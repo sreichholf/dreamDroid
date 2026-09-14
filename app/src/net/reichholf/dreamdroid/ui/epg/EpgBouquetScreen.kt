@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.epg
 
 import android.widget.ImageView
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,24 +15,43 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
+
+const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
+const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
+const val EPG_TIME_JUMP_NOW_TAG = "epg_time_jump_now"
+const val EPG_TIME_JUMP_PRIME_TAG = "epg_time_jump_prime"
+
+data class EpgTimeJumpUi(
+    val dateLabel: String,
+    val timeLabel: String,
+    val onPickDate: () -> Unit,
+    val onPickTime: () -> Unit,
+    val onNow: () -> Unit,
+    val onPrime: () -> Unit,
+)
 
 @Composable
 fun EpgBouquetScreen(
@@ -41,6 +61,7 @@ fun EpgBouquetScreen(
     listState: LazyListState = rememberLazyListState(),
     scrollEpoch: Int = 0,
     emptyMessage: String? = null,
+    timeJump: EpgTimeJumpUi? = null,
 ) {
     LaunchedEffect(scrollEpoch) {
         if (scrollEpoch > 0) {
@@ -48,35 +69,93 @@ fun EpgBouquetScreen(
         }
     }
 
-    if (items.isEmpty()) {
-        Box(
-            modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
-        ) {
-            if (emptyMessage != null) {
-                Text(
-                    text = emptyMessage,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp),
-                )
+    Column(modifier = modifier.fillMaxSize()) {
+        if (timeJump != null) {
+            EpgTimeJumpBar(timeJump)
+        }
+        if (items.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                if (emptyMessage != null) {
+                    Text(
+                        text = emptyMessage,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(24.dp),
+                    )
+                }
+            }
+        } else {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
+            ) {
+                items(
+                    items,
+                    key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" },
+                ) { event ->
+                    EpgBouquetRow(
+                        event = event,
+                        onClick = { onItemClick(event) },
+                    )
+                }
             }
         }
-        return
     }
+}
 
-    LazyColumn(
-        state = listState,
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+@Composable
+private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(items, key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" }) { event ->
-            EpgBouquetRow(
-                event = event,
-                onClick = { onItemClick(event) },
-            )
+        AssistChip(
+            onClick = timeJump.onPickDate,
+            label = {
+                Text(
+                    text = timeJump.dateLabel,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            modifier = Modifier
+                .weight(1f)
+                .testTag(EPG_TIME_JUMP_DATE_CHIP_TAG),
+        )
+        AssistChip(
+            onClick = timeJump.onPickTime,
+            label = {
+                Text(
+                    text = timeJump.timeLabel,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            },
+            modifier = Modifier.testTag(EPG_TIME_JUMP_TIME_CHIP_TAG),
+        )
+        TextButton(
+            onClick = timeJump.onNow,
+            modifier = Modifier.testTag(EPG_TIME_JUMP_NOW_TAG),
+        ) {
+            Text(stringResource(R.string.now))
+        }
+        TextButton(
+            onClick = timeJump.onPrime,
+            modifier = Modifier.testTag(EPG_TIME_JUMP_PRIME_TAG),
+        ) {
+            Text(stringResource(R.string.epg_prime))
         }
     }
 }
