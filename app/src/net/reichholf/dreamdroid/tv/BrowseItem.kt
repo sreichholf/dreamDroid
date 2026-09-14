@@ -1,22 +1,10 @@
 package net.reichholf.dreamdroid.tv
 
-import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import java.io.Serializable
-import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
-
 /**
- * Phase 3.1a typed browse payload (settings kinds still used by Compose hub).
- * Hash maps are only built at the stream-Intent edge.
+ * Settings kinds still used by the Compose TV hub. Typed service/movie payloads
+ * from Phase 3.1a were unused after the hub rewrite.
  */
-sealed class BrowseItem : Serializable {
-    data class Service(val row: ServiceNowNext) : BrowseItem()
-    data class Movie(val movie: EnigmaMovie) : BrowseItem()
-    data class Settings(
-        val kind: Kind,
-        val title: String,
-        val iconRes: Int,
-    ) : BrowseItem()
-
+object BrowseItem {
     enum class Kind {
         Reload,
         Preferences,

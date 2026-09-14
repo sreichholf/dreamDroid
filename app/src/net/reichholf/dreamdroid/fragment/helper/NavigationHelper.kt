@@ -200,8 +200,6 @@ open class NavigationHelper(
                     (host as? PhoneNavHostFragment)?.navigateToAbout()
                 }
             }
-            Statics.ITEM_CHECK_CONN ->
-                getMainActivity().onProfileChanged(DreamDroid.getCurrentProfile())
 
             R.id.menu_navigation_changelog -> {
                 val changelogHost = getMainActivity().supportFragmentManager

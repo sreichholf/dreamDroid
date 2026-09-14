@@ -113,8 +113,8 @@ android {
             }
             androidTest {
                 java.srcDirs = ['androidTest/java']
-                // Prefer new tests under androidTest/kotlin; keep java/ until migrated.
-                kotlin.srcDirs = ['androidTest/kotlin', 'androidTest/java']
+                // Instrumented tests live in androidTest/java (AGENTS.md).
+                kotlin.srcDirs = ['androidTest/java']
                 res.srcDirs = ['androidTest/res']
                 resources.srcDirs = ['androidTest/resources']
             }

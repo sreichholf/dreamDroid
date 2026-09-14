@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
@@ -110,27 +109,5 @@ class EnigmaClient(private val http: SimpleHttpClient) {
                 MovieParser.parse(http.pageContentString)
             }
         }
-    }
-
-    companion object {
-        fun getServicesBlocking(
-            http: SimpleHttpClient,
-            params: List<NameValuePair>,
-        ): List<Service>? {
-            return runBlocking {
-                EnigmaClient(http).getServices(params)
-            }
-        }
-
-        fun getEventsBlocking(
-            http: SimpleHttpClient,
-            params: List<NameValuePair>,
-            uri: String = URIStore.EPG_SERVICE
-        ): List<Event>? {
-            return runBlocking {
-                EnigmaClient(http).getEvents(params, uri)
-            }
-        }
-
     }
 }
