@@ -185,14 +185,14 @@ class MultiEpgSync(
             }
         }
 
-        /** Bouquet members from `/web/getservices?sRef=`. Failures return empty. */
+        /** Bouquet members from `/web/getservices?sRef=`. HTTP failures throw. */
         fun httpFetchBouquet(
             http: SimpleHttpClient = SimpleHttpClient.getInstance(),
         ): suspend (String) -> List<Service> {
             return { bouquetRef ->
                 EnigmaClient(http).getServices(
                     listOf(NameValuePair("sRef", bouquetRef)),
-                ) ?: emptyList()
+                ) ?: error("getservices request failed")
             }
         }
     }

@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.paneTitle
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
+import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
@@ -70,13 +72,11 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
-import kotlin.math.max
 
 /** Default visible span (GraphMultiEPG default). */
 const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
 
 private val RulerHeight = 22.dp
-private val MinBarWidth = 28.dp
 
 /**
  * MultiEPG grid aligned with the rest of the app's Material surfaces.
@@ -276,6 +276,7 @@ fun MultiEpgScreen(
         cb(visibleStartSec, visibleEndSec)
     }
     val todayLabel = stringResource(R.string.multiepg_today)
+    val paneTitleText = bouquetName.ifBlank { stringResource(R.string.multiepg) }
     val dayLabel = remember(visibleStartSec, nowSec, todayLabel) {
             if (timelineEndSec <= originForLayout) {
             ""
@@ -290,21 +291,21 @@ fun MultiEpgScreen(
         enabled = onRefresh != null,
         modifier = modifier,
     ) {
-        Column(modifier = Modifier.fillMaxSize().testTag("multi_epg_screen")) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("multi_epg_screen")
+                .semantics { paneTitle = paneTitleText },
+        ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp, vertical = 2.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(
-                    text = bouquetName.ifBlank { stringResource(R.string.multiepg) },
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
+                // Bouquet name lives on the activity toolbar; keep this row for
+                // Now / ±day / zoom so it does not duplicate the title chrome.
+                Spacer(modifier = Modifier.weight(1f))
                 if (loading) {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -592,6 +593,10 @@ private fun MultiEpgChannelTimeline(
                             bar.startSec,
                         ),
                     ],
+                    nextStartSec = MultiEpgBarLayout.nextStartSec(
+                        channel.bars,
+                        bar.startSec,
+                    ),
                     onEventClick = onEventClick,
                 )
             }
@@ -620,16 +625,29 @@ private fun ProgrammeBar(
     eventStyle: TextStyle,
     clockSize: Dp,
     clock: MultiEpgTimerClock?,
+    nextStartSec: Long?,
     onEventClick: (Event) -> Unit,
 ) {
-    val drawStart = max(bar.startSec, timelineStartSec)
+    val drawStart = maxOf(bar.startSec, timelineStartSec)
     if (bar.endSec <= timelineStartSec) {
         return
     }
-    val startMin = (drawStart - timelineStartSec) / 60f
-    val durationMin = max((bar.endSec - drawStart) / 60f, 1f)
-    val x = minuteWidth * startMin
-    val w = (minuteWidth * durationMin).coerceAtLeast(MinBarWidth)
+    val minuteWidthDp = minuteWidth.value
+    val x = MultiEpgBarLayout.offsetDp(
+        startSec = drawStart,
+        timelineStartSec = timelineStartSec,
+        minuteWidthDp = minuteWidthDp,
+    ).dp
+    val w = MultiEpgBarLayout.widthDp(
+        startSec = bar.startSec,
+        endSec = bar.endSec,
+        timelineStartSec = timelineStartSec,
+        minuteWidthDp = minuteWidthDp,
+        nextStartSec = nextStartSec,
+    ).dp
+    if (w <= 0.dp) {
+        return
+    }
     Box(
         modifier = Modifier
             .offset(x = x)

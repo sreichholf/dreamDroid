@@ -139,9 +139,12 @@ class MultiEpgSession(
             try {
                 val rosterDeferred = async(Dispatchers.IO) {
                     try {
-                        loadBouquetServices(ref)
-                    } catch (_: Throwable) {
-                        emptyList()
+                        MultiEpgRosterFetch(loadBouquetServices(ref))
+                    } catch (t: Throwable) {
+                        if (t is kotlinx.coroutines.CancellationException) {
+                            throw t
+                        }
+                        MultiEpgRosterFetch(error = t)
                     }
                 }
                 val id = profileId()
@@ -152,9 +155,13 @@ class MultiEpgSession(
                 } else {
                     null
                 }
-                val roster = playableMultiEpgRoster(rosterDeferred.await())
+                val fetched = rosterDeferred.await()
                 gridMutex.withLock {
-                    bouquetRoster = roster
+                    val applied = applyBouquetRoster(bouquetRoster, fetched)
+                    bouquetRoster = applied.roster
+                    if (applied.errorMessage != null) {
+                        errorMessage = applied.errorMessage
+                    }
                 }
                 if (peek != null && peek.events.isNotEmpty()) {
                     putWindow(peek.windowStart, peek.events)
@@ -175,6 +182,9 @@ class MultiEpgSession(
                 putWindow(chunk.startSec, events)
                 prefetchFuture(anchorSec)
             } catch (t: Throwable) {
+                if (t is kotlinx.coroutines.CancellationException) {
+                    throw t
+                }
                 errorMessage = t.message ?: t.javaClass.simpleName
             } finally {
                 pullRefreshing = false
@@ -231,8 +241,11 @@ class MultiEpgSession(
                     snapStart != this@MultiEpgSession.visibleStartSec ||
                     snapEnd != this@MultiEpgSession.visibleEndSec
                 )
-            } catch (_: Throwable) {
-                // Window sync failures stay silent; painted range stays put.
+            } catch (t: Throwable) {
+                if (t is kotlinx.coroutines.CancellationException) {
+                    throw t
+                }
+                errorMessage = t.message ?: t.javaClass.simpleName
             } finally {
                 endSync()
             }
@@ -257,8 +270,11 @@ class MultiEpgSession(
         prefetchJob = scope.launch {
             try {
                 attachWindow(anchor + MultiEpgWindows.CHUNK_SECONDS)
-            } catch (_: Throwable) {
-                // Prefetch failures stay silent.
+            } catch (t: Throwable) {
+                if (t is kotlinx.coroutines.CancellationException) {
+                    throw t
+                }
+                errorMessage = t.message ?: t.javaClass.simpleName
             } finally {
                 endSync()
             }

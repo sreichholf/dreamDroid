@@ -563,6 +563,85 @@ class MultiEpgSessionTest {
         assertEquals("Overnight", spanBars.single().event.title)
     }
 
+    @Test
+    fun failedGetservicesKeepsLastGoodRoster() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.endSec - 600L
+        val withEpg = "1:0:1:1:1:1:0:0:0:0:"
+        val withoutEpg = "1:0:1:2:1:1:0:0:0:0:"
+        val bouquetCalls = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                listOf(
+                    programme(
+                        id = "$time-a",
+                        title = "T",
+                        start = time,
+                        serviceReference = withEpg,
+                        serviceName = "Das Erste",
+                    ),
+                )
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            loadBouquetServices = {
+                if (bouquetCalls.incrementAndGet() > 1) {
+                    error("getservices down")
+                }
+                listOf(
+                    Service(withEpg, "Das Erste"),
+                    Service(withoutEpg, "ZDF"),
+                )
+            },
+        )
+        session.replaceAndLoad("bouquet-a", now)
+        session.awaitIdle()
+        assertEquals(2, session.channels.size)
+        assertEquals("ZDF", session.channels[1].serviceName)
+        assertEquals(null, session.errorMessage)
+
+        session.load(now, forceRefresh = true, isPull = true)
+        session.awaitIdle()
+        assertEquals(2, session.channels.size)
+        assertEquals("ZDF", session.channels[1].serviceName)
+        assertEquals("getservices down", session.errorMessage)
+    }
+
+    @Test
+    fun prefetchFailureKeepsGridAndSurfacesError() = runBlocking {
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (time != visibleStart) {
+                    error("prefetch down")
+                }
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L,
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        session.awaitIdle()
+        assertEquals("T", titleOnFocusedChunk(session, t0))
+        assertTrue(session.channels.isNotEmpty())
+        assertEquals("prefetch down", session.errorMessage)
+    }
+
     private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {
