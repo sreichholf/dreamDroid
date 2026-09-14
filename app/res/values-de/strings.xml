@@ -119,6 +119,9 @@
     <string name="current_service">Es läuft</string>
     <string name="provider">Provider</string>
     <string name="now">Jetzt</string>
+    <string name="epg_pick_date">Datum</string>
+    <string name="epg_pick_time">Uhrzeit</string>
+    <string name="epg_prime">Prime</string>
     <string name="next">Nachher</string>
     <string name="epg_search">EPG-Suche</string>
     <string name="epg_search_hint">In EPG suchen</string>
