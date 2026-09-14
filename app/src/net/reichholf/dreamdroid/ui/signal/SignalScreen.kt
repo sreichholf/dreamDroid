@@ -125,6 +125,7 @@ fun SignalScreen(
                     setValueColor(onSurface)
                     setMinValueTextColor(onSurface)
                     setMaxValueTextColor(onSurface)
+                    setNeedleColor(onSurface)
                     addRange(range("#ce0000", 0.0, 50.0))
                     addRange(range("#e37700", 50.0, 65.0))
                     addRange(range("#e3e500", 65.0, 80.0))
@@ -141,6 +142,7 @@ fun SignalScreen(
                 gauge.setValueColor(onSurface)
                 gauge.setMinValueTextColor(onSurface)
                 gauge.setMaxValueTextColor(onSurface)
+                gauge.setNeedleColor(onSurface)
                 if (gauge.value != state.snrPercent.toDouble()) {
                     gauge.value = state.snrPercent.toDouble()
                 }
