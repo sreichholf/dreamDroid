@@ -12,12 +12,7 @@
 * UPD: Virtual Remote home-screen widget
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer / playlist browser
-* FIX: Profiles/backup import & export edge cases
-* FIX: Timer edit keeps fields across service pick; clearer save errors
-* FIX: EPG search with slashes in the query
-* FIX: Sleep timer dialog args; Back on progress dialogs no longer kills the screen
-* FIX: Screenshot gallery save errors; signal gauge needle in night theme
-* FIX: Virtual Remote widget button clicks; TLS trust-all when "All certificates" is enabled
+* FIX: multiple smaller issues
 
 ## 1.15.460
 * FIX: reenable screenshots

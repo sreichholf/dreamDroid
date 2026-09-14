@@ -12,12 +12,7 @@
 * UPD: Virtual-Remote-Homescreen-Widget
 * UPD: Benötigt Android 8.0 oder neuer
 * DEL: Eingebauter Mediaplayer / Playlist-Browser
-* FIX: Profile/Backup Import & Export in Randfällen
-* FIX: Timer-Bearbeitung behält Felder nach Senderwahl; klarere Speicherfehler
-* FIX: EPG-Suche mit Schrägstrichen in der Suchanfrage
-* FIX: Sleep-Timer-Dialog; Zurück bei Fortschrittsdialogen beendet den Bildschirm nicht mehr
-* FIX: Screenshot-Speicherfehler; Signalnadel im Nachtmodus
-* FIX: Klicks am Virtual-Remote-Widget; TLS „Alle Zertifikate“ greift zuverlässig
+* FIX: diverse kleinere Probleme
 
 ## 1.15.460
 * FIX: Screenshots sind wieder aktiviert
