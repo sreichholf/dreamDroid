@@ -15,7 +15,7 @@ class ServiceParserTest {
         assertEquals(3, services.size)
         assertEquals(
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
-            services[0].reference,
+            services[0].reference
         )
         assertEquals("Favourites (TV)", services[0].name)
         assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", services[1].reference)

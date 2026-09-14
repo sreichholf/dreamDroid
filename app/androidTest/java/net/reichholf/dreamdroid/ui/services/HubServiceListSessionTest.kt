@@ -23,10 +23,10 @@ class HubServiceListSessionTest {
             rows = listOf(
                 ServiceNowNext(
                     serviceReference = "1:0:1:1:1:1:1:0:0:0:",
-                    serviceName = "Stale bouquet",
-                ),
+                    serviceName = "Stale bouquet"
+                )
             ),
-            errorText = null,
+            errorText = null
         )
         assertEquals(emptyList<String>(), state.items.map { it.name })
 
@@ -36,10 +36,10 @@ class HubServiceListSessionTest {
             rows = listOf(
                 ServiceNowNext(
                     serviceReference = "1:0:1:2:1:1:1:0:0:0:",
-                    serviceName = "Fresh bouquet",
-                ),
+                    serviceName = "Fresh bouquet"
+                )
             ),
-            errorText = null,
+            errorText = null
         )
         assertEquals(listOf("Fresh bouquet"), state.items.map { it.name })
 
@@ -47,7 +47,7 @@ class HubServiceListSessionTest {
             generation = staleGeneration,
             success = false,
             rows = emptyList(),
-            errorText = "timeout",
+            errorText = "timeout"
         )
         assertEquals(listOf("Fresh bouquet"), state.items.map { it.name })
     }

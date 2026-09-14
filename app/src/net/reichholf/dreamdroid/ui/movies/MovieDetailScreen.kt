@@ -28,7 +28,7 @@ data class MovieDetailContent(
     val tags: List<String>,
     val length: String,
     val date: String,
-    val fileSize: String,
+    val fileSize: String
 )
 
 fun Movie.toMovieDetailContent(): MovieDetailContent {
@@ -45,39 +45,35 @@ fun Movie.toMovieDetailContent(): MovieDetailContent {
         tags = tagList,
         length = length,
         date = timeReadable,
-        fileSize = fileSizeReadable,
+        fileSize = fileSizeReadable
     )
 }
 
-fun HashMovie.toMovieDetailContent(): MovieDetailContent {
-    return MovieDetailContent(
-        title = title().orEmpty(),
-        serviceName = serviceName().orEmpty(),
-        description = description().orEmpty(),
-        descriptionExtended = descriptionExtended(),
-        tags = tags(),
-        length = length().orEmpty(),
-        date = timeReadable().orEmpty(),
-        fileSize = fileSizeReadable().orEmpty(),
-    )
-}
+fun HashMovie.toMovieDetailContent(): MovieDetailContent = MovieDetailContent(
+    title = title().orEmpty(),
+    serviceName = serviceName().orEmpty(),
+    description = description().orEmpty(),
+    descriptionExtended = descriptionExtended(),
+    tags = tags(),
+    length = length().orEmpty(),
+    date = timeReadable().orEmpty(),
+    fileSize = fileSizeReadable().orEmpty()
+)
 
-fun HashMovie.toTypedMovie(): Movie {
-    return Movie(
-        reference = reference().orEmpty(),
-        title = title().orEmpty(),
-        description = description().orEmpty(),
-        descriptionExtended = descriptionExtended(),
-        serviceName = serviceName().orEmpty(),
-        time = time().orEmpty(),
-        timeReadable = timeReadable().orEmpty(),
-        length = length().orEmpty(),
-        tags = getString(HashMovie.KEY_TAGS, "").orEmpty(),
-        fileName = fileName().orEmpty(),
-        fileSize = fileSize().orEmpty(),
-        fileSizeReadable = fileSizeReadable().orEmpty(),
-    )
-}
+fun HashMovie.toTypedMovie(): Movie = Movie(
+    reference = reference().orEmpty(),
+    title = title().orEmpty(),
+    description = description().orEmpty(),
+    descriptionExtended = descriptionExtended(),
+    serviceName = serviceName().orEmpty(),
+    time = time().orEmpty(),
+    timeReadable = timeReadable().orEmpty(),
+    length = length().orEmpty(),
+    tags = getString(HashMovie.KEY_TAGS, "").orEmpty(),
+    fileName = fileName().orEmpty(),
+    fileSize = fileSize().orEmpty(),
+    fileSizeReadable = fileSizeReadable().orEmpty()
+)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -85,7 +81,7 @@ fun MovieDetailScreen(
     content: MovieDetailContent,
     modifier: Modifier = Modifier,
     /** Phone bottom sheet caps height; TV fullscreen passes null. */
-    heightCap: Dp? = 480.dp,
+    heightCap: Dp? = 480.dp
 ) {
     Column(
         modifier = modifier
@@ -93,19 +89,19 @@ fun MovieDetailScreen(
             .then(if (heightCap != null) Modifier.heightIn(max = heightCap) else Modifier)
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
-            .padding(top = 16.dp, bottom = 24.dp),
+            .padding(top = 16.dp, bottom = 24.dp)
     ) {
         Text(
             text = content.title,
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface
         )
         if (content.serviceName.isNotEmpty()) {
             Text(
                 text = content.serviceName,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
         if (content.description.isNotEmpty()) {
@@ -113,7 +109,7 @@ fun MovieDetailScreen(
                 text = content.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
         if (content.tags.isNotEmpty()) {
@@ -122,7 +118,7 @@ fun MovieDetailScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp, bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 content.tags.forEach { tag ->
                     Text(
@@ -132,9 +128,9 @@ fun MovieDetailScreen(
                         modifier = Modifier
                             .background(
                                 color = MaterialTheme.colorScheme.secondaryContainer,
-                                shape = RoundedCornerShape(8.dp),
+                                shape = RoundedCornerShape(8.dp)
                             )
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                            .padding(horizontal = 8.dp, vertical = 6.dp)
                     )
                 }
             }
@@ -144,7 +140,7 @@ fun MovieDetailScreen(
                 text = content.length,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
         if (content.date.isNotEmpty()) {
@@ -152,7 +148,7 @@ fun MovieDetailScreen(
                 text = content.date,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 2.dp),
+                modifier = Modifier.padding(top = 2.dp)
             )
         }
         if (content.descriptionExtended.isNotEmpty()) {
@@ -160,14 +156,14 @@ fun MovieDetailScreen(
                 text = content.descriptionExtended,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
         }
         if (content.fileSize.isNotEmpty()) {
             Text(
                 text = content.fileSize,
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

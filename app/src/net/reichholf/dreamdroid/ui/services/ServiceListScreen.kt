@@ -37,19 +37,20 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
+import kotlin.math.roundToInt
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import net.reichholf.dreamdroid.helpers.enigma2.Service
-import kotlin.math.roundToInt
 
 /** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
 typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
 
 private val EventStartColumnWidth = 45.dp
 private val EventEndColumnWidth = 50.dp
+
 /** Slightly taller than the VLC zap list's 4dp strip so the top-edge progress reads clearly. */
 private val ProgressBarHeight = 6.dp
 
@@ -58,14 +59,14 @@ fun ServiceListScreen(
     items: List<ServiceListItem>,
     onItemClick: ServiceListTap,
     onItemLongClick: ServiceListTap,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
         items(items, key = { "${it.index}:${it.reference}" }) { item ->
             ServiceRow(
                 item = item,
                 onClick = { x, y -> onItemClick(item, x, y) },
-                onLongClick = { x, y -> onItemLongClick(item, x, y) },
+                onLongClick = { x, y -> onItemLongClick(item, x, y) }
             )
         }
     }
@@ -76,14 +77,14 @@ fun ServiceListScreen(
 private fun ServiceRow(
     item: ServiceListItem,
     onClick: (windowX: Int, windowY: Int) -> Unit,
-    onLongClick: (windowX: Int, windowY: Int) -> Unit,
+    onLongClick: (windowX: Int, windowY: Int) -> Unit
 ) {
     if (item.kind == ServiceRowKind.MARKER) {
         Text(
             text = item.name,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         )
         return
     }
@@ -105,9 +106,9 @@ private fun ServiceRow(
                 onLongClick = {
                     val (x, y) = windowTopLeft()
                     onLongClick(x, y)
-                },
+                }
             ),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(Modifier.fillMaxWidth()) {
             if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
@@ -115,20 +116,20 @@ private fun ServiceRow(
                     progress = { item.progress.toFloat() / item.progressMax.toFloat() },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(ProgressBarHeight),
+                        .height(ProgressBarHeight)
                 )
             }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp),
+                    .padding(12.dp)
             ) {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (item.kind == ServiceRowKind.CHANNEL &&
                     (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
@@ -137,7 +138,7 @@ private fun ServiceRow(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         ServicePicon(item)
                         Column(modifier = Modifier.weight(1f)) {
@@ -147,7 +148,7 @@ private fun ServiceRow(
                                     title = item.nowTitle,
                                     endValue = item.nowDuration,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface,
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
                             if (item.nextTitle.isNotEmpty()) {
@@ -156,7 +157,7 @@ private fun ServiceRow(
                                     title = item.nextTitle,
                                     endValue = item.nextDuration,
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -177,18 +178,18 @@ private fun EventTimeRow(
     title: String,
     endValue: String,
     style: TextStyle,
-    color: Color,
+    color: Color
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = start,
             style = style,
             color = color,
             maxLines = 1,
-            modifier = Modifier.width(EventStartColumnWidth),
+            modifier = Modifier.width(EventStartColumnWidth)
         )
         Text(
             text = title,
@@ -198,7 +199,7 @@ private fun EventTimeRow(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .weight(1f)
-                .padding(horizontal = 4.dp),
+                .padding(horizontal = 4.dp)
         )
         Text(
             text = endValue,
@@ -206,7 +207,7 @@ private fun EventTimeRow(
             color = color,
             maxLines = 1,
             textAlign = TextAlign.End,
-            modifier = Modifier.width(EventEndColumnWidth),
+            modifier = Modifier.width(EventEndColumnWidth)
         )
     }
 }
@@ -230,6 +231,6 @@ private fun ServicePicon(item: ServiceListItem) {
             map.put(Event.KEY_SERVICE_REFERENCE, item.reference)
             map.put(Event.KEY_SERVICE_NAME, item.name)
             Picon.setPiconForView(context, view, map, Statics.TAG_PICON)
-        },
+        }
     )
 }

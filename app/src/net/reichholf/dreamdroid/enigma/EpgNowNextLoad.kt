@@ -14,17 +14,14 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 data class EpgNowNextLoadResult(
     val success: Boolean,
     val rows: List<ServiceNowNext>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
  * Phase 2.7h: load typed hub now/next rows without a Fragment owner.
  * Null fetch is failure. Empty 200 stays an empty list.
  */
-suspend fun loadEpgNowNext(
-    context: Context,
-    params: List<NameValuePair>,
-): EpgNowNextLoadResult {
+suspend fun loadEpgNowNext(context: Context, params: List<NameValuePair>): EpgNowNextLoadResult {
     val http = SimpleHttpClient.getInstance()
     val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
     val fetched = EnigmaClient(http).getEpgNowNext(params, uri)
@@ -45,7 +42,7 @@ suspend fun loadEpgNowNext(
  */
 fun Fragment.launchEpgNowNextLoad(
     params: List<NameValuePair>,
-    onResult: (success: Boolean, rows: List<ServiceNowNext>, errorText: String?) -> Unit,
+    onResult: (success: Boolean, rows: List<ServiceNowNext>, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val result = loadEpgNowNext(requireContext(), params)

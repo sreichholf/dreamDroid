@@ -60,7 +60,7 @@ class EpgNowNextParserTest {
             <e2eventservicename>TV</e2eventservicename>
             </e2event>
             </e2eventlist>
-            """.trimIndent(),
+            """.trimIndent()
         )
         val rows = EpgNowNextParser.pairEvents(events)
         assertEquals(1, rows.size)

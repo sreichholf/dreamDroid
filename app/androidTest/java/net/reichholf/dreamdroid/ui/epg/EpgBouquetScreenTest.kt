@@ -24,7 +24,7 @@ class EpgBouquetScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
@@ -40,7 +40,7 @@ class EpgBouquetScreenTest {
             serviceName = "Das Erste HD",
             startReadable = "20:00",
             durationReadable = "15",
-            descriptionExtended = "Die Nachrichten.",
+            descriptionExtended = "Die Nachrichten."
         )
         val second = Event(
             eventId = "101",
@@ -49,14 +49,14 @@ class EpgBouquetScreenTest {
             serviceName = "ZDF HD",
             startReadable = "20:15",
             durationReadable = "10",
-            descriptionExtended = "Der Wetterbericht.",
+            descriptionExtended = "Der Wetterbericht."
         )
         var clicked: Event? = null
         composeRule.setContent {
             DreamDroidTheme {
                 EpgBouquetScreen(
                     items = listOf(first, second),
-                    onItemClick = { clicked = it },
+                    onItemClick = { clicked = it }
                 )
             }
         }
@@ -89,8 +89,8 @@ class EpgBouquetScreenTest {
                         onPickDate = { dateClicks++ },
                         onPickTime = { timeClicks++ },
                         onNow = { nowClicks++ },
-                        onPrime = { primeClicks++ },
-                    ),
+                        onPrime = { primeClicks++ }
+                    )
                 )
             }
         }
@@ -114,7 +114,7 @@ class EpgBouquetScreenTest {
                 EpgBouquetScreen(
                     items = emptyList(),
                     onItemClick = {},
-                    emptyMessage = "No items to display…",
+                    emptyMessage = "No items to display…"
                 )
             }
         }

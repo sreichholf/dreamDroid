@@ -22,11 +22,11 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
@@ -34,10 +34,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
  * Result Intent carries [NavExtras.DATA] ExtendedHashMap for timer edit.
  */
 @Composable
-fun TimerServicePickDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun TimerServicePickDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { PickServiceListState() }
@@ -80,12 +77,12 @@ fun TimerServicePickDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         PickServiceScreen(
             items = listState.items,
             emptyMessage = emptyMessage,
-            onItemClick = { session.onRowClick(it) },
+            onItemClick = { session.onRowClick(it) }
         )
     }
 }
@@ -232,7 +229,7 @@ private class TimerServicePickSession {
         loadJob = coroutineScope.launch {
             val result = loadServiceList(
                 ctx.applicationContext,
-                listOf(NameValuePair("sRef", bouquetRef)),
+                listOf(NameValuePair("sRef", bouquetRef))
             )
             if (generation != loadGeneration || bouquetRef.isEmpty()) {
                 return@launch

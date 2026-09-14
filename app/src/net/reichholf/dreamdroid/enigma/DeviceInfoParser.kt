@@ -1,10 +1,10 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object DeviceInfoParser {
     fun parse(xml: String): DeviceInfo? {
@@ -15,18 +15,16 @@ object DeviceInfoParser {
             ?: parseSanitized(xml, aggressive = true)
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): DeviceInfo? {
-        return try {
-            val handler = DeviceInfoHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.result
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): DeviceInfo? = try {
+        val handler = DeviceInfoHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.result
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -73,18 +71,29 @@ private class DeviceInfoHandler : DefaultHandler() {
     private val nics = ArrayList<DeviceNic>()
     private val hdds = ArrayList<DeviceHdd>()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2enigmaversion" -> inGuiVersion = true
+
             "e2imageversion" -> inImageVersion = true
+
             "e2webifversion" -> inInterfaceVersion = true
+
             "e2fpversion" -> inFpVersion = true
+
             "e2devicename" -> inDeviceName = true
+
             "e2frontend" -> {
                 inFrontend = true
                 frontendName.setLength(0)
                 frontendModel.setLength(0)
             }
+
             "e2interface" -> {
                 inNic = true
                 nicName.setLength(0)
@@ -94,20 +103,30 @@ private class DeviceInfoHandler : DefaultHandler() {
                 nicGateway.setLength(0)
                 nicNetmask.setLength(0)
             }
+
             "e2hdd" -> {
                 inHdd = true
                 hddModel.setLength(0)
                 hddCapacity.setLength(0)
                 hddFree.setLength(0)
             }
+
             "e2name" -> inName = true
+
             "e2model" -> inModel = true
+
             "e2mac" -> inMac = true
+
             "e2dhcp" -> inDhcp = true
+
             "e2ip" -> inIp = true
+
             "e2gateway" -> inGateway = true
+
             "e2netmask" -> inNetmask = true
+
             "e2capacity" -> inCapacity = true
+
             "e2free" -> inFree = true
         }
     }
@@ -115,19 +134,25 @@ private class DeviceInfoHandler : DefaultHandler() {
     override fun endElement(uri: String?, localName: String?, qName: String?) {
         when (tag(localName, qName)) {
             "e2enigmaversion" -> inGuiVersion = false
+
             "e2imageversion" -> inImageVersion = false
+
             "e2webifversion" -> inInterfaceVersion = false
+
             "e2fpversion" -> inFpVersion = false
+
             "e2devicename" -> inDeviceName = false
+
             "e2frontend" -> {
                 inFrontend = false
                 frontends.add(
                     DeviceFrontend(
                         name = frontendName.toString().trim(),
-                        model = frontendModel.toString().trim(),
-                    ),
+                        model = frontendModel.toString().trim()
+                    )
                 )
             }
+
             "e2interface" -> {
                 inNic = false
                 nics.add(
@@ -137,29 +162,40 @@ private class DeviceInfoHandler : DefaultHandler() {
                         dhcp = nicDhcp.toString().trim(),
                         ip = nicIp.toString().trim(),
                         gateway = nicGateway.toString().trim(),
-                        netmask = nicNetmask.toString().trim(),
-                    ),
+                        netmask = nicNetmask.toString().trim()
+                    )
                 )
             }
+
             "e2hdd" -> {
                 inHdd = false
                 hdds.add(
                     DeviceHdd(
                         model = hddModel.toString().trim(),
                         capacity = hddCapacity.toString().trim(),
-                        free = hddFree.toString().trim(),
-                    ),
+                        free = hddFree.toString().trim()
+                    )
                 )
             }
+
             "e2name" -> inName = false
+
             "e2model" -> inModel = false
+
             "e2mac" -> inMac = false
+
             "e2dhcp" -> inDhcp = false
+
             "e2ip" -> inIp = false
+
             "e2gateway" -> inGateway = false
+
             "e2netmask" -> inNetmask = false
+
             "e2capacity" -> inCapacity = false
+
             "e2free" -> inFree = false
+
             "e2deviceinfo" -> finalizeResult()
         }
     }
@@ -179,7 +215,7 @@ private class DeviceInfoHandler : DefaultHandler() {
             deviceName = deviceName.toString().trim(),
             frontends = frontends.toList(),
             nics = nics.toList(),
-            hdds = hdds.toList(),
+            hdds = hdds.toList()
         )
         result = if (built.isEmpty()) null else built
     }

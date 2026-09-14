@@ -50,7 +50,7 @@ data class EpgTimeJumpUi(
     val onPickDate: () -> Unit,
     val onPickTime: () -> Unit,
     val onNow: () -> Unit,
-    val onPrime: () -> Unit,
+    val onPrime: () -> Unit
 )
 
 @Composable
@@ -61,7 +61,7 @@ fun EpgBouquetScreen(
     listState: LazyListState = rememberLazyListState(),
     scrollEpoch: Int = 0,
     emptyMessage: String? = null,
-    timeJump: EpgTimeJumpUi? = null,
+    timeJump: EpgTimeJumpUi? = null
 ) {
     LaunchedEffect(scrollEpoch) {
         if (scrollEpoch > 0) {
@@ -78,7 +78,7 @@ fun EpgBouquetScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 if (emptyMessage != null) {
                     Text(
@@ -86,7 +86,7 @@ fun EpgBouquetScreen(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp),
+                        modifier = Modifier.padding(24.dp)
                     )
                 }
             }
@@ -96,15 +96,15 @@ fun EpgBouquetScreen(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 items(
                     items,
-                    key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" },
+                    key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" }
                 ) { event ->
                     EpgBouquetRow(
                         event = event,
-                        onClick = { onItemClick(event) },
+                        onClick = { onItemClick(event) }
                     )
                 }
             }
@@ -119,7 +119,7 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         AssistChip(
             onClick = timeJump.onPickDate,
@@ -127,12 +127,12 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
                 Text(
                     text = timeJump.dateLabel,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
             },
             modifier = Modifier
                 .weight(1f)
-                .testTag(EPG_TIME_JUMP_DATE_CHIP_TAG),
+                .testTag(EPG_TIME_JUMP_DATE_CHIP_TAG)
         )
         AssistChip(
             onClick = timeJump.onPickTime,
@@ -140,20 +140,20 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
                 Text(
                     text = timeJump.timeLabel,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
             },
-            modifier = Modifier.testTag(EPG_TIME_JUMP_TIME_CHIP_TAG),
+            modifier = Modifier.testTag(EPG_TIME_JUMP_TIME_CHIP_TAG)
         )
         TextButton(
             onClick = timeJump.onNow,
-            modifier = Modifier.testTag(EPG_TIME_JUMP_NOW_TAG),
+            modifier = Modifier.testTag(EPG_TIME_JUMP_NOW_TAG)
         ) {
             Text(stringResource(R.string.now))
         }
         TextButton(
             onClick = timeJump.onPrime,
-            modifier = Modifier.testTag(EPG_TIME_JUMP_PRIME_TAG),
+            modifier = Modifier.testTag(EPG_TIME_JUMP_PRIME_TAG)
         ) {
             Text(stringResource(R.string.epg_prime))
         }
@@ -161,10 +161,7 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
 }
 
 @Composable
-private fun EpgBouquetRow(
-    event: Event,
-    onClick: () -> Unit,
-) {
+private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
     val context = LocalContext.current
     val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
         .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
@@ -174,7 +171,7 @@ private fun EpgBouquetRow(
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -196,9 +193,9 @@ private fun EpgBouquetRow(
                                 event.serviceReference,
                                 event.serviceName,
                                 Statics.TAG_PICON,
-                                null,
+                                null
                             )
-                        },
+                        }
                     )
                 }
                 Column(modifier = Modifier.weight(1f)) {
@@ -207,14 +204,14 @@ private fun EpgBouquetRow(
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = event.serviceName,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -223,14 +220,14 @@ private fun EpgBouquetRow(
                     text = event.startReadable,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = event.durationReadable,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
             if (event.descriptionExtended.isNotEmpty()) {
@@ -242,7 +239,7 @@ private fun EpgBouquetRow(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp),
+                        .padding(top = 4.dp)
                 )
             }
         }

@@ -35,10 +35,7 @@ private const val PROFILE_WAIT_MS = 20_000L
  * [DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP] is off.
  */
 @Composable
-fun HubNowPlaying(
-    reloadEpoch: Int,
-    hubState: TvMoviesHubState,
-) {
+fun HubNowPlaying(reloadEpoch: Int, hubState: TvMoviesHubState) {
     val context = LocalContext.current
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -144,7 +141,7 @@ fun HubNowPlaying(
         serviceName = service?.name.orEmpty(),
         eventTitle = now?.title.orEmpty(),
         loadingText = loadingText,
-        unavailableText = unavailableText,
+        unavailableText = unavailableText
     )
     hubState.nowPlayingProgress = eventProgressFraction(now)
     hubState.nowPlayingReference = service?.reference.orEmpty()
@@ -159,7 +156,7 @@ fun HubNowPlaying(
             onDismiss = {
                 showSheet = false
                 reload()
-            },
+            }
         )
     }
 }
@@ -191,12 +188,11 @@ class CurrentServiceLoadGate {
         return true
     }
 
-    fun visible(profileId: Int): CurrentService? {
-        return lastGood.takeIf { lastGoodProfileId == profileId }
+    fun visible(profileId: Int): CurrentService? = lastGood.takeIf {
+        lastGoodProfileId == profileId
     }
 }
 
 /** Stream is only valid when `/web/getcurrent` gave a non-empty service reference. */
-fun currentServiceCanStream(current: CurrentService?): Boolean {
-    return current?.service?.reference?.isNotEmpty() == true
-}
+fun currentServiceCanStream(current: CurrentService?): Boolean =
+    current?.service?.reference?.isNotEmpty() == true

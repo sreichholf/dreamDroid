@@ -12,4 +12,5 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SleepTimerHandler
 /**
  * @author sre
  */
-class SleepTimerRequestHandler : AbstractSimpleRequestHandler(URIStore.SLEEPTIMER, E2SleepTimerHandler())
+class SleepTimerRequestHandler :
+    AbstractSimpleRequestHandler(URIStore.SLEEPTIMER, E2SleepTimerHandler())

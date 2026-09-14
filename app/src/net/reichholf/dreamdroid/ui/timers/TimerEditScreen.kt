@@ -50,7 +50,7 @@ fun TimerEditScreen(
     onPickRepeated: () -> Unit,
     onPickService: () -> Unit,
     onPickTags: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     // Hosted in a destination that already fits system windows.
     // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
@@ -61,11 +61,11 @@ fun TimerEditScreen(
             FloatingActionButton(onClick = onSave) {
                 Icon(
                     painter = painterResource(R.drawable.ic_action_save),
-                    contentDescription = saveLabel,
+                    contentDescription = saveLabel
                 )
             }
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -73,13 +73,13 @@ fun TimerEditScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (state.saveError.isNotEmpty()) {
                 Text(
                     text = state.saveError,
                     color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             OutlinedTextField(
@@ -91,22 +91,22 @@ fun TimerEditScreen(
                     .fillMaxWidth()
                     .semantics { contentDescription = "Title" },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp),
+                horizontalArrangement = Arrangement.spacedBy(24.dp)
             ) {
                 CheckRow(
                     checked = state.enabled,
                     onCheckedChange = { state.enabled = it },
-                    label = stringResource(R.string.enabled),
+                    label = stringResource(R.string.enabled)
                 )
                 CheckRow(
                     checked = state.zap,
                     onCheckedChange = { state.zap = it },
-                    label = stringResource(R.string.zap),
+                    label = stringResource(R.string.zap)
                 )
             }
             OutlinedTextField(
@@ -117,45 +117,45 @@ fun TimerEditScreen(
                     .fillMaxWidth()
                     .semantics { contentDescription = "Description" },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
 
             SectionHeader(stringResource(R.string.begin_time))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SelectableValue(
                     value = state.beginDate,
                     contentDescription = stringResource(R.string.begin_date),
                     onClick = onPickBeginDate,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 SelectableValue(
                     value = state.beginTime,
                     contentDescription = stringResource(R.string.begin_time),
                     onClick = onPickBeginTime,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
 
             SectionHeader(stringResource(R.string.end_time))
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SelectableValue(
                     value = state.endDate,
                     contentDescription = stringResource(R.string.end_date),
                     onClick = onPickEndDate,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 SelectableValue(
                     value = state.endTime,
                     contentDescription = stringResource(R.string.end_time),
                     onClick = onPickEndTime,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
 
@@ -163,14 +163,14 @@ fun TimerEditScreen(
             SelectableValue(
                 value = state.repeatedLabel.ifEmpty { stringResource(R.string.none) },
                 contentDescription = stringResource(R.string.repeatings),
-                onClick = onPickRepeated,
+                onClick = onPickRepeated
             )
 
             SectionHeader(stringResource(R.string.service))
             SelectableValue(
                 value = state.serviceName.ifEmpty { "…" },
                 contentDescription = stringResource(R.string.service),
-                onClick = onPickService,
+                onClick = onPickService
             )
 
             SectionHeader(stringResource(R.string.afterevent))
@@ -178,7 +178,7 @@ fun TimerEditScreen(
                 options = state.afterEventOptions,
                 selectedIndex = state.afterEventIndex,
                 onSelected = { state.afterEventIndex = it },
-                contentDescription = stringResource(R.string.afterevent),
+                contentDescription = stringResource(R.string.afterevent)
             )
 
             SectionHeader(stringResource(R.string.location))
@@ -186,14 +186,14 @@ fun TimerEditScreen(
                 options = state.locationOptions,
                 selectedIndex = state.locationIndex,
                 onSelected = { state.locationIndex = it },
-                contentDescription = stringResource(R.string.location),
+                contentDescription = stringResource(R.string.location)
             )
 
             SectionHeader(stringResource(R.string.tags))
             SelectableValue(
                 value = state.tagsLabel.ifEmpty { "…" },
                 contentDescription = stringResource(R.string.tags),
-                onClick = onPickTags,
+                onClick = onPickTags
             )
         }
     }
@@ -205,29 +205,25 @@ private fun SectionHeader(text: String) {
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp),
+        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
     )
 }
 
 @Composable
-private fun CheckRow(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    label: String,
-) {
+private fun CheckRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit, label: String) {
     Row(
         modifier = Modifier.toggleable(
             value = checked,
             onValueChange = onCheckedChange,
-            role = Role.Checkbox,
+            role = Role.Checkbox
         ),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(checked = checked, onCheckedChange = null)
         Text(
             text = label,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = 4.dp),
+            modifier = Modifier.padding(start = 4.dp)
         )
     }
 }
@@ -237,7 +233,7 @@ private fun SelectableValue(
     value: String,
     contentDescription: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = value,
@@ -247,7 +243,7 @@ private fun SelectableValue(
             .fillMaxWidth()
             .clickable(onClick = onClick)
             .padding(vertical = 10.dp, horizontal = 4.dp)
-            .semantics { this.contentDescription = contentDescription },
+            .semantics { this.contentDescription = contentDescription }
     )
 }
 
@@ -257,14 +253,14 @@ private fun DropdownField(
     options: List<String>,
     selectedIndex: Int,
     onSelected: (Int) -> Unit,
-    contentDescription: String,
+    contentDescription: String
 ) {
     var expanded by remember { mutableStateOf(false) }
     val label = options.getOrElse(selectedIndex) { "" }
     ExposedDropdownMenuBox(
         expanded = expanded,
         onExpandedChange = { expanded = it },
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth()
     ) {
         OutlinedTextField(
             value = label,
@@ -276,12 +272,12 @@ private fun DropdownField(
                 .fillMaxWidth()
                 .semantics { this.contentDescription = contentDescription },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         )
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { expanded = false }
         ) {
             options.forEachIndexed { index, option ->
                 DropdownMenuItem(
@@ -289,7 +285,7 @@ private fun DropdownField(
                     onClick = {
                         onSelected(index)
                         expanded = false
-                    },
+                    }
                 )
             }
         }

@@ -19,7 +19,7 @@ class ZapScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -30,10 +30,10 @@ class ZapScreenTest {
                 ZapScreen(
                     items = listOf(
                         Service("1:0:1:1:1:1:1:0:0:0:", "ARD HD"),
-                        Service("1:0:1:2:1:1:1:0:0:0:", "ZDF HD"),
+                        Service("1:0:1:2:1:1:1:0:0:0:", "ZDF HD")
                     ),
                     onItemClick = {},
-                    onItemLongClick = {},
+                    onItemLongClick = {}
                 )
             }
         }
@@ -49,7 +49,7 @@ class ZapScreenTest {
                     items = emptyList(),
                     onItemClick = {},
                     onItemLongClick = {},
-                    emptyMessage = "No items to display…",
+                    emptyMessage = "No items to display…"
                 )
             }
         }

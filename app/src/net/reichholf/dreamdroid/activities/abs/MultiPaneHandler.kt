@@ -9,11 +9,7 @@ interface MultiPaneHandler {
     fun showDetails(fragment: Fragment, addToBackStack: Boolean)
     fun onFragmentResume(fragment: Fragment)
     fun onFragmentPause(fragment: Fragment)
-    fun showDialogFragment(
-        fragmentClass: Class<out DialogFragment>,
-        args: Bundle?,
-        tag: String,
-    )
+    fun showDialogFragment(fragmentClass: Class<out DialogFragment>, args: Bundle?, tag: String)
     fun showDialogFragment(fragment: DialogFragment, tag: String)
     val isMultiPane: Boolean
     val isDrawerOpen: Boolean

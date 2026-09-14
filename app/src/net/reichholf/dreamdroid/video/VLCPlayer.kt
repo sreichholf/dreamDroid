@@ -2,11 +2,11 @@ package net.reichholf.dreamdroid.video
 
 import android.net.Uri
 import android.view.SurfaceView
+import kotlin.math.max
+import kotlin.math.min
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
-import kotlin.math.max
-import kotlin.math.min
 
 /**
  * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
@@ -23,7 +23,7 @@ class VLCPlayer {
     fun attach(
         newVideoLayoutListener: IVLCVout.OnNewVideoLayoutListener?,
         surfaceView: SurfaceView?,
-        subtitleSurfaceView: SurfaceView?,
+        subtitleSurfaceView: SurfaceView?
     ) {
         val vlcVout = getMediaPlayer()?.vlcVout ?: return
         if (vlcVout.areViewsAttached()) {

@@ -9,18 +9,6 @@ package net.reichholf.dreamdroid.helpers
 import android.content.Context
 import android.os.Environment
 import android.util.Log
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -42,6 +30,18 @@ import java.util.concurrent.atomic.AtomicReference
 import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.X509TrustManager
+import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.Credentials
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.Response
 
 /**
  * Enigma2 HTTP client. Phase SOTA: OkHttp (aligned with Picasso) instead of
@@ -61,6 +61,7 @@ class SimpleHttpClient {
     private var okHttpTimeoutMillis: Int = -1
     private var okHttpSsl: Boolean? = null
     private var okHttpTrustAll: Boolean? = null
+
     @Volatile
     private var inFlight: Call? = null
     private val fetchEpoch = AtomicInteger(0)
@@ -122,7 +123,7 @@ class SimpleHttpClient {
             mProfile!!.encoderPath,
             encoded,
             mProfile!!.encoderVideoBitrate,
-            mProfile!!.encoderAudioBitrate,
+            mProfile!!.encoderAudioBitrate
         )
     }
 
@@ -146,7 +147,7 @@ class SimpleHttpClient {
             try {
                 return URLDecoder.decode(
                     serviceRef.substring(serviceRef.indexOf("http")),
-                    "utf-8",
+                    "utf-8"
                 ).replace(" ", "%20")
             } catch (_: UnsupportedEncodingException) {
             }
@@ -159,7 +160,7 @@ class SimpleHttpClient {
             enabled = mProfile!!.streamLogin,
             user = mProfile!!.user,
             pass = mProfile!!.pass,
-            scheme = "http",
+            scheme = "http"
         )
         return "http://" + streamLoginString + mProfile!!.streamHostOrHost + ":" +
             mProfile!!.streamPort + "/" + serviceRef
@@ -180,7 +181,7 @@ class SimpleHttpClient {
             enabled = mProfile!!.fileLogin,
             user = mProfile!!.user,
             pass = mProfile!!.pass,
-            scheme = fileScheme,
+            scheme = fileScheme
         )
         return mFilePrefix + fileAuthString + mProfile!!.streamHostOrHost + ":" +
             mProfile!!.filePort + URIStore.FILE + parms
@@ -212,8 +213,8 @@ class SimpleHttpClient {
                 builder.sslSocketFactory(sc.socketFactory, trustManager)
                 builder.hostnameVerifier(
                     trustManager.wrapHostnameVerifier(
-                        HttpsURLConnection.getDefaultHostnameVerifier(),
-                    ),
+                        HttpsURLConnection.getDefaultHostnameVerifier()
+                    )
                 )
             } catch (e: Exception) {
                 Log.w(LOG_TAG, "SSL setup for OkHttp failed", e)
@@ -257,7 +258,7 @@ class SimpleHttpClient {
                     responseRef.set(response)
                     done.countDown()
                 }
-            },
+            }
         )
         try {
             done.await()
@@ -338,10 +339,12 @@ class SimpleHttpClient {
                     mErrorText = null
                     mErrorTextId = R.string.host_not_found
                 }
+
                 is ConnectException -> {
                     mError = true
                     mErrorTextId = R.string.host_unreach
                 }
+
                 else -> {
                     e.printStackTrace()
                     mError = true
@@ -373,7 +376,7 @@ class SimpleHttpClient {
         parameters: MutableList<NameValuePair>,
         urlString: String,
         response: Response,
-        epoch: Int,
+        epoch: Int
     ): Boolean {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {

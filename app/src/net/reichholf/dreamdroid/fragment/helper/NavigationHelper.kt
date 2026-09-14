@@ -33,10 +33,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 /**
  * Created by Stephan on 25.12.2015.
  */
-open class NavigationHelper(
-    activity: MainActivity,
-    protected val mDrawerState: DrawerListState,
-) {
+open class NavigationHelper(activity: MainActivity, protected val mDrawerState: DrawerListState) {
     var mActivity: MainActivity = activity
 
     protected var mPowerStateJob: Job? = null
@@ -204,7 +201,10 @@ open class NavigationHelper(
             R.id.menu_navigation_changelog -> {
                 val changelogHost = getMainActivity().supportFragmentManager
                     .findFragmentById(R.id.detail_view)
-                if (!(changelogHost is PhoneNavHostFragment && changelogHost.navigateToChangelog())) {
+                if (
+                    changelogHost !is PhoneNavHostFragment ||
+                    !changelogHost.navigateToChangelog()
+                ) {
                     getMainActivity().showChangeLog(false)
                 }
             }
@@ -247,7 +247,7 @@ open class NavigationHelper(
         }
         clearBackStack()
         getMainActivity().showDetails(
-            PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs),
+            PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs)
         )
     }
 
@@ -266,7 +266,7 @@ open class NavigationHelper(
         }
         clearBackStack()
         getMainActivity().showDetails(
-            PhoneNavHostFragment.newInstance(PhoneNavRoutes.MULTI_EPG, epgArgs),
+            PhoneNavHostFragment.newInstance(PhoneNavRoutes.MULTI_EPG, epgArgs)
         )
     }
 
@@ -299,13 +299,18 @@ open class NavigationHelper(
         success: Boolean,
         result: ExtendedHashMap,
         openDialog: Boolean,
-        errorText: String?,
+        errorText: String?
     ) {
         if (success) {
             if (openDialog) {
                 val sleepHost = getMainActivity().supportFragmentManager
                     .findFragmentById(R.id.detail_view)
-                if (!(sleepHost is PhoneNavHostFragment && sleepHost.navigateToSleepTimer(result))) {
+                if (!(
+                        sleepHost is PhoneNavHostFragment && sleepHost.navigateToSleepTimer(
+                            result
+                        )
+                        )
+                ) {
                     navigatePhoneNavRoot(PhoneNavRoutes.HUB)
                     val host = getMainActivity().supportFragmentManager
                         .findFragmentById(R.id.detail_view)
@@ -322,12 +327,16 @@ open class NavigationHelper(
         }
     }
 
-    fun execSimpleResultTask(handler: SimpleResultRequestHandler, params: ArrayList<NameValuePair>) {
+    fun execSimpleResultTask(
+        handler: SimpleResultRequestHandler,
+        params: ArrayList<NameValuePair>
+    ) {
         mSimpleResultJob?.cancel(null)
-        mSimpleResultJob = mActivity.launchSimpleResultLoad(handler, params) { success, result, http ->
-            mSimpleResultJob = null
-            onSimpleResult(success, result, http)
-        }
+        mSimpleResultJob =
+            mActivity.launchSimpleResultLoad(handler, params) { success, result, http ->
+                mSimpleResultJob = null
+                onSimpleResult(success, result, http)
+            }
     }
 
     private fun onSimpleResult(success: Boolean, result: ExtendedHashMap, http: SimpleHttpClient) {
@@ -347,13 +356,16 @@ open class NavigationHelper(
      * @param params
      */
     @Suppress("UNCHECKED_CAST")
-    protected fun execSleepTimerTask(params: ArrayList<NameValuePair>, showDialogOnFinish: Boolean) {
+    protected fun execSleepTimerTask(
+        params: ArrayList<NameValuePair>,
+        showDialogOnFinish: Boolean
+    ) {
         mSleepTimerJob?.cancel(null)
 
         mSleepTimerJob = mActivity.launchSleepTimerLoad(
             params,
             showDialogOnFinish,
-            mActivity,
+            mActivity
         ) { success, result, openDialog, errorText ->
             mSleepTimerJob = null
             onSleepTimerSet(success, result, openDialog, errorText)
@@ -369,7 +381,7 @@ open class NavigationHelper(
 
         mPowerStateJob = mActivity.launchPowerStateSetLoad(
             state,
-            mActivity,
+            mActivity
         ) { success, result, errorText ->
             mPowerStateJob = null
             onPowerStateSet(success, result, errorText)
@@ -414,7 +426,7 @@ open class NavigationHelper(
             R.id.menu_navigation_message,
             R.id.menu_navigation_power,
             R.id.menu_navigation_about,
-            R.id.menu_navigation_changelog,
+            R.id.menu_navigation_changelog
         )
 
         /** Drawer menu ids that open a PhoneNavHost root (no extras). EPG is separate. */

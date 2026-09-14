@@ -12,8 +12,8 @@ class ScreenshotSaveTest {
             screenshotGallerySaveError(
                 bytes = ByteArray(0),
                 inserted = true,
-                ioFailed = false,
-            ),
+                ioFailed = false
+            )
         )
     }
 
@@ -24,8 +24,8 @@ class ScreenshotSaveTest {
             screenshotGallerySaveError(
                 bytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte()),
                 inserted = false,
-                ioFailed = false,
-            ),
+                ioFailed = false
+            )
         )
     }
 
@@ -36,8 +36,8 @@ class ScreenshotSaveTest {
             screenshotGallerySaveError(
                 bytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte()),
                 inserted = true,
-                ioFailed = true,
-            ),
+                ioFailed = true
+            )
         )
     }
 
@@ -47,8 +47,8 @@ class ScreenshotSaveTest {
             screenshotGallerySaveError(
                 bytes = byteArrayOf(0xFF.toByte(), 0xD8.toByte()),
                 inserted = true,
-                ioFailed = false,
-            ),
+                ioFailed = false
+            )
         )
     }
 }

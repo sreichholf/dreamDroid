@@ -26,12 +26,12 @@ fun ServiceEpgScreen(
     items: List<Event>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
-    emptyMessage: String? = null,
+    emptyMessage: String? = null
 ) {
     if (items.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             if (emptyMessage != null) {
                 Text(
@@ -39,7 +39,7 @@ fun ServiceEpgScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(24.dp)
                 )
             }
         }
@@ -49,28 +49,25 @@ fun ServiceEpgScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         items(items, key = { "${it.eventId}:${it.start}:${it.title}" }) { event ->
             ServiceEpgRow(
                 event = event,
-                onClick = { onItemClick(event) },
+                onClick = { onItemClick(event) }
             )
         }
     }
 }
 
 @Composable
-private fun ServiceEpgRow(
-    event: Event,
-    onClick: () -> Unit,
-) {
+private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
@@ -78,21 +75,21 @@ private fun ServiceEpgRow(
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
+                overflow = TextOverflow.Ellipsis
             )
             Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                 Text(
                     text = event.startReadable,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 Text(
                     text = event.durationReadable,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
             if (event.descriptionExtended.isNotEmpty()) {
@@ -104,7 +101,7 @@ private fun ServiceEpgRow(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 4.dp),
+                        .padding(top = 4.dp)
                 )
             }
         }

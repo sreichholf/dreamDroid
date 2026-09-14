@@ -7,7 +7,7 @@ fun loadWebFixture(name: String): String {
     }
     val stream = checkNotNull(
         loader.getResourceAsStream("web/$name")
-            ?: object {}.javaClass.getResourceAsStream("/web/$name"),
+            ?: object {}.javaClass.getResourceAsStream("/web/$name")
     ) { "Missing androidTest fixture web/$name" }
     return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
 }

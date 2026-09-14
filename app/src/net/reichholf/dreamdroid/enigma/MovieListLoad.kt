@@ -15,7 +15,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 data class MovieListLoadResult(
     val success: Boolean,
     val movies: List<Movie>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -23,18 +23,17 @@ data class MovieListLoadResult(
  * Null parse result is failure (not an empty list) — matches [launchMovieListLoad].
  * Caller is responsible for locations/tags prefetch when needed.
  */
-suspend fun loadMovieList(
-    context: Context,
-    params: List<NameValuePair>,
-): MovieListLoadResult {
+suspend fun loadMovieList(context: Context, params: List<NameValuePair>): MovieListLoadResult {
     val http = SimpleHttpClient.getInstance()
     val fetched = EnigmaClient(http).getMovies(params)
     val success = fetched != null
     val movies = fetched ?: emptyList()
     val errorText = when {
         success -> null
+
         http.hasError() ->
             context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+
         else -> context.getString(R.string.error_parsing)
     }
     return MovieListLoadResult(success, movies, errorText)
@@ -47,7 +46,7 @@ suspend fun loadMovieList(
  */
 fun Fragment.launchMovieListLoad(
     params: List<NameValuePair>,
-    onResult: (success: Boolean, movies: List<Movie>, errorText: String?) -> Unit,
+    onResult: (success: Boolean, movies: List<Movie>, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val http = SimpleHttpClient.getInstance()

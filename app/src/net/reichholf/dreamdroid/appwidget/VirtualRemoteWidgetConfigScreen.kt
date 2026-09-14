@@ -30,36 +30,36 @@ fun VirtualRemoteWidgetConfigScreen(
     isFull: Boolean,
     onStyleFullChange: (Boolean) -> Unit,
     onProfileClick: (ProfileListItem) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         Text(
             text = stringResource(R.string.remote_widget_config_title_style),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
         Column(modifier = Modifier.selectableGroup()) {
             StyleOptionRow(
                 label = stringResource(R.string.quickzap),
                 selected = !isFull,
-                onClick = { onStyleFullChange(false) },
+                onClick = { onStyleFullChange(false) }
             )
             StyleOptionRow(
                 label = stringResource(R.string.standard),
                 selected = isFull,
-                onClick = { onStyleFullChange(true) },
+                onClick = { onStyleFullChange(true) }
             )
         }
         Text(
             text = stringResource(R.string.remote_widget_config_title_profile),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(profiles, key = { it.id }) { profile ->
@@ -69,19 +69,19 @@ fun VirtualRemoteWidgetConfigScreen(
                         .padding(vertical = 4.dp)
                         .clickable { onProfileClick(profile) },
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                    ),
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant
+                    )
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
                             text = profile.name,
                             style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = profile.host,
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -91,27 +91,23 @@ fun VirtualRemoteWidgetConfigScreen(
 }
 
 @Composable
-private fun StyleOptionRow(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-) {
+private fun StyleOptionRow(label: String, selected: Boolean, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .selectable(
                 selected = selected,
                 onClick = onClick,
-                role = Role.RadioButton,
+                role = Role.RadioButton
             )
             .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(selected = selected, onClick = null)
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 8.dp)
         )
     }
 }

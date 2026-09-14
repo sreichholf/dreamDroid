@@ -12,17 +12,14 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 data class ServiceListLoadResult(
     val success: Boolean,
     val services: List<Service>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
  * Phase 2.7d: load typed service list without a Fragment owner.
  * Null fetch is failure. Empty 200 stays an empty list.
  */
-suspend fun loadServiceList(
-    context: Context,
-    params: List<NameValuePair>,
-): ServiceListLoadResult {
+suspend fun loadServiceList(context: Context, params: List<NameValuePair>): ServiceListLoadResult {
     val http = SimpleHttpClient.getInstance()
     val fetched = EnigmaClient(http).getServices(params)
     val success = fetched != null
@@ -41,7 +38,7 @@ suspend fun loadServiceList(
  */
 fun Fragment.launchServiceListLoad(
     params: List<NameValuePair>,
-    onResult: (success: Boolean, services: List<Service>, errorText: String?) -> Unit,
+    onResult: (success: Boolean, services: List<Service>, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val result = loadServiceList(requireContext(), params)

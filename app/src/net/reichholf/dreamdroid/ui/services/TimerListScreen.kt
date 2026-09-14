@@ -29,7 +29,7 @@ fun TimerListScreen(
     items: List<TimerListItem>,
     onItemClick: (TimerListItem) -> Unit,
     onItemLongClick: (TimerListItem) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
         items(items, key = { it.index }) { item ->
@@ -40,45 +40,41 @@ fun TimerListScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TimerRow(
-    item: TimerListItem,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-) {
+private fun TimerRow(item: TimerListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(Modifier.height(IntrinsicSize.Min)) {
             Box(
                 Modifier
                     .width(4.dp)
                     .fillMaxHeight()
-                    .background(Color(item.stateColor)),
+                    .background(Color(item.stateColor))
             )
             Column(Modifier.padding(12.dp)) {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = item.serviceName,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "${item.begin} – ${item.end}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "${item.action}  ${item.state}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

@@ -8,10 +8,10 @@ class Service : ExtendedHashMap() {
         const val KEY_REFERENCE: String = "reference"
 
         enum class FLAGS(private val `val`: Int) {
-            isDirectory(1),
-            isMarker(64),
-            isGroup(128),
-            isLive(256);
+            IS_DIRECTORY(1),
+            IS_MARKER(64),
+            IS_GROUP(128),
+            IS_LIVE(256);
 
             fun value(): Int = `val`
         }
@@ -29,7 +29,7 @@ class Service : ExtendedHashMap() {
 
         fun isDirectory(ref: String?): Boolean {
             if (ref.isNullOrEmpty()) return false
-            if ((getFlags(ref) and FLAGS.isDirectory.value()) == FLAGS.isDirectory.value()) {
+            if ((getFlags(ref) and FLAGS.IS_DIRECTORY.value()) == FLAGS.IS_DIRECTORY.value()) {
                 return true
             }
             // Provider / satellite / bouquet path nodes sometimes omit the directory flag bit.
@@ -40,8 +40,7 @@ class Service : ExtendedHashMap() {
 
         fun isBouquet(ref: String): Boolean = ref.startsWith("1:7:")
 
-        fun isMarker(ref: String?): Boolean {
-            return (getFlags(ref) and FLAGS.isMarker.value()) == FLAGS.isMarker.value()
-        }
+        fun isMarker(ref: String?): Boolean =
+            (getFlags(ref) and FLAGS.IS_MARKER.value()) == FLAGS.IS_MARKER.value()
     }
 }

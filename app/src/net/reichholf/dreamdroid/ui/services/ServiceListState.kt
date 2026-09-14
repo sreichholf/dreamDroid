@@ -22,7 +22,7 @@ fun ComposeView.bindServiceListScreen(
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
     onItemClick: ServiceListTap,
-    onItemLongClick: ServiceListTap,
+    onItemLongClick: ServiceListTap
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -30,12 +30,12 @@ fun ComposeView.bindServiceListScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 ServiceListScreen(
                     items = state.items,
                     onItemClick = onItemClick,
-                    onItemLongClick = onItemLongClick,
+                    onItemLongClick = onItemLongClick
                 )
             }
         }

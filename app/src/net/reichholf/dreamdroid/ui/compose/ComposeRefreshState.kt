@@ -9,7 +9,7 @@ import androidx.compose.runtime.mutableStateOf
  */
 class ComposeRefreshState(
     /** When false, gesture pull-to-refresh is off; programmatic [setRefreshing] still works. */
-    var enabled: Boolean = true,
+    var enabled: Boolean = true
 ) {
     private val refreshingState: MutableState<Boolean> = mutableStateOf(false)
 

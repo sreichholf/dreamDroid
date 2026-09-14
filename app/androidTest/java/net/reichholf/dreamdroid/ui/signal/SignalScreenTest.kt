@@ -29,7 +29,7 @@ class SignalScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -41,16 +41,16 @@ class SignalScreenTest {
                 snrDbRaw = "12.50 dB",
                 snrRaw = "63 %",
                 berRaw = "0",
-                agcRaw = "73 %",
+                agcRaw = "73 %"
             ),
-            minSnrDb = 5.0,
+            minSnrDb = 5.0
         )
         composeRule.setContent {
             DreamDroidTheme {
                 SignalScreen(
                     state = state,
                     onEnabledChange = {},
-                    onAcousticChange = {},
+                    onAcousticChange = {}
                 )
             }
         }
@@ -73,7 +73,7 @@ class SignalScreenTest {
                 SignalScreen(
                     state = state,
                     onEnabledChange = {},
-                    onAcousticChange = {},
+                    onAcousticChange = {}
                 )
             }
         }

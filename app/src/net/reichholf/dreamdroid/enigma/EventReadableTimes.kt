@@ -27,6 +27,6 @@ fun Event.withReadableTimes(): Event {
     return copy(
         startReadable = formattedStart,
         startTimeReadable = formattedTime,
-        durationReadable = formattedDuration,
+        durationReadable = formattedDuration
     )
 }

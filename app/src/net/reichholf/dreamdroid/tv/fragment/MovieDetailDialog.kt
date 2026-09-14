@@ -8,12 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
-import androidx.fragment.app.DialogFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailScreen
@@ -37,7 +37,7 @@ class MovieDetailDialog : DialogFragment() {
         super.onStart()
         dialog?.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
 
@@ -54,14 +54,14 @@ class MovieDetailDialog : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View {
         val content = detailContent()
         val host = this
         return ComposeView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
             setViewTreeLifecycleOwner(host)
             setViewTreeViewModelStoreOwner(host)
@@ -72,7 +72,7 @@ class MovieDetailDialog : DialogFragment() {
                     MovieDetailScreen(
                         content = content,
                         modifier = Modifier.fillMaxSize(),
-                        heightCap = null,
+                        heightCap = null
                     )
                 }
             }

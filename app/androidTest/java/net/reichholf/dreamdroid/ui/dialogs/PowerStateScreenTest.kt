@@ -19,7 +19,7 @@ class PowerStateScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -29,7 +29,7 @@ class PowerStateScreenTest {
             PowerChoiceItem(Statics.ITEM_TOGGLE_STANDBY, "Standby"),
             PowerChoiceItem(Statics.ITEM_RESTART_GUI, "Restart GUI"),
             PowerChoiceItem(Statics.ITEM_REBOOT, "Reboot"),
-            PowerChoiceItem(Statics.ITEM_SHUTDOWN, "Shutdown"),
+            PowerChoiceItem(Statics.ITEM_SHUTDOWN, "Shutdown")
         )
         composeRule.setContent {
             DreamDroidTheme {

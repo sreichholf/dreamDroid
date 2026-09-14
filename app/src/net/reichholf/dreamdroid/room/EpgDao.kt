@@ -26,13 +26,13 @@ interface EpgDao {
           AND bouquetRef = :bouquetRef
           AND start >= :windowStart
           AND start < :windowEnd
-        """,
+        """
     )
     fun deleteEventsStartingIn(
         profileId: Int,
         bouquetRef: String,
         windowStart: Long,
-        windowEnd: Long,
+        windowEnd: Long
     )
 
     @Transaction
@@ -41,7 +41,7 @@ interface EpgDao {
             meta.profileId,
             meta.bouquetRef,
             meta.windowStart,
-            meta.windowEnd,
+            meta.windowEnd
         )
         upsertEvents(events)
         upsertChunk(meta)
@@ -54,13 +54,9 @@ interface EpgDao {
           AND bouquetRef = :bouquetRef
           AND windowStart = :windowStart
         LIMIT 1
-        """,
+        """
     )
-    fun getChunk(
-        profileId: Int,
-        bouquetRef: String,
-        windowStart: Long,
-    ): EpgChunkMetaEntity?
+    fun getChunk(profileId: Int, bouquetRef: String, windowStart: Long): EpgChunkMetaEntity?
 
     @Query(
         """
@@ -70,13 +66,13 @@ interface EpgDao {
           AND start < :windowEnd
           AND (start + duration) > :windowStart
         ORDER BY bouquetPos ASC, serviceRef ASC, start ASC
-        """,
+        """
     )
     fun eventsOverlapping(
         profileId: Int,
         bouquetRef: String,
         windowStart: Long,
-        windowEnd: Long,
+        windowEnd: Long
     ): List<EpgEventEntity>
 
     @Query("DELETE FROM epg_event WHERE profileId = :profileId")

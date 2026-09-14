@@ -23,20 +23,22 @@ class ShareProfilesScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
     @Test
     fun seededProfilesShowNameHostAndClick() {
-        val first = ProfileListItem(id = 1, name = "Living Room", host = "dm7080.local", active = false)
-        val second = ProfileListItem(id = 2, name = "Bedroom", host = "192.168.1.50", active = false)
+        val first =
+            ProfileListItem(id = 1, name = "Living Room", host = "dm7080.local", active = false)
+        val second =
+            ProfileListItem(id = 2, name = "Bedroom", host = "192.168.1.50", active = false)
         var clicked: ProfileListItem? = null
         composeRule.setContent {
             DreamDroidTheme {
                 ShareProfilesScreen(
                     profiles = listOf(first, second),
-                    onProfileClick = { clicked = it },
+                    onProfileClick = { clicked = it }
                 )
             }
         }
@@ -52,12 +54,17 @@ class ShareProfilesScreenTest {
             DreamDroidTheme {
                 ShareProfilesScreen(
                     profiles = listOf(
-                        ProfileListItem(id = 1, name = "Living Room", host = "dm7080.local", active = false),
+                        ProfileListItem(
+                            id = 1,
+                            name = "Living Room",
+                            host = "dm7080.local",
+                            active = false
+                        )
                     ),
-                    onProfileClick = {},
+                    onProfileClick = {}
                 )
                 IndeterminateProgressHost(
-                    IndeterminateProgressState(message = "Loading"),
+                    IndeterminateProgressState(message = "Loading")
                 )
             }
         }

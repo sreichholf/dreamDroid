@@ -1,6 +1,10 @@
 package net.reichholf.dreamdroid.enigma
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -9,10 +13,6 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
 
 @RunWith(AndroidJUnit4::class)
 class DeviceInfoParserTest {
@@ -58,8 +58,8 @@ class DeviceInfoParserTest {
     fun emptyDeviceInfoElementYieldsNull() {
         assertNull(
             DeviceInfoParser.parse(
-                """<?xml version="1.0" encoding="UTF-8"?><e2deviceinfo></e2deviceinfo>""",
-            ),
+                """<?xml version="1.0" encoding="UTF-8"?><e2deviceinfo></e2deviceinfo>"""
+            )
         )
     }
 

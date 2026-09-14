@@ -13,9 +13,6 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
 import android.os.Bundle
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
-import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -33,6 +30,7 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
@@ -46,15 +44,17 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
+import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 
 /**
  * @author sre
@@ -84,9 +84,8 @@ class MainActivity :
 
     private var mSnackbar: Snackbar? = null
 
-    /** When true, a successful profile check opens the start route (after Recheck from the gate). */
+    /** When true, a successful profile check opens the start route (after Recheck). */
     private var mOpenStartOnProfileSuccess: Boolean = false
-
 
     private lateinit var mCurrentProfile: Profile
 
@@ -124,7 +123,6 @@ class MainActivity :
         mSnackbar?.dismiss()
         mSnackbar = null
     }
-
 
     private fun showProfileCheckChecking(message: String) {
         dismissSnackbar()
@@ -188,7 +186,9 @@ class MainActivity :
     }
 
     private fun leaveProfileCheckGate(isFirstStart: Boolean) {
-        val detail = supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment
+        val detail = supportFragmentManager.findFragmentById(
+            R.id.detail_view
+        ) as? PhoneNavHostFragment
         if (detail != null && detail.isOnProfileCheckRoute()) {
             val route = if (isFirstStart) {
                 PhoneNavRoutes.PROFILES
@@ -206,13 +206,9 @@ class MainActivity :
         }
     }
 
-    private fun isPaused(): Boolean {
-        return !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-    }
+    private fun isPaused(): Boolean = !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
 
-    fun getProfileCheckContext(): Context {
-        return this
-    }
+    fun getProfileCheckContext(): Context = this
 
     private fun onProfileCheckProgress(state: String) {
         setConnectionState(state, false)
@@ -243,8 +239,9 @@ class MainActivity :
             mNavigationHelper!!.setAvailableFeatures()
             val openStart = mOpenStartOnProfileSuccess
             mOpenStartOnProfileSuccess = false
-            val onGate = (supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment)
-                ?.isOnProfileCheckRoute() == true
+            val onGate =
+                (supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment)
+                    ?.isOnProfileCheckRoute() == true
             if (onGate || openStart) {
                 // Leave PROFILE_CHECK on the back stack so Back returns to the gate.
                 leaveProfileCheckGate(isFirstStart)
@@ -273,7 +270,9 @@ class MainActivity :
         mCurrentProfile = Profile.getDefault()
         initViews()
         DreamDroid.setCurrentProfileChangedListener(this)
-        PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this)
+        PreferenceManager.getDefaultSharedPreferences(
+            this
+        ).registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         handleSearchIntent(intent)
     }
@@ -298,7 +297,7 @@ class MainActivity :
     /**
      * open the change log dialog
      *
-     * @param onUpdateOnly if this is true, the change log will only displayed if the app has been updated
+     * @param onUpdateOnly if true, only show the change log after an app update
      */
     fun showChangeLog(onUpdateOnly: Boolean) {
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -334,13 +333,13 @@ class MainActivity :
     }
 
     override fun onDestroy() {
-        PreferenceManager.getDefaultSharedPreferences(this).unregisterOnSharedPreferenceChangeListener(this)
+        PreferenceManager.getDefaultSharedPreferences(
+            this
+        ).unregisterOnSharedPreferenceChangeListener(this)
         super.onDestroy()
     }
 
-    private fun checkNavigationHelper(): Boolean {
-        return checkNavigationHelper(false)
-    }
+    private fun checkNavigationHelper(): Boolean = checkNavigationHelper(false)
 
     private fun checkNavigationHelper(isResume: Boolean): Boolean {
         if (mNavigationHelper == null) {
@@ -362,7 +361,7 @@ class MainActivity :
         val state = mDrawerListState ?: return
         val itemId = DrawerHighlight.itemIdForRoute(
             route,
-            previousRoute,
+            previousRoute
         ) ?: return
         if (itemId == R.id.menu_none) {
             state.clearSelection()
@@ -452,7 +451,7 @@ class MainActivity :
                 this, /* host Activity */
                 mDrawerLayout, /* DrawerLayout object */
                 R.string.drawer_open, /* "open drawer" description for accessibility */
-                R.string.drawer_close, /* "close drawer" description for accessibility */
+                R.string.drawer_close /* "close drawer" description for accessibility */
             ) {
                 override fun onDrawerClosed(view: View) {
                     mIsDrawerOpen = false
@@ -602,7 +601,7 @@ class MainActivity :
                     if (result != null) {
                         onProfileChecked(result)
                     }
-                },
+                }
             )
         } else {
             onProfileChecked(CheckProfile.checkProfile(p, this))
@@ -651,14 +650,14 @@ class MainActivity :
             mDetailFragment!!.isVisible &&
             PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true,
+                true
             )
         ) {
             ft.setCustomAnimations(
                 R.animator.activity_open_translate,
                 R.animator.activity_close_scale,
                 R.animator.activity_open_scale,
-                R.animator.activity_close_translate,
+                R.animator.activity_close_translate
             )
         }
 
@@ -685,12 +684,16 @@ class MainActivity :
             }
         }
 
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean("volume_control", false)) {
+        if (PreferenceManager.getDefaultSharedPreferences(
+                this
+            ).getBoolean("volume_control", false)
+        ) {
             when (keyCode) {
                 KeyEvent.KEYCODE_VOLUME_UP -> {
                     // TODO onVolumeButtonClicked(Volume.CMD_UP);
                     return true
                 }
+
                 KeyEvent.KEYCODE_VOLUME_DOWN -> {
                     // TODO onVolumeButtonClicked(Volume.CMD_DOWN);
                     return true
@@ -719,9 +722,7 @@ class MainActivity :
     override val isDrawerOpen: Boolean
         get() = isNavigationDrawerVisible()
 
-    fun isSlidingMenu(): Boolean {
-        return mSlider
-    }
+    fun isSlidingMenu(): Boolean = mSlider
 
     fun finish(finishFragment: Boolean) {
         if (finishFragment) {
@@ -758,7 +759,7 @@ class MainActivity :
     override fun showDialogFragment(
         fragmentClass: Class<out DialogFragment>,
         args: Bundle?,
-        tag: String,
+        tag: String
     ) {
         try {
             @Suppress("DEPRECATION")
@@ -782,7 +783,8 @@ class MainActivity :
      * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        getCurrentDetailFragment() // FIXME find the real cause for mDetailFragment being null and fix that
+        // FIXME find the real cause for mDetailFragment being null and fix that
+        getCurrentDetailFragment()
         if (mDetailFragment != null) {
             val content = getDetailContentFragment()
             if (content is DialogActionListener) {
@@ -814,7 +816,6 @@ class MainActivity :
         }
     }
 
-
     /*
      * (non-Javadoc)
      *
@@ -843,9 +844,7 @@ class MainActivity :
      * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange
      * (java.lang.String)
      */
-    override fun onQueryTextChange(newText: String?): Boolean {
-        return false
-    }
+    override fun onQueryTextChange(newText: String?): Boolean = false
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName

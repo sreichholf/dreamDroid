@@ -28,7 +28,7 @@ class ProfileEditScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -49,7 +49,7 @@ class ProfileEditScreenTest {
                 ProfileEditScreen(
                     state = state,
                     saveLabel = "Save",
-                    onSave = {},
+                    onSave = {}
                 )
             }
         }
@@ -77,7 +77,7 @@ class ProfileEditScreenTest {
                 ProfileEditScreen(
                     state = state,
                     saveLabel = "Save",
-                    onSave = {},
+                    onSave = {}
                 )
             }
         }
@@ -114,7 +114,7 @@ class ProfileEditScreenTest {
                 ProfileEditScreen(
                     state = state,
                     saveLabel = "Save",
-                    onSave = {},
+                    onSave = {}
                 )
             }
         }
@@ -143,7 +143,7 @@ class ProfileEditScreenTest {
                         val profile = Profile.getDefault()
                         state.applyTo(profile)
                         outcome = persistEditedProfile(context, profile)
-                    },
+                    }
                 )
             }
         }

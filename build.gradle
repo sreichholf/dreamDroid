@@ -11,6 +11,24 @@ buildscript {
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
     }
 }
+
+plugins {
+    id 'com.diffplug.spotless' version '8.10.1'
+}
+
+// Google’s Android Kotlin style guide via ktlint `android_studio`.
+// https://developer.android.com/kotlin/style-guide
+// https://ktlint.github.io/ktlint/latest/rules/code-styles/
+spotless {
+    kotlin {
+        target 'app/**/*.kt'
+        targetExclude '**/build/**'
+        ktlint('1.8.0')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
 allprojects {
     tasks.withType(Test).configureEach {
      forkEvery = 100

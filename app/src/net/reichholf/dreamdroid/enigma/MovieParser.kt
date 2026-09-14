@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object MovieParser {
     /**
@@ -20,18 +20,16 @@ object MovieParser {
             ?: parseSanitized(xml, aggressive = true)
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): List<Movie>? {
-        return try {
-            val handler = MovieListHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.movies
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): List<Movie>? = try {
+        val handler = MovieListHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.movies
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -61,7 +59,12 @@ private class MovieListHandler : DefaultHandler() {
     private val fileName = StringBuilder()
     private val fileSize = StringBuilder()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2movie" -> {
                 inMovie = true
@@ -76,15 +79,25 @@ private class MovieListHandler : DefaultHandler() {
                 fileName.setLength(0)
                 fileSize.setLength(0)
             }
+
             "e2servicereference" -> inReference = true
+
             "e2title" -> inTitle = true
+
             "e2description" -> inDescription = true
+
             "e2descriptionextended" -> inDescriptionEx = true
+
             "e2servicename" -> inName = true
+
             "e2time" -> inTime = true
+
             "e2length" -> inLength = true
+
             "e2tags" -> inTags = true
+
             "e2filename" -> inFilename = true
+
             "e2filesize" -> inFilesize = true
         }
     }
@@ -95,15 +108,25 @@ private class MovieListHandler : DefaultHandler() {
                 inMovie = false
                 movies.add(buildMovie())
             }
+
             "e2servicereference" -> inReference = false
+
             "e2title" -> inTitle = false
+
             "e2description" -> inDescription = false
+
             "e2descriptionextended" -> inDescriptionEx = false
+
             "e2servicename" -> inName = false
+
             "e2time" -> inTime = false
+
             "e2length" -> inLength = false
+
             "e2tags" -> inTags = false
+
             "e2filename" -> inFilename = false
+
             "e2filesize" -> inFilesize = false
         }
     }
@@ -155,7 +178,7 @@ private class MovieListHandler : DefaultHandler() {
             tags = tags.toString(),
             fileName = fileName.toString(),
             fileSize = sizeRaw,
-            fileSizeReadable = sizeReadable,
+            fileSizeReadable = sizeReadable
         )
     }
 

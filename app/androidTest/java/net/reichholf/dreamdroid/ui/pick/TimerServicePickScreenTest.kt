@@ -23,7 +23,7 @@ class TimerServicePickScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -35,7 +35,7 @@ class TimerServicePickScreenTest {
             DreamDroidTheme {
                 PickServiceScreen(
                     items = listOf(channel),
-                    onItemClick = { clicked = it },
+                    onItemClick = { clicked = it }
                 )
             }
         }

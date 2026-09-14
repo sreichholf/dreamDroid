@@ -11,9 +11,7 @@ package net.reichholf.dreamdroid.enigma
  * one event per row without pairing.
  */
 object EpgNowNextParser {
-    fun parse(xml: String): List<ServiceNowNext> {
-        return pairEvents(EventParser.parse(xml))
-    }
+    fun parse(xml: String): List<ServiceNowNext> = pairEvents(EventParser.parse(xml))
 
     fun pairEvents(events: List<Event>): List<ServiceNowNext> {
         if (events.isEmpty()) {
@@ -29,7 +27,7 @@ object EpgNowNextParser {
                     serviceReference = now.serviceReference,
                     serviceName = now.serviceName,
                     now = now,
-                    next = next,
+                    next = next
                 )
             )
             i += if (next != null) 2 else 1

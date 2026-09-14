@@ -6,5 +6,5 @@ data class MovieListItem(
     val serviceName: String,
     val fileSize: String,
     val time: String,
-    val length: String,
+    val length: String
 )

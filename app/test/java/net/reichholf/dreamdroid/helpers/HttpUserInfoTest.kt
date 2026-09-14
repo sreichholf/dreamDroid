@@ -12,8 +12,8 @@ class HttpUserInfoTest {
                 enabled = true,
                 user = "root",
                 pass = "secret",
-                scheme = "http",
-            ),
+                scheme = "http"
+            )
         )
         assertEquals(
             "",
@@ -21,8 +21,8 @@ class HttpUserInfoTest {
                 enabled = true,
                 user = "root",
                 pass = "secret",
-                scheme = "HTTP",
-            ),
+                scheme = "HTTP"
+            )
         )
     }
 
@@ -34,8 +34,8 @@ class HttpUserInfoTest {
                 enabled = true,
                 user = "root",
                 pass = "secret",
-                scheme = "https",
-            ),
+                scheme = "https"
+            )
         )
         assertEquals(
             "",
@@ -43,8 +43,8 @@ class HttpUserInfoTest {
                 enabled = false,
                 user = "root",
                 pass = "secret",
-                scheme = "https",
-            ),
+                scheme = "https"
+            )
         )
     }
 
@@ -56,8 +56,8 @@ class HttpUserInfoTest {
                 enabled = true,
                 user = "enc",
                 pass = "pw",
-                scheme = "rtsp",
-            ),
+                scheme = "rtsp"
+            )
         )
     }
 }

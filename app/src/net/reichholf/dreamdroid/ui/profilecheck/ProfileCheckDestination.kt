@@ -9,16 +9,13 @@ import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 
 @Composable
-fun ProfileCheckDestination(
-	hostFragment: PhoneNavHostFragment,
-	modifier: Modifier = Modifier,
-) {
-	val ui by hostFragment.profileCheckUiFlow().collectAsState()
-	val activity = LocalContext.current as? MainActivity
-	ProfileCheckScreen(
-		ui = ui,
-		onRecheck = { activity?.recheckProfileAfterFailure() },
-		onProfiles = { activity?.openProfilesFromProfileCheckFailed() },
-		modifier = modifier,
-	)
+fun ProfileCheckDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+    val ui by hostFragment.profileCheckUiFlow().collectAsState()
+    val activity = LocalContext.current as? MainActivity
+    ProfileCheckScreen(
+        ui = ui,
+        onRecheck = { activity?.recheckProfileAfterFailure() },
+        onProfiles = { activity?.openProfilesFromProfileCheckFailed() },
+        modifier = modifier
+    )
 }

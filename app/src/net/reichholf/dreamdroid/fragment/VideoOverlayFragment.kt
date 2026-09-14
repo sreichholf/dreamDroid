@@ -38,7 +38,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchEpgNowNextLoad
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -48,14 +47,15 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.services.movieFromExtendedHashMap
 import net.reichholf.dreamdroid.ui.services.movieToExtendedHashMap
 import net.reichholf.dreamdroid.ui.services.serviceNowNextFromExtendedHashMap
 import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
+import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
 import net.reichholf.dreamdroid.ui.video.showEpgDetail
 import net.reichholf.dreamdroid.ui.video.showMovieDetail
-import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport
@@ -116,7 +116,9 @@ class VideoOverlayFragment :
         applyPlaybackExtras(requireArguments())
 
         mAudioManager =
-            requireActivity().applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            requireActivity().applicationContext.getSystemService(
+                Context.AUDIO_SERVICE
+            ) as AudioManager
         mAudioMaxVol = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 
         mVolume = -1f
@@ -127,7 +129,7 @@ class VideoOverlayFragment :
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.video_player_overlay, container, false)
         mOverlayRoot = view.findViewById(R.id.overlay_root)
@@ -142,7 +144,7 @@ class VideoOverlayFragment :
             onList = { onList() },
             onAudio = { onSelectAudioTrack() },
             onSubtitle = { onSelectSubtitleTrack() },
-            onSeekChange = { progress -> seek(progress) },
+            onSeekChange = { progress -> seek(progress) }
         )
         mOverlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
@@ -166,8 +168,10 @@ class VideoOverlayFragment :
             }
             servicesView.addItemDecoration(
                 SpacesItemDecoration(
-                    requireActivity().resources.getDimensionPixelSize(R.dimen.recylcerview_content_margin),
-                ),
+                    requireActivity().resources.getDimensionPixelSize(
+                        R.dimen.recylcerview_content_margin
+                    )
+                )
             )
             mItemClickSupport = ItemClickSupport.addTo(servicesView)
             mItemClickSupport!!.setOnItemClickListener(this)
@@ -183,7 +187,7 @@ class VideoOverlayFragment :
                             mHandler.removeCallbacks(mAutoHideRunnable)
                         }
                     }
-                },
+                }
             )
             mServicesViewVisible = servicesView.visibility == View.VISIBLE
         }
@@ -196,7 +200,7 @@ class VideoOverlayFragment :
                         e1: MotionEvent?,
                         e2: MotionEvent,
                         distanceX: Float,
-                        distanceY: Float,
+                        distanceY: Float
                     ): Boolean {
                         if (e1 == null) return true
                         val isGesturesEnabled =
@@ -204,7 +208,14 @@ class VideoOverlayFragment :
                                 .getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true)
                         if (!isGesturesEnabled) return true
 
-                        Log.d(LOG_TAG, String.format("distanceY=%s, DeltaY=%s", distanceY, e1.y - e2.y))
+                        Log.d(
+                            LOG_TAG,
+                            String.format(
+                                "distanceY=%s, DeltaY=%s",
+                                distanceY,
+                                e1.y - e2.y
+                            )
+                        )
                         val metrics = DisplayMetrics()
                         requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
                         val isRight = e1.rawX > (4 * metrics.widthPixels / 7)
@@ -226,7 +237,7 @@ class VideoOverlayFragment :
                         toggleViews()
                         return true
                     }
-                },
+                }
             )
 
         requireActivity().findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
@@ -268,12 +279,20 @@ class VideoOverlayFragment :
 
     private fun onSelectAudioTrack() {
         val player = VLCPlayer.getMediaPlayer()!!
-        showTrackSelection(getString(R.string.audio_tracks), player.audioTracks, DIALOG_TAG_AUDIO_TRACK)
+        showTrackSelection(
+            getString(R.string.audio_tracks),
+            player.audioTracks,
+            DIALOG_TAG_AUDIO_TRACK
+        )
     }
 
     private fun onSelectSubtitleTrack() {
         val player = VLCPlayer.getMediaPlayer()!!
-        showTrackSelection(getString(R.string.subtitles), player.spuTracks, DIALOG_TAG_SUBTITLE_TRACK)
+        showTrackSelection(
+            getString(R.string.subtitles),
+            player.spuTracks,
+            DIALOG_TAG_SUBTITLE_TRACK
+        )
     }
 
     private fun onInfo() {
@@ -304,7 +323,7 @@ class VideoOverlayFragment :
                     mCurrentService!!.serviceName,
                     "",
                     "",
-                    "",
+                    ""
                 )
         }
         if (DreamDroid.isTV(requireContext())) {
@@ -328,7 +347,7 @@ class VideoOverlayFragment :
     private fun showTrackSelection(
         title: String,
         descriptions: Array<MediaPlayer.TrackDescription>?,
-        dialogTag: String,
+        dialogTag: String
     ) {
         // this should actually never be true, but just to be sure we do it anyways
         if (descriptions == null || descriptions.isEmpty()) {
@@ -357,7 +376,11 @@ class VideoOverlayFragment :
     protected fun setVolume(volume: Int) {
         val currentVol = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         if (volume != currentVol) {
-            mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, volume, AudioManager.FLAG_SHOW_UI)
+            mAudioManager.setStreamVolume(
+                AudioManager.STREAM_MUSIC,
+                volume,
+                AudioManager.FLAG_SHOW_UI
+            )
         }
     }
 
@@ -411,7 +434,7 @@ class VideoOverlayFragment :
                 mServiceRef!!,
                 mTitle ?: "",
                 mBouquetRef,
-                serviceInfoHash,
+                serviceInfoHash
             )
         val zapExtras =
             VideoPlayback.overlayExtrasForZap(mTitle, mServiceRef, mBouquetRef)
@@ -430,7 +453,7 @@ class VideoOverlayFragment :
             VideoPlayback.overlayExtrasForActionView(
                 extras.getString(TITLE),
                 extras.getString(SERVICE_REFERENCE),
-                extras.getString(BOUQUET_REFERENCE),
+                extras.getString(BOUQUET_REFERENCE)
             )
         val args = arguments
         if (args != null && args !== extras) {
@@ -582,7 +605,7 @@ class VideoOverlayFragment :
     private fun onEpgNowNextReady(
         success: Boolean,
         rows: List<ServiceNowNext>,
-        errorText: String?,
+        errorText: String?
     ) {
         if (!isAdded) return
         if (!success) {
@@ -753,7 +776,9 @@ class VideoOverlayFragment :
     }
 
     fun showOverlays() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && requireActivity().isInPictureInPictureMode) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
+            requireActivity().isInPictureInPictureMode
+        ) {
             hideOverlays()
             return
         }
@@ -802,7 +827,7 @@ class VideoOverlayFragment :
                 override fun onAnimationEnd(animation: Animator) {
                     v.alpha = sOverlayAlpha
                 }
-            },
+            }
         )
     }
 
@@ -813,7 +838,7 @@ class VideoOverlayFragment :
                 override fun onAnimationEnd(animation: Animator) {
                     v.visibility = View.GONE
                 }
-            },
+            }
         )
     }
 
@@ -836,13 +861,16 @@ class VideoOverlayFragment :
                 val progressView = requireView().findViewById<View>(R.id.video_load_progress)
                 fadeInView(progressView)
             }
+
             MediaPlayer.Event.Playing -> {
                 val progressView = requireView().findViewById<View>(R.id.video_load_progress)
                 fadeOutView(progressView)
                 updateProgress()
                 hideOverlays()
             }
+
             MediaPlayer.Event.PositionChanged -> updateProgress()
+
             MediaPlayer.Event.EncounteredError ->
                 Toast.makeText(activity, R.string.playback_failed, Toast.LENGTH_LONG).show()
         }
@@ -880,6 +908,7 @@ class VideoOverlayFragment :
                     return false
                 }
             }
+
             KeyEvent.KEYCODE_DPAD_LEFT -> {
                 if (isOverlaysVisible()) return false
                 if (isRecording()) {
@@ -890,6 +919,7 @@ class VideoOverlayFragment :
                 }
                 ret = true
             }
+
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 if (isOverlaysVisible()) return false
                 if (isRecording()) {
@@ -899,18 +929,21 @@ class VideoOverlayFragment :
                 }
                 ret = true
             }
+
             KeyEvent.KEYCODE_R, KeyEvent.KEYCODE_MEDIA_REWIND -> {
                 if (isRecording()) {
                     onRewind()
                     ret = true
                 }
             }
+
             KeyEvent.KEYCODE_F, KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> {
                 if (isRecording()) {
                     onForward()
                     ret = true
                 }
             }
+
             KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 player.play()
                 ret = true

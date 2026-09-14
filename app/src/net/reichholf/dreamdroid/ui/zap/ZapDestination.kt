@@ -43,10 +43,7 @@ import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
  * Bouquet pick results arrive via [PhoneNavHostFragment.composeActivityResultListener].
  */
 @Composable
-fun ZapDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun ZapDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { ZapListState() }
@@ -103,7 +100,7 @@ fun ZapDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         ZapScreen(
             items = listState.items,
@@ -111,7 +108,7 @@ fun ZapDestination(
             scrollEpoch = listState.scrollEpoch,
             emptyMessage = emptyMessage,
             onItemClick = { service: Service -> session.zapTo(service.reference) },
-            onItemLongClick = { service: Service -> session.stream(service) },
+            onItemLongClick = { service: Service -> session.stream(service) }
         )
     }
 }
@@ -201,7 +198,7 @@ private class ZapSession :
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
             ZapRequestHandler(),
-            listOf(NameValuePair("sRef", ref)),
+            listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
@@ -219,7 +216,7 @@ private class ZapSession :
         try {
             val activity = ctx as AppCompatActivity
             activity.startActivity(
-                IntentFactory.getStreamServiceIntent(activity, service.reference, service.name),
+                IntentFactory.getStreamServiceIntent(activity, service.reference, service.name)
             )
         } catch (_: ActivityNotFoundException) {
             toast(ctx.getText(R.string.missing_stream_player))
@@ -232,7 +229,7 @@ private class ZapSession :
         }
         if (resultCode != Activity.RESULT_OK) {
             val effect = ZapPickerGate.afterNonOkPickerResult(
-                gridEmpty = listState?.items.isNullOrEmpty(),
+                gridEmpty = listState?.items.isNullOrEmpty()
             )
             waitingForPicker = effect.waitingForPicker
             onWaitingForPicker?.invoke(effect.waitingForPicker)

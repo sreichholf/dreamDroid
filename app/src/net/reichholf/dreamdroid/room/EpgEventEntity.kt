@@ -9,7 +9,7 @@ import androidx.room.Entity
  */
 @Entity(
     tableName = "epg_event",
-    primaryKeys = ["profileId", "bouquetRef", "serviceRef", "eventId"],
+    primaryKeys = ["profileId", "bouquetRef", "serviceRef", "eventId"]
 )
 data class EpgEventEntity(
     val profileId: Int,
@@ -23,5 +23,5 @@ data class EpgEventEntity(
     val descriptionExtended: String,
     val serviceName: String,
     val currentTime: Long = 0L,
-    val bouquetPos: Int = 0,
+    val bouquetPos: Int = 0
 )

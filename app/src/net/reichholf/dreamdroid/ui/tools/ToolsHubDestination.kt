@@ -30,40 +30,40 @@ import net.reichholf.dreamdroid.ui.signal.SignalDestination
  */
 @Composable
 fun ToolsHubDestination(modifier: Modifier = Modifier) {
-	var selected by rememberSaveable { mutableStateOf(ToolsDestination.SCREENSHOT) }
-	val destinationBarState = remember { ToolsHubState() }
-	destinationBarState.selected = selected
-	destinationBarState.onDestinationSelected = { selected = it }
+    var selected by rememberSaveable { mutableStateOf(ToolsDestination.SCREENSHOT) }
+    val destinationBarState = remember { ToolsHubState() }
+    destinationBarState.selected = selected
+    destinationBarState.onDestinationSelected = { selected = it }
 
-	// Publish Snapshot state to the NavHost-owned shell ComposeView — do not install or
-	// setContent on shell_destination_nav from this leaf (content load must not dispose chrome).
-	RegisterShellDestinationBar(ShellDestinationBarContent.Tools(destinationBarState))
+    // Publish Snapshot state to the NavHost-owned shell ComposeView — do not install or
+    // setContent on shell_destination_nav from this leaf (content load must not dispose chrome).
+    RegisterShellDestinationBar(ShellDestinationBarContent.Tools(destinationBarState))
 
-	Scaffold(
-		modifier = modifier.fillMaxSize(),
-		contentWindowInsets = WindowInsets(0, 0, 0, 0),
-		containerColor = MaterialTheme.colorScheme.background,
-	) { padding ->
-		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.padding(padding),
-		) {
-			Box(
-				modifier = Modifier
-					.weight(1f)
-					.fillMaxSize(),
-			) {
-				when (selected) {
-					ToolsDestination.SCREENSHOT -> ScreenshotDestination()
-					ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
-					ToolsDestination.SIGNAL -> SignalDestination()
-				}
-			}
-			// Reserve space for the Coordinator-hosted destination bar.
-			Spacer(
-				Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
-			)
-		}
-	}
+    Scaffold(
+        modifier = modifier.fillMaxSize(),
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
+        containerColor = MaterialTheme.colorScheme.background
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxSize()
+            ) {
+                when (selected) {
+                    ToolsDestination.SCREENSHOT -> ScreenshotDestination()
+                    ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
+                    ToolsDestination.SIGNAL -> SignalDestination()
+                }
+            }
+            // Reserve space for the Coordinator-hosted destination bar.
+            Spacer(
+                Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height))
+            )
+        }
+    }
 }

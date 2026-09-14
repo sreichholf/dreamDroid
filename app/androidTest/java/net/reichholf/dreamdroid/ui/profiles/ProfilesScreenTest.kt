@@ -24,7 +24,7 @@ class ProfilesScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -53,11 +53,11 @@ class ProfilesScreenTest {
                             id = 1,
                             name = "Demo",
                             host = "dreamdroid.org",
-                            active = true,
-                        ),
+                            active = true
+                        )
                     ),
                     onProfileClick = {},
-                    onProfileLongClick = {},
+                    onProfileLongClick = {}
                 )
             }
         }

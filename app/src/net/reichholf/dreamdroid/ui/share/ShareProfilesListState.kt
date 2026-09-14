@@ -24,14 +24,14 @@ class ShareProfilesListState(initial: List<ProfileListItem> = emptyList()) {
 
 fun ComposeView.bindShareProfilesScreen(
     state: ShareProfilesListState,
-    onProfileClick: (ProfileListItem) -> Unit,
+    onProfileClick: (ProfileListItem) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
             ShareProfilesScreen(
                 profiles = state.profiles,
-                onProfileClick = onProfileClick,
+                onProfileClick = onProfileClick
             )
             IndeterminateProgressHost(state.progress)
         }

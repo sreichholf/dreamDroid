@@ -39,7 +39,7 @@ fun ProfileEditScreen(
     state: ProfileEditState,
     saveLabel: String,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     // Hosted in a destination that already fits system windows.
     // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
@@ -50,11 +50,11 @@ fun ProfileEditScreen(
             FloatingActionButton(onClick = onSave) {
                 Icon(
                     painter = painterResource(R.drawable.ic_action_save),
-                    contentDescription = saveLabel,
+                    contentDescription = saveLabel
                 )
             }
         },
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -62,71 +62,71 @@ fun ProfileEditScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ProfileTextField(
                 value = state.name,
                 onValueChange = { state.name = it },
-                label = stringResource(R.string.profile_name),
+                label = stringResource(R.string.profile_name)
             )
             ProfileCheckRow(
                 checked = state.simpleRemote,
                 onCheckedChange = { state.simpleRemote = it },
-                label = stringResource(R.string.simple_remote),
+                label = stringResource(R.string.simple_remote)
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 ProfileTextField(
                     value = state.host,
                     onValueChange = { state.host = it },
                     label = stringResource(R.string.host_long),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 ProfileTextField(
                     value = state.port,
                     onValueChange = { state.port = it },
                     label = stringResource(R.string.port),
                     keyboardType = KeyboardType.Number,
-                    modifier = Modifier.weight(0.4f),
+                    modifier = Modifier.weight(0.4f)
                 )
             }
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 ProfileCheckRow(
                     checked = state.ssl,
                     onCheckedChange = { state.onSslChanged(it, keepPort = false) },
                     label = stringResource(R.string.ssl_enabled),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
                 if (state.ssl) {
                     ProfileCheckRow(
                         checked = state.trustAllCerts,
                         onCheckedChange = { state.trustAllCerts = it },
                         label = stringResource(R.string.trust_all_certs),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f)
                     )
                 }
                 ProfileCheckRow(
                     checked = state.login,
                     onCheckedChange = { state.login = it },
                     label = stringResource(R.string.login_enabled),
-                    modifier = Modifier.weight(1f),
+                    modifier = Modifier.weight(1f)
                 )
             }
             if (state.login) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     ProfileTextField(
                         value = state.user,
                         onValueChange = { state.user = it },
                         label = stringResource(R.string.user),
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f)
                     )
                     ProfileTextField(
                         value = state.pass,
@@ -134,7 +134,7 @@ fun ProfileEditScreen(
                         label = stringResource(R.string.pass),
                         keyboardType = KeyboardType.Password,
                         password = true,
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
@@ -143,24 +143,24 @@ fun ProfileEditScreen(
             ProfileTextField(
                 value = state.ssid,
                 onValueChange = { state.ssid = it },
-                label = stringResource(R.string.ssid),
+                label = stringResource(R.string.ssid)
             )
             ProfileCheckRow(
                 checked = state.defaultOnNoWifi,
                 onCheckedChange = { state.defaultOnNoWifi = it },
-                label = stringResource(R.string.defaultOnNoWifi),
+                label = stringResource(R.string.defaultOnNoWifi)
             )
 
             SectionHeader(stringResource(R.string.streaming))
             ProfileTextField(
                 value = state.streamHost,
                 onValueChange = { state.streamHost = it },
-                label = stringResource(R.string.stream_host_long),
+                label = stringResource(R.string.stream_host_long)
             )
             ProfileCheckRow(
                 checked = state.encoderStream,
                 onCheckedChange = { state.encoderStream = it },
-                label = stringResource(R.string.use_encoder),
+                label = stringResource(R.string.use_encoder)
             )
 
             if (state.encoderStream) {
@@ -178,37 +178,37 @@ fun ProfileEditScreen(
 private fun EncoderSection(state: ProfileEditState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ProfileTextField(
             value = state.encoderPath,
             onValueChange = { state.encoderPath = it },
             label = stringResource(R.string.encoder_path),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         ProfileTextField(
             value = state.encoderPort,
             onValueChange = { state.encoderPort = it },
             label = stringResource(R.string.encoder_port),
             keyboardType = KeyboardType.Number,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
     }
     ProfileCheckRow(
         checked = state.encoderLogin,
         onCheckedChange = { state.encoderLogin = it },
-        label = stringResource(R.string.login_enabled),
+        label = stringResource(R.string.login_enabled)
     )
     if (state.encoderLogin) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ProfileTextField(
                 value = state.encoderUser,
                 onValueChange = { state.encoderUser = it },
                 label = stringResource(R.string.encoder_user),
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
             ProfileTextField(
                 value = state.encoderPass,
@@ -216,27 +216,27 @@ private fun EncoderSection(state: ProfileEditState) {
                 label = stringResource(R.string.encoder_pass),
                 keyboardType = KeyboardType.Password,
                 password = true,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
         }
     }
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ProfileTextField(
             value = state.encoderVideoBitrate,
             onValueChange = { state.encoderVideoBitrate = it },
             label = stringResource(R.string.video_bitrate),
             keyboardType = KeyboardType.Number,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         ProfileTextField(
             value = state.encoderAudioBitrate,
             onValueChange = { state.encoderAudioBitrate = it },
             label = stringResource(R.string.audio_bitrate),
             keyboardType = KeyboardType.Number,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
     }
 }
@@ -245,7 +245,7 @@ private fun EncoderSection(state: ProfileEditState) {
 private fun StreamPortsSection(state: ProfileEditState) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Column(modifier = Modifier.weight(1f)) {
             SectionHeader(stringResource(R.string.live))
@@ -253,12 +253,12 @@ private fun StreamPortsSection(state: ProfileEditState) {
                 value = state.streamPort,
                 onValueChange = { state.streamPort = it },
                 label = stringResource(R.string.port_stream_live),
-                keyboardType = KeyboardType.Number,
+                keyboardType = KeyboardType.Number
             )
             ProfileCheckRow(
                 checked = state.streamLogin,
                 onCheckedChange = { state.streamLogin = it },
-                label = stringResource(R.string.login),
+                label = stringResource(R.string.login)
             )
         }
         Column(modifier = Modifier.weight(1f)) {
@@ -267,17 +267,17 @@ private fun StreamPortsSection(state: ProfileEditState) {
                 value = state.filePort,
                 onValueChange = { state.filePort = it },
                 label = stringResource(R.string.port_stream_file),
-                keyboardType = KeyboardType.Number,
+                keyboardType = KeyboardType.Number
             )
             ProfileCheckRow(
                 checked = state.fileLogin,
                 onCheckedChange = { state.fileLogin = it },
-                label = stringResource(R.string.login),
+                label = stringResource(R.string.login)
             )
             ProfileCheckRow(
                 checked = state.fileSsl,
                 onCheckedChange = { state.fileSsl = it },
-                label = stringResource(R.string.ssl_enabled),
+                label = stringResource(R.string.ssl_enabled)
             )
         }
     }
@@ -289,7 +289,7 @@ private fun SectionHeader(text: String) {
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
     )
 }
 
@@ -300,7 +300,7 @@ private fun ProfileTextField(
     label: String,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
-    password: Boolean = false,
+    password: Boolean = false
 ) {
     OutlinedTextField(
         value = value,
@@ -317,8 +317,8 @@ private fun ProfileTextField(
             VisualTransformation.None
         },
         textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = MaterialTheme.colorScheme.onSurface,
-        ),
+            color = MaterialTheme.colorScheme.onSurface
+        )
     )
 }
 
@@ -327,7 +327,7 @@ private fun ProfileCheckRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     label: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
@@ -335,19 +335,19 @@ private fun ProfileCheckRow(
             .toggleable(
                 value = checked,
                 onValueChange = onCheckedChange,
-                role = Role.Checkbox,
+                role = Role.Checkbox
             )
             .semantics { contentDescription = label },
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Checkbox(
             checked = checked,
-            onCheckedChange = null,
+            onCheckedChange = null
         )
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }

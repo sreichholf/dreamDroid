@@ -72,9 +72,11 @@ jobs:
       # .temp path; dependency/build caches already make the real work ~30s.
       # -Pci disables ABI splits (one APK). androidTest compile catches broken
       # Compose tests without an emulator.
+      # spotlessCheck: ktlint android_studio (Google Android Kotlin) on app/**/*.kt.
       - name: Unit tests + compile androidTest
         run: >
           ./gradlew -Pci --no-configuration-cache
+          spotlessCheck
           :app:testGoogleDebugUnitTest
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac

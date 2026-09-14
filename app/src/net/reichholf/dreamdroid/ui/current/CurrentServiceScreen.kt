@@ -105,7 +105,7 @@ fun CurrentServiceScreen(
     onNowClick: () -> Unit,
     onNextClick: () -> Unit,
     onStream: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val horz = dimensionResource(R.dimen.content_horz_padding)
     val vert = dimensionResource(R.dimen.content_vert_padding)
@@ -115,8 +115,7 @@ fun CurrentServiceScreen(
         .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     val loading = stringResource(R.string.loading)
     val unavailable = stringResource(R.string.not_available)
-    fun displayOrLoading(value: String): String =
-        if (!state.ready) loading else value
+    fun displayOrLoading(value: String): String = if (!state.ready) loading else value
     val serviceText = when {
         !state.ready -> loading
         state.serviceName.isNotEmpty() -> state.serviceName
@@ -128,14 +127,14 @@ fun CurrentServiceScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = horz, vertical = vert),
+            .padding(horizontal = horz, vertical = vert)
     ) {
         SectionHeader(stringResource(R.string.service))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 6.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (piconsEnabled &&
                 (state.serviceReference.isNotEmpty() || state.serviceName.isNotEmpty())
@@ -146,7 +145,7 @@ fun CurrentServiceScreen(
                     modifier = Modifier
                         .padding(horizontal = 3.dp)
                         .width(48.dp)
-                        .height(36.dp),
+                        .height(36.dp)
                 )
             }
             Text(
@@ -155,7 +154,7 @@ fun CurrentServiceScreen(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(3.dp),
+                    .padding(3.dp)
             )
         }
 
@@ -167,7 +166,7 @@ fun CurrentServiceScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(3.dp)
-                .padding(bottom = 6.dp),
+                .padding(bottom = 6.dp)
         )
 
         SectionHeader(stringResource(R.string.now))
@@ -178,7 +177,7 @@ fun CurrentServiceScreen(
             duration = state.nowDuration,
             description = state.nowDescription,
             onClick = onNowClick,
-            modifier = Modifier.padding(bottom = 6.dp),
+            modifier = Modifier.padding(bottom = 6.dp)
         )
 
         SectionHeader(stringResource(R.string.next))
@@ -189,7 +188,7 @@ fun CurrentServiceScreen(
             duration = state.nextDuration,
             description = state.nextDescription,
             onClick = onNextClick,
-            modifier = Modifier.padding(bottom = 6.dp),
+            modifier = Modifier.padding(bottom = 6.dp)
         )
 
         if (canStream) {
@@ -197,7 +196,7 @@ fun CurrentServiceScreen(
                 onClick = onStream,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 6.dp),
+                    .padding(top = 6.dp)
             ) {
                 Text(stringResource(R.string.stream_current))
             }
@@ -213,7 +212,7 @@ private fun SectionHeader(text: String) {
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 2.dp),
+            .padding(bottom = 2.dp)
     )
 }
 
@@ -225,7 +224,7 @@ private fun EventBlock(
     duration: String,
     description: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val loading = stringResource(R.string.loading)
     fun displayOrLoading(value: String): String = if (!ready) loading else value
@@ -233,20 +232,20 @@ private fun EventBlock(
         modifier = modifier
             .fillMaxWidth()
             .clickable(enabled = ready && title.isNotEmpty(), onClick = onClick)
-            .padding(3.dp),
+            .padding(3.dp)
     ) {
         Text(
             text = displayOrLoading(title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
         Row(modifier = Modifier.fillMaxWidth()) {
             Text(
                 text = displayOrLoading(start),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
             Text(
                 text = displayOrLoading(duration),
@@ -254,7 +253,7 @@ private fun EventBlock(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.End,
                 modifier = Modifier.weight(1f),
-                maxLines = 1,
+                maxLines = 1
             )
         }
         Text(
@@ -263,17 +262,13 @@ private fun EventBlock(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }
 
 @Composable
-private fun ServicePicon(
-    reference: String,
-    name: String,
-    modifier: Modifier = Modifier,
-) {
+private fun ServicePicon(reference: String, name: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     AndroidView(
         factory = { ctx ->
@@ -289,8 +284,8 @@ private fun ServicePicon(
                 reference,
                 name,
                 Statics.TAG_PICON,
-                null,
+                null
             )
-        },
+        }
     )
 }

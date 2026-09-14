@@ -32,14 +32,14 @@ fun MovieListScreen(
     items: List<MovieListItem>,
     onItemClick: MovieListTap,
     onItemLongClick: MovieListTap,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
         items(items, key = { it.index }) { item ->
             MovieRow(
                 item = item,
                 onClick = { x, y -> onItemClick(item, x, y) },
-                onLongClick = { x, y -> onItemLongClick(item, x, y) },
+                onLongClick = { x, y -> onItemLongClick(item, x, y) }
             )
         }
     }
@@ -50,7 +50,7 @@ fun MovieListScreen(
 private fun MovieRow(
     item: MovieListItem,
     onClick: (windowX: Int, windowY: Int) -> Unit,
-    onLongClick: (windowX: Int, windowY: Int) -> Unit,
+    onLongClick: (windowX: Int, windowY: Int) -> Unit
 ) {
     var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
     fun windowTopLeft(): Pair<Int, Int> {
@@ -70,25 +70,27 @@ private fun MovieRow(
                 onLongClick = {
                     val (x, y) = windowTopLeft()
                     onLongClick(x, y)
-                },
+                }
             ),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(Modifier.padding(12.dp)) {
             Text(
                 text = item.title,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = item.serviceName,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = listOf(item.time, item.length, item.fileSize).filter { it.isNotEmpty() }.joinToString("  "),
+                text = listOf(item.time, item.length, item.fileSize).filter {
+                    it.isNotEmpty()
+                }.joinToString("  "),
                 style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

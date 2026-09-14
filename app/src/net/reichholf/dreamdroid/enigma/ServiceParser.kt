@@ -1,10 +1,10 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object ServiceParser {
     fun parse(xml: String): List<Service> {
@@ -33,14 +33,21 @@ private class ServiceListHandler : DefaultHandler() {
     private val reference = StringBuilder()
     private val name = StringBuilder()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2service" -> {
                 inService = true
                 reference.setLength(0)
                 name.setLength(0)
             }
+
             "e2servicereference" -> inReference = true
+
             "e2servicename" -> inName = true
         }
     }
@@ -49,9 +56,16 @@ private class ServiceListHandler : DefaultHandler() {
         when (tag(localName, qName)) {
             "e2service" -> {
                 inService = false
-                services.add(Service(reference.toString(), name.toString().replace("\\p{Cntrl}".toRegex(), "")))
+                services.add(
+                    Service(
+                        reference.toString(),
+                        name.toString().replace("\\p{Cntrl}".toRegex(), "")
+                    )
+                )
             }
+
             "e2servicereference" -> inReference = false
+
             "e2servicename" -> inName = false
         }
     }

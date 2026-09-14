@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.video
 
-/*****************************************************************************
+/*
  * VLCInstance.kt
- *****************************************************************************
+ *
  * Copyright © 2011-2014 VLC authors and VideoLAN
  *
  * This program is free software; you can redistribute it and/or modify

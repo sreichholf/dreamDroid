@@ -16,10 +16,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import io.noties.markwon.Markwon
 
 @Composable
-fun ChangelogScreen(
-    markdown: String,
-    modifier: Modifier = Modifier,
-) {
+fun ChangelogScreen(markdown: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val onSurface = MaterialTheme.colorScheme.onSurface
     AndroidView(
@@ -37,6 +34,6 @@ fun ChangelogScreen(
         update = { view ->
             view.setTextColor(onSurface.toArgb())
             Markwon.create(context).setMarkdown(view, markdown)
-        },
+        }
     )
 }

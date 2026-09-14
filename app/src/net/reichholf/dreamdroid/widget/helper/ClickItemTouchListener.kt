@@ -12,13 +12,12 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
     private val mGestureDetector: GestureDetectorCompat =
         GestureDetectorCompat(hostView.context, ItemClickGestureListener(hostView))
 
-    private fun isAttachedToWindow(hostView: RecyclerView): Boolean {
-        return if (Build.VERSION.SDK_INT >= 19) {
+    private fun isAttachedToWindow(hostView: RecyclerView): Boolean =
+        if (Build.VERSION.SDK_INT >= 19) {
             hostView.isAttachedToWindow
         } else {
             hostView.handler != null
         }
-    }
 
     private fun hasAdapter(hostView: RecyclerView): Boolean = hostView.adapter != null
 
@@ -37,12 +36,21 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
 
     override fun onRequestDisallowInterceptTouchEvent(disallowIntercept: Boolean) {}
 
-    abstract fun performItemClick(parent: RecyclerView, view: View, position: Int, id: Long): Boolean
-    abstract fun performItemLongClick(parent: RecyclerView, view: View, position: Int, id: Long): Boolean
+    abstract fun performItemClick(
+        parent: RecyclerView,
+        view: View,
+        position: Int,
+        id: Long
+    ): Boolean
+    abstract fun performItemLongClick(
+        parent: RecyclerView,
+        view: View,
+        position: Int,
+        id: Long
+    ): Boolean
 
-    private inner class ItemClickGestureListener(
-        private val mHostView: RecyclerView,
-    ) : SimpleOnGestureListener() {
+    private inner class ItemClickGestureListener(private val mHostView: RecyclerView) :
+        SimpleOnGestureListener() {
         private var mTargetChild: View? = null
 
         override fun onDown(event: MotionEvent): Boolean {
@@ -73,7 +81,7 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
             event: MotionEvent?,
             event2: MotionEvent,
             v: Float,
-            v2: Float,
+            v2: Float
         ): Boolean {
             val target = mTargetChild
             if (target != null) {

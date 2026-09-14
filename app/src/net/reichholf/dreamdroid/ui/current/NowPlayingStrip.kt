@@ -41,7 +41,7 @@ fun NowPlayingStrip(
     serviceReference: String,
     serviceName: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
@@ -57,14 +57,14 @@ fun NowPlayingStrip(
                     role = Role.Button
                     contentDescription = description
                 }
-                .clickable(onClick = onClick),
+                .clickable(onClick = onClick)
         ) {
             Column(Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     if (piconsEnabled &&
                         (serviceReference.isNotEmpty() || serviceName.isNotEmpty())
@@ -75,7 +75,7 @@ fun NowPlayingStrip(
                             modifier = Modifier
                                 .padding(end = 12.dp)
                                 .width(40.dp)
-                                .height(28.dp),
+                                .height(28.dp)
                         )
                     }
                     Column(Modifier.weight(1f)) {
@@ -84,14 +84,14 @@ fun NowPlayingStrip(
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            overflow = TextOverflow.Ellipsis
                         )
                         Text(
                             text = headline,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface,
                             maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -100,7 +100,7 @@ fun NowPlayingStrip(
                         progress = { progress.coerceIn(0f, 1f) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(3.dp),
+                            .height(3.dp)
                     )
                 }
             }
@@ -113,7 +113,7 @@ fun nowPlayingHeadline(
     serviceName: String,
     eventTitle: String,
     loadingText: String,
-    unavailableText: String,
+    unavailableText: String
 ): String {
     if (!ready) {
         return loadingText
@@ -121,8 +121,11 @@ fun nowPlayingHeadline(
     return when {
         serviceName.isNotEmpty() && eventTitle.isNotEmpty() ->
             "$serviceName · $eventTitle"
+
         serviceName.isNotEmpty() -> serviceName
+
         eventTitle.isNotEmpty() -> eventTitle
+
         else -> unavailableText
     }
 }
@@ -153,11 +156,7 @@ fun eventProgressFraction(event: Event?): Float {
 }
 
 @Composable
-private fun StripPicon(
-    reference: String,
-    name: String,
-    modifier: Modifier = Modifier,
-) {
+private fun StripPicon(reference: String, name: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     AndroidView(
         factory = { ctx ->
@@ -173,8 +172,8 @@ private fun StripPicon(
                 reference,
                 name,
                 Statics.TAG_PICON,
-                null,
+                null
             )
-        },
+        }
     )
 }

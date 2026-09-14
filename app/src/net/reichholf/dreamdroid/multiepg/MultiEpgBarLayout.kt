@@ -7,11 +7,7 @@ package net.reichholf.dreamdroid.multiepg
 object MultiEpgBarLayout {
     const val MIN_WIDTH_DP: Float = 28f
 
-    fun offsetDp(
-        startSec: Long,
-        timelineStartSec: Long,
-        minuteWidthDp: Float,
-    ): Float {
+    fun offsetDp(startSec: Long, timelineStartSec: Long, minuteWidthDp: Float): Float {
         val drawStart = maxOf(startSec, timelineStartSec)
         return minuteWidthDp * ((drawStart - timelineStartSec) / 60f)
     }
@@ -22,7 +18,7 @@ object MultiEpgBarLayout {
         timelineStartSec: Long,
         minuteWidthDp: Float,
         nextStartSec: Long? = null,
-        minWidthDp: Float = MIN_WIDTH_DP,
+        minWidthDp: Float = MIN_WIDTH_DP
     ): Float {
         val drawStart = maxOf(startSec, timelineStartSec)
         if (endSec <= timelineStartSec) {

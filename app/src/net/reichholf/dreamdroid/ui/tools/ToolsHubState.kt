@@ -11,6 +11,6 @@ import androidx.compose.runtime.setValue
  * reads these fields directly (no hub `@Composable` capture).
  */
 class ToolsHubState {
-	var selected by mutableStateOf(ToolsDestination.SCREENSHOT)
-	var onDestinationSelected: (ToolsDestination) -> Unit = {}
+    var selected by mutableStateOf(ToolsDestination.SCREENSHOT)
+    var onDestinationSelected: (ToolsDestination) -> Unit = {}
 }

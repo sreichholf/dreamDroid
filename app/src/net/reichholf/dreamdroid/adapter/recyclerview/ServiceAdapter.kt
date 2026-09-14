@@ -25,7 +25,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
  */
 open class ServiceAdapter(
     protected var mContext: Context,
-    protected var mData: ArrayList<ServiceNowNext>,
+    protected var mData: ArrayList<ServiceNowNext>
 ) : RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder>() {
 
     override fun getItemCount(): Int = mData.size
@@ -74,7 +74,7 @@ open class ServiceAdapter(
             ref,
             service.serviceName,
             Statics.TAG_PICON,
-            null,
+            null
         )
         holder.root.cardElevation =
             mContext.resources.getDimension(R.dimen.cardview_elevation)

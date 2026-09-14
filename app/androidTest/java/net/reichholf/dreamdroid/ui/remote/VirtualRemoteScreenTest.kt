@@ -24,7 +24,7 @@ class VirtualRemoteScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -35,7 +35,7 @@ class VirtualRemoteScreenTest {
                 VirtualRemoteScreen(
                     layout = VirtualRemoteLayout.Full,
                     playButtonAsPlayPause = false,
-                    onKey = { _, _ -> },
+                    onKey = { _, _ -> }
                 )
             }
         }
@@ -54,7 +54,7 @@ class VirtualRemoteScreenTest {
                 VirtualRemoteScreen(
                     layout = VirtualRemoteLayout.Simple,
                     playButtonAsPlayPause = false,
-                    onKey = { _, _ -> },
+                    onKey = { _, _ -> }
                 )
             }
         }
@@ -71,7 +71,7 @@ class VirtualRemoteScreenTest {
                 VirtualRemoteScreen(
                     layout = VirtualRemoteLayout.QuickZap,
                     playButtonAsPlayPause = false,
-                    onKey = { _, _ -> },
+                    onKey = { _, _ -> }
                 )
             }
         }
@@ -90,7 +90,7 @@ class VirtualRemoteScreenTest {
                     modifier = Modifier.fillMaxSize(),
                     layout = VirtualRemoteLayout.Full,
                     playButtonAsPlayPause = false,
-                    onKey = { _, _ -> },
+                    onKey = { _, _ -> }
                 )
             }
         }
@@ -101,7 +101,7 @@ class VirtualRemoteScreenTest {
         // OK sits in the middle of the 3-wide nav pad, which is centered in the host.
         assertTrue(
             "OK center=$okCenterX root center=$rootCenterX",
-            kotlin.math.abs((okCenterX - rootCenterX).value) < 24f,
+            kotlin.math.abs((okCenterX - rootCenterX).value) < 24f
         )
     }
 }

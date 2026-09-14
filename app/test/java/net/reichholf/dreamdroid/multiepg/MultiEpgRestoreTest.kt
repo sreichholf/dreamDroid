@@ -21,24 +21,24 @@ class MultiEpgRestoreTest {
                 remountEpoch = 1,
                 bouquetRef = "A",
                 savedEpoch = 0,
-                savedRef = "A",
-            ),
+                savedRef = "A"
+            )
         )
         assertTrue(
             MultiEpgRestore.resetClock(
                 remountEpoch = 0,
                 bouquetRef = "B",
                 savedEpoch = 0,
-                savedRef = "A",
-            ),
+                savedRef = "A"
+            )
         )
         assertFalse(
             MultiEpgRestore.resetClock(
                 remountEpoch = 2,
                 bouquetRef = "A",
                 savedEpoch = 2,
-                savedRef = "A",
-            ),
+                savedRef = "A"
+            )
         )
     }
 }

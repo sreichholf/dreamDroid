@@ -18,7 +18,7 @@ class E2VolumeHandler : E2SimpleHandler() {
         namespaceUri: String?,
         localName: String,
         qName: String?,
-        attrs: Attributes?,
+        attrs: Attributes?
     ) {
         when (localName) {
             TAG_E2RESULT -> inResult = true

@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleHandler
  */
 abstract class AbstractSimpleRequestHandler(
     protected var mUri: String,
-    private val mHandler: E2SimpleHandler,
+    private val mHandler: E2SimpleHandler
 ) : SimpleRequestInterface {
     override fun get(shc: SimpleHttpClient?): String? = get(shc, ArrayList())
 

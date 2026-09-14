@@ -18,7 +18,7 @@ class MovieListScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -34,11 +34,11 @@ class MovieListScreenTest {
                             serviceName = "ZDF",
                             fileSize = "1.2 GB",
                             time = "01.01.2026",
-                            length = "90",
-                        ),
+                            length = "90"
+                        )
                     ),
                     onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
                 )
             }
         }

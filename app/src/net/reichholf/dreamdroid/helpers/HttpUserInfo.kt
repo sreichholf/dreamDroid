@@ -5,12 +5,7 @@ package net.reichholf.dreamdroid.helpers
  * password would sit on the wire and in logs. HTTPS/RTSP may still embed it.
  */
 object HttpUserInfo {
-    fun embed(
-        enabled: Boolean,
-        user: String?,
-        pass: String?,
-        scheme: String,
-    ): String {
+    fun embed(enabled: Boolean, user: String?, pass: String?, scheme: String): String {
         if (!enabled) return ""
         if (scheme.equals("http", ignoreCase = true)) return ""
         return "${user.orEmpty()}:${pass.orEmpty()}@"

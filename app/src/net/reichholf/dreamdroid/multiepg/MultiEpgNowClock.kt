@@ -7,7 +7,5 @@ package net.reichholf.dreamdroid.multiepg
 object MultiEpgNowClock {
     const val TICK_MS: Long = 60_000L
 
-    fun sec(clockMs: () -> Long = System::currentTimeMillis): Long {
-        return clockMs() / 1000L
-    }
+    fun sec(clockMs: () -> Long = System::currentTimeMillis): Long = clockMs() / 1000L
 }

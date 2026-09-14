@@ -28,83 +28,83 @@ import org.junit.Test
  * Leaves only publish Snapshot state; clearing must not wipe a successor's publish.
  */
 class ShellDestinationBarHostTest {
-	@get:Rule
-	val composeRule = createComposeRule()
+    @get:Rule
+    val composeRule = createComposeRule()
 
-	@Before
-	fun forceAlwaysNight() {
-		PreferenceManager.getDefaultSharedPreferences(
-			InstrumentationRegistry.getInstrumentation().targetContext,
-		).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-	}
+    @Before
+    fun forceAlwaysNight() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
 
-	@Test
-	fun registerPublishesToolsStateToController() {
-		val state = ToolsHubState().apply { selected = ToolsDestination.SIGNAL }
-		lateinit var controller: ShellDestinationBarController
-		composeRule.setContent {
-			DreamDroidTheme {
-				ProvideShellDestinationBarForTest { c ->
-					controller = c
-					RegisterShellDestinationBar(ShellDestinationBarContent.Tools(state))
-					Text("hub body")
-				}
-			}
-		}
-		composeRule.onNodeWithText("hub body").assertIsDisplayed()
-		composeRule.runOnIdle {
-			val content = controller.content
-			assertTrue(content is ShellDestinationBarContent.Tools)
-			assertEquals(
-				ToolsDestination.SIGNAL,
-				(content as ShellDestinationBarContent.Tools).state.selected,
-			)
-		}
-	}
+    @Test
+    fun registerPublishesToolsStateToController() {
+        val state = ToolsHubState().apply { selected = ToolsDestination.SIGNAL }
+        lateinit var controller: ShellDestinationBarController
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProvideShellDestinationBarForTest { c ->
+                    controller = c
+                    RegisterShellDestinationBar(ShellDestinationBarContent.Tools(state))
+                    Text("hub body")
+                }
+            }
+        }
+        composeRule.onNodeWithText("hub body").assertIsDisplayed()
+        composeRule.runOnIdle {
+            val content = controller.content
+            assertTrue(content is ShellDestinationBarContent.Tools)
+            assertEquals(
+                ToolsDestination.SIGNAL,
+                (content as ShellDestinationBarContent.Tools).state.selected
+            )
+        }
+    }
 
-	@Test
-	fun disposeClearsOnlyWhenStillOwner() {
-		val first = ToolsHubState().apply { selected = ToolsDestination.SCREENSHOT }
-		val second = ToolsHubState().apply { selected = ToolsDestination.DEVICE_INFO }
-		lateinit var controller: ShellDestinationBarController
-		composeRule.setContent {
-			DreamDroidTheme {
-				var showFirst by remember { mutableStateOf(true) }
-				ProvideShellDestinationBarForTest { c ->
-					controller = c
-					if (showFirst) {
-						RegisterShellDestinationBar(ShellDestinationBarContent.Tools(first))
-					} else {
-						RegisterShellDestinationBar(ShellDestinationBarContent.Tools(second))
-					}
-					Text(if (showFirst) "first" else "second")
-				}
-				// Flip after first frame via side channel Text click substitute:
-				androidx.compose.foundation.layout.Box {
-					if (showFirst) {
-						androidx.compose.material3.Button(onClick = { showFirst = false }) {
-							Text("swap")
-						}
-					}
-				}
-			}
-		}
-		composeRule.onNodeWithText("first").assertIsDisplayed()
-		composeRule.runOnIdle {
-			assertEquals(
-				ToolsDestination.SCREENSHOT,
-				(controller.content as ShellDestinationBarContent.Tools).state.selected,
-			)
-		}
-		composeRule.onNodeWithText("swap").performClick()
-		composeRule.onNodeWithText("second").assertIsDisplayed()
-		composeRule.runOnIdle {
-			assertEquals(
-				ToolsDestination.DEVICE_INFO,
-				(controller.content as ShellDestinationBarContent.Tools).state.selected,
-			)
-		}
-	}
+    @Test
+    fun disposeClearsOnlyWhenStillOwner() {
+        val first = ToolsHubState().apply { selected = ToolsDestination.SCREENSHOT }
+        val second = ToolsHubState().apply { selected = ToolsDestination.DEVICE_INFO }
+        lateinit var controller: ShellDestinationBarController
+        composeRule.setContent {
+            DreamDroidTheme {
+                var showFirst by remember { mutableStateOf(true) }
+                ProvideShellDestinationBarForTest { c ->
+                    controller = c
+                    if (showFirst) {
+                        RegisterShellDestinationBar(ShellDestinationBarContent.Tools(first))
+                    } else {
+                        RegisterShellDestinationBar(ShellDestinationBarContent.Tools(second))
+                    }
+                    Text(if (showFirst) "first" else "second")
+                }
+                // Flip after first frame via side channel Text click substitute:
+                androidx.compose.foundation.layout.Box {
+                    if (showFirst) {
+                        androidx.compose.material3.Button(onClick = { showFirst = false }) {
+                            Text("swap")
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithText("first").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(
+                ToolsDestination.SCREENSHOT,
+                (controller.content as ShellDestinationBarContent.Tools).state.selected
+            )
+        }
+        composeRule.onNodeWithText("swap").performClick()
+        composeRule.onNodeWithText("second").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(
+                ToolsDestination.DEVICE_INFO,
+                (controller.content as ShellDestinationBarContent.Tools).state.selected
+            )
+        }
+    }
 }
 
 /**
@@ -113,10 +113,10 @@ class ShellDestinationBarHostTest {
  */
 @Composable
 private fun ProvideShellDestinationBarForTest(
-	content: @Composable (ShellDestinationBarController) -> Unit,
+    content: @Composable (ShellDestinationBarController) -> Unit
 ) {
-	val controller = remember { ShellDestinationBarController() }
-	CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
-		content(controller)
-	}
+    val controller = remember { ShellDestinationBarController() }
+    CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
+        content(controller)
+    }
 }

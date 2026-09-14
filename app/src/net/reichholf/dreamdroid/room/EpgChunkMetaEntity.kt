@@ -7,12 +7,12 @@ import androidx.room.Entity
  */
 @Entity(
     tableName = "epg_chunk",
-    primaryKeys = ["profileId", "bouquetRef", "windowStart"],
+    primaryKeys = ["profileId", "bouquetRef", "windowStart"]
 )
 data class EpgChunkMetaEntity(
     val profileId: Int,
     val bouquetRef: String,
     val windowStart: Long,
     val windowEnd: Long,
-    val fetchedAtMs: Long,
+    val fetchedAtMs: Long
 )

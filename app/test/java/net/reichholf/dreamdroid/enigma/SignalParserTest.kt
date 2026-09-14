@@ -48,8 +48,8 @@ class SignalParserTest {
     fun emptyFrontendStatusYieldsNull() {
         assertNull(
             SignalParser.parse(
-                """<?xml version="1.0" encoding="UTF-8"?><e2frontendstatus></e2frontendstatus>""",
-            ),
+                """<?xml version="1.0" encoding="UTF-8"?><e2frontendstatus></e2frontendstatus>"""
+            )
         )
     }
 }

@@ -30,7 +30,7 @@ class NowPlayingStripTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
@@ -48,7 +48,7 @@ class NowPlayingStripTest {
                     progress = 0.4f,
                     serviceReference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
                     serviceName = "Das Erste HD",
-                    onClick = { clicks++ },
+                    onClick = { clicks++ }
                 )
             }
         }
@@ -67,8 +67,8 @@ class NowPlayingStripTest {
                 serviceName = "Das Erste HD",
                 eventTitle = "Tagesschau",
                 loadingText = "Loading",
-                unavailableText = "Not available",
-            ),
+                unavailableText = "Not available"
+            )
         )
         assertEquals(
             "Loading",
@@ -77,8 +77,8 @@ class NowPlayingStripTest {
                 serviceName = "Das Erste HD",
                 eventTitle = "Tagesschau",
                 loadingText = "Loading",
-                unavailableText = "Not available",
-            ),
+                unavailableText = "Not available"
+            )
         )
         assertEquals(
             "Not available",
@@ -87,8 +87,8 @@ class NowPlayingStripTest {
                 serviceName = "",
                 eventTitle = "",
                 loadingText = "Loading",
-                unavailableText = "Not available",
-            ),
+                unavailableText = "Not available"
+            )
         )
     }
 
@@ -98,16 +98,16 @@ class NowPlayingStripTest {
         assertEquals(
             0f,
             eventProgressFraction(
-                Event(title = "Tagesschau", duration = Python.NONE, start = "1"),
-            ),
+                Event(title = "Tagesschau", duration = Python.NONE, start = "1")
+            )
         )
         val mid = eventProgressFraction(
             Event(
                 title = "Tagesschau",
                 duration = "3600",
                 start = "1000",
-                currentTime = "2800",
-            ),
+                currentTime = "2800"
+            )
         )
         assertTrue("expected mid-event progress, got $mid", mid > 0f && mid < 1f)
     }
@@ -125,13 +125,13 @@ class NowPlayingStripTest {
                         progress = 0f,
                         serviceReference = "",
                         serviceName = "",
-                        onClick = { showSheet = true },
+                        onClick = { showSheet = true }
                     )
                     if (showSheet) {
                         NowPlayingDetailScreen(
                             current = null,
                             loading = true,
-                            onStream = { streamClicks++ },
+                            onStream = { streamClicks++ }
                         )
                     }
                 }
@@ -156,13 +156,13 @@ class NowPlayingStripTest {
                         progress = 0f,
                         serviceReference = "",
                         serviceName = "",
-                        onClick = { showSheet = true },
+                        onClick = { showSheet = true }
                     )
                     if (showSheet) {
                         NowPlayingDetailScreen(
                             current = null,
                             loading = false,
-                            onStream = { streamClicks++ },
+                            onStream = { streamClicks++ }
                         )
                     }
                 }
@@ -178,9 +178,9 @@ class NowPlayingStripTest {
         val current = CurrentService(
             service = Service(
                 reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
-                name = "Das Erste HD",
+                name = "Das Erste HD"
             ),
-            now = Event(title = "Tagesschau"),
+            now = Event(title = "Tagesschau")
         )
         var streamClicks = 0
         composeRule.setContent {
@@ -193,12 +193,12 @@ class NowPlayingStripTest {
                         progress = 0.4f,
                         serviceReference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
                         serviceName = "Das Erste HD",
-                        onClick = { showSheet = true },
+                        onClick = { showSheet = true }
                     )
                     if (showSheet) {
                         NowPlayingDetailScreen(
                             current = current,
-                            onStream = { streamClicks++ },
+                            onStream = { streamClicks++ }
                         )
                     }
                 }

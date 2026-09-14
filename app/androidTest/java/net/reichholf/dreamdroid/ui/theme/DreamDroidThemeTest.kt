@@ -33,7 +33,7 @@ class DreamDroidThemeTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -83,7 +83,7 @@ class DreamDroidThemeTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
             assertEquals(primary, dateSelected)
             assertEquals(outlineVariant, dateDivider)
@@ -93,32 +93,32 @@ class DreamDroidThemeTest {
             assertEquals(surfaceVariant, timeClock)
             assertTrue(
                 "date picker headline should be light, luminance=${dateHeadline.luminance()}",
-                dateHeadline.luminance() > 0.5f,
+                dateHeadline.luminance() > 0.5f
             )
             assertTrue(
                 "clock numbers should be light, luminance=${timeUnselected.luminance()}",
-                timeUnselected.luminance() > 0.5f,
+                timeUnselected.luminance() > 0.5f
             )
             assertTrue(
                 "date picker container should be dark, luminance=${dateContainer.luminance()}",
-                dateContainer.luminance() < 0.4f,
+                dateContainer.luminance() < 0.4f
             )
             assertTrue(
                 "time picker container should be dark, luminance=${timeContainer.luminance()}",
-                timeContainer.luminance() < 0.4f,
+                timeContainer.luminance() < 0.4f
             )
             assertTrue(
                 "clock dial should be dark, luminance=${timeClock.luminance()}",
-                timeClock.luminance() < 0.4f,
+                timeClock.luminance() < 0.4f
             )
             assertTrue(
                 "alert dialog container should be dark, luminance=${alertContainer.luminance()}",
-                alertContainer.luminance() < 0.4f,
+                alertContainer.luminance() < 0.4f
             )
             assertTrue(
                 "surfaceContainerHigh should be dark, " +
                     "luminance=${surfaceContainerHigh.luminance()}",
-                surfaceContainerHigh.luminance() < 0.4f,
+                surfaceContainerHigh.luminance() < 0.4f
             )
             // Baseline Material purple neutrals that lightColorScheme/darkColorScheme
             // use when surfaceContainer* is omitted.

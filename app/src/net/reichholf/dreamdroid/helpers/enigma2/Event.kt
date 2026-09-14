@@ -82,7 +82,7 @@ class Event : ExtendedHashMap {
                 val duration = try {
                     DateTime.getDurationString(
                         event.getString(prefix + KEY_EVENT_DURATION),
-                        eventstart,
+                        eventstart
                     )
                 } catch (_: NumberFormatException) {
                     // deal with WebInterface 1.5 => EVENT_DURATION is already a string
@@ -118,7 +118,9 @@ class Event : ExtendedHashMap {
                     key = key.replaceFirst(PREFIX_NEXT, "")
                     event.put(key, value)
                     converted.add(key)
-                } else if (key != KEY_SERVICE_NAME && key != KEY_SERVICE_REFERENCE && !converted.contains(key)) {
+                } else if (key != KEY_SERVICE_NAME && key != KEY_SERVICE_REFERENCE &&
+                    !converted.contains(key)
+                ) {
                     event.remove(key)
                 }
             }

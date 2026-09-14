@@ -7,7 +7,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 data class CurrentServiceLoadResult(
     val success: Boolean,
     val current: CurrentService?,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -20,8 +20,10 @@ suspend fun loadCurrentService(context: Context): CurrentServiceLoadResult {
     val success = current != null
     val errorText = when {
         success -> null
+
         http.hasError() ->
             context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+
         else -> context.getString(R.string.error_parsing)
     }
     return CurrentServiceLoadResult(success, current, errorText)

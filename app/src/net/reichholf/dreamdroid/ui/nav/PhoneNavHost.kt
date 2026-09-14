@@ -11,6 +11,7 @@ import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -20,37 +21,36 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import net.reichholf.dreamdroid.activities.MainActivity
+import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.fragment.SleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.about.AboutDialog
+import net.reichholf.dreamdroid.ui.backup.BackupDestination
+import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
+import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.dialogs.ChangelogDialog
 import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
 import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
 import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
 import net.reichholf.dreamdroid.ui.dialogs.defaultSleepTimerAction
-import net.reichholf.dreamdroid.activities.MainActivity
-import androidx.compose.ui.platform.LocalContext
-import net.reichholf.dreamdroid.ui.backup.BackupDestination
-import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
-import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetDestination
-import net.reichholf.dreamdroid.ui.multiepg.MultiEpgDestination
 import net.reichholf.dreamdroid.ui.epg.EpgSearchDestination
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgDestination
+import net.reichholf.dreamdroid.ui.multiepg.MultiEpgDestination
 import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
-import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
-import net.reichholf.dreamdroid.ui.signal.SignalDestination
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.SleepTimerNavArgs
+import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckDestination
 import net.reichholf.dreamdroid.ui.remote.VirtualRemoteDestination
+import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.services.HubDestination
-import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
-import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
-import net.reichholf.dreamdroid.ui.zap.ZapDestination
-import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
+import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
+import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
+import net.reichholf.dreamdroid.ui.zap.ZapDestination
 
 private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
     save = { listOf(it.minutes, it.enabled, it.action) },
@@ -58,9 +58,9 @@ private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
         SleepTimerNavArgs(
             minutes = it[0] as Int,
             enabled = it[1] as Boolean,
-            action = it[2] as String,
+            action = it[2] as String
         )
-    },
+    }
 )
 
 /**
@@ -69,9 +69,8 @@ private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
  * [SleepTimerNavArgs.defaults].
  */
 @Composable
-fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavArgs {
-    return rememberSaveable(saver = SleepTimerNavArgsSaver) { consume() }
-}
+fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavArgs =
+    rememberSaveable(saver = SleepTimerNavArgsSaver) { consume() }
 
 /**
  * Phone shell [NavHost]. Drawer leaves through hub + settings; Backup is nested from Settings.
@@ -81,7 +80,7 @@ fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavAr
 fun PhoneNavHost(
     hostFragment: PhoneNavHostFragment,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = hostFragment.startRoute(),
+    startDestination: String = hostFragment.startRoute()
 ) {
     DisposableEffect(navController) {
         hostFragment.attachNavController(navController)
@@ -92,7 +91,7 @@ fun PhoneNavHost(
         PhoneNavHostGraph(
             hostFragment = hostFragment,
             navController = navController,
-            startDestination = startDestination,
+            startDestination = startDestination
         )
     }
 }
@@ -101,12 +100,12 @@ fun PhoneNavHost(
 private fun PhoneNavHostGraph(
     hostFragment: PhoneNavHostFragment,
     navController: NavHostController,
-    startDestination: String,
+    startDestination: String
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
     ) {
         composable(PhoneNavRoutes.DEVICE_INFO) {
             DeviceInfoDestination()
@@ -163,22 +162,22 @@ private fun PhoneNavHostGraph(
                 navArgument(PhoneNavRoutes.ARG_SERVICE_NAME) {
                     type = NavType.StringType
                     defaultValue = ""
-                },
-            ),
+                }
+            )
         ) { entry ->
             val serviceRef = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
             val serviceName = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
             ServiceEpgDestination(
                 hostFragment = hostFragment,
                 serviceRef = serviceRef,
-                serviceName = serviceName,
+                serviceName = serviceName
             )
         }
         composable(
             route = PhoneNavRoutes.EPG_SEARCH,
             arguments = listOf(
-                navArgument(PhoneNavRoutes.ARG_QUERY) { type = NavType.StringType },
-            ),
+                navArgument(PhoneNavRoutes.ARG_QUERY) { type = NavType.StringType }
+            )
         ) { entry ->
             val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()
             val remount by hostFragment.epgSearchRemountFlow().collectAsState()
@@ -186,7 +185,7 @@ private fun PhoneNavHostGraph(
                 EpgSearchDestination(
                     hostFragment = hostFragment,
                     query = query,
-                    remountEpoch = remount,
+                    remountEpoch = remount
                 )
             }
         }
@@ -215,7 +214,7 @@ private fun PhoneNavHostGraph(
             val activity = LocalContext.current as? MainActivity
             PowerStateDialog(
                 onDismiss = { navController.popBackStack() },
-                onChoice = { action -> activity?.onDrawerPowerChoice(action) },
+                onChoice = { action -> activity?.onDrawerPowerChoice(action) }
             )
         }
         dialog(PhoneNavRoutes.SEND_MESSAGE) {
@@ -224,7 +223,7 @@ private fun PhoneNavHostGraph(
                 onDismiss = { navController.popBackStack() },
                 onSend = { text, type, timeout ->
                     activity?.onSendMessage(text, type, timeout)
-                },
+                }
             )
         }
         dialog(PhoneNavRoutes.SLEEP_TIMER) {
@@ -239,7 +238,7 @@ private fun PhoneNavHostGraph(
                 onDismiss = { navController.popBackStack() },
                 onSave = { time, action, enabled ->
                     activity?.onSetSleepTimer(time, action, enabled)
-                },
+                }
             )
         }
         dialog(PhoneNavRoutes.CHANGELOG) {

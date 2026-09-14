@@ -35,7 +35,7 @@ class AboutDialogHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -48,7 +48,7 @@ class AboutDialogHostTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "home",
+                    startDestination = "home"
                 ) {
                     composable("home") {
                         LaunchedEffect(Unit) {
@@ -70,7 +70,7 @@ class AboutDialogHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }

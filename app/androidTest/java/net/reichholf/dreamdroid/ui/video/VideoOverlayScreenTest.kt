@@ -30,7 +30,7 @@ class VideoOverlayScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -67,7 +67,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
-                    onSeekChange = {},
+                    onSeekChange = {}
                 )
             }
         }
@@ -116,7 +116,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
-                    onSeekChange = {},
+                    onSeekChange = {}
                 )
             }
         }
@@ -152,8 +152,10 @@ class VideoOverlayScreenTest {
         assertTrue(
             "progress nest should match surfaceVariant, not primaryContainer " +
                 "(nearSurface=$nearSurface nearPrimary=$nearPrimary samples=$samples " +
-                "surfaceVariant=#${Integer.toHexString(expected)} primaryContainer=#${Integer.toHexString(wrong)})",
-            nearSurface > samples / 2 && nearPrimary < samples / 4,
+                "surfaceVariant=#${Integer.toHexString(
+                    expected
+                )} primaryContainer=#${Integer.toHexString(wrong)})",
+            nearSurface > samples / 2 && nearPrimary < samples / 4
         )
     }
 

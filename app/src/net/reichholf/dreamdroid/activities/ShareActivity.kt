@@ -15,6 +15,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.ui.platform.ComposeView
+import java.net.URLEncoder
+import java.util.Date
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -30,8 +32,6 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.share.ShareProfilesListState
 import net.reichholf.dreamdroid.ui.share.bindShareProfilesScreen
-import java.net.URLEncoder
-import java.util.Date
 
 /**
  * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
@@ -113,7 +113,7 @@ class ShareActivity : AppCompatActivity() {
                 ref = String.format(
                     "8193:0:1:0:0:0:0:0:0:0:%s:%s",
                     URLEncoder.encode(String.format("yt://%s", vid)),
-                    title,
+                    title
                 )
             }
             Log.i(LOG_TAG, ref)
@@ -151,7 +151,7 @@ class ShareActivity : AppCompatActivity() {
         mSimpleResultJob?.cancel(null)
         mListState.progress = IndeterminateProgressState(
             title = getString(R.string.loading),
-            message = getString(R.string.loading),
+            message = getString(R.string.loading)
         )
         val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
         mSimpleResultJob = launchSimpleResultLoad(handler, params) { _, result, http ->

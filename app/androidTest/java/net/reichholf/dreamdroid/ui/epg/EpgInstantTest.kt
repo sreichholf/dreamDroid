@@ -1,11 +1,11 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
-import org.junit.Test
 import java.util.Calendar
 import java.util.Locale
 import java.util.TimeZone
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
+import org.junit.Test
 
 class EpgInstantTest {
     private val berlin = TimeZone.getTimeZone("Europe/Berlin")
@@ -15,7 +15,7 @@ class EpgInstantTest {
         val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
         assertEquals(
             "Sep 13, 2026",
-            EpgInstant.formatDateLabel(sec, Locale.US, berlin),
+            EpgInstant.formatDateLabel(sec, Locale.US, berlin)
         )
     }
 
@@ -44,11 +44,11 @@ class EpgInstantTest {
         val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
         val nextDay = EpgInstant.utcMidnightMillis(
             localSec(2026, Calendar.SEPTEMBER, 14, 8, 0),
-            berlin,
+            berlin
         )
         assertEquals(
             localSec(2026, Calendar.SEPTEMBER, 14, 20, 15),
-            EpgInstant.applyDate(sec, nextDay, berlin),
+            EpgInstant.applyDate(sec, nextDay, berlin)
         )
     }
 
@@ -57,7 +57,7 @@ class EpgInstantTest {
         val sec = localSec(2026, Calendar.SEPTEMBER, 13, 20, 15)
         assertEquals(
             localSec(2026, Calendar.SEPTEMBER, 13, 18, 0),
-            EpgInstant.applyTime(sec, 18, 0, berlin),
+            EpgInstant.applyTime(sec, 18, 0, berlin)
         )
     }
 

@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.multiepg
 
-import net.reichholf.dreamdroid.enigma.Timer
 import java.util.Calendar
 import java.util.TimeZone
+import net.reichholf.dreamdroid.enigma.Timer
 
 /**
  * GraphMultiEPG `show_record_clocks`: a small clock on programme bars that
@@ -10,14 +10,10 @@ import java.util.TimeZone
  */
 enum class MultiEpgTimerClock {
     Record,
-    Zap,
+    Zap
 }
 
-fun multiEpgTimerClockKey(
-    serviceRef: String,
-    eventId: String,
-    startSec: Long,
-): String {
+fun multiEpgTimerClockKey(serviceRef: String, eventId: String, startSec: Long): String {
     val id = eventId.trim()
     return if (id.isNotEmpty()) "$serviceRef|$id" else "$serviceRef|$startSec"
 }
@@ -25,7 +21,7 @@ fun multiEpgTimerClockKey(
 fun buildMultiEpgTimerClocks(
     channels: List<MultiEpgChannel>,
     timers: List<Timer>,
-    timeZone: TimeZone = TimeZone.getDefault(),
+    timeZone: TimeZone = TimeZone.getDefault()
 ): Map<String, MultiEpgTimerClock> {
     if (channels.isEmpty() || timers.isEmpty()) {
         return emptyMap()
@@ -47,8 +43,8 @@ fun buildMultiEpgTimerClocks(
                 multiEpgTimerClockKey(
                     channel.serviceRef,
                     bar.event.eventId,
-                    bar.startSec,
-                ),
+                    bar.startSec
+                )
             ] = clock
         }
     }
@@ -60,7 +56,7 @@ internal data class ActiveTimer(
     val beginSec: Long,
     val endSec: Long,
     val repeated: Int,
-    val zap: Boolean,
+    val zap: Boolean
 )
 
 internal fun timerServiceKey(ref: String): String {
@@ -91,7 +87,7 @@ internal fun parseActiveTimer(timer: Timer): ActiveTimer? {
         beginSec = begin,
         endSec = end.coerceAtLeast(begin + 1L),
         repeated = timer.repeated.toIntOrNull() ?: 0,
-        zap = zap,
+        zap = zap
     )
 }
 
@@ -113,7 +109,7 @@ private fun clockForBar(
     bar: MultiEpgBar,
     serviceKey: String,
     timers: List<ActiveTimer>,
-    timeZone: TimeZone,
+    timeZone: TimeZone
 ): MultiEpgTimerClock? {
     var zap = false
     var record = false
@@ -142,7 +138,7 @@ private fun matchesTime(
     startSec: Long,
     endSec: Long,
     timer: ActiveTimer,
-    timeZone: TimeZone,
+    timeZone: TimeZone
 ): Boolean {
     if (timer.repeated == 0) {
         return startSec < timer.endSec && timer.beginSec < endSec

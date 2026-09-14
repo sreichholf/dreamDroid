@@ -29,7 +29,7 @@ class SettingsScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -43,7 +43,7 @@ class SettingsScreenTest {
                     state = state,
                     onThemeChanged = {},
                     onDynamicColorsChanged = {},
-                    onSyncPicons = {},
+                    onSyncPicons = {}
                 )
             }
         }
@@ -81,7 +81,7 @@ class SettingsScreenTest {
                     onSyncPicons = {},
                     onAbout = { about = true },
                     onChangelog = { changelog = true },
-                    onBackup = { backup = true },
+                    onBackup = { backup = true }
                 )
             }
         }
@@ -108,7 +108,7 @@ class SettingsScreenTest {
                     state = state,
                     onThemeChanged = {},
                     onDynamicColorsChanged = {},
-                    onSyncPicons = {},
+                    onSyncPicons = {}
                 )
             }
         }
@@ -121,7 +121,7 @@ class SettingsScreenTest {
         assertEquals(
             "compact",
             PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null),
+                .getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
         )
         assertEquals("compact", state.multiEpgTextSize)
     }
@@ -140,7 +140,7 @@ class SettingsScreenTest {
                     state = state,
                     onThemeChanged = {},
                     onDynamicColorsChanged = {},
-                    onSyncPicons = {},
+                    onSyncPicons = {}
                 )
             }
         }
@@ -150,7 +150,7 @@ class SettingsScreenTest {
         assertEquals(
             false,
             PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true),
+                .getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true)
         )
         assertEquals(false, state.nowPlayingStrip)
     }
@@ -164,7 +164,7 @@ class SettingsScreenTest {
         assertEquals("Startbildschirm", germanContext.getString(R.string.start_screen))
         assertEquals(
             "Bildschirm, der beim Öffnen der App angezeigt wird (Hauptziele im Navigationsmenü)",
-            germanContext.getString(R.string.start_screen_long),
+            germanContext.getString(R.string.start_screen_long)
         )
 
         val state = SettingsState.create(context)
@@ -175,7 +175,7 @@ class SettingsScreenTest {
                         state = state,
                         onThemeChanged = {},
                         onDynamicColorsChanged = {},
-                        onSyncPicons = {},
+                        onSyncPicons = {}
                     )
                 }
             }

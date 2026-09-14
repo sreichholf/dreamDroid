@@ -33,7 +33,7 @@ fun DreamDroidPullRefresh(
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    content: @Composable BoxScope.() -> Unit,
+    content: @Composable BoxScope.() -> Unit
 ) {
     val state = rememberPullToRefreshState(enabled = { enabled })
 
@@ -55,14 +55,14 @@ fun DreamDroidPullRefresh(
         modifier
             .nestedScroll(state.nestedScrollConnection)
             .clipToBounds()
-            .fillMaxSize(),
+            .fillMaxSize()
     ) {
         content()
         PullToRefreshContainer(
             state = state,
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .testTag(PULL_REFRESH_INDICATOR_TAG),
+                .testTag(PULL_REFRESH_INDICATOR_TAG)
         )
     }
 }

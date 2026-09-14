@@ -5,7 +5,8 @@ import java.net.URLEncoder
 
 /**
  * Compose Navigation route ids for the phone shell NavHost.
- * Expand as more drawer destinations migrate off [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
+ * Expand as more drawer destinations migrate off
+ * [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
  */
 object PhoneNavRoutes {
     const val DEVICE_INFO = "device_info"
@@ -62,9 +63,7 @@ object PhoneNavRoutes {
     private const val ENCODING = "UTF-8"
 
     /** Filled [EPG_SEARCH] route; percent-encodes [query] as a query parameter. */
-    fun epgSearchRoute(query: String): String {
-        return "epg_search?$ARG_QUERY=${encodeQueryParam(query)}"
-    }
+    fun epgSearchRoute(query: String): String = "epg_search?$ARG_QUERY=${encodeQueryParam(query)}"
 
     /**
      * Inverse of [epgSearchRoute]. Matches the percent-decode Navigation applies
@@ -80,11 +79,8 @@ object PhoneNavRoutes {
         return decodeQueryParam(encoded)
     }
 
-    private fun encodeQueryParam(value: String): String {
-        return URLEncoder.encode(value, ENCODING).replace("+", "%20")
-    }
+    private fun encodeQueryParam(value: String): String =
+        URLEncoder.encode(value, ENCODING).replace("+", "%20")
 
-    private fun decodeQueryParam(value: String): String {
-        return URLDecoder.decode(value, ENCODING)
-    }
+    private fun decodeQueryParam(value: String): String = URLDecoder.decode(value, ENCODING)
 }

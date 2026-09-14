@@ -22,6 +22,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.FragmentTransaction
 import androidx.preference.PreferenceManager
+import kotlin.math.ceil
+import kotlin.math.floor
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
@@ -30,8 +32,6 @@ import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
 import org.videolan.libvlc.interfaces.IVLCVout
-import kotlin.math.ceil
-import kotlin.math.floor
 
 /**
  * Created by reichi on 16/02/16.
@@ -89,9 +89,11 @@ class VideoActivity :
                         oldLeft: Int,
                         oldTop: Int,
                         oldRight: Int,
-                        oldBottom: Int,
+                        oldBottom: Int
                     ) {
-                        if (left != oldLeft || top != oldTop || right != oldRight || bottom != oldBottom) {
+                        if (left != oldLeft || top != oldTop || right != oldRight ||
+                            bottom != oldBottom
+                        ) {
                             /* changeSurfaceLayout need to be called after the layout changed */
                             mHandler.removeCallbacks(mRunnable)
                             mHandler.post(mRunnable)
@@ -168,15 +170,14 @@ class VideoActivity :
                     .getDefaultSharedPreferences(this)
                     .getString(
                         DreamDroid.PREFS_KEY_HWACCEL,
-                        Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED),
-                    ),
+                        Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)
+                    )
             )
         player.playUri(data, accel)
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        return mOverlayFragment!!.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
-    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
+        mOverlayFragment!!.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
 
     private fun initialize() {
         cleanup()
@@ -251,10 +252,10 @@ class VideoActivity :
         sw = window.decorView.width
         sh = window.decorView.height
 
-        // getWindow().getDecorView() doesn't always take orientation into account, we have to correct the values
+        // DecorView size ignores orientation sometimes; swap width/height if needed.
         val isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT
 
-        if (sw > sh && isPortrait || sw < sh && !isPortrait) {
+        if ((sw > sh && isPortrait) || (sw < sh && !isPortrait)) {
             val w = sw
             sw = sh
             sh = w
@@ -371,9 +372,7 @@ class VideoActivity :
     }
 
     @TargetApi(Build.VERSION_CODES.R)
-    override fun onPictureInPictureRequested(): Boolean {
-        return doEnterPip()
-    }
+    override fun onPictureInPictureRequested(): Boolean = doEnterPip()
 
     @TargetApi(Build.VERSION_CODES.O)
     override fun onUserLeaveHint() {
@@ -398,7 +397,7 @@ class VideoActivity :
         visibleWidth: Int,
         visibleHeight: Int,
         sarNum: Int,
-        sarDen: Int,
+        sarDen: Int
     ) {
         mVideoWidth = width
         mVideoHeight = height
@@ -416,13 +415,12 @@ class VideoActivity :
         mediaPlayer.setVideoTrackEnabled(true)
     }
 
-    override fun isInPictureInPictureMode(): Boolean {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && super.isInPictureInPictureMode()
-    }
+    override fun isInPictureInPictureMode(): Boolean =
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && super.isInPictureInPictureMode()
 
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
-        newConfig: Configuration,
+        newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         changeSurfaceLayout()
@@ -445,16 +443,18 @@ class VideoActivity :
         when (event.type) {
             MediaPlayer.Event.Playing -> {
                 onMediaPlaying()
-                // Intentional fall-through from Playing into ESSelected handling (matches Java switch).
+                // Fall through from Playing into ESSelected (matches Java switch).
                 if (event.esChangedType == IMedia.Track.Type.Video) {
                     changeSurfaceLayout()
                 }
             }
+
             MediaPlayer.Event.ESSelected -> {
                 if (event.esChangedType == IMedia.Track.Type.Video) {
                     changeSurfaceLayout()
                 }
             }
+
             MediaPlayer.Event.EndReached -> finish()
         }
         mOverlayFragment!!.onEvent(event)

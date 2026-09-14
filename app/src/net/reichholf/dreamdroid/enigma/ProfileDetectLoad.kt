@@ -22,24 +22,19 @@ fun LifecycleOwner.launchCheckProfileLoad(
     profile: Profile,
     context: Context,
     onProgress: (state: String) -> Unit,
-    onResult: (result: ExtendedHashMap?) -> Unit,
-): Job {
-    return lifecycleScope.launch {
-        onProgress(context.getString(R.string.checking))
-        val result = withContext(Dispatchers.IO) {
-            CheckProfile.checkProfile(profile, context)
-        }
-        onResult(result)
+    onResult: (result: ExtendedHashMap?) -> Unit
+): Job = lifecycleScope.launch {
+    onProgress(context.getString(R.string.checking))
+    val result = withContext(Dispatchers.IO) {
+        CheckProfile.checkProfile(profile, context)
     }
+    onResult(result)
 }
 
-fun LifecycleOwner.launchDetectDevicesLoad(
-    onResult: (profiles: ArrayList<Profile>) -> Unit,
-): Job {
-    return lifecycleScope.launch {
+fun LifecycleOwner.launchDetectDevicesLoad(onResult: (profiles: ArrayList<Profile>) -> Unit): Job =
+    lifecycleScope.launch {
         val profiles = withContext(Dispatchers.IO) {
             DeviceDetector.getAvailableHosts()
         }
         onResult(profiles)
     }
-}

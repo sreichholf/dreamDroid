@@ -10,18 +10,20 @@ import androidx.compose.runtime.setValue
  * The shell bar is published through [net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar].
  */
 class TvMoviesHubState {
-	var selected by mutableStateOf(TvMoviesDestination.TV)
-	var rows by mutableStateOf(listOf<String>())
-	var selectedRow by mutableIntStateOf(0)
-	var error by mutableStateOf<String?>(null)
-	/** Latest hub destination click handler; shell composition reads this on each click. */
-	var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
+    var selected by mutableStateOf(TvMoviesDestination.TV)
+    var rows by mutableStateOf(listOf<String>())
+    var selectedRow by mutableIntStateOf(0)
+    var error by mutableStateOf<String?>(null)
 
-	var nowPlayingStripEnabled by mutableStateOf(true)
-	var nowPlayingHeadline by mutableStateOf("")
-	var nowPlayingProgress by mutableStateOf(0f)
-	var nowPlayingReference by mutableStateOf("")
-	var nowPlayingName by mutableStateOf("")
-	/** Latest now-playing tap handler; shell composition reads this on each click. */
-	var onNowPlayingClick: () -> Unit = {}
+    /** Latest hub destination click handler; shell composition reads this on each click. */
+    var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
+
+    var nowPlayingStripEnabled by mutableStateOf(true)
+    var nowPlayingHeadline by mutableStateOf("")
+    var nowPlayingProgress by mutableStateOf(0f)
+    var nowPlayingReference by mutableStateOf("")
+    var nowPlayingName by mutableStateOf("")
+
+    /** Latest now-playing tap handler; shell composition reads this on each click. */
+    var onNowPlayingClick: () -> Unit = {}
 }

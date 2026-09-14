@@ -31,9 +31,9 @@ import net.reichholf.dreamdroid.ui.tools.ToolsHubState
  * sibling ComposeView (the #355 regression).
  */
 sealed interface ShellDestinationBarContent {
-	data object Hidden : ShellDestinationBarContent
-	data class Tools(val state: ToolsHubState) : ShellDestinationBarContent
-	data class TvMovies(val state: TvMoviesHubState) : ShellDestinationBarContent
+    data object Hidden : ShellDestinationBarContent
+    data class Tools(val state: ToolsHubState) : ShellDestinationBarContent
+    data class TvMovies(val state: TvMoviesHubState) : ShellDestinationBarContent
 }
 
 /**
@@ -41,16 +41,20 @@ sealed interface ShellDestinationBarContent {
  * Owned by [ProvideShellDestinationBar] for the lifetime of [PhoneNavHost], not by hub leaves.
  */
 class ShellDestinationBarController {
-	var content by mutableStateOf<ShellDestinationBarContent>(ShellDestinationBarContent.Hidden)
+    var content by mutableStateOf<ShellDestinationBarContent>(ShellDestinationBarContent.Hidden)
 }
 
 val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinationBarController> {
-	error("ShellDestinationBarController not provided — wrap PhoneNavHost in ProvideShellDestinationBar")
+    error(
+        "ShellDestinationBarController not provided — wrap PhoneNavHost in " +
+            "ProvideShellDestinationBar"
+    )
 }
 
 /**
  * Installs a long-lived composition on the activity [R.id.shell_destination_nav] ComposeView
- * for the lifetime of this host (the phone NavHost), then provides [LocalShellDestinationBarController].
+ * for the lifetime of this host (the phone NavHost), then provides
+ * [LocalShellDestinationBarController].
  *
  * Hub destinations only publish [ShellDestinationBarContent] via [RegisterShellDestinationBar].
  * That keeps shell chrome out of hub content recomposition / load cycles — the failure mode when
@@ -59,46 +63,48 @@ val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinati
  */
 @Composable
 fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
-	val controller = remember { ShellDestinationBarController() }
-	val view = LocalView.current
-	DisposableEffect(view) {
-		val activity = view.context.findActivity()
-			?: return@DisposableEffect onDispose { }
-		val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav)
-			?: return@DisposableEffect onDispose { }
-		shellNav.setViewCompositionStrategy(
-			ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed,
-		)
-		shellNav.setContent {
-			DreamDroidTheme {
-				val shown = controller.content
-				SideEffect {
-					shellNav.visibility =
-						if (shown is ShellDestinationBarContent.Hidden) View.GONE else View.VISIBLE
-					if (shown !is ShellDestinationBarContent.Hidden) {
-						shellNav.bringToFront()
-					}
-				}
-				when (shown) {
-					ShellDestinationBarContent.Hidden -> Unit
-					is ShellDestinationBarContent.Tools -> ToolsDestinationBar(
-						selected = shown.state.selected,
-						onDestinationSelected = { shown.state.onDestinationSelected(it) },
-					)
-					is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
-						state = shown.state,
-					)
-				}
-			}
-		}
-		onDispose {
-			shellNav.visibility = View.GONE
-			shellNav.disposeComposition()
-		}
-	}
-	CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
-		content()
-	}
+    val controller = remember { ShellDestinationBarController() }
+    val view = LocalView.current
+    DisposableEffect(view) {
+        val activity = view.context.findActivity()
+            ?: return@DisposableEffect onDispose { }
+        val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav)
+            ?: return@DisposableEffect onDispose { }
+        shellNav.setViewCompositionStrategy(
+            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+        )
+        shellNav.setContent {
+            DreamDroidTheme {
+                val shown = controller.content
+                SideEffect {
+                    shellNav.visibility =
+                        if (shown is ShellDestinationBarContent.Hidden) View.GONE else View.VISIBLE
+                    if (shown !is ShellDestinationBarContent.Hidden) {
+                        shellNav.bringToFront()
+                    }
+                }
+                when (shown) {
+                    ShellDestinationBarContent.Hidden -> Unit
+
+                    is ShellDestinationBarContent.Tools -> ToolsDestinationBar(
+                        selected = shown.state.selected,
+                        onDestinationSelected = { shown.state.onDestinationSelected(it) }
+                    )
+
+                    is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
+                        state = shown.state
+                    )
+                }
+            }
+        }
+        onDispose {
+            shellNav.visibility = View.GONE
+            shellNav.disposeComposition()
+        }
+    }
+    CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
+        content()
+    }
 }
 
 /**
@@ -107,22 +113,22 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
  */
 @Composable
 fun RegisterShellDestinationBar(content: ShellDestinationBarContent) {
-	val controller = LocalShellDestinationBarController.current
-	DisposableEffect(controller, content) {
-		controller.content = content
-		onDispose {
-			if (controller.content == content) {
-				controller.content = ShellDestinationBarContent.Hidden
-			}
-		}
-	}
+    val controller = LocalShellDestinationBarController.current
+    DisposableEffect(controller, content) {
+        controller.content = content
+        onDispose {
+            if (controller.content == content) {
+                controller.content = ShellDestinationBarContent.Hidden
+            }
+        }
+    }
 }
 
 private fun Context.findActivity(): Activity? {
-	var ctx: Context? = this
-	while (ctx is ContextWrapper) {
-		if (ctx is Activity) return ctx
-		ctx = ctx.baseContext
-	}
-	return ctx as? Activity
+    var ctx: Context? = this
+    while (ctx is ContextWrapper) {
+        if (ctx is Activity) return ctx
+        ctx = ctx.baseContext
+    }
+    return ctx as? Activity
 }

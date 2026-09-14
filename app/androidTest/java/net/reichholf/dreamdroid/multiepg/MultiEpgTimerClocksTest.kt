@@ -1,13 +1,13 @@
 package net.reichholf.dreamdroid.multiepg
 
+import java.util.Calendar
+import java.util.TimeZone
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.util.Calendar
-import java.util.TimeZone
 
 class MultiEpgTimerClocksTest {
     private val tz: TimeZone = TimeZone.getTimeZone("UTC")
@@ -19,9 +19,9 @@ class MultiEpgTimerClocksTest {
         val clocks = buildMultiEpgTimerClocks(
             channels = listOf(channel(start)),
             timers = listOf(
-                timer(begin = start - 60, end = start + 1800, justPlay = "0"),
+                timer(begin = start - 60, end = start + 1800, justPlay = "0")
             ),
-            timeZone = tz,
+            timeZone = tz
         )
         val key = multiEpgTimerClockKey(ref, "10", start)
         assertEquals(MultiEpgTimerClock.Record, clocks[key])
@@ -32,13 +32,13 @@ class MultiEpgTimerClocksTest {
         val clocks = buildMultiEpgTimerClocks(
             channels = listOf(channel(start)),
             timers = listOf(
-                timer(begin = start, end = start + 1, justPlay = "1"),
+                timer(begin = start, end = start + 1, justPlay = "1")
             ),
-            timeZone = tz,
+            timeZone = tz
         )
         assertEquals(
             MultiEpgTimerClock.Zap,
-            clocks[multiEpgTimerClockKey(ref, "10", start)],
+            clocks[multiEpgTimerClockKey(ref, "10", start)]
         )
     }
 
@@ -51,10 +51,10 @@ class MultiEpgTimerClocksTest {
                 timer(
                     reference = "1:0:1:2:1:1:0:0:0:0:",
                     begin = start,
-                    end = start + 1800,
-                ),
+                    end = start + 1800
+                )
             ),
-            timeZone = tz,
+            timeZone = tz
         )
         assertTrue(clocks.isEmpty())
     }
@@ -67,14 +67,14 @@ class MultiEpgTimerClocksTest {
                 timer(
                     begin = start - 7L * 86400L,
                     end = start - 7L * 86400L + 1800,
-                    repeated = "1",
-                ),
+                    repeated = "1"
+                )
             ),
-            timeZone = tz,
+            timeZone = tz
         )
         assertEquals(
             MultiEpgTimerClock.Record,
-            clocks[multiEpgTimerClockKey(ref, "10", start)],
+            clocks[multiEpgTimerClockKey(ref, "10", start)]
         )
         val tuesday = start + 86400L
         val miss = buildMultiEpgTimerClocks(
@@ -83,10 +83,10 @@ class MultiEpgTimerClocksTest {
                 timer(
                     begin = start - 7L * 86400L,
                     end = start - 7L * 86400L + 1800,
-                    repeated = "1",
-                ),
+                    repeated = "1"
+                )
             ),
-            timeZone = tz,
+            timeZone = tz
         )
         assertNull(miss[multiEpgTimerClockKey(ref, "11", tuesday)])
     }
@@ -101,30 +101,28 @@ class MultiEpgTimerClocksTest {
     fun serviceKeyDropsBouquetPathAndTrailingColon() {
         assertEquals(
             timerServiceKey("1:0:1:1:1:1:0:0:0:0:"),
-            timerServiceKey("1:0:1:1:1:1:0:0:0:0:FROM BOUQUET \"fav\""),
+            timerServiceKey("1:0:1:1:1:1:0:0:0:0:FROM BOUQUET \"fav\"")
         )
     }
 
-    private fun channel(startSec: Long, eventId: String = "10"): MultiEpgChannel {
-        return MultiEpgChannel(
-            serviceRef = ref,
-            serviceName = "TV",
-            bars = listOf(
-                MultiEpgBar(
-                    event = Event(
-                        eventId = eventId,
-                        title = "News",
-                        start = startSec.toString(),
-                        duration = "1800",
-                        serviceReference = ref,
-                        serviceName = "TV",
-                    ),
-                    startSec = startSec,
-                    endSec = startSec + 1800,
+    private fun channel(startSec: Long, eventId: String = "10"): MultiEpgChannel = MultiEpgChannel(
+        serviceRef = ref,
+        serviceName = "TV",
+        bars = listOf(
+            MultiEpgBar(
+                event = Event(
+                    eventId = eventId,
+                    title = "News",
+                    start = startSec.toString(),
+                    duration = "1800",
+                    serviceReference = ref,
+                    serviceName = "TV"
                 ),
-            ),
+                startSec = startSec,
+                endSec = startSec + 1800
+            )
         )
-    }
+    )
 
     private fun timer(
         reference: String = ref,
@@ -132,18 +130,16 @@ class MultiEpgTimerClocksTest {
         end: Long,
         justPlay: String = "0",
         disabled: String = "0",
-        repeated: String = "0",
-    ): Timer {
-        return Timer(
-            reference = reference,
-            begin = begin.toString(),
-            end = end.toString(),
-            duration = (end - begin).toString(),
-            justPlay = justPlay,
-            disabled = disabled,
-            repeated = repeated,
-        )
-    }
+        repeated: String = "0"
+    ): Timer = Timer(
+        reference = reference,
+        begin = begin.toString(),
+        end = end.toString(),
+        duration = (end - begin).toString(),
+        justPlay = justPlay,
+        disabled = disabled,
+        repeated = repeated
+    )
 
     private fun mondayUtc(hour: Int, minute: Int): Long {
         val cal = Calendar.getInstance(tz)

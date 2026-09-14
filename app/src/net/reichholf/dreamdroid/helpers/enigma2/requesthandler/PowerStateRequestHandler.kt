@@ -12,4 +12,5 @@ import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2PowerStateHandler
 /**
  * @author sre
  */
-class PowerStateRequestHandler : AbstractSimpleRequestHandler(URIStore.POWERSTATE, E2PowerStateHandler())
+class PowerStateRequestHandler :
+    AbstractSimpleRequestHandler(URIStore.POWERSTATE, E2PowerStateHandler())

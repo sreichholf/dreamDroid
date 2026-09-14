@@ -33,18 +33,18 @@ class ComposeTvHubMovieRowTest {
             title = "Demo Recording",
             description = "Short desc",
             descriptionExtended = "Line1\\nLine2",
-            fileName = "demo.ts",
+            fileName = "demo.ts"
         )
         composeRule.setContent {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(200.dp),
+                    .height(200.dp)
             ) {
                 HubMovieRow(
                     dirname = "/hdd/movie",
                     movies = listOf(movie),
-                    onMovieClick = { clicked = it },
+                    onMovieClick = { clicked = it }
                 )
             }
         }
@@ -63,20 +63,20 @@ class ComposeTvHubMovieRowTest {
         val movie = Movie(
             reference = "1:0:0:0:0:0:0:0:0:1:",
             title = "Another",
-            fileName = "another.ts",
+            fileName = "another.ts"
         )
         val headerId = TvComposeHubHost.movieHeaderId("/hdd/movie")
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(headerId, "/hdd/movie"),
+                    HubNavHeader(headerId, "/hdd/movie")
                 ),
                 selectedHeaderId = headerId,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
-                moviesByLocation = mapOf("/hdd/movie" to listOf(movie)),
+                moviesByLocation = mapOf("/hdd/movie" to listOf(movie))
             )
         }
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()

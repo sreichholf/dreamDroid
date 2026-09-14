@@ -30,7 +30,7 @@ fun EpgSearchDestination(
     hostFragment: PhoneNavHostFragment,
     query: String,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -65,7 +65,7 @@ fun EpgSearchDestination(
             val result = loadEventList(
                 context.applicationContext,
                 listOf(NameValuePair("search", query)),
-                URIStore.EPG_SEARCH,
+                URIStore.EPG_SEARCH
             )
             refresh.setRefreshing(false)
             setToolbarTitle(finishedTitle())
@@ -101,14 +101,14 @@ fun EpgSearchDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         EpgBouquetScreen(
             items = listState.items,
             listState = listState.listState,
             scrollEpoch = listState.scrollEpoch,
             emptyMessage = emptyMessage,
-            onItemClick = { dialogSession.showDetail(it) },
+            onItemClick = { dialogSession.showDetail(it) }
         )
     }
 

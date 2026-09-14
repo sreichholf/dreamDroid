@@ -36,7 +36,7 @@ private val DeviceInfoNullableSaver = Saver<DeviceInfo?, Bundle>(
     restore = { bundle ->
         @Suppress("DEPRECATION")
         bundle.getSerializable(KEY_SAVED_INFO) as? DeviceInfo
-    },
+    }
 )
 
 /**
@@ -123,7 +123,7 @@ fun DeviceInfoDestination(modifier: Modifier = Modifier) {
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         DeviceInfoScreen(state = uiState)
     }

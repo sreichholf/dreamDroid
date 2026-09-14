@@ -4,11 +4,7 @@ import android.content.Context
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
-data class DeviceInfoLoadResult(
-    val success: Boolean,
-    val info: DeviceInfo?,
-    val errorText: String?,
-)
+data class DeviceInfoLoadResult(val success: Boolean, val info: DeviceInfo?, val errorText: String?)
 
 /**
  * Phase 2.7b: load typed device info without a Fragment owner.
@@ -20,8 +16,10 @@ suspend fun loadDeviceInfo(context: Context): DeviceInfoLoadResult {
     val success = info != null && !info.isEmpty()
     val errorText = when {
         success -> null
+
         http.hasError() ->
             context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+
         else -> context.getString(R.string.error_parsing)
     }
     return DeviceInfoLoadResult(success, info, errorText)

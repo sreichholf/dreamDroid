@@ -4,11 +4,10 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -25,6 +24,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
@@ -54,10 +54,7 @@ private const val MODE_TIMER = "Timer"
  * and routes MultiChoice / timer-edit results for the active child page.
  */
 @Composable
-fun HubDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var mode by rememberSaveable { mutableStateOf(MODE_TV) }
     var currentTv by rememberSaveable { mutableStateOf<String?>(null) }
@@ -79,14 +76,14 @@ fun HubDestination(
         buildDedicatedBouquets(
             bouquets?.tv.orEmpty(),
             context.resources.getStringArray(R.array.servicelist_dedicated),
-            context.resources.getStringArray(R.array.servicerefstv),
+            context.resources.getStringArray(R.array.servicerefstv)
         )
     }
     val radioBouquets = remember(bouquets) {
         buildDedicatedBouquets(
             bouquets?.radio.orEmpty(),
             context.resources.getStringArray(R.array.servicelist_dedicated),
-            context.resources.getStringArray(R.array.servicerefsradio),
+            context.resources.getStringArray(R.array.servicerefsradio)
         )
     }
     val movieLocations = remember(locationsReady) {
@@ -114,17 +111,19 @@ fun HubDestination(
                 val (idx, ref) = resolveBouquetSelection(
                     tvBouquets,
                     currentTv,
-                    DreamDroid.getCurrentProfile().defaultBouquetTv,
+                    DreamDroid.getCurrentProfile().defaultBouquetTv
                 )
                 selectedRow = idx
                 currentTv = ref
             }
+
             TvMoviesDestination.RADIO -> {
                 mode = MODE_RADIO
                 val (idx, ref) = resolveBouquetSelection(radioBouquets, currentRadio, null)
                 selectedRow = idx
                 currentRadio = ref
             }
+
             TvMoviesDestination.MOVIES -> {
                 mode = MODE_MOVIES
                 if (!locationsReady || movieLocations.isEmpty()) {
@@ -134,6 +133,7 @@ fun HubDestination(
                     selectedRow = indexOfLocation(movieLocations, currentMovie)
                 }
             }
+
             TvMoviesDestination.TIMER -> {
                 mode = MODE_TIMER
                 selectedRow = 0
@@ -151,7 +151,7 @@ fun HubDestination(
 
     HubNowPlaying(
         reloadEpoch = nowPlayingReloadEpoch,
-        hubState = destinationBarState,
+        hubState = destinationBarState
     )
 
     fun onRowSelected(index: Int) {
@@ -203,31 +203,34 @@ fun HubDestination(
                 val list = buildDedicatedBouquets(
                     result.bouquets.tv,
                     context.resources.getStringArray(R.array.servicelist_dedicated),
-                    context.resources.getStringArray(R.array.servicerefstv),
+                    context.resources.getStringArray(R.array.servicerefstv)
                 )
                 val (idx, ref) = resolveBouquetSelection(
                     list,
                     currentTv,
-                    DreamDroid.getCurrentProfile().defaultBouquetTv,
+                    DreamDroid.getCurrentProfile().defaultBouquetTv
                 )
                 selectedRow = idx
                 currentTv = ref
             }
+
             MODE_RADIO -> {
                 val list = buildDedicatedBouquets(
                     result.bouquets.radio,
                     context.resources.getStringArray(R.array.servicelist_dedicated),
-                    context.resources.getStringArray(R.array.servicerefsradio),
+                    context.resources.getStringArray(R.array.servicerefsradio)
                 )
                 val (idx, ref) = resolveBouquetSelection(list, currentRadio, null)
                 selectedRow = idx
                 currentRadio = ref
             }
+
             MODE_MOVIES -> {
                 if (locationsReady) {
                     selectedRow = indexOfLocation(DreamDroid.getLocations().toList(), currentMovie)
                 }
             }
+
             else -> selectedRow = 0
         }
     }
@@ -240,7 +243,7 @@ fun HubDestination(
                 if (mode == MODE_MOVIES) {
                     selectedRow = indexOfLocation(DreamDroid.getLocations().toList(), currentMovie)
                 }
-            },
+            }
         )
         onDispose { job.cancel() }
     }
@@ -257,12 +260,12 @@ fun HubDestination(
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        containerColor = MaterialTheme.colorScheme.background,
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
         ) {
             // zIndex above the list: stock PullToRefreshContainer sits TopCenter in the
             // list slot; Column draws later children on top, so without this the elevated
@@ -272,21 +275,28 @@ fun HubDestination(
                 selectedRow = if (rows.isEmpty()) 0 else selectedRow.coerceIn(0, rows.lastIndex),
                 error = bouquetError,
                 onRowSelected = { onRowSelected(it) },
-                modifier = Modifier.zIndex(1f),
+                modifier = Modifier.zIndex(1f)
             )
             // Clip list pages so mid-pull glyphs cannot paint outside the list slot.
             Box(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxSize()
-                    .clipToBounds(),
+                    .clipToBounds()
             ) {
                 when (mode) {
                     MODE_TV -> {
                         // Wait for bouquet roots (old ServiceListPager stayed empty until then).
                         if (bouquets != null) {
                             val bouquet = tvBouquets.getOrNull(
-                                if (tvBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, tvBouquets.lastIndex),
+                                if (tvBouquets.isEmpty()) {
+                                    0
+                                } else {
+                                    selectedRow.coerceIn(
+                                        0,
+                                        tvBouquets.lastIndex
+                                    )
+                                }
                             )
                             if (bouquet != null) {
                                 key(bouquet.reference) {
@@ -295,16 +305,24 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
-                                        onZapped = { nowPlayingReloadEpoch += 1 },
+                                        onZapped = { nowPlayingReloadEpoch += 1 }
                                     )
                                 }
                             }
                         }
                     }
+
                     MODE_RADIO -> {
                         if (bouquets != null) {
                             val bouquet = radioBouquets.getOrNull(
-                                if (radioBouquets.isEmpty()) 0 else selectedRow.coerceIn(0, radioBouquets.lastIndex),
+                                if (radioBouquets.isEmpty()) {
+                                    0
+                                } else {
+                                    selectedRow.coerceIn(
+                                        0,
+                                        radioBouquets.lastIndex
+                                    )
+                                }
                             )
                             if (bouquet != null) {
                                 key(bouquet.reference) {
@@ -313,12 +331,13 @@ fun HubDestination(
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
-                                        onZapped = { nowPlayingReloadEpoch += 1 },
+                                        onZapped = { nowPlayingReloadEpoch += 1 }
                                     )
                                 }
                             }
                         }
                     }
+
                     MODE_MOVIES -> {
                         val locationIndex = if (movieLocations.isEmpty()) {
                             0
@@ -332,15 +351,16 @@ fun HubDestination(
                                     hostFragment = hostFragment,
                                     location = location,
                                     locationIndex = locationIndex,
-                                    session = movieSession,
+                                    session = movieSession
                                 )
                             }
                         }
                     }
+
                     MODE_TIMER -> {
                         HubTimerListPage(
                             hostFragment = hostFragment,
-                            remountEpoch = timerRemountEpoch,
+                            remountEpoch = timerRemountEpoch
                         )
                     }
                 }
@@ -348,11 +368,11 @@ fun HubDestination(
             // Reserve space for the Coordinator overlay (now-playing strip + destination bar).
             if (destinationBarState.nowPlayingStripEnabled) {
                 Spacer(
-                    Modifier.height(dimensionResource(R.dimen.now_playing_strip_height)),
+                    Modifier.height(dimensionResource(R.dimen.now_playing_strip_height))
                 )
             }
             Spacer(
-                Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height)),
+                Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height))
             )
         }
     }

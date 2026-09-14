@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.helpers
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import javax.net.ssl.HttpsURLConnection
 import net.reichholf.dreamdroid.Profile
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -15,7 +16,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import javax.net.ssl.HttpsURLConnection
 
 @RunWith(AndroidJUnit4::class)
 class SimpleHttpClientOkHttpTest {
@@ -97,10 +97,13 @@ class SimpleHttpClientOkHttpTest {
                     val sessionIds = url.queryParameterValues("sessionid")
                     return when {
                         url.encodedPath == "/web/session" -> MockResponse().setBody("fresh-id")
+
                         url.encodedPath == "/web/about" && sessionIds == listOf("stale") ->
                             MockResponse().setResponseCode(412)
+
                         url.encodedPath == "/web/about" && sessionIds == listOf("fresh-id") ->
                             MockResponse().setBody("about-ok")
+
                         else -> MockResponse().setResponseCode(500).setBody("bad-session-query")
                     }
                 }

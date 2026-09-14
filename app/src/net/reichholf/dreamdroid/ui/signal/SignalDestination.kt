@@ -19,15 +19,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import kotlin.math.ceil
+import kotlin.math.pow
+import kotlin.math.sin
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.loadSignal
-import kotlin.math.ceil
-import kotlin.math.pow
-import kotlin.math.sin
 
 private const val TAG = "SignalDestination"
 private const val MAX_SNR_DB = 20
@@ -173,7 +173,7 @@ fun SignalDestination(modifier: Modifier = Modifier) {
                 stopAcoustic()
             }
         },
-        modifier = modifier,
+        modifier = modifier
     )
 }
 
@@ -189,14 +189,14 @@ private fun playAcousticTone(freqOfTone: Double) {
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_MEDIA)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .build(),
+                    .build()
             )
             .setAudioFormat(
                 AudioFormat.Builder()
                     .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
                     .setSampleRate(sampleRate)
                     .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                    .build(),
+                    .build()
             )
             .setBufferSizeInBytes(numSamples * 2)
             .setTransferMode(AudioTrack.MODE_STATIC)

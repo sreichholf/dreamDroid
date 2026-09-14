@@ -12,7 +12,7 @@ class EpgSearchRouteTest {
             "Tagesschau / Wetter",
             "who? what",
             "two words",
-            "Tagesschau / Wetter? live",
+            "Tagesschau / Wetter? live"
         )
         for (query in queries) {
             val route = PhoneNavRoutes.epgSearchRoute(query)
@@ -20,7 +20,7 @@ class EpgSearchRouteTest {
             assertEquals("epg_search", path)
             assertFalse(
                 "path must not contain extra segments from the query: $query",
-                path.contains("/"),
+                path.contains("/")
             )
             assertEquals(query, PhoneNavRoutes.queryFromEpgSearchRoute(route))
         }

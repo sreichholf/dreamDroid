@@ -19,7 +19,7 @@ object EpgInstant {
     fun formatDateLabel(
         timeSec: Int,
         locale: Locale = Locale.getDefault(),
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): String {
         val dateFmt = DateFormat.getDateInstance(DateFormat.MEDIUM, locale)
         dateFmt.timeZone = timeZone
@@ -30,7 +30,7 @@ object EpgInstant {
         timeSec: Int,
         is24Hour: Boolean,
         locale: Locale = Locale.getDefault(),
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): String {
         val pattern = if (is24Hour) "HH:mm" else "h:mm a"
         val timeFmt = SimpleDateFormat(pattern, locale)
@@ -38,10 +38,7 @@ object EpgInstant {
         return timeFmt.format(Date(timeSec * 1000L))
     }
 
-    fun utcMidnightMillis(
-        timeSec: Int,
-        timeZone: TimeZone = TimeZone.getDefault(),
-    ): Long {
+    fun utcMidnightMillis(timeSec: Int, timeZone: TimeZone = TimeZone.getDefault()): Long {
         val local = Calendar.getInstance(timeZone)
         local.timeInMillis = timeSec * 1000L
         val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
@@ -49,7 +46,7 @@ object EpgInstant {
         utc.set(
             local.get(Calendar.YEAR),
             local.get(Calendar.MONTH),
-            local.get(Calendar.DAY_OF_MONTH),
+            local.get(Calendar.DAY_OF_MONTH)
         )
         return utc.timeInMillis
     }
@@ -58,7 +55,7 @@ object EpgInstant {
         utcDateMillis: Long,
         hour: Int,
         minute: Int,
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): Int {
         val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
         utc.timeInMillis = utcDateMillis
@@ -69,7 +66,7 @@ object EpgInstant {
             utc.get(Calendar.DAY_OF_MONTH),
             hour,
             minute,
-            0,
+            0
         )
         local.set(Calendar.MILLISECOND, 0)
         return (local.timeInMillis / 1000).toInt()
@@ -78,7 +75,7 @@ object EpgInstant {
     fun applyDate(
         timeSec: Int,
         utcDateMillis: Long,
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): Int {
         val local = Calendar.getInstance(timeZone)
         local.timeInMillis = timeSec * 1000L
@@ -86,7 +83,7 @@ object EpgInstant {
             utcDateMillis = utcDateMillis,
             hour = local.get(Calendar.HOUR_OF_DAY),
             minute = local.get(Calendar.MINUTE),
-            timeZone = timeZone,
+            timeZone = timeZone
         )
     }
 
@@ -94,19 +91,17 @@ object EpgInstant {
         timeSec: Int,
         hour: Int,
         minute: Int,
-        timeZone: TimeZone = TimeZone.getDefault(),
-    ): Int {
-        return combine(
-            utcDateMillis = utcMidnightMillis(timeSec, timeZone),
-            hour = hour,
-            minute = minute,
-            timeZone = timeZone,
-        )
-    }
+        timeZone: TimeZone = TimeZone.getDefault()
+    ): Int = combine(
+        utcDateMillis = utcMidnightMillis(timeSec, timeZone),
+        hour = hour,
+        minute = minute,
+        timeZone = timeZone
+    )
 
     fun primeTimeSec(
         nowSec: Int = (System.currentTimeMillis() / 1000).toInt(),
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): Int {
         val cal = Calendar.getInstance(timeZone)
         cal.timeInMillis = nowSec * 1000L

@@ -44,7 +44,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Remote
 enum class VirtualRemoteLayout {
     Full,
     Simple,
-    QuickZap,
+    QuickZap
 }
 
 private val KeyDark = Color(0xFF424242)
@@ -60,7 +60,7 @@ private data class RemoteMetrics(
     val keyWidth: Dp,
     val keyHeight: Dp,
     val keyHeightLow: Dp,
-    val gap: Dp,
+    val gap: Dp
 )
 
 private val LocalRemoteMetrics = compositionLocalOf {
@@ -72,11 +72,11 @@ fun VirtualRemoteScreen(
     layout: VirtualRemoteLayout,
     playButtonAsPlayPause: Boolean,
     onKey: (keyCode: Int, longClick: Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     BoxWithConstraints(
         modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         val horizontalPad = 16.dp
         val available = maxWidth - horizontalPad * 2
@@ -90,7 +90,7 @@ fun VirtualRemoteScreen(
             keyWidth = keyWidth,
             keyHeight = keyHeight,
             keyHeightLow = keyHeightLow,
-            gap = gap,
+            gap = gap
         )
         val padMaxWidth = keyWidth * 5 + gap * 4
 
@@ -102,14 +102,16 @@ fun VirtualRemoteScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = horizontalPad, vertical = 12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(metrics.gap * 2 + 2.dp),
+                verticalArrangement = Arrangement.spacedBy(metrics.gap * 2 + 2.dp)
             ) {
                 when (layout) {
                     VirtualRemoteLayout.QuickZap -> QuickZapPad(onKey = onKey)
+
                     VirtualRemoteLayout.Simple -> SimplePad(onKey = onKey)
+
                     VirtualRemoteLayout.Full -> FullPad(
                         playButtonAsPlayPause = playButtonAsPlayPause,
-                        onKey = onKey,
+                        onKey = onKey
                     )
                 }
             }
@@ -118,10 +120,7 @@ fun VirtualRemoteScreen(
 }
 
 @Composable
-private fun FullPad(
-    playButtonAsPlayPause: Boolean,
-    onKey: (Int, Boolean) -> Unit,
-) {
+private fun FullPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -> Unit) {
     NumberVolumeBouquetPad(onKey = onKey)
     ColorKeysRow(onKey = onKey)
     NavigationPad(onKey = onKey)
@@ -156,7 +155,13 @@ private fun QuickZapPad(onKey: (Int, Boolean) -> Unit) {
             RemoteKey(label = "B+", keyCode = Remote.KEY_BOUP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "B-", keyCode = Remote.KEY_BOUM, onKey = onKey, container = KeyLight)
         }
-        RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = m.keyHeightLow)
+        RemoteKey(
+            label = "PWR",
+            keyCode = Remote.KEY_POWER,
+            onKey = onKey,
+            container = KeyRed,
+            height = m.keyHeightLow
+        )
     }
     NavigationPad(onKey = onKey, big = true)
     ColorKeysRow(onKey = onKey, height = m.keyHeightLow)
@@ -167,7 +172,12 @@ private fun NumberVolumeBouquetPad(onKey: (Int, Boolean) -> Unit) {
     val m = LocalRemoteMetrics.current
     Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
         Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
-            RemoteKey(label = "Help", keyCode = Remote.KEY_HELP, onKey = onKey, height = m.keyHeightLow)
+            RemoteKey(
+                label = "Help",
+                keyCode = Remote.KEY_HELP,
+                onKey = onKey,
+                height = m.keyHeightLow
+            )
             RemoteKey(label = "V+", keyCode = Remote.KEY_VOLP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "V-", keyCode = Remote.KEY_VOLM, onKey = onKey, container = KeyLight)
         }
@@ -194,7 +204,13 @@ private fun NumberVolumeBouquetPad(onKey: (Int, Boolean) -> Unit) {
             }
         }
         Column(verticalArrangement = Arrangement.spacedBy(m.gap)) {
-            RemoteKey(label = "PWR", keyCode = Remote.KEY_POWER, onKey = onKey, container = KeyRed, height = m.keyHeightLow)
+            RemoteKey(
+                label = "PWR",
+                keyCode = Remote.KEY_POWER,
+                onKey = onKey,
+                container = KeyRed,
+                height = m.keyHeightLow
+            )
             RemoteKey(label = "B+", keyCode = Remote.KEY_BOUP, onKey = onKey, container = KeyLight)
             RemoteKey(label = "B-", keyCode = Remote.KEY_BOUM, onKey = onKey, container = KeyLight)
         }
@@ -206,10 +222,39 @@ private fun ColorKeysRow(onKey: (Int, Boolean) -> Unit, height: Dp? = null) {
     val m = LocalRemoteMetrics.current
     val rowHeight = height ?: m.keyHeightLow
     Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
-        RemoteKey(label = "Red", keyCode = Remote.KEY_RED, onKey = onKey, container = KeyRed, height = rowHeight, showLabel = false)
-        RemoteKey(label = "Green", keyCode = Remote.KEY_GREEN, onKey = onKey, container = KeyGreen, height = rowHeight, showLabel = false)
-        RemoteKey(label = "Yellow", keyCode = Remote.KEY_YELLOW, onKey = onKey, container = KeyYellow, height = rowHeight, showLabel = false, contentColor = KeyOnYellow)
-        RemoteKey(label = "Blue", keyCode = Remote.KEY_BLUE, onKey = onKey, container = KeyBlue, height = rowHeight, showLabel = false)
+        RemoteKey(
+            label = "Red",
+            keyCode = Remote.KEY_RED,
+            onKey = onKey,
+            container = KeyRed,
+            height = rowHeight,
+            showLabel = false
+        )
+        RemoteKey(
+            label = "Green",
+            keyCode = Remote.KEY_GREEN,
+            onKey = onKey,
+            container = KeyGreen,
+            height = rowHeight,
+            showLabel = false
+        )
+        RemoteKey(
+            label = "Yellow",
+            keyCode = Remote.KEY_YELLOW,
+            onKey = onKey,
+            container = KeyYellow,
+            height = rowHeight,
+            showLabel = false,
+            contentColor = KeyOnYellow
+        )
+        RemoteKey(
+            label = "Blue",
+            keyCode = Remote.KEY_BLUE,
+            onKey = onKey,
+            container = KeyBlue,
+            height = rowHeight,
+            showLabel = false
+        )
     }
 }
 
@@ -219,10 +264,16 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
     val size = if (big) (m.keyWidth * 1.15f).coerceAtMost(72.dp) else m.keyWidth
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(m.gap),
+        verticalArrangement = Arrangement.spacedBy(m.gap)
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
-            RemoteKey(label = "Info", keyCode = Remote.KEY_INFO, onKey = onKey, width = size, height = size)
+            RemoteKey(
+                label = "Info",
+                keyCode = Remote.KEY_INFO,
+                onKey = onKey,
+                width = size,
+                height = size
+            )
             IconRemoteKey(
                 description = "Up",
                 keyCode = Remote.KEY_UP,
@@ -230,9 +281,15 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
                 onKey = onKey,
                 width = size,
                 height = size,
-                container = KeyLight,
+                container = KeyLight
             )
-            RemoteKey(label = "Menu", keyCode = Remote.KEY_MENU, onKey = onKey, width = size, height = size)
+            RemoteKey(
+                label = "Menu",
+                keyCode = Remote.KEY_MENU,
+                onKey = onKey,
+                width = size,
+                height = size
+            )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
             IconRemoteKey(
@@ -242,9 +299,16 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
                 onKey = onKey,
                 width = size,
                 height = size,
-                container = KeyLight,
+                container = KeyLight
             )
-            RemoteKey(label = "OK", keyCode = Remote.KEY_OK, onKey = onKey, width = size, height = size, container = KeyLight)
+            RemoteKey(
+                label = "OK",
+                keyCode = Remote.KEY_OK,
+                onKey = onKey,
+                width = size,
+                height = size,
+                container = KeyLight
+            )
             IconRemoteKey(
                 description = "Right",
                 keyCode = Remote.KEY_RIGHT,
@@ -252,11 +316,17 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
                 onKey = onKey,
                 width = size,
                 height = size,
-                container = KeyLight,
+                container = KeyLight
             )
         }
         Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
-            RemoteKey(label = "Audio", keyCode = Remote.KEY_AUDIO, onKey = onKey, width = size, height = size)
+            RemoteKey(
+                label = "Audio",
+                keyCode = Remote.KEY_AUDIO,
+                onKey = onKey,
+                width = size,
+                height = size
+            )
             IconRemoteKey(
                 description = "Down",
                 keyCode = Remote.KEY_DOWN,
@@ -264,9 +334,15 @@ private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
                 onKey = onKey,
                 width = size,
                 height = size,
-                container = KeyLight,
+                container = KeyLight
             )
-            RemoteKey(label = "PVR", keyCode = Remote.KEY_PVR, onKey = onKey, width = size, height = size)
+            RemoteKey(
+                label = "PVR",
+                keyCode = Remote.KEY_PVR,
+                onKey = onKey,
+                width = size,
+                height = size
+            )
         }
     }
 }
@@ -276,8 +352,21 @@ private fun MuteExitRow(onKey: (Int, Boolean) -> Unit) {
     val m = LocalRemoteMetrics.current
     val width = m.keyWidth * 1.7f
     Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
-        RemoteKey(label = "Mute", keyCode = Remote.KEY_MUTE, onKey = onKey, width = width, height = m.keyHeightLow)
-        RemoteKey(label = "Exit", keyCode = Remote.KEY_EXIT, onKey = onKey, width = width, height = m.keyHeightLow, container = KeyRed)
+        RemoteKey(
+            label = "Mute",
+            keyCode = Remote.KEY_MUTE,
+            onKey = onKey,
+            width = width,
+            height = m.keyHeightLow
+        )
+        RemoteKey(
+            label = "Exit",
+            keyCode = Remote.KEY_EXIT,
+            onKey = onKey,
+            width = width,
+            height = m.keyHeightLow,
+            container = KeyRed
+        )
     }
 }
 
@@ -291,7 +380,7 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
             iconRes = R.drawable.ic_media_previous_dark,
             onKey = onKey,
             width = m.keyWidth,
-            height = m.keyHeight,
+            height = m.keyHeight
         )
         if (playButtonAsPlayPause) {
             IconRemoteKey(
@@ -300,7 +389,7 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
                 iconRes = R.drawable.ic_media_play_pause_dark,
                 onKey = onKey,
                 width = m.keyWidth,
-                height = m.keyHeight,
+                height = m.keyHeight
             )
         } else {
             IconRemoteKey(
@@ -309,7 +398,7 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
                 iconRes = R.drawable.ic_media_play_dark,
                 onKey = onKey,
                 width = m.keyWidth,
-                height = m.keyHeight,
+                height = m.keyHeight
             )
         }
         IconRemoteKey(
@@ -318,7 +407,7 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
             iconRes = R.drawable.ic_media_stop_dark,
             onKey = onKey,
             width = m.keyWidth,
-            height = m.keyHeight,
+            height = m.keyHeight
         )
         IconRemoteKey(
             description = "Forward",
@@ -326,7 +415,7 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
             iconRes = R.drawable.ic_media_next_dark,
             onKey = onKey,
             width = m.keyWidth,
-            height = m.keyHeight,
+            height = m.keyHeight
         )
     }
 }
@@ -335,16 +424,34 @@ private fun TransportPad(playButtonAsPlayPause: Boolean, onKey: (Int, Boolean) -
 private fun SourcePad(onKey: (Int, Boolean) -> Unit) {
     val m = LocalRemoteMetrics.current
     Row(horizontalArrangement = Arrangement.spacedBy(m.gap)) {
-        RemoteKey(label = "TV", keyCode = Remote.KEY_TV, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
-        RemoteKey(label = "RADIO", keyCode = Remote.KEY_RADIO, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
-        RemoteKey(label = "TEXT", keyCode = Remote.KEY_TEXT, onKey = onKey, width = m.keyWidth, height = m.keyHeight)
+        RemoteKey(
+            label = "TV",
+            keyCode = Remote.KEY_TV,
+            onKey = onKey,
+            width = m.keyWidth,
+            height = m.keyHeight
+        )
+        RemoteKey(
+            label = "RADIO",
+            keyCode = Remote.KEY_RADIO,
+            onKey = onKey,
+            width = m.keyWidth,
+            height = m.keyHeight
+        )
+        RemoteKey(
+            label = "TEXT",
+            keyCode = Remote.KEY_TEXT,
+            onKey = onKey,
+            width = m.keyWidth,
+            height = m.keyHeight
+        )
         RemoteKey(
             label = "REC",
             keyCode = Remote.KEY_RECORD,
             onKey = onKey,
             width = m.keyWidth,
             height = m.keyHeight,
-            contentColor = KeyRed,
+            contentColor = KeyRed
         )
     }
 }
@@ -355,7 +462,7 @@ private fun DigitKey(label: String, keyCode: Int, onKey: (Int, Boolean) -> Unit)
         label = label,
         keyCode = keyCode,
         onKey = onKey,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Bold
     )
 }
 
@@ -371,7 +478,7 @@ private fun RemoteKey(
     container: Color = KeyDark,
     contentColor: Color = KeyOnDark,
     showLabel: Boolean = true,
-    fontWeight: FontWeight = FontWeight.Normal,
+    fontWeight: FontWeight = FontWeight.Normal
 ) {
     val m = LocalRemoteMetrics.current
     val keyWidth = width ?: m.keyWidth
@@ -385,9 +492,9 @@ private fun RemoteKey(
             .semantics { contentDescription = label }
             .combinedClickable(
                 onClick = { onKey(keyCode, false) },
-                onLongClick = { onKey(keyCode, true) },
+                onLongClick = { onKey(keyCode, true) }
             ),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         if (showLabel) {
             Text(
@@ -396,7 +503,7 @@ private fun RemoteKey(
                 fontSize = 12.sp,
                 fontWeight = fontWeight,
                 textAlign = TextAlign.Center,
-                maxLines = 1,
+                maxLines = 1
             )
         }
     }
@@ -411,7 +518,7 @@ private fun IconRemoteKey(
     onKey: (Int, Boolean) -> Unit,
     width: Dp,
     height: Dp,
-    container: Color = KeyDark,
+    container: Color = KeyDark
 ) {
     Box(
         modifier = Modifier
@@ -422,9 +529,9 @@ private fun IconRemoteKey(
             .semantics { contentDescription = description }
             .combinedClickable(
                 onClick = { onKey(keyCode, false) },
-                onLongClick = { onKey(keyCode, true) },
+                onLongClick = { onKey(keyCode, true) }
             ),
-        contentAlignment = Alignment.Center,
+        contentAlignment = Alignment.Center
     ) {
         // layer-list / rotate drawables are not VectorDrawables; painterResource cannot load them.
         AndroidView(
@@ -434,7 +541,7 @@ private fun IconRemoteKey(
                     setImageResource(iconRes)
                     ImageViewCompat.setImageTintList(
                         this,
-                        ColorStateList.valueOf(KeyOnDark.toArgb()),
+                        ColorStateList.valueOf(KeyOnDark.toArgb())
                     )
                 }
             },
@@ -442,10 +549,10 @@ private fun IconRemoteKey(
                 imageView.setImageResource(iconRes)
                 ImageViewCompat.setImageTintList(
                     imageView,
-                    ColorStateList.valueOf(KeyOnDark.toArgb()),
+                    ColorStateList.valueOf(KeyOnDark.toArgb())
                 )
             },
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp)
         )
     }
 }

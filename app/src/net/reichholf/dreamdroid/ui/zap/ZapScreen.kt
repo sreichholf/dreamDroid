@@ -51,7 +51,7 @@ fun ZapScreen(
     modifier: Modifier = Modifier,
     gridState: LazyGridState = rememberLazyGridState(),
     scrollEpoch: Int = 0,
-    emptyMessage: String? = null,
+    emptyMessage: String? = null
 ) {
     LaunchedEffect(scrollEpoch) {
         if (scrollEpoch > 0) {
@@ -62,7 +62,7 @@ fun ZapScreen(
     if (items.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             if (emptyMessage != null) {
                 Text(
@@ -70,7 +70,7 @@ fun ZapScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(24.dp)
                 )
             }
         }
@@ -88,13 +88,13 @@ fun ZapScreen(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(items, key = { "${it.reference}:${it.name}" }) { service ->
             ZapServiceCard(
                 service = service,
                 onClick = { onItemClick(service) },
-                onLongClick = { onItemLongClick(service) },
+                onLongClick = { onItemLongClick(service) }
             )
         }
     }
@@ -102,11 +102,7 @@ fun ZapScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ZapServiceCard(
-    service: Service,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-) {
+private fun ZapServiceCard(service: Service, onClick: () -> Unit, onLongClick: () -> Unit) {
     var piconLoaded by remember(service.reference, service.name) { mutableStateOf(false) }
     val context = LocalContext.current
 
@@ -114,7 +110,7 @@ private fun ZapServiceCard(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9f)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         AndroidView(
             factory = { ctx ->
@@ -139,20 +135,20 @@ private fun ZapServiceCard(
                             Log.w(TAG, "Error loading picon for ${service.name}")
                             piconLoaded = false
                         }
-                    },
+                    }
                 )
-            },
+            }
         )
         if (!piconLoaded) {
             Card(
                 modifier = Modifier.fillMaxSize(),
                 colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                ),
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
             ) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center,
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = service.name,
@@ -161,7 +157,7 @@ private fun ZapServiceCard(
                         textAlign = TextAlign.Center,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.padding(8.dp),
+                        modifier = Modifier.padding(8.dp)
                     )
                 }
             }

@@ -27,10 +27,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
  * Result Intent still carries [KEY_BOUQUET] ExtendedHashMap for Zap / EPG consumers.
  */
 @Composable
-fun PickServiceDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun PickServiceDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { PickServiceListState() }
@@ -88,7 +85,7 @@ fun PickServiceDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         PickServiceScreen(
             items = listState.items,
@@ -98,7 +95,7 @@ fun PickServiceDestination(
                     putExtra(KEY_BOUQUET, ZapListMapper.toBouquetMap(service))
                 }
                 hostFragment.deliverPickResult(Activity.RESULT_OK, data)
-            },
+            }
         )
     }
 }

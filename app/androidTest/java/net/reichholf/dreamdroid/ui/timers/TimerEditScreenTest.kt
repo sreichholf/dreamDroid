@@ -36,7 +36,7 @@ class TimerEditScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -47,7 +47,7 @@ class TimerEditScreenTest {
                 sampleTimer(),
                 afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
                 locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None",
+                repeatedLabel = "None"
             )
         }
         var saveClicks = 0
@@ -63,7 +63,7 @@ class TimerEditScreenTest {
                     onPickEndTime = {},
                     onPickRepeated = {},
                     onPickService = {},
-                    onPickTags = {},
+                    onPickTags = {}
                 )
             }
         }
@@ -88,7 +88,7 @@ class TimerEditScreenTest {
                 timer,
                 afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
                 locations = listOf("/hdd/movie/"),
-                repeatedLabel = "Mo, Tu",
+                repeatedLabel = "Mo, Tu"
             )
         }
         composeRule.setContent {
@@ -103,7 +103,7 @@ class TimerEditScreenTest {
                     onPickEndTime = {},
                     onPickRepeated = {},
                     onPickService = {},
-                    onPickTags = {},
+                    onPickTags = {}
                 )
             }
         }
@@ -124,7 +124,7 @@ class TimerEditScreenTest {
                 timer,
                 afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
                 locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None",
+                repeatedLabel = "None"
             )
         }
         state.name = "Edited"
@@ -157,7 +157,7 @@ class TimerEditScreenTest {
         session.onActivityResult(
             Statics.REQUEST_PICK_SERVICE,
             Activity.RESULT_OK,
-            Intent().putExtra(NavExtras.DATA, picked),
+            Intent().putExtra(NavExtras.DATA, picked)
         )
         session.reload()
 
@@ -197,7 +197,7 @@ class TimerEditScreenTest {
             timerOld = null,
             isCreate = true,
             selectedTags = ArrayList(),
-            checkedDays = BooleanArray(7),
+            checkedDays = BooleanArray(7)
         )
         session.context = InstrumentationRegistry.getInstrumentation().targetContext
         return session
@@ -215,7 +215,7 @@ class TimerEditScreenTest {
             onPickEndTime = {},
             onPickRepeated = {},
             onPickService = {},
-            onPickTags = {},
+            onPickTags = {}
         )
     }
 

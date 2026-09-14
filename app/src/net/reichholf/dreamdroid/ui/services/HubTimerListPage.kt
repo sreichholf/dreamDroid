@@ -62,7 +62,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 fun HubTimerListPage(
     hostFragment: PhoneNavHostFragment,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
@@ -128,13 +128,13 @@ fun HubTimerListPage(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         Box(Modifier.fillMaxSize()) {
             TimerListScreen(
                 items = listState.items,
                 onItemClick = { session.onItemClick(it) },
-                onItemLongClick = { session.onItemLongClick(it) },
+                onItemLongClick = { session.onItemLongClick(it) }
             )
             val message = emptyMessage
             if (message != null && listState.items.isEmpty()) {
@@ -142,7 +142,7 @@ fun HubTimerListPage(
                     text = message,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.Center),
+                    modifier = Modifier.align(Alignment.Center)
                 )
             }
         }
@@ -156,7 +156,7 @@ fun HubTimerListPage(
             onConfirm = {
                 session.confirmDeleteSelected()
                 showDeleteConfirm = null
-            },
+            }
         )
     }
 
@@ -327,9 +327,10 @@ class HubTimerListSession :
         progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
         val params = Timer.getDeleteParams(timer)
         mutateJob?.cancel()
-        mutateJob = host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, http ->
-            onSimpleResult(result, http)
-        }
+        mutateJob =
+            host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, http ->
+                onSimpleResult(result, http)
+            }
         onMutateJob?.invoke(mutateJob)
     }
 
@@ -345,9 +346,10 @@ class HubTimerListSession :
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         val params = Timer.getSaveParams(timerNew, timer)
         mutateJob?.cancel()
-        mutateJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, http ->
-            onSimpleResult(result, http)
-        }
+        mutateJob =
+            host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, http ->
+                onSimpleResult(result, http)
+            }
         onMutateJob?.invoke(mutateJob)
     }
 
@@ -358,7 +360,7 @@ class HubTimerListSession :
         mutateJob?.cancel()
         mutateJob = host.launchSimpleResultLoad(
             TimerCleanupRequestHandler(),
-            emptyList(),
+            emptyList()
         ) { _, result, http ->
             onSimpleResult(result, http)
         }
@@ -367,7 +369,7 @@ class HubTimerListSession :
 
     private fun onSimpleResult(
         result: ExtendedHashMap,
-        http: net.reichholf.dreamdroid.helpers.SimpleHttpClient,
+        http: net.reichholf.dreamdroid.helpers.SimpleHttpClient
     ) {
         dismissProgress()
         val ctx = context ?: return
@@ -381,26 +383,28 @@ class HubTimerListSession :
         reload()
     }
 
-    private fun onItemSelected(id: Int): Boolean {
-        return when (id) {
-            Statics.ITEM_NEW_TIMER -> {
-                createTimer()
-                true
-            }
-            Statics.ITEM_CLEANUP -> {
-                cleanupTimerList()
-                true
-            }
-            Statics.ITEM_TOGGLE_ENABLED -> {
-                toggleTimerEnabled(selected)
-                true
-            }
-            Statics.ITEM_DELETE -> {
-                deleteTimerConfirm()
-                true
-            }
-            else -> false
+    private fun onItemSelected(id: Int): Boolean = when (id) {
+        Statics.ITEM_NEW_TIMER -> {
+            createTimer()
+            true
         }
+
+        Statics.ITEM_CLEANUP -> {
+            cleanupTimerList()
+            true
+        }
+
+        Statics.ITEM_TOGGLE_ENABLED -> {
+            toggleTimerEnabled(selected)
+            true
+        }
+
+        Statics.ITEM_DELETE -> {
+            deleteTimerConfirm()
+            true
+        }
+
+        else -> false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -417,7 +421,5 @@ class HubTimerListSession :
         menuInflater.inflate(R.menu.timerlist, menu)
     }
 
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        return onItemSelected(menuItem.itemId)
-    }
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemSelected(menuItem.itemId)
 }

@@ -36,7 +36,7 @@ class DrawerDialogHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -49,7 +49,7 @@ class DrawerDialogHostTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = "home",
+                    startDestination = "home"
                 ) {
                     composable("home") {
                         LaunchedEffect(Unit) {
@@ -64,7 +64,7 @@ class DrawerDialogHostTest {
                             initialEnabled = true,
                             initialAction = SleepTimer.ACTION_STANDBY,
                             onDismiss = { navController.popBackStack() },
-                            onSave = { _, _, _ -> },
+                            onSave = { _, _, _ -> }
                         )
                     }
                 }
@@ -77,7 +77,7 @@ class DrawerDialogHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -89,10 +89,10 @@ class DrawerDialogHostTest {
                 net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckScreen(
                     ui = net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi.Failed(
                         title = "user@box:80",
-                        message = "Cannot reach box",
+                        message = "Cannot reach box"
                     ),
                     onRecheck = {},
-                    onProfiles = {},
+                    onProfiles = {}
                 )
             }
         }
@@ -102,4 +102,3 @@ class DrawerDialogHostTest {
         composeRule.onNodeWithText("Profiles").assertIsDisplayed()
     }
 }
-

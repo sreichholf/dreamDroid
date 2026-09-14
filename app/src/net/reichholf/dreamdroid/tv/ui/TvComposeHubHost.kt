@@ -78,7 +78,8 @@ object TvComposeHubHost {
 
     /** Same bouquet query formerly on RootBrowseFragment.BOUQUETS_TV. */
     const val BOUQUETS_TV: String =
-        """1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet"""
+        "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || " +
+            "(type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet"
 
     fun movieHeaderId(dirname: String): String = HEADER_MOVIE_PREFIX + dirname
 
@@ -87,18 +88,17 @@ object TvComposeHubHost {
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
 
-    fun preferenceTypeForKind(kind: BrowseItem.Kind): String? =
-        when (kind) {
-            BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
-            BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
-            BrowseItem.Kind.Reload -> null
-        }
+    fun preferenceTypeForKind(kind: BrowseItem.Kind): String? = when (kind) {
+        BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
+        BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
+        BrowseItem.Kind.Reload -> null
+    }
 
     fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
         val type = preferenceTypeForKind(kind) ?: return null
         return Intent(context, PreferenceActivity::class.java).putExtra(
             PreferenceActivity.KEY_PREFS_TYPE,
-            type,
+            type
         )
     }
 
@@ -111,9 +111,8 @@ object TvComposeHubHost {
     fun shouldShowBrowseError(
         selectedHeaderId: String,
         loading: Boolean,
-        errorText: String?,
-    ): Boolean =
-        !loading && errorText != null && selectedHeaderId != HEADER_SETTINGS_ID
+        errorText: String?
+    ): Boolean = !loading && errorText != null && selectedHeaderId != HEADER_SETTINGS_ID
 
     fun install(activity: ComponentActivity) {
         activity.setContent {
@@ -122,15 +121,9 @@ object TvComposeHubHost {
     }
 }
 
-data class HubNavHeader(
-    val id: String,
-    val title: String,
-)
+data class HubNavHeader(val id: String, val title: String)
 
-data class HubBouquetRow(
-    val bouquet: Service,
-    val services: List<ServiceNowNext>,
-)
+data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext>)
 
 @Composable
 fun ComposeTvHubApp(activity: ComponentActivity) {
@@ -146,7 +139,7 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     var movieError by remember { mutableStateOf<String?>(null) }
     var selectedHeaderId by remember { mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID) }
     val preferenceLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
+        ActivityResultContracts.StartActivityForResult()
     ) { result ->
         TvComposeHubHost.applyPreferenceActivityResult(result.resultCode) {
             reloadToken++
@@ -173,7 +166,8 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
 
     // Leanback parity: load movies for a location only when its header is selected.
     LaunchedEffect(selectedHeaderId, reloadToken) {
-        val dirname = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return@LaunchedEffect
+        val dirname =
+            TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return@LaunchedEffect
         if (dirname in moviesByLocation) {
             return@LaunchedEffect
         }
@@ -207,7 +201,7 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     val settingsItems = listOf(
         BrowseItem.Kind.Reload to stringResource(R.string.reload),
         BrowseItem.Kind.Preferences to stringResource(R.string.settings),
-        BrowseItem.Kind.Profile to stringResource(R.string.profile),
+        BrowseItem.Kind.Profile to stringResource(R.string.profile)
     )
 
     ComposeTvHubChrome(
@@ -218,6 +212,7 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         onSettingsClick = { kind ->
             when (kind) {
                 BrowseItem.Kind.Reload -> reloadToken++
+
                 BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
                     val intent = TvComposeHubHost.preferenceIntent(activity, kind)
                     if (intent != null) {
@@ -236,14 +231,14 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         },
         onMovieClick = { movie ->
             openMovieStream(activity, movie)
-        },
+        }
     )
 }
 
 private data class HubLoadResult(
     val rows: List<HubBouquetRow>,
     val locations: List<String>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -288,7 +283,7 @@ private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
 private fun openServiceStream(
     activity: ComponentActivity,
     service: ServiceNowNext,
-    bouquetRef: String?,
+    bouquetRef: String?
 ) {
     val map = serviceNowNextToExtendedHashMap(service)
     val title = service.now?.title?.takeIf { it.isNotEmpty() } ?: service.serviceName
@@ -298,8 +293,8 @@ private fun openServiceStream(
             service.serviceReference,
             title,
             bouquetRef,
-            map,
-        ),
+            map
+        )
     )
 }
 
@@ -311,8 +306,8 @@ private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
             movie.reference,
             movie.fileName,
             movie.title,
-            map,
-        ),
+            map
+        )
     )
 }
 
@@ -332,7 +327,7 @@ fun ComposeTvHubChrome(
     movieLoading: Boolean = false,
     errorText: String? = null,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
-    onMovieClick: (Movie) -> Unit = {},
+    onMovieClick: (Movie) -> Unit = {}
 ) {
     MaterialTheme {
         NavigationDrawer(
@@ -342,7 +337,7 @@ fun ComposeTvHubChrome(
             drawerContent = {
                 Column(
                     modifier = Modifier.padding(vertical = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     headers.forEach { header ->
                         NavigationDrawerItem(
@@ -352,7 +347,7 @@ fun ComposeTvHubChrome(
                                 Box(
                                     modifier = Modifier
                                         .width(24.dp)
-                                        .height(24.dp),
+                                        .height(24.dp)
                                 )
                             },
                             modifier = Modifier
@@ -361,13 +356,13 @@ fun ComposeTvHubChrome(
                                     if (focusState.isFocused) {
                                         onHeaderSelected(header.id)
                                     }
-                                },
+                                }
                         ) {
                             Text(text = header.title)
                         }
                     }
                 }
-            },
+            }
         ) {
             LazyColumn(
                 modifier = Modifier
@@ -375,14 +370,14 @@ fun ComposeTvHubChrome(
                     .padding(24.dp)
                     .testTag("compose_tv_hub_rows"),
                 verticalArrangement = Arrangement.spacedBy(24.dp),
-                contentPadding = PaddingValues(bottom = 48.dp),
+                contentPadding = PaddingValues(bottom = 48.dp)
             ) {
                 item {
                     val title = headers.firstOrNull { it.id == selectedHeaderId }?.title.orEmpty()
                     Text(
                         text = title,
                         style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 12.dp),
+                        modifier = Modifier.padding(bottom = 12.dp)
                     )
                 }
                 if (loading) {
@@ -390,7 +385,7 @@ fun ComposeTvHubChrome(
                         Text(
                             text = stringResource(R.string.loading),
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.testTag("hub_loading"),
+                            modifier = Modifier.testTag("hub_loading")
                         )
                     }
                 }
@@ -398,14 +393,14 @@ fun ComposeTvHubChrome(
                     TvComposeHubHost.shouldShowBrowseError(
                         selectedHeaderId,
                         loading,
-                        errorText,
+                        errorText
                     )
                 ) {
                     item {
                         Text(
                             text = errorText.orEmpty(),
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.testTag("hub_error"),
+                            modifier = Modifier.testTag("hub_error")
                         )
                     }
                 }
@@ -413,7 +408,7 @@ fun ComposeTvHubChrome(
                     item {
                         HubSettingsRow(
                             settingsItems = settingsItems,
-                            onSettingsClick = onSettingsClick,
+                            onSettingsClick = onSettingsClick
                         )
                     }
                 } else {
@@ -426,7 +421,7 @@ fun ComposeTvHubChrome(
                             HubServiceRow(
                                 bouquetRef = selectedBouquet.bouquet.reference,
                                 services = selectedBouquet.services,
-                                onServiceClick = onServiceClick,
+                                onServiceClick = onServiceClick
                             )
                         }
                     } else if (movieDir != null) {
@@ -435,7 +430,7 @@ fun ComposeTvHubChrome(
                                 Text(
                                     text = stringResource(R.string.loading),
                                     style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.testTag("hub_movie_loading"),
+                                    modifier = Modifier.testTag("hub_movie_loading")
                                 )
                             }
                         } else {
@@ -443,7 +438,7 @@ fun ComposeTvHubChrome(
                                 HubMovieRow(
                                     dirname = movieDir,
                                     movies = moviesByLocation[movieDir].orEmpty(),
-                                    onMovieClick = onMovieClick,
+                                    onMovieClick = onMovieClick
                                 )
                             }
                         }
@@ -464,13 +459,13 @@ fun ComposeTvHubChrome(
 fun HubSettingsRow(
     settingsItems: List<Pair<BrowseItem.Kind, String>>,
     onSettingsClick: (BrowseItem.Kind) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
-            .testTag("hub_settings_row"),
+            .testTag("hub_settings_row")
     ) {
         items(settingsItems, key = { it.first.name }) { (kind, title) ->
             Surface(
@@ -479,13 +474,13 @@ fun HubSettingsRow(
                     .width(180.dp)
                     .height(100.dp)
                     .testTag("hub_settings_${kind.name.lowercase()}"),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    contentAlignment = Alignment.CenterStart,
+                    contentAlignment = Alignment.CenterStart
                 ) {
                     Text(text = title, style = MaterialTheme.typography.titleMedium)
                 }
@@ -501,18 +496,18 @@ fun HubServiceRow(
     bouquetRef: String,
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
-            .testTag("hub_service_row"),
+            .testTag("hub_service_row")
     ) {
         items(services, key = { it.serviceReference }) { service ->
             HubServiceCard(
                 service = service,
-                onClick = { onServiceClick(service, bouquetRef) },
+                onClick = { onServiceClick(service, bouquetRef) }
             )
         }
     }
@@ -520,10 +515,7 @@ fun HubServiceRow(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubServiceCard(
-    service: ServiceNowNext,
-    onClick: () -> Unit,
-) {
+private fun HubServiceCard(service: ServiceNowNext, onClick: () -> Unit) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
     val now = service.now
@@ -550,7 +542,7 @@ private fun HubServiceCard(
         modifier = Modifier
             .width(200.dp)
             .testTag("hub_service_card"),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {
         Column {
             AndroidView(
@@ -560,7 +552,7 @@ private fun HubServiceCard(
                         adjustViewBounds = true
                         layoutParams = ViewGroup.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
                         )
                     }
                 },
@@ -571,13 +563,13 @@ private fun HubServiceCard(
                         service.serviceReference,
                         service.serviceName,
                         "compose_tv_hub",
-                        null,
+                        null
                     )
                 },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)
-                    .testTag("hub_service_picon"),
+                    .testTag("hub_service_picon")
             )
             ImageCardContent(
                 title = title,
@@ -585,7 +577,7 @@ private fun HubServiceCard(
                 nextStart = nextStart,
                 nextTitle = nextTitle,
                 contentExpanded = false,
-                imageWidthPx = imageWidthPx,
+                imageWidthPx = imageWidthPx
             )
         }
     }
@@ -598,18 +590,18 @@ fun HubMovieRow(
     dirname: String,
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
-            .testTag("hub_movie_row"),
+            .testTag("hub_movie_row")
     ) {
         items(movies, key = { it.reference + "|" + it.fileName }) { movie ->
             HubMovieCard(
                 movie = movie,
-                onClick = { onMovieClick(movie) },
+                onClick = { onMovieClick(movie) }
             )
         }
     }
@@ -617,10 +609,7 @@ fun HubMovieRow(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubMovieCard(
-    movie: Movie,
-    onClick: () -> Unit,
-) {
+private fun HubMovieCard(movie: Movie, onClick: () -> Unit) {
     val descriptionEx = movie.descriptionExtended.replace("\\n", "\n")
     val content = if (descriptionEx.isNotEmpty()) descriptionEx else movie.description
     Surface(
@@ -629,18 +618,18 @@ private fun HubMovieCard(
             .width(200.dp)
             .height(160.dp)
             .testTag("hub_movie_card"),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(12.dp),
+                .padding(12.dp)
         ) {
             Text(
                 text = movie.title,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
             )
             Text(
                 text = content,
@@ -648,7 +637,7 @@ private fun HubMovieCard(
                 maxLines = 6,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp),
+                    .padding(top = 4.dp)
             )
         }
     }
@@ -661,7 +650,7 @@ private fun HubPlaceholderRow() {
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .testTag("hub_placeholder_row"),
+            .testTag("hub_placeholder_row")
     ) {
         items(3) { index ->
             Surface(
@@ -670,13 +659,13 @@ private fun HubPlaceholderRow() {
                     .width(180.dp)
                     .height(100.dp)
                     .testTag("hub_placeholder_card_$index"),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
-                    contentAlignment = Alignment.CenterStart,
+                    contentAlignment = Alignment.CenterStart
                 ) {
                     Text(text = "…", style = MaterialTheme.typography.titleMedium)
                 }
@@ -691,15 +680,15 @@ fun ComposeTvHubStub() {
     ComposeTvHubChrome(
         headers = listOf(
             HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-            HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+            HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
         ),
         selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
         onHeaderSelected = {},
         settingsItems = listOf(
             BrowseItem.Kind.Reload to "Reload",
             BrowseItem.Kind.Preferences to "Settings",
-            BrowseItem.Kind.Profile to "Profile",
+            BrowseItem.Kind.Profile to "Profile"
         ),
-        onSettingsClick = {},
+        onSettingsClick = {}
     )
 }

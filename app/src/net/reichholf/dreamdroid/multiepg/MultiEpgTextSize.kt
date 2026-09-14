@@ -9,19 +9,15 @@ enum class MultiEpgTextSize(
     val prefValue: String,
     private val rowHeightDp: Float,
     private val clockDp: Float,
-    val channelWidthDp: Float,
+    val channelWidthDp: Float
 ) {
     Compact("compact", 36f, 12f, 100f),
-    Comfortable("comfortable", 48f, 16f, 112f),
+    Comfortable("comfortable", 48f, 16f, 112f)
     ;
 
-    fun rowHeightDp(fontScale: Float): Float {
-        return rowHeightDp * fontScale.coerceAtLeast(1f)
-    }
+    fun rowHeightDp(fontScale: Float): Float = rowHeightDp * fontScale.coerceAtLeast(1f)
 
-    fun clockSizeDp(fontScale: Float): Float {
-        return clockDp * fontScale.coerceAtLeast(1f)
-    }
+    fun clockSizeDp(fontScale: Float): Float = clockDp * fontScale.coerceAtLeast(1f)
 
     companion object {
         val DEFAULT: MultiEpgTextSize = Comfortable

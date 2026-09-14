@@ -22,7 +22,7 @@ fun ComposeView.bindTimerListScreen(
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
     onItemClick: (TimerListItem) -> Unit,
-    onItemLongClick: (TimerListItem) -> Unit,
+    onItemLongClick: (TimerListItem) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -30,12 +30,12 @@ fun ComposeView.bindTimerListScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 TimerListScreen(
                     items = state.items,
                     onItemClick = onItemClick,
-                    onItemLongClick = onItemLongClick,
+                    onItemLongClick = onItemLongClick
                 )
             }
         }

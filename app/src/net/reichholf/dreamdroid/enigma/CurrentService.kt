@@ -10,7 +10,6 @@ data class CurrentService(
     val now: Event? = null,
     val next: Event? = null
 ) : Serializable {
-    fun isEmpty(): Boolean {
-        return service.reference.isEmpty() && service.name.isEmpty() && now == null && next == null
-    }
+    fun isEmpty(): Boolean =
+        service.reference.isEmpty() && service.name.isEmpty() && now == null && next == null
 }

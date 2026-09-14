@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 data class EventListLoadResult(
     val success: Boolean,
     val events: List<Event>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -23,7 +23,7 @@ data class EventListLoadResult(
 suspend fun loadEventList(
     context: Context,
     params: List<NameValuePair>,
-    uri: String = URIStore.EPG_SERVICE,
+    uri: String = URIStore.EPG_SERVICE
 ): EventListLoadResult {
     val http = SimpleHttpClient.getInstance()
     val fetched = EnigmaClient(http).getEvents(params, uri)
@@ -43,7 +43,7 @@ suspend fun loadEventList(
 fun Fragment.launchEventListLoad(
     params: List<NameValuePair>,
     uri: String = URIStore.EPG_SERVICE,
-    onResult: (success: Boolean, events: List<Event>, errorText: String?) -> Unit,
+    onResult: (success: Boolean, events: List<Event>, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val result = loadEventList(requireContext(), params, uri)

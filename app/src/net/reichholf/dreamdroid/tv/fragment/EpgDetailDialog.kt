@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.setViewTreeLifecycleOwner
 import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import androidx.fragment.app.DialogFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.Event as HashEvent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
@@ -43,7 +43,7 @@ class EpgDetailDialog : DialogFragment() {
         super.onStart()
         dialog?.window?.setLayout(
             ViewGroup.LayoutParams.MATCH_PARENT,
-            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
         )
     }
 
@@ -72,18 +72,18 @@ class EpgDetailDialog : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
+        savedInstanceState: Bundle?
     ): View? {
         val content = detailContent(getString(R.string.minutes_short)) ?: return super.onCreateView(
             inflater,
             container,
-            savedInstanceState,
+            savedInstanceState
         )
         val host = this
         return ComposeView(requireContext()).apply {
             layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
             )
             setViewTreeLifecycleOwner(host)
             setViewTreeViewModelStoreOwner(host)
@@ -99,7 +99,7 @@ class EpgDetailDialog : DialogFragment() {
                         onSimilar = {},
                         modifier = Modifier.fillMaxSize(),
                         showActions = false,
-                        bodyHeightCap = null,
+                        bodyHeightCap = null
                     )
                 }
             }

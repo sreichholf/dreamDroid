@@ -97,16 +97,15 @@ class ProfileEditState {
     }
 
     companion object {
-        fun fromProfile(profile: Profile): ProfileEditState {
-            return ProfileEditState().also { it.loadFrom(profile) }
-        }
+        fun fromProfile(profile: Profile): ProfileEditState =
+            ProfileEditState().also { it.loadFrom(profile) }
     }
 }
 
 fun ComposeView.bindProfileEditScreen(
     state: ProfileEditState,
     saveLabel: String,
-    onSave: () -> Unit,
+    onSave: () -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -114,7 +113,7 @@ fun ComposeView.bindProfileEditScreen(
             ProfileEditScreen(
                 state = state,
                 saveLabel = saveLabel,
-                onSave = onSave,
+                onSave = onSave
             )
         }
     }

@@ -4,11 +4,6 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
 import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
-import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
-import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import java.security.GeneralSecurityException
 import java.security.KeyStore
 import java.util.Arrays
@@ -16,6 +11,11 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
+import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
+import okhttp3.Credentials
+import okhttp3.OkHttpClient
+import okhttp3.Response
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -47,7 +47,7 @@ class MainActivity : FragmentActivity() {
             sc.init(
                 null,
                 arrayOf<X509TrustManager>(mTrustManager!!),
-                java.security.SecureRandom(),
+                java.security.SecureRandom()
             )
 
             HttpsURLConnection.setFollowRedirects(false)
@@ -70,8 +70,8 @@ class MainActivity : FragmentActivity() {
                 // OkHttp 4: avoid okhttp3.internal.*; match HttpsURLConnection verifier wrap.
                 .hostnameVerifier(
                     mTrustManager!!.wrapHostnameVerifier(
-                        HttpsURLConnection.getDefaultHostnameVerifier(),
-                    ),
+                        HttpsURLConnection.getDefaultHostnameVerifier()
+                    )
                 )
             val builder = Picasso.Builder(applicationContext)
             builder.downloader(OkHttp3Downloader(clientBuilder.build()))
@@ -93,7 +93,7 @@ class MainActivity : FragmentActivity() {
                 val trustManagers = trustManagerFactory.trustManagers
                 if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
                     throw IllegalStateException(
-                        "Unexpected default trust managers:" + Arrays.toString(trustManagers),
+                        "Unexpected default trust managers:" + Arrays.toString(trustManagers)
                     )
                 }
                 return trustManagers[0] as X509TrustManager

@@ -18,7 +18,7 @@ class ScreenshotScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -31,7 +31,7 @@ class ScreenshotScreenTest {
                     state = state,
                     onReload = {},
                     onShare = {},
-                    onSave = {},
+                    onSave = {}
                 )
             }
         }
@@ -50,7 +50,7 @@ class ScreenshotScreenTest {
                     state = state,
                     onReload = {},
                     onShare = {},
-                    onSave = {},
+                    onSave = {}
                 )
             }
         }

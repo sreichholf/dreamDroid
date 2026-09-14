@@ -18,77 +18,77 @@ import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
 
 @Composable
 fun TvMoviesScreen(
-	selected: TvMoviesDestination,
-	rows: List<String>,
-	selectedRow: Int,
-	error: String?,
-	onDestinationSelected: (TvMoviesDestination) -> Unit,
-	onRowSelected: (Int) -> Unit,
-	modifier: Modifier = Modifier,
+    selected: TvMoviesDestination,
+    rows: List<String>,
+    selectedRow: Int,
+    error: String?,
+    onDestinationSelected: (TvMoviesDestination) -> Unit,
+    onRowSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-	Column(modifier.fillMaxWidth()) {
-		TvMoviesHeader(
-			rows = rows,
-			selectedRow = selectedRow,
-			error = error,
-			onRowSelected = onRowSelected,
-		)
-		TvMoviesDestinationBar(
-			selected = selected,
-			onDestinationSelected = onDestinationSelected,
-		)
-	}
+    Column(modifier.fillMaxWidth()) {
+        TvMoviesHeader(
+            rows = rows,
+            selectedRow = selectedRow,
+            error = error,
+            onRowSelected = onRowSelected
+        )
+        TvMoviesDestinationBar(
+            selected = selected,
+            onDestinationSelected = onDestinationSelected
+        )
+    }
 }
 
 @Composable
 fun TvMoviesHeader(
-	rows: List<String>,
-	selectedRow: Int,
-	error: String?,
-	onRowSelected: (Int) -> Unit,
-	modifier: Modifier = Modifier,
+    rows: List<String>,
+    selectedRow: Int,
+    error: String?,
+    onRowSelected: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-	Column(modifier.fillMaxWidth()) {
-		if (!error.isNullOrBlank()) {
-			Text(
-				text = error,
-				color = MaterialTheme.colorScheme.error,
-				style = MaterialTheme.typography.bodyMedium,
-				modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-			)
-		}
-		if (rows.isNotEmpty()) {
-			val tabIndex = selectedRow.coerceIn(0, rows.lastIndex)
-			ScrollableTabRow(selectedTabIndex = tabIndex) {
-				rows.forEachIndexed { index, title ->
-					Tab(
-						selected = index == tabIndex,
-						onClick = { onRowSelected(index) },
-						text = { Text(title) },
-					)
-				}
-			}
-		}
-	}
+    Column(modifier.fillMaxWidth()) {
+        if (!error.isNullOrBlank()) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+        }
+        if (rows.isNotEmpty()) {
+            val tabIndex = selectedRow.coerceIn(0, rows.lastIndex)
+            ScrollableTabRow(selectedTabIndex = tabIndex) {
+                rows.forEachIndexed { index, title ->
+                    Tab(
+                        selected = index == tabIndex,
+                        onClick = { onRowSelected(index) },
+                        text = { Text(title) }
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
 fun TvMoviesDestinationBar(
-	selected: TvMoviesDestination,
-	onDestinationSelected: (TvMoviesDestination) -> Unit,
-	modifier: Modifier = Modifier,
+    selected: TvMoviesDestination,
+    onDestinationSelected: (TvMoviesDestination) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-	DestinationBar(
-		items = TvMoviesDestination.entries.map { dest ->
-			DestinationBarItem(
-				labelRes = destinationLabelRes(dest),
-				iconRes = destinationIcon(dest),
-			)
-		},
-		selectedIndex = selected.ordinal,
-		onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
-		modifier = modifier,
-	)
+    DestinationBar(
+        items = TvMoviesDestination.entries.map { dest ->
+            DestinationBarItem(
+                labelRes = destinationLabelRes(dest),
+                iconRes = destinationIcon(dest)
+            )
+        },
+        selectedIndex = selected.ordinal,
+        onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
+        modifier = modifier
+    )
 }
 
 /**
@@ -97,42 +97,35 @@ fun TvMoviesDestinationBar(
  * so the strip must live here — not in the hub Column.
  */
 @Composable
-fun TvMoviesShellChrome(
-	state: TvMoviesHubState,
-	modifier: Modifier = Modifier,
-) {
-	Column(modifier.fillMaxWidth()) {
-		if (state.nowPlayingStripEnabled) {
-			NowPlayingStrip(
-				label = stringResource(R.string.current_service),
-				headline = state.nowPlayingHeadline,
-				progress = state.nowPlayingProgress,
-				serviceReference = state.nowPlayingReference,
-				serviceName = state.nowPlayingName,
-				onClick = { state.onNowPlayingClick() },
-			)
-		}
-		TvMoviesDestinationBar(
-			selected = state.selected,
-			onDestinationSelected = { state.onDestinationSelected(it) },
-		)
-	}
+fun TvMoviesShellChrome(state: TvMoviesHubState, modifier: Modifier = Modifier) {
+    Column(modifier.fillMaxWidth()) {
+        if (state.nowPlayingStripEnabled) {
+            NowPlayingStrip(
+                label = stringResource(R.string.current_service),
+                headline = state.nowPlayingHeadline,
+                progress = state.nowPlayingProgress,
+                serviceReference = state.nowPlayingReference,
+                serviceName = state.nowPlayingName,
+                onClick = { state.onNowPlayingClick() }
+            )
+        }
+        TvMoviesDestinationBar(
+            selected = state.selected,
+            onDestinationSelected = { state.onDestinationSelected(it) }
+        )
+    }
 }
 
-private fun destinationIcon(dest: TvMoviesDestination): Int {
-	return when (dest) {
-		TvMoviesDestination.TV -> R.drawable.ic_menu_tv
-		TvMoviesDestination.RADIO -> R.drawable.ic_menu_radio
-		TvMoviesDestination.MOVIES -> R.drawable.ic_menu_movie
-		TvMoviesDestination.TIMER -> R.drawable.ic_menu_timer
-	}
+private fun destinationIcon(dest: TvMoviesDestination): Int = when (dest) {
+    TvMoviesDestination.TV -> R.drawable.ic_menu_tv
+    TvMoviesDestination.RADIO -> R.drawable.ic_menu_radio
+    TvMoviesDestination.MOVIES -> R.drawable.ic_menu_movie
+    TvMoviesDestination.TIMER -> R.drawable.ic_menu_timer
 }
 
-private fun destinationLabelRes(dest: TvMoviesDestination): Int {
-	return when (dest) {
-		TvMoviesDestination.TV -> R.string.tv
-		TvMoviesDestination.RADIO -> R.string.radio
-		TvMoviesDestination.MOVIES -> R.string.movies
-		TvMoviesDestination.TIMER -> R.string.timer
-	}
+private fun destinationLabelRes(dest: TvMoviesDestination): Int = when (dest) {
+    TvMoviesDestination.TV -> R.string.tv
+    TvMoviesDestination.RADIO -> R.string.radio
+    TvMoviesDestination.MOVIES -> R.string.movies
+    TvMoviesDestination.TIMER -> R.string.timer
 }

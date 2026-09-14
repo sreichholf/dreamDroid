@@ -17,8 +17,9 @@ class ServiceDirectoryTest {
     fun providersPathWithoutFlagIsDirectory() {
         assertTrue(
             Service.isDirectory(
-                "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) FROM PROVIDERS ORDER BY name",
-            ),
+                "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || " +
+                    "(type == 25) FROM PROVIDERS ORDER BY name"
+            )
         )
     }
 
@@ -26,8 +27,8 @@ class ServiceDirectoryTest {
     fun bouquetPathWithoutFlagIsDirectory() {
         assertTrue(
             Service.isDirectory(
-                "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
-            ),
+                "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
+            )
         )
     }
 

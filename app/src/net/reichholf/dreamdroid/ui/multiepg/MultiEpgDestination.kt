@@ -42,17 +42,17 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 fun MultiEpgDestination(
     hostFragment: PhoneNavHostFragment,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val scope = rememberCoroutineScope()
     val leafArgs = hostFragment.epgLeafArguments()
     val bouquetRef = MultiEpgRestore.bouquetRef(
-        leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE),
+        leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE)
     )
     val bouquetName = MultiEpgRestore.bouquetName(
-        leafArgs.getString(EventKeys.KEY_SERVICE_NAME),
+        leafArgs.getString(EventKeys.KEY_SERVICE_NAME)
     )
     var anchorSec by remember(remountEpoch, bouquetRef) {
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
@@ -67,8 +67,8 @@ fun MultiEpgDestination(
     var textSize by remember {
         mutableStateOf(
             MultiEpgTextSize.fromPref(
-                prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null),
-            ),
+                prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
+            )
         )
     }
     DisposableEffect(prefs) {
@@ -84,7 +84,7 @@ fun MultiEpgDestination(
     val sync = remember(context) {
         MultiEpgSync(
             dao = AppDatabase.epg(context),
-            fetch = MultiEpgSync.httpFetch(),
+            fetch = MultiEpgSync.httpFetch()
         )
     }
     val session = remember(sync, scope, context) {
@@ -93,10 +93,10 @@ fun MultiEpgDestination(
             scope = scope,
             profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
             noBouquetMessage = context.getString(
-                R.string.multiepg_sync_test_no_bouquet,
+                R.string.multiepg_sync_test_no_bouquet
             ),
             fetchTimers = MultiEpgSync.httpFetchTimers(),
-            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
+            loadBouquetServices = MultiEpgSync.httpFetchBouquet()
         )
     }
 
@@ -153,7 +153,7 @@ fun MultiEpgDestination(
         onPrevDay = {
             val target = maxOf(
                 session.originFloorSec,
-                session.anchorSec - MultiEpgWindows.CHUNK_SECONDS,
+                session.anchorSec - MultiEpgWindows.CHUNK_SECONDS
             )
             anchorSec = target
             session.focusAt(target)
@@ -174,7 +174,7 @@ fun MultiEpgDestination(
         visibleMinutes = visibleMinutes,
         onVisibleMinutesChange = { visibleMinutes = it },
         textSize = textSize,
-        modifier = modifier,
+        modifier = modifier
     )
     EpgEventDetailSheetHost(session = dialogSession)
 }

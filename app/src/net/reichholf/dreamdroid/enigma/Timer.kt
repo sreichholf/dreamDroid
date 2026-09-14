@@ -33,5 +33,5 @@ data class Timer(
     val repeated: String = "",
     val dontSave: String = "",
     val canceled: String = "",
-    val toggleDisabled: String = "",
+    val toggleDisabled: String = ""
 ) : Serializable

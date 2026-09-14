@@ -24,14 +24,14 @@ fun DreamDroidTheme(content: @Composable () -> Unit) {
     }
 }
 
-fun isDreamDroidDark(context: Context): Boolean {
-    return when (DreamDroid.getThemeType(context)) {
-        0 -> false
-        1 -> true
-        else -> {
-            val night = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-            night == Configuration.UI_MODE_NIGHT_YES
-        }
+fun isDreamDroidDark(context: Context): Boolean = when (DreamDroid.getThemeType(context)) {
+    0 -> false
+
+    1 -> true
+
+    else -> {
+        val night = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        night == Configuration.UI_MODE_NIGHT_YES
     }
 }
 
@@ -75,7 +75,7 @@ private fun dreamDroidLightColorScheme() = lightColorScheme(
     surfaceContainerLowest = colorResource(R.color.md_theme_light_surfaceContainerLowest),
     inverseOnSurface = colorResource(R.color.md_theme_light_inverseOnSurface),
     inverseSurface = colorResource(R.color.md_theme_light_inverseSurface),
-    inversePrimary = colorResource(R.color.md_theme_light_primaryInverse),
+    inversePrimary = colorResource(R.color.md_theme_light_primaryInverse)
 )
 
 @Composable
@@ -115,5 +115,5 @@ private fun dreamDroidDarkColorScheme() = darkColorScheme(
     surfaceContainerLowest = colorResource(R.color.md_theme_dark_surfaceContainerLowest),
     inverseOnSurface = colorResource(R.color.md_theme_dark_inverseOnSurface),
     inverseSurface = colorResource(R.color.md_theme_dark_inverseSurface),
-    inversePrimary = colorResource(R.color.md_theme_dark_primaryInverse),
+    inversePrimary = colorResource(R.color.md_theme_dark_primaryInverse)
 )

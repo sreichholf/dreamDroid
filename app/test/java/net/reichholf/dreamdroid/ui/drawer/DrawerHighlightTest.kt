@@ -11,11 +11,11 @@ class DrawerHighlightTest {
     fun backFromNestedToolsLeafHighlightsTools() {
         assertEquals(
             R.id.menu_navigation_tools,
-            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.SIGNAL),
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.SIGNAL)
         )
         assertEquals(
             R.id.menu_navigation_tools,
-            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.TOOLS),
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.TOOLS)
         )
     }
 
@@ -23,7 +23,7 @@ class DrawerHighlightTest {
     fun backFromZapHighlightsZap() {
         assertEquals(
             R.id.menu_navigation_zap,
-            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.ZAP),
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.ZAP)
         )
     }
 
@@ -33,15 +33,15 @@ class DrawerHighlightTest {
             R.id.menu_navigation_zap,
             DrawerHighlight.itemIdForRoute(
                 PhoneNavRoutes.PICK_SERVICE,
-                previousRoute = PhoneNavRoutes.ZAP,
-            ),
+                previousRoute = PhoneNavRoutes.ZAP
+            )
         )
         assertEquals(
             R.id.menu_navigation_epg,
             DrawerHighlight.itemIdForRoute(
                 PhoneNavRoutes.PICK_SERVICE,
-                previousRoute = PhoneNavRoutes.EPG,
-            ),
+                previousRoute = PhoneNavRoutes.EPG
+            )
         )
     }
 
@@ -55,7 +55,7 @@ class DrawerHighlightTest {
     fun profilesClearsTheHighlight() {
         assertEquals(
             R.id.menu_none,
-            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.PROFILES),
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.PROFILES)
         )
     }
 
@@ -63,13 +63,13 @@ class DrawerHighlightTest {
     fun epgSearchQueryParamKeepsEpgHighlight() {
         assertEquals(
             R.id.menu_navigation_epg,
-            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.EPG_SEARCH),
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.EPG_SEARCH)
         )
         assertEquals(
             R.id.menu_navigation_epg,
             DrawerHighlight.itemIdForRoute(
-                PhoneNavRoutes.epgSearchRoute("Tagesschau / Wetter"),
-            ),
+                PhoneNavRoutes.epgSearchRoute("Tagesschau / Wetter")
+            )
         )
     }
 }

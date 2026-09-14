@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.multiepg
 
-import net.reichholf.dreamdroid.enigma.Event
 import kotlin.math.max
 import kotlin.math.min
+import net.reichholf.dreamdroid.enigma.Event
 
 /**
  * Align MultiEPG cache chunks to fixed unix windows (default 24 h).
@@ -10,6 +10,7 @@ import kotlin.math.min
 object MultiEpgWindows {
     const val CHUNK_SECONDS: Long = 24L * 60L * 60L
     const val DEFAULT_TTL_MS: Long = 25L * 60L * 1000L
+
     /** Hard cap so a wild visible range cannot request an unbounded dump. */
     const val MAX_SLIDING_CHUNKS: Int = 8
 
@@ -34,7 +35,7 @@ object MultiEpgWindows {
         visibleStartSec: Long,
         visibleEndSec: Long,
         chunkSeconds: Long = CHUNK_SECONDS,
-        padSec: Long = CHUNK_SECONDS,
+        padSec: Long = CHUNK_SECONDS
     ): List<Long> {
         val visStart = max(originFloorSec, visibleStartSec)
         val visEnd = max(visStart + 60L, visibleEndSec)
@@ -58,11 +59,7 @@ object MultiEpgWindows {
      * If nothing is airing, the edge is now. After the now-window has been
      * dropped from the sliding set, the edge is the oldest remaining window.
      */
-    fun paintedTimelineStart(
-        nowSec: Long,
-        minWindowStartSec: Long,
-        events: List<Event>,
-    ): Long {
+    fun paintedTimelineStart(nowSec: Long, minWindowStartSec: Long, events: List<Event>): Long {
         if (minWindowStartSec > nowSec) {
             return minWindowStartSec
         }
@@ -81,10 +78,7 @@ object MultiEpgWindows {
      * Seconds to add to horizontal scroll so the wall-clock under the left edge
      * stays put when [paintedTimelineStart] moves.
      */
-    fun originScrollCompensationSec(
-        previousOriginSec: Long,
-        newOriginSec: Long,
-    ): Long {
+    fun originScrollCompensationSec(previousOriginSec: Long, newOriginSec: Long): Long {
         if (previousOriginSec == Long.MIN_VALUE ||
             previousOriginSec == 0L ||
             newOriginSec == 0L

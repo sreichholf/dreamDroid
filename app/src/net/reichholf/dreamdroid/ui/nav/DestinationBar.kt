@@ -16,10 +16,7 @@ import androidx.compose.ui.res.stringResource
 /**
  * One entry in a phone shell bottom [DestinationBar] (TV & Movies, Tools, …).
  */
-data class DestinationBarItem(
-	@StringRes val labelRes: Int,
-	@DrawableRes val iconRes: Int,
-)
+data class DestinationBarItem(@StringRes val labelRes: Int, @DrawableRes val iconRes: Int)
 
 /**
  * Shared Material 3 bottom destination bar for phone hubs that host chrome on the
@@ -30,29 +27,29 @@ data class DestinationBarItem(
  */
 @Composable
 fun DestinationBar(
-	items: List<DestinationBarItem>,
-	selectedIndex: Int,
-	onSelect: (Int) -> Unit,
-	modifier: Modifier = Modifier,
+    items: List<DestinationBarItem>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-	// Hosted on MainActivity Coordinator which already fits system windows (#263/#264).
-	NavigationBar(
-		modifier = modifier.fillMaxWidth(),
-		windowInsets = WindowInsets(0, 0, 0, 0),
-	) {
-		items.forEachIndexed { index, item ->
-			val label = stringResource(item.labelRes)
-			NavigationBarItem(
-				selected = index == selectedIndex,
-				onClick = { onSelect(index) },
-				icon = {
-					Icon(
-						painter = painterResource(item.iconRes),
-						contentDescription = label,
-					)
-				},
-				label = { Text(label) },
-			)
-		}
-	}
+    // Hosted on MainActivity Coordinator which already fits system windows (#263/#264).
+    NavigationBar(
+        modifier = modifier.fillMaxWidth(),
+        windowInsets = WindowInsets(0, 0, 0, 0)
+    ) {
+        items.forEachIndexed { index, item ->
+            val label = stringResource(item.labelRes)
+            NavigationBarItem(
+                selected = index == selectedIndex,
+                onClick = { onSelect(index) },
+                icon = {
+                    Icon(
+                        painter = painterResource(item.iconRes),
+                        contentDescription = label
+                    )
+                },
+                label = { Text(label) }
+            )
+        }
+    }
 }

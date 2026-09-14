@@ -36,13 +36,13 @@ class ComposeTvHubServiceRowTest {
             serviceReference = "1:0:1:1:1:1:1:0:0:0:",
             serviceName = "Demo Channel",
             now = Event(title = "Now Show"),
-            next = Event(title = "Next Show", startTimeReadable = "20:00"),
+            next = Event(title = "Next Show", startTimeReadable = "20:00")
         )
         composeRule.setContent {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp),
+                    .height(220.dp)
             ) {
                 HubServiceRow(
                     bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
@@ -50,7 +50,7 @@ class ComposeTvHubServiceRowTest {
                     onServiceClick = { row, ref ->
                         clicked = row
                         bouquetRef = ref
-                    },
+                    }
                 )
             }
         }
@@ -69,25 +69,25 @@ class ComposeTvHubServiceRowTest {
     fun bouquetSelectionShowsServiceRowHost() {
         val bouquet = Service(
             reference = "1:7:1:0:0:0:0:0:0:0:Favourites",
-            name = "Favourites",
+            name = "Favourites"
         )
         val service = ServiceNowNext(
             serviceReference = "1:0:1:2:2:2:2:0:0:0:",
-            serviceName = "Another",
+            serviceName = "Another"
         )
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(bouquet.reference, bouquet.name),
+                    HubNavHeader(bouquet.reference, bouquet.name)
                 ),
                 selectedHeaderId = bouquet.reference,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = listOf(
-                    HubBouquetRow(bouquet = bouquet, services = listOf(service)),
-                ),
+                    HubBouquetRow(bouquet = bouquet, services = listOf(service))
+                )
             )
         }
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()

@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 data class BouquetListLoadResult(
     val success: Boolean,
     val bouquets: Bouquets,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -30,7 +30,7 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
         return BouquetListLoadResult(
             false,
             bouquets,
-            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context),
+            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
         )
     }
     bouquets.tv.addAll(tv)
@@ -51,7 +51,7 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
  * Phase 2.2i: load TV+Radio bouquet roots via coroutines (no executor / runBlocking).
  */
 fun Fragment.launchBouquetListLoad(
-    onResult: (success: Boolean, bouquets: Bouquets, errorText: String?) -> Unit,
+    onResult: (success: Boolean, bouquets: Bouquets, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val result = loadBouquetList(requireContext())

@@ -58,7 +58,7 @@ private val CurrentServiceNullableSaver = Saver<CurrentService?, Bundle>(
     restore = { bundle ->
         @Suppress("DEPRECATION")
         bundle.getSerializable(KEY_SAVED_CURRENT) as? CurrentService
-    },
+    }
 )
 
 private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
@@ -72,7 +72,7 @@ private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
     restore = { bundle ->
         @Suppress("DEPRECATION")
         bundle.getSerializable(KEY_SAVED_ITEM) as? ExtendedHashMap
-    },
+    }
 )
 
 /**
@@ -86,7 +86,7 @@ private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
 fun CurrentServiceDestination(
     hostFragment: PhoneNavHostFragment,
     modifier: Modifier = Modifier,
-    updateToolbarTitle: Boolean = true,
+    updateToolbarTitle: Boolean = true
 ) {
     val context = LocalContext.current
     val prefs = remember(context) {
@@ -196,7 +196,7 @@ fun CurrentServiceDestination(
             applyCurrent(
                 generation,
                 loadProfileId,
-                content = if (result.success) result.current else null,
+                content = if (result.success) result.current else null
             )
         }
     }
@@ -247,13 +247,13 @@ fun CurrentServiceDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         CurrentServiceScreen(
             state = uiState,
             onNowClick = { onNowOrNextOrStream(Statics.ITEM_NOW) },
             onNextClick = { onNowOrNextOrStream(Statics.ITEM_NEXT) },
-            onStream = { onNowOrNextOrStream(Statics.ITEM_STREAM) },
+            onStream = { onNowOrNextOrStream(Statics.ITEM_STREAM) }
         )
     }
 
@@ -275,7 +275,7 @@ fun CurrentServiceDestination(
             },
             onSimilar = {
                 session.onDialogAction(Statics.ACTION_FIND_SIMILAR, null, null)
-            },
+            }
         )
     }
 
@@ -303,7 +303,7 @@ private class CurrentServiceSession : DialogActionListener {
                 progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
                 host.launchSimpleResultLoad(
                     TimerAddByEventIdRequestHandler(),
-                    Timer.getEventIdParams(event),
+                    Timer.getEventIdParams(event)
                 ) { _, result, http ->
                     dismissProgress()
                     var toastText = ctx.getText(R.string.get_content_error).toString()
@@ -315,14 +315,17 @@ private class CurrentServiceSession : DialogActionListener {
                     Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
                 }
             }
+
             Statics.ACTION_EDIT_TIMER -> {
                 val event = currentItem ?: return
                 host.navigateToTimerEdit(Timer.createByEvent(event), true)
             }
+
             Statics.ACTION_FIND_SIMILAR -> {
                 val query = currentItem?.getString(EventKeys.KEY_EVENT_TITLE)
                 host.navigateToEpgSearch(query)
             }
+
             Statics.ACTION_IMDB -> {
                 val event = currentItem ?: return
                 val activity = ctx as? AppCompatActivity ?: return

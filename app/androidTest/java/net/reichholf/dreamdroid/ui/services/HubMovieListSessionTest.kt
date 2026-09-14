@@ -21,7 +21,7 @@ class HubMovieListSessionTest {
             generation = staleGeneration,
             success = true,
             next = listOf(Movie(title = "Stale folder", serviceName = "ZDF")),
-            errorText = null,
+            errorText = null
         )
         assertEquals(emptyList<String>(), state.items.map { it.title })
 
@@ -29,7 +29,7 @@ class HubMovieListSessionTest {
             generation = freshGeneration,
             success = true,
             next = listOf(Movie(title = "Fresh folder", serviceName = "ARD")),
-            errorText = null,
+            errorText = null
         )
         assertEquals(listOf("Fresh folder"), state.items.map { it.title })
 
@@ -37,7 +37,7 @@ class HubMovieListSessionTest {
             generation = staleGeneration,
             success = false,
             next = emptyList(),
-            errorText = "timeout",
+            errorText = "timeout"
         )
         assertEquals(listOf("Fresh folder"), state.items.map { it.title })
     }

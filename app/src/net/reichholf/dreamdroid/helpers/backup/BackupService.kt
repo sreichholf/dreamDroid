@@ -7,10 +7,10 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
-import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.room.AppDatabase
 import java.io.FileNotFoundException
 import java.io.IOException
+import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * Created by GAigner on 01/09/18.
@@ -24,7 +24,7 @@ class BackupService(context: Context) {
         val export = BackupData()
         for ((key, value) in mPreferences.all) {
             export.addGenericSetting(
-                GenericSetting(key, value!!.toString(), value.javaClass.simpleName),
+                GenericSetting(key, value!!.toString(), value.javaClass.simpleName)
             )
         }
         for (profile in mProfiles.getProfiles()) {
@@ -43,16 +43,16 @@ class BackupService(context: Context) {
             contentValues.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/json")
             contentValues.put(
                 MediaStore.Files.FileColumns.DATE_ADDED,
-                System.currentTimeMillis() / 1000,
+                System.currentTimeMillis() / 1000
             )
             contentValues.put(
                 MediaStore.Files.FileColumns.DATE_MODIFIED,
-                System.currentTimeMillis() / 1000,
+                System.currentTimeMillis() / 1000
             )
             contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true)
             val fileUri = mContext.contentResolver.insert(
                 MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-                contentValues,
+                contentValues
             ) ?: return false
 
             val os = mContext.contentResolver.openOutputStream(fileUri, "w") ?: return false
@@ -94,10 +94,7 @@ class BackupService(context: Context) {
         editor.apply()
     }
 
-    private fun applyImportedSetting(
-        editor: SharedPreferences.Editor,
-        setting: GenericSetting,
-    ) {
+    private fun applyImportedSetting(editor: SharedPreferences.Editor, setting: GenericSetting) {
         val key = setting.getKey()
         val value = setting.getValue()
         when (setting.getType()) {

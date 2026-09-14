@@ -8,26 +8,16 @@ import net.reichholf.dreamdroid.helpers.Statics
  * can be unit-tested without hosting [ZapSession].
  */
 object ZapPickerGate {
-    data class NonOkEffect(
-        val waitingForPicker: Boolean,
-        val emptyMessageResId: Int?,
+    data class NonOkEffect(val waitingForPicker: Boolean, val emptyMessageResId: Int?)
+
+    fun isBouquetPickerRequest(requestCode: Int): Boolean =
+        requestCode == Statics.REQUEST_PICK_BOUQUET
+
+    fun afterNonOkPickerResult(gridEmpty: Boolean): NonOkEffect = NonOkEffect(
+        waitingForPicker = false,
+        emptyMessageResId = if (gridEmpty) R.string.no_list_item else null
     )
 
-    fun isBouquetPickerRequest(requestCode: Int): Boolean {
-        return requestCode == Statics.REQUEST_PICK_BOUQUET
-    }
-
-    fun afterNonOkPickerResult(gridEmpty: Boolean): NonOkEffect {
-        return NonOkEffect(
-            waitingForPicker = false,
-            emptyMessageResId = if (gridEmpty) R.string.no_list_item else null,
-        )
-    }
-
-    fun shouldNavigateToPickBouquet(
-        bouquetRef: String,
-        waitingForPicker: Boolean,
-    ): Boolean {
-        return bouquetRef.isEmpty() && !waitingForPicker
-    }
+    fun shouldNavigateToPickBouquet(bouquetRef: String, waitingForPicker: Boolean): Boolean =
+        bouquetRef.isEmpty() && !waitingForPicker
 }

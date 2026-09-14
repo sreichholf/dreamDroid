@@ -33,16 +33,16 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(
                     BrowseItem.Kind.Reload to "Reload",
                     BrowseItem.Kind.Preferences to "Settings",
-                    BrowseItem.Kind.Profile to "Profile",
+                    BrowseItem.Kind.Profile to "Profile"
                 ),
-                onSettingsClick = {},
+                onSettingsClick = {}
             )
         }
         // Phone AVDs often give the drawer content pane no usable width, so row
@@ -61,13 +61,13 @@ class ComposeTvHubChromeTest {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp),
+                    .height(120.dp)
             ) {
                 HubSettingsRow(
                     settingsItems = listOf(
-                        BrowseItem.Kind.Profile to "Profile",
+                        BrowseItem.Kind.Profile to "Profile"
                     ),
-                    onSettingsClick = { clicked = it },
+                    onSettingsClick = { clicked = it }
                 )
             }
         }
@@ -88,12 +88,12 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
-                onSettingsClick = {},
+                onSettingsClick = {}
             )
         }
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()
@@ -108,12 +108,12 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
-                onSettingsClick = {},
+                onSettingsClick = {}
             )
         }
         val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
@@ -131,12 +131,12 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
-                onSettingsClick = {},
+                onSettingsClick = {}
             )
         }
         val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
@@ -154,13 +154,13 @@ class ComposeTvHubChromeTest {
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
-                loading = true,
+                loading = true
             )
         }
         composeRule.onNodeWithTag("hub_loading", useUnmergedTree = true).assertExists()
@@ -172,13 +172,13 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
                 onSettingsClick = {},
-                errorText = "box offline",
+                errorText = "box offline"
             )
         }
         composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
@@ -190,13 +190,13 @@ class ComposeTvHubChromeTest {
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
                 ),
                 selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
-                errorText = "box offline",
+                errorText = "box offline"
             )
         }
         composeRule.onNodeWithTag("hub_error", useUnmergedTree = true).assertExists()
@@ -209,14 +209,14 @@ class ComposeTvHubChromeTest {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(headerId, "/hdd/movie"),
+                    HubNavHeader(headerId, "/hdd/movie")
                 ),
                 selectedHeaderId = headerId,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 movieLoading = true,
-                moviesByLocation = emptyMap(),
+                moviesByLocation = emptyMap()
             )
         }
         composeRule.onNodeWithTag("hub_movie_loading", useUnmergedTree = true).assertExists()

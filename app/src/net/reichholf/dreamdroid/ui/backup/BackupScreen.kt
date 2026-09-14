@@ -24,11 +24,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 
-data class BackupProfileToggle(
-    val id: Int,
-    val label: String,
-    val checked: Boolean = true,
-)
+data class BackupProfileToggle(val id: Int, val label: String, val checked: Boolean = true)
 
 class BackupUiState {
     var profiles by mutableStateOf<List<BackupProfileToggle>>(emptyList())
@@ -44,7 +40,7 @@ class BackupUiState {
     fun setProfilesFromBackup(
         profiles: List<Profile>,
         currentProfileId: Int,
-        currentProfileLabel: String,
+        currentProfileLabel: String
     ) {
         replaceProfiles(
             profiles.map { profile ->
@@ -54,7 +50,7 @@ class BackupUiState {
                     label += " ($currentProfileLabel)"
                 }
                 BackupProfileToggle(id = id ?: 0, label = label, checked = true)
-            },
+            }
         )
     }
 
@@ -70,14 +66,14 @@ fun BackupScreen(
     state: BackupUiState,
     onImport: () -> Unit,
     onExport: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         Button(
             onClick = onImport,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(stringResource(R.string.backup_import))
         }
@@ -85,7 +81,7 @@ fun BackupScreen(
             onClick = onExport,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .padding(horizontal = 8.dp, vertical = 4.dp)
         ) {
             Text(stringResource(R.string.backup_export))
         }
@@ -95,20 +91,20 @@ fun BackupScreen(
                 .weight(1f)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 6.dp, vertical = 3.dp),
+                .padding(horizontal = 6.dp, vertical = 3.dp)
         ) {
             Text(
                 text = stringResource(R.string.backup_profiles),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
             )
 
             state.profiles.forEach { profile ->
                 BackupSwitchRow(
                     label = profile.label,
                     checked = profile.checked,
-                    onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) },
+                    onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) }
                 )
             }
 
@@ -116,44 +112,40 @@ fun BackupScreen(
                 text = stringResource(R.string.backup_settings),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp),
+                modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
             )
 
             BackupSwitchRow(
                 label = stringResource(R.string.backup_export_settings),
                 checked = state.exportSettings,
-                onCheckedChange = { state.exportSettings = it },
+                onCheckedChange = { state.exportSettings = it }
             )
         }
     }
 }
 
 @Composable
-private fun BackupSwitchRow(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-) {
+private fun BackupSwitchRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .toggleable(
                 value = checked,
                 role = Role.Switch,
-                onValueChange = onCheckedChange,
+                onValueChange = onCheckedChange
             )
             .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         Switch(
             checked = checked,
-            onCheckedChange = null,
+            onCheckedChange = null
         )
     }
 }

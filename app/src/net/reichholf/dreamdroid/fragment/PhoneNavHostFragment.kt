@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.fragment
 
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
@@ -17,47 +18,43 @@ import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
-import android.content.DialogInterface
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
-import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
-import net.reichholf.dreamdroid.ui.nav.navigateReplacingProfileCheck
-import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
+import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerRoot
 import net.reichholf.dreamdroid.ui.nav.navigateDrawerSettings
+import net.reichholf.dreamdroid.ui.nav.navigateReplacingProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateToAbout
-import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
-import net.reichholf.dreamdroid.ui.nav.navigateToChangelog
-import net.reichholf.dreamdroid.ui.nav.navigateToPower
-import net.reichholf.dreamdroid.ui.nav.navigateToSendMessage
-import net.reichholf.dreamdroid.ui.nav.navigateToSleepTimer
 import net.reichholf.dreamdroid.ui.nav.navigateToBackup
+import net.reichholf.dreamdroid.ui.nav.navigateToChangelog
 import net.reichholf.dreamdroid.ui.nav.navigateToEpgSearch
+import net.reichholf.dreamdroid.ui.nav.navigateToPower
+import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
+import net.reichholf.dreamdroid.ui.nav.navigateToSendMessage
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
+import net.reichholf.dreamdroid.ui.nav.navigateToSleepTimer
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
  * Hosts Compose [androidx.navigation.compose.NavHost] in the phone detail pane.
- * Migrated drawer leaves include Device Info through hub (Compose destinations). Drawer selection uses
+ * Migrated drawer leaves include Device Info through hub (Compose destinations).
+ * Drawer selection uses
  * [navigateToRoute] when this host is already shown; [ARG_START_ROUTE] picks the first leaf.
  *
  * [net.reichholf.dreamdroid.activities.abs.BaseActivity] only delivers [onActivityResult] to
  * top-level fragments; forward to the active leaf (Profiles edit, EPG bouquet picker, Zap).
  */
-data class SleepTimerNavArgs(
-    val minutes: Int,
-    val enabled: Boolean,
-    val action: String,
-) {
+data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action: String) {
     companion object {
         fun from(timer: ExtendedHashMap): SleepTimerNavArgs {
             var minutes = 90
@@ -70,8 +67,7 @@ data class SleepTimerNavArgs(
             return SleepTimerNavArgs(minutes, enabled, action)
         }
 
-        fun defaults(): SleepTimerNavArgs =
-            SleepTimerNavArgs(90, false, SleepTimer.ACTION_STANDBY)
+        fun defaults(): SleepTimerNavArgs = SleepTimerNavArgs(90, false, SleepTimer.ACTION_STANDBY)
     }
 }
 
@@ -85,12 +81,10 @@ class PhoneNavHostFragment : BaseFragment() {
         private const val STATE_TIMER_EDIT_ARGS = "phone_nav_timer_edit_args"
         private const val STATE_TIMER_EDIT_TAG = "phone_nav_timer_edit_tag"
 
-        fun newInstance(startRoute: String): PhoneNavHostFragment {
-            return newInstance(startRoute, null)
-        }
+        fun newInstance(startRoute: String): PhoneNavHostFragment = newInstance(startRoute, null)
 
-        fun newInstance(startRoute: String, leafExtras: Bundle?): PhoneNavHostFragment {
-            return PhoneNavHostFragment().apply {
+        fun newInstance(startRoute: String, leafExtras: Bundle?): PhoneNavHostFragment =
+            PhoneNavHostFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_START_ROUTE, startRoute)
                     if (leafExtras != null) {
@@ -98,7 +92,6 @@ class PhoneNavHostFragment : BaseFragment() {
                     }
                 }
             }
-        }
     }
 
     @Volatile
@@ -120,7 +113,6 @@ class PhoneNavHostFragment : BaseFragment() {
 
     var composeActivityResultListener: ActivityResultListener? = null
 
-
     /** Stack of pending onActivityResult request codes (nested edit → service pick). */
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var profileEditArgs: Bundle? = null
@@ -138,7 +130,7 @@ class PhoneNavHostFragment : BaseFragment() {
     private var pendingChangelog: Boolean = false
     private var pendingProfileCheck: Boolean = false
     private val profileCheckUiState = MutableStateFlow<ProfileCheckUi>(
-        ProfileCheckUi.Checking(""),
+        ProfileCheckUi.Checking("")
     )
     private val profileEditRemountState = MutableStateFlow(0)
     private val timerEditRemountState = MutableStateFlow(0)
@@ -178,11 +170,15 @@ class PhoneNavHostFragment : BaseFragment() {
         super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
             resultRequestCodes.clear()
-            savedInstanceState.getIntArray(STATE_PICK_REQUEST_CODES)?.forEach { resultRequestCodes.addLast(it) }
+            savedInstanceState.getIntArray(STATE_PICK_REQUEST_CODES)?.forEach {
+                resultRequestCodes.addLast(it)
+            }
             profileEditArgs = savedInstanceState.getBundle(STATE_PROFILE_EDIT_ARGS)
-            profileEditTag = savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
+            profileEditTag =
+                savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
             timerEditArgs = savedInstanceState.getBundle(STATE_TIMER_EDIT_ARGS)
-            timerEditTag = savedInstanceState.getString(STATE_TIMER_EDIT_TAG, PhoneNavRoutes.TIMER_EDIT)
+            timerEditTag =
+                savedInstanceState.getString(STATE_TIMER_EDIT_TAG, PhoneNavRoutes.TIMER_EDIT)
             timerEditSession = TimerEditSession.fromSavedState(savedInstanceState)
         }
     }
@@ -200,15 +196,13 @@ class PhoneNavHostFragment : BaseFragment() {
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View {
-        return ComposeView(requireContext()).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT,
-            )
-            bindPhoneNavHost(this@PhoneNavHostFragment)
-        }
+        savedInstanceState: Bundle?
+    ): View = ComposeView(requireContext()).apply {
+        layoutParams = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        bindPhoneNavHost(this@PhoneNavHostFragment)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -216,22 +210,18 @@ class PhoneNavHostFragment : BaseFragment() {
         requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, backCallback)
     }
 
-    fun startRoute(): String {
-        return arguments?.getString(ARG_START_ROUTE) ?: PhoneNavRoutes.DEVICE_INFO
-    }
+    fun startRoute(): String = arguments?.getString(ARG_START_ROUTE) ?: PhoneNavRoutes.DEVICE_INFO
 
     /** Args for EPG bouquet destination (default TV bouquet from drawer). */
-    fun epgLeafArguments(): Bundle {
-        return Bundle().apply {
-            putString(
-                Event.KEY_SERVICE_REFERENCE,
-                arguments?.getString(Event.KEY_SERVICE_REFERENCE),
-            )
-            putString(
-                Event.KEY_SERVICE_NAME,
-                arguments?.getString(Event.KEY_SERVICE_NAME),
-            )
-        }
+    fun epgLeafArguments(): Bundle = Bundle().apply {
+        putString(
+            Event.KEY_SERVICE_REFERENCE,
+            arguments?.getString(Event.KEY_SERVICE_REFERENCE)
+        )
+        putString(
+            Event.KEY_SERVICE_NAME,
+            arguments?.getString(Event.KEY_SERVICE_NAME)
+        )
     }
 
     /** Nested destination fragment for the current NavHost route (if any). */
@@ -240,35 +230,54 @@ class PhoneNavHostFragment : BaseFragment() {
         return when {
             // Phase 2.7b/c: Compose destinations (no nested Fragment).
             route == PhoneNavRoutes.DEVICE_INFO -> null
+
             route == PhoneNavRoutes.SIGNAL -> null
+
             route == PhoneNavRoutes.BACKUP -> null
+
             route == PhoneNavRoutes.CURRENT -> null
+
             route == PhoneNavRoutes.SCREENSHOT -> null
+
             route == PhoneNavRoutes.ZAP -> null
+
             route == PhoneNavRoutes.REMOTE -> null
+
             route == PhoneNavRoutes.SETTINGS -> null
+
             route == PhoneNavRoutes.PROFILES -> null
+
             route == PhoneNavRoutes.PROFILE_EDIT -> null
+
             route == PhoneNavRoutes.EPG -> null
+
             route == PhoneNavRoutes.MULTI_EPG -> null
+
             route == PhoneNavRoutes.SERVICE_EPG || route.startsWith("service_epg") -> null
+
             route == PhoneNavRoutes.EPG_SEARCH || route.startsWith("epg_search") -> null
+
             route == PhoneNavRoutes.PICK_SERVICE -> null
+
             route == PhoneNavRoutes.TIMER_EDIT -> null
+
             route == PhoneNavRoutes.TIMER_SERVICE_PICK -> null
+
             route == PhoneNavRoutes.HUB -> null
+
             route == PhoneNavRoutes.TOOLS -> null
+
             else -> null
         }
     }
 
     fun attachNavController(controller: NavHostController) {
         navController = controller
-    controller.addOnDestinationChangedListener { _, dest, _ ->
-        backCallback.isEnabled = controller.previousBackStackEntry != null
-        val previous = controller.previousBackStackEntry?.destination?.route
-        (activity as? DrawerRouteHighlighter)?.highlightDrawerForRoute(dest.route, previous)
-    }
+        controller.addOnDestinationChangedListener { _, dest, _ ->
+            backCallback.isEnabled = controller.previousBackStackEntry != null
+            val previous = controller.previousBackStackEntry?.destination?.route
+            (activity as? DrawerRouteHighlighter)?.highlightDrawerForRoute(dest.route, previous)
+        }
         backCallback.isEnabled = controller.previousBackStackEntry != null
         flushPendingNavigations()
     }
@@ -373,9 +382,8 @@ class PhoneNavHostFragment : BaseFragment() {
         profileCheckUiState.value = ui
     }
 
-    fun isOnProfileCheckRoute(): Boolean {
-        return navController?.currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK
-    }
+    fun isOnProfileCheckRoute(): Boolean =
+        navController?.currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK
 
     fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean {
         updateProfileCheckUi(ui)
@@ -413,8 +421,6 @@ class PhoneNavHostFragment : BaseFragment() {
         controller.navigateReplacingProfileCheck(route)
         return true
     }
-
-
 
     /**
      * Open EPG with bouquet args. Remounts when already on the EPG route so
@@ -474,8 +480,8 @@ class PhoneNavHostFragment : BaseFragment() {
         val controller = navController ?: return false
         val q = query.orEmpty()
         if (q.isEmpty()) return false
-        val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH
-            || controller.currentDestination?.route?.startsWith("epg_search") == true
+        val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH ||
+            controller.currentDestination?.route?.startsWith("epg_search") == true
         if (onSearch) {
             epgSearchRemountState.value = epgSearchRemountState.value + 1
         }
@@ -493,12 +499,6 @@ class PhoneNavHostFragment : BaseFragment() {
         controller.navigate(PhoneNavRoutes.PICK_SERVICE)
         return true
     }
-
-    /**
-     * Pop the nested picker and forward [onActivityResult] to the prior leaf
-     * (Zap / EPG bouquet). Used instead of [Fragment.setTargetFragment] under NavHost.
-     */
-
 
     /** Queue profile edit until [attachNavController] (host was just mounted). */
     fun queueProfileEdit(profile: Profile?) {
@@ -556,9 +556,7 @@ class PhoneNavHostFragment : BaseFragment() {
 
     fun profileEditRouteTag(): String = profileEditTag
 
-    fun profileEditLeafArguments(): Bundle {
-        return profileEditArgs ?: Bundle()
-    }
+    fun profileEditLeafArguments(): Bundle = profileEditArgs ?: Bundle()
 
     /**
      * Push profile create/edit. Result goes through [deliverPickResult] with
@@ -589,14 +587,9 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /** Current NavHost route, or [startRoute] if the controller is not attached. */
-    fun currentRoute(): String {
-        return navController?.currentDestination?.route ?: startRoute()
-    }
+    fun currentRoute(): String = navController?.currentDestination?.route ?: startRoute()
 
-    fun popNavBackStack(): Boolean {
-        return navController?.popBackStack() ?: false
-    }
-
+    fun popNavBackStack(): Boolean = navController?.popBackStack() ?: false
 
     fun timerEditRouteTag(): String = timerEditTag
 
@@ -659,10 +652,10 @@ class PhoneNavHostFragment : BaseFragment() {
     /** True when this route pushed a pending [resultRequestCodes] entry. */
     private fun isResultDestination(route: String?): Boolean {
         if (route == null) return false
-        return route == PhoneNavRoutes.PICK_SERVICE
-            || route == PhoneNavRoutes.PROFILE_EDIT
-            || route == PhoneNavRoutes.TIMER_EDIT
-            || route == PhoneNavRoutes.TIMER_SERVICE_PICK
+        return route == PhoneNavRoutes.PICK_SERVICE ||
+            route == PhoneNavRoutes.PROFILE_EDIT ||
+            route == PhoneNavRoutes.TIMER_EDIT ||
+            route == PhoneNavRoutes.TIMER_SERVICE_PICK
     }
 
     /**
@@ -727,7 +720,6 @@ class PhoneNavHostFragment : BaseFragment() {
         super.onDialogAction(action, details, dialogTag)
     }
 
-
     override fun onDrawerOpened() {
         (getActiveLeaf() as? ActivityCallbackHandler)?.onDrawerOpened()
     }
@@ -736,11 +728,9 @@ class PhoneNavHostFragment : BaseFragment() {
         (getActiveLeaf() as? ActivityCallbackHandler)?.onDrawerClosed()
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        return (getActiveLeaf() as? ActivityCallbackHandler)?.onKeyDown(keyCode, event) ?: false
-    }
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
+        (getActiveLeaf() as? ActivityCallbackHandler)?.onKeyDown(keyCode, event) ?: false
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        return (getActiveLeaf() as? ActivityCallbackHandler)?.onKeyUp(keyCode, event) ?: false
-    }
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
+        (getActiveLeaf() as? ActivityCallbackHandler)?.onKeyUp(keyCode, event) ?: false
 }

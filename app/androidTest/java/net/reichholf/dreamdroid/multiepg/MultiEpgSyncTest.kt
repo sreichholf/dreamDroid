@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.multiepg
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -17,7 +18,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(AndroidJUnit4::class)
 class MultiEpgSyncTest {
@@ -60,7 +60,7 @@ class MultiEpgSyncTest {
                 fixture
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val t0 = 1_893_456_000L
         val first = sync.ensureChunk(1, "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", t0)
@@ -77,7 +77,7 @@ class MultiEpgSyncTest {
             dao = db.epgDao(),
             fetch = { _, _, _ -> fixture },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val t0 = 1_893_456_000L
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
@@ -100,14 +100,14 @@ class MultiEpgSyncTest {
                 fixture
             },
             clockMs = { 2_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
         val t0 = 1_893_456_000L
         val results = listOf(
             async { sync.ensureChunk(1, bouquet, t0) },
             async { sync.ensureChunk(1, bouquet, t0) },
-            async { sync.ensureChunk(1, bouquet, t0) },
+            async { sync.ensureChunk(1, bouquet, t0) }
         ).awaitAll()
         assertEquals(1, fetches.get())
         results.forEach { assertEquals(2, it.size) }
@@ -128,12 +128,12 @@ class MultiEpgSyncTest {
                         start = time.toString(),
                         duration = "60",
                         serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                        serviceName = "TV",
-                    ),
+                        serviceName = "TV"
+                    )
                 )
             },
             clockMs = { now },
-            ttlMs = 1_000L,
+            ttlMs = 1_000L
         )
         val bouquet = "bref"
         val t0 = MultiEpgWindows.CHUNK_SECONDS
@@ -159,7 +159,7 @@ class MultiEpgSyncTest {
                 fixture
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
         val t0 = 1_893_456_000L
@@ -181,7 +181,7 @@ class MultiEpgSyncTest {
                 fixture
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
         val t0 = 1_893_456_000L
@@ -208,7 +208,7 @@ class MultiEpgSyncTest {
             start = t0.toString(),
             duration = "60",
             serviceReference = "1:0:1:FFFF:1:1:0:0:0:0:",
-            serviceName = "First in bouquet",
+            serviceName = "First in bouquet"
         )
         val secondInBouquet = Event(
             eventId = "2",
@@ -216,26 +216,26 @@ class MultiEpgSyncTest {
             start = t0.toString(),
             duration = "60",
             serviceReference = "1:0:1:0001:1:1:0:0:0:0:",
-            serviceName = "Second in bouquet",
+            serviceName = "Second in bouquet"
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ -> listOf(firstInBouquet, secondInBouquet) },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
         val loaded = buildMultiEpgChannels(sync.ensureChunk(1, bouquet, t0))
         val peeked = buildMultiEpgChannels(
-            sync.peekChunk(1, bouquet, t0)!!.events,
+            sync.peekChunk(1, bouquet, t0)!!.events
         )
         assertEquals(
             listOf("First in bouquet", "Second in bouquet"),
-            loaded.map { it.serviceName },
+            loaded.map { it.serviceName }
         )
         assertEquals(
             listOf("First in bouquet", "Second in bouquet"),
-            peeked.map { it.serviceName },
+            peeked.map { it.serviceName }
         )
     }
 
@@ -249,7 +249,7 @@ class MultiEpgSyncTest {
             start = spanStart.toString(),
             duration = "7200",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "TV",
+            serviceName = "TV"
         )
         val day0 = Event(
             eventId = "day0",
@@ -257,7 +257,7 @@ class MultiEpgSyncTest {
             start = chunk0.startSec.toString(),
             duration = "60",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "TV",
+            serviceName = "TV"
         )
         val day1 = Event(
             eventId = "day1",
@@ -265,7 +265,7 @@ class MultiEpgSyncTest {
             start = chunk0.endSec.toString(),
             duration = "60",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "TV",
+            serviceName = "TV"
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
@@ -277,7 +277,7 @@ class MultiEpgSyncTest {
                 }
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val bouquet = "bouquet-a"
         sync.ensureChunk(1, bouquet, chunk0.startSec + 10L)
@@ -286,18 +286,18 @@ class MultiEpgSyncTest {
             1,
             bouquet,
             chunk0.startSec,
-            chunk0.endSec,
+            chunk0.endSec
         )
         assertTrue(
             "spanning event must survive the next chunk write",
-            kept.any { it.eventId == "span" },
+            kept.any { it.eventId == "span" }
         )
         assertTrue(kept.any { it.eventId == "day0" })
         val nextWindow = db.epgDao().eventsOverlapping(
             1,
             bouquet,
             chunk0.endSec,
-            chunk0.endSec + MultiEpgWindows.CHUNK_SECONDS,
+            chunk0.endSec + MultiEpgWindows.CHUNK_SECONDS
         )
         assertTrue(nextWindow.any { it.eventId == "span" })
         assertTrue(nextWindow.any { it.eventId == "day1" })

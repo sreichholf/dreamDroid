@@ -1,0 +1,24 @@
+# https://editorconfig.org
+# ktlint `android_studio` = Google’s Android Kotlin style guide
+# https://developer.android.com/kotlin/style-guide
+# https://ktlint.github.io/ktlint/latest/rules/code-styles/
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+
+[*.{kt,kts}]
+indent_style = space
+indent_size = 4
+max_line_length = 100
+ktlint_code_style = android_studio
+ij_kotlin_imports_layout = *
+ktlint_function_naming_ignore_when_annotated_with = Composable, Test
+# Converted Java still uses mFoo / Hungarian leftovers; do not fail CI on those.
+ktlint_standard_property-naming = disabled
+ktlint_standard_backing-property-naming = disabled
+# Several files hold more than one type (Load results, ScreenshotSave, etc.).
+ktlint_standard_filename = disabled

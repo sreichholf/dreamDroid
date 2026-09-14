@@ -27,7 +27,7 @@ fun NowPlayingDetailScreen(
     current: CurrentService?,
     onStream: () -> Unit,
     modifier: Modifier = Modifier,
-    loading: Boolean = false,
+    loading: Boolean = false
 ) {
     val minutesShort = stringResource(R.string.minutes_short)
     val serviceName = current?.service?.name.orEmpty()
@@ -50,7 +50,7 @@ fun NowPlayingDetailScreen(
                 .heightIn(max = 360.dp)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 8.dp),
+                .padding(top = 16.dp, bottom = 8.dp)
         ) {
             if (nowContent != null) {
                 EpgDetailBody(nowContent)
@@ -58,7 +58,7 @@ fun NowPlayingDetailScreen(
                 Text(
                     text = emptyTitle,
                     style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             if (nextContent != null) {
@@ -66,7 +66,7 @@ fun NowPlayingDetailScreen(
                     text = stringResource(R.string.next),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp),
+                    modifier = Modifier.padding(top = 16.dp, bottom = 4.dp)
                 )
                 EpgDetailBody(nextContent)
             }
@@ -77,7 +77,7 @@ fun NowPlayingDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 16.dp)
             ) {
                 Text(stringResource(R.string.stream_current))
             }

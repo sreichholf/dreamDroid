@@ -171,7 +171,7 @@ class Profile : Serializable {
         defaultRef: String?,
         defaultRefName: String?,
         defaultRef2: String?,
-        defaultRef2Name: String?,
+        defaultRef2Name: String?
     ) : this() {
         init(
             id,
@@ -201,7 +201,7 @@ class Profile : Serializable {
             "",
             "",
             2500,
-            128,
+            128
         )
     }
 
@@ -233,14 +233,14 @@ class Profile : Serializable {
         encoderUser: String?,
         encoderPass: String?,
         encoderVideoBitrate: Int,
-        encoderAudioBitrate: Int,
+        encoderAudioBitrate: Int
     ) : this() {
         init(
             id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl,
             allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultBouquetTv,
             defaultBouquetTvName, defaultParentBouquetTv, defaultParentBouquetTvName, encoderStream,
             encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate,
-            encoderAudioBitrate,
+            encoderAudioBitrate
         )
     }
 
@@ -272,7 +272,7 @@ class Profile : Serializable {
         encoderUser: String?,
         encoderPass: String?,
         encoderVideoBitrate: Int,
-        encoderAudioBitrate: Int,
+        encoderAudioBitrate: Int
     ) {
         this.id = id
         sessionId = null
@@ -349,52 +349,46 @@ class Profile : Serializable {
         defaultParentBouquetTvName = name
     }
 
-    fun hasSameSettings(p: Profile): Boolean {
-        return host == p.host &&
-            streamHostOrHost == p.streamHostOrHost &&
-            user == p.user &&
-            pass == p.pass &&
-            login == p.login &&
-            ssl == p.ssl &&
-            simpleRemote == p.simpleRemote &&
-            id == p.id &&
-            port == p.port &&
-            streamPort == p.streamPort &&
-            filePort == p.filePort &&
-            streamLogin == p.streamLogin &&
-            fileSsl == p.fileSsl &&
-            fileLogin == p.fileLogin &&
-            encoderStream == p.encoderStream &&
-            encoderPort == p.encoderPort &&
-            encoderPath == p.encoderPath &&
-            encoderLogin == p.encoderLogin &&
-            encoderUser == p.encoderUser &&
-            encoderPass == p.encoderPass &&
-            encoderVideoBitrate == p.encoderVideoBitrate &&
-            encoderAudioBitrate == p.encoderAudioBitrate
+    fun hasSameSettings(p: Profile): Boolean = host == p.host &&
+        streamHostOrHost == p.streamHostOrHost &&
+        user == p.user &&
+        pass == p.pass &&
+        login == p.login &&
+        ssl == p.ssl &&
+        simpleRemote == p.simpleRemote &&
+        id == p.id &&
+        port == p.port &&
+        streamPort == p.streamPort &&
+        filePort == p.filePort &&
+        streamLogin == p.streamLogin &&
+        fileSsl == p.fileSsl &&
+        fileLogin == p.fileLogin &&
+        encoderStream == p.encoderStream &&
+        encoderPort == p.encoderPort &&
+        encoderPath == p.encoderPath &&
+        encoderLogin == p.encoderLogin &&
+        encoderUser == p.encoderUser &&
+        encoderPass == p.encoderPass &&
+        encoderVideoBitrate == p.encoderVideoBitrate &&
+        encoderAudioBitrate == p.encoderAudioBitrate
+
+    private fun parseInt(value: String, fallback: () -> Int): Int = try {
+        value.toInt()
+    } catch (e: NumberFormatException) {
+        Log.w(DreamDroid.LOG_TAG, e.toString())
+        fallback()
     }
 
-    private fun parseInt(value: String, fallback: () -> Int): Int {
-        return try {
-            value.toInt()
-        } catch (e: NumberFormatException) {
-            Log.w(DreamDroid.LOG_TAG, e.toString())
-            fallback()
-        }
-    }
-
-    private fun stripScheme(value: String?): String {
-        return (value ?: "").replace("http://", "").replace("https://", "")
-    }
+    private fun stripScheme(value: String?): String =
+        (value ?: "").replace("http://", "").replace("https://", "")
 
     companion object {
         private const val serialVersionUID: Long = 8176949133234868302L
 
         @Ignore
-        fun getDefault(): Profile =
-            Profile(
-                null, "", "", "", 443, 8001, 80, false, "root", "dreambox", true, false, false,
-                false, false, "", "", "", "",
-            )
+        fun getDefault(): Profile = Profile(
+            null, "", "", "", 443, 8001, 80, false, "root", "dreambox", true, false, false,
+            false, false, "", "", "", ""
+        )
     }
 }

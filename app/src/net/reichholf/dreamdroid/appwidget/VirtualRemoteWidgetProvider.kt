@@ -49,7 +49,7 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int,
-            profile: Profile?,
+            profile: Profile?
         ) {
             if (profile == null) return
             val appContext = context.applicationContext
@@ -60,7 +60,7 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
                 } catch (_: IllegalArgumentException) {
                     appWidgetManager.updateAppWidget(
                         appWidgetId,
-                        VirtualRemoteWidgetViews.build(appContext, appWidgetId, profile),
+                        VirtualRemoteWidgetViews.build(appContext, appWidgetId, profile)
                     )
                 }
             }

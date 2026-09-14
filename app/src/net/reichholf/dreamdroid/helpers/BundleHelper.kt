@@ -9,7 +9,8 @@ object BundleHelper {
         return list
     }
 
-    fun toCharSequenceArray(strings: ArrayList<String>): Array<CharSequence> {
-        return Array(strings.size) { i -> strings[i] }
-    }
+    fun toCharSequenceArray(strings: ArrayList<String>): Array<CharSequence> =
+        Array(strings.size) { i ->
+            strings[i]
+        }
 }

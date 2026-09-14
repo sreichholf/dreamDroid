@@ -15,14 +15,6 @@ import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import com.squareup.picasso.OkHttp3Downloader
 import com.squareup.picasso.Picasso
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.helpers.PiconSyncService
-import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
-import okhttp3.Response
 import java.security.GeneralSecurityException
 import java.security.KeyStore
 import java.util.Arrays
@@ -30,6 +22,14 @@ import javax.net.ssl.HttpsURLConnection
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
+import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.PiconSyncService
+import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import okhttp3.Credentials
+import okhttp3.OkHttpClient
+import okhttp3.Response
 
 /**
  * Created by Stephan on 06.11.13.
@@ -58,7 +58,7 @@ open class BaseActivity :
             sc.init(
                 null,
                 arrayOf<X509TrustManager>(mTrustManager!!),
-                java.security.SecureRandom(),
+                java.security.SecureRandom()
             )
             HttpsURLConnection.setFollowRedirects(false)
             // Picasso w/ OkHttpClient. Do not mutate process-wide
@@ -79,8 +79,8 @@ open class BaseActivity :
                 // OkHttp 4: avoid okhttp3.internal.*; match HttpsURLConnection verifier wrap.
                 .hostnameVerifier(
                     mTrustManager!!.wrapHostnameVerifier(
-                        HttpsURLConnection.getDefaultHostnameVerifier(),
-                    ),
+                        HttpsURLConnection.getDefaultHostnameVerifier()
+                    )
                 )
             val builder = Picasso.Builder(applicationContext)
             builder.downloader(OkHttp3Downloader(clientBuilder.build()))
@@ -94,10 +94,13 @@ open class BaseActivity :
         super.onCreate(savedInstanceState)
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true,
+                true
             )
         ) {
-            overridePendingTransition(R.animator.activity_open_translate, R.animator.activity_close_scale)
+            overridePendingTransition(
+                R.animator.activity_open_translate,
+                R.animator.activity_close_scale
+            )
         }
     }
 
@@ -120,10 +123,13 @@ open class BaseActivity :
         super.onPause()
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true,
+                true
             )
         ) {
-            overridePendingTransition(R.animator.activity_open_scale, R.animator.activity_close_translate)
+            overridePendingTransition(
+                R.animator.activity_open_scale,
+                R.animator.activity_close_translate
+            )
         }
     }
 
@@ -143,7 +149,7 @@ open class BaseActivity :
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray,
+        grantResults: IntArray
     ) {
         val granted = grantResults.isNotEmpty() &&
             grantResults[0] == PackageManager.PERMISSION_GRANTED
@@ -152,6 +158,7 @@ open class BaseActivity :
                 if (granted) {
                     callPiconSyncIntent()
                 }
+
             else -> {
                 val details = supportFragmentManager.findFragmentById(R.id.detail_view)
                 details?.onRequestPermissionsResult(requestCode, permissions, grantResults)
@@ -169,7 +176,7 @@ open class BaseActivity :
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON,
+                REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON
             )
         }
     }
@@ -214,7 +221,7 @@ open class BaseActivity :
                 val trustManagers = trustManagerFactory.trustManagers
                 if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
                     throw IllegalStateException(
-                        "Unexpected default trust managers:" + Arrays.toString(trustManagers),
+                        "Unexpected default trust managers:" + Arrays.toString(trustManagers)
                     )
                 }
                 return trustManagers[0] as X509TrustManager

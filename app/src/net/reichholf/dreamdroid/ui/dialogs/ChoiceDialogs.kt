@@ -39,12 +39,14 @@ fun MultiChoiceAlertDialog(
     initialChecked: BooleanArray,
     onDismiss: () -> Unit,
     onConfirm: (selectedIndices: List<Int>) -> Unit,
-    confirmLabel: String = stringResource(R.string.ok),
+    confirmLabel: String = stringResource(R.string.ok)
 ) {
     val checked = remember(items, initialChecked) {
-        mutableStateListOf(*BooleanArray(items.size) { i ->
-            i < initialChecked.size && initialChecked[i]
-        }.toTypedArray())
+        mutableStateListOf(
+            *BooleanArray(items.size) { i ->
+                i < initialChecked.size && initialChecked[i]
+            }.toTypedArray()
+        )
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -54,7 +56,7 @@ fun MultiChoiceAlertDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 360.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
             ) {
                 items.forEachIndexed { index, label ->
                     Row(
@@ -63,18 +65,18 @@ fun MultiChoiceAlertDialog(
                             .toggleable(
                                 value = checked[index],
                                 role = Role.Checkbox,
-                                onValueChange = { checked[index] = it },
+                                onValueChange = { checked[index] = it }
                             )
                             .padding(vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Checkbox(
                             checked = checked[index],
-                            onCheckedChange = null,
+                            onCheckedChange = null
                         )
                         Text(
                             text = label,
-                            modifier = Modifier.padding(start = 8.dp),
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
                 }
@@ -86,7 +88,7 @@ fun MultiChoiceAlertDialog(
                     val selected = checked.mapIndexedNotNull { i, on -> if (on) i else null }
                     onConfirm(selected)
                     onDismiss()
-                },
+                }
             ) {
                 Text(confirmLabel)
             }
@@ -95,7 +97,7 @@ fun MultiChoiceAlertDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }
 
@@ -104,7 +106,7 @@ fun SimpleChoiceAlertDialog(
     title: String,
     items: List<String>,
     onDismiss: () -> Unit,
-    onChoice: (index: Int) -> Unit,
+    onChoice: (index: Int) -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -114,7 +116,7 @@ fun SimpleChoiceAlertDialog(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 360.dp)
-                    .verticalScroll(rememberScrollState()),
+                    .verticalScroll(rememberScrollState())
             ) {
                 items.forEachIndexed { index, label ->
                     Text(
@@ -125,7 +127,7 @@ fun SimpleChoiceAlertDialog(
                                 onChoice(index)
                                 onDismiss()
                             }
-                            .padding(vertical = 12.dp),
+                            .padding(vertical = 12.dp)
                     )
                 }
             }
@@ -135,22 +137,15 @@ fun SimpleChoiceAlertDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }
 
 /** In-composition stand-in for a blocking [android.app.ProgressDialog]. */
-data class IndeterminateProgressState(
-    val message: String,
-    val title: String = "",
-)
+data class IndeterminateProgressState(val message: String, val title: String = "")
 
 @Composable
-fun IndeterminateProgressDialog(
-    title: String,
-    message: String,
-    onDismiss: () -> Unit = {},
-) {
+fun IndeterminateProgressDialog(title: String, message: String, onDismiss: () -> Unit = {}) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = if (title.isBlank()) {
@@ -164,7 +159,7 @@ fun IndeterminateProgressDialog(
                 Text(message)
             }
         },
-        confirmButton = {},
+        confirmButton = {}
     )
 }
 
@@ -175,7 +170,7 @@ fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
         IndeterminateProgressDialog(
             title = progress.title,
             message = progress.message,
-            onDismiss = { dismissed = true },
+            onDismiss = { dismissed = true }
         )
     }
 }
@@ -187,7 +182,7 @@ fun ConfirmAlertDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     confirmLabel: String = stringResource(R.string.ok),
-    dismissLabel: String = stringResource(R.string.cancel),
+    dismissLabel: String = stringResource(R.string.cancel)
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -198,7 +193,7 @@ fun ConfirmAlertDialog(
                 onClick = {
                     onConfirm()
                     onDismiss()
-                },
+                }
             ) {
                 Text(confirmLabel)
             }
@@ -207,7 +202,6 @@ fun ConfirmAlertDialog(
             TextButton(onClick = onDismiss) {
                 Text(dismissLabel)
             }
-        },
+        }
     )
 }
-

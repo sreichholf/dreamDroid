@@ -24,7 +24,7 @@ class NowPlayingDetailScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .commit()
@@ -36,7 +36,7 @@ class NowPlayingDetailScreenTest {
             service = Service(
                 reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
                 name = "Das Erste HD",
-                provider = "ARD",
+                provider = "ARD"
             ),
             now = Event(
                 eventId = "39150",
@@ -44,22 +44,22 @@ class NowPlayingDetailScreenTest {
                 startReadable = "20:00",
                 durationReadable = "15",
                 description = "News",
-                descriptionExtended = "Die Nachrichten um 20 Uhr.",
+                descriptionExtended = "Die Nachrichten um 20 Uhr."
             ),
             next = Event(
                 eventId = "39151",
                 title = "Wetter",
                 startReadable = "20:15",
                 durationReadable = "15",
-                descriptionExtended = "Der Wetterbericht.",
-            ),
+                descriptionExtended = "Der Wetterbericht."
+            )
         )
         var streamClicks = 0
         composeRule.setContent {
             DreamDroidTheme {
                 NowPlayingDetailScreen(
                     current = current,
-                    onStream = { streamClicks++ },
+                    onStream = { streamClicks++ }
                 )
             }
         }
@@ -85,7 +85,7 @@ class NowPlayingDetailScreenTest {
                 NowPlayingDetailScreen(
                     current = null,
                     loading = true,
-                    onStream = { streamClicks++ },
+                    onStream = { streamClicks++ }
                 )
             }
         }
@@ -103,7 +103,7 @@ class NowPlayingDetailScreenTest {
             DreamDroidTheme {
                 NowPlayingDetailScreen(
                     current = null,
-                    onStream = { streamClicks++ },
+                    onStream = { streamClicks++ }
                 )
             }
         }
@@ -117,15 +117,15 @@ class NowPlayingDetailScreenTest {
         val current = CurrentService(
             service = Service(
                 reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
-                name = "Das Erste HD",
-            ),
+                name = "Das Erste HD"
+            )
         )
         var streamClicks = 0
         composeRule.setContent {
             DreamDroidTheme {
                 NowPlayingDetailScreen(
                     current = current,
-                    onStream = { streamClicks++ },
+                    onStream = { streamClicks++ }
                 )
             }
         }

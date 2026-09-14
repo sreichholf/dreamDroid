@@ -11,7 +11,9 @@ import java.io.Serializable
 /**
  * @author sreichholf
  */
-open class ExtendedHashMap : Serializable, Cloneable {
+open class ExtendedHashMap :
+    Serializable,
+    Cloneable {
     protected var mMap: HashMap<String, Any?>
 
     constructor() {
@@ -103,12 +105,10 @@ open class ExtendedHashMap : Serializable, Cloneable {
         return retVal
     }
 
-    fun getInt(key: String?, def: Int): Int {
-        return try {
-            Integer.valueOf(getString(key, "0"))
-        } catch (_: NumberFormatException) {
-            def
-        }
+    fun getInt(key: String?, def: Int): Int = try {
+        Integer.valueOf(getString(key, "0"))
+    } catch (_: NumberFormatException) {
+        def
     }
 
     fun getInt(key: String?): Int = getInt(key, 0)

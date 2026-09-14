@@ -67,7 +67,7 @@ class TimerParserTest {
     @Test
     fun emptyTimerListYieldsEmptyList() {
         val timers = TimerParser.parse(
-            """<?xml version="1.0" encoding="UTF-8"?><e2timerlist></e2timerlist>""",
+            """<?xml version="1.0" encoding="UTF-8"?><e2timerlist></e2timerlist>"""
         )
         assertNotNull(timers)
         assertEquals(0, timers!!.size)

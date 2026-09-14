@@ -20,7 +20,7 @@ class TvMoviesScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -34,7 +34,7 @@ class TvMoviesScreenTest {
                     selectedRow = 0,
                     error = null,
                     onDestinationSelected = {},
-                    onRowSelected = {},
+                    onRowSelected = {}
                 )
             }
         }
@@ -92,7 +92,7 @@ class TvMoviesScreenTest {
                     rows = listOf("Favourites (TV)", "Provider"),
                     selectedRow = 1,
                     error = null,
-                    onRowSelected = { selected += it },
+                    onRowSelected = { selected += it }
                 )
             }
         }

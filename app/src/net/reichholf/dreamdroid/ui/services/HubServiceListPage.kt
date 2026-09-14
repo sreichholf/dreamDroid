@@ -56,7 +56,8 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
- * Phase 2.7h: one TV/Radio hub bouquet page as Compose (parity with former ServiceListPageFragment).
+ * Phase 2.7h: one TV/Radio hub bouquet page as Compose
+ * (parity with former ServiceListPageFragment).
  * Host must keep this in composition only while the page is the active hub child so
  * the options menu stay scoped.
  * System back pops one directory drill-down level before leaving the hub.
@@ -68,7 +69,7 @@ fun HubServiceListPage(
     bouquetName: String,
     modifier: Modifier = Modifier,
     onProvideGoUp: ((() -> Unit)?) -> Unit = {},
-    onZapped: () -> Unit = {},
+    onZapped: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -153,12 +154,12 @@ fun HubServiceListPage(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         if (listState.items.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 if (emptyMessage != null) {
                     Text(
@@ -166,7 +167,7 @@ fun HubServiceListPage(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp),
+                        modifier = Modifier.padding(24.dp)
                     )
                 }
             }
@@ -174,7 +175,7 @@ fun HubServiceListPage(
             ServiceListScreen(
                 items = listState.items,
                 onItemClick = { item, x, y -> session.onItemClick(item, isLong = false, x, y) },
-                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) },
+                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) }
             )
         }
     }
@@ -213,7 +214,7 @@ class HubServiceListSession : MenuProvider {
         generation: Int,
         success: Boolean,
         rows: List<ServiceNowNext>,
-        errorText: String?,
+        errorText: String?
     ) {
         if (generation != loadGeneration) {
             return
@@ -318,7 +319,7 @@ class HubServiceListSession : MenuProvider {
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
             ZapRequestHandler(),
-            listOf(NameValuePair("sRef", ref)),
+            listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
@@ -349,18 +350,22 @@ class HubServiceListSession : MenuProvider {
                         row.next?.let { dialogs.showDetail(it) }
                         true
                     }
+
                     R.id.menu_current_event -> {
                         row.now?.let { dialogs.showDetail(it) }
                         true
                     }
+
                     R.id.menu_browse_epg -> {
                         host.navigateToServiceEpg(ref, name)
                         true
                     }
+
                     R.id.menu_zap -> {
                         zapTo(ref)
                         true
                     }
+
                     R.id.menu_stream -> {
                         try {
                             val activity = ctx as AppCompatActivity
@@ -370,14 +375,15 @@ class HubServiceListSession : MenuProvider {
                                     ref,
                                     name,
                                     currentRef,
-                                    serviceNowNextToExtendedHashMap(row),
-                                ),
+                                    serviceNowNextToExtendedHashMap(row)
+                                )
                             )
                         } catch (_: ActivityNotFoundException) {
                             toast(ctx.getText(R.string.missing_stream_player))
                         }
                         true
                     }
+
                     else -> false
                 }
             }
@@ -458,7 +464,9 @@ class HubServiceListSession : MenuProvider {
         }
         AppDatabase.profiles(ctx).updateProfile(p)
         if (!reset) {
-            toast(ctx.getText(R.string.default_bouquet_set_to).toString() + " '" + currentName + "'")
+            toast(
+                ctx.getText(R.string.default_bouquet_set_to).toString() + " '" + currentName + "'"
+            )
         }
         (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
         return true
