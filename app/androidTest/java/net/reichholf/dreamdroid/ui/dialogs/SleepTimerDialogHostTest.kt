@@ -8,7 +8,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
-import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
@@ -91,7 +90,8 @@ class SleepTimerDialogHostTest {
 
     private fun assertQueuedForm(queued: SleepTimerNavArgs) {
         composeRule.onNodeWithText("Sleep Timer").assertIsDisplayed()
-        composeRule.onNodeWithText("Activate").assertIsOff()
+        // Activate is a selectable Checkbox row (Selected), not ToggleableState.
+        composeRule.onNodeWithText("Activate").assertIsNotSelected()
         composeRule.onNodeWithText("Shutdown").assertIsSelected()
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
         composeRule.runOnIdle {

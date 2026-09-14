@@ -60,7 +60,7 @@ class MultiEpgSessionTest {
             noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { session.channels.isNotEmpty() }
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
         assertEquals("T1", titleOnFocusedChunk(session, t0))
         assertTrue(session.syncing)
         gate.complete(Unit)
@@ -452,6 +452,7 @@ class MultiEpgSessionTest {
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
+        waitUntil { session.timerClocks.isNotEmpty() }
         assertEquals(MultiEpgTimerClock.Record, session.timerClocks.values.single())
     }
 
@@ -644,16 +645,21 @@ class MultiEpgSessionTest {
         assertEquals("prefetch down", session.errorMessage)
     }
 
-    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String {
+    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String =
+        titleOnFocusedChunkOrNull(session, unixSec)
+            ?: error(
+                "no bar in chunk ${MultiEpgWindows.chunkContaining(unixSec).startSec}"
+            )
+
+    private fun titleOnFocusedChunkOrNull(session: MultiEpgSession, unixSec: Long): String? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
         for (channel in session.channels) {
-            for (bar in channel.bars) {
-                if (bar.startSec >= chunk.startSec && bar.startSec < chunk.endSec) {
-                    return bar.event.title
-                }
+            val bars = channel.bars.overlapping(chunk.startSec, chunk.endSec)
+            if (bars.isNotEmpty()) {
+                return bars.first().event.title
             }
         }
-        error("no bar in chunk ${chunk.startSec}")
+        return null
     }
 
     private fun programme(
