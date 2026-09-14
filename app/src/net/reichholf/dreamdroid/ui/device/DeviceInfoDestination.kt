@@ -62,6 +62,10 @@ fun DeviceInfoDestination(modifier: Modifier = Modifier) {
         }
     }
 
+    restoreDeviceInfoUiState(uiState, info, deviceInfoReady) { capacity, free ->
+        String.format(context.getString(R.string.hdd_capacity), capacity, free)
+    }
+
     fun setToolbarTitle(title: String) {
         val activity = context as? AppCompatActivity ?: return
         activity.title = title

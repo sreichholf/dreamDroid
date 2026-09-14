@@ -45,6 +45,29 @@ fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
     )
 }
 
+/** Keep an EPG sheet open when title/date are empty; show [unavailableTitle] instead. */
+fun Event.toEpgDetailContentOrUnavailable(
+    minutesShort: String,
+    unavailableTitle: String,
+): EpgDetailContent {
+    toEpgDetailContent(minutesShort)?.let { return it }
+    val event = withReadableTimes()
+    val title = event.title.takeUnless { it.isEmpty() || it == "N/A" } ?: unavailableTitle
+    val dateLine = if (event.startReadable.isEmpty()) {
+        ""
+    } else {
+        "${event.startReadable} (${event.durationReadable} $minutesShort)"
+    }
+    return EpgDetailContent(
+        title = title,
+        serviceName = event.serviceName,
+        description = event.description,
+        descriptionExtended = event.descriptionExtended.replace("\\n", "\n"),
+        dateLine = dateLine,
+        isNext = false,
+    )
+}
+
 fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String): EpgDetailContent? {
     val prefix = if (showNext) EventKeys.PREFIX_NEXT else ""
     val title = getString(prefix + EventKeys.KEY_EVENT_TITLE) ?: "N/A"

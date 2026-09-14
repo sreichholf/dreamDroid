@@ -10,13 +10,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import io.noties.markwon.Markwon
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 @Composable
 fun ChangelogScreen(
@@ -42,13 +39,4 @@ fun ChangelogScreen(
             Markwon.create(context).setMarkdown(view, markdown)
         },
     )
-}
-
-fun ComposeView.bindChangelogScreen(markdown: String) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            ChangelogScreen(markdown = markdown)
-        }
-    }
 }

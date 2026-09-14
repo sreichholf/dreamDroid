@@ -5,8 +5,8 @@ import net.reichholf.dreamdroid.helpers.Python
 
 /**
  * Fill [Event.startReadable] / duration strings the same way [EventParser] does.
- * Room round-trips store unix [Event.start] only; the EPG detail sheet refuses
- * to open without the formatted date line.
+ * Room round-trips store unix [Event.start] only; format the date line before
+ * mapping to EPG detail content.
  */
 fun Event.withReadableTimes(): Event {
     if (startReadable.isNotEmpty()) {

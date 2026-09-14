@@ -783,25 +783,13 @@ class MainActivity :
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         getCurrentDetailFragment() // FIXME find the real cause for mDetailFragment being null and fix that
-        if (isNavigationDialog(dialogTag)) {
-            mNavigationHelper?.onDialogAction(action, details, dialogTag)
-        } else if (mDetailFragment != null) {
+        if (mDetailFragment != null) {
             val content = getDetailContentFragment()
             if (content is DialogActionListener) {
                 content.onDialogAction(action, details, dialogTag)
             }
         }
         super.onDialogAction(action, details, dialogTag)
-    }
-
-
-    private fun isNavigationDialog(dialogTag: String?): Boolean {
-        for (tag in NAVIGATION_DIALOG_TAGS) {
-            if (tag == dialogTag) {
-                return true
-            }
-        }
-        return false
     }
 
     fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
@@ -861,10 +849,6 @@ class MainActivity :
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
-
-        val NAVIGATION_DIALOG_TAGS: List<String> = listOf(
-            "sleeptimer_progress_dialog",
-        )
 
         private fun isNestedInPhoneNavHost(fragment: Fragment): Boolean {
             var parent = fragment.parentFragment

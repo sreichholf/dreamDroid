@@ -32,7 +32,6 @@ object Statics {
     const val ITEM_SHUTDOWN: Int = 0x6016
     const val ITEM_POWERSTATE_DIALOG: Int = 0x6017
     const val ITEM_ABOUT: Int = R.id.menu_navigation_about
-    const val ITEM_CHECK_CONN: Int = R.id.menu_check_connectivity
     const val ITEM_CHANGELOG: Int = R.id.menu_navigation_changelog
     const val ITEM_SLEEPTIMER: Int = 0x6020
     const val ITEM_PROFILES: Int = R.id.menu_navigation_profiles

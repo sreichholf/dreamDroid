@@ -13,6 +13,7 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
@@ -133,6 +134,31 @@ class EpgDetailDialogHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
+    }
+
+    @Test
+    fun sheetHostKeepsUnavailableTitleInsteadOfDismissing() {
+        val session = EpgEventDialogSession()
+        session.showDetail(
+            Event(
+                title = "",
+                serviceName = "Das Erste HD",
+                startReadable = "20:00",
+                durationReadable = "15",
+            ),
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheetHost(session)
+            }
+        }
+        composeRule.waitForIdle()
+        val unavailable = composeRule.activity.getString(R.string.not_available)
+        composeRule.onNodeWithText(unavailable).assertIsDisplayed()
+        composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals("", session.detailEvent?.title.orEmpty())
+        }
     }
 
     @Test

@@ -1,9 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <item name="detail_title_prio" type="id"/>
     <item name="recyclerview_item_click_support" type="id"/>
-    <item name="recyclerview_item_selection_support" type="id"/>
+    <item name="menu_none" type="id"/>
+    <item name="menu_navigation_services" type="id"/>
+    <item name="menu_navigation_epg" type="id"/>
+    <item name="menu_navigation_multiepg" type="id"/>
+    <item name="menu_navigation_remote" type="id"/>
+    <item name="menu_navigation_current" type="id"/>
+    <item name="menu_navigation_zap" type="id"/>
+    <item name="menu_navigation_tools" type="id"/>
+    <item name="menu_navigation_settings" type="id"/>
     <item name="menu_navigation_profiles" type="id"/>
     <item name="menu_navigation_power" type="id"/>
     <item name="menu_navigation_sleeptimer" type="id"/>
@@ -15,6 +22,5 @@
     <item name="menu_navigation_device_info" type="id"/>
     <item name="menu_navigation_screenshot" type="id"/>
     <item name="menu_cancel" type="id"/>
-    <item name="menu_check_connectivity" type="id"/>
 
 </resources>

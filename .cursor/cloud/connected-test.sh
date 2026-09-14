@@ -6,6 +6,7 @@
 # UTP's device controller (which ignores adbOptions.timeOutInMs). This helper
 # uses a streamed `adb install` of the standalone x86_64 APK plus `am instrument`
 # (the path AGENTS.md sanctions) so tests run green on the slow emulator.
+# This ABI split vs CI `-Pci` (one fat APK for UTP) is intentional.
 #
 # Usage: bash .cursor/cloud/connected-test.sh [testClassOrPackage]
 set -euo pipefail
