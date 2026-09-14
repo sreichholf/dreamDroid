@@ -1,7 +1,7 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.461
-* NEW: MultiEPG — graphical EPG grid (channels × time) with zoom (1/2/4/5 h), Now/±day navigation, timer clocks, and Compact/Comfortable text size
+* NEW: MultiEPG — graphical EPG grid
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
 * NEW: Choose which screen opens when the app starts (Settings → Start screen)
 * NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
