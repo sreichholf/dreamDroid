@@ -6,10 +6,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
-import androidx.compose.ui.test.assertDoesNotExist
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
@@ -180,7 +181,7 @@ class ComposeTvHubChromeTest {
                 errorText = "box offline",
             )
         }
-        composeRule.onNodeWithTag("hub_error", useUnmergedTree = true).assertDoesNotExist()
+        composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 
