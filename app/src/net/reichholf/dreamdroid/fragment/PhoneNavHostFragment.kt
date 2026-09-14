@@ -342,6 +342,10 @@ class PhoneNavHostFragment : BaseFragment() {
         flushPendingNavigations()
     }
 
+    /**
+     * Returns queued args once, then [SleepTimerNavArgs.defaults]. Snapshot with
+     * [net.reichholf.dreamdroid.ui.nav.rememberSleepTimerNavArgs] in the dialog destination.
+     */
     fun consumeSleepTimerArgs(): SleepTimerNavArgs {
         val args = pendingSleepTimerArgs ?: SleepTimerNavArgs.defaults()
         pendingSleepTimerArgs = null
