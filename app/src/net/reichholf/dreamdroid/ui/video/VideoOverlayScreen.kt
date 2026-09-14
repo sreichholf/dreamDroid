@@ -307,6 +307,7 @@ fun VideoOverlayScreen(
             onEditTimer = { state.epgDetailContent = null },
             onImdb = { state.epgDetailContent = null },
             onSimilar = { state.epgDetailContent = null },
+            showActions = false,
         )
     }
     state.movieDetailContent?.let { content ->

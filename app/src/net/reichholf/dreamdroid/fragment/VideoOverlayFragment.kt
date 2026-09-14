@@ -108,23 +108,12 @@ class VideoOverlayFragment :
         retainInstance = true
         setHasOptionsMenu(true)
         super.onCreate(savedInstanceState)
-        mTitle = requireArguments().getString(TITLE)
-        mServiceRef = requireArguments().getString(SERVICE_REFERENCE)
-        mBouquetRef = requireArguments().getString(BOUQUET_REFERENCE)
         mServiceList = ArrayList()
-        @Suppress("DEPRECATION")
-        val serviceInfoHash = requireArguments().get(SERVICE_INFO) as ExtendedHashMap?
-        if (serviceInfoHash != null) {
-            if (serviceInfoHash.containsKey(Movie.KEY_FILE_NAME)) {
-                mMovie = movieFromExtendedHashMap(serviceInfoHash)
-            } else {
-                mCurrentService = serviceNowNextFromExtendedHashMap(serviceInfoHash)
-            }
-        }
         mHandler = Handler(Looper.getMainLooper())
         mServicesViewVisible = false
         mAutoHideRunnable = Runnable { hideOverlays() }
         mIssueReloadRunnable = Runnable { reload() }
+        applyPlaybackExtras(requireArguments())
 
         mAudioManager =
             requireActivity().applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
@@ -424,13 +413,69 @@ class VideoOverlayFragment :
                 mBouquetRef,
                 serviceInfoHash,
             )
-        requireArguments().putString(TITLE, mTitle)
-        requireArguments().getString(SERVICE_REFERENCE, mServiceRef)
-        requireArguments().getString(BOUQUET_REFERENCE, mBouquetRef)
+        val zapExtras =
+            VideoPlayback.overlayExtrasForZap(mTitle, mServiceRef, mBouquetRef)
+        requireArguments().putString(TITLE, zapExtras.title)
+        requireArguments().putString(SERVICE_REFERENCE, zapExtras.serviceRef)
+        requireArguments().putString(BOUQUET_REFERENCE, zapExtras.bouquetRef)
         requireArguments().putSerializable(SERVICE_INFO, serviceInfoHash)
         (requireActivity() as VideoActivity).handleIntent(streamingIntent)
 
         onServiceInfoChanged(true)
+    }
+
+    fun applyPlaybackExtras(extras: Bundle?) {
+        if (extras == null) return
+        val incoming =
+            VideoPlayback.overlayExtrasForActionView(
+                extras.getString(TITLE),
+                extras.getString(SERVICE_REFERENCE),
+                extras.getString(BOUQUET_REFERENCE),
+            )
+        val args = arguments
+        if (args != null && args !== extras) {
+            args.putString(TITLE, incoming.title)
+            args.putString(SERVICE_REFERENCE, incoming.serviceRef)
+            args.putString(BOUQUET_REFERENCE, incoming.bouquetRef)
+            if (extras.containsKey(SERVICE_INFO)) {
+                @Suppress("DEPRECATION")
+                val serviceInfo = extras.get(SERVICE_INFO) as java.io.Serializable?
+                args.putSerializable(SERVICE_INFO, serviceInfo)
+            } else {
+                args.remove(SERVICE_INFO)
+            }
+        }
+
+        if (!this::mServiceList.isInitialized) return
+
+        val refsChanged =
+            incoming.serviceRef != mServiceRef || incoming.bouquetRef != mBouquetRef
+        val titleChanged = incoming.title != mTitle
+        mTitle = incoming.title
+        mServiceRef = incoming.serviceRef
+        mBouquetRef = incoming.bouquetRef
+
+        @Suppress("DEPRECATION")
+        val serviceInfoHash = extras.get(SERVICE_INFO) as ExtendedHashMap?
+        if (serviceInfoHash != null) {
+            if (serviceInfoHash.containsKey(Movie.KEY_FILE_NAME)) {
+                mMovie = movieFromExtendedHashMap(serviceInfoHash)
+                mCurrentService = null
+            } else {
+                mCurrentService = serviceNowNextFromExtendedHashMap(serviceInfoHash)
+                mMovie = null
+            }
+        } else if (refsChanged) {
+            mMovie = null
+            mCurrentService = null
+        }
+
+        if ((titleChanged || refsChanged) && view != null && this::mHandler.isInitialized) {
+            onServiceInfoChanged(true)
+            if (isResumed) {
+                reload()
+            }
+        }
     }
 
     private fun serviceInfoForIntent(): ExtendedHashMap? {
@@ -537,10 +582,15 @@ class VideoOverlayFragment :
     private fun onEpgNowNextReady(
         success: Boolean,
         rows: List<ServiceNowNext>,
-        @Suppress("UNUSED_PARAMETER") errorText: String?,
+        errorText: String?,
     ) {
         if (!isAdded) return
-        if (!success) return
+        if (!success) {
+            val message = errorText ?: getString(R.string.get_content_error)
+            Log.e(LOG_TAG, message)
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            return
+        }
         applyServiceList(ArrayList(rows))
     }
 
