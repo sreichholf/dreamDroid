@@ -58,4 +58,18 @@ class DrawerHighlightTest {
             DrawerHighlight.itemIdForRoute(PhoneNavRoutes.PROFILES),
         )
     }
+
+    @Test
+    fun epgSearchQueryParamKeepsEpgHighlight() {
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.EPG_SEARCH),
+        )
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute(
+                PhoneNavRoutes.epgSearchRoute("Tagesschau / Wetter"),
+            ),
+        )
+    }
 }
