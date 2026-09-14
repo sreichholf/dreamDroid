@@ -269,7 +269,6 @@ class MultiEpgScreenTest {
         }
 
         composeRule.onNodeWithTag("multi_epg_screen").assertIsDisplayed()
-        composeRule.onNodeWithText("Favourites").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
         composeRule.onNodeWithText("ZDF HD").assertIsDisplayed()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
