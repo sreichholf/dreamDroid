@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.remote
 
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.widget.ImageView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,15 +21,28 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +52,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.widget.ImageViewCompat
+import kotlin.math.abs
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
 
@@ -60,58 +75,145 @@ private data class RemoteMetrics(
     val keyWidth: Dp,
     val keyHeight: Dp,
     val keyHeightLow: Dp,
-    val gap: Dp
+    val gap: Dp,
+    val navKeySize: Dp,
+    val sectionExtra: Dp,
+    val verticalPadding: Dp,
+    val labelSp: Float,
+    val iconDp: Dp
 )
 
 private val LocalRemoteMetrics = compositionLocalOf {
-    RemoteMetrics(keyWidth = 56.dp, keyHeight = 48.dp, keyHeightLow = 36.dp, gap = 4.dp)
+    RemoteMetrics(
+        keyWidth = 56.dp,
+        keyHeight = 40.dp,
+        keyHeightLow = 30.dp,
+        gap = 4.dp,
+        navKeySize = 56.dp,
+        sectionExtra = 2.dp,
+        verticalPadding = 24.dp,
+        labelSp = 12f,
+        iconDp = 24.dp
+    )
 }
+
+internal const val VIRTUAL_REMOTE_LAYOUT_TOGGLE_TAG = "virtual_remote_layout_toggle"
 
 @Composable
 fun VirtualRemoteScreen(
     layout: VirtualRemoteLayout,
     playButtonAsPlayPause: Boolean,
     onKey: (keyCode: Int, longClick: Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onToggleLayout: (() -> Unit)? = null,
+    toggleIconRes: Int = R.drawable.ic_action_list,
+    toggleContentDescription: String? = null
 ) {
-    BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
+    val view = LocalView.current
+    val density = LocalDensity.current
+    var overflowBottom by remember { mutableStateOf(0.dp) }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .onGloballyPositioned { coordinates ->
+                val visible = Rect()
+                if (!view.getGlobalVisibleRect(visible)) {
+                    return@onGloballyPositioned
+                }
+                val clippedPx = (coordinates.size.height - visible.height()).coerceAtLeast(0)
+                val clippedDp = with(density) { clippedPx.toDp() }
+                if (abs(clippedDp.value - overflowBottom.value) > 0.5f) {
+                    overflowBottom = clippedDp
+                }
+            }
     ) {
-        val horizontalPad = 16.dp
-        val available = maxWidth - horizontalPad * 2
-        // Full/simple pads are five columns (side + 3 digits + side); quick-zap is also five.
-        val gap = 4.dp
-        val rawKey = (available - gap * 4) / 5
-        val keyWidth = rawKey.coerceIn(52.dp, 72.dp)
-        val keyHeight = (keyWidth * 0.86f).coerceIn(44.dp, 64.dp)
-        val keyHeightLow = (keyHeight * 0.75f).coerceIn(32.dp, 48.dp)
-        val metrics = RemoteMetrics(
-            keyWidth = keyWidth,
-            keyHeight = keyHeight,
-            keyHeightLow = keyHeightLow,
-            gap = gap
-        )
-        val padMaxWidth = keyWidth * 5 + gap * 4
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = overflowBottom)
+                .clipToBounds()
+        ) {
+            val horizontalPad = 16.dp
+            val fit = VirtualRemoteFit.metrics(
+                availableWidthDp = (maxWidth - horizontalPad * 2).value,
+                availableHeightDp = maxHeight.value,
+                layout = layout
+            )
+            val metrics = RemoteMetrics(
+                keyWidth = fit.keyWidth.dp,
+                keyHeight = fit.keyHeight.dp,
+                keyHeightLow = fit.keyHeightLow.dp,
+                gap = fit.gap.dp,
+                navKeySize = fit.navKeySize.dp,
+                sectionExtra = fit.sectionExtra.dp,
+                verticalPadding = fit.verticalPadding.dp,
+                labelSp = (12f * (fit.keyWidth / VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP))
+                    .coerceIn(9f, 12f),
+                iconDp = (24f * (fit.keyWidth / VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP))
+                    .coerceIn(16f, 24f)
+                    .dp
+            )
+            val padMaxWidth = metrics.keyWidth * 5 + metrics.gap * 4
+            val scroll = rememberScrollState()
+            val padModifier = Modifier
+                .fillMaxWidth()
+                .widthIn(max = padMaxWidth)
+                .then(
+                    if (fit.fitsWithoutScroll) {
+                        Modifier
+                    } else {
+                        Modifier.verticalScroll(scroll)
+                    }
+                )
+                .padding(
+                    horizontal = horizontalPad,
+                    vertical = metrics.verticalPadding / 2
+                )
 
-        CompositionLocalProvider(LocalRemoteMetrics provides metrics) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .widthIn(max = padMaxWidth)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = horizontalPad, vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(metrics.gap * 2 + 2.dp)
-            ) {
-                when (layout) {
-                    VirtualRemoteLayout.QuickZap -> QuickZapPad(onKey = onKey)
+            CompositionLocalProvider(LocalRemoteMetrics provides metrics) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = if (fit.fitsWithoutScroll) {
+                        Alignment.Center
+                    } else {
+                        Alignment.TopCenter
+                    }
+                ) {
+                    Column(
+                        modifier = padModifier,
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(
+                            metrics.gap * 2 + metrics.sectionExtra
+                        )
+                    ) {
+                        when (layout) {
+                            VirtualRemoteLayout.QuickZap -> QuickZapPad(onKey = onKey)
 
-                    VirtualRemoteLayout.Simple -> SimplePad(onKey = onKey)
+                            VirtualRemoteLayout.Simple -> SimplePad(onKey = onKey)
 
-                    VirtualRemoteLayout.Full -> FullPad(
-                        playButtonAsPlayPause = playButtonAsPlayPause,
-                        onKey = onKey
+                            VirtualRemoteLayout.Full -> FullPad(
+                                playButtonAsPlayPause = playButtonAsPlayPause,
+                                onKey = onKey
+                            )
+                        }
+                    }
+                }
+            }
+
+            if (onToggleLayout != null && toggleContentDescription != null) {
+                SmallFloatingActionButton(
+                    onClick = onToggleLayout,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(12.dp)
+                        .testTag(VIRTUAL_REMOTE_LAYOUT_TOGGLE_TAG),
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                ) {
+                    Icon(
+                        painter = painterResource(toggleIconRes),
+                        contentDescription = toggleContentDescription,
+                        tint = MaterialTheme.colorScheme.onPrimary
                     )
                 }
             }
@@ -163,7 +265,7 @@ private fun QuickZapPad(onKey: (Int, Boolean) -> Unit) {
             height = m.keyHeightLow
         )
     }
-    NavigationPad(onKey = onKey, big = true)
+    NavigationPad(onKey = onKey)
     ColorKeysRow(onKey = onKey, height = m.keyHeightLow)
 }
 
@@ -259,9 +361,9 @@ private fun ColorKeysRow(onKey: (Int, Boolean) -> Unit, height: Dp? = null) {
 }
 
 @Composable
-private fun NavigationPad(onKey: (Int, Boolean) -> Unit, big: Boolean = false) {
+private fun NavigationPad(onKey: (Int, Boolean) -> Unit) {
     val m = LocalRemoteMetrics.current
-    val size = if (big) (m.keyWidth * 1.15f).coerceAtMost(72.dp) else m.keyWidth
+    val size = m.navKeySize
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(m.gap)
@@ -500,7 +602,7 @@ private fun RemoteKey(
             Text(
                 text = label,
                 color = contentColor,
-                fontSize = 12.sp,
+                fontSize = m.labelSp.sp,
                 fontWeight = fontWeight,
                 textAlign = TextAlign.Center,
                 maxLines = 1
@@ -552,7 +654,7 @@ private fun IconRemoteKey(
                     ColorStateList.valueOf(KeyOnDark.toArgb())
                 )
             },
-            modifier = Modifier.size(24.dp)
+            modifier = Modifier.size(LocalRemoteMetrics.current.iconDp)
         )
     }
 }
