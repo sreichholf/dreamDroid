@@ -156,7 +156,7 @@ private class ZapSession :
         val state = listState ?: return
         val refreshState = refresh ?: return
         val coroutineScope = scope ?: return
-        if (bouquetRef.isEmpty() && !waitingForPicker) {
+        if (ZapPickerGate.shouldNavigateToPickBouquet(bouquetRef, waitingForPicker)) {
             waitingForPicker = true
             onWaitingForPicker?.invoke(true)
             host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
@@ -227,10 +227,22 @@ private class ZapSession :
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode != Activity.RESULT_OK) {
+        if (!ZapPickerGate.isBouquetPickerRequest(requestCode)) {
             return
         }
-        if (requestCode != Statics.REQUEST_PICK_BOUQUET) {
+        if (resultCode != Activity.RESULT_OK) {
+            val effect = ZapPickerGate.afterNonOkPickerResult(
+                gridEmpty = listState?.items.isNullOrEmpty(),
+            )
+            waitingForPicker = effect.waitingForPicker
+            onWaitingForPicker?.invoke(effect.waitingForPicker)
+            val messageRes = effect.emptyMessageResId
+            if (messageRes != null) {
+                val ctx = context
+                if (ctx != null) {
+                    onEmptyMessage?.invoke(ctx.getString(messageRes))
+                }
+            }
             return
         }
         @Suppress("DEPRECATION")
