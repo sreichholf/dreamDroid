@@ -148,13 +148,29 @@ fun ScreenshotDestination(
         }
     }
 
+    fun toastGallerySaveError() {
+        toast(context.getString(R.string.error))
+    }
+
+    fun failGallerySave(
+        bytes: ByteArray,
+        inserted: Boolean,
+        ioFailed: Boolean,
+    ): Boolean {
+        if (screenshotGallerySaveError(bytes, inserted, ioFailed) == null) {
+            return false
+        }
+        toastGallerySaveError()
+        return true
+    }
+
     fun saveToFile(inCache: Boolean): File? {
         val bytes = rawImage
-        if (bytes.isEmpty()) {
-            return null
-        }
         val extension = fileExtension()
         if (inCache) {
+            if (bytes.isEmpty()) {
+                return null
+            }
             val fileName = "dreamDroid.$extension"
             return try {
                 val file = File(context.cacheDir, fileName)
@@ -164,6 +180,9 @@ fun ScreenshotDestination(
                 e.printStackTrace()
                 null
             }
+        }
+        if (failGallerySave(bytes, inserted = true, ioFailed = false)) {
+            return null
         }
         val timestamp = GregorianCalendar.getInstance().timeInMillis
         val fileName = "dreamDroid_$timestamp.$extension"
@@ -176,7 +195,12 @@ fun ScreenshotDestination(
             MediaStore.Images.Media.EXTERNAL_CONTENT_URI
         }
         val resolver = context.applicationContext.contentResolver
-        val imageContentUri = resolver.insert(imageCollection, imageDetails) ?: return null
+        val imageContentUri = resolver.insert(imageCollection, imageDetails)
+        if (failGallerySave(bytes, inserted = imageContentUri != null, ioFailed = false) ||
+            imageContentUri == null
+        ) {
+            return null
+        }
         return try {
             val pfd: ParcelFileDescriptor = resolver.openFileDescriptor(imageContentUri, "w")!!
             FileOutputStream(pfd.fileDescriptor).use { it.write(bytes) }
@@ -185,7 +209,7 @@ fun ScreenshotDestination(
             null
         } catch (e: IOException) {
             Log.e(DreamDroid.LOG_TAG, e.localizedMessage ?: e.toString())
-            toast(e.toString())
+            failGallerySave(bytes, inserted = true, ioFailed = true)
             null
         }
     }
