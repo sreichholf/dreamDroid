@@ -55,10 +55,7 @@ fun EpgDatePickerDialog(
         },
         modifier = modifier,
     ) {
-        DatePicker(
-            state = dateState,
-            title = { Text(stringResource(R.string.epg_pick_date)) },
-        )
+        DatePicker(state = dateState)
     }
 }
 
