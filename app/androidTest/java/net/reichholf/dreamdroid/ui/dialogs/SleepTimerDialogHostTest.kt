@@ -95,7 +95,7 @@ class SleepTimerDialogHostTest {
         composeRule.onNodeWithText("Shutdown").assertIsSelected()
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
         composeRule.runOnIdle {
-            val picker = findNumberPicker(composeRule.activity.window.decorView)
+            val picker = findNumberPicker()
             assertNotNull("sleep timer minutes picker", picker)
             assertEquals(queued.minutes, picker!!.value)
         }
@@ -111,6 +111,19 @@ private class SleepTimerArgsQueue(initial: SleepTimerNavArgs) {
         pending = null
         return args
     }
+}
+
+private fun findNumberPicker(): NumberPicker? {
+    val wmgClass = Class.forName("android.view.WindowManagerGlobal")
+    val instance = wmgClass.getMethod("getInstance").invoke(null)
+    val viewsField = wmgClass.getDeclaredField("mViews")
+    viewsField.isAccessible = true
+    @Suppress("UNCHECKED_CAST")
+    val roots = viewsField.get(instance) as List<View>
+    for (root in roots) {
+        findNumberPicker(root)?.let { return it }
+    }
+    return null
 }
 
 private fun findNumberPicker(root: View): NumberPicker? {
