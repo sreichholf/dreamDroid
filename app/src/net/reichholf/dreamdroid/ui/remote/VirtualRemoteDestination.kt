@@ -47,10 +47,7 @@ import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
  * including the historical SIMPLE_VRM default-page quirk.
  */
 @Composable
-fun VirtualRemoteDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = remember {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -82,7 +79,8 @@ fun VirtualRemoteDestination(
     val baseTitle = if (quickZap) {
         context.getString(R.string.app_name_release) + "::" + context.getString(R.string.quickzap)
     } else {
-        context.getString(R.string.app_name_release) + "::" + context.getString(R.string.virtual_remote)
+        context.getString(R.string.app_name_release) + "::" +
+            context.getString(R.string.virtual_remote)
     }
 
     fun setToolbarTitle() {
@@ -110,7 +108,7 @@ fun VirtualRemoteDestination(
     fun onKey(keyCode: Int, longClick: Boolean) {
         val msec = if (longClick) 100L else 25L
         vibrator?.vibrate(
-            VibrationEffect.createOneShot(msec, VibrationEffect.DEFAULT_AMPLITUDE),
+            VibrationEffect.createOneShot(msec, VibrationEffect.DEFAULT_AMPLITUDE)
         )
         val params = ArrayList<NameValuePair>().apply {
             add(NameValuePair("command", keyCode.toString()))
@@ -119,7 +117,11 @@ fun VirtualRemoteDestination(
                 add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
             }
         }
-        hostFragment.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) { _, result, http ->
+        hostFragment.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
+                _,
+                result,
+                http
+            ->
             var hasError = false
             var toastText = context.getString(R.string.get_content_error)
             val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
@@ -165,7 +167,7 @@ fun VirtualRemoteDestination(
                     modifier = Modifier
                         .fillMaxWidth()
                         .weight(1f)
-                        .padding(20.dp),
+                        .padding(20.dp)
                 )
                 VirtualRemoteScreen(
                     layout = layout,
@@ -173,7 +175,7 @@ fun VirtualRemoteDestination(
                     onKey = ::onKey,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 15.dp),
+                        .padding(bottom = 15.dp)
                 )
             }
         } else {
@@ -181,7 +183,7 @@ fun VirtualRemoteDestination(
                 layout = layout,
                 playButtonAsPlayPause = playAsPlayPause,
                 onKey = ::onKey,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize()
             )
         }
 
@@ -190,11 +192,11 @@ fun VirtualRemoteDestination(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(8.dp)
-                .size(40.dp),
+                .size(40.dp)
         ) {
             Icon(
                 painter = painterResource(toggleIcon),
-                contentDescription = context.getString(R.string.virtual_remote),
+                contentDescription = context.getString(R.string.virtual_remote)
             )
         }
     }

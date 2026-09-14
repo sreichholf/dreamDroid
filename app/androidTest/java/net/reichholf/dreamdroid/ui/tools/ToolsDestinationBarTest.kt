@@ -15,44 +15,44 @@ import org.junit.Rule
 import org.junit.Test
 
 class ToolsDestinationBarTest {
-	@get:Rule
-	val composeRule = createComposeRule()
+    @get:Rule
+    val composeRule = createComposeRule()
 
-	@Before
-	fun forceAlwaysNight() {
-		PreferenceManager.getDefaultSharedPreferences(
-			InstrumentationRegistry.getInstrumentation().targetContext,
-		).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-	}
+    @Before
+    fun forceAlwaysNight() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
 
-	@Test
-	fun showsToolDestinations() {
-		composeRule.setContent {
-			DreamDroidTheme {
-				ToolsDestinationBar(
-					selected = ToolsDestination.SCREENSHOT,
-					onDestinationSelected = {},
-				)
-			}
-		}
-		composeRule.onNodeWithText("Screenshot").assertIsDisplayed()
-		composeRule.onNodeWithText("Device Information").assertIsDisplayed()
-		composeRule.onNodeWithText("Signal Meter").assertIsDisplayed()
-		composeRule.onNodeWithText("Screenshot").assertIsSelected()
-	}
+    @Test
+    fun showsToolDestinations() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                ToolsDestinationBar(
+                    selected = ToolsDestination.SCREENSHOT,
+                    onDestinationSelected = {}
+                )
+            }
+        }
+        composeRule.onNodeWithText("Screenshot").assertIsDisplayed()
+        composeRule.onNodeWithText("Device Information").assertIsDisplayed()
+        composeRule.onNodeWithText("Signal Meter").assertIsDisplayed()
+        composeRule.onNodeWithText("Screenshot").assertIsSelected()
+    }
 
-	@Test
-	fun selectingDestinationReportsChoice() {
-		val selected = mutableListOf<ToolsDestination>()
-		composeRule.setContent {
-			DreamDroidTheme {
-				ToolsDestinationBar(
-					selected = ToolsDestination.SCREENSHOT,
-					onDestinationSelected = { selected += it },
-				)
-			}
-		}
-		composeRule.onNodeWithText("Signal Meter").performClick()
-		assertEquals(listOf(ToolsDestination.SIGNAL), selected)
-	}
+    @Test
+    fun selectingDestinationReportsChoice() {
+        val selected = mutableListOf<ToolsDestination>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                ToolsDestinationBar(
+                    selected = ToolsDestination.SCREENSHOT,
+                    onDestinationSelected = { selected += it }
+                )
+            }
+        }
+        composeRule.onNodeWithText("Signal Meter").performClick()
+        assertEquals(listOf(ToolsDestination.SIGNAL), selected)
+    }
 }

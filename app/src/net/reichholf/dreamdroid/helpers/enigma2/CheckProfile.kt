@@ -68,7 +68,7 @@ object CheckProfile {
                                 resultList,
                                 R.string.device_name,
                                 false,
-                                deviceInfo.deviceName,
+                                deviceInfo.deviceName
                             )
 
                             var version = deviceInfo.interfaceVersion
@@ -97,7 +97,7 @@ object CheckProfile {
                                     R.string.interface_version,
                                     true,
                                     version,
-                                    R.string.version_too_low,
+                                    R.string.version_too_low
                                 )
                                 setError(checkResult, true, true, R.string.version_too_low)
                             }
@@ -108,7 +108,7 @@ object CheckProfile {
                                 R.string.connection,
                                 true,
                                 host.toString(),
-                                R.string.get_content_error,
+                                R.string.get_content_error
                             )
                             setError(checkResult, true, R.string.get_content_error)
                         }
@@ -119,13 +119,13 @@ object CheckProfile {
                             true,
                             host.toString(),
                             R.string.connection_error,
-                            shc.getErrorText(context),
+                            shc.getErrorText(context)
                         )
                         setError(
                             checkResult,
                             true,
                             R.string.connection_error,
-                            shc.getErrorText(context),
+                            shc.getErrorText(context)
                         )
                     } else if (xml == null) {
                         addEntry(
@@ -133,7 +133,7 @@ object CheckProfile {
                             R.string.connection,
                             true,
                             host.toString(),
-                            R.string.get_content_error,
+                            R.string.get_content_error
                         )
                         setError(checkResult, true, R.string.get_content_error)
                     }
@@ -143,7 +143,7 @@ object CheckProfile {
                         R.string.port,
                         true,
                         port.toString(),
-                        R.string.port_out_of_range,
+                        R.string.port_out_of_range
                     )
                     setError(checkResult, true, R.string.port_out_of_range)
                 }
@@ -153,7 +153,7 @@ object CheckProfile {
                     R.string.host,
                     true,
                     host.toString(),
-                    R.string.illegal_host,
+                    R.string.illegal_host
                 )
                 setError(checkResult, true, R.string.illegal_host)
             }
@@ -184,7 +184,9 @@ object CheckProfile {
                         return 0
                     }
                 }
+
                 cur > req -> return 1
+
                 else -> return -1
             }
         }
@@ -197,7 +199,7 @@ object CheckProfile {
         checkTypeId: Int,
         hasError: Boolean,
         value: String?,
-        errorTextId: Int,
+        errorTextId: Int
     ) {
         addEntry(resultList, checkTypeId, hasError, value, errorTextId, null)
     }
@@ -208,7 +210,7 @@ object CheckProfile {
         hasError: Boolean,
         value: String?,
         errorTextId: Int,
-        errorTextExt: String?,
+        errorTextExt: String?
     ) {
         val entry = ExtendedHashMap()
         entry.put(KEY_HAS_ERROR, hasError)
@@ -223,7 +225,7 @@ object CheckProfile {
         resultList: ArrayList<ExtendedHashMap>,
         checkTypeId: Int,
         hasError: Boolean,
-        value: String?,
+        value: String?
     ) {
         addEntry(resultList, checkTypeId, hasError, value, -1)
     }
@@ -236,7 +238,7 @@ object CheckProfile {
         checkResult: ExtendedHashMap,
         hasError: Boolean,
         errorTextId: Int,
-        extendedText: String?,
+        extendedText: String?
     ) {
         setError(checkResult, hasError, false, errorTextId, extendedText)
     }
@@ -245,7 +247,7 @@ object CheckProfile {
         checkResult: ExtendedHashMap,
         hasError: Boolean,
         isSoftError: Boolean,
-        errorTextId: Int,
+        errorTextId: Int
     ) {
         setError(checkResult, hasError, isSoftError, errorTextId, null)
     }
@@ -255,7 +257,7 @@ object CheckProfile {
         hasError: Boolean,
         isSoftError: Boolean,
         errorTextId: Int,
-        extendedText: String?,
+        extendedText: String?
     ) {
         var text = extendedText
         checkResult.put(KEY_HAS_ERROR, hasError)

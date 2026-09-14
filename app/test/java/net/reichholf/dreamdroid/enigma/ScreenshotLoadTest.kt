@@ -22,7 +22,7 @@ class ScreenshotLoadTest {
         val result = screenshotPayloadResult(
             ByteArray(0),
             httpErrorText = null,
-            fallbackError = "ERROR!",
+            fallbackError = "ERROR!"
         )
         assertFalse(result.success)
         assertFalse(looksLikeScreenshotImage(ByteArray(0)))
@@ -59,7 +59,7 @@ class ScreenshotLoadTest {
             0x0A,
             0x1A,
             0x0A,
-            0x00,
+            0x00
         )
         assertTrue(looksLikeScreenshotImage(png))
         val result = screenshotPayloadResult(png, httpErrorText = null, fallbackError = "ERROR!")
@@ -72,7 +72,7 @@ class ScreenshotLoadTest {
         val result = screenshotPayloadResult(
             "not-an-image".toByteArray(),
             httpErrorText = "timeout",
-            fallbackError = "ERROR!",
+            fallbackError = "ERROR!"
         )
         assertFalse(result.success)
         assertEquals("timeout", result.errorText)

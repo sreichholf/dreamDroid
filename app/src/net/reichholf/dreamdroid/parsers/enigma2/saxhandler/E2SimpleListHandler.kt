@@ -23,7 +23,7 @@ abstract class E2SimpleListHandler(private val mTag: String?) : DefaultHandler()
         namespaceUri: String?,
         localName: String,
         qName: String?,
-        attrs: Attributes?,
+        attrs: Attributes?
     ) {
         if (localName == mTag) {
             inItem = true

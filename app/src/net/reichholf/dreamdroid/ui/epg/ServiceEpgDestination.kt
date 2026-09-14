@@ -30,7 +30,7 @@ fun ServiceEpgDestination(
     hostFragment: PhoneNavHostFragment,
     serviceRef: String,
     serviceName: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     // Prefer Compose BackHandler so system Back pops to hub before MainActivity leave-confirm.
     BackHandler {
@@ -70,7 +70,7 @@ fun ServiceEpgDestination(
             val result = loadEventList(
                 context.applicationContext,
                 listOf(NameValuePair("sRef", serviceRef)),
-                URIStore.EPG_SERVICE,
+                URIStore.EPG_SERVICE
             )
             refresh.setRefreshing(false)
             setToolbarTitle(finishedTitle())
@@ -110,12 +110,12 @@ fun ServiceEpgDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         ServiceEpgScreen(
             items = listState.items,
             emptyMessage = emptyMessage,
-            onItemClick = { dialogSession.showDetail(it) },
+            onItemClick = { dialogSession.showDetail(it) }
         )
     }
 

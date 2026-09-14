@@ -24,34 +24,26 @@ class MultiEpgSync(
     private val fetch: suspend (bouquetRef: String, timeSec: Long, endTimeSec: Long) -> List<Event>,
     private val clockMs: () -> Long = { System.currentTimeMillis() },
     private val ttlMs: Long = MultiEpgWindows.DEFAULT_TTL_MS,
-    private val chunkSeconds: Long = MultiEpgWindows.CHUNK_SECONDS,
+    private val chunkSeconds: Long = MultiEpgWindows.CHUNK_SECONDS
 ) {
     private val mutex = Mutex()
     private val inFlight = HashMap<ChunkKey, CompletableDeferred<List<Event>>>()
 
-    data class ChunkKey(
-        val profileId: Int,
-        val bouquetRef: String,
-        val windowStart: Long,
-    )
+    data class ChunkKey(val profileId: Int, val bouquetRef: String, val windowStart: Long)
 
     data class CachedChunk(
         val events: List<Event>,
         val windowStart: Long,
         val windowEnd: Long,
         val fetchedAtMs: Long,
-        val fresh: Boolean,
+        val fresh: Boolean
     )
 
     /**
      * Room peek for the chunk containing [unixSec], ignoring TTL.
      * Used to paint immediately while a background refresh runs.
      */
-    suspend fun peekChunk(
-        profileId: Int,
-        bouquetRef: String,
-        unixSec: Long,
-    ): CachedChunk? {
+    suspend fun peekChunk(profileId: Int, bouquetRef: String, unixSec: Long): CachedChunk? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
         val meta = withContext(Dispatchers.IO) {
             dao.getChunk(profileId, bouquetRef, chunk.startSec)
@@ -61,7 +53,7 @@ class MultiEpgSync(
                 profileId,
                 bouquetRef,
                 chunk.startSec,
-                chunk.endSec,
+                chunk.endSec
             ).map { it.toEvent() }
         }
         val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
@@ -77,7 +69,7 @@ class MultiEpgSync(
         profileId: Int,
         bouquetRef: String,
         unixSec: Long,
-        forceRefresh: Boolean = false,
+        forceRefresh: Boolean = false
     ): List<Event> {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
         val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
@@ -93,7 +85,7 @@ class MultiEpgSync(
                         profileId,
                         bouquetRef,
                         chunk.startSec,
-                        chunk.endSec,
+                        chunk.endSec
                     ).map { it.toEvent() }
                 }
             }
@@ -124,7 +116,7 @@ class MultiEpgSync(
                 bouquetRef = bouquetRef,
                 windowStart = chunk.startSec,
                 windowEnd = chunk.endSec,
-                fetchedAtMs = clockMs(),
+                fetchedAtMs = clockMs()
             )
             withContext(Dispatchers.IO) {
                 dao.replaceChunk(meta, entities)
@@ -134,7 +126,7 @@ class MultiEpgSync(
                     profileId,
                     bouquetRef,
                     chunk.startSec,
-                    chunk.endSec,
+                    chunk.endSec
                 ).map { it.toEvent() }
             }
             deferred.complete(result)
@@ -160,40 +152,34 @@ class MultiEpgSync(
          *   and yields empty results (overflow in startTimeQuery).
          */
         fun httpFetch(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
-        ): suspend (String, Long, Long) -> List<Event> {
-            return { bouquetRef, timeSec, endTimeSec ->
-                require(endTimeSec > timeSec) { "window end must be after start" }
-                val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
-                val events = EnigmaClient(http).getEvents(
-                    listOf(
-                        NameValuePair("bRef", bouquetRef),
-                        NameValuePair("time", timeSec.toString()),
-                        NameValuePair("endTime", durationMinutes.toString()),
-                    ),
-                    URIStore.EPG_MULTI,
-                ) ?: error("epgmulti request failed")
-                events
-            }
+            http: SimpleHttpClient = SimpleHttpClient.getInstance()
+        ): suspend (String, Long, Long) -> List<Event> = { bouquetRef, timeSec, endTimeSec ->
+            require(endTimeSec > timeSec) { "window end must be after start" }
+            val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
+            val events = EnigmaClient(http).getEvents(
+                listOf(
+                    NameValuePair("bRef", bouquetRef),
+                    NameValuePair("time", timeSec.toString()),
+                    NameValuePair("endTime", durationMinutes.toString())
+                ),
+                URIStore.EPG_MULTI
+            ) ?: error("epgmulti request failed")
+            events
         }
 
         fun httpFetchTimers(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
-        ): suspend () -> List<Timer> {
-            return {
-                EnigmaClient(http).getTimers() ?: emptyList()
-            }
+            http: SimpleHttpClient = SimpleHttpClient.getInstance()
+        ): suspend () -> List<Timer> = {
+            EnigmaClient(http).getTimers() ?: emptyList()
         }
 
         /** Bouquet members from `/web/getservices?sRef=`. HTTP failures throw. */
         fun httpFetchBouquet(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance(),
-        ): suspend (String) -> List<Service> {
-            return { bouquetRef ->
-                EnigmaClient(http).getServices(
-                    listOf(NameValuePair("sRef", bouquetRef)),
-                ) ?: error("getservices request failed")
-            }
+            http: SimpleHttpClient = SimpleHttpClient.getInstance()
+        ): suspend (String) -> List<Service> = { bouquetRef ->
+            EnigmaClient(http).getServices(
+                listOf(NameValuePair("sRef", bouquetRef))
+            ) ?: error("getservices request failed")
         }
     }
 }

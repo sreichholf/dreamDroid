@@ -27,6 +27,7 @@ import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.zIndex
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.concurrent.atomic.AtomicInteger
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -34,7 +35,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Pull-to-refresh must not fire when the list is scrolled away from the top
@@ -47,7 +47,7 @@ class DreamDroidPullRefreshTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -60,14 +60,14 @@ class DreamDroidPullRefreshTest {
             DreamDroidTheme {
                 DreamDroidPullRefresh(
                     refreshing = false,
-                    onRefresh = { refreshCount.incrementAndGet() },
+                    onRefresh = { refreshCount.incrementAndGet() }
                 ) {
                     val listState = rememberLazyListState()
                     LazyColumn(
                         state = listState,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .testTag("pull_list"),
+                            .testTag("pull_list")
                     ) {
                         items(labels) { label ->
                             Text(text = label, modifier = Modifier.fillMaxWidth())
@@ -90,7 +90,7 @@ class DreamDroidPullRefreshTest {
             DreamDroidTheme {
                 DreamDroidPullRefresh(
                     refreshing = true,
-                    onRefresh = {},
+                    onRefresh = {}
                 ) {
                     Text("Still here")
                 }
@@ -116,13 +116,13 @@ class DreamDroidPullRefreshTest {
                         selectedTabIndex = selected,
                         modifier = Modifier
                             .zIndex(1f)
-                            .testTag("hub_tabs"),
+                            .testTag("hub_tabs")
                     ) {
                         tabs.forEachIndexed { index, title ->
                             Tab(
                                 selected = index == selected,
                                 onClick = { selected = index },
-                                text = { Text(title) },
+                                text = { Text(title) }
                             )
                         }
                     }
@@ -131,7 +131,7 @@ class DreamDroidPullRefreshTest {
                         onRefresh = {},
                         modifier = Modifier
                             .fillMaxSize()
-                            .testTag("hub_pull"),
+                            .testTag("hub_pull")
                     ) {
                         Text("list body")
                     }
@@ -147,8 +147,9 @@ class DreamDroidPullRefreshTest {
         val tabBounds = composeRule.onNodeWithTag("hub_tabs").getBoundsInRoot()
         val pullBounds = composeRule.onNodeWithTag("hub_pull").getBoundsInRoot()
         assertTrue(
-            "pull host must start at or below the tab row (tab.bottom=${tabBounds.bottom}, pull.top=${pullBounds.top})",
-            pullBounds.top.value >= tabBounds.bottom.value - 1f,
+            "pull host must start at or below the tab row " +
+                "(tab.bottom=${tabBounds.bottom}, pull.top=${pullBounds.top})",
+            pullBounds.top.value >= tabBounds.bottom.value - 1f
         )
 
         // Root pixels over the Provider label must stay readable text contrast — not a flat
@@ -160,8 +161,14 @@ class DreamDroidPullRefreshTest {
         val density = rootBitmap.width / rootWidthDp
         val left = (providerBounds.left.value * density).toInt().coerceIn(0, rootBitmap.width - 1)
         val top = (providerBounds.top.value * density).toInt().coerceIn(0, rootBitmap.height - 1)
-        val right = (providerBounds.right.value * density).toInt().coerceIn(left + 1, rootBitmap.width)
-        val bottom = (providerBounds.bottom.value * density).toInt().coerceIn(top + 1, rootBitmap.height)
+        val right = (providerBounds.right.value * density).toInt().coerceIn(
+            left + 1,
+            rootBitmap.width
+        )
+        val bottom = (providerBounds.bottom.value * density).toInt().coerceIn(
+            top + 1,
+            rootBitmap.height
+        )
         var distinctColors = 0
         val seen = HashSet<Int>()
         var y = top
@@ -175,8 +182,9 @@ class DreamDroidPullRefreshTest {
         }
         distinctColors = seen.size
         assertTrue(
-            "Provider tab region should keep text contrast during reload, not a flat PTR disk (colors=$distinctColors)",
-            distinctColors >= 3,
+            "Provider tab region should keep text contrast during reload, " +
+                "not a flat PTR disk (colors=$distinctColors)",
+            distinctColors >= 3
         )
     }
 }

@@ -14,6 +14,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Calendar
+import java.util.TimeZone
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -21,8 +23,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.util.Calendar
-import java.util.TimeZone
 
 class EpgDateTimePickerDialogHostTest {
     @get:Rule
@@ -31,7 +31,7 @@ class EpgDateTimePickerDialogHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -50,7 +50,7 @@ class EpgDateTimePickerDialogHostTest {
                     initialTimeSec = initial,
                     timeZone = berlin,
                     onDismiss = {},
-                    onConfirm = { confirmed = it },
+                    onConfirm = { confirmed = it }
                 )
             }
         }
@@ -58,8 +58,9 @@ class EpgDateTimePickerDialogHostTest {
         composeRule.onNodeWithText("Select date").assertIsDisplayed()
         val titleBounds = composeRule.onNodeWithText("Select date").getBoundsInRoot()
         assertTrue(
-            "stock DatePicker title should be inset, not clipped in the corner (left=${titleBounds.left})",
-            titleBounds.left >= 16.dp,
+            "stock DatePicker title should be inset, not clipped in the corner " +
+                "(left=${titleBounds.left})",
+            titleBounds.left >= 16.dp
         )
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
@@ -68,7 +69,7 @@ class EpgDateTimePickerDialogHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -89,7 +90,7 @@ class EpgDateTimePickerDialogHostTest {
                     onConfirm = { h, m ->
                         hour = h
                         minute = m
-                    },
+                    }
                 )
             }
         }
@@ -110,7 +111,7 @@ class EpgDateTimePickerDialogHostTest {
                 EpgDatePickerDialog(
                     initialTimeSec = 1_789_312_500,
                     onDismiss = { dismissed = true },
-                    onConfirm = { confirmed = it },
+                    onConfirm = { confirmed = it }
                 )
             }
         }
@@ -127,7 +128,7 @@ class EpgDateTimePickerDialogHostTest {
         month: Int,
         day: Int,
         hour: Int,
-        minute: Int,
+        minute: Int
     ): Int {
         val cal = Calendar.getInstance(timeZone)
         cal.clear()

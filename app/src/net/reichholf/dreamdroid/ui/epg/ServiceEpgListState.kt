@@ -22,7 +22,7 @@ fun ComposeView.bindServiceEpgScreen(
     state: ServiceEpgListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (Event) -> Unit,
+    onItemClick: (Event) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -30,11 +30,11 @@ fun ComposeView.bindServiceEpgScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 ServiceEpgScreen(
                     items = state.items,
-                    onItemClick = onItemClick,
+                    onItemClick = onItemClick
                 )
             }
         }

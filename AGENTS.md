@@ -4,7 +4,7 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **New code is Kotlin.** `app/src` has no Java sources. Do not add `.java` types under `app/src`. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`. Do not add `@JvmStatic`/`@JvmOverloads`/`@JvmField` for Java callers.
 
-**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Spotless + ktlint `android_studio` is the checker (`.editorconfig`). Run `./gradlew spotlessApply` on Kotlin you touch; `./gradlew spotlessCheck` is in CI. Do not hand-retab or invent a house indent. Ratchet is `origin/main` (only changed files). Whole-tree format: `./gradlew spotlessApply -PspotlessFull`.
+**Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Spotless + ktlint `android_studio` is the checker (`.editorconfig`). Run `./gradlew spotlessApply` on Kotlin you touch; `./gradlew spotlessCheck` is in CI (full `app/**/*.kt` tree). Do not hand-retab or invent a house indent.
 
 Hard rules (also in `.editorconfig`):
 - 4 spaces, never tabs

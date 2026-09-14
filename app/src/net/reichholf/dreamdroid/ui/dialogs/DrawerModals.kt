@@ -9,12 +9,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 
 /**
  * Phase 2.1g-ii-c: Material 3 [AlertDialog] wrappers for drawer modals
@@ -22,15 +22,12 @@ import java.io.InputStream
  */
 
 @Composable
-fun PowerStateDialog(
-    onDismiss: () -> Unit,
-    onChoice: (Int) -> Unit,
-) {
+fun PowerStateDialog(onDismiss: () -> Unit, onChoice: (Int) -> Unit) {
     val items = listOf(
         PowerChoiceItem(Statics.ITEM_TOGGLE_STANDBY, stringResource(R.string.standby)),
         PowerChoiceItem(Statics.ITEM_RESTART_GUI, stringResource(R.string.restart_gui)),
         PowerChoiceItem(Statics.ITEM_REBOOT, stringResource(R.string.reboot)),
-        PowerChoiceItem(Statics.ITEM_SHUTDOWN, stringResource(R.string.shutdown)),
+        PowerChoiceItem(Statics.ITEM_SHUTDOWN, stringResource(R.string.shutdown))
     )
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -41,7 +38,7 @@ fun PowerStateDialog(
                 onItemClick = {
                     onChoice(it.id)
                     onDismiss()
-                },
+                }
             )
         },
         confirmButton = {},
@@ -49,14 +46,14 @@ fun PowerStateDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }
 
 @Composable
 fun SendMessageDialog(
     onDismiss: () -> Unit,
-    onSend: (text: String, type: String, timeout: String) -> Unit,
+    onSend: (text: String, type: String, timeout: String) -> Unit
 ) {
     val state = remember { SendMessageUiState() }
     AlertDialog(
@@ -68,7 +65,7 @@ fun SendMessageDialog(
                 onClick = {
                     onSend(state.message, state.typeIndex.toString(), state.timeout)
                     onDismiss()
-                },
+                }
             ) {
                 Text(stringResource(R.string.send))
             }
@@ -77,7 +74,7 @@ fun SendMessageDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }
 
@@ -87,7 +84,7 @@ fun SleepTimerDialog(
     initialEnabled: Boolean,
     initialAction: String,
     onDismiss: () -> Unit,
-    onSave: (time: String, action: String, enabled: Boolean) -> Unit,
+    onSave: (time: String, action: String, enabled: Boolean) -> Unit
 ) {
     val state = remember(initialMinutes, initialEnabled, initialAction) {
         SleepTimerUiState(initialMinutes, initialEnabled, initialAction)
@@ -101,7 +98,7 @@ fun SleepTimerDialog(
                 onClick = {
                     onSave(state.minutes.toString(), state.action, state.enabled)
                     onDismiss()
-                },
+                }
             ) {
                 Text(stringResource(R.string.save))
             }
@@ -110,15 +107,12 @@ fun SleepTimerDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }
 
 @Composable
-fun ChangelogDialog(
-    onDismiss: () -> Unit,
-    markdown: String = rememberChangelogMarkdown(),
-) {
+fun ChangelogDialog(onDismiss: () -> Unit, markdown: String = rememberChangelogMarkdown()) {
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.changelog)) },
@@ -127,7 +121,7 @@ fun ChangelogDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.close))
             }
-        },
+        }
     )
 }
 
@@ -157,18 +151,16 @@ fun loadChangelogMarkdown(context: Context): String {
     }
 }
 
-internal fun readChangelogUtf8(input: InputStream): String? {
-    return try {
-        val baos = ByteArrayOutputStream()
-        val buffer = ByteArray(1024)
-        var length: Int
-        while (input.read(buffer).also { length = it } != -1) {
-            baos.write(buffer, 0, length)
-        }
-        baos.toString("UTF-8")
-    } catch (_: IOException) {
-        null
+internal fun readChangelogUtf8(input: InputStream): String? = try {
+    val baos = ByteArrayOutputStream()
+    val buffer = ByteArray(1024)
+    var length: Int
+    while (input.read(buffer).also { length = it } != -1) {
+        baos.write(buffer, 0, length)
     }
+    baos.toString("UTF-8")
+} catch (_: IOException) {
+    null
 }
 
 /** Defaults when sleep-timer HTTP load fails but we still want a form. */

@@ -21,20 +21,28 @@ class PickServiceScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
     @Test
     fun seededBouquetsShowNamesAndClick() {
-        val ars = Service("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet", "Favourites (TV)")
-        val radio = Service("1:7:2:0:0:0:0:0:0:0:FROM BOUQUET \"bouquets.radio\" ORDER BY bouquet", "All Radio")
+        val ars =
+            Service(
+                "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
+                "Favourites (TV)"
+            )
+        val radio =
+            Service(
+                "1:7:2:0:0:0:0:0:0:0:FROM BOUQUET \"bouquets.radio\" ORDER BY bouquet",
+                "All Radio"
+            )
         var clicked: Service? = null
         composeRule.setContent {
             DreamDroidTheme {
                 PickServiceScreen(
                     items = listOf(ars, radio),
-                    onItemClick = { clicked = it },
+                    onItemClick = { clicked = it }
                 )
             }
         }
@@ -50,7 +58,7 @@ class PickServiceScreenTest {
                 PickServiceScreen(
                     items = emptyList(),
                     onItemClick = {},
-                    emptyMessage = "No items to display…",
+                    emptyMessage = "No items to display…"
                 )
             }
         }

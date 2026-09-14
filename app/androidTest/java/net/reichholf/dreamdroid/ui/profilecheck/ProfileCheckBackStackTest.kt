@@ -34,7 +34,7 @@ class ProfileCheckBackStackTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -46,7 +46,7 @@ class ProfileCheckBackStackTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = PhoneNavRoutes.HUB,
+                    startDestination = PhoneNavRoutes.HUB
                 ) {
                     composable(PhoneNavRoutes.HUB) { Text("Hub") }
                     composable(PhoneNavRoutes.PROFILE_CHECK) { Text("ProfileCheck") }
@@ -55,7 +55,8 @@ class ProfileCheckBackStackTest {
                 LaunchedEffect(Unit) {
                     navController.navigateToProfileCheck()
                     navController.navigateReplacingProfileCheck(PhoneNavRoutes.HUB)
-                    backStackRoutes = navController.currentBackStack.value.mapNotNull { it.destination.route }
+                    backStackRoutes =
+                        navController.currentBackStack.value.mapNotNull { it.destination.route }
                 }
             }
         }
@@ -64,7 +65,7 @@ class ProfileCheckBackStackTest {
         composeRule.runOnIdle {
             assertFalse(
                 "profile_check must not remain under the service list: $backStackRoutes",
-                PhoneNavRoutes.PROFILE_CHECK in backStackRoutes,
+                PhoneNavRoutes.PROFILE_CHECK in backStackRoutes
             )
             assertEquals(PhoneNavRoutes.HUB, backStackRoutes.last())
         }
@@ -78,7 +79,7 @@ class ProfileCheckBackStackTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = PhoneNavRoutes.HUB,
+                    startDestination = PhoneNavRoutes.HUB
                 ) {
                     composable(PhoneNavRoutes.HUB) { Text("Hub") }
                     composable(PhoneNavRoutes.PROFILE_CHECK) { Text("ProfileCheck") }
@@ -87,7 +88,8 @@ class ProfileCheckBackStackTest {
                 LaunchedEffect(Unit) {
                     navController.navigateToProfileCheck()
                     navController.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
-                    backStackRoutes = navController.currentBackStack.value.mapNotNull { it.destination.route }
+                    backStackRoutes =
+                        navController.currentBackStack.value.mapNotNull { it.destination.route }
                 }
             }
         }
@@ -96,7 +98,7 @@ class ProfileCheckBackStackTest {
         composeRule.runOnIdle {
             assertTrue(
                 "failed-check → Profiles should keep profile_check underneath: $backStackRoutes",
-                PhoneNavRoutes.PROFILE_CHECK in backStackRoutes,
+                PhoneNavRoutes.PROFILE_CHECK in backStackRoutes
             )
             assertEquals(PhoneNavRoutes.PROFILES, backStackRoutes.last())
         }

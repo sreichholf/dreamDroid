@@ -32,11 +32,11 @@ class TvComposeHubHostTest {
     fun preferenceTypeForSettingsKinds() {
         assertEquals(
             PreferenceActivity.PREFS_TYPE_GENERIC,
-            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Preferences),
+            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Preferences)
         )
         assertEquals(
             PreferenceActivity.PREFS_TYPE_PROFILE,
-            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile),
+            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile)
         )
         assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Reload))
     }
@@ -47,8 +47,8 @@ class TvComposeHubHostTest {
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_SETTINGS_ID,
                 loading = false,
-                errorText = "box offline",
-            ),
+                errorText = "box offline"
+            )
         )
     }
 
@@ -58,22 +58,22 @@ class TvComposeHubHostTest {
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 loading = false,
-                errorText = "box offline",
-            ),
+                errorText = "box offline"
+            )
         )
         assertFalse(
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 loading = true,
-                errorText = "box offline",
-            ),
+                errorText = "box offline"
+            )
         )
         assertFalse(
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 loading = false,
-                errorText = null,
-            ),
+                errorText = null
+            )
         )
     }
 }

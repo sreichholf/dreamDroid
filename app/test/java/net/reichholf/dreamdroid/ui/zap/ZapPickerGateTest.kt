@@ -14,8 +14,8 @@ class ZapPickerGateTest {
         assertFalse(
             ZapPickerGate.shouldNavigateToPickBouquet(
                 bouquetRef = "",
-                waitingForPicker = true,
-            ),
+                waitingForPicker = true
+            )
         )
 
         val afterCancel = ZapPickerGate.afterNonOkPickerResult(gridEmpty = true)
@@ -24,8 +24,8 @@ class ZapPickerGateTest {
         assertTrue(
             ZapPickerGate.shouldNavigateToPickBouquet(
                 bouquetRef = "",
-                waitingForPicker = afterCancel.waitingForPicker,
-            ),
+                waitingForPicker = afterCancel.waitingForPicker
+            )
         )
     }
 
@@ -43,8 +43,8 @@ class ZapPickerGateTest {
         assertFalse(
             ZapPickerGate.shouldNavigateToPickBouquet(
                 bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
-                waitingForPicker = afterCancel.waitingForPicker,
-            ),
+                waitingForPicker = afterCancel.waitingForPicker
+            )
         )
     }
 }

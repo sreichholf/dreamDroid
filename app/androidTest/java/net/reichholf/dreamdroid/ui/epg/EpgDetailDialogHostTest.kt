@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.foundation.layout.Column
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
@@ -37,7 +37,7 @@ class EpgDetailDialogHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -52,7 +52,7 @@ class EpgDetailDialogHostTest {
             description = "News",
             descriptionExtended = "Die Nachrichten um 20 Uhr.",
             dateLine = "20:00 (15 min)",
-            isNext = false,
+            isNext = false
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -64,7 +64,7 @@ class EpgDetailDialogHostTest {
                     onSetTimer = { setTimerClicks++ },
                     onEditTimer = {},
                     onImdb = {},
-                    onSimilar = {},
+                    onSimilar = {}
                 )
             }
         }
@@ -78,7 +78,7 @@ class EpgDetailDialogHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -91,7 +91,7 @@ class EpgDetailDialogHostTest {
             description = "News",
             descriptionExtended = "Die Nachrichten um 20 Uhr.",
             dateLine = "20:00 (15 min)",
-            isNext = false,
+            isNext = false
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -102,7 +102,7 @@ class EpgDetailDialogHostTest {
                     onImdb = {},
                     onSimilar = {},
                     showActions = false,
-                    bodyHeightCap = null,
+                    bodyHeightCap = null
                 )
             }
         }
@@ -122,8 +122,8 @@ class EpgDetailDialogHostTest {
                 description = "News",
                 descriptionExtended = "Die Nachrichten um 20 Uhr.",
                 startReadable = "20:00",
-                durationReadable = "15",
-            ),
+                durationReadable = "15"
+            )
         )
         session.progress = IndeterminateProgressState(message = "Saving")
         composeRule.setContent {
@@ -144,8 +144,8 @@ class EpgDetailDialogHostTest {
                 title = "",
                 serviceName = "Das Erste HD",
                 startReadable = "20:00",
-                durationReadable = "15",
-            ),
+                durationReadable = "15"
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -179,13 +179,13 @@ class EpgDetailDialogHostTest {
                             description = "News",
                             descriptionExtended = "Die Nachrichten um 20 Uhr.",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
-            ),
+                        endSec = start + 1800
+                    )
+                )
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -198,7 +198,7 @@ class EpgDetailDialogHostTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = { session.showDetail(it) },
+                    onEventClick = { session.showDetail(it) }
                 )
                 EpgEventDetailSheetHost(session)
             }

@@ -1,10 +1,10 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object SignalParser {
     fun parse(xml: String): Signal? {
@@ -15,18 +15,16 @@ object SignalParser {
             ?: parseSanitized(xml, aggressive = true)
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): Signal? {
-        return try {
-            val handler = SignalHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.result
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): Signal? = try {
+        val handler = SignalHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.result
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -43,11 +41,19 @@ private class SignalHandler : DefaultHandler() {
     private val ber = StringBuilder()
     private val agc = StringBuilder()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2snrdb" -> inSnrDb = true
+
             "e2snr" -> inSnr = true
+
             "e2ber" -> inBer = true
+
             // OpenWebif historically emits the typo "e2acg"; accept both.
             "e2acg", "e2agc" -> inAgc = true
         }
@@ -74,7 +80,7 @@ private class SignalHandler : DefaultHandler() {
             snrDbRaw = snrDb.toString().trim(),
             snrRaw = snr.toString().trim(),
             berRaw = ber.toString().trim(),
-            agcRaw = agc.toString().trim(),
+            agcRaw = agc.toString().trim()
         )
         result = if (built.isEmpty()) null else built
     }

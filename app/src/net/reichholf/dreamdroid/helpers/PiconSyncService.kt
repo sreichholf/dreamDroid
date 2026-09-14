@@ -7,15 +7,15 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.preference.PreferenceManager
+import java.io.BufferedOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPClientConfig
 import org.apache.commons.net.ftp.FTPFileFilter
-import java.io.BufferedOutputStream
-import java.io.File
-import java.io.FileOutputStream
 
 /**
  * Created by Stephan on 05.02.2016.
@@ -59,6 +59,7 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
         Log.i(TAG, String.format("Syncing from %s to %s", remotePath, localPath))
         val client = FTPClient()
+
         @Suppress("UNUSED_VARIABLE")
         val config = FTPClientConfig()
         val p = DreamDroid.getCurrentProfile()
@@ -131,15 +132,22 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
         var message = "-"
         when (eventid) {
             DownloadProgress.EVENT_ID_CONNECTING -> message = getString(R.string.connecting)
+
             DownloadProgress.EVENT_ID_CONNECTED -> message = getString(R.string.connected)
+
             DownloadProgress.EVENT_ID_LOGIN_SUCCEEDED -> message = getString(R.string.connected)
+
             DownloadProgress.EVENT_ID_LISTING -> message = getString(R.string.getting_list_of_files)
+
             DownloadProgress.EVENT_ID_LISTING_READY -> message = getString(R.string.checking)
+
             DownloadProgress.EVENT_ID_DOWNLOADING_FILE -> message = mDownloadProgress.currentFile
+
             DownloadProgress.EVENT_ID_FINISHED -> {
                 Picon.clearCache()
                 if (!mDownloadProgress.error) {
-                    message = getString(R.string.picon_sync_finished, mDownloadProgress.downloadedFiles)
+                    message =
+                        getString(R.string.picon_sync_finished, mDownloadProgress.downloadedFiles)
                 } else {
                     message = mDownloadProgress.errorText ?: mDownloadProgress.currentFile
                 }

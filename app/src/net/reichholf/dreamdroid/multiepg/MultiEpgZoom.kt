@@ -24,14 +24,11 @@ object MultiEpgZoom {
         return best
     }
 
-    fun minuteWidthDp(visibleMinutes: Int): Float {
-        return BASE_MINUTE_WIDTH_DP * DEFAULT_MINUTES / coerce(visibleMinutes).toFloat()
-    }
+    fun minuteWidthDp(visibleMinutes: Int): Float =
+        BASE_MINUTE_WIDTH_DP * DEFAULT_MINUTES / coerce(visibleMinutes).toFloat()
 
     fun hours(visibleMinutes: Int): Int = coerce(visibleMinutes) / 60
 
     /** Ruler step: half-hour when zoomed to 1 h, otherwise hourly. */
-    fun tickStepSec(visibleMinutes: Int): Long {
-        return if (coerce(visibleMinutes) <= 60) 1800L else 3600L
-    }
+    fun tickStepSec(visibleMinutes: Int): Long = if (coerce(visibleMinutes) <= 60) 1800L else 3600L
 }

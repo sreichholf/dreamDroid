@@ -29,31 +29,27 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
-class SleepTimerUiState(
-    initialMinutes: Int,
-    initialEnabled: Boolean,
-    initialAction: String,
-) {
+class SleepTimerUiState(initialMinutes: Int, initialEnabled: Boolean, initialAction: String) {
     var minutes by mutableIntStateOf(initialMinutes.coerceIn(0, 999))
     var enabled by mutableStateOf(initialEnabled)
     var action by mutableStateOf(
-        if (initialAction == SleepTimer.ACTION_SHUTDOWN) SleepTimer.ACTION_SHUTDOWN
-        else SleepTimer.ACTION_STANDBY,
+        if (initialAction == SleepTimer.ACTION_SHUTDOWN) {
+            SleepTimer.ACTION_SHUTDOWN
+        } else {
+            SleepTimer.ACTION_STANDBY
+        }
     )
 }
 
 @Composable
-fun SleepTimerScreen(
-    state: SleepTimerUiState,
-    modifier: Modifier = Modifier,
-) {
+fun SleepTimerScreen(state: SleepTimerUiState, modifier: Modifier = Modifier) {
     val textColor = MaterialTheme.colorScheme.onSurface.toArgb()
     val separatorColor = MaterialTheme.colorScheme.primary.toArgb()
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         AndroidView(
             factory = { ctx ->
@@ -79,7 +75,7 @@ fun SleepTimerScreen(
                 if (picker.separatorColor != separatorColor) {
                     picker.separatorColor = separatorColor
                 }
-            },
+            }
         )
         Column(modifier = Modifier.padding(start = 20.dp)) {
             Row(
@@ -87,16 +83,16 @@ fun SleepTimerScreen(
                 modifier = Modifier.selectable(
                     selected = state.enabled,
                     onClick = { state.enabled = !state.enabled },
-                    role = Role.Checkbox,
-                ),
+                    role = Role.Checkbox
+                )
             ) {
                 Checkbox(
                     checked = state.enabled,
-                    onCheckedChange = { state.enabled = it },
+                    onCheckedChange = { state.enabled = it }
                 )
                 Text(
                     text = stringResource(R.string.activate),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Row(
@@ -104,16 +100,16 @@ fun SleepTimerScreen(
                 modifier = Modifier.selectable(
                     selected = state.action == SleepTimer.ACTION_STANDBY,
                     onClick = { state.action = SleepTimer.ACTION_STANDBY },
-                    role = Role.RadioButton,
-                ),
+                    role = Role.RadioButton
+                )
             ) {
                 RadioButton(
                     selected = state.action == SleepTimer.ACTION_STANDBY,
-                    onClick = { state.action = SleepTimer.ACTION_STANDBY },
+                    onClick = { state.action = SleepTimer.ACTION_STANDBY }
                 )
                 Text(
                     text = stringResource(R.string.standby),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Row(
@@ -121,16 +117,16 @@ fun SleepTimerScreen(
                 modifier = Modifier.selectable(
                     selected = state.action == SleepTimer.ACTION_SHUTDOWN,
                     onClick = { state.action = SleepTimer.ACTION_SHUTDOWN },
-                    role = Role.RadioButton,
-                ),
+                    role = Role.RadioButton
+                )
             ) {
                 RadioButton(
                     selected = state.action == SleepTimer.ACTION_SHUTDOWN,
-                    onClick = { state.action = SleepTimer.ACTION_SHUTDOWN },
+                    onClick = { state.action = SleepTimer.ACTION_SHUTDOWN }
                 )
                 Text(
                     text = stringResource(R.string.shutdown),
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

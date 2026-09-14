@@ -19,21 +19,29 @@ object DrawerHighlight {
                 r == PhoneNavRoutes.CURRENT ||
                 r == PhoneNavRoutes.TIMER_EDIT ||
                 r == PhoneNavRoutes.TIMER_SERVICE_PICK -> R.id.menu_navigation_services
+
             r == PhoneNavRoutes.TOOLS ||
                 r == PhoneNavRoutes.DEVICE_INFO ||
                 r == PhoneNavRoutes.SIGNAL ||
                 r == PhoneNavRoutes.SCREENSHOT -> R.id.menu_navigation_tools
+
             r == PhoneNavRoutes.REMOTE -> R.id.menu_navigation_remote
+
             r == PhoneNavRoutes.ZAP -> R.id.menu_navigation_zap
+
             r == PhoneNavRoutes.EPG ||
                 r.startsWith("service_epg") ||
                 r.startsWith("epg_search") -> R.id.menu_navigation_epg
+
             r == PhoneNavRoutes.MULTI_EPG -> R.id.menu_navigation_multiepg
+
             r == PhoneNavRoutes.SETTINGS || r == PhoneNavRoutes.BACKUP ->
                 R.id.menu_navigation_settings
+
             r == PhoneNavRoutes.PROFILES ||
                 r == PhoneNavRoutes.PROFILE_EDIT ||
                 r == PhoneNavRoutes.PROFILE_CHECK -> R.id.menu_none
+
             else -> null
         }
     }

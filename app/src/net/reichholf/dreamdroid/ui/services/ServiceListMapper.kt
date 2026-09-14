@@ -10,61 +10,77 @@ import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 
-fun serviceListItemsFrom(maps: List<ExtendedHashMap>): List<ServiceListItem> {
-    return maps.mapIndexed { index, map ->
-        EventKeys.supplementReadables(map)
-        val ref = map.getString(Service.KEY_REFERENCE) ?: ""
-        val name = map.getString(EventKeys.KEY_SERVICE_NAME) ?: ""
-        when {
-            Service.isMarker(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.MARKER)
-            Service.isDirectory(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.DIRECTORY)
-            else -> {
-                val nextTitle = map.getString(EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_TITLE).orEmpty()
-                var max = 0
-                var cur = 0
-                val nowTime = map.getString(EventKeys.KEY_CURRENT_TIME)
-                val duration = map.getString(EventKeys.KEY_EVENT_DURATION)
-                val start = map.getString(EventKeys.KEY_EVENT_START)
-                if (duration != null && start != null && duration != Python.NONE && start != Python.NONE) {
-                    try {
-                        max = (duration.toDouble() / 60).toLong().toInt()
-                        cur = max - DateTime.getRemaining(duration, start, nowTime)
-                    } catch (e: Exception) {
-                        Log.e(DreamDroid.LOG_TAG, e.toString())
-                    }
+fun serviceListItemsFrom(maps: List<ExtendedHashMap>): List<ServiceListItem> = maps.mapIndexed {
+        index,
+        map
+    ->
+    EventKeys.supplementReadables(map)
+    val ref = map.getString(Service.KEY_REFERENCE) ?: ""
+    val name = map.getString(EventKeys.KEY_SERVICE_NAME) ?: ""
+    when {
+        Service.isMarker(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.MARKER)
+
+        Service.isDirectory(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.DIRECTORY)
+
+        else -> {
+            val nextTitle = map.getString(
+                EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_TITLE
+            ).orEmpty()
+            var max = 0
+            var cur = 0
+            val nowTime = map.getString(EventKeys.KEY_CURRENT_TIME)
+            val duration = map.getString(EventKeys.KEY_EVENT_DURATION)
+            val start = map.getString(EventKeys.KEY_EVENT_START)
+            if (duration != null && start != null && duration != Python.NONE &&
+                start != Python.NONE
+            ) {
+                try {
+                    max = (duration.toDouble() / 60).toLong().toInt()
+                    cur = max - DateTime.getRemaining(duration, start, nowTime)
+                } catch (e: Exception) {
+                    Log.e(DreamDroid.LOG_TAG, e.toString())
                 }
-                ServiceListItem(
-                    index = index,
-                    reference = ref,
-                    name = name,
-                    kind = ServiceRowKind.CHANNEL,
-                    nowTitle = map.getString(EventKeys.KEY_EVENT_TITLE).orEmpty(),
-                    nowStart = map.getString(EventKeys.KEY_EVENT_START_TIME_READABLE).orEmpty(),
-                    nowDuration = map.getString(EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty(),
-                    nextTitle = nextTitle,
-                    nextStart = map.getString(EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_START_TIME_READABLE).orEmpty(),
-                    nextDuration = map.getString(EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty(),
-                    progressMax = max,
-                    progress = cur.coerceAtLeast(0),
-                )
             }
+            ServiceListItem(
+                index = index,
+                reference = ref,
+                name = name,
+                kind = ServiceRowKind.CHANNEL,
+                nowTitle = map.getString(EventKeys.KEY_EVENT_TITLE).orEmpty(),
+                nowStart = map.getString(EventKeys.KEY_EVENT_START_TIME_READABLE).orEmpty(),
+                nowDuration = map.getString(EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty(),
+                nextTitle = nextTitle,
+                nextStart = map.getString(
+                    EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_START_TIME_READABLE
+                ).orEmpty(),
+                nextDuration = map.getString(
+                    EventKeys.PREFIX_NEXT + EventKeys.KEY_EVENT_DURATION_READABLE
+                ).orEmpty(),
+                progressMax = max,
+                progress = cur.coerceAtLeast(0)
+            )
         }
     }
 }
 
-fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListItem> {
-    return rows.mapIndexed { index, row ->
+fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListItem> =
+    rows.mapIndexed {
+            index,
+            row
+        ->
         val ref = row.serviceReference
         val name = row.serviceName
         when {
             Service.isMarker(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.MARKER)
+
             Service.isDirectory(ref) -> ServiceListItem(index, ref, name, ServiceRowKind.DIRECTORY)
+
             else -> {
                 val now = row.now
                 var max = 0
                 var cur = 0
-                if (now != null && now.duration.isNotEmpty() && now.start.isNotEmpty()
-                    && now.duration != Python.NONE && now.start != Python.NONE
+                if (now != null && now.duration.isNotEmpty() && now.start.isNotEmpty() &&
+                    now.duration != Python.NONE && now.start != Python.NONE
                 ) {
                     try {
                         max = (now.duration.toDouble() / 60).toLong().toInt()
@@ -85,12 +101,11 @@ fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListIte
                     nextStart = row.next?.startTimeReadable.orEmpty(),
                     nextDuration = row.next?.durationReadable.orEmpty(),
                     progressMax = max,
-                    progress = cur.coerceAtLeast(0),
+                    progress = cur.coerceAtLeast(0)
                 )
             }
         }
     }
-}
 
 /**
  * Combined now+next hash for stream Intent / legacy edges that still expect PREFIX_NEXT keys.
@@ -112,7 +127,7 @@ fun serviceNowNextFromExtendedHashMap(map: ExtendedHashMap): ServiceNowNext {
         serviceReference = serviceReference,
         serviceName = serviceName,
         now = eventFromPrefixedMap(map, ""),
-        next = eventFromPrefixedMap(map, EventKeys.PREFIX_NEXT),
+        next = eventFromPrefixedMap(map, EventKeys.PREFIX_NEXT)
     )
 }
 
@@ -123,13 +138,17 @@ private fun eventFromPrefixedMap(map: ExtendedHashMap, prefix: String): Event? {
     val duration = map.getString(prefix + EventKeys.KEY_EVENT_DURATION).orEmpty()
     val currentTime = map.getString(prefix + EventKeys.KEY_CURRENT_TIME).orEmpty()
     val description = map.getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION).orEmpty()
-    val descriptionExtended = map.getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty()
+    val descriptionExtended = map.getString(
+        prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED
+    ).orEmpty()
     val startReadable = map.getString(prefix + EventKeys.KEY_EVENT_START_READABLE).orEmpty()
-    val startTimeReadable = map.getString(prefix + EventKeys.KEY_EVENT_START_TIME_READABLE).orEmpty()
+    val startTimeReadable = map.getString(
+        prefix + EventKeys.KEY_EVENT_START_TIME_READABLE
+    ).orEmpty()
     val durationReadable = map.getString(prefix + EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty()
-    if (eventId.isEmpty() && title.isEmpty() && start.isEmpty() && duration.isEmpty()
-        && currentTime.isEmpty() && description.isEmpty() && descriptionExtended.isEmpty()
-        && startReadable.isEmpty() && startTimeReadable.isEmpty() && durationReadable.isEmpty()
+    if (eventId.isEmpty() && title.isEmpty() && start.isEmpty() && duration.isEmpty() &&
+        currentTime.isEmpty() && description.isEmpty() && descriptionExtended.isEmpty() &&
+        startReadable.isEmpty() && startTimeReadable.isEmpty() && durationReadable.isEmpty()
     ) {
         return null
     }
@@ -155,7 +174,7 @@ private fun eventFromPrefixedMap(map: ExtendedHashMap, prefix: String): Event? {
         serviceName = serviceName,
         startReadable = startReadable,
         startTimeReadable = startTimeReadable,
-        durationReadable = durationReadable,
+        durationReadable = durationReadable
     )
 }
 

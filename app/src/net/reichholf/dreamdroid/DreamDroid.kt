@@ -23,14 +23,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.GregorianCalendar
 
 /**
  * @author sre
@@ -91,7 +91,8 @@ class DreamDroid : Application() {
 
     private fun handleProfileSwitch(context: Context) {
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-                PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, false,
+                PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED,
+                false
             )
         ) {
             val currentWifiName = getWifiName(context)
@@ -118,16 +119,21 @@ class DreamDroid : Application() {
             } else {
                 Log.i(
                     LOG_TAG,
-                    "connected to wifi $currentWifiName will search for profile with this wifi name configured",
+                    "connected to wifi $currentWifiName will search for profile " +
+                        "with this wifi name configured"
                 )
                 // we are connected to a wifi
                 // check if current active profile fits to the wifi name
                 if (currentWifiName.equals(currentProfile.ssid, ignoreCase = true)) {
-                    Log.i(LOG_TAG, "currentProfile has correct wifi name configured, so no action required")
+                    Log.i(
+                        LOG_TAG,
+                        "currentProfile has correct wifi name configured, so no action required"
+                    )
                 } else {
                     Log.i(
                         LOG_TAG,
-                        "connected to wifi $currentWifiName will search for profile with this wifi name configured",
+                        "connected to wifi $currentWifiName will search for profile " +
+                            "with this wifi name configured"
                     )
                     val wifiProfile = dao.getProfiles()
                         .firstOrNull { p ->
@@ -170,7 +176,7 @@ class DreamDroid : Application() {
         var channel = NotificationChannel(
             "dreamdroid_picon_sync",
             getString(R.string.picons),
-            NotificationManager.IMPORTANCE_LOW,
+            NotificationManager.IMPORTANCE_LOW
         )
         channel.description = getString(R.string.sync_picons)
         notificationManager.createNotificationChannel(channel)
@@ -178,7 +184,7 @@ class DreamDroid : Application() {
         channel = NotificationChannel(
             "dreamdroid_epg_sync",
             getString(R.string.epg),
-            NotificationManager.IMPORTANCE_LOW,
+            NotificationManager.IMPORTANCE_LOW
         )
         channel.description = getString(R.string.epg_sync)
         notificationManager.createNotificationChannel(channel)
@@ -221,11 +227,17 @@ class DreamDroid : Application() {
         const val PREFS_KEY_START_SCREEN: String = "start_screen"
         const val PREFS_KEY_VIDEO_ENABLE_GESTURES: String = "video_enable_gestures"
         const val PREFS_KEY_LAST_VERSION_CODE: String = "last_version_code"
-        const val PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED: String = "auto_switch_profile_wifi_based"
+        const val PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED: String =
+            "auto_switch_profile_wifi_based"
         const val PREFS_KEY_DYNAMIC_THEME_COLORS: String = "dynamic_theme_colors"
 
         const val IAB_PUB_KEY: String =
-            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wvbGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpnaEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR888CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB"
+            "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wv" +
+                "bGF5SxcZCELP6I6Rs47hYOydmCBDV5e11FXHZyS3BGuuVKEjf9DxkR2skNtKfgbX/UQD0jpn" +
+                "aEk2GnnsZ9OAaso9pKFn1ZJKtLtP7OKVlt2HpHjag3x8NGayjkno0k0gmvf5T8c77tYLtoHY" +
+                "+uLlUTwo0DiXhzxHjTjzTxc0nbEyRDa/5pDPudBCSien4lg+C8D9K8rdcUCI1QcLjkOgBR88" +
+                "8CxT7cyhvUnoHcHZQLGbTFZG0XtyJnxop2AqWMiOepT3txAfq6OjOmo0PofuIk+m0jVrPLYs" +
+                "2eNSxmJrfZ5MddocPYD50cj+2QIDAQAB"
 
         const val SKU_DONATE_1: String = "donate_1"
         const val SKU_DONATE_2: String = "donate_2"
@@ -244,7 +256,7 @@ class DreamDroid : Application() {
             SKU_DONATE_10,
             SKU_DONATE_15,
             SKU_DONATE_20,
-            SKU_DONATE_INSANE,
+            SKU_DONATE_INSANE
         )
 
         const val CURRENT_PROFILE: String = "currentProfile"
@@ -297,7 +309,7 @@ class DreamDroid : Application() {
                 BuildConfig.FLAVOR,
                 BuildConfig.BUILD_TYPE,
                 abi,
-                buildDate,
+                buildDate
             )
         }
 
@@ -309,13 +321,9 @@ class DreamDroid : Application() {
             sFeatureNowNext = true
         }
 
-        fun featureNowNext(): Boolean {
-            return sFeatureNowNext
-        }
+        fun featureNowNext(): Boolean = sFeatureNowNext
 
-        fun featurePostRequest(): Boolean {
-            return sFeaturePostRequest
-        }
+        fun featurePostRequest(): Boolean = sFeaturePostRequest
 
         fun setFeaturePostRequest(enabled: Boolean) {
             sFeaturePostRequest = enabled
@@ -329,13 +337,9 @@ class DreamDroid : Application() {
             sFeatureSleeptimer = true
         }
 
-        fun featureSleepTimer(): Boolean {
-            return sFeatureSleeptimer
-        }
+        fun featureSleepTimer(): Boolean = sFeatureSleeptimer
 
-        fun getCurrentProfile(): Profile {
-            return sProfile!!
-        }
+        fun getCurrentProfile(): Profile = sProfile!!
 
         fun loadCurrentProfile(context: Context) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
@@ -360,8 +364,25 @@ class DreamDroid : Application() {
                 val ssl = sp.getBoolean("ssl", true)
 
                 val p = Profile(
-                    null, "Demo", host, streamHost, port, 8001, 80, login, user, pass, ssl, false, false,
-                    false, false, "", "", "", "",
+                    null,
+                    "Demo",
+                    host,
+                    streamHost,
+                    port,
+                    8001,
+                    80,
+                    login,
+                    user,
+                    pass,
+                    ssl,
+                    false,
+                    false,
+                    false,
+                    false,
+                    "",
+                    "",
+                    "",
+                    ""
                 )
                 p.id = dao.addProfile(p).toInt()
 
@@ -374,26 +395,41 @@ class DreamDroid : Application() {
                 // However we got here... we're creating an
                 // "do-not-crash-default-profile now
                 sProfile = Profile(
-                    null, "Demo", "dreamdroid.org", "", 80, 8001, 80, false, "", "", false, false, false, false,
-                    false, "", "", "", "",
+                    null,
+                    "Demo",
+                    "dreamdroid.org",
+                    "",
+                    80,
+                    8001,
+                    80,
+                    false,
+                    "",
+                    "",
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    "",
+                    "",
+                    "",
+                    ""
                 )
             }
         }
 
-        fun setCurrentProfile(context: Context, id: Int): Boolean {
-            return setCurrentProfile(context, id, false)
-        }
+        fun setCurrentProfile(context: Context, id: Int): Boolean =
+            setCurrentProfile(context, id, false)
 
-        fun dumpXml(): Boolean {
-            return sDumpXml
-        }
+        fun dumpXml(): Boolean = sDumpXml
 
         /**
          * @param id
          * @return
          */
         fun setCurrentProfile(context: Context, id: Int, forceEvent: Boolean): Boolean {
-            sDumpXml = PreferenceManager.getDefaultSharedPreferences(context).getBoolean("xml_debug", false)
+            sDumpXml = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean("xml_debug", false)
 
             var oldProfile = sProfile
             if (oldProfile == null) {
@@ -445,9 +481,8 @@ class DreamDroid : Application() {
         /**
          * @return
          */
-        fun reloadCurrentProfile(ctx: Context): Boolean {
-            return setCurrentProfile(ctx, sProfile!!.id ?: -1, true)
-        }
+        fun reloadCurrentProfile(ctx: Context): Boolean =
+            setCurrentProfile(ctx, sProfile!!.id ?: -1, true)
 
         /**
          * @param shc
@@ -475,9 +510,7 @@ class DreamDroid : Application() {
             return gotLoc
         }
 
-        fun getLocations(): ArrayList<String> {
-            return sLocations
-        }
+        fun getLocations(): ArrayList<String> = sLocations
 
         /**
          * @param shc
@@ -505,9 +538,7 @@ class DreamDroid : Application() {
             return gotTags
         }
 
-        fun getTags(): ArrayList<String> {
-            return sTags
-        }
+        fun getTags(): ArrayList<String> = sTags
 
         @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
         fun scheduleBackup(context: Context) {
@@ -570,8 +601,6 @@ class DreamDroid : Application() {
             editor.apply()
         }
 
-        fun isTV(context: Context): Boolean {
-            return context.resources.getBoolean(R.bool.is_television)
-        }
+        fun isTV(context: Context): Boolean = context.resources.getBoolean(R.bool.is_television)
     }
 }

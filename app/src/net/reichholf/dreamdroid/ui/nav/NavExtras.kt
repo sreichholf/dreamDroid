@@ -5,6 +5,6 @@ package net.reichholf.dreamdroid.ui.nav
  * Keep wire keys stable for Bundle/Intent compat with older callers.
  */
 object NavExtras {
-    /** Serializable [net.reichholf.dreamdroid.helpers.ExtendedHashMap] payload (wire key `"data"`). */
+    /** Serializable [net.reichholf.dreamdroid.helpers.ExtendedHashMap] payload (`"data"`). */
     const val DATA = "data"
 }

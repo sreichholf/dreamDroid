@@ -23,12 +23,12 @@ fun PickServiceScreen(
     items: List<Service>,
     onItemClick: (Service) -> Unit,
     modifier: Modifier = Modifier,
-    emptyMessage: String? = null,
+    emptyMessage: String? = null
 ) {
     if (items.isEmpty()) {
         Box(
             modifier = modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.Center
         ) {
             if (emptyMessage != null) {
                 Text(
@@ -36,7 +36,7 @@ fun PickServiceScreen(
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(24.dp)
                 )
             }
         }
@@ -46,34 +46,31 @@ fun PickServiceScreen(
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         items(items, key = { "${it.reference}:${it.name}" }) { service ->
             BouquetRow(
                 name = service.name,
-                onClick = { onItemClick(service) },
+                onClick = { onItemClick(service) }
             )
         }
     }
 }
 
 @Composable
-private fun BouquetRow(
-    name: String,
-    onClick: () -> Unit,
-) {
+private fun BouquetRow(name: String, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Text(
             text = name,
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(16.dp)
         )
     }
 }

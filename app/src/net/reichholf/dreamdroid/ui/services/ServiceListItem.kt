@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.ui.services
 enum class ServiceRowKind {
     CHANNEL,
     DIRECTORY,
-    MARKER,
+    MARKER
 }
 
 data class ServiceListItem(
@@ -18,5 +18,5 @@ data class ServiceListItem(
     val nextStart: String = "",
     val nextDuration: String = "",
     val progressMax: Int = 0,
-    val progress: Int = 0,
+    val progress: Int = 0
 )

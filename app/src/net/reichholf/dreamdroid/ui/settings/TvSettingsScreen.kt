@@ -22,10 +22,7 @@ import net.reichholf.dreamdroid.R
  * (`xml-television/preferences.xml`). Same PreferenceManager keys as phone.
  */
 @Composable
-fun TvSettingsScreen(
-    state: SettingsState,
-    modifier: Modifier = Modifier,
-) {
+fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
     var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
 
@@ -38,14 +35,14 @@ fun TvSettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 24.dp),
+            .padding(bottom = 24.dp)
     ) {
         PreferenceCategoryHeader(stringResource(R.string.video_player))
         ListPreferenceRow(
             title = stringResource(R.string.use_hw_accel),
             summary = stringResource(
                 R.string.use_hw_accel_long,
-                entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration),
+                entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration)
             ),
             onClick = {
                 listDialog = ListDialogSpec(
@@ -53,9 +50,9 @@ fun TvSettingsScreen(
                     entries = hwEntries.toList(),
                     values = hwValues.toList(),
                     selectedValue = state.videoHardwareAcceleration,
-                    key = DreamDroid.PREFS_KEY_HWACCEL,
+                    key = DreamDroid.PREFS_KEY_HWACCEL
                 )
-            },
+            }
         )
 
         PreferenceCategoryHeader(stringResource(R.string.picons))
@@ -63,7 +60,7 @@ fun TvSettingsScreen(
             title = stringResource(R.string.use_name_as_picon_filename),
             summary = stringResource(R.string.use_name_as_picon_filename_long),
             checked = state.useNameAsPiconFilename,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) }
         )
         ActionPreferenceRow(
             title = stringResource(R.string.sync_picons_path),
@@ -74,9 +71,9 @@ fun TvSettingsScreen(
                 editDialog = EditDialogSpec(
                     title = syncPathDialogTitle,
                     value = state.syncPiconsPath,
-                    key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH,
+                    key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH
                 )
-            },
+            }
         )
 
         if (state.showDeveloperCategory) {
@@ -87,21 +84,21 @@ fun TvSettingsScreen(
                 checked = state.enableDeveloper,
                 onCheckedChange = {
                     state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_DEVELOPER_SETTINGS, it)
-                },
+                }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.use_fake_picon),
                 summary = stringResource(R.string.use_fake_picon_long),
                 checked = state.fakePicon,
                 enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) },
+                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.dump_xml),
                 summary = stringResource(R.string.dump_xml_long),
                 checked = state.xmlDebug,
                 enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) },
+                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) }
             )
         }
     }
@@ -113,7 +110,7 @@ fun TvSettingsScreen(
             onSelect = { value ->
                 state.setString(dialog.key, value)
                 listDialog = null
-            },
+            }
         )
     }
 
@@ -124,7 +121,7 @@ fun TvSettingsScreen(
             onConfirm = { value ->
                 state.setString(dialog.key, value)
                 editDialog = null
-            },
+            }
         )
     }
 }

@@ -40,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -69,9 +71,10 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+
     /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
-    var epgDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.epg.EpgDetailContent?>(null)
-    var movieDetailContent by mutableStateOf<net.reichholf.dreamdroid.ui.movies.MovieDetailContent?>(null)
+    var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
+    var movieDetailContent by mutableStateOf<MovieDetailContent?>(null)
 
     /** Phase 2.1g-ii-e: in-composition simple choice (audio/subtitle tracks). */
     var choiceTitle by mutableStateOf<String?>(null)
@@ -95,7 +98,6 @@ class VideoOverlayUiState {
     }
 }
 
-
 @Composable
 fun VideoOverlayScreen(
     state: VideoOverlayUiState,
@@ -108,7 +110,7 @@ fun VideoOverlayScreen(
     onSubtitle: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    firstControlFocusRequester: FocusRequester? = null,
+    firstControlFocusRequester: FocusRequester? = null
 ) {
     val playLabel = stringResource(R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
@@ -124,7 +126,7 @@ fun VideoOverlayScreen(
         modifier = modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(8.dp),
+            .padding(8.dp)
     ) {
         Text(
             text = state.title,
@@ -135,7 +137,7 @@ fun VideoOverlayScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .semantics { contentDescription = "overlay_title" },
+                .semantics { contentDescription = "overlay_title" }
         )
 
         if (state.showNow) {
@@ -143,7 +145,7 @@ fun VideoOverlayScreen(
                 start = state.nowStart,
                 title = state.nowTitle,
                 duration = state.nowDuration,
-                rowDescription = stringResource(R.string.now),
+                rowDescription = stringResource(R.string.now)
             )
         }
 
@@ -152,7 +154,7 @@ fun VideoOverlayScreen(
                 start = state.nextStart,
                 title = state.nextTitle,
                 duration = state.nextDuration,
-                rowDescription = stringResource(R.string.next),
+                rowDescription = stringResource(R.string.next)
             )
         }
 
@@ -165,7 +167,7 @@ fun VideoOverlayScreen(
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
                 .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (state.showPvrControls) {
                 Row(
@@ -173,26 +175,26 @@ fun VideoOverlayScreen(
                         .fillMaxWidth()
                         .focusGroup(),
                     horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     RepeatIconButton(
                         onClick = onRewind,
                         painter = painterResource(R.drawable.ic_fast_rewind_dark),
                         contentDescription = rewindLabel,
                         modifier = firstControlFocusRequester?.let { Modifier.focusRequester(it) }
-                            ?: Modifier,
+                            ?: Modifier
                     )
                     IconButton(onClick = onPlay) {
                         Icon(
                             painter = painterResource(R.drawable.ic_play_circle_outline_dark),
                             contentDescription = playLabel,
-                            tint = onSurface,
+                            tint = onSurface
                         )
                     }
                     RepeatIconButton(
                         onClick = onForward,
                         painter = painterResource(R.drawable.ic_fast_forward_dark),
-                        contentDescription = forwardLabel,
+                        contentDescription = forwardLabel
                     )
                 }
             }
@@ -211,7 +213,7 @@ fun VideoOverlayScreen(
                     enabled = state.progressEnabled && state.seekable,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .semantics { contentDescription = seekLabel },
+                        .semantics { contentDescription = seekLabel }
                 )
             }
         }
@@ -230,7 +232,7 @@ fun VideoOverlayScreen(
                 .padding(top = 4.dp)
                 .focusGroup(),
             horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (state.showAudioButton) {
                 IconButton(
@@ -239,12 +241,12 @@ fun VideoOverlayScreen(
                         Modifier.focusRequester(firstControlFocusRequester!!)
                     } else {
                         Modifier
-                    },
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_audio_track),
                         contentDescription = audioLabel,
-                        tint = onSurface,
+                        tint = onSurface
                     )
                 }
             }
@@ -255,12 +257,12 @@ fun VideoOverlayScreen(
                         Modifier.focusRequester(firstControlFocusRequester!!)
                     } else {
                         Modifier
-                    },
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu_info_dark),
                         contentDescription = infoLabel,
-                        tint = onSurface,
+                        tint = onSurface
                     )
                 }
             }
@@ -271,12 +273,12 @@ fun VideoOverlayScreen(
                         Modifier.focusRequester(firstControlFocusRequester!!)
                     } else {
                         Modifier
-                    },
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_menu_list_dark),
                         contentDescription = listLabel,
-                        tint = onSurface,
+                        tint = onSurface
                     )
                 }
             }
@@ -287,12 +289,12 @@ fun VideoOverlayScreen(
                         Modifier.focusRequester(firstControlFocusRequester!!)
                     } else {
                         Modifier
-                    },
+                    }
                 ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_subtitle),
                         contentDescription = subtitleLabel,
-                        tint = onSurface,
+                        tint = onSurface
                     )
                 }
             }
@@ -307,13 +309,13 @@ fun VideoOverlayScreen(
             onEditTimer = { state.epgDetailContent = null },
             onImdb = { state.epgDetailContent = null },
             onSimilar = { state.epgDetailContent = null },
-            showActions = false,
+            showActions = false
         )
     }
     state.movieDetailContent?.let { content ->
         MovieDetailModalSheet(
             content = content,
-            onDismiss = { state.movieDetailContent = null },
+            onDismiss = { state.movieDetailContent = null }
         )
     }
 }
@@ -330,7 +332,7 @@ private fun RepeatIconButton(
     contentDescription: String,
     modifier: Modifier = Modifier,
     initialDelayMs: Long = 500L,
-    repeatDelayMs: Long = 300L,
+    repeatDelayMs: Long = 300L
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -356,35 +358,30 @@ private fun RepeatIconButton(
             onClick()
         },
         modifier = modifier,
-        interactionSource = interactionSource,
+        interactionSource = interactionSource
     ) {
         Icon(
             painter = painter,
             contentDescription = contentDescription,
-            tint = MaterialTheme.colorScheme.onSurface,
+            tint = MaterialTheme.colorScheme.onSurface
         )
     }
 }
 
 @Composable
-private fun EventRow(
-    start: String,
-    title: String,
-    duration: String,
-    rowDescription: String,
-) {
+private fun EventRow(start: String, title: String, duration: String, rowDescription: String) {
     val onSurface = MaterialTheme.colorScheme.onSurface
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .semantics { contentDescription = rowDescription },
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = start,
             style = MaterialTheme.typography.bodyMedium,
             color = onSurface,
-            modifier = Modifier.padding(end = 8.dp),
+            modifier = Modifier.padding(end = 8.dp)
         )
         Text(
             text = title,
@@ -392,13 +389,13 @@ private fun EventRow(
             color = onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = duration,
             style = MaterialTheme.typography.bodyMedium,
             color = onSurface,
-            modifier = Modifier.padding(start = 8.dp),
+            modifier = Modifier.padding(start = 8.dp)
         )
     }
 }
@@ -412,7 +409,7 @@ fun ComposeView.bindVideoOverlayScreen(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
-    onSeekChange: (Int) -> Unit,
+    onSeekChange: (Int) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     // Focusable shell so nextFocusDown from servicelist lands here; we then forward into Compose.
@@ -434,7 +431,7 @@ fun ComposeView.bindVideoOverlayScreen(
                 firstControlFocusRequester = firstControlFocus,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusGroup(),
+                    .focusGroup()
             )
             val choiceTitle = state.choiceTitle
             if (choiceTitle != null) {
@@ -449,7 +446,7 @@ fun ComposeView.bindVideoOverlayScreen(
                             state.onChoiceAction?.invoke(ids[index], tag)
                         }
                         state.dismissChoice()
-                    },
+                    }
                 )
             }
         }

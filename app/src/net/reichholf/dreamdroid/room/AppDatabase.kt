@@ -12,9 +12,9 @@ import net.reichholf.dreamdroid.Profile
     entities = [
         Profile::class,
         EpgEventEntity::class,
-        EpgChunkMetaEntity::class,
+        EpgChunkMetaEntity::class
     ],
-    version = 4,
+    version = 4
 )
 abstract class AppDatabase : RoomDatabase() {
     /** Room profile DB file name under `databases/`. */
@@ -42,7 +42,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `currentTime` INTEGER NOT NULL,
                         PRIMARY KEY(`profileId`, `serviceRef`, `eventId`)
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 db.execSQL(
                     """
@@ -54,7 +54,7 @@ abstract class AppDatabase : RoomDatabase() {
                         `fetchedAtMs` INTEGER NOT NULL,
                         PRIMARY KEY(`profileId`, `bouquetRef`, `windowStart`)
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             }
         }
@@ -82,7 +82,7 @@ abstract class AppDatabase : RoomDatabase() {
                             `eventId`
                         )
                     )
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 db.execSQL(
                     """
@@ -96,11 +96,11 @@ abstract class AppDatabase : RoomDatabase() {
                         `start`, `duration`, `title`, `description`,
                         `descriptionExtended`, `serviceName`, `currentTime`
                     FROM `epg_event`
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
                 db.execSQL("DROP TABLE `epg_event`")
                 db.execSQL(
-                    "ALTER TABLE `epg_event_new` RENAME TO `epg_event`",
+                    "ALTER TABLE `epg_event_new` RENAME TO `epg_event`"
                 )
             }
         }
@@ -111,7 +111,7 @@ abstract class AppDatabase : RoomDatabase() {
                     """
                     ALTER TABLE `epg_event`
                     ADD COLUMN `bouquetPos` INTEGER NOT NULL DEFAULT 0
-                    """.trimIndent(),
+                    """.trimIndent()
                 )
             }
         }
@@ -126,7 +126,7 @@ abstract class AppDatabase : RoomDatabase() {
                 Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    DATABASE_NAME,
+                    DATABASE_NAME
                 )
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                     .allowMainThreadQueries()
@@ -136,14 +136,12 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /** In-memory DB for instrumentation tests (does not touch the process singleton). */
-        fun inMemory(context: Context): AppDatabase {
-            return Room.inMemoryDatabaseBuilder(
-                context.applicationContext,
-                AppDatabase::class.java,
-            )
-                .allowMainThreadQueries()
-                .build()
-        }
+        fun inMemory(context: Context): AppDatabase = Room.inMemoryDatabaseBuilder(
+            context.applicationContext,
+            AppDatabase::class.java
+        )
+            .allowMainThreadQueries()
+            .build()
 
         fun profiles(context: Context): Profile.ProfileDao = database(context).profileDao()
 

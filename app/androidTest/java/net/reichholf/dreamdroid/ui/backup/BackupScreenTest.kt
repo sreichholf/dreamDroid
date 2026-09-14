@@ -29,7 +29,7 @@ class BackupScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -54,9 +54,9 @@ class BackupScreenTest {
                     BackupProfileToggle(
                         id = 1,
                         label = "Home (192.168.1.1) (current)",
-                        checked = true,
-                    ),
-                ),
+                        checked = true
+                    )
+                )
             )
         }
         composeRule.setContent {
@@ -64,7 +64,7 @@ class BackupScreenTest {
                 BackupScreen(
                     state = state,
                     onImport = {},
-                    onExport = {},
+                    onExport = {}
                 )
             }
         }
@@ -85,11 +85,11 @@ class BackupScreenTest {
         val message = backupExportUserMessage(context, exported = false)
         assertEquals(
             context.getString(net.reichholf.dreamdroid.R.string.backup_export_missing_permission),
-            message,
+            message
         )
         assertTrue(
             backupExportUserMessage(context, exported = true) !=
-                backupExportUserMessage(context, exported = false),
+                backupExportUserMessage(context, exported = false)
         )
     }
 
@@ -100,7 +100,7 @@ class BackupScreenTest {
         prefs.edit().remove("f05_import_probe").commit()
         val data = BackupData()
         data.addGenericSetting(
-            GenericSetting("f05_import_probe", "from-backup", "String"),
+            GenericSetting("f05_import_probe", "from-backup", "String")
         )
         BackupService(context).doImport(GsonBuilder().create().toJson(data))
         assertEquals("from-backup", prefs.getString("f05_import_probe", null))

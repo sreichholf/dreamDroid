@@ -37,13 +37,25 @@ class MovieListMapperTest {
             "tag",
             "/file.ts",
             "1024",
-            "0 MB",
+            "0 MB"
         )
         val map = movieToExtendedHashMap(movie)
-        assertEquals("Title", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TITLE))
-        assertEquals("ref", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_REFERENCE))
-        assertEquals("/file.ts", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_NAME))
-        assertEquals("0 MB", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_SIZE_READABLE))
+        assertEquals(
+            "Title",
+            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_TITLE)
+        )
+        assertEquals(
+            "ref",
+            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_REFERENCE)
+        )
+        assertEquals(
+            "/file.ts",
+            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_NAME)
+        )
+        assertEquals(
+            "0 MB",
+            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Movie.KEY_FILE_SIZE_READABLE)
+        )
     }
 
     @Test
@@ -60,7 +72,7 @@ class MovieListMapperTest {
             "tag",
             "/file.ts",
             "1024",
-            "0 MB",
+            "0 MB"
         )
         val map = movieToExtendedHashMap(movie)
         val back = movieFromExtendedHashMap(map)

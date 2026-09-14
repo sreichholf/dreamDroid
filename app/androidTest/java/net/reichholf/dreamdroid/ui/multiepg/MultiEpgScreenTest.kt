@@ -2,14 +2,13 @@ package net.reichholf.dreamdroid.ui.multiepg
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertHeightIsEqualTo
@@ -18,9 +17,9 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
-import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -28,6 +27,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.buildMultiEpgChannels
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
@@ -49,7 +49,7 @@ class MultiEpgScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .commit()
@@ -64,7 +64,7 @@ class MultiEpgScreenTest {
                 start = "1000",
                 duration = "600",
                 serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                serviceName = "Das Erste",
+                serviceName = "Das Erste"
             ),
             Event(
                 eventId = "2",
@@ -72,7 +72,7 @@ class MultiEpgScreenTest {
                 start = "1000",
                 duration = "900",
                 serviceReference = "1:0:1:2:1:1:0:0:0:0:",
-                serviceName = "ZDF",
+                serviceName = "ZDF"
             ),
             Event(
                 eventId = "3",
@@ -80,8 +80,8 @@ class MultiEpgScreenTest {
                 start = "1600",
                 duration = "300",
                 serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                serviceName = "Das Erste",
-            ),
+                serviceName = "Das Erste"
+            )
         )
         val channels = buildMultiEpgChannels(events)
         assertEquals(2, channels.size)
@@ -98,7 +98,7 @@ class MultiEpgScreenTest {
             start = "1000",
             duration = "600",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "Das Erste",
+            serviceName = "Das Erste"
         )
         val first = buildMultiEpgChannels(listOf(news))
         val film = Event(
@@ -107,7 +107,7 @@ class MultiEpgScreenTest {
             start = "90000",
             duration = "3600",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "Das Erste",
+            serviceName = "Das Erste"
         )
         val newsAgain = news.copy()
         val second = buildMultiEpgChannels(listOf(newsAgain, film), first)
@@ -125,7 +125,7 @@ class MultiEpgScreenTest {
         val marker = Service("1:64:0:0:0:0:0:0:0:0:", "---")
         val directory = Service(
             "1:7:1:0:0:0:FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet",
-            "Favourites",
+            "Favourites"
         )
         val roster = playableMultiEpgRoster(listOf(marker, live, directory))
         assertEquals(1, roster.size)
@@ -142,11 +142,11 @@ class MultiEpgScreenTest {
             start = "1000",
             duration = "600",
             serviceReference = liveA.reference,
-            serviceName = liveA.name,
+            serviceName = liveA.name
         )
         val channels = buildMultiEpgChannels(
             events = listOf(news),
-            roster = listOf(liveA, liveB),
+            roster = listOf(liveA, liveB)
         )
         assertEquals(2, channels.size)
         assertEquals("Das Erste", channels[0].serviceName)
@@ -156,7 +156,7 @@ class MultiEpgScreenTest {
         val again = buildMultiEpgChannels(
             events = listOf(news.copy()),
             previous = channels,
-            roster = listOf(liveA, liveB),
+            roster = listOf(liveA, liveB)
         )
         assertSame(channels[1], again[1])
         assertSame(channels[0].bars[0], again[0].bars[0])
@@ -171,8 +171,8 @@ class MultiEpgScreenTest {
                 start = "1000",
                 duration = "600",
                 serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                serviceName = "Das Erste",
-            ),
+                serviceName = "Das Erste"
+            )
         )
         val first = buildMultiEpgChannels(events)
         val second = buildMultiEpgChannels(listOf(events[0].copy()), first)
@@ -189,9 +189,9 @@ class MultiEpgScreenTest {
                     start = "1000",
                     duration = "600",
                     serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                    serviceName = "Das Erste",
-                ),
-            ),
+                    serviceName = "Das Erste"
+                )
+            )
         )
         val second = buildMultiEpgChannels(
             listOf(
@@ -201,10 +201,10 @@ class MultiEpgScreenTest {
                     start = "1000",
                     duration = "600",
                     serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                    serviceName = "Das Erste",
-                ),
+                    serviceName = "Das Erste"
+                )
             ),
-            first,
+            first
         )
         assertNotSame(first[0].bars[0], second[0].bars[0])
         assertEquals("News 2", second[0].bars[0].event.title)
@@ -225,12 +225,12 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
+                        endSec = start + 1800
+                    )
+                )
             ),
             MultiEpgChannel(
                 serviceRef = "1:0:1:2:1:1:0:0:0:0:",
@@ -243,13 +243,13 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:2:1:1:0:0:0:0:",
-                            serviceName = "ZDF HD",
+                            serviceName = "ZDF HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
-            ),
+                        endSec = start + 1800
+                    )
+                )
+            )
         )
         var clicked = ""
         composeRule.setContent {
@@ -263,7 +263,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = { clicked = it.title },
+                    onEventClick = { clicked = it.title }
                 )
             }
         }
@@ -296,18 +296,18 @@ class MultiEpgScreenTest {
                                         start = start.toString(),
                                         duration = "1800",
                                         serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                                        serviceName = "Das Erste HD",
+                                        serviceName = "Das Erste HD"
                                     ),
                                     startSec = start,
-                                    endSec = start + 1800,
-                                ),
-                            ),
+                                    endSec = start + 1800
+                                )
+                            )
                         ),
                         MultiEpgChannel(
                             serviceRef = "1:0:1:2:1:1:0:0:0:0:",
                             serviceName = "Deluxe Music HD",
-                            bars = emptyList(),
-                        ),
+                            bars = emptyList()
+                        )
                     ),
                     timelineStartSec = start,
                     timelineEndSec = start + 7200,
@@ -315,7 +315,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -339,13 +339,13 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
-            ),
+                        endSec = start + 1800
+                    )
+                )
+            )
         )
         var timelineStart by mutableLongStateOf(0L)
         var timelineEnd by mutableLongStateOf(0L)
@@ -361,7 +361,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -387,7 +387,7 @@ class MultiEpgScreenTest {
                     loading = true,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -411,7 +411,7 @@ class MultiEpgScreenTest {
                     onJumpToNow = {},
                     onPrevDay = { prev += 1 },
                     onNextDay = { next += 1 },
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -437,13 +437,13 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
-            ),
+                        endSec = start + 1800
+                    )
+                )
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -456,7 +456,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = "box down",
                     onJumpToNow = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -480,7 +480,7 @@ class MultiEpgScreenTest {
                     errorMessage = null,
                     onJumpToNow = {},
                     onRefresh = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -507,13 +507,13 @@ class MultiEpgScreenTest {
                                         start = start.toString(),
                                         duration = "1800",
                                         serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                                        serviceName = "Das Erste HD",
+                                        serviceName = "Das Erste HD"
                                     ),
                                     startSec = start,
-                                    endSec = start + 1800,
-                                ),
-                            ),
-                        ),
+                                    endSec = start + 1800
+                                )
+                            )
+                        )
                     ),
                     timelineStartSec = start,
                     timelineEndSec = start + 7200,
@@ -521,7 +521,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = {},
+                    onEventClick = {}
                 )
             }
         }
@@ -547,13 +547,13 @@ class MultiEpgScreenTest {
                             start = barStart.toString(),
                             duration = "3600",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = barStart,
-                        endSec = barStart + 3600,
-                    ),
-                ),
-            ),
+                        endSec = barStart + 3600
+                    )
+                )
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -568,7 +568,7 @@ class MultiEpgScreenTest {
                     onJumpToNow = {},
                     onEventClick = {},
                     focusSec = barStart,
-                    focusEpoch = 1,
+                    focusEpoch = 1
                 )
             }
         }
@@ -602,13 +602,13 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = ref,
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
-            ),
+                        endSec = start + 1800
+                    )
+                )
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -624,8 +624,8 @@ class MultiEpgScreenTest {
                     onEventClick = {},
                     timerClocks = mapOf(
                         multiEpgTimerClockKey(ref, "10", start) to
-                            MultiEpgTimerClock.Record,
-                    ),
+                            MultiEpgTimerClock.Record
+                    )
                 )
             }
         }
@@ -650,7 +650,7 @@ class MultiEpgScreenTest {
                     errorMessage = null,
                     onJumpToNow = {},
                     onEventClick = {},
-                    textSize = size,
+                    textSize = size
                 )
             }
         }
@@ -666,7 +666,7 @@ class MultiEpgScreenTest {
         composeRule.setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(
-                LocalDensity provides Density(density.density, fontScale = 1.5f),
+                LocalDensity provides Density(density.density, fontScale = 1.5f)
             ) {
                 DreamDroidTheme {
                     MultiEpgScreen(
@@ -679,7 +679,7 @@ class MultiEpgScreenTest {
                         errorMessage = null,
                         onJumpToNow = {},
                         onEventClick = {},
-                        textSize = MultiEpgTextSize.Compact,
+                        textSize = MultiEpgTextSize.Compact
                     )
                 }
             }
@@ -707,48 +707,46 @@ class MultiEpgScreenTest {
                     textSize = size,
                     timerClocks = mapOf(
                         multiEpgTimerClockKey(ref, "10", start) to
-                            MultiEpgTimerClock.Record,
-                    ),
+                            MultiEpgTimerClock.Record
+                    )
                 )
             }
         }
         composeRule.onNodeWithTag(
             "multi_epg_timer_record",
-            useUnmergedTree = true,
+            useUnmergedTree = true
         ).assertHeightIsEqualTo(12.dp)
         composeRule.runOnIdle { size = MultiEpgTextSize.Comfortable }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag(
             "multi_epg_timer_record",
-            useUnmergedTree = true,
+            useUnmergedTree = true
         ).assertHeightIsEqualTo(16.dp)
     }
 
     private fun oneChannel(
         start: Long,
-        serviceRef: String = "1:0:1:1:1:1:0:0:0:0:",
-    ): List<MultiEpgChannel> {
-        return listOf(
-            MultiEpgChannel(
-                serviceRef = serviceRef,
-                serviceName = "Das Erste HD",
-                bars = listOf(
-                    MultiEpgBar(
-                        event = Event(
-                            eventId = "10",
-                            title = "Tagesschau",
-                            start = start.toString(),
-                            duration = "1800",
-                            serviceReference = serviceRef,
-                            serviceName = "Das Erste HD",
-                        ),
-                        startSec = start,
-                        endSec = start + 1800,
+        serviceRef: String = "1:0:1:1:1:1:0:0:0:0:"
+    ): List<MultiEpgChannel> = listOf(
+        MultiEpgChannel(
+            serviceRef = serviceRef,
+            serviceName = "Das Erste HD",
+            bars = listOf(
+                MultiEpgBar(
+                    event = Event(
+                        eventId = "10",
+                        title = "Tagesschau",
+                        start = start.toString(),
+                        duration = "1800",
+                        serviceReference = serviceRef,
+                        serviceName = "Das Erste HD"
                     ),
-                ),
-            ),
+                    startSec = start,
+                    endSec = start + 1800
+                )
+            )
         )
-    }
+    )
 
     private fun dayLabelText(): String {
         val node = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
@@ -771,7 +769,7 @@ class MultiEpgScreenTest {
                     onJumpToNow = {},
                     onEventClick = {},
                     visibleMinutes = visibleMinutes,
-                    onVisibleMinutesChange = { visibleMinutes = it },
+                    onVisibleMinutesChange = { visibleMinutes = it }
                 )
             }
         }
@@ -800,10 +798,10 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
+                        endSec = start + 1800
                     ),
                     MultiEpgBar(
                         event = Event(
@@ -812,13 +810,13 @@ class MultiEpgScreenTest {
                             start = lateStart.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-                            serviceName = "Das Erste HD",
+                            serviceName = "Das Erste HD"
                         ),
                         startSec = lateStart,
-                        endSec = lateStart + 1800,
-                    ),
-                ),
-            ),
+                        endSec = lateStart + 1800
+                    )
+                )
+            )
         )
         var visibleMinutes by mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
         var spanSec = 0L
@@ -838,7 +836,7 @@ class MultiEpgScreenTest {
                         spanSec = visEnd - visStart
                     },
                     visibleMinutes = visibleMinutes,
-                    onVisibleMinutesChange = { visibleMinutes = it },
+                    onVisibleMinutesChange = { visibleMinutes = it }
                 )
             }
         }
@@ -865,7 +863,7 @@ class MultiEpgScreenTest {
             start = "1000",
             duration = "90000",
             serviceReference = "1:0:1:1:1:1:0:0:0:0:",
-            serviceName = "Das Erste",
+            serviceName = "Das Erste"
         )
         val channels = buildMultiEpgChannels(listOf(event, event.copy()))
         assertEquals(1, channels.size)
@@ -888,12 +886,12 @@ class MultiEpgScreenTest {
                             start = start.toString(),
                             duration = "1800",
                             serviceReference = "1:0:1:$index:1:1:0:0:0:0:",
-                            serviceName = "Channel $index",
+                            serviceName = "Channel $index"
                         ),
                         startSec = start,
-                        endSec = start + 1800,
-                    ),
-                ),
+                        endSec = start + 1800
+                    )
+                )
             )
         }
         composeRule.setContent {
@@ -908,7 +906,7 @@ class MultiEpgScreenTest {
                         loading = false,
                         errorMessage = null,
                         onJumpToNow = {},
-                        onEventClick = {},
+                        onEventClick = {}
                     )
                 }
             }

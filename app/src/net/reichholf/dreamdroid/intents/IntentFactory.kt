@@ -4,8 +4,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.preference.PreferenceManager
 import android.util.Log
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
@@ -32,9 +32,8 @@ object IntentFactory {
         }
     }
 
-    fun getStreamServiceIntent(context: Context, ref: String, title: String): Intent {
-        return getStreamServiceIntent(context, ref, title, null, null)
-    }
+    fun getStreamServiceIntent(context: Context, ref: String, title: String): Intent =
+        getStreamServiceIntent(context, ref, title, null, null)
 
     private fun getVideoIntent(context: Context, uriString: String): Intent {
         val intent = if (PreferenceManager.getDefaultSharedPreferences(context)
@@ -54,7 +53,7 @@ object IntentFactory {
         ref: String,
         title: String,
         bouquetRef: String?,
-        serviceInfo: ExtendedHashMap?,
+        serviceInfo: ExtendedHashMap?
     ): Intent {
         val uriString = SimpleHttpClient.getInstance().buildStreamUrl(ref)
         Log.i(DreamDroid.LOG_TAG, "Service-Streaming URL set to '$uriString'")
@@ -78,7 +77,7 @@ object IntentFactory {
         ref: String,
         fileName: String?,
         title: String?,
-        fileInfo: ExtendedHashMap?,
+        fileInfo: ExtendedHashMap?
     ): Intent {
         val uriString = SimpleHttpClient.getInstance().buildFileStreamUrl(ref, fileName)
         Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '$uriString'")

@@ -11,7 +11,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 data class TimerListLoadResult(
     val success: Boolean,
     val timers: List<Timer>,
-    val errorText: String?,
+    val errorText: String?
 )
 
 /**
@@ -25,8 +25,10 @@ suspend fun loadTimerList(context: Context): TimerListLoadResult {
     val timers = fetched ?: emptyList()
     val errorText = when {
         success -> null
+
         http.hasError() ->
             context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+
         else -> context.getString(R.string.error_parsing)
     }
     return TimerListLoadResult(success, timers, errorText)
@@ -40,7 +42,7 @@ suspend fun loadTimerList(context: Context): TimerListLoadResult {
  * Null parse result is failure (not an empty list) — matches the former task.
  */
 fun Fragment.launchTimerListLoad(
-    onResult: (success: Boolean, timers: List<Timer>, errorText: String?) -> Unit,
+    onResult: (success: Boolean, timers: List<Timer>, errorText: String?) -> Unit
 ): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
         val result = loadTimerList(requireContext())

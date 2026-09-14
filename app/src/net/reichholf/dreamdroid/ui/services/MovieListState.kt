@@ -22,7 +22,7 @@ fun ComposeView.bindMovieListScreen(
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
     onItemClick: MovieListTap,
-    onItemLongClick: MovieListTap,
+    onItemLongClick: MovieListTap
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -30,12 +30,12 @@ fun ComposeView.bindMovieListScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 MovieListScreen(
                     items = state.items,
                     onItemClick = onItemClick,
-                    onItemLongClick = onItemLongClick,
+                    onItemLongClick = onItemLongClick
                 )
             }
         }

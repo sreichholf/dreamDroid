@@ -10,7 +10,7 @@ data class Signal(
     val snrDbRaw: String = "",
     val snrRaw: String = "",
     val berRaw: String = "",
-    val agcRaw: String = "",
+    val agcRaw: String = ""
 ) : Serializable {
     val snrPercent: Int
         get() {
@@ -32,9 +32,8 @@ data class Signal(
             }
         }
 
-    fun isEmpty(): Boolean {
-        return snrDbRaw.isEmpty() && snrRaw.isEmpty() && berRaw.isEmpty() && agcRaw.isEmpty()
-    }
+    fun isEmpty(): Boolean =
+        snrDbRaw.isEmpty() && snrRaw.isEmpty() && berRaw.isEmpty() && agcRaw.isEmpty()
 
     companion object {
         const val MIN_SNR_DB = 5.0

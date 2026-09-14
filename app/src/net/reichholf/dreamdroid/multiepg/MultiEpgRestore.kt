@@ -18,8 +18,6 @@ object MultiEpgRestore {
         remountEpoch: Int,
         bouquetRef: String,
         savedEpoch: Int,
-        savedRef: String,
-    ): Boolean {
-        return remountEpoch != savedEpoch || bouquetRef != savedRef
-    }
+        savedRef: String
+    ): Boolean = remountEpoch != savedEpoch || bouquetRef != savedRef
 }

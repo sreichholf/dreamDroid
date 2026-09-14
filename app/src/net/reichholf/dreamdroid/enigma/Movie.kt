@@ -14,5 +14,5 @@ data class Movie(
     val tags: String = "",
     val fileName: String = "",
     val fileSize: String = "",
-    val fileSizeReadable: String = "",
+    val fileSizeReadable: String = ""
 ) : Serializable

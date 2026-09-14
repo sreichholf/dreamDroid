@@ -22,24 +22,22 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 
 /**
  * Phase 2.7e: Profile create/edit as a direct Compose NavHost destination.
  * Remounts when [PhoneNavHostFragment.profileEditRouteTag] / remount epoch changes.
  */
 @Composable
-fun ProfileEditDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val remount = hostFragment.profileEditRemountEpoch
     val tag = hostFragment.profileEditRouteTag()
     val args = hostFragment.profileEditLeafArguments()
+
     @Suppress("DEPRECATION")
     val extras = args.getSerializable(NavExtras.DATA) as? ExtendedHashMap
     val initialProfile = remember(tag, remount) {
@@ -71,18 +69,18 @@ fun ProfileEditDestination(
                 menuInflater.inflate(R.menu.save, menu)
             }
 
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-                return when (menuItem.itemId) {
-                    Statics.ITEM_SAVE -> {
-                        save()
-                        true
-                    }
-                    Statics.ITEM_CANCEL -> {
-                        hostFragment.deliverPickResult(Activity.RESULT_CANCELED, null)
-                        true
-                    }
-                    else -> false
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+                Statics.ITEM_SAVE -> {
+                    save()
+                    true
                 }
+
+                Statics.ITEM_CANCEL -> {
+                    hostFragment.deliverPickResult(Activity.RESULT_CANCELED, null)
+                    true
+                }
+
+                else -> false
             }
         }
     }
@@ -104,23 +102,17 @@ fun ProfileEditDestination(
         state = editState,
         saveLabel = context.getString(R.string.save),
         onSave = { save() },
-        modifier = modifier,
+        modifier = modifier
     )
 }
 
-internal data class ProfilePersistOutcome(
-    val saved: Boolean,
-    val message: String,
-)
+internal data class ProfilePersistOutcome(val saved: Boolean, val message: String)
 
-internal fun persistEditedProfile(
-    context: Context,
-    profile: Profile,
-): ProfilePersistOutcome {
+internal fun persistEditedProfile(context: Context, profile: Profile): ProfilePersistOutcome {
     if (profile.host.isNullOrEmpty()) {
         return ProfilePersistOutcome(
             saved = false,
-            message = context.getString(R.string.host_empty),
+            message = context.getString(R.string.host_empty)
         )
     }
     if (profile.streamHost == null) {
@@ -136,13 +128,13 @@ internal fun persistEditedProfile(
         return ProfilePersistOutcome(
             saved = true,
             message = context.getText(R.string.profile_updated).toString() +
-                " '" + profile.name + "'",
+                " '" + profile.name + "'"
         )
     }
     profile.id = dao.addProfile(profile).toInt()
     return ProfilePersistOutcome(
         saved = true,
         message = context.getText(R.string.profile_added).toString() +
-            " '" + profile.name + "'",
+            " '" + profile.name + "'"
     )
 }

@@ -32,7 +32,7 @@ class MovieDetailDialogHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -48,7 +48,7 @@ class MovieDetailDialogHostTest {
             tags = listOf("News", "HD"),
             length = "00:15",
             date = "2026-09-09 20:00",
-            fileSize = "123 MB",
+            fileSize = "123 MB"
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -56,7 +56,7 @@ class MovieDetailDialogHostTest {
                 onSurface = MaterialTheme.colorScheme.onSurface
                 MovieDetailModalSheet(
                     content = content,
-                    onDismiss = {},
+                    onDismiss = {}
                 )
             }
         }
@@ -72,7 +72,7 @@ class MovieDetailDialogHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -87,7 +87,7 @@ class MovieDetailDialogHostTest {
             tags = listOf("News"),
             length = "00:15",
             date = "2026-09-09 20:00",
-            fileSize = "123 MB",
+            fileSize = "123 MB"
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -119,7 +119,7 @@ class MovieDetailDialogHostTest {
             tags = "A B",
             length = "01:00",
             timeReadable = "today",
-            fileSizeReadable = "1 GB",
+            fileSizeReadable = "1 GB"
         )
         val fromHash = hash.toMovieDetailContent()
         val fromTyped = typed.toMovieDetailContent()

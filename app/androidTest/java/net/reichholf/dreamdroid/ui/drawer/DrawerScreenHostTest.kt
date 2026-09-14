@@ -32,60 +32,60 @@ import org.junit.Test
  * [R.layout.dualpane] does — catches LocalContentColor leaks from the host.
  */
 class DrawerScreenHostTest {
-	@get:Rule
-	val composeRule = createAndroidComposeRule<ComponentActivity>()
+    @get:Rule
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-	@Before
-	fun forceAlwaysNight() {
-		PreferenceManager.getDefaultSharedPreferences(
-			InstrumentationRegistry.getInstrumentation().targetContext,
-		).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-	}
+    @Before
+    fun forceAlwaysNight() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
 
-	@Test
-	fun contentColorIsOnSurfaceInsideNightViewHost() {
-		var localContent = Color.Unspecified
-		var onSurface = Color.Unspecified
-		val activity = composeRule.activity
-		composeRule.runOnUiThread {
-			val themed = ContextThemeWrapper(activity, R.style.Theme_DreamDroid_Night)
-			val host = FrameLayout(themed).apply {
-				layoutParams = ViewGroup.LayoutParams(
-					ViewGroup.LayoutParams.MATCH_PARENT,
-					ViewGroup.LayoutParams.MATCH_PARENT,
-				)
-			}
-			val state = DrawerListState()
-			val composeView = ComposeView(themed).apply {
-				layoutParams = ViewGroup.LayoutParams(
-					ViewGroup.LayoutParams.MATCH_PARENT,
-					ViewGroup.LayoutParams.MATCH_PARENT,
-				)
-				setViewTreeLifecycleOwner(activity)
-				setViewTreeViewModelStoreOwner(activity)
-				setViewTreeSavedStateRegistryOwner(activity)
-				setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-				setContent {
-					DreamDroidTheme {
-						localContent = LocalContentColor.current
-						onSurface = MaterialTheme.colorScheme.onSurface
-						DrawerScreen(state = state, onItemClick = {})
-					}
-				}
-			}
-			host.addView(composeView)
-			activity.setContentView(host)
-		}
-		composeRule.waitForIdle()
-		composeRule.onNodeWithText("Tools").assertIsDisplayed()
-		composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
-		composeRule.onNodeWithText("Control").assertDoesNotExist()
-		composeRule.runOnIdle {
-			assertEquals(onSurface, localContent)
-			assertTrue(
-				"night onSurface should be light, luminance=${onSurface.luminance()}",
-				onSurface.luminance() > 0.5f,
-			)
-		}
-	}
+    @Test
+    fun contentColorIsOnSurfaceInsideNightViewHost() {
+        var localContent = Color.Unspecified
+        var onSurface = Color.Unspecified
+        val activity = composeRule.activity
+        composeRule.runOnUiThread {
+            val themed = ContextThemeWrapper(activity, R.style.Theme_DreamDroid_Night)
+            val host = FrameLayout(themed).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+            }
+            val state = DrawerListState()
+            val composeView = ComposeView(themed).apply {
+                layoutParams = ViewGroup.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.MATCH_PARENT
+                )
+                setViewTreeLifecycleOwner(activity)
+                setViewTreeViewModelStoreOwner(activity)
+                setViewTreeSavedStateRegistryOwner(activity)
+                setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+                setContent {
+                    DreamDroidTheme {
+                        localContent = LocalContentColor.current
+                        onSurface = MaterialTheme.colorScheme.onSurface
+                        DrawerScreen(state = state, onItemClick = {})
+                    }
+                }
+            }
+            host.addView(composeView)
+            activity.setContentView(host)
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tools").assertIsDisplayed()
+        composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
+        composeRule.onNodeWithText("Control").assertDoesNotExist()
+        composeRule.runOnIdle {
+            assertEquals(onSurface, localContent)
+            assertTrue(
+                "night onSurface should be light, luminance=${onSurface.luminance()}",
+                onSurface.luminance() > 0.5f
+            )
+        }
+    }
 }

@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object CurrentServiceParser {
     fun parse(xml: String): CurrentService? {
@@ -17,18 +17,16 @@ object CurrentServiceParser {
             ?: parseSanitized(xml, aggressive = true)
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): CurrentService? {
-        return try {
-            val handler = CurrentServiceHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.result
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): CurrentService? = try {
+        val handler = CurrentServiceHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.result
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -71,7 +69,12 @@ private class CurrentServiceHandler : DefaultHandler() {
     private var service: Service = Service("", "")
     private val events = ArrayList<Event>()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2service" -> {
                 inService = true
@@ -79,9 +82,13 @@ private class CurrentServiceHandler : DefaultHandler() {
                 serviceName.setLength(0)
                 provider.setLength(0)
             }
+
             "e2servicereference" -> if (inService) inServiceReference = true
+
             "e2servicename" -> if (inService) inServiceName = true
+
             "e2providername" -> if (inService) inProviderName = true
+
             "e2event" -> {
                 inEvent = true
                 eventId.setLength(0)
@@ -95,15 +102,25 @@ private class CurrentServiceHandler : DefaultHandler() {
                 eventServiceReference.setLength(0)
                 eventServiceName.setLength(0)
             }
+
             "e2eventservicereference" -> if (inEvent) inEventServiceReference = true
+
             "e2eventservicename" -> if (inEvent) inEventServiceName = true
+
             "e2eventid" -> if (inEvent) inEventId = true
+
             "e2eventtitle" -> if (inEvent) inEventTitle = true
+
             "e2eventname" -> if (inEvent) inEventName = true
+
             "e2eventdescription" -> if (inEvent) inEventDescription = true
+
             "e2eventstart" -> if (inEvent) inEventStart = true
+
             "e2eventduration" -> if (inEvent) inEventDuration = true
+
             "e2eventcurrenttime" -> if (inEvent) inEventCurrentTime = true
+
             "e2eventdescriptionextended" -> if (inEvent) inEventDescriptionExtended = true
         }
     }
@@ -118,23 +135,38 @@ private class CurrentServiceHandler : DefaultHandler() {
                     provider = provider.toString().trim()
                 )
             }
+
             "e2servicereference" -> inServiceReference = false
+
             "e2servicename" -> inServiceName = false
+
             "e2providername" -> inProviderName = false
+
             "e2event" -> {
                 inEvent = false
                 events.add(buildEvent())
             }
+
             "e2eventservicereference" -> inEventServiceReference = false
+
             "e2eventservicename" -> inEventServiceName = false
+
             "e2eventid" -> inEventId = false
+
             "e2eventtitle" -> inEventTitle = false
+
             "e2eventname" -> inEventName = false
+
             "e2eventdescription" -> inEventDescription = false
+
             "e2eventstart" -> inEventStart = false
+
             "e2eventduration" -> inEventDuration = false
+
             "e2eventcurrenttime" -> inEventCurrentTime = false
+
             "e2eventdescriptionextended" -> inEventDescriptionExtended = false
+
             "e2currentserviceinformation" -> {
                 result = CurrentService(
                     service = service,

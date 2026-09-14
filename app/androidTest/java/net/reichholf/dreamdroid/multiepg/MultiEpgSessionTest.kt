@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.multiepg
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
@@ -16,7 +17,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.util.concurrent.atomic.AtomicInteger
 
 @RunWith(AndroidJUnit4::class)
 class MultiEpgSessionTest {
@@ -49,7 +49,7 @@ class MultiEpgSessionTest {
                 listOf(programme(id = "e1", title = "T$n", start = time))
             },
             clockMs = { now },
-            ttlMs = 1_000L,
+            ttlMs = 1_000L
         )
         sync.ensureChunk(1, "bouquet-a", t0)
         now += 2_000L
@@ -57,7 +57,7 @@ class MultiEpgSessionTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         waitUntil { session.channels.isNotEmpty() }
@@ -84,7 +84,7 @@ class MultiEpgSessionTest {
                 listOf(programme(id = "1", title = "Old", start = time))
             },
             clockMs = { now },
-            ttlMs = 1_000L,
+            ttlMs = 1_000L
         )
         sync.ensureChunk(1, "bouquet-a", t0)
         now += 2_000L
@@ -92,7 +92,7 @@ class MultiEpgSessionTest {
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
@@ -115,13 +115,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
@@ -148,14 +148,14 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         sync.ensureChunk(1, "bouquet-a", t0)
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         waitUntil { session.channels.isNotEmpty() }
@@ -176,13 +176,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = "$bouquet-$time", title = title, start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
@@ -203,13 +203,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", lateNow)
         session.awaitIdle()
@@ -217,7 +217,9 @@ class MultiEpgSessionTest {
         assertEquals(lateNow, session.originFloorSec)
         assertTrue(session.timelineEndSec > chunk.endSec)
         assertEquals(chunk.startSec, session.loadedWindowStarts.minOrNull())
-        assertFalse(session.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS))
+        assertFalse(
+            session.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS)
+        )
     }
 
     @Test
@@ -233,13 +235,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -249,7 +251,7 @@ class MultiEpgSessionTest {
         session.awaitIdle()
         assertTrue(
             "panning inside the padded window must keep today",
-            session.loadedWindowStarts.contains(chunk.startSec),
+            session.loadedWindowStarts.contains(chunk.startSec)
         )
 
         session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
@@ -265,7 +267,7 @@ class MultiEpgSessionTest {
         assertEquals(
             "restoring today should peek Room, not refetch the box",
             fetchesBeforeRestore,
-            fetches.size,
+            fetches.size
         )
     }
 
@@ -282,13 +284,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -320,27 +322,27 @@ class MultiEpgSessionTest {
                             id = "early",
                             title = "Early",
                             start = earliest,
-                            duration = "14400",
+                            duration = "14400"
                         ),
                         programme(
                             id = "later",
                             title = "Later",
                             start = later,
-                            duration = "3600",
-                        ),
+                            duration = "3600"
+                        )
                     )
                 } else {
                     listOf(programme(id = time.toString(), title = "T", start = time))
                 }
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -365,13 +367,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -397,7 +399,7 @@ class MultiEpgSessionTest {
                 listOf(programme(id = "e1", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
@@ -407,7 +409,7 @@ class MultiEpgSessionTest {
             fetchTimers = {
                 gate.await()
                 error("timerlist down")
-            },
+            }
         )
         session.replaceAndLoad("bouquet-a", t0)
         waitUntil { session.channels.isNotEmpty() }
@@ -428,7 +430,7 @@ class MultiEpgSessionTest {
                 listOf(programme(id = "e1", title = "News", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
@@ -443,10 +445,10 @@ class MultiEpgSessionTest {
                         end = (t0 + 3600L).toString(),
                         justPlay = "0",
                         disabled = "0",
-                        repeated = "0",
-                    ),
+                        repeated = "0"
+                    )
                 )
-            },
+            }
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
@@ -470,8 +472,8 @@ class MultiEpgSessionTest {
                         title = "T",
                         start = time,
                         serviceReference = withEpg,
-                        serviceName = "Das Erste",
-                    ),
+                        serviceName = "Das Erste"
+                    )
                 )
                 if (time == chunk.startSec) {
                     events.add(
@@ -480,14 +482,14 @@ class MultiEpgSessionTest {
                             title = "B",
                             start = time,
                             serviceReference = withoutEpg,
-                            serviceName = "ZDF",
-                        ),
+                            serviceName = "ZDF"
+                        )
                     )
                 }
                 events
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
@@ -497,9 +499,9 @@ class MultiEpgSessionTest {
             loadBouquetServices = {
                 listOf(
                     Service(withEpg, "Das Erste"),
-                    Service(withoutEpg, "ZDF"),
+                    Service(withoutEpg, "ZDF")
                 )
-            },
+            }
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -514,7 +516,7 @@ class MultiEpgSessionTest {
         assertEquals("ZDF", session.channels[1].serviceName)
         assertTrue(
             "ZDF stays in the grid after today is dropped",
-            session.channels[1].bars.isEmpty(),
+            session.channels[1].bars.isEmpty()
         )
         assertTrue(session.channels[0].bars.isNotEmpty())
     }
@@ -527,7 +529,7 @@ class MultiEpgSessionTest {
             id = "span",
             title = "Overnight",
             start = spanStart,
-            duration = "7200",
+            duration = "7200"
         )
         val sync = MultiEpgSync(
             dao = db.epgDao(),
@@ -535,24 +537,24 @@ class MultiEpgSessionTest {
                 if (time == chunk0.startSec) {
                     listOf(
                         spanning,
-                        programme(id = "a", title = "A", start = time),
+                        programme(id = "a", title = "A", start = time)
                     )
                 } else {
                     listOf(
                         spanning,
-                        programme(id = "b", title = "B", start = time),
+                        programme(id = "b", title = "B", start = time)
                     )
                 }
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val origin = chunk0.endSec - 600L
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", origin)
         session.awaitIdle()
@@ -579,12 +581,12 @@ class MultiEpgSessionTest {
                         title = "T",
                         start = time,
                         serviceReference = withEpg,
-                        serviceName = "Das Erste",
-                    ),
+                        serviceName = "Das Erste"
+                    )
                 )
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
@@ -597,9 +599,9 @@ class MultiEpgSessionTest {
                 }
                 listOf(
                     Service(withEpg, "Das Erste"),
-                    Service(withoutEpg, "ZDF"),
+                    Service(withoutEpg, "ZDF")
                 )
-            },
+            }
         )
         session.replaceAndLoad("bouquet-a", now)
         session.awaitIdle()
@@ -627,13 +629,13 @@ class MultiEpgSessionTest {
                 listOf(programme(id = time.toString(), title = "T", start = time))
             },
             clockMs = { 1_000_000L },
-            ttlMs = 25L * 60L * 1000L,
+            ttlMs = 25L * 60L * 1000L
         )
         val session = MultiEpgSession(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
+            noBouquetMessage = "no bouquet"
         )
         session.replaceAndLoad("bouquet-a", t0)
         session.awaitIdle()
@@ -660,17 +662,15 @@ class MultiEpgSessionTest {
         start: Long,
         duration: String = "3600",
         serviceReference: String = "1:0:1:1:1:1:0:0:0:0:",
-        serviceName: String = "TV",
-    ): Event {
-        return Event(
-            eventId = id,
-            title = title,
-            start = start.toString(),
-            duration = duration,
-            serviceReference = serviceReference,
-            serviceName = serviceName,
-        )
-    }
+        serviceName: String = "TV"
+    ): Event = Event(
+        eventId = id,
+        title = title,
+        start = start.toString(),
+        duration = duration,
+        serviceReference = serviceReference,
+        serviceName = serviceName
+    )
 
     private suspend fun waitUntil(timeoutMs: Long = 5_000L, condition: () -> Boolean) {
         val startMs = System.currentTimeMillis()

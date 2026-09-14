@@ -29,18 +29,18 @@ fun ProfilesScreen(
     profiles: List<ProfileListItem>,
     onProfileClick: (ProfileListItem) -> Unit,
     onProfileLongClick: (ProfileListItem) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         items(profiles, key = { it.id }) { profile ->
             ProfileRow(
                 profile = profile,
                 onClick = { onProfileClick(profile) },
-                onLongClick = { onProfileLongClick(profile) },
+                onLongClick = { onProfileLongClick(profile) }
             )
         }
     }
@@ -48,40 +48,36 @@ fun ProfilesScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ProfileRow(
-    profile: ProfileListItem,
-    onClick: () -> Unit,
-    onLongClick: () -> Unit,
-) {
+private fun ProfileRow(profile: ProfileListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Row(
             modifier = Modifier.height(IntrinsicSize.Min),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             if (profile.active) {
                 Box(
                     Modifier
                         .width(4.dp)
                         .fillMaxHeight()
-                        .background(MaterialTheme.colorScheme.primary),
+                        .background(MaterialTheme.colorScheme.primary)
                 )
             }
             Column(Modifier.padding(16.dp)) {
                 Text(
                     text = profile.name,
                     style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = profile.host,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }

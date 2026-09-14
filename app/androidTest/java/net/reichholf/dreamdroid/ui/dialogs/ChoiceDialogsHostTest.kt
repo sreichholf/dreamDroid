@@ -29,7 +29,7 @@ class ChoiceDialogsHostTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -46,7 +46,7 @@ class ChoiceDialogsHostTest {
                     items = listOf("News", "Sport"),
                     initialChecked = booleanArrayOf(true, false),
                     onDismiss = {},
-                    onConfirm = {},
+                    onConfirm = {}
                 )
             }
         }
@@ -58,7 +58,7 @@ class ChoiceDialogsHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -75,7 +75,7 @@ class ChoiceDialogsHostTest {
                     title = "Audio tracks",
                     items = listOf("Track 1", "Track 2"),
                     onDismiss = {},
-                    onChoice = {},
+                    onChoice = {}
                 )
             }
         }
@@ -86,7 +86,7 @@ class ChoiceDialogsHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -101,7 +101,7 @@ class ChoiceDialogsHostTest {
                 onSurface = MaterialTheme.colorScheme.onSurface
                 IndeterminateProgressDialog(
                     title = "Searching",
-                    message = "Looking for devices",
+                    message = "Looking for devices"
                 )
             }
         }
@@ -112,7 +112,7 @@ class ChoiceDialogsHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -123,7 +123,7 @@ class ChoiceDialogsHostTest {
             DreamDroidTheme {
                 IndeterminateProgressDialog(
                     title = "",
-                    message = "Saving",
+                    message = "Saving"
                 )
             }
         }
@@ -138,8 +138,8 @@ class ChoiceDialogsHostTest {
                 IndeterminateProgressHost(
                     IndeterminateProgressState(
                         title = "Searching",
-                        message = "Looking for devices",
-                    ),
+                        message = "Looking for devices"
+                    )
                 )
             }
         }
@@ -164,7 +164,7 @@ class ChoiceDialogsHostTest {
                     title = "Delete?",
                     message = "Really delete this item?",
                     onDismiss = {},
-                    onConfirm = {},
+                    onConfirm = {}
                 )
             }
         }
@@ -175,9 +175,8 @@ class ChoiceDialogsHostTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
-
 }

@@ -22,6 +22,8 @@ import androidx.core.view.MenuProvider
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
+import java.util.Calendar
+import java.util.Collections
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
@@ -41,8 +43,6 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
-import java.util.Calendar
-import java.util.Collections
 
 private const val LOG_TAG = "TimerEditDestination"
 
@@ -51,10 +51,7 @@ private const val LOG_TAG = "TimerEditDestination"
  * Working copy lives on [PhoneNavHostFragment] so service-pick navigation does not wipe edits.
  */
 @Composable
-fun TimerEditDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun TimerEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val remount = hostFragment.timerEditRemountEpoch
     val tag = hostFragment.timerEditRouteTag()
@@ -95,7 +92,7 @@ fun TimerEditDestination(
         onPickRepeated = { showRepeatingsPicker = true },
         onPickService = { session.pickService() },
         onPickTags = { showTagsPicker = true },
-        modifier = modifier,
+        modifier = modifier
     )
 
     if (showRepeatingsPicker) {
@@ -108,12 +105,13 @@ fun TimerEditDestination(
             onConfirm = { indices ->
                 session.applyRepeatingsSelection(indices)
                 showRepeatingsPicker = false
-            },
+            }
         )
     }
     if (showTagsPicker) {
         val tags = DreamDroid.getTags().map { it.toString() }
-        val checked = BooleanArray(tags.size) { i -> session.selectedTags.contains(DreamDroid.getTags()[i]) }
+        val checked =
+            BooleanArray(tags.size) { i -> session.selectedTags.contains(DreamDroid.getTags()[i]) }
         MultiChoiceAlertDialog(
             title = stringResource(R.string.choose_tags),
             items = tags,
@@ -122,7 +120,7 @@ fun TimerEditDestination(
             onConfirm = { indices ->
                 session.applyTagsSelection(indices)
                 showTagsPicker = false
-            },
+            }
         )
     }
 
@@ -140,7 +138,7 @@ class TimerEditSession(
     var timerOld: ExtendedHashMap?,
     var isCreate: Boolean,
     val selectedTags: ArrayList<String>,
-    val checkedDays: BooleanArray,
+    val checkedDays: BooleanArray
 ) : PhoneNavHostFragment.ActivityResultListener,
     MenuProvider {
 
@@ -167,18 +165,18 @@ class TimerEditSession(
         menuInflater.inflate(R.menu.save, menu)
     }
 
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        return when (menuItem.itemId) {
-            Statics.ITEM_SAVE -> {
-                saveTimer()
-                true
-            }
-            Statics.ITEM_CANCEL -> {
-                hostFragment?.deliverPickResult(Activity.RESULT_CANCELED, null)
-                true
-            }
-            else -> false
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+        Statics.ITEM_SAVE -> {
+            saveTimer()
+            true
         }
+
+        Statics.ITEM_CANCEL -> {
+            hostFragment?.deliverPickResult(Activity.RESULT_CANCELED, null)
+            true
+        }
+
+        else -> false
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -238,7 +236,14 @@ class TimerEditSession(
     fun pickBeginTime() {
         val ctx = context ?: return
         val cal = calendar(begin)
-        val timeFormat = if (DateFormat.is24HourFormat(ctx)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+        val timeFormat = if (DateFormat.is24HourFormat(
+                ctx
+            )
+        ) {
+            TimeFormat.CLOCK_24H
+        } else {
+            TimeFormat.CLOCK_12H
+        }
         val picker = MaterialTimePicker.Builder()
             .setHour(cal.get(Calendar.HOUR_OF_DAY))
             .setMinute(cal.get(Calendar.MINUTE))
@@ -264,7 +269,14 @@ class TimerEditSession(
     fun pickEndTime() {
         val ctx = context ?: return
         val cal = calendar(end)
-        val timeFormat = if (DateFormat.is24HourFormat(ctx)) TimeFormat.CLOCK_24H else TimeFormat.CLOCK_12H
+        val timeFormat = if (DateFormat.is24HourFormat(
+                ctx
+            )
+        ) {
+            TimeFormat.CLOCK_24H
+        } else {
+            TimeFormat.CLOCK_12H
+        }
         val picker = MaterialTimePicker.Builder()
             .setHour(cal.get(Calendar.HOUR_OF_DAY))
             .setMinute(cal.get(Calendar.MINUTE))
@@ -290,7 +302,7 @@ class TimerEditSession(
                     locationsJob = null
                     progress = null
                     reload()
-                },
+                }
             )
         } else {
             reload()
@@ -393,13 +405,20 @@ class TimerEditSession(
 
     private fun onDateSet(isBegin: Boolean, millis: Long) {
         val c = Calendar.getInstance().apply { timeInMillis = millis }
-        onDateSet(isBegin, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH))
+        onDateSet(
+            isBegin,
+            c.get(Calendar.YEAR),
+            c.get(Calendar.MONTH),
+            c.get(Calendar.DAY_OF_MONTH)
+        )
     }
 
     private fun onDateSet(isBegin: Boolean, year: Int, month: Int, day: Int) {
         val time = if (isBegin) begin else end
         val cal = calendar(time)
-        if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month && cal.get(Calendar.DATE) == day) {
+        if (cal.get(Calendar.YEAR) == year && cal.get(Calendar.MONTH) == month &&
+            cal.get(Calendar.DATE) == day
+        ) {
             return
         }
         cal.set(year, month, day)
@@ -432,7 +451,6 @@ class TimerEditSession(
         editState.setBeginEndLabels(begin, end)
     }
 
-
     companion object {
         private val REPEATED_VALUES = intArrayOf(1, 2, 4, 8, 16, 32, 64)
 
@@ -444,10 +462,15 @@ class TimerEditSession(
         const val STATE_TAG = "timer_edit_session_tag"
         const val STATE_REMOUNT = "timer_edit_session_remount"
 
-        fun fromArgs(args: android.os.Bundle, routeTag: String, remountEpoch: Int): TimerEditSession {
+        fun fromArgs(
+            args: android.os.Bundle,
+            routeTag: String,
+            remountEpoch: Int
+        ): TimerEditSession {
             @Suppress("DEPRECATION")
             val data = (args.getSerializable(NavExtras.DATA) as? ExtendedHashMap)?.clone()
                 ?: ExtendedHashMap()
+
             @Suppress("UNCHECKED_CAST")
             val timer = ((data["timer"] as? ExtendedHashMap) ?: ExtendedHashMap()).clone()
             val isCreate = !Intent.ACTION_EDIT.equals(data["action"])
@@ -459,14 +482,16 @@ class TimerEditSession(
                 timerOld = timerOld,
                 isCreate = isCreate,
                 selectedTags = ArrayList(),
-                checkedDays = BooleanArray(7),
+                checkedDays = BooleanArray(7)
             )
         }
 
         fun fromSavedState(state: android.os.Bundle): TimerEditSession? {
             val routeTag = state.getString(STATE_TAG) ?: return null
+
             @Suppress("DEPRECATION")
             val timer = state.getSerializable(STATE_TIMER) as? ExtendedHashMap ?: return null
+
             @Suppress("DEPRECATION")
             val timerOld = state.getSerializable(STATE_TIMER_OLD) as? ExtendedHashMap
             val tags = state.getStringArrayList(STATE_TAGS) ?: ArrayList()
@@ -478,7 +503,7 @@ class TimerEditSession(
                 timerOld = timerOld,
                 isCreate = state.getBoolean(STATE_CREATE, timerOld == null),
                 selectedTags = ArrayList(tags),
-                checkedDays = checked,
+                checkedDays = checked
             )
         }
     }

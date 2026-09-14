@@ -5,8 +5,16 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class HubBouquetSelectionTest {
-    private val favourites = Service("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet", "Favourites (TV)")
-    private val sports = Service("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\" ORDER BY bouquet", "Sports")
+    private val favourites =
+        Service(
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
+            "Favourites (TV)"
+        )
+    private val sports =
+        Service(
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\" ORDER BY bouquet",
+            "Sports"
+        )
     private val items = listOf(favourites, sports)
 
     @Test
@@ -42,6 +50,14 @@ class HubBouquetSelectionTest {
         val labels = arrayOf("Bouquets", "Provider", "All Services")
         val refs = arrayOf("ref-b", "ref-p", "ref-a")
         val built = buildDedicatedBouquets(items, labels, refs)
-        assertEquals(listOf(favourites, sports, Service("ref-p", "Provider"), Service("ref-a", "All Services")), built)
+        assertEquals(
+            listOf(
+                favourites,
+                sports,
+                Service("ref-p", "Provider"),
+                Service("ref-a", "All Services")
+            ),
+            built
+        )
     }
 }

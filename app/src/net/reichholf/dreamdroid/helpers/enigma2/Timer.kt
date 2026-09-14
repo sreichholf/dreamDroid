@@ -9,6 +9,9 @@ package net.reichholf.dreamdroid.helpers.enigma2
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import java.util.Calendar
+import java.util.Date
+import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
@@ -17,9 +20,6 @@ import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
-import java.util.Calendar
-import java.util.Date
-import java.util.GregorianCalendar
 
 /**
  * @author sreichholf
@@ -117,14 +117,20 @@ class Timer {
             timer.put(KEY_END, end.toString())
             timer.put(KEY_NAME, event.getString(Event.KEY_EVENT_TITLE))
             timer.put(KEY_DESCRIPTION, event.getString(Event.KEY_EVENT_DESCRIPTION))
-            timer.put(KEY_DESCRIPTION_EXTENDED, event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED))
+            timer.put(
+                KEY_DESCRIPTION_EXTENDED,
+                event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED)
+            )
             timer.put(KEY_SERVICE_NAME, event.getString(Event.KEY_SERVICE_NAME))
             timer.put(KEY_REFERENCE, event.getString(Event.KEY_SERVICE_REFERENCE))
 
             return timer
         }
 
-        fun getSaveParams(timer: ExtendedHashMap, timerOld: ExtendedHashMap?): ArrayList<NameValuePair> {
+        fun getSaveParams(
+            timer: ExtendedHashMap,
+            timerOld: ExtendedHashMap?
+        ): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
 
             params.add(NameValuePair("sRef", timer.getString(KEY_REFERENCE)))
@@ -171,7 +177,12 @@ class Timer {
             edit(mph, createByEvent(event), target, true)
         }
 
-        fun edit(mph: MultiPaneHandler?, timer: ExtendedHashMap?, target: Fragment, create: Boolean) {
+        fun edit(
+            mph: MultiPaneHandler?,
+            timer: ExtendedHashMap?,
+            target: Fragment,
+            create: Boolean
+        ) {
             var walker = target.parentFragment
             while (walker != null) {
                 if (walker is PhoneNavHostFragment && walker.navigateToTimerEdit(timer!!, create)) {

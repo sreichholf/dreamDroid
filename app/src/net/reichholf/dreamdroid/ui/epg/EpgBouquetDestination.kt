@@ -20,6 +20,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
+import java.util.Calendar
+import java.util.Locale
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
@@ -34,8 +36,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
-import java.util.Calendar
-import java.util.Locale
 
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
@@ -46,7 +46,7 @@ import java.util.Locale
 fun EpgBouquetDestination(
     hostFragment: PhoneNavHostFragment,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
@@ -55,15 +55,15 @@ fun EpgBouquetDestination(
     var bouquetRef by rememberSaveable(remountEpoch) {
         mutableStateOf(
             leafArgs.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE,
-            ).orEmpty(),
+                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
+            ).orEmpty()
         )
     }
     var bouquetName by rememberSaveable(remountEpoch) {
         mutableStateOf(
             leafArgs.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME,
-            ).orEmpty(),
+                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME
+            ).orEmpty()
         )
     }
     val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
@@ -122,16 +122,16 @@ fun EpgBouquetDestination(
         onNow = {
             session.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
         },
-        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) },
+        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) }
     )
 
     LaunchedEffect(remountEpoch, bouquetRef) {
         val args = hostFragment.epgLeafArguments()
         val ref = args.getString(
-            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE,
+            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
         ).orEmpty()
         val name = args.getString(
-            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME,
+            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME
         ).orEmpty()
         if (ref.isNotEmpty() && ref != bouquetRef) {
             bouquetRef = ref
@@ -145,7 +145,7 @@ fun EpgBouquetDestination(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         EpgBouquetScreen(
             items = listState.items,
@@ -153,7 +153,7 @@ fun EpgBouquetDestination(
             scrollEpoch = listState.scrollEpoch,
             emptyMessage = emptyMessage,
             timeJump = timeJump,
-            onItemClick = { dialogSession.showDetail(it) },
+            onItemClick = { dialogSession.showDetail(it) }
         )
     }
 
@@ -164,7 +164,7 @@ fun EpgBouquetDestination(
             onConfirm = { utcDateMillis ->
                 showDatePicker = false
                 session.onInstantSet(EpgInstant.applyDate(timeSec, utcDateMillis))
-            },
+            }
         )
     }
     if (showTimePicker) {
@@ -175,7 +175,7 @@ fun EpgBouquetDestination(
             onConfirm = { hour, minute ->
                 showTimePicker = false
                 session.onInstantSet(EpgInstant.applyTime(timeSec, hour, minute))
-            },
+            }
         )
     }
 
@@ -248,9 +248,9 @@ private class EpgBouquetSession :
                 ctx.applicationContext,
                 listOf(
                     NameValuePair("bRef", bouquetRef),
-                    NameValuePair("time", timeSec.toString()),
+                    NameValuePair("time", timeSec.toString())
                 ),
-                URIStore.EPG_BOUQUET,
+                URIStore.EPG_BOUQUET
             )
             refreshState.setRefreshing(false)
             setToolbarTitle(finishedTitle())

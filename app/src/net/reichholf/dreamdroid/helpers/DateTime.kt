@@ -7,12 +7,12 @@
 package net.reichholf.dreamdroid.helpers
 
 import android.util.Log
-import net.reichholf.dreamdroid.DreamDroid
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import net.reichholf.dreamdroid.DreamDroid
 
 /**
  * Provides static methods for Date and Time parsing
@@ -20,9 +20,8 @@ import java.util.Locale
  * @author sreichholf
  */
 object DateTime {
-    fun getRemaining(duration: String?, eventstart: String?): Int {
-        return getRemaining(duration, eventstart, null)
-    }
+    fun getRemaining(duration: String?, eventstart: String?): Int =
+        getRemaining(duration, eventstart, null)
 
     fun getRemaining(duration: String?, eventstart: String?, nowTime: String?): Int {
         if (duration == null || Python.NONE == duration) {
@@ -97,9 +96,7 @@ object DateTime {
         return getFormattedDateString(sdfDateTime, timestamp)
     }
 
-    fun getYearDateTimeString(timestamp: Long): String {
-        return getYearDateTimeString(timestamp.toString())
-    }
+    fun getYearDateTimeString(timestamp: Long): String = getYearDateTimeString(timestamp.toString())
 
     fun getYearDateTimeString(timestamp: String): String {
         val sdfDateTime = if (DreamDroid.DATE_LOCALE_WO) {
@@ -116,14 +113,12 @@ object DateTime {
         return getFormattedDateString(sdfTime, timestamp)
     }
 
-    fun getDate(timestamp: String): Date? {
-        return try {
-            var s = timestamp.toDouble().toLong()
-            s = s * 1000
-            Date(s)
-        } catch (_: NumberFormatException) {
-            null
-        }
+    fun getDate(timestamp: String): Date? = try {
+        var s = timestamp.toDouble().toLong()
+        s = s * 1000
+        Date(s)
+    } catch (_: NumberFormatException) {
+        null
     }
 
     fun getFormattedDateString(sdf: SimpleDateFormat, timestamp: String): String {
@@ -134,9 +129,7 @@ object DateTime {
         return "-"
     }
 
-    fun parseTimestamp(timestamp: String?): Int {
-        return BigDecimal(timestamp).toInt()
-    }
+    fun parseTimestamp(timestamp: String?): Int = BigDecimal(timestamp).toInt()
 
     fun minutesAndSeconds(seconds: Int): String {
         val min = seconds / 60

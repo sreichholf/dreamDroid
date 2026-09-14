@@ -23,16 +23,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.util.GregorianCalendar
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadScreenshot
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
-import java.util.GregorianCalendar
 
 /**
  * Screenshot grab type / format constants (formerly on ScreenShotFragment).
@@ -69,7 +69,7 @@ fun ScreenshotDestination(
     actionsEnabled: Boolean = true,
     setTitle: Boolean = true,
     reloadTrigger: ScreenshotReloadTrigger? = null,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -117,7 +117,9 @@ fun ScreenshotDestination(
                 params.add(NameValuePair("o", " "))
                 params.add(NameValuePair("n", " "))
             }
+
             ScreenshotParams.TYPE_VIDEO -> params.add(NameValuePair("v", " "))
+
             ScreenshotParams.TYPE_ALL -> Unit
         }
         when (format) {
@@ -143,7 +145,10 @@ fun ScreenshotDestination(
             if (result.success && result.bytes != null) {
                 onAvailable(result.bytes)
             } else {
-                toast(result.errorText?.takeIf { it.isNotEmpty() } ?: context.getString(R.string.error))
+                toast(
+                    result.errorText?.takeIf { it.isNotEmpty() }
+                        ?: context.getString(R.string.error)
+                )
             }
         }
     }
@@ -152,11 +157,7 @@ fun ScreenshotDestination(
         toast(context.getString(R.string.error))
     }
 
-    fun failGallerySave(
-        bytes: ByteArray,
-        inserted: Boolean,
-        ioFailed: Boolean,
-    ): Boolean {
+    fun failGallerySave(bytes: ByteArray, inserted: Boolean, ioFailed: Boolean): Boolean {
         if (screenshotGallerySaveError(bytes, inserted, ioFailed) == null) {
             return false
         }
@@ -223,7 +224,7 @@ fun ScreenshotDestination(
         val uri = FileProvider.getUriForFile(
             context,
             context.applicationContext.packageName + ".provider",
-            file,
+            file
         )
         val intent = Intent(Intent.ACTION_SEND).apply {
             putExtra(Intent.EXTRA_STREAM, uri)
@@ -234,10 +235,14 @@ fun ScreenshotDestination(
 
     DisposableEffect(Unit) {
         setToolbarTitle()
-        val conn = MediaScannerConnection(context, object : MediaScannerConnection.MediaScannerConnectionClient {
-            override fun onMediaScannerConnected() {}
-            override fun onScanCompleted(path: String?, uri: Uri?) {}
-        })
+        val conn =
+            MediaScannerConnection(
+                context,
+                object : MediaScannerConnection.MediaScannerConnectionClient {
+                    override fun onMediaScannerConnected() {}
+                    override fun onScanCompleted(path: String?, uri: Uri?) {}
+                }
+            )
         conn.connect()
         scanner = conn
         onDispose {
@@ -268,6 +273,6 @@ fun ScreenshotDestination(
         onReload = { reload() },
         onShare = { share() },
         onSave = { saveToFile(false) },
-        modifier = modifier,
+        modifier = modifier
     )
 }

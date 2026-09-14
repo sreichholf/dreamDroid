@@ -16,7 +16,7 @@ class E2PowerStateHandler : E2SimpleHandler() {
         namespaceUri: String?,
         localName: String,
         qName: String?,
-        attrs: Attributes?,
+        attrs: Attributes?
     ) {
         if (localName == TAG_E2INSTANDBY) {
             inState = true

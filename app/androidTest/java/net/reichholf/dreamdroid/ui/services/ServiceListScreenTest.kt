@@ -22,7 +22,7 @@ class ServiceListScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -44,11 +44,11 @@ class ServiceListScreenTest {
                             nextStart = "20:15",
                             nextDuration = "5",
                             progressMax = 15,
-                            progress = 3,
-                        ),
+                            progress = 3
+                        )
                     ),
                     onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
                 )
             }
         }
@@ -78,11 +78,11 @@ class ServiceListScreenTest {
                             index = 0,
                             reference = "1:0:1:1:1:1:1:0:0:0:",
                             name = "ZDF",
-                            kind = ServiceRowKind.CHANNEL,
-                        ),
+                            kind = ServiceRowKind.CHANNEL
+                        )
                     ),
                     onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
                 )
             }
         }
@@ -105,20 +105,20 @@ class ServiceListScreenTest {
                             index = 0,
                             reference = "1:0:1:1:1:1:1:0:0:0:",
                             name = "ARD",
-                            kind = ServiceRowKind.CHANNEL,
+                            kind = ServiceRowKind.CHANNEL
                         ),
                         ServiceListItem(
                             index = 1,
                             reference = "1:0:1:2:1:1:1:0:0:0:",
                             name = "ZDF",
-                            kind = ServiceRowKind.CHANNEL,
-                        ),
+                            kind = ServiceRowKind.CHANNEL
+                        )
                     ),
                     onItemClick = { _, x, y ->
                         tapX = x
                         tapY = y
                     },
-                    onItemLongClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
                 )
             }
         }

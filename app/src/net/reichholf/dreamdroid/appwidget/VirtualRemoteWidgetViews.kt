@@ -29,11 +29,11 @@ object VirtualRemoteWidgetViews {
         registerButtons(context, remoteViews, appWidgetId, playAsPlayPause)
         remoteViews.setViewVisibility(
             R.id.ButtonPlay,
-            if (playAsPlayPause) View.INVISIBLE else View.VISIBLE,
+            if (playAsPlayPause) View.INVISIBLE else View.VISIBLE
         )
         remoteViews.setViewVisibility(
             R.id.ButtonPlayPause,
-            if (playAsPlayPause) View.VISIBLE else View.INVISIBLE,
+            if (playAsPlayPause) View.VISIBLE else View.INVISIBLE
         )
         return remoteViews
     }
@@ -42,25 +42,24 @@ object VirtualRemoteWidgetViews {
         context: Context,
         remoteViews: RemoteViews,
         appWidgetId: Int,
-        playAsPlayPause: Boolean,
+        playAsPlayPause: Boolean
     ) {
         for (btn in VirtualRemoteButtons.getRemoteButtons(playAsPlayPause)) {
             val pendingIntent = PendingIntent.getBroadcast(
                 context,
                 btn[0],
                 rcuButtonIntent(context, appWidgetId, btn[1].toString()),
-                PendingIntent.FLAG_IMMUTABLE,
+                PendingIntent.FLAG_IMMUTABLE
             )
             remoteViews.setOnClickPendingIntent(btn[0], pendingIntent)
         }
     }
 
-    fun rcuButtonIntent(context: Context, appWidgetId: Int, keyId: String): Intent {
-        return Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
+    fun rcuButtonIntent(context: Context, appWidgetId: Int, keyId: String): Intent =
+        Intent(context, VirtualRemoteWidgetProvider::class.java).apply {
             putExtra(WidgetRemoteRequest.KEY_WIDGETID, appWidgetId)
             putExtra(WidgetRemoteRequest.KEY_KEYID, keyId)
             action = WidgetRemoteRequest.ACTION_RCU
             data = Uri.parse("dreamdroid://virtual-remote/$appWidgetId")
         }
-    }
 }

@@ -46,7 +46,7 @@ fun SettingsScreen(
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
     var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
@@ -70,7 +70,7 @@ fun SettingsScreen(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(bottom = 24.dp),
+            .padding(bottom = 24.dp)
     ) {
         PreferenceCategoryHeader(stringResource(R.string.video_player))
         SwitchPreferenceRow(
@@ -79,7 +79,7 @@ fun SettingsScreen(
             checked = state.integratedVideoPlayer,
             onCheckedChange = {
                 state.setBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, it)
-            },
+            }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.video_enable_gestures),
@@ -88,13 +88,13 @@ fun SettingsScreen(
             enabled = state.integratedVideoPlayer,
             onCheckedChange = {
                 state.setBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, it)
-            },
+            }
         )
         ListPreferenceRow(
             title = stringResource(R.string.use_hw_accel),
             summary = stringResource(
                 R.string.use_hw_accel_long,
-                entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration),
+                entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration)
             ),
             enabled = state.integratedVideoPlayer,
             onClick = {
@@ -103,9 +103,9 @@ fun SettingsScreen(
                     entries = hwEntries.toList(),
                     values = hwValues.toList(),
                     selectedValue = state.videoHardwareAcceleration,
-                    key = DreamDroid.PREFS_KEY_HWACCEL,
+                    key = DreamDroid.PREFS_KEY_HWACCEL
                 )
-            },
+            }
         )
 
         PreferenceCategoryHeader(stringResource(R.string.usability))
@@ -121,21 +121,21 @@ fun SettingsScreen(
                     entries = startEntries.toList(),
                     values = startValues.toList(),
                     selectedValue = state.startScreen,
-                    key = DreamDroid.PREFS_KEY_START_SCREEN,
+                    key = DreamDroid.PREFS_KEY_START_SCREEN
                 )
-            },
+            }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_volume_control),
             summary = stringResource(R.string.enable_volume_control_long),
             checked = state.volumeControl,
-            onCheckedChange = { state.setBoolean(SettingsState.KEY_VOLUME_CONTROL, it) },
+            onCheckedChange = { state.setBoolean(SettingsState.KEY_VOLUME_CONTROL, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_instant_zap),
             summary = stringResource(R.string.enable_instant_zap_long),
             checked = state.instantZap,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.show_now_playing_strip),
@@ -143,25 +143,25 @@ fun SettingsScreen(
             checked = state.nowPlayingStrip,
             onCheckedChange = {
                 state.setBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, it)
-            },
+            }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.default_to_full_vrm),
             summary = stringResource(R.string.default_to_full_vrm_long),
             checked = state.simpleVrm,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.mobile_imdb),
             summary = stringResource(R.string.mobile_imdb_long),
             checked = state.mobileImdb,
-            onCheckedChange = { state.setBoolean(SettingsState.KEY_MOBILE_IMDB, it) },
+            onCheckedChange = { state.setBoolean(SettingsState.KEY_MOBILE_IMDB, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.confirm_app_close),
             summary = stringResource(R.string.confirm_app_close_long),
             checked = state.confirmAppClose,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.play_button_as_play_pause),
@@ -169,7 +169,7 @@ fun SettingsScreen(
             checked = state.playButtonAsPlayPause,
             onCheckedChange = {
                 state.setBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, it)
-            },
+            }
         )
 
         PreferenceCategoryHeader(stringResource(R.string.appearance))
@@ -182,9 +182,9 @@ fun SettingsScreen(
                     entries = themeEntries.toList(),
                     values = themeValues.toList(),
                     selectedValue = state.themeType,
-                    key = DreamDroid.PREFS_KEY_THEME_TYPE,
+                    key = DreamDroid.PREFS_KEY_THEME_TYPE
                 )
-            },
+            }
         )
         if (state.showDynamicThemeColors) {
             SwitchPreferenceRow(
@@ -194,14 +194,14 @@ fun SettingsScreen(
                 onCheckedChange = {
                     state.setBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, it)
                     onDynamicColorsChanged()
-                },
+                }
             )
         }
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_animations),
             summary = stringResource(R.string.enable_animations_long),
             checked = state.enableAnimations,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, it) }
         )
         ListPreferenceRow(
             title = stringResource(R.string.max_grid_cols),
@@ -212,16 +212,16 @@ fun SettingsScreen(
                     entries = gridEntries.toList(),
                     values = gridValues.toList(),
                     selectedValue = state.gridMaxCols,
-                    key = DreamDroid.PREFS_KEY_GRID_MAX_COLS,
+                    key = DreamDroid.PREFS_KEY_GRID_MAX_COLS
                 )
-            },
+            }
         )
         ListPreferenceRow(
             title = multiEpgTextSizeTitle,
             summary = entryLabel(
                 multiEpgTextSizeEntries,
                 multiEpgTextSizeValues,
-                state.multiEpgTextSize,
+                state.multiEpgTextSize
             ),
             onClick = {
                 listDialog = ListDialogSpec(
@@ -229,9 +229,9 @@ fun SettingsScreen(
                     entries = multiEpgTextSizeEntries.toList(),
                     values = multiEpgTextSizeValues.toList(),
                     selectedValue = state.multiEpgTextSize,
-                    key = DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE,
+                    key = DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE
                 )
-            },
+            }
         )
 
         PreferenceCategoryHeader(stringResource(R.string.picons))
@@ -239,26 +239,26 @@ fun SettingsScreen(
             title = stringResource(R.string.use_picons),
             summary = stringResource(R.string.use_picons_long),
             checked = state.picons,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.online_picons),
             summary = stringResource(R.string.online_picons_long),
             checked = state.piconsOnline,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, it) }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.use_name_as_picon_filename),
             summary = stringResource(R.string.use_name_as_picon_filename_long),
             checked = state.useNameAsPiconFilename,
             enabled = state.picons,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) },
+            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) }
         )
         ActionPreferenceRow(
             title = stringResource(R.string.sync_picons),
             summary = stringResource(R.string.sync_picons_long),
             enabled = state.picons,
-            onClick = onSyncPicons,
+            onClick = onSyncPicons
         )
         ActionPreferenceRow(
             title = stringResource(R.string.sync_picons_path),
@@ -268,9 +268,9 @@ fun SettingsScreen(
                 editDialog = EditDialogSpec(
                     title = syncPathDialogTitle,
                     value = state.syncPiconsPath,
-                    key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH,
+                    key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH
                 )
-            },
+            }
         )
 
         if (state.showDeveloperCategory) {
@@ -281,28 +281,28 @@ fun SettingsScreen(
                 checked = state.enableDeveloper,
                 onCheckedChange = {
                     state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_DEVELOPER_SETTINGS, it)
-                },
+                }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.use_fake_picon),
                 summary = stringResource(R.string.use_fake_picon_long),
                 checked = state.fakePicon,
                 enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) },
+                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.dump_xml),
                 summary = stringResource(R.string.dump_xml_long),
                 checked = state.xmlDebug,
                 enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) },
+                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) }
             )
             // TEMP MultiEPG Phase 1 beachhead — remove once Phase 2 grid ships.
             ActionPreferenceRow(
                 title = stringResource(R.string.multiepg_sync_test),
                 summary = stringResource(R.string.multiepg_sync_test_long),
                 enabled = state.enableDeveloper,
-                onClick = onMultiEpgSyncTest,
+                onClick = onMultiEpgSyncTest
             )
         }
 
@@ -313,7 +313,7 @@ fun SettingsScreen(
             checked = state.autoSwitchProfileWifiBased,
             onCheckedChange = {
                 state.setBoolean(DreamDroid.PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, it)
-            },
+            }
         )
 
         HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
@@ -332,7 +332,7 @@ fun SettingsScreen(
                     onThemeChanged()
                 }
                 listDialog = null
-            },
+            }
         )
     }
 
@@ -343,7 +343,7 @@ fun SettingsScreen(
             onConfirm = { value ->
                 state.setString(dialog.key, value)
                 editDialog = null
-            },
+            }
         )
     }
 }
@@ -353,14 +353,10 @@ internal data class ListDialogSpec(
     val entries: List<String>,
     val values: List<String>,
     val selectedValue: String,
-    val key: String,
+    val key: String
 )
 
-internal data class EditDialogSpec(
-    val title: String,
-    val value: String,
-    val key: String,
-)
+internal data class EditDialogSpec(val title: String, val value: String, val key: String)
 
 @Composable
 internal fun PreferenceCategoryHeader(title: String) {
@@ -368,7 +364,7 @@ internal fun PreferenceCategoryHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp),
+        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp)
     )
 }
 
@@ -378,7 +374,7 @@ internal fun SwitchPreferenceRow(
     summary: String?,
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     val contentAlpha = if (enabled) 1f else 0.38f
     Row(
@@ -388,30 +384,30 @@ internal fun SwitchPreferenceRow(
                 value = checked,
                 enabled = enabled,
                 role = Role.Switch,
-                onValueChange = onCheckedChange,
+                onValueChange = onCheckedChange
             )
             .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
             )
             if (!summary.isNullOrEmpty()) {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = summary,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
                 )
             }
         }
         Switch(
             checked = checked,
             onCheckedChange = null,
-            enabled = enabled,
+            enabled = enabled
         )
     }
 }
@@ -421,7 +417,7 @@ internal fun ListPreferenceRow(
     title: String,
     summary: String,
     onClick: () -> Unit,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     ActionPreferenceRow(title = title, summary = summary, enabled = enabled, onClick = onClick)
 }
@@ -431,26 +427,26 @@ internal fun ActionPreferenceRow(
     title: String,
     summary: String?,
     onClick: () -> Unit,
-    enabled: Boolean = true,
+    enabled: Boolean = true
 ) {
     val contentAlpha = if (enabled) 1f else 0.38f
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha),
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
         )
         if (!summary.isNullOrEmpty()) {
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = summary,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha),
+                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
             )
         }
     }
@@ -460,7 +456,7 @@ internal fun ActionPreferenceRow(
 internal fun ListPreferenceDialog(
     spec: ListDialogSpec,
     onDismiss: () -> Unit,
-    onSelect: (String) -> Unit,
+    onSelect: (String) -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -473,16 +469,16 @@ internal fun ListPreferenceDialog(
                             .fillMaxWidth()
                             .clickable { onSelect(value) }
                             .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(
                             selected = value == spec.selectedValue,
-                            onClick = { onSelect(value) },
+                            onClick = { onSelect(value) }
                         )
                         Text(
                             text = entry,
                             style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(start = 8.dp),
+                            modifier = Modifier.padding(start = 8.dp)
                         )
                     }
                 }
@@ -492,7 +488,7 @@ internal fun ListPreferenceDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.cancel))
             }
-        },
+        }
     )
 }
 
@@ -500,7 +496,7 @@ internal fun ListPreferenceDialog(
 internal fun EditTextPreferenceDialog(
     spec: EditDialogSpec,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit,
+    onConfirm: (String) -> Unit
 ) {
     var text by remember(spec.value) { mutableStateOf(spec.value) }
     AlertDialog(
@@ -511,7 +507,7 @@ internal fun EditTextPreferenceDialog(
                 value = text,
                 onValueChange = { text = it },
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
+                singleLine = true
             )
         },
         confirmButton = {
@@ -523,7 +519,7 @@ internal fun EditTextPreferenceDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.cancel))
             }
-        },
+        }
     )
 }
 
@@ -540,7 +536,7 @@ fun ComposeView.bindSettingsScreen(
     onMultiEpgSyncTest: () -> Unit = {},
     onAbout: () -> Unit,
     onChangelog: () -> Unit,
-    onBackup: () -> Unit,
+    onBackup: () -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -553,7 +549,7 @@ fun ComposeView.bindSettingsScreen(
                 onMultiEpgSyncTest = onMultiEpgSyncTest,
                 onAbout = onAbout,
                 onChangelog = onChangelog,
-                onBackup = onBackup,
+                onBackup = onBackup
             )
         }
     }

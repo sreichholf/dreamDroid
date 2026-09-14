@@ -8,11 +8,7 @@ import java.util.TimeZone
 
 /** Visible-day label for the MultiEPG toolbar (local calendar, not UTC chunk). */
 object MultiEpgTimeLabels {
-    fun sameLocalDay(
-        aSec: Long,
-        bSec: Long,
-        timeZone: TimeZone = TimeZone.getDefault(),
-    ): Boolean {
+    fun sameLocalDay(aSec: Long, bSec: Long, timeZone: TimeZone = TimeZone.getDefault()): Boolean {
         val a = Calendar.getInstance(timeZone)
         a.timeInMillis = aSec * 1000L
         val b = Calendar.getInstance(timeZone)
@@ -26,7 +22,7 @@ object MultiEpgTimeLabels {
         nowSec: Long,
         todayLabel: String,
         locale: Locale = Locale.getDefault(),
-        timeZone: TimeZone = TimeZone.getDefault(),
+        timeZone: TimeZone = TimeZone.getDefault()
     ): String {
         val date = Date(visibleSec * 1000L)
         if (sameLocalDay(visibleSec, nowSec, timeZone)) {

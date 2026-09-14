@@ -7,12 +7,10 @@ package net.reichholf.dreamdroid.enigma
 internal object XmlInput {
     private val aggressiveControl = Regex("\\p{C}")
 
-    fun sanitize(input: String, aggressive: Boolean): String {
-        return if (aggressive) {
-            aggressiveControl.replace(input, "").replace("&nbsp;", " ")
-        } else {
-            stripControlCharacters(input).replace("\u008A", "\n").replace("&nbsp;", " ")
-        }
+    fun sanitize(input: String, aggressive: Boolean): String = if (aggressive) {
+        aggressiveControl.replace(input, "").replace("&nbsp;", " ")
+    } else {
+        stripControlCharacters(input).replace("\u008A", "\n").replace("&nbsp;", " ")
     }
 
     private fun stripControlCharacters(s: String): String {

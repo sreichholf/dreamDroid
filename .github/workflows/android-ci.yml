@@ -25,10 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Spotless ratchetFrom origin/main needs that ref on shallow clones.
-      - name: Fetch origin/main for Spotless
-        run: git fetch --no-tags origin main:refs/remotes/origin/main
-
       - name: Set up JDK 25
         uses: actions/setup-java@v5
         with:
@@ -76,8 +72,7 @@ jobs:
       # .temp path; dependency/build caches already make the real work ~30s.
       # -Pci disables ABI splits (one APK). androidTest compile catches broken
       # Compose tests without an emulator.
-      # spotlessCheck: ktlint android_studio (Google Android Kotlin) on files
-      # changed vs origin/main. Does not rewrite untouched tab-indented Kotlin.
+      # spotlessCheck: ktlint android_studio (Google Android Kotlin) on app/**/*.kt.
       - name: Unit tests + compile androidTest
         run: >
           ./gradlew -Pci --no-configuration-cache

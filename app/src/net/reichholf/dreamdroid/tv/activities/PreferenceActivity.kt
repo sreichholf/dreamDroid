@@ -46,7 +46,7 @@ class PreferenceActivity : ComponentActivity() {
                         onSave = {
                             persistProfile()
                             finish()
-                        },
+                        }
                     )
                 }
             }

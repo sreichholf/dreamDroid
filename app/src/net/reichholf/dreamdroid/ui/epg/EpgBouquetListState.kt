@@ -33,7 +33,7 @@ fun ComposeView.bindEpgBouquetScreen(
     state: EpgBouquetListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (Event) -> Unit,
+    onItemClick: (Event) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -41,13 +41,13 @@ fun ComposeView.bindEpgBouquetScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 EpgBouquetScreen(
                     items = state.items,
                     listState = state.listState,
                     scrollEpoch = state.scrollEpoch,
-                    onItemClick = onItemClick,
+                    onItemClick = onItemClick
                 )
             }
         }

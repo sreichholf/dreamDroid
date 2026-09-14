@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object EventParser {
     fun parse(xml: String): List<Event> {
@@ -18,18 +18,16 @@ object EventParser {
             ?: emptyList()
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): List<Event>? {
-        return try {
-            val handler = EventListHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.events
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): List<Event>? = try {
+        val handler = EventListHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.events
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -56,7 +54,12 @@ private class EventListHandler : DefaultHandler() {
     private val serviceReference = StringBuilder()
     private val serviceName = StringBuilder()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2event" -> {
                 inEvent = true
@@ -70,14 +73,23 @@ private class EventListHandler : DefaultHandler() {
                 serviceReference.setLength(0)
                 serviceName.setLength(0)
             }
+
             "e2eventid" -> inId = true
+
             "e2eventstart" -> inStart = true
+
             "e2eventduration" -> inDuration = true
+
             "e2eventcurrenttime" -> inCurrentTime = true
+
             "e2eventtitle" -> inTitle = true
+
             "e2eventdescription" -> inDescription = true
+
             "e2eventdescriptionextended" -> inDescriptionEx = true
+
             "e2eventservicereference" -> inServiceRef = true
+
             "e2eventservicename" -> inServiceName = true
         }
     }
@@ -88,14 +100,23 @@ private class EventListHandler : DefaultHandler() {
                 inEvent = false
                 events.add(buildEvent())
             }
+
             "e2eventid" -> inId = false
+
             "e2eventstart" -> inStart = false
+
             "e2eventduration" -> inDuration = false
+
             "e2eventcurrenttime" -> inCurrentTime = false
+
             "e2eventtitle" -> inTitle = false
+
             "e2eventdescription" -> inDescription = false
+
             "e2eventdescriptionextended" -> inDescriptionEx = false
+
             "e2eventservicereference" -> inServiceRef = false
+
             "e2eventservicename" -> inServiceName = false
         }
     }

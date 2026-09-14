@@ -7,18 +7,16 @@ package net.reichholf.dreamdroid.ui.screenshot
 internal enum class ScreenshotGallerySaveError {
     EMPTY_BYTES,
     INSERT_FAILED,
-    IO_EXCEPTION,
+    IO_EXCEPTION
 }
 
 internal fun screenshotGallerySaveError(
     bytes: ByteArray,
     inserted: Boolean,
-    ioFailed: Boolean,
-): ScreenshotGallerySaveError? {
-    return when {
-        bytes.isEmpty() -> ScreenshotGallerySaveError.EMPTY_BYTES
-        !inserted -> ScreenshotGallerySaveError.INSERT_FAILED
-        ioFailed -> ScreenshotGallerySaveError.IO_EXCEPTION
-        else -> null
-    }
+    ioFailed: Boolean
+): ScreenshotGallerySaveError? = when {
+    bytes.isEmpty() -> ScreenshotGallerySaveError.EMPTY_BYTES
+    !inserted -> ScreenshotGallerySaveError.INSERT_FAILED
+    ioFailed -> ScreenshotGallerySaveError.IO_EXCEPTION
+    else -> null
 }

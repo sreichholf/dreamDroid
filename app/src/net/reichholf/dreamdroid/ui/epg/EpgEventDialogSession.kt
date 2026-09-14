@@ -9,8 +9,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
@@ -54,7 +54,7 @@ class EpgEventDialogSession {
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         host.launchSimpleResultLoad(
             TimerAddByEventIdRequestHandler(),
-            Timer.getEventIdParams(item),
+            Timer.getEventIdParams(item)
         ) { _, result, http ->
             dismissProgress()
             var toastText = ctx.getText(R.string.get_content_error).toString()
@@ -101,7 +101,7 @@ fun EpgEventDetailSheetHost(session: EpgEventDialogSession) {
             onSetTimer = { session.onSetTimer() },
             onEditTimer = { session.onEditTimer() },
             onImdb = { session.onImdb() },
-            onSimilar = { session.onFindSimilar() },
+            onSimilar = { session.onFindSimilar() }
         )
     }
     IndeterminateProgressHost(session.progress)

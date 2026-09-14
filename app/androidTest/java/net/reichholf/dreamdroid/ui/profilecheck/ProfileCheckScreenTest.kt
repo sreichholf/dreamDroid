@@ -20,7 +20,7 @@ class ProfileCheckScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -31,7 +31,7 @@ class ProfileCheckScreenTest {
                 ProfileCheckScreen(
                     ui = ProfileCheckUi.Checking("Checking connection…"),
                     onRecheck = {},
-                    onProfiles = {},
+                    onProfiles = {}
                 )
             }
         }
@@ -47,10 +47,10 @@ class ProfileCheckScreenTest {
                 ProfileCheckScreen(
                     ui = ProfileCheckUi.Failed(
                         title = "user@host:80",
-                        message = "Host unreachable",
+                        message = "Host unreachable"
                     ),
                     onRecheck = { recheck = true },
-                    onProfiles = { profiles = true },
+                    onProfiles = { profiles = true }
                 )
             }
         }

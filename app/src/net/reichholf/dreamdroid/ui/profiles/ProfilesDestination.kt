@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -29,21 +30,17 @@ import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
-import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
 
 /**
  * Phase 2.7e: Profiles list as a direct Compose NavHost destination.
  * Reloads whenever this route enters composition (covers return from profile edit).
  */
 @Composable
-fun ProfilesDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun ProfilesDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val listState = remember { ProfilesListState() }
@@ -93,14 +90,14 @@ fun ProfilesDestination(
         profiles = listState.items,
         onProfileClick = { item -> session.onProfileRowClick(item) },
         onProfileLongClick = { item -> session.onProfileRowLongClick(item) },
-        modifier = modifier,
+        modifier = modifier
     )
 
     if (showDetectProgress) {
         IndeterminateProgressDialog(
             title = stringResource(R.string.searching),
             message = stringResource(R.string.searching_known_devices),
-            onDismiss = { showDetectProgress = false },
+            onDismiss = { showDetectProgress = false }
         )
     }
     showDeleteConfirm?.let { title ->
@@ -111,13 +108,12 @@ fun ProfilesDestination(
             onConfirm = {
                 session.deleteProfileConfirmed()
                 showDeleteConfirm = null
-            },
+            }
         )
     }
 }
 
-private class ProfilesSession :
-    MenuProvider {
+private class ProfilesSession : MenuProvider {
     var hostFragment: PhoneNavHostFragment? = null
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
     var context: android.content.Context? = null
@@ -213,7 +209,9 @@ private class ProfilesSession :
         if (DreamDroid.setCurrentProfile(act, selected.id ?: -1, true)) {
             toast(act.getText(R.string.profile_activated).toString() + " '" + selected.name + "'")
         } else {
-            toast(act.getText(R.string.profile_not_activated).toString() + " '" + selected.name + "'")
+            toast(
+                act.getText(R.string.profile_not_activated).toString() + " '" + selected.name + "'"
+            )
         }
         reloadProfiles()
     }
@@ -290,18 +288,22 @@ private class ProfilesSession :
                 createProfile()
                 true
             }
+
             Statics.ITEM_DETECT_DEVICES -> {
                 detectDevices()
                 true
             }
+
             Statics.ITEM_EDIT -> {
                 editProfile()
                 true
             }
+
             Statics.ITEM_DELETE -> {
                 onRequestDeleteConfirm?.invoke(selected.name.orEmpty())
                 true
             }
+
             else -> false
         }
     }
@@ -316,9 +318,7 @@ private class ProfilesSession :
         menuInflater.inflate(R.menu.profiles, menu)
     }
 
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        return onItemClicked(menuItem.itemId)
-    }
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemClicked(menuItem.itemId)
 }
 
 internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {

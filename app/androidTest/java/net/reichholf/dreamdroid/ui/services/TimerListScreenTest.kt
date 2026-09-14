@@ -18,7 +18,7 @@ class TimerListScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -36,11 +36,11 @@ class TimerListScreenTest {
                             end = "20:15",
                             action = "Record",
                             state = "Waiting",
-                            stateColor = 0xFF888888.toInt(),
-                        ),
+                            stateColor = 0xFF888888.toInt()
+                        )
                     ),
                     onItemClick = {},
-                    onItemLongClick = {},
+                    onItemLongClick = {}
                 )
             }
         }

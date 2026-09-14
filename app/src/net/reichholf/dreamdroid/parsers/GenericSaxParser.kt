@@ -7,12 +7,12 @@
 package net.reichholf.dreamdroid.parsers
 
 import android.util.Log
-import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser
-import org.xml.sax.InputSource
-import org.xml.sax.helpers.DefaultHandler
 import java.io.ByteArrayInputStream
 import java.util.regex.Pattern
 import javax.xml.parsers.SAXParserFactory
+import net.reichholf.dreamdroid.dataProviders.interfaces.DataParser
+import org.xml.sax.InputSource
+import org.xml.sax.helpers.DefaultHandler
 
 /**
  * @author sreichholf
@@ -37,17 +37,16 @@ class GenericSaxParser : DataParser {
 
     fun getHandler(): DefaultHandler? = mHandler
 
-    protected fun stripNonValidXMLCharacters(input: String, aggressive: Boolean): String {
-        return if (aggressive) {
+    protected fun stripNonValidXMLCharacters(input: String, aggressive: Boolean): String =
+        if (aggressive) {
             sControlPatternAggressive.matcher(input).replaceAll("").replace("&nbsp;", " ")
         } else {
             stripControlCharacters(input).replace("\u008A", "\n").replace("&nbsp;", " ")
         }
-    }
 
     /*
-     * this is based on https://github.com/GreyCat/java-string-benchmark/blob/master/src/ru/greycat/algorithms/strip/RatchetFreak2EdStaub1GreyCat1.java
-     * and is about a zillion lightyears faster than replaceAll... (defeats noticable lag between load finish and parse finish)
+     * Faster than replaceAll (avoids lag between load finish and parse finish).
+     * Based on GreyCat's java-string-benchmark strip algorithm.
      */
     fun stripControlCharacters(s: String): String {
         val length = s.length

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
+import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
@@ -8,13 +9,8 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.Request
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import java.util.ArrayList
 
-data class ScreenshotLoadResult(
-    val success: Boolean,
-    val bytes: ByteArray?,
-    val errorText: String?,
-)
+data class ScreenshotLoadResult(val success: Boolean, val bytes: ByteArray?, val errorText: String?)
 
 private val JPEG_MAGIC = byteArrayOf(0xFF.toByte(), 0xD8.toByte())
 private val PNG_MAGIC = byteArrayOf(
@@ -25,20 +21,19 @@ private val PNG_MAGIC = byteArrayOf(
     0x0D,
     0x0A,
     0x1A,
-    0x0A,
+    0x0A
 )
 
 /**
  * True when [bytes] start with JPEG SOI or a PNG signature, not HTML/XML/text.
  */
-internal fun looksLikeScreenshotImage(bytes: ByteArray): Boolean {
-    return hasMagic(bytes, JPEG_MAGIC) || hasMagic(bytes, PNG_MAGIC)
-}
+internal fun looksLikeScreenshotImage(bytes: ByteArray): Boolean =
+    hasMagic(bytes, JPEG_MAGIC) || hasMagic(bytes, PNG_MAGIC)
 
 internal fun screenshotPayloadResult(
     bytes: ByteArray,
     httpErrorText: String?,
-    fallbackError: String,
+    fallbackError: String
 ): ScreenshotLoadResult {
     val success = looksLikeScreenshotImage(bytes)
     val errorText = when {
@@ -64,10 +59,7 @@ private fun hasMagic(bytes: ByteArray, magic: ByteArray): Boolean {
 /**
  * Phase 2.7c/d: load screenshot bytes without a Fragment owner.
  */
-suspend fun loadScreenshot(
-    context: Context,
-    params: List<NameValuePair>,
-): ScreenshotLoadResult {
+suspend fun loadScreenshot(context: Context, params: List<NameValuePair>): ScreenshotLoadResult {
     val http = SimpleHttpClient.getInstance()
     val bytes = withContext(Dispatchers.IO) {
         Request.getBytes(http, URIStore.SCREENSHOT, ArrayList(params))

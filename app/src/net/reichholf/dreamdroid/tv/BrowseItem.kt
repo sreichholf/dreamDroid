@@ -8,6 +8,6 @@ object BrowseItem {
     enum class Kind {
         Reload,
         Preferences,
-        Profile,
+        Profile
     }
 }

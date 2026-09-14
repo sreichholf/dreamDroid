@@ -16,7 +16,7 @@ class FragmentHostActivity : AppCompatActivity() {
         setContentView(
             FragmentContainerView(this).apply {
                 id = android.R.id.content
-            },
+            }
         )
     }
 }

@@ -6,14 +6,16 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2
 
+import java.io.Serializable
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import java.io.Serializable
 
 /**
  * @author sreichholf
  */
-class Movie : ExtendedHashMap, Serializable {
+class Movie :
+    ExtendedHashMap,
+    Serializable {
     constructor() : super()
 
     constructor(data: ExtendedHashMap) {

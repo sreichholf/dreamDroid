@@ -24,7 +24,7 @@ class VirtualRemoteWidget : GlanceAppWidget() {
             RemoteViews(context.packageName, R.layout.virtual_remote_appwidget_quickzap).apply {
                 setTextViewText(
                     R.id.profile_name,
-                    context.getString(R.string.no_profile_available),
+                    context.getString(R.string.no_profile_available)
                 )
             }
         } else {
@@ -40,6 +40,6 @@ class VirtualRemoteWidget : GlanceAppWidget() {
 private fun VirtualRemoteGlanceContent(remoteViews: RemoteViews) {
     AndroidRemoteViews(
         remoteViews = remoteViews,
-        modifier = GlanceModifier.fillMaxSize(),
+        modifier = GlanceModifier.fillMaxSize()
     )
 }

@@ -24,7 +24,7 @@ class DeviceInfoScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -39,9 +39,18 @@ class DeviceInfoScreenTest {
                 frontProcessorVersion = "0",
                 deviceName = "Solo4K",
                 frontends = listOf(DeviceFrontend("Tuner A", "DVB-S2")),
-                nics = listOf(DeviceNic("eth0", "00:11", "True", "192.168.0.8", "192.168.0.1", "255.255.255.0")),
-                hdds = listOf(DeviceHdd("ATA Disk", "1.82 TB", "1405 GB")),
-            ),
+                nics = listOf(
+                    DeviceNic(
+                        "eth0",
+                        "00:11",
+                        "True",
+                        "192.168.0.8",
+                        "192.168.0.1",
+                        "255.255.255.0"
+                    )
+                ),
+                hdds = listOf(DeviceHdd("ATA Disk", "1.82 TB", "1405 GB"))
+            )
         ) { capacity, free -> "$capacity ($free free)" }
 
         composeRule.setContent {
@@ -85,9 +94,9 @@ class DeviceInfoScreenTest {
                 imageVersion = "9.0.3.",
                 interfaceVersion = "1.7.4",
                 frontProcessorVersion = "0",
-                deviceName = "Solo4K",
+                deviceName = "Solo4K"
             ),
-            deviceInfoReady = true,
+            deviceInfoReady = true
         ) { capacity, free -> "$capacity ($free free)" }
 
         composeRule.setContent {

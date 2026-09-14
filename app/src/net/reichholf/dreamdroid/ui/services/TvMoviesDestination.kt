@@ -4,5 +4,5 @@ enum class TvMoviesDestination {
     TV,
     RADIO,
     MOVIES,
-    TIMER,
+    TIMER
 }

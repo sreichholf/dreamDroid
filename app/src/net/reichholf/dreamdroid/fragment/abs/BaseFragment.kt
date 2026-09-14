@@ -19,11 +19,11 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.fragment.helper.FragmentHelper
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment
 import net.reichholf.dreamdroid.fragment.interfaces.IMutliPaneContent
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 
 /**
  * @author sre
@@ -104,21 +104,15 @@ abstract class BaseFragment :
     override fun onDrawerClosed() {
     }
 
-    override fun hasHeader(): Boolean {
-        return false
-    }
+    override fun hasHeader(): Boolean = false
 
-    fun getBaseTitle(): String? {
-        return mHelper!!.getBaseTitle()
-    }
+    fun getBaseTitle(): String? = mHelper!!.getBaseTitle()
 
     fun setBaseTitle(baseTitle: String?) {
         mHelper!!.setBaseTitle(baseTitle)
     }
 
-    fun getCurrentTitle(): String? {
-        return mHelper!!.getCurrenTtitle()
-    }
+    fun getCurrentTitle(): String? = mHelper!!.getCurrenTtitle()
 
     fun setCurrentTitle(currentTitle: String?) {
         mHelper!!.setCurrentTitle(currentTitle)
@@ -129,9 +123,7 @@ abstract class BaseFragment :
         mHelper!!.setCurrentTitle(title)
     }
 
-    override fun getMultiPaneHandler(): MultiPaneHandler {
-        return mHelper!!.getMultiPaneHandler()!!
-    }
+    override fun getMultiPaneHandler(): MultiPaneHandler = mHelper!!.getMultiPaneHandler()!!
 
     protected fun finish() {
         finish(Statics.RESULT_NONE, null)
@@ -145,9 +137,7 @@ abstract class BaseFragment :
         mHelper!!.finish(resultCode, data)
     }
 
-    protected fun getAppCompatActivity(): AppCompatActivity? {
-        return activity as AppCompatActivity?
-    }
+    protected fun getAppCompatActivity(): AppCompatActivity? = activity as AppCompatActivity?
 
     protected fun showToast(toastText: String?) {
         val toast = Toast.makeText(getAppCompatActivity(), toastText, Toast.LENGTH_LONG)
@@ -163,7 +153,7 @@ abstract class BaseFragment :
         id: Int,
         descriptionId: Int,
         backgroundResId: Int,
-        onClickListener: View.OnClickListener?,
+        onClickListener: View.OnClickListener?
     ) {
         val fab = getAppCompatActivity()?.findViewById<FloatingActionButton>(id) ?: return
 

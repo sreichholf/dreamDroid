@@ -20,3 +20,5 @@ ktlint_function_naming_ignore_when_annotated_with = Composable, Test
 # Converted Java still uses mFoo / Hungarian leftovers; do not fail CI on those.
 ktlint_standard_property-naming = disabled
 ktlint_standard_backing-property-naming = disabled
+# Several files hold more than one type (Load results, ScreenshotSave, etc.).
+ktlint_standard_filename = disabled

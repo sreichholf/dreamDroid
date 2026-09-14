@@ -32,7 +32,7 @@ fun ImageCardContent(
     nextTitle: String,
     contentExpanded: Boolean,
     imageWidthPx: Int,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val density = LocalDensity.current
     val cardWidth = if (imageWidthPx > 0) {
@@ -47,7 +47,7 @@ fun ImageCardContent(
     Column(
         modifier = modifier
             .width(cardWidth)
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Text(
             text = title,
@@ -56,7 +56,7 @@ fun ImageCardContent(
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
             style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth()
         )
         if (hasContent) {
             val body = buildAnnotatedString {
@@ -71,8 +71,8 @@ fun ImageCardContent(
                         withStyle(
                             SpanStyle(
                                 fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Italic,
-                            ),
+                                fontStyle = FontStyle.Italic
+                            )
                         ) {
                             append(nextStart)
                         }
@@ -94,7 +94,7 @@ fun ImageCardContent(
                 style = MaterialTheme.typography.bodySmall,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 2.dp),
+                    .padding(top = 2.dp)
             )
         }
     }

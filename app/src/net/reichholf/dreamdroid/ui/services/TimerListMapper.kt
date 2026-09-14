@@ -76,7 +76,7 @@ fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListIte
             end = timer.endReadable,
             action = action,
             state = state,
-            stateColor = color,
+            stateColor = color
         )
     }
 }

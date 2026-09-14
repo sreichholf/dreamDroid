@@ -22,7 +22,7 @@ fun ComposeView.bindPickServiceScreen(
     state: PickServiceListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (Service) -> Unit,
+    onItemClick: (Service) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -30,11 +30,11 @@ fun ComposeView.bindPickServiceScreen(
             DreamDroidPullRefresh(
                 refreshing = refresh.isRefreshing,
                 onRefresh = onRefresh,
-                enabled = refresh.enabled,
+                enabled = refresh.enabled
             ) {
                 PickServiceScreen(
                     items = state.items,
-                    onItemClick = onItemClick,
+                    onItemClick = onItemClick
                 )
             }
         }

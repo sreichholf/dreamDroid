@@ -8,17 +8,17 @@ package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.content.Context
 import android.os.Environment
-import androidx.preference.PreferenceManager
 import android.view.View
 import android.widget.ImageView
+import androidx.preference.PreferenceManager
 import com.squareup.picasso.Callback
 import com.squareup.picasso.Picasso
+import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
-import java.io.File
 
 /**
  * @author sre
@@ -29,7 +29,7 @@ object Picon {
         if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
             return String.format(
                 "%s/",
-                sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon"),
+                sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
             )
         }
 
@@ -38,7 +38,7 @@ object Picon {
                 "%s%spicons%s",
                 context.filesDir.absolutePath,
                 File.separator,
-                File.separator,
+                File.separator
             )
         }
 
@@ -47,7 +47,7 @@ object Picon {
             Environment.getExternalStorageDirectory().absolutePath,
             File.separator,
             File.separator,
-            File.separator,
+            File.separator
         )
     }
 
@@ -56,14 +56,14 @@ object Picon {
             context,
             service.getString(Event.KEY_SERVICE_REFERENCE),
             service.getString(Event.KEY_SERVICE_NAME),
-            useName,
+            useName
         )
 
     fun getPiconFileName(
         context: Context,
         reference: String?,
         name: String?,
-        useName: Boolean,
+        useName: Boolean
     ): String? {
         val root = getBasepath(context)
         if (PreferenceManager.getDefaultSharedPreferences(context)
@@ -94,7 +94,7 @@ object Picon {
         context: Context,
         piconView: ImageView?,
         service: ExtendedHashMap,
-        tag: String,
+        tag: String
     ) {
         setPiconForView(context, piconView, service, tag, null)
     }
@@ -104,7 +104,7 @@ object Picon {
         piconView: ImageView?,
         service: ExtendedHashMap,
         tag: String,
-        callback: Callback?,
+        callback: Callback?
     ) {
         setPiconForView(
             context,
@@ -112,7 +112,7 @@ object Picon {
             service.getString(Event.KEY_SERVICE_REFERENCE),
             service.getString(Event.KEY_SERVICE_NAME),
             tag,
-            callback,
+            callback
         )
     }
 
@@ -122,7 +122,7 @@ object Picon {
         reference: String?,
         name: String?,
         tag: String,
-        callback: Callback?,
+        callback: Callback?
     ) {
         if (piconView == null) return
         val sp = PreferenceManager.getDefaultSharedPreferences(context)

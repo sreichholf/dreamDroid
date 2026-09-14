@@ -19,13 +19,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.BackupService
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
 
 private const val TAG = "BackupDestination"
 
@@ -43,7 +43,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         uiState.setProfilesFromBackup(
             data.getProfiles(),
             DreamDroid.getCurrentProfile().id ?: -1,
-            context.getString(R.string.backup_current_profile),
+            context.getString(R.string.backup_current_profile)
         )
     }
 
@@ -58,7 +58,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     }
 
     val pickImportFile = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult(),
+        ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode != Activity.RESULT_OK) {
             return@rememberLauncherForActivityResult
@@ -111,7 +111,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         state = uiState,
         onImport = { doImport() },
         onExport = { doExport() },
-        modifier = modifier,
+        modifier = modifier
     )
 }
 
@@ -129,10 +129,8 @@ private fun readTextFromUri(context: android.content.Context, uri: Uri): String 
     }
 }
 
-internal fun backupExportUserMessage(context: Context, exported: Boolean): String {
-    return if (exported) {
-        context.getString(R.string.backup_export_successful)
-    } else {
-        context.getString(R.string.backup_export_missing_permission)
-    }
+internal fun backupExportUserMessage(context: Context, exported: Boolean): String = if (exported) {
+    context.getString(R.string.backup_export_successful)
+} else {
+    context.getString(R.string.backup_export_missing_permission)
 }

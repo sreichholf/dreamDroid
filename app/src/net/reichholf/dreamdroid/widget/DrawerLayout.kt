@@ -16,18 +16,20 @@ import android.view.MotionEvent
 class DrawerLayout : androidx.drawerlayout.widget.DrawerLayout {
     constructor(context: Context) : super(context)
     constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-    constructor(context: Context, attrs: AttributeSet?, defStyle: Int) : super(context, attrs, defStyle)
+    constructor(
+        context: Context,
+        attrs: AttributeSet?,
+        defStyle: Int
+    ) : super(context, attrs, defStyle)
 
-    /* We need this hack to avoid "random" exceptions with the DrawerLayouts, nothing else we can currently do about that */
-    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean {
-        return try {
-            super.onInterceptTouchEvent(ev)
-        } catch (e: IllegalArgumentException) {
-            e.printStackTrace()
-            false
-        } catch (e: ArrayIndexOutOfBoundsException) {
-            e.printStackTrace()
-            false
-        }
+    /* Avoid "random" DrawerLayout intercept exceptions; nothing else we can do. */
+    override fun onInterceptTouchEvent(ev: MotionEvent?): Boolean = try {
+        super.onInterceptTouchEvent(ev)
+    } catch (e: IllegalArgumentException) {
+        e.printStackTrace()
+        false
+    } catch (e: ArrayIndexOutOfBoundsException) {
+        e.printStackTrace()
+        false
     }
 }

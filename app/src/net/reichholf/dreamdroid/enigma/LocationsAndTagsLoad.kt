@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
  */
 fun Fragment.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,
-    onReady: () -> Unit,
+    onReady: () -> Unit
 ): Job {
     return lifecycleScope.launch {
         val http = SimpleHttpClient.getInstance()
@@ -28,7 +28,7 @@ fun Fragment.launchLocationsAndTagsLoad(
             }
             onProgress(
                 getString(R.string.loading),
-                getString(R.string.locations) + " - " + getString(R.string.fetching_data),
+                getString(R.string.locations) + " - " + getString(R.string.fetching_data)
             )
             withContext(Dispatchers.IO) {
                 DreamDroid.loadLocations(http)
@@ -40,7 +40,7 @@ fun Fragment.launchLocationsAndTagsLoad(
             }
             onProgress(
                 getString(R.string.loading),
-                getString(R.string.tags) + " - " + getString(R.string.fetching_data),
+                getString(R.string.tags) + " - " + getString(R.string.fetching_data)
             )
             withContext(Dispatchers.IO) {
                 DreamDroid.loadTags(http)

@@ -21,12 +21,12 @@ fun EpgDetailModalSheet(
     onEditTimer: () -> Unit,
     onImdb: () -> Unit,
     onSimilar: () -> Unit,
-    showActions: Boolean = true,
+    showActions: Boolean = true
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
+        sheetState = sheetState
     ) {
         EpgDetailScreen(
             content = content,
@@ -47,7 +47,7 @@ fun EpgDetailModalSheet(
                 onDismiss()
             },
             showActions = showActions,
-            modifier = Modifier.padding(bottom = 16.dp),
+            modifier = Modifier.padding(bottom = 16.dp)
         )
     }
 }

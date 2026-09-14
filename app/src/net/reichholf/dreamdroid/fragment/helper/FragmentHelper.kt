@@ -31,8 +31,7 @@ class FragmentHelper {
         mFragment = fragment
     }
 
-    fun getAppCompatActivity(): AppCompatActivity? =
-        mFragment?.activity as AppCompatActivity?
+    fun getAppCompatActivity(): AppCompatActivity? = mFragment?.activity as AppCompatActivity?
 
     fun onCreate(savedInstanceState: Bundle?) {
         mBaseTitle = mFragment!!.getString(R.string.app_name_release)
@@ -59,8 +58,7 @@ class FragmentHelper {
         outState.putString("WORKAROUND_FOR_BUG_19917_KEY", "WORKAROUND_FOR_BUG_19917_VALUE")
     }
 
-    fun getMultiPaneHandler(): MultiPaneHandler? =
-        getAppCompatActivity() as MultiPaneHandler?
+    fun getMultiPaneHandler(): MultiPaneHandler? = getAppCompatActivity() as MultiPaneHandler?
 
     fun getBaseTitle(): String? = mBaseTitle
 

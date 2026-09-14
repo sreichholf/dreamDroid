@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.StringReader
+import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
 import org.xml.sax.helpers.DefaultHandler
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 
 object TimerParser {
     /**
@@ -20,18 +20,16 @@ object TimerParser {
             ?: parseSanitized(xml, aggressive = true)
     }
 
-    private fun parseSanitized(xml: String, aggressive: Boolean): List<Timer>? {
-        return try {
-            val handler = TimerListHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-            handler.timers
-        } catch (e: Exception) {
-            null
-        }
+    private fun parseSanitized(xml: String, aggressive: Boolean): List<Timer>? = try {
+        val handler = TimerListHandler()
+        val factory = SAXParserFactory.newInstance()
+        factory.isValidating = false
+        val reader = factory.newSAXParser().xmlReader
+        reader.contentHandler = handler
+        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
+        handler.timers
+    } catch (e: Exception) {
+        null
     }
 }
 
@@ -91,36 +89,66 @@ private class TimerListHandler : DefaultHandler() {
     private val canceled = StringBuilder()
     private val toggleDisabled = StringBuilder()
 
-    override fun startElement(uri: String?, localName: String?, qName: String?, attributes: Attributes?) {
+    override fun startElement(
+        uri: String?,
+        localName: String?,
+        qName: String?,
+        attributes: Attributes?
+    ) {
         when (tag(localName, qName)) {
             "e2timer" -> {
                 inTimer = true
                 clearBuilders()
             }
+
             "e2servicereference" -> inReference = true
+
             "e2servicename" -> inServiceName = true
+
             "e2eit" -> inEit = true
+
             "e2name" -> inName = true
+
             "e2description" -> inDescription = true
+
             "e2descriptionextended" -> inDescriptionEx = true
+
             "e2disabled" -> inDisabled = true
+
             "e2timebegin" -> inBegin = true
+
             "e2timeend" -> inEnd = true
+
             "e2duration" -> inDuration = true
+
             "e2startprepare" -> inStartPrepare = true
+
             "e2justplay" -> inJustPlay = true
+
             "e2afterevent" -> inAfterEvent = true
+
             "e2location" -> inLocation = true
+
             "e2tags" -> inTags = true
+
             "e2logentries" -> inLogEntries = true
+
             "e2filename" -> inFileName = true
+
             "e2backoff" -> inBackOff = true
+
             "e2nextactivation" -> inNextActivation = true
+
             "e2firsttryprepare" -> inFirstTryPrepare = true
+
             "e2state" -> inState = true
+
             "e2repeated" -> inRepeated = true
+
             "e2dontsave" -> inDontSave = true
+
             "e2cancled" -> inCanceled = true
+
             "e2toggledisabled" -> inToggleDisabled = true
         }
     }
@@ -131,30 +159,55 @@ private class TimerListHandler : DefaultHandler() {
                 inTimer = false
                 timers.add(buildTimer())
             }
+
             "e2servicereference" -> inReference = false
+
             "e2servicename" -> inServiceName = false
+
             "e2eit" -> inEit = false
+
             "e2name" -> inName = false
+
             "e2description" -> inDescription = false
+
             "e2descriptionextended" -> inDescriptionEx = false
+
             "e2disabled" -> inDisabled = false
+
             "e2timebegin" -> inBegin = false
+
             "e2timeend" -> inEnd = false
+
             "e2duration" -> inDuration = false
+
             "e2startprepare" -> inStartPrepare = false
+
             "e2justplay" -> inJustPlay = false
+
             "e2afterevent" -> inAfterEvent = false
+
             "e2location" -> inLocation = false
+
             "e2tags" -> inTags = false
+
             "e2logentries" -> inLogEntries = false
+
             "e2filename" -> inFileName = false
+
             "e2backoff" -> inBackOff = false
+
             "e2nextactivation" -> inNextActivation = false
+
             "e2firsttryprepare" -> inFirstTryPrepare = false
+
             "e2state" -> inState = false
+
             "e2repeated" -> inRepeated = false
+
             "e2dontsave" -> inDontSave = false
+
             "e2cancled" -> inCanceled = false
+
             "e2toggledisabled" -> inToggleDisabled = false
         }
     }
@@ -270,7 +323,7 @@ private class TimerListHandler : DefaultHandler() {
             repeated = repeated.toString().trim(),
             dontSave = dontSave.toString().trim(),
             canceled = canceled.toString().trim(),
-            toggleDisabled = toggleDisabled.toString().trim(),
+            toggleDisabled = toggleDisabled.toString().trim()
         )
     }
 

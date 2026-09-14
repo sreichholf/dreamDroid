@@ -18,10 +18,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 
-data class DeviceInfoRow(
-    val title: String,
-    val subtitle: String,
-)
+data class DeviceInfoRow(val title: String, val subtitle: String)
 
 class DeviceInfoUiState {
     var guiVersion by mutableStateOf("")
@@ -76,7 +73,7 @@ internal fun restoreDeviceInfoUiState(
     uiState: DeviceInfoUiState,
     info: DeviceInfo?,
     deviceInfoReady: Boolean,
-    hddCapacityFormat: (capacity: String, free: String) -> String,
+    hddCapacityFormat: (capacity: String, free: String) -> String
 ) {
     if (deviceInfoReady && info != null && !info.isEmpty() && !uiState.ready) {
         uiState.apply(info, hddCapacityFormat)
@@ -84,70 +81,64 @@ internal fun restoreDeviceInfoUiState(
 }
 
 @Composable
-fun DeviceInfoScreen(
-    state: DeviceInfoUiState,
-    modifier: Modifier = Modifier,
-) {
+fun DeviceInfoScreen(state: DeviceInfoUiState, modifier: Modifier = Modifier) {
     val loading = stringResource(R.string.loading)
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         DeviceInfoField(
             label = stringResource(R.string.gui_version),
-            value = if (state.ready) state.guiVersion else loading,
+            value = if (state.ready) state.guiVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.image_version),
-            value = if (state.ready) state.imageVersion else loading,
+            value = if (state.ready) state.imageVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.interface_version),
-            value = if (state.ready) state.interfaceVersion else loading,
+            value = if (state.ready) state.interfaceVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.front_processor_version),
-            value = if (state.ready) state.frontProcessorVersion else loading,
+            value = if (state.ready) state.frontProcessorVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.device_name),
-            value = if (state.ready) state.deviceName else loading,
+            value = if (state.ready) state.deviceName else loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.frontends),
             rows = state.frontends,
             ready = state.ready,
-            loading = loading,
+            loading = loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.nics),
             rows = state.nics,
             ready = state.ready,
-            loading = loading,
+            loading = loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.hdds),
             rows = state.hdds,
             ready = state.ready,
-            loading = loading,
+            loading = loading
         )
     }
 }
 
 @Composable
-private fun DeviceInfoField(
-    label: String,
-    value: String,
-) {
+private fun DeviceInfoField(label: String, value: String) {
     Text(
         text = label,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp),
+            .padding(top = 4.dp)
     )
     Text(
         text = value,
@@ -155,7 +146,7 @@ private fun DeviceInfoField(
         color = MaterialTheme.colorScheme.onSurface,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp, top = 2.dp),
+            .padding(bottom = 8.dp, top = 2.dp)
     )
 }
 
@@ -164,7 +155,7 @@ private fun DeviceInfoSection(
     label: String,
     rows: List<DeviceInfoRow>,
     ready: Boolean,
-    loading: String,
+    loading: String
 ) {
     Text(
         text = label,
@@ -172,7 +163,7 @@ private fun DeviceInfoSection(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp),
+            .padding(top = 4.dp)
     )
     if (!ready) {
         Text(
@@ -181,7 +172,7 @@ private fun DeviceInfoSection(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 2.dp),
+                .padding(bottom = 8.dp, top = 2.dp)
         )
         return
     }
@@ -192,7 +183,7 @@ private fun DeviceInfoSection(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 2.dp),
+                .padding(bottom = 8.dp, top = 2.dp)
         )
         return
     }
@@ -203,7 +194,7 @@ private fun DeviceInfoSection(
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 2.dp),
+                .padding(top = 2.dp)
         )
         Text(
             text = row.subtitle,
@@ -211,7 +202,7 @@ private fun DeviceInfoSection(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 6.dp),
+                .padding(bottom = 6.dp)
         )
     }
 }

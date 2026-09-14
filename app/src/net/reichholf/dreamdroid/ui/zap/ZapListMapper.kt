@@ -9,10 +9,8 @@ import net.reichholf.dreamdroid.helpers.ExtendedHashMap
  * [Service] and maps one [ExtendedHashMap] only when putting the Intent extra.
  */
 object ZapListMapper {
-    fun rowsFrom(services: List<Service>): List<Service> {
-        return services.filter { service ->
-            !net.reichholf.dreamdroid.helpers.enigma2.Service.isMarker(service.reference)
-        }
+    fun rowsFrom(services: List<Service>): List<Service> = services.filter { service ->
+        !net.reichholf.dreamdroid.helpers.enigma2.Service.isMarker(service.reference)
     }
 
     fun toBouquetMap(service: Service?): ExtendedHashMap {

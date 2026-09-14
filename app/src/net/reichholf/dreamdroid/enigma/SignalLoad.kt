@@ -4,11 +4,7 @@ import android.content.Context
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
-data class SignalLoadResult(
-    val success: Boolean,
-    val signal: Signal?,
-    val errorText: String?,
-)
+data class SignalLoadResult(val success: Boolean, val signal: Signal?, val errorText: String?)
 
 /**
  * Phase 2.7c: load typed signal without a Fragment owner.
@@ -20,8 +16,10 @@ suspend fun loadSignal(context: Context): SignalLoadResult {
     val success = signal != null && !signal.isEmpty()
     val errorText = when {
         success -> null
+
         http.hasError() ->
             context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
+
         else -> context.getString(R.string.error_parsing)
     }
     return SignalLoadResult(success, signal, errorText)

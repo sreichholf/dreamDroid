@@ -64,7 +64,7 @@ class CurrentServiceLoadGateTest {
         assertFalse(currentServiceCanStream(null))
         assertFalse(currentServiceCanStream(CurrentService()))
         assertFalse(
-            currentServiceCanStream(CurrentService(service = Service("", "Name only"))),
+            currentServiceCanStream(CurrentService(service = Service("", "Name only")))
         )
     }
 }

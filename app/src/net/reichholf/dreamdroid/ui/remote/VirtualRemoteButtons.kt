@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.ui.remote
 
+import java.util.HashMap
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
-import java.util.HashMap
 
 /**
  * Widget RemoteViews button → Enigma2 RCU key map.

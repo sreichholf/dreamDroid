@@ -7,7 +7,7 @@ import net.reichholf.dreamdroid.room.EpgEventEntity
 internal fun Event.toEpgEventEntity(
     profileId: Int,
     bouquetRef: String,
-    bouquetPos: Int,
+    bouquetPos: Int
 ): EpgEventEntity? {
     val id = eventId.trim()
     val ref = serviceReference.trim()
@@ -28,28 +28,26 @@ internal fun Event.toEpgEventEntity(
         descriptionExtended = descriptionExtended,
         serviceName = serviceName,
         currentTime = currentTime.toLongOrNull() ?: 0L,
-        bouquetPos = bouquetPos,
+        bouquetPos = bouquetPos
     )
 }
 
-internal fun EpgEventEntity.toEvent(): Event {
-    return Event(
-        eventId = eventId,
-        title = title,
-        start = start.toString(),
-        duration = duration.toString(),
-        currentTime = if (currentTime == 0L) "" else currentTime.toString(),
-        description = description,
-        descriptionExtended = descriptionExtended,
-        serviceReference = serviceRef,
-        serviceName = serviceName,
-    ).withReadableTimes()
-}
+internal fun EpgEventEntity.toEvent(): Event = Event(
+    eventId = eventId,
+    title = title,
+    start = start.toString(),
+    duration = duration.toString(),
+    currentTime = if (currentTime == 0L) "" else currentTime.toString(),
+    description = description,
+    descriptionExtended = descriptionExtended,
+    serviceReference = serviceRef,
+    serviceName = serviceName
+).withReadableTimes()
 
 /** Assign [EpgEventEntity.bouquetPos] from first-seen service order in [events]. */
 internal fun List<Event>.toEpgEventEntities(
     profileId: Int,
-    bouquetRef: String,
+    bouquetRef: String
 ): List<EpgEventEntity> {
     val posByRef = LinkedHashMap<String, Int>()
     val out = ArrayList<EpgEventEntity>(size)

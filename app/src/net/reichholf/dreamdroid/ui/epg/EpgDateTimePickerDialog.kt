@@ -12,9 +12,9 @@ import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import net.reichholf.dreamdroid.R
 import java.util.Calendar
 import java.util.TimeZone
+import net.reichholf.dreamdroid.R
 
 /**
  * Stock Material 3 date picker for bouquet EPG. Keeps the current local time of
@@ -27,10 +27,10 @@ fun EpgDatePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (utcDateMillis: Long) -> Unit,
     modifier: Modifier = Modifier,
-    timeZone: TimeZone = TimeZone.getDefault(),
+    timeZone: TimeZone = TimeZone.getDefault()
 ) {
     val dateState = rememberDatePickerState(
-        initialSelectedDateMillis = EpgInstant.utcMidnightMillis(initialTimeSec, timeZone),
+        initialSelectedDateMillis = EpgInstant.utcMidnightMillis(initialTimeSec, timeZone)
     )
     DatePickerDialog(
         onDismissRequest = onDismiss,
@@ -40,7 +40,7 @@ fun EpgDatePickerDialog(
                     val dateMillis = dateState.selectedDateMillis
                         ?: EpgInstant.utcMidnightMillis(initialTimeSec, timeZone)
                     onConfirm(dateMillis)
-                },
+                }
             ) {
                 Text(stringResource(R.string.ok))
             }
@@ -50,7 +50,7 @@ fun EpgDatePickerDialog(
                 Text(stringResource(R.string.cancel))
             }
         },
-        modifier = modifier,
+        modifier = modifier
     ) {
         DatePicker(state = dateState)
     }
@@ -68,7 +68,7 @@ fun EpgTimePickerDialog(
     onDismiss: () -> Unit,
     onConfirm: (hour: Int, minute: Int) -> Unit,
     modifier: Modifier = Modifier,
-    timeZone: TimeZone = TimeZone.getDefault(),
+    timeZone: TimeZone = TimeZone.getDefault()
 ) {
     val initial = Calendar.getInstance(timeZone).apply {
         timeInMillis = initialTimeSec * 1000L
@@ -76,7 +76,7 @@ fun EpgTimePickerDialog(
     val timeState = rememberTimePickerState(
         initialHour = initial.get(Calendar.HOUR_OF_DAY),
         initialMinute = initial.get(Calendar.MINUTE),
-        is24Hour = is24Hour,
+        is24Hour = is24Hour
     )
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -84,7 +84,7 @@ fun EpgTimePickerDialog(
         text = { TimePicker(state = timeState) },
         confirmButton = {
             TextButton(
-                onClick = { onConfirm(timeState.hour, timeState.minute) },
+                onClick = { onConfirm(timeState.hour, timeState.minute) }
             ) {
                 Text(stringResource(R.string.ok))
             }
@@ -93,6 +93,6 @@ fun EpgTimePickerDialog(
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
-        },
+        }
     )
 }

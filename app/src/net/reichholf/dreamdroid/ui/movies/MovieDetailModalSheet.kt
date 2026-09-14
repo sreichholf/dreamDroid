@@ -14,18 +14,15 @@ import androidx.compose.ui.unit.dp
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MovieDetailModalSheet(
-    content: MovieDetailContent,
-    onDismiss: () -> Unit,
-) {
+fun MovieDetailModalSheet(content: MovieDetailContent, onDismiss: () -> Unit) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
+        sheetState = sheetState
     ) {
         MovieDetailScreen(
             content = content,
-            modifier = Modifier.padding(bottom = 16.dp),
+            modifier = Modifier.padding(bottom = 16.dp)
         )
     }
 }

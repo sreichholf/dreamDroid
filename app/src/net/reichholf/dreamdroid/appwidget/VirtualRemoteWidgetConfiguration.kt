@@ -4,7 +4,6 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import androidx.preference.PreferenceManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
@@ -12,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -34,7 +34,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
 
         appWidgetId = intent.extras?.getInt(
             AppWidgetManager.EXTRA_APPWIDGET_ID,
-            AppWidgetManager.INVALID_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
         val profiles = AppDatabase.profiles(this).getProfiles()
@@ -49,7 +49,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
                 id = profile.id ?: 0,
                 name = profile.name.orEmpty(),
                 host = profile.host.orEmpty(),
-                active = false,
+                active = false
             )
         }
 
@@ -61,7 +61,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
                     profiles = items,
                     isFull = isFull,
                     onStyleFullChange = { isFull = it },
-                    onProfileClick = { profile -> finishWithProfile(profile.id, isFull) },
+                    onProfileClick = { profile -> finishWithProfile(profile.id, isFull) }
                 )
             }
         }
@@ -103,7 +103,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         fun isFull(context: Context, appWidgetId: Int): Boolean =
             PreferenceManager.getDefaultSharedPreferences(context).getBoolean(
                 VirtualRemoteWidgetProvider.WIDGET_PREFERENCE_PREFIX + appWidgetId + "isFull",
-                false,
+                false
             )
 
         fun deleteWidgetConfiguration(context: Context, appWidgetId: Int) {

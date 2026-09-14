@@ -147,24 +147,18 @@ class EnigmaClientHttpFailTest {
         assertEquals(null, result.errorText)
     }
 
-    private fun appContext(): Context {
-        return ApplicationProvider.getApplicationContext()
+    private fun appContext(): Context = ApplicationProvider.getApplicationContext()
+
+    private fun contentError(httpMessage: String): String =
+        appContext().getString(R.string.get_content_error) + "\n" + httpMessage
+
+    private fun profileForServer(): Profile = Profile().apply {
+        host = "127.0.0.1"
+        port = server.port
+        ssl = false
+        login = false
     }
 
-    private fun contentError(httpMessage: String): String {
-        return appContext().getString(R.string.get_content_error) + "\n" + httpMessage
-    }
-
-    private fun profileForServer(): Profile {
-        return Profile().apply {
-            host = "127.0.0.1"
-            port = server.port
-            ssl = false
-            login = false
-        }
-    }
-
-    private fun clientForServer(): SimpleHttpClient {
-        return SimpleHttpClient.getInstance(profileForServer())
-    }
+    private fun clientForServer(): SimpleHttpClient =
+        SimpleHttpClient.getInstance(profileForServer())
 }

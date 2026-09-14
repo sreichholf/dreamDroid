@@ -5,17 +5,13 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaServiceFlags
 
 /** One programme bar in the MultiEPG grid (precomputed unix bounds). */
-data class MultiEpgBar(
-    val event: Event,
-    val startSec: Long,
-    val endSec: Long,
-)
+data class MultiEpgBar(val event: Event, val startSec: Long, val endSec: Long)
 
 /** One channel row with bars already sorted by start. */
 data class MultiEpgChannel(
     val serviceRef: String,
     val serviceName: String,
-    val bars: List<MultiEpgBar>,
+    val bars: List<MultiEpgBar>
 )
 
 /**
@@ -35,7 +31,7 @@ fun playableMultiEpgRoster(services: List<Service>): List<Service> {
                 service
             } else {
                 Service(ref, service.name.trim().ifBlank { ref })
-            },
+            }
         )
     }
     return out
@@ -44,34 +40,28 @@ fun playableMultiEpgRoster(services: List<Service>): List<Service> {
 /** Result of `/web/getservices` for the painted bouquet roster. */
 data class MultiEpgRosterFetch(
     val services: List<Service> = emptyList(),
-    val error: Throwable? = null,
+    val error: Throwable? = null
 )
 
 /**
  * Keep the last-good playable roster when getservices fails. A successful empty
  * list still replaces the roster (the bouquet really has no playable rows).
  */
-fun applyBouquetRoster(
-    previous: List<Service>,
-    fetch: MultiEpgRosterFetch,
-): AppliedBouquetRoster {
+fun applyBouquetRoster(previous: List<Service>, fetch: MultiEpgRosterFetch): AppliedBouquetRoster {
     val error = fetch.error
     if (error != null) {
         return AppliedBouquetRoster(
             roster = previous,
-            errorMessage = error.message ?: error.javaClass.simpleName,
+            errorMessage = error.message ?: error.javaClass.simpleName
         )
     }
     return AppliedBouquetRoster(
         roster = playableMultiEpgRoster(fetch.services),
-        errorMessage = null,
+        errorMessage = null
     )
 }
 
-data class AppliedBouquetRoster(
-    val roster: List<Service>,
-    val errorMessage: String?,
-)
+data class AppliedBouquetRoster(val roster: List<Service>, val errorMessage: String?)
 
 /**
  * Build channel rows from a flat event list. Keeps work off composition —
@@ -85,7 +75,7 @@ data class AppliedBouquetRoster(
 fun buildMultiEpgChannels(
     events: List<Event>,
     previous: List<MultiEpgChannel> = emptyList(),
-    roster: List<Service> = emptyList(),
+    roster: List<Service> = emptyList()
 ): List<MultiEpgChannel> {
     val playable = if (roster.isEmpty()) {
         emptyList()
@@ -148,7 +138,7 @@ private fun channelRow(
     serviceRef: String,
     serviceName: String,
     bars: List<MultiEpgBar>,
-    previousChannels: Map<String, MultiEpgChannel>,
+    previousChannels: Map<String, MultiEpgChannel>
 ): MultiEpgChannel {
     val prev = previousChannels[serviceRef]
     val barsList: List<MultiEpgBar> =
@@ -165,20 +155,18 @@ private fun channelRow(
     return MultiEpgChannel(
         serviceRef = serviceRef,
         serviceName = serviceName,
-        bars = barsList,
+        bars = barsList
     )
 }
 
-private fun barReuseKey(serviceRef: String, eventId: String): String {
-    return "$serviceRef\u0000$eventId"
-}
+private fun barReuseKey(serviceRef: String, eventId: String): String = "$serviceRef\u0000$eventId"
 
 private fun reuseOrCreateBar(
     previousBars: Map<String, MultiEpgBar>,
     serviceRef: String,
     event: Event,
     startSec: Long,
-    endSec: Long,
+    endSec: Long
 ): MultiEpgBar {
     val prev = previousBars[barReuseKey(serviceRef, event.eventId)]
     if (prev != null &&
@@ -191,10 +179,7 @@ private fun reuseOrCreateBar(
     return MultiEpgBar(event = event, startSec = startSec, endSec = endSec)
 }
 
-private fun sameBarInstances(
-    previous: List<MultiEpgBar>,
-    next: List<MultiEpgBar>,
-): Boolean {
+private fun sameBarInstances(previous: List<MultiEpgBar>, next: List<MultiEpgBar>): Boolean {
     if (previous.size != next.size) return false
     for (i in previous.indices) {
         if (previous[i] !== next[i]) return false

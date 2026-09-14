@@ -41,7 +41,7 @@ fun ScreenshotScreen(
     onReload: () -> Unit,
     onShare: () -> Unit,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val screenshotLabel = stringResource(R.string.screenshot)
     val reloadLabel = stringResource(R.string.reload)
@@ -51,7 +51,7 @@ fun ScreenshotScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Black),
+            .background(Color.Black)
     ) {
         if (state.actionsEnabled) {
             Row(
@@ -59,27 +59,27 @@ fun ScreenshotScreen(
                     .fillMaxWidth()
                     .background(MaterialTheme.colorScheme.surface)
                     .padding(horizontal = 4.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onReload) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_refresh),
                         contentDescription = reloadLabel,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(onClick = onShare) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_share),
                         contentDescription = shareLabel,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 IconButton(onClick = onSave) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_save),
                         contentDescription = saveLabel,
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -88,7 +88,7 @@ fun ScreenshotScreen(
         Box(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
         ) {
             AndroidView(
                 factory = { context ->
@@ -107,13 +107,13 @@ fun ScreenshotScreen(
                     } else {
                         photoView.setImageDrawable(null)
                     }
-                },
+                }
             )
 
             if (state.loading) {
                 CircularProgressIndicator(
                     modifier = Modifier.align(Alignment.Center),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }

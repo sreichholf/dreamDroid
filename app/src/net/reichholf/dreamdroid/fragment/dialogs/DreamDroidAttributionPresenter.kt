@@ -9,12 +9,12 @@ import com.franmontiel.attributionpresenter.entities.License
 import net.reichholf.dreamdroid.R
 
 object DreamDroidAttributionPresenter {
-    fun newInstance(context: Context): AttributionPresenter {
-        return AttributionPresenter.Builder(ContextThemeWrapper(context, R.style.Theme_DreamDroid_Dialog))
+    fun newInstance(context: Context): AttributionPresenter =
+        AttributionPresenter.Builder(ContextThemeWrapper(context, R.style.Theme_DreamDroid_Dialog))
             .addAttributions(
                 Library.GSON,
                 Library.PICASSO,
-                Library.OK_HTTP,
+                Library.OK_HTTP
             )
             .addAttributions(
                 Attribution.Builder("AndroidX")
@@ -43,7 +43,9 @@ object DreamDroidAttributionPresenter {
                     .setWebsite("https://github.com/afollestad/material-dialogs")
                     .build(),
                 Attribution.Builder("vlc-android-sdk")
-                    .addCopyrightNotice("Copyright (C) 2017  VLC authors, Enno Gottschalk, Aldo Borrero")
+                    .addCopyrightNotice(
+                        "Copyright (C) 2017  VLC authors, Enno Gottschalk, Aldo Borrero"
+                    )
                     .addLicense(License.GPL_3)
                     .setWebsite("https://github.com/butterproject/vlc-android-sdk")
                     .build(),
@@ -86,8 +88,7 @@ object DreamDroidAttributionPresenter {
                     .addCopyrightNotice("Copyright (c) 2012 Evelina Vrabie")
                     .addLicense(License.APACHE)
                     .setWebsite("https://github.com/CodeAndMagic/GaugeView")
-                    .build(),
+                    .build()
             )
             .build()
-    }
 }

@@ -14,18 +14,19 @@ import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
 import android.os.Environment
 import android.util.Log
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Event
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.channels.FileChannel
+import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.helpers.enigma2.Event
 
 /**
  * @author sre
  */
-class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DatabaseHelper(context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     private val mContext: Context = context
 
@@ -192,7 +193,12 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     fun updateProfile(p: Profile): Boolean {
         val db = writableDatabase
-        val numRows = db.update(PROFILES_TABLE_NAME, p2cv(p), KEY_PROFILE_ID + "=" + (p.id ?: -1), null)
+        val numRows = db.update(
+            PROFILES_TABLE_NAME,
+            p2cv(p),
+            KEY_PROFILE_ID + "=" + (p.id ?: -1),
+            null
+        )
         db.close()
         if (numRows == 1) {
             DreamDroid.scheduleBackup(mContext)
@@ -221,15 +227,22 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     fun getProfiles(): ArrayList<Profile> {
         val columns = arrayOf(
-            KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT,
-            KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
-            KEY_PROFILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN,
-            KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
+            KEY_PROFILE_ID, KEY_PROFILE_PROFILE,
+            KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST,
+            KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT,
+            KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN,
+            KEY_PROFILE_USER, KEY_PROFILE_PASS,
+            KEY_PROFILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS,
+            KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN,
+            KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL,
+            KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
             KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
-            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE,
+            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH,
+            KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
+            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS,
+            KEY_PROFILE_ENCODER_VIDEO_BITRATE,
             KEY_PROFILE_ENCODER_AUDIO_BITRATE,
-            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI,
+            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI
         )
         val db = readableDatabase
 
@@ -257,19 +270,32 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
      */
     fun getProfile(id: Int): Profile? {
         val columns = arrayOf(
-            KEY_PROFILE_ID, KEY_PROFILE_PROFILE, KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST, KEY_PROFILE_PORT,
-            KEY_PROFILE_STREAM_PORT, KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN, KEY_PROFILE_USER, KEY_PROFILE_PASS,
-            KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN,
-            KEY_PROFILE_FILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS, KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
+            KEY_PROFILE_ID, KEY_PROFILE_PROFILE,
+            KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST,
+            KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT,
+            KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN,
+            KEY_PROFILE_USER, KEY_PROFILE_PASS,
+            KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE,
+            KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN,
+            KEY_PROFILE_FILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS,
+            KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
             KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH, KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
-            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS, KEY_PROFILE_ENCODER_VIDEO_BITRATE,
+            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH,
+            KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
+            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS,
+            KEY_PROFILE_ENCODER_VIDEO_BITRATE,
             KEY_PROFILE_ENCODER_AUDIO_BITRATE,
-            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI,
+            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI
         )
         val db = readableDatabase
         val c = db.query(
-            PROFILES_TABLE_NAME, columns, KEY_PROFILE_ID + "=" + id, null, null, null, KEY_PROFILE_PROFILE,
+            PROFILES_TABLE_NAME,
+            columns,
+            KEY_PROFILE_ID + "=" + id,
+            null,
+            null,
+            null,
+            KEY_PROFILE_PROFILE
         )
 
         var p: Profile? = null
@@ -338,7 +364,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
             id, name, host, streamHost, port, streamPort, filePort, isLogin, user, pass, isSsl,
             isAllCertsTrusted, isStreamLogin, isFileLogin, isFileSsl, isSimpleRemote, defaultRef,
             defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort,
-            isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate,
+            isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate
         )
         p.ssid = ssid
         p.isDefaultProfileOnNoWifi = defaultProfileOnNoWifi
@@ -385,7 +411,10 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         values.put(KEY_EVENT_DURATION, _duration)
         values.put(KEY_EVENT_TITLE, event.getString(Event.KEY_EVENT_TITLE))
         values.put(KEY_EVENT_DESCRIPTION, event.getString(Event.KEY_EVENT_DESCRIPTION))
-        values.put(KEY_EVENT_DESCRIPTION_EXTENDED, event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED))
+        values.put(
+            KEY_EVENT_DESCRIPTION_EXTENDED,
+            event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED)
+        )
         values.put(KEY_EVENT_SERVICE_REFERENCE, event.getString(Event.KEY_SERVICE_REFERENCE))
         return values
     }
@@ -607,8 +636,6 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
                 KEY_SERVICES_REFERENCE + " TEXT PRIMARY KEY, " +
                 KEY_SERVICES_NAME + " TEXT);"
 
-        fun getInstance(ctx: Context): DatabaseHelper {
-            return DatabaseHelper(ctx)
-        }
+        fun getInstance(ctx: Context): DatabaseHelper = DatabaseHelper(ctx)
     }
 }

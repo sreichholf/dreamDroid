@@ -33,7 +33,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 class SendMessageUiState(
     initialMessage: String = "",
     initialTypeIndex: Int = 2,
-    initialTimeout: String = "20",
+    initialTimeout: String = "20"
 ) {
     var message by mutableStateOf(initialMessage)
     var typeIndex by mutableIntStateOf(initialTypeIndex)
@@ -42,16 +42,13 @@ class SendMessageUiState(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SendMessageScreen(
-    state: SendMessageUiState,
-    modifier: Modifier = Modifier,
-) {
+fun SendMessageScreen(state: SendMessageUiState, modifier: Modifier = Modifier) {
     val types = stringArrayResource(R.array.message_types)
     var typeExpanded by remember { mutableStateOf(false) }
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(8.dp)
     ) {
         OutlinedTextField(
             value = state.message,
@@ -59,37 +56,39 @@ fun SendMessageScreen(
             modifier = Modifier.fillMaxWidth(),
             label = { Text(stringResource(R.string.message_text_hint)) },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface,
-            ),
+                color = MaterialTheme.colorScheme.onSurface
+            )
         )
         Row(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(R.string.type),
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier.padding(end = 8.dp)
             )
             ExposedDropdownMenuBox(
                 expanded = typeExpanded,
-                onExpandedChange = { typeExpanded = it },
+                onExpandedChange = { typeExpanded = it }
             ) {
                 OutlinedTextField(
                     value = types.getOrElse(state.typeIndex) { "" },
                     onValueChange = {},
                     readOnly = true,
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded)
+                    },
                     modifier = Modifier.menuAnchor(),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = MaterialTheme.colorScheme.onSurface,
-                    ),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = typeExpanded,
-                    onDismissRequest = { typeExpanded = false },
+                    onDismissRequest = { typeExpanded = false }
                 ) {
                     types.forEachIndexed { index, label ->
                         DropdownMenuItem(
@@ -97,7 +96,7 @@ fun SendMessageScreen(
                             onClick = {
                                 state.typeIndex = index
                                 typeExpanded = false
-                            },
+                            }
                         )
                     }
                 }
@@ -107,12 +106,12 @@ fun SendMessageScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(R.string.timeout),
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(end = 8.dp),
+                modifier = Modifier.padding(end = 8.dp)
             )
             OutlinedTextField(
                 value = state.timeout,
@@ -125,13 +124,13 @@ fun SendMessageScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface,
-                ),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             )
             Text(
                 text = stringResource(R.string.seconds),
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(start = 8.dp),
+                modifier = Modifier.padding(start = 8.dp)
             )
         }
     }

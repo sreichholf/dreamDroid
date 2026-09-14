@@ -4,30 +4,32 @@ import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 
-fun movieListItemsFrom(maps: List<ExtendedHashMap>): List<MovieListItem> {
-    return maps.mapIndexed { index, map ->
-        MovieListItem(
-            index = index,
-            title = map.getString(MovieKeys.KEY_TITLE).orEmpty(),
-            serviceName = map.getString(MovieKeys.KEY_SERVICE_NAME).orEmpty(),
-            fileSize = map.getString(MovieKeys.KEY_FILE_SIZE_READABLE).orEmpty(),
-            time = map.getString(MovieKeys.KEY_TIME_READABLE).orEmpty(),
-            length = map.getString(MovieKeys.KEY_LENGTH).orEmpty(),
-        )
-    }
+fun movieListItemsFrom(maps: List<ExtendedHashMap>): List<MovieListItem> = maps.mapIndexed {
+        index,
+        map
+    ->
+    MovieListItem(
+        index = index,
+        title = map.getString(MovieKeys.KEY_TITLE).orEmpty(),
+        serviceName = map.getString(MovieKeys.KEY_SERVICE_NAME).orEmpty(),
+        fileSize = map.getString(MovieKeys.KEY_FILE_SIZE_READABLE).orEmpty(),
+        time = map.getString(MovieKeys.KEY_TIME_READABLE).orEmpty(),
+        length = map.getString(MovieKeys.KEY_LENGTH).orEmpty()
+    )
 }
 
-fun movieListItemsFromMovies(movies: List<Movie>): List<MovieListItem> {
-    return movies.mapIndexed { index, movie ->
-        MovieListItem(
-            index = index,
-            title = movie.title,
-            serviceName = movie.serviceName,
-            fileSize = movie.fileSizeReadable,
-            time = movie.timeReadable,
-            length = movie.length,
-        )
-    }
+fun movieListItemsFromMovies(movies: List<Movie>): List<MovieListItem> = movies.mapIndexed {
+        index,
+        movie
+    ->
+    MovieListItem(
+        index = index,
+        title = movie.title,
+        serviceName = movie.serviceName,
+        fileSize = movie.fileSizeReadable,
+        time = movie.timeReadable,
+        length = movie.length
+    )
 }
 
 fun movieToExtendedHashMap(movie: Movie): ExtendedHashMap {
@@ -48,19 +50,17 @@ fun movieToExtendedHashMap(movie: Movie): ExtendedHashMap {
 }
 
 /** Inverse of [movieToExtendedHashMap] for Intent / legacy hash edges. */
-fun movieFromExtendedHashMap(map: ExtendedHashMap): Movie {
-    return Movie(
-        reference = map.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
-        title = map.getString(MovieKeys.KEY_TITLE).orEmpty(),
-        description = map.getString(MovieKeys.KEY_DESCRIPTION).orEmpty(),
-        descriptionExtended = map.getString(MovieKeys.KEY_DESCRIPTION_EXTENDED).orEmpty(),
-        serviceName = map.getString(MovieKeys.KEY_SERVICE_NAME).orEmpty(),
-        time = map.getString(MovieKeys.KEY_TIME).orEmpty(),
-        timeReadable = map.getString(MovieKeys.KEY_TIME_READABLE).orEmpty(),
-        length = map.getString(MovieKeys.KEY_LENGTH).orEmpty(),
-        tags = map.getString(MovieKeys.KEY_TAGS).orEmpty(),
-        fileName = map.getString(MovieKeys.KEY_FILE_NAME).orEmpty(),
-        fileSize = map.getString(MovieKeys.KEY_FILE_SIZE).orEmpty(),
-        fileSizeReadable = map.getString(MovieKeys.KEY_FILE_SIZE_READABLE).orEmpty(),
-    )
-}
+fun movieFromExtendedHashMap(map: ExtendedHashMap): Movie = Movie(
+    reference = map.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
+    title = map.getString(MovieKeys.KEY_TITLE).orEmpty(),
+    description = map.getString(MovieKeys.KEY_DESCRIPTION).orEmpty(),
+    descriptionExtended = map.getString(MovieKeys.KEY_DESCRIPTION_EXTENDED).orEmpty(),
+    serviceName = map.getString(MovieKeys.KEY_SERVICE_NAME).orEmpty(),
+    time = map.getString(MovieKeys.KEY_TIME).orEmpty(),
+    timeReadable = map.getString(MovieKeys.KEY_TIME_READABLE).orEmpty(),
+    length = map.getString(MovieKeys.KEY_LENGTH).orEmpty(),
+    tags = map.getString(MovieKeys.KEY_TAGS).orEmpty(),
+    fileName = map.getString(MovieKeys.KEY_FILE_NAME).orEmpty(),
+    fileSize = map.getString(MovieKeys.KEY_FILE_SIZE).orEmpty(),
+    fileSizeReadable = map.getString(MovieKeys.KEY_FILE_SIZE_READABLE).orEmpty()
+)

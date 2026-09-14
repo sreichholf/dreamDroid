@@ -21,7 +21,7 @@ class ServiceEpgScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -32,21 +32,21 @@ class ServiceEpgScreenTest {
             title = "Tagesschau",
             startReadable = "20:00",
             durationReadable = "15",
-            descriptionExtended = "Die Nachrichten.",
+            descriptionExtended = "Die Nachrichten."
         )
         val second = Event(
             eventId = "101",
             title = "Wetter",
             startReadable = "20:15",
             durationReadable = "10",
-            descriptionExtended = "Der Wetterbericht.",
+            descriptionExtended = "Der Wetterbericht."
         )
         var clicked: Event? = null
         composeRule.setContent {
             DreamDroidTheme {
                 ServiceEpgScreen(
                     items = listOf(first, second),
-                    onItemClick = { clicked = it },
+                    onItemClick = { clicked = it }
                 )
             }
         }
@@ -63,7 +63,7 @@ class ServiceEpgScreenTest {
                 ServiceEpgScreen(
                     items = emptyList(),
                     onItemClick = {},
-                    emptyMessage = "No items to display…",
+                    emptyMessage = "No items to display…"
                 )
             }
         }

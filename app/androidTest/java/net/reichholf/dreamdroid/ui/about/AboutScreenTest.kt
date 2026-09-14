@@ -24,7 +24,7 @@ class AboutScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
@@ -54,7 +54,7 @@ class AboutScreenTest {
             assertEquals(onSurface, localContent)
             assertTrue(
                 "night onSurface should be light, luminance=${onSurface.luminance()}",
-                onSurface.luminance() > 0.5f,
+                onSurface.luminance() > 0.5f
             )
         }
     }
@@ -65,5 +65,5 @@ internal fun sampleAboutContent() = AboutContent(
     version = "dreamDroid 1.15.460-debug",
     license = "GPLv3",
     sourceLink = "Source code available at: http://github.com/sreichholf/dreamDroid",
-    licensesLabel = "Licenses",
+    licensesLabel = "Licenses"
 )

@@ -27,7 +27,7 @@ data class EpgDetailContent(
     val description: String,
     val descriptionExtended: String,
     val dateLine: String,
-    val isNext: Boolean,
+    val isNext: Boolean
 )
 
 fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
@@ -41,14 +41,14 @@ fun Event.toEpgDetailContent(minutesShort: String): EpgDetailContent? {
         description = event.description,
         descriptionExtended = event.descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
-        isNext = false,
+        isNext = false
     )
 }
 
 /** Keep an EPG sheet open when title/date are empty; show [unavailableTitle] instead. */
 fun Event.toEpgDetailContentOrUnavailable(
     minutesShort: String,
-    unavailableTitle: String,
+    unavailableTitle: String
 ): EpgDetailContent {
     toEpgDetailContent(minutesShort)?.let { return it }
     val event = withReadableTimes()
@@ -64,7 +64,7 @@ fun Event.toEpgDetailContentOrUnavailable(
         description = event.description,
         descriptionExtended = event.descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
-        isNext = false,
+        isNext = false
     )
 }
 
@@ -79,29 +79,28 @@ fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String):
         title = title,
         serviceName = getString(EventKeys.KEY_SERVICE_NAME).orEmpty(),
         description = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION, "").orEmpty(),
-        descriptionExtended = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED).orEmpty().replace("\\n", "\n"),
+        descriptionExtended = getString(
+            prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED
+        ).orEmpty().replace("\\n", "\n"),
         dateLine = dateLine,
-        isNext = showNext,
+        isNext = showNext
     )
 }
 
 @Composable
-fun EpgDetailBody(
-    content: EpgDetailContent,
-    modifier: Modifier = Modifier,
-) {
+fun EpgDetailBody(content: EpgDetailContent, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         Text(
             text = content.title,
             style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = MaterialTheme.colorScheme.onSurface
         )
         if (content.serviceName.isNotEmpty()) {
             Text(
                 text = content.serviceName,
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp),
+                modifier = Modifier.padding(top = 4.dp)
             )
         }
         if (content.description.isNotEmpty()) {
@@ -109,21 +108,21 @@ fun EpgDetailBody(
                 text = content.description,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
         Text(
             text = content.dateLine,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = 8.dp)
         )
         if (content.descriptionExtended.isNotEmpty()) {
             Text(
                 text = content.descriptionExtended,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 8.dp),
+                modifier = Modifier.padding(top = 8.dp)
             )
         }
     }
@@ -139,17 +138,25 @@ fun EpgDetailScreen(
     modifier: Modifier = Modifier,
     showActions: Boolean = true,
     /** Phone bottom sheet caps body height; TV fullscreen passes null. */
-    bodyHeightCap: Dp? = 360.dp,
+    bodyHeightCap: Dp? = 360.dp
 ) {
     // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
     Column(modifier = modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .then(if (bodyHeightCap != null) Modifier.heightIn(max = bodyHeightCap) else Modifier)
+                .then(
+                    if (bodyHeightCap !=
+                        null
+                    ) {
+                        Modifier.heightIn(max = bodyHeightCap)
+                    } else {
+                        Modifier
+                    }
+                )
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 8.dp),
+                .padding(top = 16.dp, bottom = 8.dp)
         ) {
             EpgDetailBody(content)
         }
@@ -158,7 +165,7 @@ fun EpgDetailScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 16.dp)
             ) {
                 Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.set_timer))

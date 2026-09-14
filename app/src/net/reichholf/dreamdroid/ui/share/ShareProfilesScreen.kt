@@ -20,44 +20,41 @@ import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 fun ShareProfilesScreen(
     profiles: List<ProfileListItem>,
     onProfileClick: (ProfileListItem) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp)
     ) {
         items(profiles, key = { it.id }) { profile ->
             ShareProfileRow(
                 profile = profile,
-                onClick = { onProfileClick(profile) },
+                onClick = { onProfileClick(profile) }
             )
         }
     }
 }
 
 @Composable
-private fun ShareProfileRow(
-    profile: ProfileListItem,
-    onClick: () -> Unit,
-) {
+private fun ShareProfileRow(profile: ProfileListItem, onClick: () -> Unit) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
             .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = profile.name,
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface
             )
             Text(
                 text = profile.host,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

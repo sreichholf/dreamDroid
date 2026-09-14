@@ -80,14 +80,14 @@ fun SignalScreen(
     state: SignalUiState,
     onEnabledChange: (Boolean) -> Unit,
     onAcousticChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val onSurface = MaterialTheme.colorScheme.onSurface.toArgb()
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(20.dp),
+            .padding(20.dp)
     ) {
         Row(
             modifier = Modifier
@@ -98,20 +98,20 @@ fun SignalScreen(
                         state.enabled = it
                         onEnabledChange(it)
                     },
-                    role = Role.Switch,
+                    role = Role.Switch
                 )
                 .padding(bottom = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(R.string.enable),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
             )
             Switch(
                 checked = state.enabled,
-                onCheckedChange = null,
+                onCheckedChange = null
             )
         }
 
@@ -120,7 +120,7 @@ fun SignalScreen(
                 HalfGauge(ctx).apply {
                     layoutParams = ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
                     )
                     setValueColor(onSurface)
                     setMinValueTextColor(onSurface)
@@ -146,7 +146,7 @@ fun SignalScreen(
                 if (gauge.value != state.snrPercent.toDouble()) {
                     gauge.value = state.snrPercent.toDouble()
                 }
-            },
+            }
         )
 
         MetricRow(label = "SNRdb", value = state.snrDbRaw)
@@ -163,18 +163,18 @@ fun SignalScreen(
                         state.acousticFeedback = it
                         onAcousticChange(it)
                     },
-                    role = Role.Checkbox,
+                    role = Role.Checkbox
                 ),
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
                 checked = state.acousticFeedback,
-                onCheckedChange = null,
+                onCheckedChange = null
             )
             Text(
                 text = stringResource(R.string.accoustic_feedback),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -186,28 +186,26 @@ private fun MetricRow(label: String, value: String) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f)
         )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
-            textAlign = androidx.compose.ui.text.style.TextAlign.End,
+            textAlign = androidx.compose.ui.text.style.TextAlign.End
         )
     }
 }
 
-private fun range(color: String, from: Double, to: Double): Range {
-    return Range().apply {
-        setColor(Color.parseColor(color))
-        setFrom(from)
-        setTo(to)
-    }
+private fun range(color: String, from: Double, to: Double): Range = Range().apply {
+    setColor(Color.parseColor(color))
+    setFrom(from)
+    setTo(to)
 }

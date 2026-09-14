@@ -13,7 +13,7 @@ class EpgDetailContentTest {
             title = "",
             startReadable = "20:00",
             durationReadable = "15",
-            serviceName = "Das Erste HD",
+            serviceName = "Das Erste HD"
         )
         assertNull(event.toEpgDetailContent("min"))
     }
@@ -23,7 +23,7 @@ class EpgDetailContentTest {
         val event = Event(
             title = "N/A",
             startReadable = "20:00",
-            durationReadable = "15",
+            durationReadable = "15"
         )
         assertNull(event.toEpgDetailContent("min"))
     }
@@ -35,7 +35,7 @@ class EpgDetailContentTest {
             startReadable = "20:00",
             durationReadable = "15",
             serviceName = "Das Erste HD",
-            description = "News",
+            description = "News"
         )
         val content = event.toEpgDetailContentOrUnavailable("min", "Not available")
         assertEquals("Not available", content.title)
@@ -50,7 +50,7 @@ class EpgDetailContentTest {
             title = "Tagesschau",
             startReadable = "20:00",
             durationReadable = "15",
-            serviceName = "Das Erste HD",
+            serviceName = "Das Erste HD"
         )
         val content = event.toEpgDetailContent("min")
         assertNotNull(content)

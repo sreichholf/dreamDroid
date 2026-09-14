@@ -56,6 +56,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import java.text.DateFormat
+import java.util.Date
+import java.util.Locale
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
@@ -69,9 +72,6 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import java.text.DateFormat
-import java.util.Date
-import java.util.Locale
 
 /** Default visible span (GraphMultiEPG default). */
 const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
@@ -110,7 +110,7 @@ fun MultiEpgScreen(
     timerClocks: Map<String, MultiEpgTimerClock> = emptyMap(),
     visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
-    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
@@ -168,7 +168,7 @@ fun MultiEpgScreen(
         }
         val deltaMin = MultiEpgWindows.originScrollCompensationSec(
             previousOriginSec = previous,
-            newOriginSec = timelineStartSec,
+            newOriginSec = timelineStartSec
         ) / 60f
         val deltaPx = with(density) { (minuteWidth * deltaMin).toPx() }.toInt()
         hScroll.scrollTo((hScroll.value + deltaPx).coerceAtLeast(0))
@@ -208,7 +208,7 @@ fun MultiEpgScreen(
             if (viewportWidthPx <= 0 || timelineEnd <= timelineStart) {
                 focusSecState.value.coerceIn(
                     timelineStart,
-                    (timelineEnd - 60L).coerceAtLeast(timelineStart),
+                    (timelineEnd - 60L).coerceAtLeast(timelineStart)
                 )
             } else {
                 val minutePx = with(density) {
@@ -218,7 +218,7 @@ fun MultiEpgScreen(
                     ((hScroll.value / minutePx) * 60f).toLong()
                 sec.coerceIn(
                     timelineStart,
-                    (timelineEnd - 60L).coerceAtLeast(timelineStart),
+                    (timelineEnd - 60L).coerceAtLeast(timelineStart)
                 )
             }
         }
@@ -238,7 +238,7 @@ fun MultiEpgScreen(
                     (((hScroll.value + viewportWidthPx) / minutePx) * 60f).toLong()
                 sec.coerceIn(
                     (visibleStartSec + 60L).coerceAtMost(timelineEnd),
-                    timelineEnd.coerceAtLeast(visibleStartSec + 60L),
+                    timelineEnd.coerceAtLeast(visibleStartSec + 60L)
                 )
             }
         }
@@ -278,7 +278,7 @@ fun MultiEpgScreen(
     val todayLabel = stringResource(R.string.multiepg_today)
     val paneTitleText = bouquetName.ifBlank { stringResource(R.string.multiepg) }
     val dayLabel = remember(visibleStartSec, nowSec, todayLabel) {
-            if (timelineEndSec <= originForLayout) {
+        if (timelineEndSec <= originForLayout) {
             ""
         } else {
             MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
@@ -289,19 +289,19 @@ fun MultiEpgScreen(
         refreshing = pullRefreshing,
         onRefresh = { onRefresh?.invoke() },
         enabled = onRefresh != null,
-        modifier = modifier,
+        modifier = modifier
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .testTag("multi_epg_screen")
-                .semantics { paneTitle = paneTitleText },
+                .semantics { paneTitle = paneTitleText }
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp, vertical = 2.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 // Bouquet name lives on the activity toolbar; keep this row for
                 // Now / ±day / zoom so it does not duplicate the title chrome.
@@ -314,7 +314,7 @@ fun MultiEpgScreen(
                             .width(18.dp)
                             .testTag("multi_epg_sync_indicator"),
                         strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
                 if (onPrevDay != null) {
@@ -334,7 +334,7 @@ fun MultiEpgScreen(
                     visibleMinutes = layoutVisibleMinutes,
                     onVisibleMinutesChange = { minutes ->
                         onVisibleMinutesChange?.invoke(minutes)
-                    },
+                    }
                 )
             }
 
@@ -347,7 +347,7 @@ fun MultiEpgScreen(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier
                         .padding(horizontal = 12.dp, vertical = 0.dp)
-                        .testTag("multi_epg_day_label"),
+                        .testTag("multi_epg_day_label")
                 )
             }
 
@@ -356,7 +356,7 @@ fun MultiEpgScreen(
                     text = errorMessage,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                 )
             }
 
@@ -365,7 +365,7 @@ fun MultiEpgScreen(
                     text = stringResource(R.string.multiepg_empty),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(16.dp)
                 )
                 return@DreamDroidPullRefresh
             }
@@ -374,7 +374,7 @@ fun MultiEpgScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(RulerHeight)
-                    .testTag("multi_epg_time_ruler"),
+                    .testTag("multi_epg_time_ruler")
             ) {
                 Spacer(modifier = Modifier.width(channelLabelWidth))
                 MultiEpgTimeRuler(
@@ -388,7 +388,7 @@ fun MultiEpgScreen(
                     modifier = Modifier
                         .weight(1f)
                         .onSizeChanged { viewportWidthPx = it.width }
-                        .horizontalScroll(hScroll),
+                        .horizontalScroll(hScroll)
                 )
             }
             HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
@@ -397,31 +397,31 @@ fun MultiEpgScreen(
                 state = listState,
                 modifier = Modifier
                     .fillMaxSize()
-                    .testTag("multi_epg_channel_list"),
+                    .testTag("multi_epg_channel_list")
             ) {
                 items(
                     items = channels,
                     key = { it.serviceRef },
-                    contentType = { "channel" },
+                    contentType = { "channel" }
                 ) { channel ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(rowHeight),
+                            .height(rowHeight)
                     ) {
                         Box(
                             modifier = Modifier
                                 .width(channelLabelWidth)
                                 .fillMaxHeight()
                                 .padding(horizontal = 6.dp),
-                            contentAlignment = Alignment.CenterStart,
+                            contentAlignment = Alignment.CenterStart
                         ) {
                             Text(
                                 text = channel.serviceName,
                                 style = channelStyle,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 maxLines = 2,
-                                overflow = TextOverflow.Ellipsis,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                         Box(
@@ -429,7 +429,7 @@ fun MultiEpgScreen(
                                 .weight(1f)
                                 .fillMaxHeight()
                                 .onSizeChanged { viewportWidthPx = it.width }
-                                .horizontalScroll(hScroll),
+                                .horizontalScroll(hScroll)
                         ) {
                             MultiEpgChannelTimeline(
                                 channel = channel,
@@ -443,12 +443,12 @@ fun MultiEpgScreen(
                                 rowHeight = rowHeight,
                                 eventStyle = eventStyle,
                                 clockSize = clockSize,
-                                onEventClick = onEventClick,
+                                onEventClick = onEventClick
                             )
                         }
                     }
                     HorizontalDivider(
-                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
+                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -457,10 +457,7 @@ fun MultiEpgScreen(
 }
 
 @Composable
-private fun MultiEpgZoomButton(
-    visibleMinutes: Int,
-    onVisibleMinutesChange: (Int) -> Unit,
-) {
+private fun MultiEpgZoomButton(visibleMinutes: Int, onVisibleMinutesChange: (Int) -> Unit) {
     var expanded by remember { mutableStateOf(false) }
     val hours = MultiEpgZoom.hours(visibleMinutes)
     val zoomCd = stringResource(R.string.multiepg_zoom)
@@ -469,13 +466,13 @@ private fun MultiEpgZoomButton(
             onClick = { expanded = true },
             modifier = Modifier
                 .testTag("multi_epg_zoom")
-                .semantics { contentDescription = zoomCd },
+                .semantics { contentDescription = zoomCd }
         ) {
             Text(stringResource(R.string.multiepg_zoom_hours, hours))
         }
         DropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { expanded = false }
         ) {
             for (minutes in MultiEpgZoom.OPTIONS_MINUTES) {
                 val optionHours = MultiEpgZoom.hours(minutes)
@@ -486,7 +483,7 @@ private fun MultiEpgZoomButton(
                     onClick = {
                         onVisibleMinutesChange(minutes)
                         expanded = false
-                    },
+                    }
                 )
             }
         }
@@ -502,7 +499,7 @@ private fun MultiEpgTimeRuler(
     tickStepSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier
 ) {
     val tickFormat = remember {
         DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
@@ -512,7 +509,7 @@ private fun MultiEpgTimeRuler(
         timelineEndSec,
         cullStartSec,
         cullEndSec,
-        tickStepSec,
+        tickStepSec
     ) {
         var t = timelineStartSec - (timelineStartSec % tickStepSec)
         val list = ArrayList<Long>(32)
@@ -537,7 +534,7 @@ private fun MultiEpgTimeRuler(
                 modifier = Modifier
                     .offset(x = minuteWidth * offsetMin)
                     .padding(start = 2.dp),
-                maxLines = 1,
+                maxLines = 1
             )
         }
     }
@@ -556,7 +553,7 @@ private fun MultiEpgChannelTimeline(
     rowHeight: Dp,
     eventStyle: TextStyle,
     clockSize: Dp,
-    onEventClick: (Event) -> Unit,
+    onEventClick: (Event) -> Unit
 ) {
     // Match list-EPG cards: surfaceVariant bars, not loud primaryContainer demo chrome.
     val trackColor = MaterialTheme.colorScheme.surface
@@ -574,7 +571,7 @@ private fun MultiEpgChannelTimeline(
             .width(timelineWidth)
             .height(rowHeight)
             .background(trackColor)
-            .testTag("multi_epg_row"),
+            .testTag("multi_epg_row")
     ) {
         for (bar in visibleBars) {
             key(channel.serviceRef, bar.event.eventId, bar.startSec) {
@@ -590,14 +587,14 @@ private fun MultiEpgChannelTimeline(
                         multiEpgTimerClockKey(
                             channel.serviceRef,
                             bar.event.eventId,
-                            bar.startSec,
-                        ),
+                            bar.startSec
+                        )
                     ],
                     nextStartSec = MultiEpgBarLayout.nextStartSec(
                         channel.bars,
-                        bar.startSec,
+                        bar.startSec
                     ),
-                    onEventClick = onEventClick,
+                    onEventClick = onEventClick
                 )
             }
         }
@@ -609,7 +606,7 @@ private fun MultiEpgChannelTimeline(
                     .width(2.dp)
                     .fillMaxHeight()
                     .background(nowColor)
-                    .testTag("multi_epg_now_line"),
+                    .testTag("multi_epg_now_line")
             )
         }
     }
@@ -626,7 +623,7 @@ private fun ProgrammeBar(
     clockSize: Dp,
     clock: MultiEpgTimerClock?,
     nextStartSec: Long?,
-    onEventClick: (Event) -> Unit,
+    onEventClick: (Event) -> Unit
 ) {
     val drawStart = maxOf(bar.startSec, timelineStartSec)
     if (bar.endSec <= timelineStartSec) {
@@ -636,14 +633,14 @@ private fun ProgrammeBar(
     val x = MultiEpgBarLayout.offsetDp(
         startSec = drawStart,
         timelineStartSec = timelineStartSec,
-        minuteWidthDp = minuteWidthDp,
+        minuteWidthDp = minuteWidthDp
     ).dp
     val w = MultiEpgBarLayout.widthDp(
         startSec = bar.startSec,
         endSec = bar.endSec,
         timelineStartSec = timelineStartSec,
         minuteWidthDp = minuteWidthDp,
-        nextStartSec = nextStartSec,
+        nextStartSec = nextStartSec
     ).dp
     if (w <= 0.dp) {
         return
@@ -658,7 +655,7 @@ private fun ProgrammeBar(
             .clickable { onEventClick(bar.event) }
             .semantics { contentDescription = bar.event.title }
             .padding(horizontal = 4.dp),
-        contentAlignment = Alignment.CenterStart,
+        contentAlignment = Alignment.CenterStart
     ) {
         Text(
             text = bar.event.title,
@@ -668,7 +665,7 @@ private fun ProgrammeBar(
             overflow = TextOverflow.Ellipsis,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .padding(end = if (clock != null) clockSize + 2.dp else 0.dp),
+                .padding(end = if (clock != null) clockSize + 2.dp else 0.dp)
         )
         if (clock != null) {
             val record = clock == MultiEpgTimerClock.Record
@@ -677,7 +674,7 @@ private fun ProgrammeBar(
                     R.string.multiepg_timer_record
                 } else {
                     R.string.multiepg_timer_zap
-                },
+                }
             )
             Icon(
                 painter = painterResource(R.drawable.ic_multiepg_clock),
@@ -695,8 +692,8 @@ private fun ProgrammeBar(
                             "multi_epg_timer_record"
                         } else {
                             "multi_epg_timer_zap"
-                        },
-                    ),
+                        }
+                    )
             )
         }
     }

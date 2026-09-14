@@ -24,7 +24,7 @@ class DreamDroidBackupAgent : BackupAgentHelper() {
         val dbfbh = FileBackupHelper(
             this,
             "../databases/" + AppDatabase.DATABASE_NAME,
-            "../databases/" + DatabaseHelper.DATABASE_NAME,
+            "../databases/" + DatabaseHelper.DATABASE_NAME
         )
         addHelper(DATABASE_BACKUP_KEY, dbfbh)
     }

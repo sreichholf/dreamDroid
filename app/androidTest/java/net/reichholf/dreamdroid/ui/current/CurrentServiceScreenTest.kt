@@ -24,7 +24,7 @@ class CurrentServiceScreenTest {
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext,
+            InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
@@ -40,7 +40,7 @@ class CurrentServiceScreenTest {
                     state = state,
                     onNowClick = {},
                     onNextClick = {},
-                    onStream = {},
+                    onStream = {}
                 )
             }
         }
@@ -56,7 +56,7 @@ class CurrentServiceScreenTest {
             service = Service(
                 reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
                 name = "Das Erste HD",
-                provider = "ARD",
+                provider = "ARD"
             ),
             now = null,
             next = Event(
@@ -64,8 +64,8 @@ class CurrentServiceScreenTest {
                 title = "Wetter",
                 startReadable = "20:15",
                 durationReadable = "15",
-                descriptionExtended = "Der Wetterbericht.",
-            ),
+                descriptionExtended = "Der Wetterbericht."
+            )
         )
         val state = CurrentServiceUiState().apply { apply(current) }
         composeRule.setContent {
@@ -74,7 +74,7 @@ class CurrentServiceScreenTest {
                     state = state,
                     onNowClick = {},
                     onNextClick = {},
-                    onStream = {},
+                    onStream = {}
                 )
             }
         }
@@ -89,22 +89,22 @@ class CurrentServiceScreenTest {
             service = Service(
                 reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
                 name = "Das Erste HD",
-                provider = "ARD",
+                provider = "ARD"
             ),
             now = Event(
                 eventId = "39150",
                 title = "Tagesschau",
                 startReadable = "20:00",
                 durationReadable = "60",
-                descriptionExtended = "Die Nachrichten um 20 Uhr.",
+                descriptionExtended = "Die Nachrichten um 20 Uhr."
             ),
             next = Event(
                 eventId = "39151",
                 title = "Wetter",
                 startReadable = "20:15",
                 durationReadable = "15",
-                descriptionExtended = "Der Wetterbericht.",
-            ),
+                descriptionExtended = "Der Wetterbericht."
+            )
         )
         val state = CurrentServiceUiState().apply { apply(current) }
         var streamClicks = 0
@@ -114,7 +114,7 @@ class CurrentServiceScreenTest {
                     state = state,
                     onNowClick = {},
                     onNextClick = {},
-                    onStream = { streamClicks++ },
+                    onStream = { streamClicks++ }
                 )
             }
         }
@@ -144,7 +144,7 @@ class CurrentServiceScreenTest {
                     state = state,
                     onNowClick = {},
                     onNextClick = {},
-                    onStream = {},
+                    onStream = {}
                 )
             }
         }

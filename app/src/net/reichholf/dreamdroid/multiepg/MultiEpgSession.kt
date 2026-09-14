@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,7 +18,6 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Stale-while-revalidate MultiEPG grid session: peek Room, refresh and prefetch
@@ -36,7 +36,7 @@ class MultiEpgSession(
     private val profileId: () -> Int,
     private val noBouquetMessage: String,
     private val fetchTimers: suspend () -> List<Timer> = { emptyList() },
-    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
+    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() }
 ) {
     var bouquetRef: String = ""
         private set
@@ -105,11 +105,7 @@ class MultiEpgSession(
         load(anchorSec, forceRefresh = false, isPull = false)
     }
 
-    fun load(
-        anchorSec: Long,
-        forceRefresh: Boolean = false,
-        isPull: Boolean = false,
-    ) {
+    fun load(anchorSec: Long, forceRefresh: Boolean = false, isPull: Boolean = false) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty()) {
             errorMessage = noBouquetMessage
@@ -175,7 +171,7 @@ class MultiEpgSession(
                         profileId = id,
                         bouquetRef = ref,
                         unixSec = anchorSec,
-                        forceRefresh = forceRefresh,
+                        forceRefresh = forceRefresh
                     )
                 }
                 val chunk = MultiEpgWindows.chunkContaining(anchorSec)
@@ -220,7 +216,7 @@ class MultiEpgSession(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec,
+            visibleEndSec = visibleEndSec
         )
         if (want.toSet() == eventsByWindow.keys.toSet() && windowJob?.isActive != true) {
             return
@@ -323,7 +319,7 @@ class MultiEpgSession(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec,
+            visibleEndSec = visibleEndSec
         )
         if (want.isEmpty()) {
             return
@@ -363,7 +359,7 @@ class MultiEpgSession(
         val nextStart = MultiEpgWindows.paintedTimelineStart(
             nowSec = originFloorSec,
             minWindowStartSec = starts.first(),
-            events = merged,
+            events = merged
         )
         val nextEnd = starts.last() + MultiEpgWindows.CHUNK_SECONDS
         val previous = channels

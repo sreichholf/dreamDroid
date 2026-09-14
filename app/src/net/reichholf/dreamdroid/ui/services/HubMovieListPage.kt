@@ -78,7 +78,7 @@ fun HubMovieListPage(
     location: String,
     locationIndex: Int,
     modifier: Modifier = Modifier,
-    session: HubMovieListSession = remember { HubMovieListSession() },
+    session: HubMovieListSession = remember { HubMovieListSession() }
 ) {
     val context = LocalContext.current
     val view = LocalView.current
@@ -135,12 +135,12 @@ fun HubMovieListPage(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
         enabled = refresh.enabled,
-        modifier = modifier,
+        modifier = modifier
     ) {
         if (listState.items.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
+                contentAlignment = Alignment.Center
             ) {
                 if (emptyMessage != null) {
                     Text(
@@ -148,7 +148,7 @@ fun HubMovieListPage(
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp),
+                        modifier = Modifier.padding(24.dp)
                     )
                 }
             }
@@ -156,7 +156,7 @@ fun HubMovieListPage(
             MovieListScreen(
                 items = listState.items,
                 onItemClick = { item, x, y -> session.onItemClick(item, isLong = false, x, y) },
-                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) },
+                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) }
             )
         }
     }
@@ -164,7 +164,7 @@ fun HubMovieListPage(
     detailContent?.let { content ->
         MovieDetailModalSheet(
             content = content,
-            onDismiss = { detailContent = null },
+            onDismiss = { detailContent = null }
         )
     }
 
@@ -181,7 +181,7 @@ fun HubMovieListPage(
             onConfirm = { indices ->
                 session.applyTagSelection(indices)
                 showTagPicker = false
-            },
+            }
         )
     }
 
@@ -193,7 +193,7 @@ fun HubMovieListPage(
             onConfirm = {
                 session.deleteMovie()
                 showDeleteConfirm = null
-            },
+            }
         )
     }
 
@@ -205,8 +205,7 @@ fun HubMovieListPage(
  *
  * Tag filter is requested via [onRequestTagPicker]; the page hosts [MultiChoiceAlertDialog].
  */
-class HubMovieListSession :
-    MenuProvider {
+class HubMovieListSession : MenuProvider {
 
     var hostFragment: PhoneNavHostFragment? = null
     var context: android.content.Context? = null
@@ -237,12 +236,7 @@ class HubMovieListSession :
 
     fun beginLoad(): Int = ++loadGeneration
 
-    fun applyLoadResult(
-        generation: Int,
-        success: Boolean,
-        next: List<Movie>,
-        errorText: String?,
-    ) {
+    fun applyLoadResult(generation: Int, success: Boolean, next: List<Movie>, errorText: String?) {
         if (generation != loadGeneration) {
             return
         }
@@ -370,7 +364,7 @@ class HubMovieListSession :
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
             ZapRequestHandler(),
-            listOf(NameValuePair("sRef", ref)),
+            listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
@@ -392,7 +386,7 @@ class HubMovieListSession :
         deleteJob?.cancel()
         deleteJob = host.launchSimpleResultLoad(
             MovieDeleteRequestHandler(),
-            MovieKeys.getDeleteParams(movie),
+            MovieKeys.getDeleteParams(movie)
         ) { _, result, http ->
             dismissProgress()
             var toastText = ctx.getText(R.string.get_content_error).toString()
@@ -428,22 +422,27 @@ class HubMovieListSession :
                 }
                 onShowDetail?.invoke(content)
             }
+
             R.id.menu_zap -> {
                 val ref = movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty()
                 if (ref.isNotEmpty()) {
                     zapTo(ref)
                 }
             }
+
             R.id.menu_delete -> {
                 onRequestDeleteConfirm?.invoke(movie?.getString(MovieKeys.KEY_TITLE).orEmpty())
             }
+
             Statics.ACTION_DELETE_CONFIRMED -> deleteMovie()
+
             R.id.menu_download -> {
                 val file = movie?.getString(MovieKeys.KEY_FILE_NAME).orEmpty()
                 val params = arrayListOf(NameValuePair("file", file))
                 val url = SimpleHttpClient.getInstance().buildUrl(URIStore.FILE, params)
                 ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             }
+
             R.id.menu_stream -> {
                 try {
                     val activity = ctx as AppCompatActivity
@@ -453,13 +452,14 @@ class HubMovieListSession :
                             movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
                             movie?.getString(MovieKeys.KEY_FILE_NAME),
                             movie?.getString(MovieKeys.KEY_TITLE),
-                            movie,
-                        ),
+                            movie
+                        )
                     )
                 } catch (_: ActivityNotFoundException) {
                     toast(ctx.getText(R.string.missing_stream_player))
                 }
             }
+
             else -> return false
         }
         return true
@@ -472,18 +472,16 @@ class HubMovieListSession :
         return movies.firstOrNull { it.reference == ref && it.fileName == file }
     }
 
-
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.locactions_and_tags, menu)
     }
 
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        return when (menuItem.itemId) {
-            Statics.ITEM_TAGS -> {
-                pickTags()
-                true
-            }
-            else -> false
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
+        Statics.ITEM_TAGS -> {
+            pickTags()
+            true
         }
+
+        else -> false
     }
 }

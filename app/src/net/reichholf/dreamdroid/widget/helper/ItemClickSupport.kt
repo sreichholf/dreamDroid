@@ -29,7 +29,7 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
                 mRecyclerView,
                 v,
                 holder.bindingAdapterPosition,
-                v.id.toLong(),
+                v.id.toLong()
             )
         }
         false
@@ -95,7 +95,7 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
             parent: RecyclerView,
             view: View,
             position: Int,
-            id: Long,
+            id: Long
         ): Boolean {
             val listener = mOnItemClickListener
             if (listener != null && position >= 0) {
@@ -110,7 +110,7 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
             parent: RecyclerView,
             view: View,
             position: Int,
-            id: Long,
+            id: Long
         ): Boolean {
             val listener = mOnItemLongClickListener
             if (listener != null && position >= 0) {

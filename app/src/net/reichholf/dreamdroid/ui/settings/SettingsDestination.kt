@@ -2,24 +2,24 @@ package net.reichholf.dreamdroid.ui.settings
 
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import android.widget.Toast
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.room.AppDatabase
 
@@ -27,10 +27,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
  * Phase 2.7e: Settings as a direct Compose NavHost destination.
  */
 @Composable
-fun SettingsDestination(
-    hostFragment: PhoneNavHostFragment,
-    modifier: Modifier = Modifier,
-) {
+fun SettingsDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val state = remember {
         PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
@@ -50,14 +47,14 @@ fun SettingsDestination(
             Toast.makeText(
                 context,
                 R.string.multiepg_sync_test_no_bouquet,
-                Toast.LENGTH_LONG,
+                Toast.LENGTH_LONG
             ).show()
             return
         }
         Toast.makeText(
             context,
             R.string.multiepg_sync_test_running,
-            Toast.LENGTH_SHORT,
+            Toast.LENGTH_SHORT
         ).show()
         scope.launch {
             val started = System.currentTimeMillis()
@@ -66,19 +63,19 @@ fun SettingsDestination(
                 val sync = MultiEpgSync(
                     dao = AppDatabase.epg(context),
                     fetch = MultiEpgSync.httpFetch(),
-                    ttlMs = 0L,
+                    ttlMs = 0L
                 )
                 val events = sync.ensureChunk(
                     profileId = profile.id ?: -1,
                     bouquetRef = bouquet,
-                    unixSec = System.currentTimeMillis() / 1000L,
+                    unixSec = System.currentTimeMillis() / 1000L
                 )
                 val ms = System.currentTimeMillis() - started
                 if (events.isEmpty()) {
                     context.getString(
                         R.string.multiepg_sync_test_empty,
                         bouquet.take(48),
-                        ms,
+                        ms
                     )
                 } else {
                     context.getString(R.string.multiepg_sync_test_ok, events.size, ms)
@@ -86,7 +83,7 @@ fun SettingsDestination(
             } catch (t: Throwable) {
                 context.getString(
                     R.string.multiepg_sync_test_fail,
-                    t.message ?: t.javaClass.simpleName,
+                    t.message ?: t.javaClass.simpleName
                 )
             }
             withContext(Dispatchers.Main.immediate) {
@@ -104,7 +101,7 @@ fun SettingsDestination(
             if (DynamicColors.isDynamicColorAvailable()) {
                 Handler(Looper.getMainLooper()).postDelayed(
                     { DreamDroid.restart(context) },
-                    300,
+                    300
                 )
             }
         },
@@ -123,6 +120,6 @@ fun SettingsDestination(
         onBackup = {
             hostFragment.navigateToBackup()
         },
-        modifier = modifier,
+        modifier = modifier
     )
 }
