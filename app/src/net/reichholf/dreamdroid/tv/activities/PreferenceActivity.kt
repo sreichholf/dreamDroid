@@ -32,7 +32,7 @@ class PreferenceActivity : ComponentActivity() {
         title = getString(if (isProfileMode) R.string.profile else R.string.settings)
 
         if (isProfileMode) {
-            // Match old ProfileFragment: RESULT_OK so the TV hub reloads on return.
+            // RESULT_OK: TvComposeHubHost reloads browse data via Activity Result API.
             setResult(Activity.RESULT_OK)
             val profile = DreamDroid.getCurrentProfile()
             editingProfile = profile

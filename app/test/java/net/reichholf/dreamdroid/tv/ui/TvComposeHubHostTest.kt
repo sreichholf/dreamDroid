@@ -1,0 +1,79 @@
+package net.reichholf.dreamdroid.tv.ui
+
+import android.app.Activity
+import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+
+class TvComposeHubHostTest {
+    @Test
+    fun resultOkReloadsHubBrowseData() {
+        var reloads = 0
+        TvComposeHubHost.applyPreferenceActivityResult(Activity.RESULT_OK) {
+            reloads++
+        }
+        assertEquals(1, reloads)
+    }
+
+    @Test
+    fun canceledPreferenceResultDoesNotReload() {
+        var reloads = 0
+        TvComposeHubHost.applyPreferenceActivityResult(Activity.RESULT_CANCELED) {
+            reloads++
+        }
+        assertEquals(0, reloads)
+    }
+
+    @Test
+    fun preferenceTypeForSettingsKinds() {
+        assertEquals(
+            PreferenceActivity.PREFS_TYPE_GENERIC,
+            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Preferences),
+        )
+        assertEquals(
+            PreferenceActivity.PREFS_TYPE_PROFILE,
+            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile),
+        )
+        assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Reload))
+    }
+
+    @Test
+    fun browseErrorHiddenOnSettingsHeader() {
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_SETTINGS_ID,
+                loading = false,
+                errorText = "box offline",
+            ),
+        )
+    }
+
+    @Test
+    fun browseErrorShownOnContentRows() {
+        assertTrue(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                loading = false,
+                errorText = "box offline",
+            ),
+        )
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                loading = true,
+                errorText = "box offline",
+            ),
+        )
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                loading = false,
+                errorText = null,
+            ),
+        )
+    }
+}

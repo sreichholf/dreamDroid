@@ -1,13 +1,15 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
 import android.view.ViewGroup
 import android.widget.ImageView
-import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +31,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -84,6 +87,34 @@ object TvComposeHubHost {
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
 
+    fun preferenceTypeForKind(kind: BrowseItem.Kind): String? =
+        when (kind) {
+            BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
+            BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
+            BrowseItem.Kind.Reload -> null
+        }
+
+    fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
+        val type = preferenceTypeForKind(kind) ?: return null
+        return Intent(context, PreferenceActivity::class.java).putExtra(
+            PreferenceActivity.KEY_PREFS_TYPE,
+            type,
+        )
+    }
+
+    fun applyPreferenceActivityResult(resultCode: Int, onReload: () -> Unit) {
+        if (resultCode == Activity.RESULT_OK) {
+            onReload()
+        }
+    }
+
+    fun shouldShowBrowseError(
+        selectedHeaderId: String,
+        loading: Boolean,
+        errorText: String?,
+    ): Boolean =
+        !loading && errorText != null && selectedHeaderId != HEADER_SETTINGS_ID
+
     fun install(activity: ComponentActivity) {
         activity.setContent {
             ComposeTvHubApp(activity = activity)
@@ -114,6 +145,13 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     var movieLoading by remember { mutableStateOf(false) }
     var movieError by remember { mutableStateOf<String?>(null) }
     var selectedHeaderId by remember { mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID) }
+    val preferenceLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { result ->
+        TvComposeHubHost.applyPreferenceActivityResult(result.resultCode) {
+            reloadToken++
+        }
+    }
 
     LaunchedEffect(reloadToken) {
         loading = true
@@ -180,7 +218,12 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         onSettingsClick = { kind ->
             when (kind) {
                 BrowseItem.Kind.Reload -> reloadToken++
-                else -> handleSettingsAction(activity, kind)
+                BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
+                    val intent = TvComposeHubHost.preferenceIntent(activity, kind)
+                    if (intent != null) {
+                        preferenceLauncher.launch(intent)
+                    }
+                }
             }
         },
         bouquetRows = bouquetRows,
@@ -273,30 +316,6 @@ private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
     )
 }
 
-private fun handleSettingsAction(activity: ComponentActivity, kind: BrowseItem.Kind) {
-    when (kind) {
-        BrowseItem.Kind.Reload -> {
-            Toast.makeText(activity, R.string.reload, Toast.LENGTH_SHORT).show()
-        }
-        BrowseItem.Kind.Preferences -> {
-            activity.startActivity(
-                Intent(activity, PreferenceActivity::class.java).putExtra(
-                    PreferenceActivity.KEY_PREFS_TYPE,
-                    PreferenceActivity.PREFS_TYPE_GENERIC,
-                ),
-            )
-        }
-        BrowseItem.Kind.Profile -> {
-            activity.startActivity(
-                Intent(activity, PreferenceActivity::class.java).putExtra(
-                    PreferenceActivity.KEY_PREFS_TYPE,
-                    PreferenceActivity.PREFS_TYPE_PROFILE,
-                ),
-            )
-        }
-    }
-}
-
 /** Side headers ([NavigationDrawer]) + row list focus chrome (Phase 3.1c-iv-c/d/e). */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -336,7 +355,13 @@ fun ComposeTvHubChrome(
                                         .height(24.dp),
                                 )
                             },
-                            modifier = Modifier.testTag("hub_header_${header.id}"),
+                            modifier = Modifier
+                                .testTag("hub_header_${header.id}")
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        onHeaderSelected(header.id)
+                                    }
+                                },
                         ) {
                             Text(text = header.title)
                         }
@@ -369,10 +394,16 @@ fun ComposeTvHubChrome(
                         )
                     }
                 }
-                if (errorText != null && !loading) {
+                if (
+                    TvComposeHubHost.shouldShowBrowseError(
+                        selectedHeaderId,
+                        loading,
+                        errorText,
+                    )
+                ) {
                     item {
                         Text(
-                            text = errorText,
+                            text = errorText.orEmpty(),
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.testTag("hub_error"),
                         )
