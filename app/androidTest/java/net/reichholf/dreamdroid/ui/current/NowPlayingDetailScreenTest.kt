@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -88,8 +89,9 @@ class NowPlayingDetailScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Loading").assertIsDisplayed()
-        composeRule.onNodeWithText("Not available").assertDoesNotExist()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithText(context.getString(R.string.loading)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.not_available)).assertDoesNotExist()
         composeRule.onNodeWithText("Stream current").assertDoesNotExist()
         assertEquals(0, streamClicks)
     }

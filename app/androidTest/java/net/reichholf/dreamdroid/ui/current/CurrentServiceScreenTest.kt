@@ -149,7 +149,7 @@ class CurrentServiceScreenTest {
             }
         }
         composeRule.onNodeWithText("Not available").assertIsDisplayed()
-        composeRule.onNodeWithText("Loading").assertDoesNotExist()
+        composeRule.onNodeWithText("Loading", substring = true).assertDoesNotExist()
         composeRule.onNodeWithText("Stream current").assertDoesNotExist()
     }
 }
