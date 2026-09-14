@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
@@ -93,7 +94,7 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Time").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Select hour").assertIsDisplayed()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(20, hour)
