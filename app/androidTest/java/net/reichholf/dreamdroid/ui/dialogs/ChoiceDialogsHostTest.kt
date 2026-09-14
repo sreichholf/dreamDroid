@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -11,7 +12,6 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
-import androidx.test.espresso.Espresso
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -148,9 +148,9 @@ class ChoiceDialogsHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
-        // KEYCODE_BACK to the dialog window. activity.onBackPressedDispatcher finishes the
-        // paused activity and leaves the AlertDialog window showing.
-        Espresso.pressBack()
+        // KEYCODE_BACK to the focused dialog window. activity.onBackPressedDispatcher
+        // finishes the paused activity and leaves the AlertDialog showing.
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithText("Searching").fetchSemanticsNodes().isEmpty()
         }
