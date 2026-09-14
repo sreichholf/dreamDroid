@@ -7,6 +7,8 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -37,6 +39,7 @@ import net.reichholf.dreamdroid.ui.pick.PickServiceDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.fragment.SleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditDestination
 import net.reichholf.dreamdroid.ui.profiles.ProfilesDestination
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckDestination
@@ -48,6 +51,27 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickDestination
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+
+private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
+    save = { listOf(it.minutes, it.enabled, it.action) },
+    restore = {
+        SleepTimerNavArgs(
+            minutes = it[0] as Int,
+            enabled = it[1] as Boolean,
+            action = it[2] as String,
+        )
+    },
+)
+
+/**
+ * Snapshot sleep-timer args once per dialog entry. [PhoneNavHostFragment.consumeSleepTimerArgs]
+ * nulls pending args, so calling it on every composition would reset to
+ * [SleepTimerNavArgs.defaults].
+ */
+@Composable
+fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavArgs {
+    return rememberSaveable(saver = SleepTimerNavArgsSaver) { consume() }
+}
 
 /**
  * Phone shell [NavHost]. Drawer leaves through hub + settings; Backup is nested from Settings.
@@ -205,7 +229,9 @@ private fun PhoneNavHostGraph(
         }
         dialog(PhoneNavRoutes.SLEEP_TIMER) {
             val activity = LocalContext.current as? MainActivity
-            val args = hostFragment.consumeSleepTimerArgs()
+            val args = rememberSleepTimerNavArgs {
+                hostFragment.consumeSleepTimerArgs()
+            }
             SleepTimerDialog(
                 initialMinutes = args.minutes,
                 initialEnabled = args.enabled,
