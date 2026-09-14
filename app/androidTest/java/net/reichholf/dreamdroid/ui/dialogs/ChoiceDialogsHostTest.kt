@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
-import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -148,9 +147,9 @@ class ChoiceDialogsHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
-        // KEYCODE_BACK to the focused dialog window. activity.onBackPressedDispatcher
-        // finishes the paused activity and leaves the AlertDialog showing.
-        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(KeyEvent.KEYCODE_BACK)
+        composeRule.runOnIdle {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
         composeRule.waitUntil(timeoutMillis = 5_000) {
             composeRule.onAllNodesWithText("Searching").fetchSemanticsNodes().isEmpty()
         }

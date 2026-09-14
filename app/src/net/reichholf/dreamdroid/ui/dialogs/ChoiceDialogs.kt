@@ -155,6 +155,7 @@ fun IndeterminateProgressDialog(title: String, message: String, onDismiss: () ->
             { Text(title) }
         },
         text = {
+            BackHandler(onBack = onDismiss)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularProgressIndicator(modifier = Modifier.padding(end = 16.dp))
                 Text(message)
