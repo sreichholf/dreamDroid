@@ -13,11 +13,11 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | | |
 | --- | --- |
 | **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
-| **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` with **unix** window (default 24 h cache chunk); never unbounded |
+| **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` — `time` unix seconds, `endTime` **minutes of duration** (default 24 h cache chunk); never unbounded |
 | **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
 | **Sync** | Room cache + ~20–30 min TTL; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
-| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays = v1.1 (GraphMultiEPG `show_record_clocks`) |
+| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays from `/web/timerlist` (shipped) |
 | **Next** | Phase 0 spike on a real Dreambox → then Phase 1+ implementation |
 
 Full detail in §§1–8 below.
@@ -108,10 +108,10 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 
 `EPG.getBouquetEPGMulti` is `getEPGofBouquet(param, multi=True)`. With `multi=True`, Dreambox passes **both** `time` and `endTime` into the cache lookup; `epgbouquet` does not. Response XML shape matches existing dreamDroid `Event` / `EventParser` fields (`e2eventid`, `e2eventstart`, `e2eventduration`, …).
 
-### Parameter semantics (plan assumption — confirm in Phase 0)
+### Parameter semantics (Phase 0 confirmed)
 
-- Treat `time` / `endTime` as **unix timestamps** (same parsing path as `epgservice` in `EPG.getEPGofService`), **not** OpenWebif’s documented “minutes ahead” for its `epgmulti`.
-- Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**.
+- `time` is a **unix timestamp** (start of window). `endTime` is **minutes of duration**, not a unix end (same 4th eEPGCache tuple arg GraphMultiEPG uses). Sending a unix end (~1.7e9) overflows `startTimeQuery` → **0 events**.
+- Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**. `MultiEpgSync.httpFetch` converts the unix window to minutes.
 
 OpenWebif’s wiki note that `epgmulti` is “not in Enigma2 WebInterface API” is **incorrect** for this Dreambox tree. dreamDroid will not rely on OpenWebif-only endpoints (`epgmultigz`, `/api/…`, etc.).
 
@@ -135,7 +135,7 @@ Open MultiEPG(bouquet B)
 | Rule | Default |
 | --- | --- |
 | Primary API | Windowed `/web/epgmulti` |
-| Chunk size | Rolling **24 h** windows (`endTime = time + 86400`), aligned to the viewport’s day/hour floor — not “full EPG dump” |
+| Chunk size | Rolling **24 h** windows (`time` unix + `endTime` minutes for that span), aligned to the viewport’s day/hour floor — not “full EPG dump” |
 | Visible span | Default 2 h UI (data chunk still 24 h) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
 | TTL | ~20–30 minutes |
@@ -189,7 +189,7 @@ Drawer MultiEPG
 | --- | --- |
 | Route table | `ui/nav/PhoneNavRoutes.kt` (`EPG`, `SERVICE_EPG`, `EPG_SEARCH`) — add `MULTI_EPG` |
 | NavHost | `ui/nav/PhoneNavHost.kt` — register composable |
-| Drawer | `ui/drawer/DrawerScreen.kt` + `res/menu/navigation.xml` — new item beside list EPG |
+| Drawer | `ui/drawer/DrawerScreen.kt` + `res/values/ids.xml` — new item beside list EPG |
 | Drawer → EPG | `fragment/helper/NavigationHelper.kt` (`menu_navigation_epg`) — parallel MultiEPG case |
 | HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
 | Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
@@ -225,7 +225,7 @@ EpgChunkMeta
 | **1 — Client + cache** | `getEvents(…, EPG_MULTI)`, Room schema, TTL, single-flight | androidTest (`MultiEpgSyncTest`) |
 | **2 — Grid beachhead** | Nav + bouquet + now line + pan + tap → detail | `MultiEpgScreenTest` via connected-test helper |
 | **3 — Polish** | Zoom / day jump / empty+error / pull-refresh | Same |
-| **4 — Timers (optional)** | Overlay from `timerlist` | Optional follow-on |
+| **4 — Timers** | Overlay from `timerlist` | Shipped (record clocks on bars) |
 
 **Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
@@ -242,7 +242,7 @@ EpgChunkMeta
 | **1** | `EnigmaClient.getEvents(…, URIStore.EPG_MULTI)` returns typed `Event`s; Room chunk upsert + TTL hit/miss; single-flight covered by androidTest |
 | **2** | Drawer → MultiEPG opens; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `.cursor/cloud/connected-test.sh` |
 | **3** | Zoom 1/2/4/5 h; ±day + now jump; empty/error/pull-refresh UX; no unbounded requests in code paths |
-| **4** | Timer clocks (or equivalent) on bars from `timerlist` join; optional |
+| **4** | Timer clocks on bars from `timerlist` join |
 
 ### Phase 0 notes (source-confirmed; live sizes deferred)
 

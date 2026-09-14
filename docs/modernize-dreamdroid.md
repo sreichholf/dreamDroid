@@ -385,8 +385,8 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 **Files.**
 
 - [x] `app/src/net/reichholf/dreamdroid/enigma/` Kotlin types and coroutine client wrapping `SimpleHttpClient` + `URIStore`.
-- [x] Bouquet fetch for the hub goes through `EnigmaClient.getServicesBlocking`.
-- [x] Zap list fetch goes through `EnigmaClient.getServicesBlocking` (this PR). `ExtendedHashMap` remains on unmigrated list rows (EPG, current event, `ServiceListPageFragment` hash maps into Compose items).
+- [x] Bouquet fetch for the hub goes through `EnigmaClient.getServices`.
+- [x] Zap list fetch goes through `EnigmaClient.getServices` (this PR). `ExtendedHashMap` remains on unmigrated list rows (EPG, current event, `ServiceListPageFragment` hash maps into Compose items).
 
 **Build.**
 
@@ -457,7 +457,7 @@ The original playbook wanted ten live `verify-dreamdroid.py` lanes plus a perf r
 **Files.**
 
 - [x] `EventParser` parses `/web/epgservice` into `enigma.Event` (readable fields included).
-- [x] `EnigmaClient.getEvents` / `getEventsBlocking` (+ URI param for later bouquet/search).
+- [x] `EnigmaClient.getEvents` (+ URI param for later bouquet/search).
 - [x] `GetEventListTask` → `HttpFragmentHelper.fetchEvents` → `EnigmaClient`.
 - [x] `ServiceEpgListFragment` holds `List<Event>` (Compose list via `service-epg-compose`; was `ServiceEpgAdapter` / `epg_list_item`).
 - [x] `EpgListMapper.toExtendedHashMap` at detail/timer edge only. Do not rewrite `EpgDetailBottomSheet`.
@@ -672,7 +672,7 @@ Inventory of `app/src/.../tv/` (12 Java files, ~1.3k LOC). **No TV Compose code 
 
 | Surface | Path | Role |
 | --- | --- | --- |
-| MainActivity | `tv/activities/MainActivity.java` | TV host; installs Compose hub (`TvComposeHubHost`); custom TLS + Picasso OkHttp singleton |
+| MainActivity | `tv/activities/MainActivity.kt` | TV host; installs Compose hub (`TvComposeHubHost`); custom TLS + Picasso OkHttp singleton |
 | PreferenceActivity | `tv/activities/PreferenceActivity.kt` | TV settings/profile Compose host (Phase 3.1d) |
 | TvComposeHubHost | `tv/ui/TvComposeHubHost.kt` | Compose TV browse hub (NavigationDrawer + service/movie rows) |
 | EpgDetailDialog / MovieDetailDialog | `tv/fragment/` | Fullscreen Compose detail dialogs (shared phone screens; Phase 3.1b) |
@@ -695,7 +695,7 @@ TV ButterKnife cleared (#235 details; #237 `TextCardView`). Phone VLC overlay Co
 - SAX handlers still used by typed client (`ServiceListRequestHandler`, `EpgNowNextListRequestHandler` / `EventListRequestHandler`, `MovieListRequestHandler`); `AsyncListLoader` retired in #232
 - `Picon`, `IntentFactory` → `VideoActivity` / integrated player
 - `DreamDroidTrustManager` + Picasso OkHttp in TV `MainActivity` (app-wide side effects)
-- Shared prefs XML (`R.xml.preferences` / `R.xml.profile_preferences`)
+- Shared prefs XML (`R.xml.preferences`)
 
 Phone Compose detail screens are reused by TV dialog hosts (Phase 3.1b); TV EPG hides action buttons.
 
@@ -729,10 +729,10 @@ Prefer **typed browse data → details → hub → prefs** (not prefs-first; not
 
 | Piece | Path | LOC | Notes |
 | --- | --- | --- | --- |
-| TV `MainActivity` | `tv/activities/MainActivity.java` | ~100 | Installs Compose hub; TLS + Picasso OkHttp singleton (app-wide) |
+| TV `MainActivity` | `tv/activities/MainActivity.kt` | ~100 | Installs Compose hub; TLS + Picasso OkHttp singleton (app-wide) |
 | `TvComposeHubHost` | `tv/ui/TvComposeHubHost.kt` | ~680 | NavigationDrawer headers + service/movie rows; typed loads |
 | `ImageCardContent` | `tv/view/ImageCardContent.kt` | ~100 | Shared now/next card text for hub service cards |
-| `BrowseItem` | `tv/BrowseItem.kt` | ~25 | Sealed `Service` / `Movie` / `Settings` (#234); settings kinds still used by hub |
+| `BrowseItem` | `tv/BrowseItem.kt` | ~15 | Settings `Kind` used by hub; typed Service/Movie/Settings payloads retired |
 
 Behaviors preserved: settings Reload/Preferences/Profile; lazy movie load on row select; stream Intent edge via hash mappers; profile-changed reload. Leanback browse deleted in **3.1c-iv-f** (`leanback` kept for VideoOverlay `HorizontalGridView`).
 
@@ -835,7 +835,7 @@ One program each, still one PR (or small PR series) at a time:
 
 | Order | Program | What |
 | --- | --- | --- |
-| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. `res/menu/navigation.xml` kept for destination ids. **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). |
+| 1a | Drawer chrome (Compose) | Replace `NavigationView` menu with Compose `DrawerScreen` in `ComposeView`; keep XML profile header, `DrawerLayout`, fragment `detail_view`, and `NavigationHelper.navigateTo`. Destination ids now live in `res/values/ids.xml`. **merged** [#212](https://github.com/sreichholf/dreamDroid/pull/212). |
 | 1b | Drawer Navigation | Through hub **merged** [#254](https://github.com/sreichholf/dreamDroid/pull/254)–[#270](https://github.com/sreichholf/dreamDroid/pull/270). |
 | 2a | HTTP / async — Device Info | `DeviceInfoFragment` → `lifecycleScope` + suspend `EnigmaClient.getDeviceInfo()`; delete `GetDeviceInfoTask`. **merged** [#213](https://github.com/sreichholf/dreamDroid/pull/213). Keep `SimpleHttpClient`/`HttpURLConnection`. |
 | 2b | HTTP / async — Signal | `SignalFragment` poll → `lifecycleScope` + suspend `EnigmaClient.getSignal()`; delete `GetSignalTask`; keep generation guards. **merged** [#214](https://github.com/sreichholf/dreamDroid/pull/214). |
@@ -1090,7 +1090,7 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | --- | --- | --- |
 | Launcher | `TabbedNavigationActivity` | Phone → `MainActivity`; TV → Leanback |
 | Shell | `MainActivity` + `dualpane.xml` | `DrawerLayout` + `detail_view` + FABs; profile header XML; drawer `ComposeView` |
-| Drawer chrome | `ui/drawer/DrawerScreen.kt` | Compose destinations; menu ids from `res/menu/navigation.xml` |
+| Drawer chrome | `ui/drawer/DrawerScreen.kt` | Compose destinations; menu ids from `res/values/ids.xml` |
 | Router | `NavigationHelper` | Map menu ids → `PhoneNavHost` roots; dialogs + power/sleep/message actions remain; EPG extras separate |
 | NavHost beachhead | `PhoneNavHostFragment` + `ui/nav/PhoneNavHost.kt` | **merged** [#255](https://github.com/sreichholf/dreamDroid/pull/255): `navigation-compose` 2.7.7; Device Info leaf nests existing `DeviceInfoFragment` |
 | Drawer → NavController | `NavigationHelper` + `PhoneNavHostFragment.navigateToRoute` | **merged** [#256](https://github.com/sreichholf/dreamDroid/pull/256): Device Info re-select uses in-graph navigate when host already shown |
@@ -1113,7 +1113,7 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | Host API | `MultiPaneHandler` | `isMultiPane()` always true on `MainActivity` (in-host detail, not master–detail columns) |
 | Nested | `FragmentHelper` | FM back stack leftovers; pickers via host / `onActivityResult` |
 | Side hosts | `VideoActivity`, `ShareActivity` | Stream / Share. Search → `MainActivity` ([#289](https://github.com/sreichholf/dreamDroid/pull/289) dropped `SimpleFragmentActivity`). Profile/timer edit in-host ([#284](https://github.com/sreichholf/dreamDroid/pull/284)). Settings [#279](https://github.com/sreichholf/dreamDroid/pull/279); remote [#277](https://github.com/sreichholf/dreamDroid/pull/277). |
-| Profiles | Profile header XML + first-start | Not in `DrawerScreen` / `navigation.xml`; opens `ProfileListFragment`, clears drawer selection |
+| Profiles | Profile header XML + first-start | Not in `DrawerScreen` / `ids.xml`; opens `ProfileListFragment`, clears drawer selection |
 
 #### Agreed approach
 
@@ -1159,7 +1159,7 @@ None remaining. Last consumer was `MultiChoiceDialog` (`boolean[]` via Bundle [#
 | ~~`AbstractBottomSheetDialog` / `BottomSheetActionDialog`~~ | deleted | Retired in **2.1g-ii-d** |
 | `MultiChoiceDialog` | `fragment/dialogs/MultiChoiceDialog.java` | Standalone `DialogFragment`; Bundle `boolean[]` (Phase 2.3f) |
 
-Host: `MainActivity` / `MultiPaneHandler.showDialogFragment`. Drawer tags in `MainActivity.NAVIGATION_DIALOG_TAGS` (`about_dialog`, `powerstate_dialog`, `sendmessage_dialog`, `sleeptimer_dialog`, `sleeptimer_progress_dialog`) route callbacks to `NavigationHelper`.
+Host: `MainActivity` / `MultiPaneHandler.showDialogFragment`. Drawer About / Power / Send message / Sleep timer / Changelog are Navigation `dialog` destinations (Phase **2.1g-ii-c**).
 
 #### Inventory — drawer / shell
 
@@ -1291,10 +1291,10 @@ One PR per fix or small related cluster. Prefer regressions covered by Compose t
 **Accepted** 2026-09-12. Full design: [`docs/multiepg.md`](multiepg.md). Phase 0 units confirmed from webif source; live size table deferred to [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 - **UX reference:** DreamOS on-box GraphMultiEPG (`enigma2-plugin-extensions-graphmultiepg`) — horizontal channel×time grid (not stock web column MultiEPG).
-- **Data path:** bounded Dreambox `/web/epgmulti?bRef=&time=&endTime=` (unix) + Room TTL (on-box plugin uses `eEPGCache`; the phone cannot).
-- **Locked defaults:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks in v1.1.
+- **Data path:** bounded Dreambox `/web/epgmulti?bRef=&time=&endTime=` (`time` unix seconds, `endTime` duration minutes) + Room TTL (on-box plugin uses `eEPGCache`; the phone cannot).
+- **Locked defaults:** keep list EPG + drawer MultiEPG; 2 h visible / 24 h cache chunks; no idle sync; phone-only v1; timer clocks from `/web/timerlist` join.
 - Phase **1** beachhead: `MultiEpgSync` + Room `epg_event` / `epg_chunk` (schema v4; events keyed by bouquet, `bouquetPos` keeps bouquet row order).
 
 ## Appendix F. Links
 
-[`AGENTS.md`](../AGENTS.md), [`.cursor/skills/verify-dreamdroid/SKILL.md`](../.cursor/skills/verify-dreamdroid/SKILL.md), [`docs/multiepg.md`](multiepg.md), [`app/build.gradle`](../app/build.gradle), [`NavigationHelper.java`](../app/src/net/reichholf/dreamdroid/fragment/helper/NavigationHelper.java), [`MainActivity.java`](../app/src/net/reichholf/dreamdroid/activities/MainActivity.java), [`URIStore.java`](../app/src/net/reichholf/dreamdroid/helpers/enigma2/URIStore.java), [`themes.xml`](../app/res/values/themes.xml).
+[`AGENTS.md`](../AGENTS.md), [`.cursor/skills/verify-dreamdroid/SKILL.md`](../.cursor/skills/verify-dreamdroid/SKILL.md), [`docs/multiepg.md`](multiepg.md), [`app/build.gradle`](../app/build.gradle), [`NavigationHelper.kt`](../app/src/net/reichholf/dreamdroid/fragment/helper/NavigationHelper.kt), [`MainActivity.kt`](../app/src/net/reichholf/dreamdroid/activities/MainActivity.kt), [`URIStore.kt`](../app/src/net/reichholf/dreamdroid/helpers/enigma2/URIStore.kt), [`themes.xml`](../app/res/values/themes.xml).
