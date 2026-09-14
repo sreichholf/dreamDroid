@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -12,7 +10,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
@@ -55,10 +52,7 @@ fun EpgDatePickerDialog(
         },
         modifier = modifier,
     ) {
-        DatePicker(
-            state = dateState,
-            title = { Text(stringResource(R.string.epg_pick_date)) },
-        )
+        DatePicker(state = dateState)
     }
 }
 
@@ -87,15 +81,7 @@ fun EpgTimePickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = modifier,
-        title = { Text(stringResource(R.string.epg_pick_time)) },
-        text = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center,
-            ) {
-                TimePicker(state = timeState)
-            }
-        },
+        text = { TimePicker(state = timeState) },
         confirmButton = {
             TextButton(
                 onClick = { onConfirm(timeState.hour, timeState.minute) },

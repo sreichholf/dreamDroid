@@ -53,8 +53,6 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="epg">EPG</string>
-    <string name="epg_pick_date">Date</string>
-    <string name="epg_pick_time">Time</string>
     <string name="epg_prime">Prime</string>
     <string name="multiepg">MultiEPG</string>
     <string name="multiepg_now">Now</string>

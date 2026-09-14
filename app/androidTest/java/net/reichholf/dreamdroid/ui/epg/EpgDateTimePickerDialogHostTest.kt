@@ -6,9 +6,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -52,7 +55,12 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Date").assertIsDisplayed()
+        composeRule.onNodeWithText("Select date").assertIsDisplayed()
+        val titleBounds = composeRule.onNodeWithText("Select date").getBoundsInRoot()
+        assertTrue(
+            "stock DatePicker title should be inset, not clipped in the corner (left=${titleBounds.left})",
+            titleBounds.left >= 16.dp,
+        )
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(EpgInstant.utcMidnightMillis(initial, berlin), confirmed)
@@ -86,7 +94,7 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Time").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Select hour").assertIsDisplayed()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()
         assertEquals(20, hour)
