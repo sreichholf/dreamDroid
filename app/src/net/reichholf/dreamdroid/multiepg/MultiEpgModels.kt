@@ -41,6 +41,38 @@ fun playableMultiEpgRoster(services: List<Service>): List<Service> {
     return out
 }
 
+/** Result of `/web/getservices` for the painted bouquet roster. */
+data class MultiEpgRosterFetch(
+    val services: List<Service> = emptyList(),
+    val error: Throwable? = null,
+)
+
+/**
+ * Keep the last-good playable roster when getservices fails. A successful empty
+ * list still replaces the roster (the bouquet really has no playable rows).
+ */
+fun applyBouquetRoster(
+    previous: List<Service>,
+    fetch: MultiEpgRosterFetch,
+): AppliedBouquetRoster {
+    val error = fetch.error
+    if (error != null) {
+        return AppliedBouquetRoster(
+            roster = previous,
+            errorMessage = error.message ?: error.javaClass.simpleName,
+        )
+    }
+    return AppliedBouquetRoster(
+        roster = playableMultiEpgRoster(fetch.services),
+        errorMessage = null,
+    )
+}
+
+data class AppliedBouquetRoster(
+    val roster: List<Service>,
+    val errorMessage: String?,
+)
+
 /**
  * Build channel rows from a flat event list. Keeps work off composition —
  * call from a background dispatcher after [MultiEpgSync.ensureChunk].
