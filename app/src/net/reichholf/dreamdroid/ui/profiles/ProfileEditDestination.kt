@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
@@ -98,15 +97,9 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
         (context as? AppCompatActivity)?.title = context.getString(R.string.edit_profile)
     }
 
-    val saveLabel = context.getString(R.string.save)
-    BindShellFab(
-        contentDescription = saveLabel,
-        iconRes = R.drawable.ic_action_save,
-        onClick = { save() }
-    )
     ProfileEditScreen(
         state = editState,
-        saveLabel = saveLabel,
+        saveLabel = context.getString(R.string.save),
         onSave = { save() },
         showSaveFab = false,
         modifier = modifier

@@ -23,7 +23,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -45,8 +44,8 @@ fun ProfileEditScreen(
 ) {
     // Hosted in a destination that already fits system windows.
     // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
-    // Phone destinations use Coordinator [R.id.fab_main] (showSaveFab=false) because an
-    // in-content FAB sits in detail_view overflow / under the gesture bar.
+    // Phone ProfileEditDestination passes showSaveFab=false; Save is toolbar
+    // R.menu.save. TV PreferenceActivity keeps the default in-content FAB.
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -175,9 +174,9 @@ fun ProfileEditScreen(
                 StreamPortsSection(state)
             }
 
-            Spacer(
-                Modifier.height(dimensionResource(R.dimen.fab_margin_bottom) + 72.dp)
-            )
+            if (showSaveFab) {
+                Spacer(Modifier.height(72.dp))
+            }
         }
     }
 }
