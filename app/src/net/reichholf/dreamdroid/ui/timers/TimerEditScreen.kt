@@ -39,10 +39,9 @@ fun TimerEditScreen(
     showSaveFab: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // Hosted in a destination that already fits system windows.
-    // Default Scaffold safeDrawing insets would double-pad and lift a FAB (#263).
-    // Phone save is toolbar-only ([R.menu.save]); keep showSaveFab=false so this
-    // Scaffold does not add an in-content Save FAB on the same screen.
+    // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
+    // and lift a FAB (#263). Bottom inset is PhoneNavHost when the shell
+    // destination bar is hidden. Phone save is toolbar-only ([R.menu.save]).
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

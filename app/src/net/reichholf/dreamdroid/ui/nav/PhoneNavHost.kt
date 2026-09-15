@@ -86,10 +86,15 @@ fun PhoneNavHost(
     }
     // Shell destination bar lives for the NavHost lifetime; hubs only publish Snapshot state.
     ProvideShellDestinationBar {
+        val shellBarVisible = LocalShellDestinationBarController.current.content !is
+            ShellDestinationBarContent.Hidden
         PhoneNavHostGraph(
             handle = handle,
             navController = navController,
-            startDestination = startDestination
+            startDestination = startDestination,
+            modifier = Modifier
+                .fillMaxSize()
+                .phoneNavDestinationViewport(shellBarVisible)
         )
     }
 }
@@ -98,12 +103,13 @@ fun PhoneNavHost(
 private fun PhoneNavHostGraph(
     handle: PhoneNavHandle,
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         composable(PhoneNavRoutes.DEVICE_INFO) {
             DeviceInfoDestination()

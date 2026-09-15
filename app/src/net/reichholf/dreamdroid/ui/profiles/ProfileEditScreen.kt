@@ -31,10 +31,11 @@ fun ProfileEditScreen(
     showSaveFab: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    // Hosted in a destination that already fits system windows.
-    // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
-    // Phone ProfileEditDestination passes showSaveFab=false; Save is toolbar
-    // R.menu.save. TV PreferenceActivity keeps the default in-content FAB.
+    // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
+    // and lift the FAB (#263). Bottom inset is PhoneNavHost when the shell
+    // destination bar is hidden. Phone ProfileEditDestination passes
+    // showSaveFab=false; Save is toolbar R.menu.save. TV PreferenceActivity
+    // keeps the default in-content FAB.
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
