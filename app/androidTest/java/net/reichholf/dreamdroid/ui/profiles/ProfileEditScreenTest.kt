@@ -7,6 +7,7 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -68,8 +69,8 @@ class ProfileEditScreenTest {
         composeRule.onAllNodesWithText("https", substring = false).onFirst().assertIsDisplayed()
         composeRule.onNodeWithText("Enable Login").assertIsDisplayed()
         composeRule.onNodeWithText("Streaming").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Port (Live)").assertIsDisplayed()
-        composeRule.onNodeWithText("Port (Movies)").assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Movies)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("8001").assertIsDisplayed()
         composeRule.onNodeWithText("80").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Save").assertIsDisplayed()
@@ -127,15 +128,19 @@ class ProfileEditScreenTest {
             abs((movies.left - live.left).value) < 1f
         )
 
-        composeRule.onAllNodesWithText("Login")[0].performScrollTo()
-        composeRule.onAllNodesWithText("Login")[1].performScrollTo()
-        val liveLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())[0]
+        // Scroll the last Movies control into view, then measure without further
+        // scrolling so stacked switch rows keep comparable root bounds.
+        val moviesHttpsNode = composeRule.onAllNodes(hasText("https") and isToggleable())
+            .onLast()
+        moviesHttpsNode.performScrollTo()
+        composeRule.waitForIdle()
+        val liveLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())
+            .onFirst()
             .getBoundsInRoot()
-        val moviesLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())[1]
+        val moviesLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())
+            .onLast()
             .getBoundsInRoot()
-        val moviesHttps = composeRule.onAllNodes(hasText("https") and isToggleable())[1]
-            .performScrollTo()
-            .getBoundsInRoot()
+        val moviesHttps = moviesHttpsNode.getBoundsInRoot()
         assertTrue(
             "Movies Login should sit under Live Login, live=$liveLogin movies=$moviesLogin",
             moviesLogin.top >= liveLogin.bottom
@@ -170,10 +175,10 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Password").assertIsDisplayed()
         composeRule.onNodeWithText("root").assertIsDisplayed()
 
-        composeRule.onNodeWithText("Port (Live)").assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Use encoder for streaming").performScrollTo().performClick()
         composeRule.onNodeWithText("Port (Live)").assertDoesNotExist()
-        composeRule.onNodeWithText("Stream path").assertIsDisplayed()
+        composeRule.onNodeWithText("Stream path").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("stream").assertIsDisplayed()
         composeRule.onNodeWithText("554").assertIsDisplayed()
 
