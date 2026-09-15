@@ -7,9 +7,10 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import net.reichholf.dreamdroid.R
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,19 +19,33 @@ import org.junit.runner.RunWith
 class DualpaneFabLayoutTest {
     @Test
     fun mainFabUsesGravityNotDetailAnchorAndReloadFabRemoved() {
-        val base = InstrumentationRegistry.getInstrumentation().targetContext
-        val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
-        val root = android.view.LayoutInflater.from(context)
-            .inflate(R.layout.dualpane, null, false)
-        val fabMain = root.findViewById<FloatingActionButton>(R.id.fab_main)
+        val fabMain = inflateMainFab()
         val mainLp = fabMain.layoutParams as CoordinatorLayout.LayoutParams
 
         assertEquals(View.NO_ID, mainLp.anchorId)
         assertTrue((mainLp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
         assertTrue((mainLp.gravity and Gravity.END) == Gravity.END)
         // Reload FAB removed; id must not remain in the package resources.
-        val reloadId = context.resources.getIdentifier("fab_reload", "id", context.packageName)
+        val reloadId = fabMain.context.resources.getIdentifier(
+            "fab_reload",
+            "id",
+            fabMain.context.packageName
+        )
         assertEquals(0, reloadId)
+    }
+
+    @Test
+    fun mainFabIsExtendedAndTogglesLabel() {
+        val fabMain = inflateMainFab()
+        fabMain.text = "Add Profile"
+        fabMain.extend()
+        assertEquals("Add Profile", fabMain.text.toString())
+        assertTrue(fabMain.isExtended)
+
+        fabMain.text = ""
+        fabMain.shrink()
+        assertEquals("", fabMain.text.toString())
+        assertFalse(fabMain.isExtended)
     }
 
     @Test
@@ -45,5 +60,13 @@ class DualpaneFabLayoutTest {
         assertEquals(View.NO_ID, lp.anchorId)
         assertTrue((lp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
         assertEquals(View.GONE, nav.visibility)
+    }
+
+    private fun inflateMainFab(): ExtendedFloatingActionButton {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val context = ContextThemeWrapper(base, R.style.Theme_DreamDroid_Night)
+        val root = android.view.LayoutInflater.from(context)
+            .inflate(R.layout.dualpane, null, false)
+        return root.findViewById(R.id.fab_main)
     }
 }

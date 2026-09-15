@@ -47,9 +47,11 @@
             app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
         <!-- Gravity (not detail_view anchor): AppBarLayout.ScrollingViewBehavior makes
-             detail_view taller than the visible area, so anchored / in-content FABs clip. -->
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            style="@style/Widget.Material3.FloatingActionButton.Primary"
+             detail_view taller than the visible area, so anchored / in-content FABs clip.
+             Extended so list create actions can show a label; BindShellFab shrinks when
+             the caller omits text. -->
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            style="@style/ExtendedFloatingActionButton.Primary"
             android:id="@+id/fab_main"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -58,8 +60,8 @@
             android:layout_marginBottom="@dimen/fab_margin_bottom"
             android:visibility="gone"
             app:elevation="6dp"
-            app:pressedTranslationZ="12dp"
-            android:src="@drawable/ic_action_fab_add"/>
+            app:icon="@drawable/ic_action_fab_add"
+            app:pressedTranslationZ="12dp"/>
 
         <!-- Gravity (not inside detail_view): same ScrollingViewBehavior overflow that clipped
              FABs also pushed the TV/Movies destination bar off the bottom of the screen. -->
