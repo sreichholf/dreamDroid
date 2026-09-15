@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import android.graphics.Bitmap
+import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.CompositionLocalProvider
@@ -14,6 +16,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -22,9 +25,11 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
@@ -52,6 +57,8 @@ class MultiEpgScreenTest {
             InstrumentationRegistry.getInstrumentation().targetContext
         ).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)
             .commit()
     }
 
@@ -916,5 +923,160 @@ class MultiEpgScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Channel 23").assertIsDisplayed()
         composeRule.onNodeWithTag("multi_epg_time_ruler").assertIsDisplayed()
+    }
+
+    @Test
+    fun channelLabelShowsNameWhenPiconsDisabled() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = oneChannel(start),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_channel_name", useUnmergedTree = true)
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithTag("multi_epg_channel_picon", useUnmergedTree = true)
+            .assertDoesNotExist()
+    }
+
+    @Test
+    fun channelLabelKeepsNameWhenPiconMissing() {
+        enableLocalPicons()
+        val start = 1_700_000_000L
+        val ref = "1:0:1:99:1:1:0:0:0:0:"
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = oneChannel(start, serviceRef = ref),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {}
+                )
+            }
+        }
+        composeRule.waitUntil(5_000) {
+            composeRule.onAllNodesWithTag(
+                "multi_epg_channel_name",
+                useUnmergedTree = true
+            ).fetchSemanticsNodes().isNotEmpty()
+        }
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+    }
+
+    @Test
+    fun channelLabelShowsPiconInsteadOfNameWhenAvailable() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val picon = writeLocalPicon(ref, "Das Erste HD")
+        try {
+            composeRule.setContent {
+                DreamDroidTheme {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = oneChannel(start, serviceRef = ref),
+                        timelineStartSec = start,
+                        timelineEndSec = start + 7200,
+                        nowSec = start + 60,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                        textSize = MultiEpgTextSize.Comfortable
+                    )
+                }
+            }
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag(
+                    "multi_epg_channel_name",
+                    useUnmergedTree = true
+                ).fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.onNodeWithTag("multi_epg_channel_picon", useUnmergedTree = true)
+                .assertIsDisplayed()
+                .assertHeightIsEqualTo(44.dp)
+            composeRule.onNodeWithText("Das Erste HD").assertDoesNotExist()
+        } finally {
+            picon.delete()
+        }
+    }
+
+    @Test
+    fun channelPiconScalesToCompactRowHeight() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val picon = writeLocalPicon(ref, "Das Erste HD")
+        try {
+            composeRule.setContent {
+                DreamDroidTheme {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = oneChannel(start, serviceRef = ref),
+                        timelineStartSec = start,
+                        timelineEndSec = start + 7200,
+                        nowSec = start + 60,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                        textSize = MultiEpgTextSize.Compact
+                    )
+                }
+            }
+            composeRule.waitUntil(5_000) {
+                composeRule.onAllNodesWithTag(
+                    "multi_epg_channel_name",
+                    useUnmergedTree = true
+                ).fetchSemanticsNodes().isEmpty()
+            }
+            composeRule.onNodeWithTag("multi_epg_row").assertHeightIsEqualTo(36.dp)
+            composeRule.onNodeWithTag("multi_epg_channel_picon", useUnmergedTree = true)
+                .assertHeightIsEqualTo(32.dp)
+        } finally {
+            picon.delete()
+        }
+    }
+
+    private fun enableLocalPicons() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit()
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, true)
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
+            .putBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, false)
+            .commit()
+    }
+
+    private fun writeLocalPicon(serviceRef: String, serviceName: String): File {
+        enableLocalPicons()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val path = checkNotNull(
+            Picon.getPiconFileName(context, serviceRef, serviceName, false)
+        )
+        val file = File(path)
+        file.parentFile?.mkdirs()
+        val bitmap = Bitmap.createBitmap(100, 60, Bitmap.Config.ARGB_8888)
+        bitmap.eraseColor(AndroidColor.RED)
+        file.outputStream().use { out ->
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+        }
+        bitmap.recycle()
+        return file
     }
 }

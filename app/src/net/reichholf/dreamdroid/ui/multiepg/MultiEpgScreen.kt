@@ -43,8 +43,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -56,11 +58,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.preference.PreferenceManager
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
@@ -409,21 +414,15 @@ fun MultiEpgScreen(
                             .fillMaxWidth()
                             .height(rowHeight)
                     ) {
-                        Box(
+                        MultiEpgChannelLabel(
+                            serviceRef = channel.serviceRef,
+                            serviceName = channel.serviceName,
+                            style = channelStyle,
                             modifier = Modifier
                                 .width(channelLabelWidth)
                                 .fillMaxHeight()
-                                .padding(horizontal = 6.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = channel.serviceName,
-                                style = channelStyle,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                                .padding(horizontal = 6.dp)
+                        )
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -452,6 +451,58 @@ fun MultiEpgScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Channel column: when picons are enabled and a picon loads, show it instead of
+ * the service name. The image fills the row height (minus hairline padding) and
+ * uses Fit so Compact / Comfortable / font-scale rows all fit.
+ */
+@Composable
+private fun MultiEpgChannelLabel(
+    serviceRef: String,
+    serviceName: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+    var piconLoaded by remember(serviceRef, serviceName, piconsEnabled) {
+        mutableStateOf(false)
+    }
+
+    Box(
+        modifier = modifier.testTag("multi_epg_channel_label"),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        if (piconsEnabled) {
+            // Keep the image invisible until Coil succeeds so a failed load
+            // does not flash the error placeholder under the channel name.
+            PiconImage(
+                reference = serviceRef,
+                name = serviceName,
+                contentDescription = serviceName,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 2.dp)
+                    .alpha(if (piconLoaded) 1f else 0f)
+                    .testTag("multi_epg_channel_picon"),
+                onSuccess = { piconLoaded = true },
+                onError = { piconLoaded = false }
+            )
+        }
+        if (!piconsEnabled || !piconLoaded) {
+            Text(
+                text = serviceName,
+                style = style,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag("multi_epg_channel_name")
+            )
         }
     }
 }

@@ -63,7 +63,7 @@ Sticky channel column + time header; vertical channel scroll; horizontal time pa
 
 | Topic | v1 behaviour |
 | --- | --- |
-| Picons | Optional in channel column if already available via existing picon helpers; text name always shown (GraphMultiEPG `servicetitle_mode` can be name-only) |
+| Picons | When Settings → Use Picons is on and a picon loads for the service, the channel column shows the picon (scaled to the current row height) instead of the service name; otherwise the name is shown |
 | Offline / stale | If Room chunk exists past TTL, still paint it with a subtle stale/refresh affordance; if no chunk and box unreachable, show existing connection-error pattern (do not spin forever) |
 | Orientation | Phone portrait primary; landscape uses same grid with more horizontal hours visible |
 | Profile switch | Invalidate MultiEPG UI state; Room rows are `profileId`-keyed so another profile’s cache is not mixed |
