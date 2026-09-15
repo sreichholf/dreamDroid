@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -22,11 +19,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
@@ -76,12 +71,11 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
         simpleRemote -> VirtualRemoteLayout.Simple
         else -> VirtualRemoteLayout.Full
     }
-    val baseTitle = if (quickZap) {
-        context.getString(R.string.app_name_release) + "::" + context.getString(R.string.quickzap)
-    } else {
-        context.getString(R.string.app_name_release) + "::" +
-            context.getString(R.string.virtual_remote)
-    }
+    val baseTitle = virtualRemoteToolbarTitle(
+        quickZap = quickZap,
+        virtualRemote = context.getString(R.string.virtual_remote),
+        quickZapLabel = context.getString(R.string.quickzap)
+    )
 
     fun setToolbarTitle() {
         (context as? AppCompatActivity)?.title = baseTitle
@@ -149,6 +143,11 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
         context.theme.resolveAttribute(R.attr.ic_menu_remote, typed, true)
         if (typed.resourceId != 0) typed.resourceId else R.drawable.ic_action_list
     }
+    val toggleDescription = if (quickZap) {
+        context.getString(R.string.standard)
+    } else {
+        context.getString(R.string.quickzap)
+    }
 
     DisposableEffect(baseTitle) {
         setToolbarTitle()
@@ -173,6 +172,9 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
                     layout = layout,
                     playButtonAsPlayPause = playAsPlayPause,
                     onKey = ::onKey,
+                    onToggleLayout = { page = if (page == 0) 1 else 0 },
+                    toggleIconRes = toggleIcon,
+                    toggleContentDescription = toggleDescription,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 15.dp)
@@ -183,21 +185,18 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
                 layout = layout,
                 playButtonAsPlayPause = playAsPlayPause,
                 onKey = ::onKey,
+                onToggleLayout = { page = if (page == 0) 1 else 0 },
+                toggleIconRes = toggleIcon,
+                toggleContentDescription = toggleDescription,
                 modifier = Modifier.fillMaxSize()
-            )
-        }
-
-        IconButton(
-            onClick = { page = if (page == 0) 1 else 0 },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(8.dp)
-                .size(40.dp)
-        ) {
-            Icon(
-                painter = painterResource(toggleIcon),
-                contentDescription = context.getString(R.string.virtual_remote)
             )
         }
     }
 }
+
+/** Toolbar label for the pad. Feature name only, no `DreamDroid::` prefix. */
+internal fun virtualRemoteToolbarTitle(
+    quickZap: Boolean,
+    virtualRemote: String,
+    quickZapLabel: String
+): String = if (quickZap) quickZapLabel else virtualRemote
