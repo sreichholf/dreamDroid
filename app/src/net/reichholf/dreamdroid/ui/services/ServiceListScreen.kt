@@ -26,9 +26,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -44,6 +46,8 @@ private val EventEndColumnWidth = 50.dp
 
 /** Slightly taller than the VLC zap list's 4dp strip so the top-edge progress reads clearly. */
 private val ProgressBarHeight = 6.dp
+
+const val SERVICE_LIST_PROGRESS_TAG = "service_list_progress"
 
 @Composable
 fun ServiceListScreen(
@@ -103,11 +107,17 @@ private fun ServiceRow(
     ) {
         Column(Modifier.fillMaxWidth()) {
             if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
+                // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
                 LinearProgressIndicator(
                     progress = { item.progress.toFloat() / item.progressMax.toFloat() },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(ProgressBarHeight)
+                        .testTag(SERVICE_LIST_PROGRESS_TAG),
+                    trackColor = Color.Transparent,
+                    strokeCap = StrokeCap.Butt,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
                 )
             }
             Column(

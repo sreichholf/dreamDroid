@@ -1,13 +1,19 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
@@ -127,5 +133,92 @@ class ServiceListScreenTest {
         // Second row must not report the fragment-root origin (0,0) used by the old PopupMenu bug.
         assertTrue("expected tapX >= 0, got $tapX", tapX >= 0)
         assertTrue("expected second-row tapY > 0, got $tapY", tapY > 0)
+    }
+
+    @Test
+    fun progressStripOmitsTrackAndStopIndicator() {
+        var primary = 0
+        var track = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                primary = MaterialTheme.colorScheme.primary.toArgb()
+                track = MaterialTheme.colorScheme.secondaryContainer.toArgb()
+                ServiceListScreen(
+                    items = listOf(
+                        ServiceListItem(
+                            index = 0,
+                            reference = "1:0:1:1:1:1:1:0:0:0:",
+                            name = "ARD",
+                            kind = ServiceRowKind.CHANNEL,
+                            nowTitle = "Tagesschau",
+                            nowStart = "20:00",
+                            nowDuration = "+20",
+                            progressMax = 10,
+                            progress = 4
+                        )
+                    ),
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
+                )
+            }
+        }
+        // combinedClickable on the Card merges semantics; capture the bar itself.
+        val bitmap = composeRule
+            .onNodeWithTag(SERVICE_LIST_PROGRESS_TAG, useUnmergedTree = true)
+            .captureToImage()
+            .asAndroidBitmap()
+        val xFillTo = (bitmap.width * 0.3f).toInt().coerceIn(1, bitmap.width)
+        val xStopFrom = (bitmap.width * 0.9f).toInt().coerceIn(0, bitmap.width - 1)
+        var fillHits = 0
+        var trackHits = 0
+        var stopHits = 0
+        var y = 0
+        while (y < bitmap.height) {
+            var x = 0
+            while (x < xFillTo) {
+                val px = bitmap.getPixel(x, y)
+                if (rgbDistance(px, primary) < 40) {
+                    fillHits++
+                }
+                if (rgbDistance(px, track) < 40) {
+                    trackHits++
+                }
+                x++
+            }
+            x = xStopFrom
+            while (x < bitmap.width) {
+                if (rgbDistance(bitmap.getPixel(x, y), primary) < 40) {
+                    stopHits++
+                }
+                x++
+            }
+            y++
+        }
+        assertTrue(
+            "current progress should paint primary pixels " +
+                "(fillHits=$fillHits ${bitmap.width}x${bitmap.height} " +
+                "primary=#${Integer.toHexString(primary)} " +
+                "track=#${Integer.toHexString(track)})",
+            fillHits > 10
+        )
+        assertTrue(
+            "filled progress should not show the M3 track under it " +
+                "(trackHits=$trackHits fillHits=$fillHits)",
+            trackHits == 0
+        )
+        assertTrue(
+            "right edge must not draw the M3 stop indicator (hits=$stopHits)",
+            stopHits == 0
+        )
+    }
+
+    private fun rgbDistance(a: Int, b: Int): Int {
+        val ar = (a shr 16) and 0xff
+        val ag = (a shr 8) and 0xff
+        val ab = a and 0xff
+        val br = (b shr 16) and 0xff
+        val bg = (b shr 8) and 0xff
+        val bb = b and 0xff
+        return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
     }
 }
