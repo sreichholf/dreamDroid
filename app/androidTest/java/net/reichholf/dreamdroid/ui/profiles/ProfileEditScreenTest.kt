@@ -116,7 +116,7 @@ class ProfileEditScreenTest {
 
         composeRule.onNodeWithText("Encoder user").assertDoesNotExist()
         composeRule.onAllNodesWithText("Enable Login")[1].performClick()
-        composeRule.onNodeWithText("Encoder user").assertIsDisplayed()
+        composeRule.onNodeWithText("Encoder user").performScrollTo().assertIsDisplayed()
     }
 
     @Test
