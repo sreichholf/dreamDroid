@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
@@ -86,10 +87,27 @@ fun PhoneNavHost(
     }
     // Shell destination bar lives for the NavHost lifetime; hubs only publish Snapshot state.
     ProvideShellDestinationBar {
+        val controller = LocalShellDestinationBarController.current
+        DisposableEffect(handle, controller) {
+            val state = handle as? PhoneNavHostState
+            state?.shellDestinationBarController = controller
+            onDispose {
+                if (state?.shellDestinationBarController === controller) {
+                    state.shellDestinationBarController = null
+                }
+            }
+        }
+        val backStackEntry by navController.currentBackStackEntryAsState()
+        val shellBarVisible = PhoneNavRoutes.showsShellDestinationBar(
+            backStackEntry?.destination?.route
+        )
         PhoneNavHostGraph(
             handle = handle,
             navController = navController,
-            startDestination = startDestination
+            startDestination = startDestination,
+            modifier = Modifier
+                .fillMaxSize()
+                .phoneNavDestinationViewport(shellBarVisible)
         )
     }
 }
@@ -98,12 +116,13 @@ fun PhoneNavHost(
 private fun PhoneNavHostGraph(
     handle: PhoneNavHandle,
     navController: NavHostController,
-    startDestination: String
+    startDestination: String,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier
     ) {
         composable(PhoneNavRoutes.DEVICE_INFO) {
             DeviceInfoDestination()

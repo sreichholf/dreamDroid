@@ -2,13 +2,18 @@ package net.reichholf.dreamdroid.ui.timers
 
 import android.app.Activity
 import android.content.Intent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -24,6 +29,7 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -135,6 +141,55 @@ class TimerEditScreenTest {
             .assertIsDisplayed()
             .performClick()
         assertEquals(1, tagPicks)
+    }
+
+    @Test
+    fun tagsFieldClearsHostBottomInsetWithoutScaffoldFab() {
+        val state = TimerEditState().also {
+            it.loadFrom(
+                sampleTimer().copy(tags = "News"),
+                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
+                locations = listOf("/hdd/movie/", "/media/hdd/"),
+                repeatedLabel = "None"
+            )
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(Modifier.fillMaxSize().testTag("host")) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .phoneNavDestinationViewport(
+                                shellBarVisible = false,
+                                bottomInset = 48.dp
+                            )
+                    ) {
+                        TimerEditScreen(
+                            state = state,
+                            saveLabel = "Save",
+                            onSave = {},
+                            onPickBeginDate = {},
+                            onPickBeginTime = {},
+                            onPickEndDate = {},
+                            onPickEndTime = {},
+                            onPickRepeated = {},
+                            onPickService = {},
+                            onPickTags = {},
+                            showSaveFab = false
+                        )
+                    }
+                }
+            }
+        }
+
+        val tags = composeRule.onNodeWithContentDescription("Tags")
+            .performScrollTo()
+            .getBoundsInRoot()
+        val host = composeRule.onNodeWithTag("host").getBoundsInRoot()
+        assertTrue(
+            "Tags must clear the host bottom inset, host=$host tags=$tags",
+            tags.bottom <= host.bottom - 48.dp + 1.5.dp
+        )
     }
 
     @Test

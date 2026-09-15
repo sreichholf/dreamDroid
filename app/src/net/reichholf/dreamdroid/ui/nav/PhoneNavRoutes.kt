@@ -60,6 +60,13 @@ object PhoneNavRoutes {
     /** Nested timer service pick (from timer edit). */
     const val TIMER_SERVICE_PICK = "timer_service_pick"
 
+    /**
+     * TV & Movies / Tools paint chrome on `shell_destination_nav`. Other routes must
+     * hide that overlay from the destination change, not Hub dispose — otherwise the
+     * bar is still visible on the first frame of timer/profile edit.
+     */
+    fun showsShellDestinationBar(route: String?): Boolean = route == HUB || route == TOOLS
+
     private const val ENCODING = "UTF-8"
 
     /** Filled [EPG_SEARCH] route; percent-encodes [query] as a query parameter. */

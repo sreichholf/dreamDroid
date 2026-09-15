@@ -1,5 +1,9 @@
 package net.reichholf.dreamdroid.ui.profiles
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
@@ -9,6 +13,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -19,6 +24,7 @@ import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -98,6 +104,43 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Live").assertIsDisplayed()
         composeRule.onNodeWithText("Movies").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun lastMoviesSwitchClearsHostBottomInsetWithoutScaffoldFab() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(Modifier.fillMaxSize().testTag("host")) {
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .phoneNavDestinationViewport(
+                                shellBarVisible = false,
+                                bottomInset = 48.dp
+                            )
+                    ) {
+                        ProfileEditScreen(
+                            state = state,
+                            saveLabel = "Save",
+                            onSave = {},
+                            showSaveFab = false
+                        )
+                    }
+                }
+            }
+        }
+
+        val moviesHttps = composeRule.onAllNodes(hasText("https") and isToggleable())
+            .onLast()
+            .performScrollTo()
+            .getBoundsInRoot()
+        val host = composeRule.onNodeWithTag("host").getBoundsInRoot()
+        assertTrue(
+            "Last Movies switch must clear the host bottom inset, " +
+                "host=$host switch=$moviesHttps",
+            moviesHttps.bottom <= host.bottom - 48.dp + 1.5.dp
+        )
     }
 
     @Test
