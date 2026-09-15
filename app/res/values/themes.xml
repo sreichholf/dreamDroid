@@ -56,6 +56,8 @@
         <item name="navigation_footer">@drawable/navigation_footer_light</item>
         <item name="ic_import_export">@drawable/ic_import_export_light</item>
         <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
+        <item name="extendedFloatingActionButtonStyle">@style/ExtendedFloatingActionButton.Primary
+        </item>
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
         <item name="colorPrimaryContainer">@color/md_theme_light_primaryContainer</item>
@@ -220,6 +222,8 @@
         <item name="navigation_footer">@drawable/navigation_footer_dark</item>
         <item name="ic_import_export">@drawable/ic_import_export_dark</item>
         <item name="floatingActionButtonStyle">@style/FloatingActionButton.Primary</item>
+        <item name="extendedFloatingActionButtonStyle">@style/ExtendedFloatingActionButton.Primary
+        </item>
 
         <item name="textAppearanceHeadline1">@style/TextAppearance.MaterialComponents.Headline1
         </item>

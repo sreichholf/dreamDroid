@@ -26,12 +26,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
@@ -47,6 +45,7 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
@@ -88,17 +87,6 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         // if a host prefers registering it instead of remountEpoch.
         activity.addMenuProvider(session)
         session.setToolbarTitle(context.getString(R.string.timer))
-        val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
-        fab?.let {
-            it.show()
-            it.contentDescription = context.getString(R.string.new_timer)
-            it.setImageResource(R.drawable.ic_action_fab_add)
-            it.setOnClickListener { session.createTimer() }
-            it.setOnLongClickListener { v ->
-                Toast.makeText(activity, v.contentDescription, Toast.LENGTH_SHORT).show()
-                true
-            }
-        }
         onDispose {
             activity.removeMenuProvider(session)
             session.finishActionMode()
@@ -107,14 +95,16 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
             loadJob = null
             mutateJob?.cancel()
             mutateJob = null
-            fab?.let {
-                it.setOnClickListener(null)
-                it.setOnLongClickListener(null)
-                it.hide()
-            }
-            (activity as? MainActivity)?.unregisterFab(R.id.fab_main)
         }
     }
+
+    val newTimerLabel = stringResource(R.string.new_timer)
+    BindShellFab(
+        contentDescription = newTimerLabel,
+        iconRes = R.drawable.ic_action_fab_add,
+        onClick = { session.createTimer() },
+        text = newTimerLabel
+    )
 
     LaunchedEffect(remountEpoch) {
         session.reload()

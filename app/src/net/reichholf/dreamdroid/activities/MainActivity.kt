@@ -33,7 +33,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.BuildConfig
@@ -669,7 +668,7 @@ class MainActivity :
     }
 
     fun unregisterFab(id: Int) {
-        val fab = findViewById<FloatingActionButton?>(id) ?: return
+        val fab = findViewById<View?>(id) ?: return
         fab.setOnClickListener(null)
         fab.setOnLongClickListener(null)
     }

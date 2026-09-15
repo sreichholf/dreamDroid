@@ -5,7 +5,6 @@ import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
@@ -22,17 +21,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchDetectDevicesLoad
 
@@ -54,29 +52,20 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     DisposableEffect(handle, session) {
         activity.addMenuProvider(session)
         activity.title = context.getString(R.string.profiles)
-        val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
-        fab?.let {
-            it.show()
-            it.contentDescription = context.getString(R.string.profile_add)
-            it.setImageResource(R.drawable.ic_action_fab_add)
-            it.setOnClickListener { session.createProfile() }
-            it.setOnLongClickListener { v ->
-                Toast.makeText(activity, v.contentDescription, Toast.LENGTH_SHORT).show()
-                true
-            }
-        }
         onDispose {
             activity.removeMenuProvider(session)
             session.finishActionMode()
             session.cancelDetect()
-            fab?.let {
-                it.setOnClickListener(null)
-                it.setOnLongClickListener(null)
-                it.hide()
-            }
-            (activity as? MainActivity)?.unregisterFab(R.id.fab_main)
         }
     }
+
+    val addLabel = stringResource(R.string.profile_add)
+    BindShellFab(
+        contentDescription = addLabel,
+        iconRes = R.drawable.ic_action_fab_add,
+        onClick = { session.createProfile() },
+        text = addLabel
+    )
 
     LaunchedEffect(Unit) {
         session.reloadProfiles()

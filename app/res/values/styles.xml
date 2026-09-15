@@ -95,6 +95,11 @@
         <item name="backgroundTint">?attr/colorAccent</item>
     </style>
 
+    <style name="ExtendedFloatingActionButton.Primary"
+        parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
+        <item name="backgroundTint">?attr/colorAccent</item>
+    </style>
+
     <style name="Drawer" parent="Widget.Material3.FloatingActionButton.Primary" />
 
     <style name="Preference_TextAppearanceMaterialBody2">
