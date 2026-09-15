@@ -83,7 +83,7 @@ android {
         versionCode 461
         versionName="2.0.461"
         minSdkVersion 26
-        targetSdkVersion 36
+        targetSdkVersion 37
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         buildConfigField "int", "MIN_SDK", "${minSdkVersion.apiLevel}"

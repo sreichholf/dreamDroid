@@ -14,7 +14,7 @@ SDK_PACKAGES=(
   "platform-tools"
   "platforms;android-34"
   "platforms;android-36"
-  "platforms;android-37"
+  "platforms;android-37.0"
   "build-tools;36.0.0"
   "emulator"
   "$SYSTEM_IMAGE"

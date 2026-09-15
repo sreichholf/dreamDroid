@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
           package="net.reichholf.dreamdroid"
           android:installLocation="auto">
-
-    <uses-sdk
-        tools:overrideLibrary="android.support.v17.leanback, android.support.v17.preference"/>
 
     <supports-screens
         android:anyDensity="true"
@@ -17,12 +13,11 @@
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <!-- API 37+: LAN sockets (Enigma2 HTTP, mDNS, FTP) are blocked without this. -->
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
-    <uses-permission android:name="android.permission.BIND_JOB_SERVICE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.GET_TASKS" />
 
     <uses-feature android:name="android.software.leanback" android:required="false"/>
     <uses-feature android:name="android.hardware.touchscreen" android:required="false"/>
@@ -34,6 +29,9 @@
         android:allowBackup="true"
         android:allowClearUserData="true"
         android:backupAgent="DreamDroidBackupAgent"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:enableOnBackInvokedCallback="true"
+        android:fullBackupContent="@xml/backup_rules"
         android:hardwareAccelerated="true"
         android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
@@ -163,7 +161,8 @@
 
         <service
             android:name=".helpers.PiconSyncService"
-            android:enabled="true"/>
+            android:enabled="true"
+            android:exported="false"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

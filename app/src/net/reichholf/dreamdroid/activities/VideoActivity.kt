@@ -18,6 +18,7 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.commit
@@ -27,6 +28,7 @@ import kotlin.math.floor
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
+import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
@@ -61,11 +63,14 @@ class VideoActivity :
     var mSarDen: Int = 0
 
     private val mHandler = Handler(Looper.getMainLooper())
+    private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
+        enableEdgeToEdge()
         setFullScreen()
         super.onCreate(savedInstanceState)
+        localNetworkPermissionRequest.ensure(this)
         setContentView(R.layout.video_player)
         surfaceFrameAddLayoutListener(true)
         mCurrentScreenOrientation = resources.configuration.orientation

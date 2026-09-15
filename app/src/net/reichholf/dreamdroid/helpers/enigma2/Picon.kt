@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.content.Context
-import android.os.Environment
 import android.view.View
 import android.widget.ImageView
 import androidx.preference.PreferenceManager
@@ -39,19 +38,10 @@ object Picon {
             )
         }
 
-        if (!Environment.getExternalStorageDirectory().canWrite()) {
-            return String.format(
-                "%s%spicons%s",
-                context.filesDir.absolutePath,
-                File.separator,
-                File.separator
-            )
-        }
-
+        // App-specific storage: WRITE_EXTERNAL_STORAGE is a no-op when targeting 30+.
         return String.format(
-            "%s%sdreamDroid%spicons%s",
-            Environment.getExternalStorageDirectory().absolutePath,
-            File.separator,
+            "%s%spicons%s",
+            context.filesDir.absolutePath,
             File.separator,
             File.separator
         )

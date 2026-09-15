@@ -19,6 +19,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
@@ -389,6 +390,20 @@ class VideoOverlayFragment :
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         onServiceInfoChanged(true)
+        // API 36+ no longer dispatches KEYCODE_BACK; hide overlays via predictive back.
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isOverlaysVisible()) {
+                        hideOverlays()
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                    }
+                }
+            }
+        )
     }
 
     private fun applyServiceList(services: ArrayList<ServiceNowNext>) {
