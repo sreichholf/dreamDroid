@@ -104,12 +104,10 @@ fun NowPlayingStrip(
                 }
             }
         }
-        // Hairline under the strip so it reads as its own section above the
-        // destination bar (same NavigationBar surface color otherwise blends).
-        HorizontalDivider(
-            modifier = Modifier.testTag(NOW_PLAYING_STRIP_DIVIDER_TAG),
-            color = MaterialTheme.colorScheme.outlineVariant
-        )
+        // M3 full-width divider (outlineVariant / DividerDefaults) between the
+        // strip and the destination NavigationBar — same surface would otherwise
+        // blend the two chrome regions.
+        HorizontalDivider(modifier = Modifier.testTag(NOW_PLAYING_STRIP_DIVIDER_TAG))
     }
 }
 
