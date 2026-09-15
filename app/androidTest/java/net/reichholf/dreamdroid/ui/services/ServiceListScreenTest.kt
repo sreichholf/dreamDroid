@@ -162,25 +162,30 @@ class ServiceListScreenTest {
                 )
             }
         }
+        // combinedClickable on the Card merges semantics; capture the bar itself.
         val bitmap = composeRule
-            .onNodeWithTag(SERVICE_LIST_PROGRESS_TAG)
+            .onNodeWithTag(SERVICE_LIST_PROGRESS_TAG, useUnmergedTree = true)
             .captureToImage()
             .asAndroidBitmap()
-        val yMid = bitmap.height / 2
-        val xFill = (bitmap.width * 0.2f).toInt().coerceIn(0, bitmap.width - 1)
-        val fillPx = bitmap.getPixel(xFill, yMid)
-        assertTrue(
-            "current progress should be primary, not the M3 track under it " +
-                "(fill=#${Integer.toHexString(fillPx)} primary=#${Integer.toHexString(primary)} " +
-                "track=#${Integer.toHexString(track)})",
-            rgbDistance(fillPx, primary) < 40 &&
-                rgbDistance(fillPx, primary) < rgbDistance(fillPx, track)
-        )
+        val xFillTo = (bitmap.width * 0.3f).toInt().coerceIn(1, bitmap.width)
         val xStopFrom = (bitmap.width * 0.9f).toInt().coerceIn(0, bitmap.width - 1)
+        var fillHits = 0
+        var trackHits = 0
         var stopHits = 0
         var y = 0
         while (y < bitmap.height) {
-            var x = xStopFrom
+            var x = 0
+            while (x < xFillTo) {
+                val px = bitmap.getPixel(x, y)
+                if (rgbDistance(px, primary) < 40) {
+                    fillHits++
+                }
+                if (rgbDistance(px, track) < 40) {
+                    trackHits++
+                }
+                x++
+            }
+            x = xStopFrom
             while (x < bitmap.width) {
                 if (rgbDistance(bitmap.getPixel(x, y), primary) < 40) {
                     stopHits++
@@ -189,6 +194,18 @@ class ServiceListScreenTest {
             }
             y++
         }
+        assertTrue(
+            "current progress should paint primary pixels " +
+                "(fillHits=$fillHits ${bitmap.width}x${bitmap.height} " +
+                "primary=#${Integer.toHexString(primary)} " +
+                "track=#${Integer.toHexString(track)})",
+            fillHits > 10
+        )
+        assertTrue(
+            "filled progress should not show the M3 track under it " +
+                "(trackHits=$trackHits fillHits=$fillHits)",
+            trackHits == 0
+        )
         assertTrue(
             "right edge must not draw the M3 stop indicator (hits=$stopHits)",
             stopHits == 0
