@@ -1,8 +1,5 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
-import android.util.Log
-import android.view.View
-import android.widget.ImageView
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
@@ -60,17 +58,14 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
-import com.squareup.picasso.Callback
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
@@ -82,8 +77,6 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-
-private const val TAG = "MultiEpgScreen"
 
 /** Default visible span (GraphMultiEPG default). */
 const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
@@ -465,7 +458,7 @@ fun MultiEpgScreen(
 /**
  * Channel column: when picons are enabled and a picon loads, show it instead of
  * the service name. The image fills the row height (minus hairline padding) and
- * uses FIT_CENTER so Compact / Comfortable / font-scale rows all fit.
+ * uses Fit so Compact / Comfortable / font-scale rows all fit.
  */
 @Composable
 private fun MultiEpgChannelLabel(
@@ -486,40 +479,19 @@ private fun MultiEpgChannelLabel(
         contentAlignment = Alignment.CenterStart
     ) {
         if (piconsEnabled) {
-            AndroidView(
-                factory = { ctx ->
-                    ImageView(ctx).apply {
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                        adjustViewBounds = true
-                        contentDescription = serviceName
-                    }
-                },
+            // Keep the image invisible until Coil succeeds so a failed load
+            // does not flash the error placeholder under the channel name.
+            PiconImage(
+                reference = serviceRef,
+                name = serviceName,
+                contentDescription = serviceName,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(vertical = 2.dp)
+                    .alpha(if (piconLoaded) 1f else 0f)
                     .testTag("multi_epg_channel_picon"),
-                update = { view ->
-                    view.contentDescription = serviceName
-                    Picon.setPiconForView(
-                        context,
-                        view,
-                        serviceRef,
-                        serviceName,
-                        Statics.TAG_PICON,
-                        object : Callback {
-                            override fun onSuccess() {
-                                piconLoaded = true
-                            }
-
-                            override fun onError(e: Exception?) {
-                                Log.w(TAG, "No MultiEPG picon for $serviceName")
-                                view.setImageDrawable(null)
-                                view.visibility = View.GONE
-                                piconLoaded = false
-                            }
-                        }
-                    )
-                }
+                onSuccess = { piconLoaded = true },
+                onError = { piconLoaded = false }
             )
         }
         if (!piconsEnabled || !piconLoaded) {
