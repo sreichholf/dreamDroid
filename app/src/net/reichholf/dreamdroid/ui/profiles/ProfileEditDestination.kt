@@ -21,21 +21,21 @@ import androidx.core.view.MenuProvider
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
  * Phase 2.7e: Profile create/edit as a direct Compose NavHost destination.
- * Remounts when [PhoneNavHostFragment.profileEditRouteTag] / remount epoch changes.
+ * Remounts when [PhoneNavHandle.profileEditRouteTag] / remount epoch changes.
  */
 @Composable
-fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val remount = hostFragment.profileEditRemountEpoch
-    val tag = hostFragment.profileEditRouteTag()
-    val args = hostFragment.profileEditLeafArguments()
+    val remount = handle.profileEditRemountEpoch
+    val tag = handle.profileEditRouteTag()
+    val args = handle.profileEditLeafArguments()
 
     @Suppress("DEPRECATION")
     val extras = args.getSerializable(NavExtras.DATA) as? Profile
@@ -58,7 +58,7 @@ fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifie
         val outcome = persistEditedProfile(context, currentProfile)
         toast(outcome.message)
         if (outcome.saved) {
-            hostFragment.deliverPickResult(Activity.RESULT_OK, null)
+            handle.deliverPickResult(Activity.RESULT_OK, null)
         }
     }
 
@@ -75,7 +75,7 @@ fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifie
                 }
 
                 Statics.ITEM_CANCEL -> {
-                    hostFragment.deliverPickResult(Activity.RESULT_CANCELED, null)
+                    handle.deliverPickResult(Activity.RESULT_CANCELED, null)
                     true
                 }
 
@@ -84,10 +84,10 @@ fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifie
         }
     }
 
-    DisposableEffect(hostFragment, menuProvider, tag, remount) {
+    DisposableEffect(handle, menuProvider, tag, remount) {
         (context as? AppCompatActivity)?.title = context.getString(R.string.edit_profile)
         val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(menuProvider, hostFragment.viewLifecycleOwner)
+        activity?.addMenuProvider(menuProvider)
         onDispose {
             activity?.removeMenuProvider(menuProvider)
         }
@@ -117,7 +117,7 @@ internal fun persistEditedProfile(context: Context, profile: Profile): ProfilePe
     if (profile.streamHost == null) {
         profile.streamHost = ""
     }
-    val dao = AppDatabase.profiles(context)
+    val dao = AppDatabase.profilesBlocking(context)
     val id = profile.id ?: 0
     if (id > 0) {
         dao.updateProfile(profile)

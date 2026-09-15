@@ -34,11 +34,12 @@ import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
+import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 
 private const val MODE_TV = "TV"
 private const val MODE_RADIO = "Radio"
@@ -54,7 +55,7 @@ private const val MODE_TIMER = "Timer"
  * and routes MultiChoice / timer-edit results for the active child page.
  */
 @Composable
-fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     var mode by rememberSaveable { mutableStateOf(MODE_TV) }
     var currentTv by rememberSaveable { mutableStateOf<String?>(null) }
@@ -173,16 +174,16 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
     // (bar vanished after bouquet / list refresh finished).
     RegisterShellDestinationBar(ShellDestinationBarContent.TvMovies(destinationBarState))
 
-    DisposableEffect(hostFragment) {
-        val listener = PhoneNavHostFragment.ActivityResultListener { requestCode, resultCode, _ ->
+    DisposableEffect(handle) {
+        val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, _ ->
             if (requestCode == Statics.REQUEST_EDIT_TIMER && resultCode == Activity.RESULT_OK) {
                 timerRemountEpoch += 1
             }
         }
-        hostFragment.composeActivityResultListener = listener
+        handle.composeActivityResultListener = listener
         onDispose {
-            if (hostFragment.composeActivityResultListener === listener) {
-                hostFragment.composeActivityResultListener = null
+            if (handle.composeActivityResultListener === listener) {
+                handle.composeActivityResultListener = null
             }
         }
     }
@@ -235,8 +236,8 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
         }
     }
 
-    DisposableEffect(hostFragment) {
-        val job = hostFragment.launchLocationsAndTagsLoad(
+    DisposableEffect(handle) {
+        val job = handle.launchLocationsAndTagsLoad(
             onProgress = { _, _ -> },
             onReady = {
                 locationsReady = true
@@ -301,7 +302,7 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
                             if (bouquet != null) {
                                 key(bouquet.reference) {
                                     HubServiceListPage(
-                                        hostFragment = hostFragment,
+                                        handle = handle,
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
@@ -327,7 +328,7 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
                             if (bouquet != null) {
                                 key(bouquet.reference) {
                                     HubServiceListPage(
-                                        hostFragment = hostFragment,
+                                        handle = handle,
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
@@ -348,7 +349,7 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
                         if (location != null) {
                             key(location) {
                                 HubMovieListPage(
-                                    hostFragment = hostFragment,
+                                    handle = handle,
                                     location = location,
                                     locationIndex = locationIndex,
                                     session = movieSession
@@ -359,7 +360,7 @@ fun HubDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
 
                     MODE_TIMER -> {
                         HubTimerListPage(
-                            hostFragment = hostFragment,
+                            handle = handle,
                             remountEpoch = timerRemountEpoch
                         )
                     }

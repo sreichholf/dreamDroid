@@ -27,11 +27,12 @@ import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
 
@@ -41,7 +42,7 @@ import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
  * including the historical SIMPLE_VRM default-page quirk.
  */
 @Composable
-fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = remember {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -110,7 +111,7 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
                 add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
             }
         }
-        hostFragment.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
+        handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
                 _,
                 result,
                 http

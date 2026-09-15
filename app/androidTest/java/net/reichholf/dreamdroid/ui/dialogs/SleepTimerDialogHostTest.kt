@@ -17,9 +17,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.fragment.SleepTimerNavArgs
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.SleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.nav.rememberSleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -98,7 +98,7 @@ class SleepTimerDialogHostTest {
     }
 }
 
-/** Mirrors [net.reichholf.dreamdroid.fragment.PhoneNavHostFragment.consumeSleepTimerArgs]. */
+/** Mirrors [net.reichholf.dreamdroid.ui.nav.PhoneNavHandle.consumeSleepTimerArgs]. */
 private class SleepTimerArgsQueue(initial: SleepTimerNavArgs) {
     private var pending: SleepTimerNavArgs? = initial
 

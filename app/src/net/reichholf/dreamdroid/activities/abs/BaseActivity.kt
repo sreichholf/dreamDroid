@@ -6,15 +6,18 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import javax.net.ssl.HttpsURLConnection
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.PiconSyncService
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
@@ -26,6 +29,9 @@ open class BaseActivity :
     AppCompatActivity(),
     DialogActionListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
+    private val localNetworkPermissionRequest =
+        LocalNetworkPermissionRequest(this) { onLocalNetworkPermissionGranted() }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
             HttpsURLConnection.setFollowRedirects(false)
@@ -35,7 +41,9 @@ open class BaseActivity :
         } catch (e: Exception) {
             e.printStackTrace()
         }
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        localNetworkPermissionRequest.ensure(this)
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
                 true
@@ -48,6 +56,20 @@ open class BaseActivity :
         }
     }
 
+    /** Recheck the box after the user grants LAN access (API 37+). */
+    protected open fun onLocalNetworkPermissionGranted() {
+    }
+
+    /**
+     * Phone NavHost (Compose) consumes activity results before fragment dispatch.
+     * [MainActivity] returns true after forwarding to [PhoneNavHandle].
+     */
+    open fun dispatchActivityResultToNavHandle(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ): Boolean = false
+
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
     }
@@ -56,6 +78,9 @@ open class BaseActivity :
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.i(TAG, "onActivityResult($requestCode,$resultCode,$data")
         super.onActivityResult(requestCode, resultCode, data)
+        if (dispatchActivityResultToNavHandle(requestCode, resultCode, data)) {
+            return
+        }
         val fragments = supportFragmentManager.fragments
         for (fragment in fragments) {
             if (fragment == null) continue
@@ -95,34 +120,23 @@ open class BaseActivity :
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        val granted = grantResults.isNotEmpty() &&
-            grantResults[0] == PackageManager.PERMISSION_GRANTED
-        when (requestCode) {
-            REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON ->
-                if (granted) {
-                    callPiconSyncIntent()
-                }
-
-            else -> {
-                val details = supportFragmentManager.findFragmentById(R.id.detail_view)
-                details?.onRequestPermissionsResult(requestCode, permissions, grantResults)
-            }
-        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        val details = supportFragmentManager.findFragmentById(R.id.detail_view)
+        details?.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     fun startPiconSync() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) ==
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
             PackageManager.PERMISSION_GRANTED
         ) {
-            callPiconSyncIntent()
-        } else {
             ActivityCompat.requestPermissions(
                 this,
-                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON
             )
         }
+        callPiconSyncIntent()
     }
 
     protected fun callPiconSyncIntent() {
@@ -137,6 +151,7 @@ open class BaseActivity :
 
     private fun isSyncServiceRunning(): Boolean {
         val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
+        @Suppress("DEPRECATION")
         for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
             if (PiconSyncService::class.java.name == service.service.className) {
                 return true
@@ -151,9 +166,7 @@ open class BaseActivity :
     fun getContext(): Context = this
 
     companion object {
-        const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_PICON: Int = 0
-        const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_SCREENSHOT: Int = 1
-        const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP: Int = 3
+        const val REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON: Int = 0
 
         private val TAG: String = BaseActivity::class.java.simpleName
     }

@@ -28,7 +28,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
@@ -40,6 +39,8 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"
@@ -74,14 +75,14 @@ private val EventNullableSaver = Saver<Event?, Bundle>(
 
 /**
  * Phase 2.7c: Current Service as a direct Compose NavHost destination.
- * Dialog actions (EPG sheet → timer/IMDb/similar) are registered on [hostFragment].
+ * Dialog actions (EPG sheet → timer/IMDb/similar) are registered on [handle].
  *
  * [updateToolbarTitle] is false when hosted in [CurrentServiceSheet] so the hub
  * bouquet title is not overwritten.
  */
 @Composable
 fun CurrentServiceDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
     updateToolbarTitle: Boolean = true
 ) {
@@ -112,7 +113,7 @@ fun CurrentServiceDestination(
     session.current = current
     session.currentItem = currentItem
     session.ready = ready
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
 
     fun setToolbarTitle(title: String) {
@@ -209,12 +210,12 @@ fun CurrentServiceDestination(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    DisposableEffect(hostFragment, session) {
-        hostFragment.composeDialogActionListener = session
+    DisposableEffect(handle, session) {
+        handle.composeDialogActionListener = session
         setToolbarTitle(baseTitle)
         onDispose {
-            if (hostFragment.composeDialogActionListener === session) {
-                hostFragment.composeDialogActionListener = null
+            if (handle.composeDialogActionListener === session) {
+                handle.composeDialogActionListener = null
             }
             loadJob?.cancel()
             loadJob = null
@@ -283,7 +284,7 @@ private class CurrentServiceSession : DialogActionListener {
     var current: CurrentService? = null
     var currentItem: Event? = null
     var ready: Boolean = false
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
@@ -293,7 +294,7 @@ private class CurrentServiceSession : DialogActionListener {
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         val ctx = context ?: return
-        val host = hostFragment ?: return
+        val host = handle ?: return
         when (action) {
             Statics.ACTION_SET_TIMER -> {
                 val event = currentItem ?: return

@@ -29,29 +29,30 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchDetectDevicesLoad
 
 /**
  * Phase 2.7e: Profiles list as a direct Compose NavHost destination.
  * Reloads whenever this route enters composition (covers return from profile edit).
  */
 @Composable
-fun ProfilesDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val listState = remember { ProfilesListState() }
     val session = remember { ProfilesSession() }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.activity = activity
     session.listState = listState
 
-    DisposableEffect(hostFragment, session) {
-        activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+    DisposableEffect(handle, session) {
+        activity.addMenuProvider(session)
         activity.title = context.getString(R.string.profiles)
         val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
         fab?.let {
@@ -114,7 +115,7 @@ fun ProfilesDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier =
 }
 
 private class ProfilesSession : MenuProvider {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
@@ -169,7 +170,7 @@ private class ProfilesSession : MenuProvider {
     fun reloadProfiles() {
         val ctx = context ?: return
         val state = listState ?: return
-        val dao = AppDatabase.profiles(ctx)
+        val dao = AppDatabase.profilesBlocking(ctx)
         profiles.clear()
         profiles.addAll(dao.getProfiles())
         val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
@@ -225,7 +226,7 @@ private class ProfilesSession : MenuProvider {
     }
 
     private fun detectDevices() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val act = activity ?: return
         val cached = detectedProfiles
         if (cached == null) {
@@ -246,7 +247,7 @@ private class ProfilesSession : MenuProvider {
     private fun addAllDetectedDevices() {
         val ctx = context ?: return
         val detected = detectedProfiles ?: return
-        val dao = AppDatabase.profiles(ctx)
+        val dao = AppDatabase.profilesBlocking(ctx)
         for (p in detected) {
             p.id = dao.addProfile(p).toInt()
             toast(ctx.getText(R.string.profile_added).toString() + " '" + p.name + "'")
@@ -324,9 +325,9 @@ private class ProfilesSession : MenuProvider {
 internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {
     val deletedId = profile.id
     val currentId = DreamDroid.getCurrentProfile().id
-    AppDatabase.profiles(context).deleteProfile(profile)
+    AppDatabase.profilesBlocking(context).deleteProfile(profile)
     if (deletedId != null && deletedId == currentId) {
-        val next = AppDatabase.profiles(context).getProfiles()
+        val next = AppDatabase.profilesBlocking(context).getProfiles()
             .firstOrNull { it.id != null && it.id != deletedId }
         if (next != null) {
             DreamDroid.setCurrentProfile(context, next.id!!, true)

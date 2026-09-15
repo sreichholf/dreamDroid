@@ -37,9 +37,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchMovieListLoad
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
@@ -59,6 +56,9 @@ import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchMovieListLoad
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -73,7 +73,7 @@ import net.reichholf.dreamdroid.widget.AnchorPopup
  */
 @Composable
 fun HubMovieListPage(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     location: String,
     locationIndex: Int,
     modifier: Modifier = Modifier,
@@ -94,7 +94,7 @@ fun HubMovieListPage(
     var showTagPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
 
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.popupRoot = view.rootView as? ViewGroup ?: view as? ViewGroup
     session.location = location
@@ -110,9 +110,9 @@ fun HubMovieListPage(
     session.onRequestTagPicker = { showTagPicker = true }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
 
-    DisposableEffect(hostFragment, session) {
+    DisposableEffect(handle, session) {
         val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+        activity?.addMenuProvider(session)
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             activity?.removeMenuProvider(session)
@@ -206,7 +206,7 @@ fun HubMovieListPage(
  */
 class HubMovieListSession : MenuProvider {
 
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var popupRoot: ViewGroup? = null
     var location: String = ""
@@ -290,7 +290,7 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun reload() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -358,7 +358,7 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun zapTo(ref: String) {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
@@ -377,7 +377,7 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun deleteMovie() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val movie = selectedMovie ?: return
         progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))

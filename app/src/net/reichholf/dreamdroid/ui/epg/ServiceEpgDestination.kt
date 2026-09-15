@@ -16,25 +16,25 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
  * Phase 2.7f: per-service EPG as a direct Compose NavHost destination.
  */
 @Composable
 fun ServiceEpgDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     serviceRef: String,
     serviceName: String,
     modifier: Modifier = Modifier
 ) {
     // Prefer Compose BackHandler so system Back pops to hub before MainActivity leave-confirm.
     BackHandler {
-        hostFragment.popNavBackStack()
+        handle.popNavBackStack()
     }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -43,7 +43,7 @@ fun ServiceEpgDestination(
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.hostFragment = hostFragment
+    dialogSession.handle = handle
     dialogSession.context = context
 
     val baseTitle = context.getString(R.string.epg)
@@ -55,7 +55,7 @@ fun ServiceEpgDestination(
 
     fun reload() {
         if (serviceRef.isEmpty()) {
-            hostFragment.popNavBackStack()
+            handle.popNavBackStack()
             return
         }
         if (listState.items.isEmpty()) {
@@ -89,7 +89,7 @@ fun ServiceEpgDestination(
         }
     }
 
-    DisposableEffect(hostFragment, dialogSession) {
+    DisposableEffect(handle, dialogSession) {
         setToolbarTitle(finishedTitle())
         onDispose {
             loadJob?.cancel()
@@ -100,7 +100,7 @@ fun ServiceEpgDestination(
 
     LaunchedEffect(serviceRef) {
         if (serviceRef.isEmpty()) {
-            hostFragment.popNavBackStack()
+            handle.popNavBackStack()
         } else {
             reload()
         }

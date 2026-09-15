@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.app.Activity
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentActivity
 import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.R
@@ -16,10 +15,8 @@ import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 
 /**
  * Timer XML field names, after-event enums, and request helpers. UI uses [TypedTimer].
@@ -161,29 +158,9 @@ class Timer {
         }
 
         fun edit(mph: MultiPaneHandler?, timer: TypedTimer, target: Fragment, create: Boolean) {
-            var walker = target.parentFragment
-            while (walker != null) {
-                if (walker is PhoneNavHostFragment && walker.navigateToTimerEdit(timer, create)) {
-                    return
-                }
-                walker = walker.parentFragment
-            }
-
-            val activity = target.activity ?: return
-            if (activity !is FragmentActivity) {
-                return
-            }
-            val detail = activity.supportFragmentManager.findFragmentById(R.id.detail_view)
-            if (detail is PhoneNavHostFragment && detail.navigateToTimerEdit(timer, create)) {
-                return
-            }
-            val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB)
-            host.queueTimerEdit(timer, create)
-            if (activity is MainActivity) {
-                activity.showDetails(host)
-            } else if (mph != null) {
-                mph.showDetails(host)
-            }
+            val handle = (target.activity as? MainActivity)?.phoneNav
+                ?: (mph as? MainActivity)?.phoneNav
+            handle?.navigateToTimerEdit(timer, create)
         }
     }
 }

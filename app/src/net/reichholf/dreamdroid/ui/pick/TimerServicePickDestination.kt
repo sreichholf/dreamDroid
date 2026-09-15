@@ -21,12 +21,12 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
@@ -34,7 +34,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
  * Result Intent carries typed [Service] as [NavExtras.DATA] for timer edit.
  */
 @Composable
-fun TimerServicePickDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun TimerServicePickDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { PickServiceListState() }
@@ -45,7 +45,7 @@ fun TimerServicePickDestination(hostFragment: PhoneNavHostFragment, modifier: Mo
     var loadJob by remember { mutableStateOf<Job?>(null) }
 
     val session = remember { TimerServicePickSession() }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.listState = listState
     session.refresh = refresh
@@ -88,7 +88,7 @@ fun TimerServicePickDestination(hostFragment: PhoneNavHostFragment, modifier: Mo
 }
 
 private class TimerServicePickSession {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var listState: PickServiceListState? = null
     var refresh: ComposeRefreshState? = null
@@ -144,7 +144,7 @@ private class TimerServicePickSession {
     }
 
     fun onRowClick(service: Service) {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         if (bouquetRef.isEmpty()) {

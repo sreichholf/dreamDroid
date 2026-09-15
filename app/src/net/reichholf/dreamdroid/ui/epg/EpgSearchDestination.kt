@@ -15,11 +15,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
  * Phase 2.7f: EPG search results as a direct Compose NavHost destination.
@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
  */
 @Composable
 fun EpgSearchDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     query: String,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier
@@ -39,7 +39,7 @@ fun EpgSearchDestination(
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.hostFragment = hostFragment
+    dialogSession.handle = handle
     dialogSession.context = context
 
     val baseTitle = context.getString(R.string.epg_search)
@@ -84,7 +84,7 @@ fun EpgSearchDestination(
         }
     }
 
-    DisposableEffect(hostFragment, dialogSession) {
+    DisposableEffect(handle, dialogSession) {
         setToolbarTitle(finishedTitle())
         onDispose {
             loadJob?.cancel()

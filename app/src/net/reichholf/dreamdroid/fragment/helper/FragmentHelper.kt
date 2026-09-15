@@ -12,8 +12,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment
 
 class FragmentHelper {
@@ -74,15 +74,12 @@ class FragmentHelper {
     }
 
     fun finish(resultCode: Int, data: Intent?) {
-        var walker = mFragment?.parentFragment
-        while (walker != null) {
-            if (walker is PhoneNavHostFragment) {
-                walker.deliverPickResult(resultCode, data)
-                return
-            }
-            walker = walker.parentFragment
+        val handle = (getAppCompatActivity() as? MainActivity)?.phoneNav
+        if (handle != null) {
+            handle.deliverPickResult(resultCode, data)
+            return
         }
-        // Nested leaves finish only under PhoneNavHost; remaining hosts close themselves.
+        // Remaining hosts (e.g. VideoActivity overlay) close themselves.
         getAppCompatActivity()!!.setResult(resultCode, data)
         getAppCompatActivity()!!.finish()
     }

@@ -12,19 +12,20 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.withReadableTimes
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
 /**
  * Shared EPG detail-sheet actions for bouquet / service / search / hub destinations.
  * Phase 2.1g-ii-d: opens an in-composition [EpgDetailModalSheet] (no DialogFragment).
  */
 class EpgEventDialogSession {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var currentItem: Event? = null
     var detailEvent by mutableStateOf<Event?>(null)
@@ -46,7 +47,7 @@ class EpgEventDialogSession {
     }
 
     fun onSetTimer() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val item = currentItem ?: return
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
@@ -66,13 +67,13 @@ class EpgEventDialogSession {
     }
 
     fun onEditTimer() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val item = currentItem ?: return
         host.navigateToTimerEdit(Timer.createByEvent(item), true)
     }
 
     fun onFindSimilar() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val item = currentItem ?: return
         host.navigateToEpgSearch(item.title)
     }
