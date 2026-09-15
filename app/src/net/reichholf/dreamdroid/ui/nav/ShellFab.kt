@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 
@@ -19,8 +18,11 @@ import net.reichholf.dreamdroid.activities.MainActivity
  * `dualpane.xml`), and zeroed Scaffold insets (#263) leave the control under the
  * gesture bar. List destinations already use this slot.
  *
- * Pass [text] to show an extended, labeled FAB (create-on-list). Omit it to shrink
- * to an icon-only FAB (temporary for form Save until those screens drop the FAB).
+ * Material 1.14 [ExtendedFloatingActionButton] extends MaterialButton, not
+ * [com.google.android.material.floatingactionbutton.FloatingActionButton].
+ *
+ * Pass [text] to show a labeled extended FAB (create-on-list). Omit it to shrink
+ * to icon-only (temporary for form Save until those screens drop the FAB).
  */
 @Composable
 fun BindShellFab(
@@ -33,10 +35,10 @@ fun BindShellFab(
     val activity = context as? AppCompatActivity
     val latestOnClick by rememberUpdatedState(onClick)
     DisposableEffect(activity, contentDescription, iconRes, text) {
-        val fab = activity?.findViewById<FloatingActionButton>(R.id.fab_main)
+        val fab = activity?.findViewById<ExtendedFloatingActionButton>(R.id.fab_main)
         fab?.let { button ->
             button.contentDescription = contentDescription
-            button.setImageResource(iconRes)
+            button.setIconResource(iconRes)
             applyShellFabLabel(button, text)
             button.setOnClickListener { latestOnClick() }
             button.setOnLongClickListener { view ->
@@ -57,13 +59,12 @@ fun BindShellFab(
     }
 }
 
-internal fun applyShellFabLabel(button: FloatingActionButton, text: String?) {
-    val extended = button as? ExtendedFloatingActionButton ?: return
+internal fun applyShellFabLabel(button: ExtendedFloatingActionButton, text: String?) {
     if (text.isNullOrEmpty()) {
-        extended.text = ""
-        extended.shrink()
+        button.text = ""
+        button.shrink()
     } else {
-        extended.text = text
-        extended.extend()
+        button.text = text
+        button.extend()
     }
 }

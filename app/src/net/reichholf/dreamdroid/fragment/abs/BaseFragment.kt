@@ -14,7 +14,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
@@ -57,7 +57,7 @@ abstract class BaseFragment :
     }
 
     protected fun setFabEnabled(id: Int, enabled: Boolean) {
-        val fab = getAppCompatActivity()?.findViewById<FloatingActionButton>(id) ?: return
+        val fab = getAppCompatActivity()?.findViewById<ExtendedFloatingActionButton>(id) ?: return
         if (enabled) {
             fab.show()
         } else {
@@ -155,11 +155,11 @@ abstract class BaseFragment :
         backgroundResId: Int,
         onClickListener: View.OnClickListener?
     ) {
-        val fab = getAppCompatActivity()?.findViewById<FloatingActionButton>(id) ?: return
+        val fab = getAppCompatActivity()?.findViewById<ExtendedFloatingActionButton>(id) ?: return
 
         fab.show()
         fab.contentDescription = getString(descriptionId)
-        fab.setImageResource(backgroundResId)
+        fab.setIconResource(backgroundResId)
         fab.setOnClickListener(onClickListener)
         fab.setOnLongClickListener { v ->
             Toast.makeText(getAppCompatActivity(), v.contentDescription, Toast.LENGTH_SHORT).show()
