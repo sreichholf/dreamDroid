@@ -77,6 +77,44 @@ class TimerEditScreenTest {
     }
 
     @Test
+    fun tagsFieldScrollsIntoViewAndOpensPickerWithoutScaffoldFab() {
+        val state = TimerEditState().also {
+            it.loadFrom(
+                sampleTimer().copy(tags = "News"),
+                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
+                locations = listOf("/hdd/movie/", "/media/hdd/"),
+                repeatedLabel = "None"
+            )
+        }
+        var tagPicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                TimerEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {},
+                    onPickBeginDate = {},
+                    onPickBeginTime = {},
+                    onPickEndDate = {},
+                    onPickEndTime = {},
+                    onPickRepeated = {},
+                    onPickService = {},
+                    onPickTags = { tagPicks++ },
+                    showSaveFab = false
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Save").assertDoesNotExist()
+        composeRule.onNodeWithText("News").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Tags")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, tagPicks)
+    }
+
+    @Test
     fun editModeSeedsFieldsAndToggles() {
         val timer = sampleTimer().copy(
             name = "Tagesschau",

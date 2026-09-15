@@ -70,6 +70,25 @@ class ProfileEditScreenTest {
     }
 
     @Test
+    fun lastFieldsScrollIntoViewWithoutScaffoldFab() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {},
+                    showSaveFab = false
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Save").assertDoesNotExist()
+        composeRule.onNodeWithText("Streaming").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
     fun togglingLoginAndEncoderShowsAndHidesSections() {
         val state = ProfileEditState.fromProfile(Profile.getDefault())
         composeRule.setContent {
@@ -97,7 +116,7 @@ class ProfileEditScreenTest {
 
         composeRule.onNodeWithText("Encoder user").assertDoesNotExist()
         composeRule.onAllNodesWithText("Enable Login")[1].performClick()
-        composeRule.onNodeWithText("Encoder user").assertIsDisplayed()
+        composeRule.onNodeWithText("Encoder user").performScrollTo().assertIsDisplayed()
     }
 
     @Test
