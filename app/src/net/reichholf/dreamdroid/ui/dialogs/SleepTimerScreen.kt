@@ -1,17 +1,13 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -25,14 +21,14 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
+import net.reichholf.dreamdroid.ui.compose.EditForm
+import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
+import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 internal const val SLEEP_TIMER_MINUTES_TAG = "sleep_timer_minutes"
@@ -53,107 +49,36 @@ class SleepTimerUiState(initialMinutes: Int, initialEnabled: Boolean, initialAct
 
 @Composable
 fun SleepTimerScreen(state: SleepTimerUiState, modifier: Modifier = Modifier) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
     val minutesLabel = stringResource(R.string.minutes_short)
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(EditForm.FieldSpacing)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(
-                modifier = Modifier.width(112.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(EditForm.FieldSpacing),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilledTonalIconButton(
+                onClick = { state.adjustMinutes(-1) },
+                modifier = Modifier.testTag(SLEEP_TIMER_MINUTES_DEC_TAG)
             ) {
-                IconButton(
-                    onClick = { state.adjustMinutes(1) },
-                    modifier = Modifier.testTag(SLEEP_TIMER_MINUTES_INC_TAG)
-                ) {
-                    Text(
-                        text = "+",
-                        color = onSurface,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
-                OutlinedTextField(
-                    value = state.minutes.toString(),
-                    onValueChange = { state.minutes = parseSleepTimerMinutes(it) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .testTag(SLEEP_TIMER_MINUTES_TAG),
-                    label = {
-                        Text(text = minutesLabel, color = onSurface)
-                    },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                        color = onSurface,
-                        textAlign = TextAlign.Center
-                    )
-                )
-                IconButton(
-                    onClick = { state.adjustMinutes(-1) },
-                    modifier = Modifier.testTag(SLEEP_TIMER_MINUTES_DEC_TAG)
-                ) {
-                    Text(
-                        text = "-",
-                        color = onSurface,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
+                Text("-")
             }
-            Column(modifier = Modifier.padding(start = 20.dp)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.selectable(
-                        selected = state.enabled,
-                        onClick = { state.enabled = !state.enabled },
-                        role = Role.Checkbox
-                    )
-                ) {
-                    Checkbox(
-                        checked = state.enabled,
-                        onCheckedChange = { state.enabled = it }
-                    )
-                    Text(
-                        text = stringResource(R.string.activate),
-                        color = onSurface
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.selectable(
-                        selected = state.action == SleepTimer.ACTION_STANDBY,
-                        onClick = { state.action = SleepTimer.ACTION_STANDBY },
-                        role = Role.RadioButton
-                    )
-                ) {
-                    RadioButton(
-                        selected = state.action == SleepTimer.ACTION_STANDBY,
-                        onClick = { state.action = SleepTimer.ACTION_STANDBY }
-                    )
-                    Text(
-                        text = stringResource(R.string.standby),
-                        color = onSurface
-                    )
-                }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.selectable(
-                        selected = state.action == SleepTimer.ACTION_SHUTDOWN,
-                        onClick = { state.action = SleepTimer.ACTION_SHUTDOWN },
-                        role = Role.RadioButton
-                    )
-                ) {
-                    RadioButton(
-                        selected = state.action == SleepTimer.ACTION_SHUTDOWN,
-                        onClick = { state.action = SleepTimer.ACTION_SHUTDOWN }
-                    )
-                    Text(
-                        text = stringResource(R.string.shutdown),
-                        color = onSurface
-                    )
-                }
+            EditOutlinedTextField(
+                value = state.minutes.toString(),
+                onValueChange = { state.minutes = parseSleepTimerMinutes(it) },
+                label = minutesLabel,
+                keyboardType = KeyboardType.Number,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag(SLEEP_TIMER_MINUTES_TAG)
+            )
+            FilledTonalIconButton(
+                onClick = { state.adjustMinutes(1) },
+                modifier = Modifier.testTag(SLEEP_TIMER_MINUTES_INC_TAG)
+            ) {
+                Text("+")
             }
         }
         Slider(
@@ -162,9 +87,36 @@ fun SleepTimerScreen(state: SleepTimerUiState, modifier: Modifier = Modifier) {
             valueRange = 0f..999f,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 8.dp)
                 .semantics { contentDescription = minutesLabel }
         )
+        EditSwitchRow(
+            checked = state.enabled,
+            onCheckedChange = { state.enabled = it },
+            label = stringResource(R.string.activate)
+        )
+        SleepTimerActionRow(state = state)
+    }
+}
+
+@Composable
+private fun SleepTimerActionRow(state: SleepTimerUiState) {
+    val actions = listOf(
+        SleepTimer.ACTION_STANDBY to stringResource(R.string.standby),
+        SleepTimer.ACTION_SHUTDOWN to stringResource(R.string.shutdown)
+    )
+    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+        actions.forEachIndexed { index, (value, label) ->
+            SegmentedButton(
+                selected = state.action == value,
+                onClick = { state.action = value },
+                shape = SegmentedButtonDefaults.itemShape(
+                    index = index,
+                    count = actions.size
+                )
+            ) {
+                Text(label)
+            }
+        }
     }
 }
 
