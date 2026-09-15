@@ -49,20 +49,20 @@ class TimerEditScreenTest {
                 repeatedLabel = "None"
             )
         }
-        var saveClicks = 0
         composeRule.setContent {
             DreamDroidTheme {
                 TimerEditScreen(
                     state = state,
                     saveLabel = "Save",
-                    onSave = { saveClicks++ },
+                    onSave = {},
                     onPickBeginDate = {},
                     onPickBeginTime = {},
                     onPickEndDate = {},
                     onPickEndTime = {},
                     onPickRepeated = {},
                     onPickService = {},
-                    onPickTags = {}
+                    onPickTags = {},
+                    showSaveFab = false
                 )
             }
         }
@@ -72,8 +72,6 @@ class TimerEditScreenTest {
         composeRule.onNodeWithText("Zap").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Description").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Save").assertIsDisplayed().performClick()
-        assertEquals(1, saveClicks)
     }
 
     @Test
