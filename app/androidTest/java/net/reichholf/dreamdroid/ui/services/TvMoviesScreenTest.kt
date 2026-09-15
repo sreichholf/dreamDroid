@@ -2,11 +2,13 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.current.NOW_PLAYING_STRIP_DIVIDER_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -58,6 +60,7 @@ class TvMoviesScreenTest {
         }
         composeRule.onNodeWithText("Now").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithTag(NOW_PLAYING_STRIP_DIVIDER_TAG).assertExists()
         composeRule.onNodeWithText("TV").assertIsDisplayed()
         composeRule.onNodeWithText("Radio").assertIsDisplayed()
         composeRule.onNodeWithText("Movies").assertIsDisplayed()
@@ -77,6 +80,7 @@ class TvMoviesScreenTest {
         }
         composeRule.onNodeWithText("Now").assertDoesNotExist()
         composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertDoesNotExist()
+        composeRule.onNodeWithTag(NOW_PLAYING_STRIP_DIVIDER_TAG).assertDoesNotExist()
         composeRule.onNodeWithText("TV").assertIsDisplayed()
         composeRule.onNodeWithText("Radio").assertIsDisplayed()
         composeRule.onNodeWithText("Movies").assertIsDisplayed()

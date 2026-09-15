@@ -7,6 +7,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -55,6 +56,7 @@ class NowPlayingStripTest {
         composeRule.onNodeWithText("Now").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD · Tagesschau").assertIsDisplayed()
             .performClick()
+        composeRule.onNodeWithTag(NOW_PLAYING_STRIP_DIVIDER_TAG).assertExists()
         assertEquals(1, clicks)
     }
 
