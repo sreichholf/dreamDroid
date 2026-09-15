@@ -25,12 +25,26 @@ internal fun <T> parseEnigmaXml(
         ?: onFail
 }
 
+private const val FEATURE_RELAXED = "http://xmlpull.org/v1/doc/features.html#relaxed"
+
 private fun <T> parseSanitized(xml: String, aggressive: Boolean, block: (XmlPullParser) -> T): T? =
     try {
         val parser = newEnigmaPullParser()
         parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false)
+        try {
+            // Android KXmlParser is relaxed by default and returns END_DOCUMENT for
+            // truncated input. Strict mode + depth check match SAX (malformed → fail).
+            parser.setFeature(FEATURE_RELAXED, false)
+        } catch (_: Exception) {
+            // EnigmaXmlPullParser ignores unknown features.
+        }
         parser.setInput(StringReader(XmlInput.sanitize(xml, aggressive)))
-        block(parser)
+        val result = block(parser)
+        if (parser.depth != 0) {
+            null
+        } else {
+            result
+        }
     } catch (_: Exception) {
         null
     }
