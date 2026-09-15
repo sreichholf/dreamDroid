@@ -68,7 +68,7 @@ class DreamDroid : Application() {
         }
 
         val appContext = getAppContext()!!
-        val dao = AppDatabase.profiles(appContext)
+        val dao = AppDatabase.profilesBlocking(appContext)
         if (dao.getProfiles().size == 0) {
             val dbh = DatabaseHelper.getInstance(appContext)
             if (dbh.getProfiles().size > 0) {
@@ -102,7 +102,7 @@ class DreamDroid : Application() {
 
             Log.i(LOG_TAG, "currentWifiName = $currentWifiName")
             Log.i(LOG_TAG, "currentProfileSsid = ${currentProfile.ssid}")
-            val dao = AppDatabase.profiles(getAppContext()!!)
+            val dao = AppDatabase.profilesBlocking(getAppContext()!!)
             if (currentWifiName == null) {
                 Log.i(LOG_TAG, "not connected to wifi, will search for default profile")
                 // not connected to wifi, search for default profile
@@ -350,7 +350,7 @@ class DreamDroid : Application() {
                 return
             }
 
-            val dao = AppDatabase.profiles(context)
+            val dao = AppDatabase.profilesBlocking(context)
             val profiles = dao.getProfiles()
             // the profile-table is initial - let's migrate the current config as
             // default Profile
@@ -438,8 +438,7 @@ class DreamDroid : Application() {
                 oldProfile = Profile.getDefault()
             }
 
-            @Suppress("SENSELESS_COMPARISON")
-            sProfile = AppDatabase.profiles(context).getProfile(id)
+            sProfile = AppDatabase.profilesBlocking(context).getProfile(id)
 
             if (sProfile != null) {
                 val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()

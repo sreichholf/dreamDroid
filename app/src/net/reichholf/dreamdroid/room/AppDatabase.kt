@@ -1,11 +1,15 @@
 package net.reichholf.dreamdroid.room
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.bundled.BundledSQLiteDriver
+import androidx.sqlite.execSQL
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 
 @Database(
@@ -14,7 +18,8 @@ import net.reichholf.dreamdroid.Profile
         EpgEventEntity::class,
         EpgChunkMetaEntity::class
     ],
-    version = 4
+    version = 4,
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     /** Room profile DB file name under `databases/`. */
@@ -26,8 +31,8 @@ abstract class AppDatabase : RoomDatabase() {
         const val DATABASE_NAME: String = "dreambox"
 
         val MIGRATION_1_2: Migration = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `epg_event` (
                         `profileId` INTEGER NOT NULL,
@@ -44,7 +49,7 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     """.trimIndent()
                 )
-                db.execSQL(
+                connection.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `epg_chunk` (
                         `profileId` INTEGER NOT NULL,
@@ -60,8 +65,8 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         val MIGRATION_2_3: Migration = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
                     """
                     CREATE TABLE `epg_event_new` (
                         `profileId` INTEGER NOT NULL,
@@ -84,7 +89,7 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                     """.trimIndent()
                 )
-                db.execSQL(
+                connection.execSQL(
                     """
                     INSERT INTO `epg_event_new` (
                         `profileId`, `bouquetRef`, `serviceRef`, `eventId`,
@@ -98,16 +103,16 @@ abstract class AppDatabase : RoomDatabase() {
                     FROM `epg_event`
                     """.trimIndent()
                 )
-                db.execSQL("DROP TABLE `epg_event`")
-                db.execSQL(
+                connection.execSQL("DROP TABLE `epg_event`")
+                connection.execSQL(
                     "ALTER TABLE `epg_event_new` RENAME TO `epg_event`"
                 )
             }
         }
 
         val MIGRATION_3_4: Migration = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL(
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
                     """
                     ALTER TABLE `epg_event`
                     ADD COLUMN `bouquetPos` INTEGER NOT NULL DEFAULT 0
@@ -129,7 +134,7 @@ abstract class AppDatabase : RoomDatabase() {
                     DATABASE_NAME
                 )
                     .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
-                    .allowMainThreadQueries()
+                    .configureRoomDriver()
                     .build()
                     .also { db = it }
             }
@@ -140,11 +145,46 @@ abstract class AppDatabase : RoomDatabase() {
             context.applicationContext,
             AppDatabase::class.java
         )
-            .allowMainThreadQueries()
+            .configureRoomDriver()
             .build()
 
         fun profiles(context: Context): Profile.ProfileDao = database(context).profileDao()
 
+        /**
+         * Blocking profile DAO for Application, backup, and other main-thread callers.
+         * Suspend DAOs go through [profiles] from an existing coroutine.
+         */
+        fun profilesBlocking(context: Context): ProfileDaoBlocking =
+            ProfileDaoBlocking(database(context).profileDao())
+
         fun epg(context: Context): EpgDao = database(context).epgDao()
+
+        private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
+            RoomDatabase.Builder<AppDatabase> =
+            setDriver(BundledSQLiteDriver())
+                .setQueryCoroutineContext(Dispatchers.IO)
+    }
+}
+
+/** Single `runBlocking(IO)` facade over [Profile.ProfileDao]. */
+class ProfileDaoBlocking internal constructor(private val dao: Profile.ProfileDao) {
+    fun addProfile(profile: Profile): Long = runBlocking(Dispatchers.IO) {
+        dao.addProfile(profile)
+    }
+
+    fun updateProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
+        dao.updateProfile(profile)
+    }
+
+    fun deleteProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
+        dao.deleteProfile(profile)
+    }
+
+    fun getProfiles(): MutableList<Profile> = runBlocking(Dispatchers.IO) {
+        dao.getProfiles()
+    }
+
+    fun getProfile(id: Int): Profile? = runBlocking(Dispatchers.IO) {
+        dao.getProfile(id)
     }
 }

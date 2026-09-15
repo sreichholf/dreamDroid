@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.remember
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -26,6 +27,7 @@ class PreferenceActivity : ComponentActivity() {
     private var isProfileMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val type = intent.getStringExtra(KEY_PREFS_TYPE)
         isProfileMode = PREFS_TYPE_PROFILE == type
@@ -72,7 +74,7 @@ class PreferenceActivity : ComponentActivity() {
         val state = profileState ?: return
         val profile = editingProfile ?: return
         state.applyTo(profile)
-        val dao = AppDatabase.profiles(this)
+        val dao = AppDatabase.profilesBlocking(this)
         dao.updateProfile(profile)
         val prefs = androidx.preference.PreferenceManager.getDefaultSharedPreferences(this)
         prefs.edit().putInt(DreamDroid.CURRENT_PROFILE, profile.id ?: -1).apply()

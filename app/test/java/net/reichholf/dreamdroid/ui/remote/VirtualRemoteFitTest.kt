@@ -1,9 +1,9 @@
 package net.reichholf.dreamdroid.ui.remote
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class VirtualRemoteFitTest {
     @Test
@@ -62,10 +62,10 @@ class VirtualRemoteFitTest {
         assertTrue(metrics.fitsWithoutScroll)
         assertEquals(availableWidth, padWidth, 1f)
         assertTrue(
-            "full pad must grow past the 56dp XML key when height allows",
-            metrics.keyWidth > VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP
+            metrics.keyWidth > VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP,
+            "full pad must grow past the 56dp XML key when height allows"
         )
-        assertTrue("grown pad must stay below the tall pane ($height)", height <= 800.5f)
+        assertTrue(height <= 800.5f, "grown pad must stay below the tall pane ($height)")
     }
 
     @Test

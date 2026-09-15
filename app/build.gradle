@@ -26,39 +26,38 @@ repositories {
 }
 
 dependencies {
-    def room_version = "2.8.5"
-    implementation "androidx.room:room-runtime:$room_version"
-    ksp "androidx.room:room-compiler:$room_version"
+    def room_version = "3.0.3"
+    implementation "androidx.room3:room3-runtime:$room_version"
+    ksp "androidx.room3:room3-compiler:$room_version"
+    implementation "androidx.sqlite:sqlite-bundled:2.7.1"
 
-    //noinspection KtxExtensionAvailable
-    implementation 'androidx.preference:preference:1.2.1'
+    implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'androidx.leanback:leanback:1.0.0'
+    implementation 'androidx.leanback:leanback:1.2.0'
     // Leanback kept for VideoOverlay HorizontalGridView only.
     implementation 'androidx.tv:tv-material:1.1.0'
-    implementation 'androidx.annotation:annotation:1.9.1'
-    //noinspection KtxExtensionAvailable
-    implementation 'androidx.fragment:fragment:1.8.9'
-    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.10.0'
-    implementation 'com.google.android.material:material:1.12.0'
+    implementation 'androidx.annotation:annotation:1.10.0'
+    implementation 'androidx.fragment:fragment-ktx:1.9.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.11.0'
+    implementation 'com.google.android.material:material:1.14.0'
     implementation 'org.videolan.android:libvlc-all:3.7.5'
     implementation 'com.squareup.okhttp3:okhttp:5.5.0'
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2"
-    implementation 'io.coil-kt.coil3:coil:3.5.0'
-    implementation 'io.coil-kt.coil3:coil-compose:3.5.0'
-    implementation 'io.coil-kt.coil3:coil-network-okhttp:3.5.0'
-    implementation 'commons-net:commons-net:3.11.1'
-    implementation 'org.jmdns:jmdns:3.6.1'
-    implementation 'com.google.code.gson:gson:2.13.1'
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0"
+    implementation 'io.coil-kt.coil3:coil:3.6.2'
+    implementation 'io.coil-kt.coil3:coil-compose:3.6.2'
+    implementation 'io.coil-kt.coil3:coil-network-okhttp:3.6.2'
+    implementation 'commons-net:commons-net:3.13.0'
+    implementation 'org.jmdns:jmdns:3.6.3'
+    implementation 'com.google.code.gson:gson:2.14.0'
 
-    def composeBom = platform('androidx.compose:compose-bom:2026.08.00')
+    def composeBom = platform('androidx.compose:compose-bom:2026.09.00')
     implementation composeBom
     androidTestImplementation composeBom
     implementation 'androidx.compose.runtime:runtime'
     implementation 'androidx.compose.foundation:foundation'
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.activity:activity-compose'
+    implementation 'androidx.activity:activity-compose:1.13.0'
     implementation 'androidx.navigation:navigation-compose:2.10.1'
     // Phase 2.6e: Glance chassis for Virtual Remote (dense RCU stays RemoteViews via AndroidRemoteViews).
     implementation 'androidx.glance:glance-appwidget:1.2.0'
@@ -71,7 +70,9 @@ dependencies {
     androidTestImplementation 'androidx.test:core:1.7.0'
     androidTestImplementation 'androidx.test:rules:1.7.0'
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:5.5.0'
-    testImplementation 'junit:junit:4.13.2'
+    testImplementation platform('org.junit:junit-bom:6.1.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 android {
@@ -183,6 +184,11 @@ android {
     }
     lint {
         abortOnError false
+    }
+    testOptions {
+        unitTests.all {
+            useJUnitPlatform()
+        }
     }
     buildFeatures {
         buildConfig true

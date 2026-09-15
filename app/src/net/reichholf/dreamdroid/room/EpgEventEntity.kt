@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.room
 
-import androidx.room.Entity
+import androidx.room3.Entity
 
 /**
  * Cached EPG event for MultiEPG (Room). Keyed per profile + bouquet + service

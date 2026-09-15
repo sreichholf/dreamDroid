@@ -1,16 +1,16 @@
 package net.reichholf.dreamdroid
 
 import android.util.Log
-import androidx.room.ColumnInfo
-import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.PrimaryKey
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room3.ColumnInfo
+import androidx.room3.Dao
+import androidx.room3.Delete
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.PrimaryKey
+import androidx.room3.Query
+import androidx.room3.Update
 import java.io.Serializable
 
 @Entity(tableName = "profile")
@@ -18,19 +18,19 @@ class Profile : Serializable {
     @Dao
     interface ProfileDao {
         @Insert(onConflict = OnConflictStrategy.REPLACE)
-        fun addProfile(profile: Profile): Long
+        suspend fun addProfile(profile: Profile): Long
 
         @Update
-        fun updateProfile(profiles: Profile)
+        suspend fun updateProfile(profiles: Profile)
 
         @Delete
-        fun deleteProfile(profile: Profile)
+        suspend fun deleteProfile(profile: Profile)
 
         @Query("SELECT * FROM profile")
-        fun getProfiles(): MutableList<Profile>
+        suspend fun getProfiles(): MutableList<Profile>
 
         @Query("SELECT * FROM profile WHERE _id=:id")
-        fun getProfile(id: Int): Profile
+        suspend fun getProfile(id: Int): Profile?
     }
 
     @PrimaryKey(autoGenerate = true)
@@ -205,6 +205,7 @@ class Profile : Serializable {
         )
     }
 
+    @Ignore
     constructor(
         id: Int?,
         name: String?,

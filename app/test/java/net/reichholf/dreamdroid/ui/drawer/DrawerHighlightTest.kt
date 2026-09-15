@@ -2,9 +2,9 @@ package net.reichholf.dreamdroid.ui.drawer
 
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 
 class DrawerHighlightTest {
     @Test

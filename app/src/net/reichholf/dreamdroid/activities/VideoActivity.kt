@@ -20,7 +20,7 @@ import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.FragmentTransaction
+import androidx.fragment.app.commit
 import androidx.preference.PreferenceManager
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -204,17 +204,18 @@ class VideoActivity :
                 supportFragmentManager.findFragmentByTag("video_overlay_fragment")
                     as VideoOverlayFragment?
         }
-        val overlay = mOverlayFragment
-        if (overlay != null) {
-            overlay.applyPlaybackExtras(intent.extras)
+        val existing = mOverlayFragment
+        if (existing != null) {
+            existing.applyPlaybackExtras(intent.extras)
             return
         }
 
-        mOverlayFragment = VideoOverlayFragment()
-        mOverlayFragment!!.arguments = intent.extras
-        val ft: FragmentTransaction = supportFragmentManager.beginTransaction()
-        ft.replace(R.id.overlay, mOverlayFragment!!, "video_overlay_fragment")
-        ft.commit()
+        val overlay = VideoOverlayFragment()
+        overlay.arguments = intent.extras
+        mOverlayFragment = overlay
+        supportFragmentManager.commit {
+            replace(R.id.overlay, overlay, "video_overlay_fragment")
+        }
     }
 
     private fun cleanup() {

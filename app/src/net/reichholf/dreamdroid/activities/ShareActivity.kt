@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.text.format.DateFormat
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.ui.platform.ComposeView
@@ -23,6 +24,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -44,10 +46,13 @@ class ShareActivity : AppCompatActivity() {
 
     private var mProfiles: List<Profile>? = null
     private val mProfilesById: MutableMap<Int, Profile> = HashMap()
+    private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        localNetworkPermissionRequest.ensure(this)
         setContentView(R.layout.share_list_content)
         title = getText(R.string.watch_on_dream)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
@@ -126,7 +131,7 @@ class ShareActivity : AppCompatActivity() {
     }
 
     fun load() {
-        val dao = AppDatabase.profiles(this)
+        val dao = AppDatabase.profilesBlocking(this)
         mProfiles = dao.getProfiles()
         mProfilesById.clear()
         val profiles = mProfiles!!

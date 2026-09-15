@@ -35,7 +35,7 @@ class ProfileEditScreenTest {
     @After
     fun deleteF05Profiles() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profiles(ctx)
+        val dao = AppDatabase.profilesBlocking(ctx)
         dao.getProfiles()
             .filter { it.name?.startsWith("f05-") == true }
             .forEach { dao.deleteProfile(it) }
@@ -151,7 +151,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithContentDescription("Save").performClick()
         assertEquals("The host name cannot be empty!", outcome!!.message)
         assertFalse(outcome!!.saved)
-        val saved = AppDatabase.profiles(context).getProfiles()
+        val saved = AppDatabase.profilesBlocking(context).getProfiles()
             .any { it.name == "f05-empty-host" }
         assertFalse(saved)
     }

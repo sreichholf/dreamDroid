@@ -1,18 +1,18 @@
 package net.reichholf.dreamdroid.room
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Query
+import androidx.room3.Transaction
 
 @Dao
 interface EpgDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun upsertEvents(events: List<EpgEventEntity>)
+    suspend fun upsertEvents(events: List<EpgEventEntity>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun upsertChunk(meta: EpgChunkMetaEntity)
+    suspend fun upsertChunk(meta: EpgChunkMetaEntity)
 
     /**
      * Drop programmes that **start** inside the chunk. Events that began earlier
@@ -28,7 +28,7 @@ interface EpgDao {
           AND start < :windowEnd
         """
     )
-    fun deleteEventsStartingIn(
+    suspend fun deleteEventsStartingIn(
         profileId: Int,
         bouquetRef: String,
         windowStart: Long,
@@ -36,7 +36,7 @@ interface EpgDao {
     )
 
     @Transaction
-    fun replaceChunk(meta: EpgChunkMetaEntity, events: List<EpgEventEntity>) {
+    suspend fun replaceChunk(meta: EpgChunkMetaEntity, events: List<EpgEventEntity>) {
         deleteEventsStartingIn(
             meta.profileId,
             meta.bouquetRef,
@@ -56,7 +56,7 @@ interface EpgDao {
         LIMIT 1
         """
     )
-    fun getChunk(profileId: Int, bouquetRef: String, windowStart: Long): EpgChunkMetaEntity?
+    suspend fun getChunk(profileId: Int, bouquetRef: String, windowStart: Long): EpgChunkMetaEntity?
 
     @Query(
         """
@@ -68,7 +68,7 @@ interface EpgDao {
         ORDER BY bouquetPos ASC, serviceRef ASC, start ASC
         """
     )
-    fun eventsOverlapping(
+    suspend fun eventsOverlapping(
         profileId: Int,
         bouquetRef: String,
         windowStart: Long,
@@ -76,8 +76,8 @@ interface EpgDao {
     ): List<EpgEventEntity>
 
     @Query("DELETE FROM epg_event WHERE profileId = :profileId")
-    fun deleteEventsForProfile(profileId: Int)
+    suspend fun deleteEventsForProfile(profileId: Int)
 
     @Query("DELETE FROM epg_chunk WHERE profileId = :profileId")
-    fun deleteChunksForProfile(profileId: Int)
+    suspend fun deleteChunksForProfile(profileId: Int)
 }

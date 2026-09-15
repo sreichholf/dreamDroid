@@ -12,7 +12,6 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
-import android.os.Environment
 import android.util.Log
 import java.io.File
 import java.io.FileInputStream
@@ -416,14 +415,11 @@ class DatabaseHelper(context: Context) :
     }
 
     fun exportDB(): Boolean {
-        val sd = Environment.getExternalStorageDirectory()
-        val data = Environment.getDataDirectory()
         var source: FileChannel? = null
         var destination: FileChannel? = null
-        val currentDBPath = "/data/net.reichholf.dreamdroid/databases/$DATABASE_NAME"
-        val backupDBPath = "$DATABASE_NAME.sqlite"
-        val currentDB = File(data, currentDBPath)
-        val backupDB = File(sd, backupDBPath)
+        val currentDB = mContext.getDatabasePath(DATABASE_NAME)
+        val backupDir = mContext.getExternalFilesDir(null) ?: mContext.filesDir
+        val backupDB = File(backupDir, "$DATABASE_NAME.sqlite")
         try {
             source = FileInputStream(currentDB).channel
             destination = FileOutputStream(backupDB).channel

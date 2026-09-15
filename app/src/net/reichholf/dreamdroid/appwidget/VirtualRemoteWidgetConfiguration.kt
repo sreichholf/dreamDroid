@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setResult(RESULT_CANCELED)
 
@@ -37,7 +39,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
-        val profiles = AppDatabase.profiles(this).getProfiles()
+        val profiles = AppDatabase.profilesBlocking(this).getProfiles()
         if (profiles.isEmpty()) {
             Toast.makeText(this, R.string.no_profile_available, Toast.LENGTH_LONG).show()
             finish()
@@ -90,7 +92,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
             val profileId = PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(getProfileIdKey(appWidgetId), -1)
             if (profileId < 0) return null
-            return AppDatabase.profiles(context).getProfiles()
+            return AppDatabase.profilesBlocking(context).getProfiles()
                 .firstOrNull { profile -> profile.id == profileId }
         }
 

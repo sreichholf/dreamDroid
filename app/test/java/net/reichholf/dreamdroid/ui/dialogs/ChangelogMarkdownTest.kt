@@ -3,9 +3,9 @@ package net.reichholf.dreamdroid.ui.dialogs
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.io.InputStream
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Test
 
 class ChangelogMarkdownTest {
     @Test
