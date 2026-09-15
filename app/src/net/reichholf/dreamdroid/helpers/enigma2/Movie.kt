@@ -6,69 +6,30 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2
 
-import java.io.Serializable
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.enigma.Movie as TypedMovie
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /**
- * @author sreichholf
+ * XML field names and request helpers for movies. UI uses
+ * [net.reichholf.dreamdroid.enigma.Movie].
  */
-class Movie :
-    ExtendedHashMap,
-    Serializable {
-    constructor() : super()
+object Movie {
+    const val KEY_REFERENCE: String = Service.KEY_REFERENCE
+    const val KEY_TITLE: String = "title"
+    const val KEY_DESCRIPTION: String = "description"
+    const val KEY_DESCRIPTION_EXTENDED: String = "descriptionEx"
+    const val KEY_SERVICE_NAME: String = Service.KEY_NAME
+    const val KEY_TIME: String = "time"
+    const val KEY_TIME_READABLE: String = "time_readable"
+    const val KEY_LENGTH: String = "length"
+    const val KEY_TAGS: String = "tags"
+    const val KEY_FILE_NAME: String = "filename"
+    const val KEY_FILE_SIZE: String = "filesize"
+    const val KEY_FILE_SIZE_READABLE: String = "filesize_readable"
 
-    constructor(data: ExtendedHashMap) {
-        mMap = data.getHashMap()
-    }
-
-    fun reference(): String = getString(KEY_REFERENCE, "") ?: ""
-
-    fun title(): String = getString(KEY_TITLE, "") ?: ""
-
-    fun description(): String = getString(KEY_DESCRIPTION, "") ?: ""
-
-    fun descriptionExtended(): String =
-        (getString(KEY_DESCRIPTION_EXTENDED, "") ?: "").replace("\\n", "\n")
-
-    fun serviceName(): String = getString(KEY_SERVICE_NAME, "") ?: ""
-
-    fun time(): String = getString(KEY_TIME, "") ?: ""
-
-    fun timeReadable(): String = getString(KEY_TIME_READABLE, "") ?: ""
-
-    fun tags(): ArrayList<String> {
-        val t = getString(KEY_TAGS, "") ?: ""
-        if (t.isEmpty()) return ArrayList()
-        return ArrayList(t.split(" "))
-    }
-
-    fun length(): String = getString(KEY_LENGTH, "00:00") ?: "00:00"
-
-    fun fileName(): String? = getString(KEY_FILE_NAME)
-
-    fun fileSize(): String? = getString(KEY_FILE_SIZE)
-
-    fun fileSizeReadable(): String? = getString(KEY_FILE_SIZE_READABLE)
-
-    companion object {
-        const val KEY_REFERENCE: String = Service.KEY_REFERENCE
-        const val KEY_TITLE: String = "title"
-        const val KEY_DESCRIPTION: String = "description"
-        const val KEY_DESCRIPTION_EXTENDED: String = "descriptionEx"
-        const val KEY_SERVICE_NAME: String = Service.KEY_NAME
-        const val KEY_TIME: String = "time"
-        const val KEY_TIME_READABLE: String = "time_readable"
-        const val KEY_LENGTH: String = "length"
-        const val KEY_TAGS: String = "tags"
-        const val KEY_FILE_NAME: String = "filename"
-        const val KEY_FILE_SIZE: String = "filesize"
-        const val KEY_FILE_SIZE_READABLE: String = "filesize_readable"
-
-        fun getDeleteParams(movie: ExtendedHashMap): ArrayList<NameValuePair> {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", movie.getString(KEY_REFERENCE)))
-            return params
-        }
+    fun getDeleteParams(movie: TypedMovie): ArrayList<NameValuePair> {
+        val params = ArrayList<NameValuePair>()
+        params.add(NameValuePair("sRef", movie.reference))
+        return params
     }
 }

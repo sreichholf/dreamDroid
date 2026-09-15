@@ -27,15 +27,14 @@ import java.util.Collections
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Service
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
@@ -43,32 +42,35 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
 private const val LOG_TAG = "TimerEditDestination"
 
 /**
  * Phase 2.7g: timer create/edit as a direct Compose NavHost destination.
- * Working copy lives on [PhoneNavHostFragment] so service-pick navigation does not wipe edits.
+ * Working copy lives on [PhoneNavHandle] so service-pick navigation does not wipe edits.
  */
 @Composable
-fun TimerEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    val remount = hostFragment.timerEditRemountEpoch
-    val tag = hostFragment.timerEditRouteTag()
+    val remount = handle.timerEditRemountEpoch
+    val tag = handle.timerEditRouteTag()
     val session = remember(tag, remount) {
-        hostFragment.obtainTimerEditSession(tag, remount)
+        handle.obtainTimerEditSession(tag, remount)
     }
     var showRepeatingsPicker by remember { mutableStateOf(false) }
     var showTagsPicker by remember { mutableStateOf(false) }
 
-    DisposableEffect(hostFragment, session, tag, remount) {
-        hostFragment.composeActivityResultListener = session
+    DisposableEffect(handle, session, tag, remount) {
+        handle.composeActivityResultListener = session
         val activity = context as? AppCompatActivity
         activity?.title = context.getString(R.string.timer)
-        activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+        activity?.addMenuProvider(session)
         onDispose {
-            if (hostFragment.composeActivityResultListener === session) {
-                hostFragment.composeActivityResultListener = null
+            if (handle.composeActivityResultListener === session) {
+                handle.composeActivityResultListener = null
             }
             activity?.removeMenuProvider(session)
             session.dismissProgress()
@@ -76,7 +78,7 @@ fun TimerEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier 
     }
 
     LaunchedEffect(tag, remount) {
-        session.hostFragment = hostFragment
+        session.handle = handle
         session.context = context
         session.ensureLocationsAndTagsThenReload()
     }
@@ -134,15 +136,15 @@ fun TimerEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier 
 class TimerEditSession(
     val routeTag: String,
     val remountEpoch: Int,
-    var timer: ExtendedHashMap,
-    var timerOld: ExtendedHashMap?,
+    var timer: TypedTimer,
+    var timerOld: TypedTimer?,
     var isCreate: Boolean,
     val selectedTags: ArrayList<String>,
     val checkedDays: BooleanArray
-) : PhoneNavHostFragment.ActivityResultListener,
+) : PhoneNavHandle.ActivityResultListener,
     MenuProvider {
 
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     val editState = TimerEditState()
     var begin: Int = 0
@@ -172,7 +174,7 @@ class TimerEditSession(
         }
 
         Statics.ITEM_CANCEL -> {
-            hostFragment?.deliverPickResult(Activity.RESULT_CANCELED, null)
+            handle?.deliverPickResult(Activity.RESULT_CANCELED, null)
             true
         }
 
@@ -184,14 +186,13 @@ class TimerEditSession(
             return
         }
         @Suppress("DEPRECATION")
-        val map = data?.getSerializableExtra(NavExtras.DATA) as? ExtendedHashMap ?: return
-        timer.put(Timer.KEY_SERVICE_NAME, map.getString(Service.KEY_NAME))
-        timer.put(Timer.KEY_REFERENCE, map.getString(Service.KEY_REFERENCE))
-        editState.serviceName = timer.getString(Timer.KEY_SERVICE_NAME).orEmpty()
+        val picked = data?.getSerializableExtra(NavExtras.DATA) as? Service ?: return
+        timer = timer.copy(serviceName = picked.name, reference = picked.reference)
+        editState.serviceName = timer.serviceName
     }
 
     fun pickService() {
-        hostFragment?.navigateToTimerServicePick()
+        handle?.navigateToTimerServicePick()
     }
 
     fun applyRepeatingsSelection(indices: List<Int>) {
@@ -217,7 +218,7 @@ class TimerEditSession(
         selectedTags.addAll(next)
         if (tagsChanged) {
             val joined = Tag.implodeTags(selectedTags)
-            timer.put(Timer.KEY_TAGS, joined)
+            timer = timer.copy(tags = joined)
             editState.tagsLabel = joined
         }
     }
@@ -289,7 +290,7 @@ class TimerEditSession(
     }
 
     fun ensureLocationsAndTagsThenReload() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
             if (locationsJob != null) {
                 return
@@ -312,17 +313,17 @@ class TimerEditSession(
     fun reload() {
         val ctx = context ?: return
         if (formHydrated) {
-            editState.applyTo(timer)
+            timer = editState.applyTo(timer)
         }
-        begin = DateTime.parseTimestamp(timer.getString(Timer.KEY_BEGIN))
-        end = DateTime.parseTimestamp(timer.getString(Timer.KEY_END))
+        begin = DateTime.parseTimestamp(timer.begin)
+        end = DateTime.parseTimestamp(timer.end)
         var repeatedValue = 0
         try {
-            repeatedValue = DateTime.parseTimestamp(timer.getString(Timer.KEY_REPEATED))
+            repeatedValue = DateTime.parseTimestamp(timer.repeated)
         } catch (_: NumberFormatException) {
         }
         val repeatedText = getRepeated(repeatedValue)
-        val text = timer.getString(Timer.KEY_TAGS).orEmpty()
+        val text = timer.tags
         selectedTags.clear()
         if (text.isNotEmpty()) {
             Collections.addAll(selectedTags, *text.split(" ").toTypedArray())
@@ -333,12 +334,12 @@ class TimerEditSession(
     }
 
     fun saveTimer() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         Log.i(LOG_TAG, "saveTimer()")
         editState.saveError = ""
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-        editState.applyTo(timer)
+        timer = editState.applyTo(timer)
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
         saveJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
@@ -346,15 +347,15 @@ class TimerEditSession(
         }
     }
 
-    fun onSaveResult(result: ExtendedHashMap) {
+    fun onSaveResult(result: SimpleResult) {
         progress = null
-        if (Python.TRUE.equals(result.getString(SimpleResult.KEY_STATE))) {
+        if (Python.TRUE.equals(result.state)) {
             editState.saveError = ""
-            hostFragment?.clearTimerEditSession()
-            hostFragment?.deliverPickResult(Activity.RESULT_OK, null)
+            handle?.clearTimerEditSession()
+            handle?.deliverPickResult(Activity.RESULT_OK, null)
             return
         }
-        val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+        val stateText = result.stateText
         editState.saveError = when {
             !stateText.isNullOrEmpty() -> stateText
             else -> context?.getString(R.string.get_content_error).orEmpty()
@@ -390,7 +391,7 @@ class TimerEditSession(
                 value += REPEATED_VALUES[i]
             }
         }
-        timer.put(Timer.KEY_REPEATED, value.toString())
+        timer = timer.copy(repeated = value.toString())
         text = when (value) {
             31 -> ctx.getText(R.string.mo_to_fr).toString()
             127 -> ctx.getText(R.string.daily).toString()
@@ -440,13 +441,17 @@ class TimerEditSession(
         if (isBegin) {
             begin = (cal.timeInMillis / 1000).toInt()
             val timestamp = begin.toString()
-            timer.put(Timer.KEY_BEGIN, timestamp)
-            timer.put(Timer.KEY_BEGIN_READEABLE, DateTime.getYearDateTimeString(timestamp))
+            timer = timer.copy(
+                begin = timestamp,
+                beginReadable = DateTime.getYearDateTimeString(timestamp)
+            )
         } else {
             end = (cal.timeInMillis / 1000).toInt()
             val timestamp = end.toString()
-            timer.put(Timer.KEY_END, timestamp)
-            timer.put(Timer.KEY_END_READABLE, DateTime.getYearDateTimeString(timestamp))
+            timer = timer.copy(
+                end = timestamp,
+                endReadable = DateTime.getYearDateTimeString(timestamp)
+            )
         }
         editState.setBeginEndLabels(begin, end)
     }
@@ -468,13 +473,9 @@ class TimerEditSession(
             remountEpoch: Int
         ): TimerEditSession {
             @Suppress("DEPRECATION")
-            val data = (args.getSerializable(NavExtras.DATA) as? ExtendedHashMap)?.clone()
-                ?: ExtendedHashMap()
-
-            @Suppress("UNCHECKED_CAST")
-            val timer = ((data["timer"] as? ExtendedHashMap) ?: ExtendedHashMap()).clone()
-            val isCreate = !Intent.ACTION_EDIT.equals(data["action"])
-            val timerOld = if (isCreate) null else timer.clone()
+            val timer = args.getSerializable(NavExtras.DATA) as? TypedTimer ?: TypedTimer()
+            val isCreate = !Intent.ACTION_EDIT.equals(args.getString(NavExtras.ACTION))
+            val timerOld = if (isCreate) null else timer.copy()
             return TimerEditSession(
                 routeTag = routeTag,
                 remountEpoch = remountEpoch,
@@ -490,10 +491,10 @@ class TimerEditSession(
             val routeTag = state.getString(STATE_TAG) ?: return null
 
             @Suppress("DEPRECATION")
-            val timer = state.getSerializable(STATE_TIMER) as? ExtendedHashMap ?: return null
+            val timer = state.getSerializable(STATE_TIMER) as? TypedTimer ?: return null
 
             @Suppress("DEPRECATION")
-            val timerOld = state.getSerializable(STATE_TIMER_OLD) as? ExtendedHashMap
+            val timerOld = state.getSerializable(STATE_TIMER_OLD) as? TypedTimer
             val tags = state.getStringArrayList(STATE_TAGS) ?: ArrayList()
             val checked = state.getBooleanArray(STATE_CHECKED) ?: BooleanArray(7)
             return TimerEditSession(

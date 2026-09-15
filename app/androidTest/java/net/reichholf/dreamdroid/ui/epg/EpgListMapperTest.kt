@@ -4,70 +4,28 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import net.reichholf.dreamdroid.enigma.EventParser
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class EpgListMapperTest {
     @Test
-    fun toExtendedHashMapCopiesEventFields() {
+    fun parsesTypedEventFields() {
         val events = EventParser.parse(loadWebFixture("epgservice.xml"))
         val event = events[0]
 
-        val map = EpgListMapper.toExtendedHashMap(event)
-        assertEquals(
-            event.eventId,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_ID)
-        )
-        assertEquals(
-            event.title,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_TITLE)
-        )
-        assertEquals(
-            event.start,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_START)
-        )
-        assertEquals(
-            event.duration,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_DURATION)
-        )
-        assertEquals(
-            event.currentTime,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_CURRENT_TIME)
-        )
-        assertEquals(
-            event.description,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_DESCRIPTION)
-        )
-        assertEquals(
-            event.descriptionExtended,
-            map.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_DESCRIPTION_EXTENDED
-            )
-        )
-        assertEquals(
-            event.serviceReference,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE)
-        )
-        assertEquals(
-            event.serviceName,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME)
-        )
-        assertEquals(
-            event.startReadable,
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_START_READABLE)
-        )
-        assertEquals(
-            event.startTimeReadable,
-            map.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_START_TIME_READABLE
-            )
-        )
-        assertEquals(
-            event.durationReadable,
-            map.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_DURATION_READABLE
-            )
-        )
+        assertEquals("39150", event.eventId)
+        assertEquals("Tagesschau", event.title)
+        assertEquals("1893456000", event.start)
+        assertEquals("3600", event.duration)
+        assertEquals("1893452400", event.currentTime)
+        assertEquals("Nachrichten", event.description)
+        assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", event.serviceReference)
+        assertEquals("Das Erste HD", event.serviceName)
+        assertTrue(event.startReadable.isNotEmpty())
+        assertTrue(event.startTimeReadable.isNotEmpty())
+        assertTrue(event.durationReadable.isNotEmpty())
+        assertTrue(event.descriptionExtended.contains("Die Nachrichten um 20 Uhr."))
     }
 }

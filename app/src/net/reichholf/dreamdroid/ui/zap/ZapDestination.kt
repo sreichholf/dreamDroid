@@ -25,25 +25,25 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 
 /**
  * Phase 2.7d: Zap channel grid as a direct Compose NavHost destination.
- * Bouquet pick results arrive via [PhoneNavHostFragment.composeActivityResultListener].
+ * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
  */
 @Composable
-fun ZapDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun ZapDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listState = remember { ZapListState() }
@@ -60,7 +60,7 @@ fun ZapDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
     var waitingForPicker by rememberSaveable { mutableStateOf(false) }
 
     val session = remember { ZapSession() }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.bouquetRef = bouquetRef
     session.bouquetName = bouquetName
@@ -75,14 +75,14 @@ fun ZapDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
     session.onZapJob = { zapJob = it }
     session.scope = scope
 
-    DisposableEffect(hostFragment, session) {
-        hostFragment.composeActivityResultListener = session
+    DisposableEffect(handle, session) {
+        handle.composeActivityResultListener = session
         val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+        activity?.addMenuProvider(session)
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
-            if (hostFragment.composeActivityResultListener === session) {
-                hostFragment.composeActivityResultListener = null
+            if (handle.composeActivityResultListener === session) {
+                handle.composeActivityResultListener = null
             }
             activity?.removeMenuProvider(session)
             loadJob?.cancel()
@@ -114,9 +114,9 @@ fun ZapDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modi
 }
 
 private class ZapSession :
-    PhoneNavHostFragment.ActivityResultListener,
+    PhoneNavHandle.ActivityResultListener,
     MenuProvider {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var bouquetRef: String = ""
     var bouquetName: String = ""
@@ -148,7 +148,7 @@ private class ZapSession :
     }
 
     fun reload() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -193,7 +193,7 @@ private class ZapSession :
     }
 
     fun zapTo(ref: String) {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
@@ -201,7 +201,7 @@ private class ZapSession :
             listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -243,8 +243,8 @@ private class ZapSession :
             return
         }
         @Suppress("DEPRECATION")
-        val bouquetMap = data?.getSerializableExtra(KEY_BOUQUET) as? ExtendedHashMap
-        val bouquet = ZapListMapper.bouquetFrom(bouquetMap)
+        val bouquet = data?.getSerializableExtra(KEY_BOUQUET) as? Service
+            ?: Service("", "")
         if (bouquet.reference != bouquetRef) {
             bouquetRef = bouquet.reference
             bouquetName = bouquet.name
@@ -263,7 +263,7 @@ private class ZapSession :
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            val host = hostFragment ?: return true
+            val host = handle ?: return true
             waitingForPicker = true
             onWaitingForPicker?.invoke(true)
             host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)

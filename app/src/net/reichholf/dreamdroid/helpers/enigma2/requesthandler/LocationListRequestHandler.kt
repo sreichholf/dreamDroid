@@ -7,10 +7,9 @@
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler
 
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2LocationHandler
 
 /**
  * @author sre
  */
 class LocationListRequestHandler :
-    AbstractSimpleListRequestHandler(URIStore.LOCATIONS, E2LocationHandler())
+    AbstractSimpleListRequestHandler(URIStore.LOCATIONS, "e2location")

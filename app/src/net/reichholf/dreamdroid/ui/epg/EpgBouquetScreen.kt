@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.widget.ImageView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,19 +24,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.preference.PreferenceManager
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 
 const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
@@ -162,10 +156,6 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
 
 @Composable
 private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
-    val context = LocalContext.current
-    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -175,29 +165,14 @@ private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (piconsEnabled) {
-                    AndroidView(
-                        factory = { ctx ->
-                            ImageView(ctx).apply {
-                                scaleType = ImageView.ScaleType.FIT_CENTER
-                            }
-                        },
-                        modifier = Modifier
-                            .padding(end = 8.dp)
-                            .width(57.dp)
-                            .height(36.dp),
-                        update = { view ->
-                            Picon.setPiconForView(
-                                context,
-                                view,
-                                event.serviceReference,
-                                event.serviceName,
-                                Statics.TAG_PICON,
-                                null
-                            )
-                        }
-                    )
-                }
+                PiconImage(
+                    reference = event.serviceReference,
+                    name = event.serviceName,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .width(57.dp)
+                        .height(36.dp)
+                )
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = event.title,

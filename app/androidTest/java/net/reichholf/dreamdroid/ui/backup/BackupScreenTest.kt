@@ -40,7 +40,7 @@ class BackupScreenTest {
             .edit()
             .remove("f05_import_probe")
             .commit()
-        val dao = AppDatabase.profiles(ctx)
+        val dao = AppDatabase.profilesBlocking(ctx)
         dao.getProfiles()
             .filter { it.name?.startsWith("f05-") == true }
             .forEach { dao.deleteProfile(it) }
@@ -109,7 +109,7 @@ class BackupScreenTest {
     @Test
     fun importDoesNotReplaceDifferentNamedProfile() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profiles(context)
+        val dao = AppDatabase.profilesBlocking(context)
         val kitchen = Profile.getDefault().apply {
             name = "f05-kitchen"
             host = "10.0.0.1"

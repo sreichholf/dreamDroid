@@ -14,7 +14,6 @@ import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailScreen
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
@@ -22,7 +21,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * TV fullscreen movie detail. Reuses phone [MovieDetailScreen] under [DreamDroidTheme]
- * (Phase 3.1b). Prefers typed [Movie]; hash kept for legacy callers.
+ * (Phase 3.1b).
  */
 class MovieDetailDialog : DialogFragment() {
 
@@ -42,13 +41,8 @@ class MovieDetailDialog : DialogFragment() {
     }
 
     private fun detailContent(): MovieDetailContent {
-        val args = requireArguments()
-        val typed = args.getSerializable(ARG_TYPED_MOVIE) as? Movie
-        if (typed != null) {
-            return typed.toMovieDetailContent()
-        }
-        val hash = args.getSerializable(ARG_HASH_MOVIE) as HashMovie
-        return hash.toMovieDetailContent()
+        val typed = requireArguments().getSerializable(ARG_TYPED_MOVIE) as Movie
+        return typed.toMovieDetailContent()
     }
 
     override fun onCreateView(
@@ -81,20 +75,11 @@ class MovieDetailDialog : DialogFragment() {
 
     companion object {
         private const val ARG_TYPED_MOVIE = "typedMovie"
-        private const val ARG_HASH_MOVIE = "Movie"
 
         fun newInstance(movie: Movie): MovieDetailDialog {
             val fragment = MovieDetailDialog()
             val args = Bundle()
             args.putSerializable(ARG_TYPED_MOVIE, movie)
-            fragment.arguments = args
-            return fragment
-        }
-
-        fun newInstance(movie: HashMovie): MovieDetailDialog {
-            val fragment = MovieDetailDialog()
-            val args = Bundle()
-            args.putSerializable(ARG_HASH_MOVIE, movie)
             fragment.arguments = args
             return fragment
         }

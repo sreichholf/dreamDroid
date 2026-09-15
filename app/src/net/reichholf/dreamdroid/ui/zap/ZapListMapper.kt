@@ -1,37 +1,14 @@
 package net.reichholf.dreamdroid.ui.zap
 
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 
 /**
- * Zap channel grid filters and bouquet Intent mapping. Channel rows come typed from
- * [net.reichholf.dreamdroid.enigma.EnigmaClient]. The bouquet picker holds typed
- * [Service] and maps one [ExtendedHashMap] only when putting the Intent extra.
+ * Zap channel grid filters. Channel rows come typed from
+ * [net.reichholf.dreamdroid.enigma.EnigmaClient]. Bouquet picker Intent extras carry
+ * [Service] directly.
  */
 object ZapListMapper {
     fun rowsFrom(services: List<Service>): List<Service> = services.filter { service ->
         !net.reichholf.dreamdroid.helpers.enigma2.Service.isMarker(service.reference)
-    }
-
-    fun toBouquetMap(service: Service?): ExtendedHashMap {
-        val map = ExtendedHashMap()
-        if (service == null) {
-            map.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE, "")
-            map.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME, "")
-            return map
-        }
-        map.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE, service.reference)
-        map.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME, service.name)
-        return map
-    }
-
-    fun bouquetFrom(map: ExtendedHashMap?): Service {
-        if (map == null) {
-            return Service("", "")
-        }
-        return Service(
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE) ?: "",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME) ?: ""
-        )
     }
 }

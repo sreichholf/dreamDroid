@@ -27,12 +27,12 @@ import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
 
@@ -42,7 +42,7 @@ import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
  * including the historical SIMPLE_VRM default-page quirk.
  */
 @Composable
-fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val prefs = remember {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -111,15 +111,15 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
                 add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
             }
         }
-        hostFragment.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
+        handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
                 _,
                 result,
                 http
             ->
             var hasError = false
             var toastText = context.getString(R.string.get_content_error)
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
-            val state = result.getString(SimpleResult.KEY_STATE)
+            val stateText = result.stateText
+            val state = result.state
             if (stateText.isNullOrEmpty()) {
                 hasError = true
             }

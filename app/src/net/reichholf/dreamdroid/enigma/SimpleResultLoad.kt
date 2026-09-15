@@ -7,7 +7,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
@@ -20,21 +19,20 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 fun LifecycleOwner.launchSimpleResultLoad(
     requestHandler: SimpleResultRequestHandler,
     params: List<NameValuePair>,
-    onResult: (success: Boolean, result: ExtendedHashMap, http: SimpleHttpClient) -> Unit
+    onResult: (success: Boolean, result: SimpleResult, http: SimpleHttpClient) -> Unit
 ): Job = lifecycleScope.launch {
     val http = SimpleHttpClient.getInstance()
     val pair = withContext(Dispatchers.IO) {
         val xml = requestHandler.get(http, ArrayList(params))
         if (xml != null) {
             val parsed = requestHandler.parseSimpleResult(xml)
-            val stateText = parsed.getString("statetext")
-            if (stateText != null) {
+            if (parsed.stateText != null) {
                 true to parsed
             } else {
-                false to ExtendedHashMap()
+                false to SimpleResult()
             }
         } else {
-            false to ExtendedHashMap()
+            false to SimpleResult()
         }
     }
     onResult(pair.first, pair.second, http)

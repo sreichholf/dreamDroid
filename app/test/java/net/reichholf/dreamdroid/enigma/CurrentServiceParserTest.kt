@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
 import net.reichholf.dreamdroid.testutil.loadWebFixture
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class CurrentServiceParserTest {
     @Test
@@ -84,5 +84,34 @@ class CurrentServiceParserTest {
         assertNotNull(current)
         assertNotNull(current!!.now)
         assertEquals("Legacy Title", current.now!!.title)
+    }
+
+    @Test
+    fun fallsBackToEventNameWhenTitleIsPythonNone() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2currentserviceinformation>
+            <e2service>
+            <e2servicereference>1:0:1:1:1:1:0:0:0:0:</e2servicereference>
+            <e2servicename>TV</e2servicename>
+            <e2providername>P</e2providername>
+            </e2service>
+            <e2event>
+            <e2eventid>1</e2eventid>
+            <e2eventstart>1893456000</e2eventstart>
+            <e2eventduration>60</e2eventduration>
+            <e2eventcurrenttime>1893456000</e2eventcurrenttime>
+            <e2eventtitle>None</e2eventtitle>
+            <e2eventname>WebIf15 Title</e2eventname>
+            <e2eventdescription/>
+            <e2eventdescriptionextended/>
+            <e2eventservicereference>1:0:1:1:1:1:0:0:0:0:</e2eventservicereference>
+            <e2eventservicename>TV</e2eventservicename>
+            </e2event>
+            </e2currentserviceinformation>
+        """.trimIndent()
+        val current = CurrentServiceParser.parse(xml)
+        assertNotNull(current)
+        assertEquals("WebIf15 Title", current!!.now!!.title)
     }
 }

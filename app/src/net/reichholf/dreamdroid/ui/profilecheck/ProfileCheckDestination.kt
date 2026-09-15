@@ -6,11 +6,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.activities.MainActivity
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 @Composable
-fun ProfileCheckDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
-    val ui by hostFragment.profileCheckUiFlow().collectAsState()
+fun ProfileCheckDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+    val ui by handle.profileCheckUiFlow().collectAsState()
     val activity = LocalContext.current as? MainActivity
     ProfileCheckScreen(
         ui = ui,

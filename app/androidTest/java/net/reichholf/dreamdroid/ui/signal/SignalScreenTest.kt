@@ -1,18 +1,15 @@
 package net.reichholf.dreamdroid.ui.signal
 
-import android.graphics.Color
-import android.graphics.Paint
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import com.ekndev.gaugelibrary.HalfGauge
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -24,7 +21,7 @@ import org.junit.Test
 
 class SignalScreenTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    val composeRule = createComposeRule()
 
     @Before
     fun forceAlwaysNight() {
@@ -55,6 +52,8 @@ class SignalScreenTest {
             }
         }
         composeRule.onNodeWithText("Enable").assertIsDisplayed()
+        composeRule.onNodeWithTag(SIGNAL_SNR_GAUGE_TAG).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("SNR 63%").assertIsDisplayed()
         composeRule.onNodeWithText("SNRdb").assertIsDisplayed()
         composeRule.onNodeWithText("12.50 dB").assertIsDisplayed()
         composeRule.onNodeWithText("BER").assertIsDisplayed()
@@ -77,35 +76,15 @@ class SignalScreenTest {
                 )
             }
         }
-        composeRule.waitForIdle()
-        val gauge = findHalfGauge(composeRule.activity.window.decorView)
-        checkNotNull(gauge) { "HalfGauge missing from view tree" }
-        val needle = needlePaint(gauge)
-        assertNotEquals(Color.BLACK, needle.color)
-        assertEquals(onSurfaceArgb, needle.color)
+        composeRule.onNodeWithTag(SIGNAL_SNR_GAUGE_TAG).assertIsDisplayed()
+        val config = composeRule
+            .onNodeWithTag(SIGNAL_SNR_GAUGE_TAG)
+            .fetchSemanticsNode()
+            .config
+        val needleArgb = config[SignalGaugeNeedleColorArgb]
+        val valueArgb = config[SignalGaugeValueColorArgb]
+        assertNotEquals(Color.Black.toArgb(), needleArgb)
+        assertEquals(onSurfaceArgb, needleArgb)
+        assertEquals(onSurfaceArgb, valueArgb)
     }
-}
-
-private fun findHalfGauge(view: View): HalfGauge? {
-    if (view is HalfGauge) {
-        return view
-    }
-    if (view is ViewGroup) {
-        for (i in 0 until view.childCount) {
-            val match = findHalfGauge(view.getChildAt(i))
-            if (match != null) {
-                return match
-            }
-        }
-    }
-    return null
-}
-
-private fun needlePaint(gauge: HalfGauge): Paint {
-    val superClass = checkNotNull(gauge.javaClass.superclass) {
-        "HalfGauge has no superclass"
-    }
-    val method = superClass.getDeclaredMethod("getNeedlePaint")
-    method.isAccessible = true
-    return method.invoke(gauge) as Paint
 }

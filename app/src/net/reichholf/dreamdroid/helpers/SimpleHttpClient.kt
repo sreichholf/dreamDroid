@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.helpers
 
 import android.content.Context
-import android.os.Environment
 import android.util.Log
 import java.io.BufferedOutputStream
 import java.io.File
@@ -44,7 +43,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 
 /**
- * Enigma2 HTTP client. Phase SOTA: OkHttp (aligned with Picasso) instead of
+ * Enigma2 HTTP client. OkHttp (aligned with Coil for picons) instead of
  * [HttpURLConnection]. Public API unchanged for callers.
  */
 class SimpleHttpClient {
@@ -427,17 +426,16 @@ class SimpleHttpClient {
     }
 
     private fun dumpToFile(urlString: String) {
-        val externalStorage = Environment.getExternalStorageDirectory()
-        if (!externalStorage.canWrite()) return
+        val context = DreamDroid.getAppContext() ?: return
+        val dumpDir = File(context.cacheDir, "xml")
 
         val parts = urlString.split("/")
         val fn = parts[parts.size - 1].split("\\?".toRegex()).toTypedArray()[0]
         Log.w("--------------", fn)
 
-        val base = String.format("%s/dreamDroid/xml", externalStorage)
-        val file = File(String.format("%s/%s", base, fn))
+        val file = File(dumpDir, fn)
         try {
-            File(base).mkdirs()
+            dumpDir.mkdirs()
             file.createNewFile()
             BufferedOutputStream(FileOutputStream(file)).use { bos ->
                 bos.write(mBytes)

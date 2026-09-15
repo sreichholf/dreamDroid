@@ -1,8 +1,8 @@
 package net.reichholf.dreamdroid.enigma
 
 import net.reichholf.dreamdroid.testutil.loadWebFixture
-import org.junit.Assert.assertEquals
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 
 class ServiceParserTest {
     @Test
@@ -32,5 +32,21 @@ class ServiceParserTest {
     @Test
     fun malformedXmlYieldsNoServices() {
         assertEquals(0, ServiceParser.parse("<e2servicelist><e2service>").size)
+    }
+
+    @Test
+    fun stripsControlCharactersFromServiceName() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2servicelist>
+            <e2service>
+            <e2servicereference>1:0:1:1:1:1:0:0:0:0:</e2servicereference>
+            <e2servicename>ZDF\u0001HD</e2servicename>
+            </e2service>
+            </e2servicelist>
+        """.trimIndent().replace("\\u0001", "\u0001")
+        val services = ServiceParser.parse(xml)
+        assertEquals(1, services.size)
+        assertEquals("ZDFHD", services[0].name)
     }
 }

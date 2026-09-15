@@ -9,16 +9,15 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
-import androidx.compose.ui.test.performTextReplacement
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Service
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -79,10 +78,11 @@ class TimerEditScreenTest {
 
     @Test
     fun editModeSeedsFieldsAndToggles() {
-        val timer = sampleTimer()
-        timer.put(Timer.KEY_NAME, "Tagesschau")
-        timer.put(Timer.KEY_DISABLED, "1")
-        timer.put(Timer.KEY_JUST_PLAY, "1")
+        val timer = sampleTimer().copy(
+            name = "Tagesschau",
+            disabled = "1",
+            justPlay = "1"
+        )
         val state = TimerEditState().also {
             it.loadFrom(
                 timer,
@@ -117,7 +117,7 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun applyToWritesHashFields() {
+    fun applyToWritesTimerFields() {
         val timer = sampleTimer()
         val state = TimerEditState().also {
             it.loadFrom(
@@ -133,13 +133,13 @@ class TimerEditScreenTest {
         state.zap = true
         state.afterEventIndex = 1
         state.locationIndex = 1
-        state.applyTo(timer)
-        assertEquals("Edited", timer.getString(Timer.KEY_NAME))
-        assertEquals("Desc", timer.getString(Timer.KEY_DESCRIPTION))
-        assertEquals("1", timer.getString(Timer.KEY_DISABLED))
-        assertEquals("1", timer.getString(Timer.KEY_JUST_PLAY))
-        assertEquals("1", timer.getString(Timer.KEY_AFTER_EVENT))
-        assertEquals("/media/hdd/", timer.getString(Timer.KEY_LOCATION))
+        val updated = state.applyTo(timer)
+        assertEquals("Edited", updated.name)
+        assertEquals("Desc", updated.description)
+        assertEquals("1", updated.disabled)
+        assertEquals("1", updated.justPlay)
+        assertEquals("1", updated.afterEvent)
+        assertEquals("/media/hdd/", updated.location)
     }
 
     @Test
@@ -151,9 +151,7 @@ class TimerEditScreenTest {
         session.editState.enabled = false
         session.editState.zap = true
 
-        val picked = ExtendedHashMap()
-        picked.put(Service.KEY_NAME, "ZDF HD")
-        picked.put(Service.KEY_REFERENCE, "1:0:1:6DCB:44D:1:C00000:0:0:0:")
+        val picked = Service("1:0:1:6DCB:44D:1:C00000:0:0:0:", "ZDF HD")
         session.onActivityResult(
             Statics.REQUEST_PICK_SERVICE,
             Activity.RESULT_OK,
@@ -179,17 +177,16 @@ class TimerEditScreenTest {
             }
         }
 
-        val result = ExtendedHashMap()
-        result.put(SimpleResult.KEY_STATE, Python.FALSE)
-        result.put(SimpleResult.KEY_STATE_TEXT, "Conflicting timer exists")
-        session.onSaveResult(result)
+        session.onSaveResult(
+            SimpleResult(state = Python.FALSE, stateText = "Conflicting timer exists")
+        )
         composeRule.waitForIdle()
 
         assertNull(session.progress)
         composeRule.onNodeWithText("Conflicting timer exists").assertIsDisplayed()
     }
 
-    private fun sessionFrom(timer: ExtendedHashMap): TimerEditSession {
+    private fun sessionFrom(timer: Timer): TimerEditSession {
         val session = TimerEditSession(
             routeTag = "timer_edit:new:1893456000",
             remountEpoch = 0,
@@ -219,20 +216,18 @@ class TimerEditScreenTest {
         )
     }
 
-    private fun sampleTimer(): ExtendedHashMap {
-        val timer = Timer.getInitialTimer()
-        timer.put(Timer.KEY_NAME, "Sample")
-        timer.put(Timer.KEY_DESCRIPTION, "Desc")
-        timer.put(Timer.KEY_SERVICE_NAME, "Das Erste HD")
-        timer.put(Timer.KEY_REFERENCE, "1:0:1:6DCA:44D:1:C00000:0:0:0:")
-        timer.put(Timer.KEY_BEGIN, "1893456000")
-        timer.put(Timer.KEY_END, "1893459600")
-        timer.put(Timer.KEY_DISABLED, "0")
-        timer.put(Timer.KEY_JUST_PLAY, "0")
-        timer.put(Timer.KEY_AFTER_EVENT, "3")
-        timer.put(Timer.KEY_LOCATION, "/hdd/movie/")
-        timer.put(Timer.KEY_REPEATED, "0")
-        timer.put(Timer.KEY_TAGS, "")
-        return timer
-    }
+    private fun sampleTimer(): Timer = TimerHelper.getInitialTimer().copy(
+        name = "Sample",
+        description = "Desc",
+        serviceName = "Das Erste HD",
+        reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",
+        begin = "1893456000",
+        end = "1893459600",
+        disabled = "0",
+        justPlay = "0",
+        afterEvent = "3",
+        location = "/hdd/movie/",
+        repeated = "0",
+        tags = ""
+    )
 }

@@ -18,11 +18,13 @@ import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.ui.platform.ComposeView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
@@ -41,19 +43,20 @@ import net.reichholf.dreamdroid.ProfileChangedListener
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
+import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 
 /**
@@ -78,6 +81,8 @@ class MainActivity :
     private var mNavigationHelper: NavigationHelper? = null
     private var mDrawerListState: DrawerListState? = null
     private var mDetailFragment: Fragment? = null
+    lateinit var phoneNav: PhoneNavHostState
+        private set
 
     private lateinit var mDrawerToggle: ActionBarDrawerToggle
     private lateinit var mDrawerLayout: DrawerLayout
@@ -100,8 +105,7 @@ class MainActivity :
                 toggle()
                 return
             }
-            val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-            if (detail is PhoneNavHostFragment && detail.popNavBackStack()) {
+            if (phoneNav.popNavBackStack()) {
                 return
             }
             val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
@@ -127,42 +131,28 @@ class MainActivity :
     private fun showProfileCheckChecking(message: String) {
         dismissSnackbar()
         val ui = ProfileCheckUi.Checking(message)
-        val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment) {
-            detail.navigateToProfileCheck(ui)
-            return
-        }
-        // Start under the configured home route, then push the gate so it is in the back stack.
-        val host = PhoneNavHostFragment.newInstance(StartScreen.navRoute(this))
-        host.queueProfileCheck(ui)
-        showDetails(host)
+        phoneNav.navigateToProfileCheck(ui)
     }
 
-    private fun showProfileCheckFailed(result: ExtendedHashMap) {
+    private fun showProfileCheckFailed(result: ProfileCheckResult) {
         dismissSnackbar()
         mOpenStartOnProfileSuccess = true
-        var error: String? = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
-        error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error)
+        var error: String? = getString(result.errorTextId)
+        if (result.errorTextExt.isNotEmpty()) {
+            error = result.errorTextExt
+        }
         if (error.isNullOrEmpty()) {
-            error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+            error = getString(result.errorTextId)
         }
         val p = DreamDroid.getCurrentProfile()
         val title = String.format("%s@%s:%s", p.user, p.host, p.port)
         val ui = ProfileCheckUi.Failed(title = title, message = error.orEmpty())
-        val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment) {
-            detail.navigateToProfileCheck(ui)
-            return
-        }
-        val host = PhoneNavHostFragment.newInstance(StartScreen.navRoute(this))
-        host.queueProfileCheck(ui)
-        showDetails(host)
+        phoneNav.navigateToProfileCheck(ui)
     }
 
     private fun updateProfileCheckChecking(message: String) {
-        val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment && detail.isOnProfileCheckRoute()) {
-            detail.updateProfileCheckUi(ProfileCheckUi.Checking(message))
+        if (phoneNav.isOnProfileCheckRoute()) {
+            phoneNav.updateProfileCheckUi(ProfileCheckUi.Checking(message))
         }
     }
 
@@ -176,27 +166,23 @@ class MainActivity :
 
     fun openProfilesFromProfileCheckFailed() {
         mOpenStartOnProfileSuccess = false
-        val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment && detail.isOnProfileCheckRoute()) {
+        if (phoneNav.isOnProfileCheckRoute()) {
             // Keep the gate under Profiles so Back returns to the check.
-            detail.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
+            phoneNav.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
             return
         }
         mNavigationHelper?.navigateTo(R.id.menu_navigation_profiles)
     }
 
     private fun leaveProfileCheckGate(isFirstStart: Boolean) {
-        val detail = supportFragmentManager.findFragmentById(
-            R.id.detail_view
-        ) as? PhoneNavHostFragment
-        if (detail != null && detail.isOnProfileCheckRoute()) {
+        if (phoneNav.isOnProfileCheckRoute()) {
             val route = if (isFirstStart) {
                 PhoneNavRoutes.PROFILES
             } else {
                 StartScreen.navRoute(this)
             }
             // Drop the gate so Back from the service list does not return to the check.
-            detail.navigateReplacingProfileCheck(route)
+            phoneNav.navigateReplacingProfileCheck(route)
             return
         }
         if (isFirstStart) {
@@ -215,23 +201,21 @@ class MainActivity :
         updateProfileCheckChecking(state)
     }
 
-    fun onProfileChecked(result: ExtendedHashMap) {
+    fun onProfileChecked(result: ProfileCheckResult) {
         if (isPaused() || checkNavigationHelper()) {
             return
         }
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
 
-        if (result[CheckProfile.KEY_HAS_ERROR] as Boolean &&
-            !(result[CheckProfile.KEY_SOFT_ERROR] as Boolean)
-        ) {
-            val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+        if (result.hasError && !result.isSoftError) {
+            val error = getString(result.errorTextId)
             setConnectionState(error, true)
             showProfileCheckFailed(result)
         } else {
             dismissSnackbar()
-            if (result[CheckProfile.KEY_SOFT_ERROR] as Boolean) {
-                val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+            if (result.isSoftError) {
+                val error = getString(result.errorTextId)
                 setConnectionState(error, true)
             } else {
                 setConnectionState(getString(R.string.ok), true)
@@ -239,16 +223,12 @@ class MainActivity :
             mNavigationHelper!!.setAvailableFeatures()
             val openStart = mOpenStartOnProfileSuccess
             mOpenStartOnProfileSuccess = false
-            val onGate =
-                (supportFragmentManager.findFragmentById(R.id.detail_view) as? PhoneNavHostFragment)
-                    ?.isOnProfileCheckRoute() == true
+            val onGate = phoneNav.isOnProfileCheckRoute()
             if (onGate || openStart) {
                 // Leave PROFILE_CHECK on the back stack so Back returns to the gate.
                 leaveProfileCheckGate(isFirstStart)
             } else if (isFirstStart) {
                 mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
-            } else if (getCurrentDetailFragment() == null) {
-                mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
             }
         }
 
@@ -268,13 +248,24 @@ class MainActivity :
 
         mIsDrawerOpen = false
         mCurrentProfile = Profile.getDefault()
+        phoneNav = PhoneNavHostState(this, this)
+        if (savedInstanceState != null) {
+            phoneNav.restoreState(savedInstanceState)
+        } else {
+            phoneNav.setStartRoute(StartScreen.navRoute(this))
+        }
         initViews()
+        bindPhoneNavCompose()
         DreamDroid.setCurrentProfileChangedListener(this)
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         handleSearchIntent(intent)
+    }
+
+    override fun onLocalNetworkPermissionGranted() {
+        onProfileChanged(DreamDroid.getCurrentProfile(), true)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -309,14 +300,22 @@ class MainActivity :
             editor.apply()
         }
         if (updated || !onUpdateOnly) {
-            val detail = supportFragmentManager.findFragmentById(R.id.detail_view)
-            if (detail is PhoneNavHostFragment && detail.navigateToChangelog()) {
-                return
-            }
-            val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB)
-            host.queueChangelog()
-            showDetails(host)
+            phoneNav.navigateToChangelog()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        phoneNav.saveState(outState)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun dispatchActivityResultToNavHandle(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ): Boolean {
+        phoneNav.onHostActivityResult(requestCode, resultCode, data)
+        return true
     }
 
     override fun onPostCreate(savedInstanceState: Bundle?) {
@@ -420,18 +419,25 @@ class MainActivity :
     }
 
     /**
-     * Detail pane content for callbacks. When the pane hosts [PhoneNavHostFragment],
-     * prefer the nested NavHost leaf (e.g. Device Info) over the wrapper.
+     * Detail pane content for leftover fragment callbacks. Phone destinations live in
+     * the activity-owned Compose [PhoneNavHostState], not a Fragment.
      */
-    private fun getDetailContentFragment(): Fragment? {
-        val detail = getCurrentDetailFragment()
-        if (detail is PhoneNavHostFragment) {
-            val leaf = detail.getActiveLeaf()
-            if (leaf != null) {
-                return leaf
-            }
+    private fun getDetailContentFragment(): Fragment? = getCurrentDetailFragment()
+
+    private fun bindPhoneNavCompose() {
+        val container = findViewById<ViewGroup>(R.id.detail_view)
+        if (container.findViewById<View>(R.id.phone_nav_compose) != null) {
+            return
         }
-        return detail
+        val composeView = ComposeView(this).apply {
+            id = R.id.phone_nav_compose
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
+            bindPhoneNavHost(phoneNav)
+        }
+        container.addView(composeView)
     }
 
     private fun initViews() {
@@ -486,14 +492,6 @@ class MainActivity :
         } else {
             supportActionBar!!.setDisplayHomeAsUpEnabled(false)
         }
-
-        val ft = supportFragmentManager.beginTransaction()
-        val detailFragment = getCurrentDetailFragment()
-        if (detailFragment != null && !detailFragment.isVisible) {
-            showFragment(ft, R.id.detail_view, detailFragment)
-        }
-
-        ft.commit()
 
         if (!this::mActiveProfile.isInitialized) {
             mActiveProfile = TextView(this)
@@ -734,13 +732,6 @@ class MainActivity :
     }
 
     override fun onFragmentResume(fragment: Fragment) {
-        // Nested leaves live under PhoneNavHostFragment's child FragmentManager.
-        // showDetails()/hide() only work on the activity FM — calling them for a
-        // nested hub / ProfileEdit crashes with
-        // "Cannot hide Fragment attached to a different FragmentManager".
-        if (isNestedInPhoneNavHost(fragment)) {
-            return
-        }
         if (fragment != mDetailFragment) {
             mDetailFragment = fragment
             showDetails(fragment)
@@ -748,9 +739,6 @@ class MainActivity :
     }
 
     override fun onFragmentPause(fragment: Fragment) {
-        if (isNestedInPhoneNavHost(fragment)) {
-            return
-        }
         if (fragment == mDetailFragment) {
             mDetailFragment = null
         }
@@ -783,7 +771,12 @@ class MainActivity :
      * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        // FIXME find the real cause for mDetailFragment being null and fix that
+        val listener = phoneNav.composeDialogActionListener
+        if (listener != null) {
+            listener.onDialogAction(action, details, dialogTag)
+            super.onDialogAction(action, details, dialogTag)
+            return
+        }
         getCurrentDetailFragment()
         if (mDetailFragment != null) {
             val content = getDetailContentFragment()
@@ -827,13 +820,7 @@ class MainActivity :
         if (query.isNullOrEmpty()) {
             return true
         }
-        val detail = getCurrentDetailFragment()
-        if (detail is PhoneNavHostFragment && detail.navigateToEpgSearch(query)) {
-            return true
-        }
-        val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB)
-        host.queueEpgSearch(query)
-        showDetails(host)
+        phoneNav.navigateToEpgSearch(query)
         return true
     }
 
@@ -848,16 +835,5 @@ class MainActivity :
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName
-
-        private fun isNestedInPhoneNavHost(fragment: Fragment): Boolean {
-            var parent = fragment.parentFragment
-            while (parent != null) {
-                if (parent is PhoneNavHostFragment) {
-                    return true
-                }
-                parent = parent.parentFragment
-            }
-            return false
-        }
     }
 }

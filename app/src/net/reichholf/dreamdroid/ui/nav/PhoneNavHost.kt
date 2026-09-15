@@ -22,8 +22,6 @@ import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import net.reichholf.dreamdroid.activities.MainActivity
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.fragment.SleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.about.AboutDialog
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
@@ -64,7 +62,7 @@ private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
 )
 
 /**
- * Snapshot sleep-timer args once per dialog entry. [PhoneNavHostFragment.consumeSleepTimerArgs]
+ * Snapshot sleep-timer args once per dialog entry. [PhoneNavHandle.consumeSleepTimerArgs]
  * nulls pending args, so calling it on every composition would reset to
  * [SleepTimerNavArgs.defaults].
  */
@@ -78,18 +76,18 @@ fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavAr
  */
 @Composable
 fun PhoneNavHost(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     navController: NavHostController = rememberNavController(),
-    startDestination: String = hostFragment.startRoute()
+    startDestination: String = handle.startRoute()
 ) {
     DisposableEffect(navController) {
-        hostFragment.attachNavController(navController)
-        onDispose { hostFragment.detachNavController(navController) }
+        handle.attachNavController(navController)
+        onDispose { handle.detachNavController(navController) }
     }
     // Shell destination bar lives for the NavHost lifetime; hubs only publish Snapshot state.
     ProvideShellDestinationBar {
         PhoneNavHostGraph(
-            hostFragment = hostFragment,
+            handle = handle,
             navController = navController,
             startDestination = startDestination
         )
@@ -98,7 +96,7 @@ fun PhoneNavHost(
 
 @Composable
 private fun PhoneNavHostGraph(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     navController: NavHostController,
     startDestination: String
 ) {
@@ -117,43 +115,43 @@ private fun PhoneNavHostGraph(
             ScreenshotDestination()
         }
         composable(PhoneNavRoutes.CURRENT) {
-            CurrentServiceDestination(hostFragment = hostFragment)
+            CurrentServiceDestination(handle = handle)
         }
         composable(PhoneNavRoutes.ZAP) {
-            ZapDestination(hostFragment = hostFragment)
+            ZapDestination(handle = handle)
         }
         composable(PhoneNavRoutes.BACKUP) {
             BackupDestination()
         }
         composable(PhoneNavRoutes.PROFILES) {
-            ProfilesDestination(hostFragment = hostFragment)
+            ProfilesDestination(handle = handle)
         }
         composable(PhoneNavRoutes.EPG) {
-            val remount by hostFragment.epgRemountFlow().collectAsState()
+            val remount by handle.epgRemountFlow().collectAsState()
             key(remount) {
-                EpgBouquetDestination(hostFragment = hostFragment, remountEpoch = remount)
+                EpgBouquetDestination(handle = handle, remountEpoch = remount)
             }
         }
         composable(PhoneNavRoutes.MULTI_EPG) {
-            val remount by hostFragment.epgRemountFlow().collectAsState()
+            val remount by handle.epgRemountFlow().collectAsState()
             key(remount) {
-                MultiEpgDestination(hostFragment = hostFragment, remountEpoch = remount)
+                MultiEpgDestination(handle = handle, remountEpoch = remount)
             }
         }
         composable(PhoneNavRoutes.REMOTE) {
-            VirtualRemoteDestination(hostFragment = hostFragment)
+            VirtualRemoteDestination(handle = handle)
         }
         composable(PhoneNavRoutes.SETTINGS) {
-            SettingsDestination(hostFragment = hostFragment)
+            SettingsDestination(handle = handle)
         }
         composable(PhoneNavRoutes.HUB) {
-            HubDestination(hostFragment = hostFragment)
+            HubDestination(handle = handle)
         }
         composable(PhoneNavRoutes.TOOLS) {
             ToolsHubDestination()
         }
         composable(PhoneNavRoutes.PROFILE_CHECK) {
-            ProfileCheckDestination(hostFragment = hostFragment)
+            ProfileCheckDestination(handle = handle)
         }
         composable(
             route = PhoneNavRoutes.SERVICE_EPG,
@@ -168,7 +166,7 @@ private fun PhoneNavHostGraph(
             val serviceRef = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
             val serviceName = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
             ServiceEpgDestination(
-                hostFragment = hostFragment,
+                handle = handle,
                 serviceRef = serviceRef,
                 serviceName = serviceName
             )
@@ -180,32 +178,32 @@ private fun PhoneNavHostGraph(
             )
         ) { entry ->
             val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()
-            val remount by hostFragment.epgSearchRemountFlow().collectAsState()
+            val remount by handle.epgSearchRemountFlow().collectAsState()
             key(query, remount) {
                 EpgSearchDestination(
-                    hostFragment = hostFragment,
+                    handle = handle,
                     query = query,
                     remountEpoch = remount
                 )
             }
         }
         composable(PhoneNavRoutes.PICK_SERVICE) {
-            PickServiceDestination(hostFragment = hostFragment)
+            PickServiceDestination(handle = handle)
         }
         composable(PhoneNavRoutes.PROFILE_EDIT) {
-            val remount by hostFragment.profileEditRemountFlow().collectAsState()
-            key(hostFragment.profileEditRouteTag(), remount) {
-                ProfileEditDestination(hostFragment = hostFragment)
+            val remount by handle.profileEditRemountFlow().collectAsState()
+            key(handle.profileEditRouteTag(), remount) {
+                ProfileEditDestination(handle = handle)
             }
         }
         composable(PhoneNavRoutes.TIMER_EDIT) {
-            val remount by hostFragment.timerEditRemountFlow().collectAsState()
-            key(hostFragment.timerEditRouteTag(), remount) {
-                TimerEditDestination(hostFragment = hostFragment)
+            val remount by handle.timerEditRemountFlow().collectAsState()
+            key(handle.timerEditRouteTag(), remount) {
+                TimerEditDestination(handle = handle)
             }
         }
         composable(PhoneNavRoutes.TIMER_SERVICE_PICK) {
-            TimerServicePickDestination(hostFragment = hostFragment)
+            TimerServicePickDestination(handle = handle)
         }
         dialog(PhoneNavRoutes.ABOUT) {
             AboutDialog(onDismiss = { navController.popBackStack() })
@@ -229,7 +227,7 @@ private fun PhoneNavHostGraph(
         dialog(PhoneNavRoutes.SLEEP_TIMER) {
             val activity = LocalContext.current as? MainActivity
             val args = rememberSleepTimerNavArgs {
-                hostFragment.consumeSleepTimerArgs()
+                handle.consumeSleepTimerArgs()
             }
             SleepTimerDialog(
                 initialMinutes = args.minutes,
@@ -351,11 +349,11 @@ fun NavHostController.navigateDrawerSettings() {
     }
 }
 
-fun ComposeView.bindPhoneNavHost(hostFragment: PhoneNavHostFragment) {
+fun ComposeView.bindPhoneNavHost(handle: PhoneNavHandle) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
         DreamDroidTheme {
-            PhoneNavHost(hostFragment = hostFragment)
+            PhoneNavHost(handle = handle)
         }
     }
 }

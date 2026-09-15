@@ -26,32 +26,31 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
  * Time jump is date/time chips + Now/Prime; each chip opens a stock Material picker.
- * Bouquet pick results arrive via [PhoneNavHostFragment.composeActivityResultListener].
+ * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
  */
 @Composable
 fun EpgBouquetDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val scope = rememberCoroutineScope()
-    val leafArgs = hostFragment.epgLeafArguments()
+    val leafArgs = handle.epgLeafArguments()
     var bouquetRef by rememberSaveable(remountEpoch) {
         mutableStateOf(
             leafArgs.getString(
@@ -76,11 +75,11 @@ fun EpgBouquetDestination(
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.hostFragment = hostFragment
+    dialogSession.handle = handle
     dialogSession.context = context
 
     val session = remember { EpgBouquetSession() }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.bouquetRef = bouquetRef
     session.bouquetName = bouquetName
@@ -96,14 +95,14 @@ fun EpgBouquetDestination(
     session.onEmptyMessage = { emptyMessage = it }
     session.onLoadJob = { loadJob = it }
 
-    DisposableEffect(hostFragment, session, dialogSession, remountEpoch) {
-        hostFragment.composeActivityResultListener = session
-        activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+    DisposableEffect(handle, session, dialogSession, remountEpoch) {
+        handle.composeActivityResultListener = session
+        activity.addMenuProvider(session)
         session.setToolbarTitle(session.finishedTitle())
 
         onDispose {
-            if (hostFragment.composeActivityResultListener === session) {
-                hostFragment.composeActivityResultListener = null
+            if (handle.composeActivityResultListener === session) {
+                handle.composeActivityResultListener = null
             }
             activity.removeMenuProvider(session)
             loadJob?.cancel()
@@ -126,7 +125,7 @@ fun EpgBouquetDestination(
     )
 
     LaunchedEffect(remountEpoch, bouquetRef) {
-        val args = hostFragment.epgLeafArguments()
+        val args = handle.epgLeafArguments()
         val ref = args.getString(
             net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
         ).orEmpty()
@@ -183,9 +182,9 @@ fun EpgBouquetDestination(
 }
 
 private class EpgBouquetSession :
-    PhoneNavHostFragment.ActivityResultListener,
+    PhoneNavHandle.ActivityResultListener,
     MenuProvider {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var bouquetRef: String = ""
     var bouquetName: String = ""
@@ -221,7 +220,7 @@ private class EpgBouquetSession :
     }
 
     fun reload() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -275,11 +274,11 @@ private class EpgBouquetSession :
             return
         }
         @Suppress("DEPRECATION")
-        val service = data?.getSerializableExtra(KEY_BOUQUET) as? ExtendedHashMap ?: return
-        val reference = service.getString(Service.KEY_REFERENCE).orEmpty()
+        val service = data?.getSerializableExtra(KEY_BOUQUET) as? Service ?: return
+        val reference = service.reference
         if (reference != bouquetRef) {
             bouquetRef = reference
-            bouquetName = service.getString(Service.KEY_NAME).orEmpty()
+            bouquetName = service.name
             onBouquetRef?.invoke(bouquetRef)
             onBouquetName?.invoke(bouquetName)
             listState?.scrollToTop()
@@ -295,7 +294,7 @@ private class EpgBouquetSession :
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            val host = hostFragment ?: return true
+            val host = handle ?: return true
             waitingForPicker = true
             onWaitingForPicker?.invoke(true)
             host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)

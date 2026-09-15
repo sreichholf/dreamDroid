@@ -1,9 +1,9 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class EpgSearchRouteTest {
     @Test
@@ -19,8 +19,8 @@ class EpgSearchRouteTest {
             val path = route.substringBefore('?')
             assertEquals("epg_search", path)
             assertFalse(
-                "path must not contain extra segments from the query: $query",
-                path.contains("/")
+                path.contains("/"),
+                "path must not contain extra segments from the query: $query"
             )
             assertEquals(query, PhoneNavRoutes.queryFromEpgSearchRoute(route))
         }

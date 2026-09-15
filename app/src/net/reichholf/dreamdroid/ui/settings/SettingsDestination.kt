@@ -19,15 +19,15 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
  * Phase 2.7e: Settings as a direct Compose NavHost destination.
  */
 @Composable
-fun SettingsDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
+fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val state = remember {
         PreferenceManager.setDefaultValues(context, R.xml.preferences, false)
@@ -112,13 +112,13 @@ fun SettingsDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier =
         onMultiEpgSyncTest = { runMultiEpgSyncTest() },
         onAbout = {
             // Phase 2.1g-ii-b: Navigation Compose dialog (no DialogFragment).
-            hostFragment.navigateToAbout()
+            handle.navigateToAbout()
         },
         onChangelog = {
             (context as? MainActivity)?.showChangeLog(false)
         },
         onBackup = {
-            hostFragment.navigateToBackup()
+            handle.navigateToBackup()
         },
         modifier = modifier
     )

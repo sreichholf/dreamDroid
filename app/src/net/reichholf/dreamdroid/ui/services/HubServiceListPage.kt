@@ -41,11 +41,9 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Service
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -53,6 +51,8 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -64,7 +64,7 @@ import net.reichholf.dreamdroid.widget.AnchorPopup
  */
 @Composable
 fun HubServiceListPage(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     bouquetRef: String,
     bouquetName: String,
     modifier: Modifier = Modifier,
@@ -89,11 +89,11 @@ fun HubServiceListPage(
     var historyDepth by remember(bouquetRef) { mutableIntStateOf(0) }
 
     val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.hostFragment = hostFragment
+    dialogSession.handle = handle
     dialogSession.context = context
 
     val session = remember { HubServiceListSession() }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.popupRoot = view as? ViewGroup
     session.currentRef = currentRef
@@ -123,9 +123,9 @@ fun HubServiceListPage(
         onDispose { onProvideGoUp(null) }
     }
 
-    DisposableEffect(hostFragment, session, dialogSession) {
+    DisposableEffect(handle, session, dialogSession) {
         val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+        activity?.addMenuProvider(session)
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             activity?.removeMenuProvider(session)
@@ -184,7 +184,7 @@ fun HubServiceListPage(
 }
 
 class HubServiceListSession : MenuProvider {
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var popupRoot: ViewGroup? = null
     var currentRef: String = ""
@@ -314,7 +314,7 @@ class HubServiceListSession : MenuProvider {
     }
 
     fun zapTo(ref: String) {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         zapJob?.cancel()
         zapJob = host.launchSimpleResultLoad(
@@ -322,7 +322,7 @@ class HubServiceListSession : MenuProvider {
             listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -336,7 +336,7 @@ class HubServiceListSession : MenuProvider {
     fun showPopupMenu(windowX: Int, windowY: Int, row: ServiceNowNext) {
         val root = popupRoot ?: return
         val ctx = context ?: return
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val dialogs = dialogSession ?: return
         AnchorPopup.showAtWindow(root, windowX, windowY) { menu ->
             menu.menuInflater.inflate(R.menu.popup_servicelist, menu.menu)
@@ -375,7 +375,7 @@ class HubServiceListSession : MenuProvider {
                                     ref,
                                     name,
                                     currentRef,
-                                    serviceNowNextToExtendedHashMap(row)
+                                    row
                                 )
                             )
                         } catch (_: ActivityNotFoundException) {
@@ -462,7 +462,7 @@ class HubServiceListSession : MenuProvider {
         } else {
             p.setDefaultRefValues(currentRef, currentName)
         }
-        AppDatabase.profiles(ctx).updateProfile(p)
+        AppDatabase.profilesBlocking(ctx).updateProfile(p)
         if (!reset) {
             toast(
                 ctx.getText(R.string.default_bouquet_set_to).toString() + " '" + currentName + "'"

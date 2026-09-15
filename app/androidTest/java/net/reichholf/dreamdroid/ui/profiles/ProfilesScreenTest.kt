@@ -31,7 +31,7 @@ class ProfilesScreenTest {
     @After
     fun deleteF05Profiles() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profiles(ctx)
+        val dao = AppDatabase.profilesBlocking(ctx)
         val keep = dao.getProfiles().firstOrNull {
             it.name?.startsWith("f05-") != true && it.id != null
         }
@@ -68,7 +68,7 @@ class ProfilesScreenTest {
     @Test
     fun deletingActiveProfileDoesNotKeepGoneId() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profiles(context)
+        val dao = AppDatabase.profilesBlocking(context)
         val keep = Profile.getDefault().apply {
             name = "f05-keep"
             host = "10.0.0.2"

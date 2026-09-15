@@ -7,7 +7,6 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,57 +53,44 @@ class ServiceListMapperTest {
     }
 
     @Test
-    fun combinedHashCarriesNowAndNextPrefixes() {
+    fun mapsNowAndNextTitlesFromTypedRow() {
         val now = Event(
-            "1", "Now", "100", "60", "100", "d", "x",
-            "1:0:1:1:1:1:0:0:0:0:", "TV", "r", "t", "1"
+            eventId = "1",
+            title = "Now",
+            start = "100",
+            duration = "60",
+            currentTime = "100",
+            description = "d",
+            descriptionExtended = "x",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "TV",
+            startReadable = "r",
+            startTimeReadable = "t",
+            durationReadable = "1"
         )
         val next = Event(
-            "2", "Next", "160", "60", "100", "d2", "x2",
-            "1:0:1:1:1:1:0:0:0:0:", "TV", "r2", "t2", "1"
+            eventId = "2",
+            title = "Next",
+            start = "160",
+            duration = "60",
+            currentTime = "100",
+            description = "d2",
+            descriptionExtended = "x2",
+            serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+            serviceName = "TV",
+            startReadable = "r2",
+            startTimeReadable = "t2",
+            durationReadable = "1"
         )
         val row = ServiceNowNext("1:0:1:1:1:1:0:0:0:0:", "TV", now, next)
-        val map = serviceNowNextToExtendedHashMap(row)
-        assertEquals(
-            "Now",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_TITLE)
-        )
-        assertEquals(
-            "Next",
-            map.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.PREFIX_NEXT +
-                    net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_EVENT_TITLE
-            )
-        )
-        assertEquals(
-            "TV",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME)
-        )
-    }
-
-    @Test
-    fun fromExtendedHashMapRoundTripsNowAndNext() {
-        val now = Event(
-            "1", "Now", "100", "60", "100", "d", "x",
-            "1:0:1:1:1:1:0:0:0:0:", "TV", "r", "t", "1"
-        )
-        val next = Event(
-            "2", "Next", "160", "60", "100", "d2", "x2",
-            "", "", "r2", "t2", "1"
-        )
-        val row = ServiceNowNext("1:0:1:1:1:1:0:0:0:0:", "TV", now, next)
-        val map = serviceNowNextToExtendedHashMap(row)
-        val back = serviceNowNextFromExtendedHashMap(map)
-        assertEquals(row.serviceReference, back.serviceReference)
-        assertEquals(row.serviceName, back.serviceName)
-        assertNotNull(back.now)
-        assertEquals("Now", back.now!!.title)
-        assertEquals("1", back.now!!.eventId)
-        assertEquals("100", back.now!!.start)
-        assertNotNull(back.next)
-        assertEquals("Next", back.next!!.title)
-        assertEquals("2", back.next!!.eventId)
-        assertEquals("t2", back.next!!.startTimeReadable)
+        val items = serviceListItemsFromNowNext(listOf(row))
+        assertEquals("TV", items[0].name)
+        assertEquals("Now", items[0].nowTitle)
+        assertEquals("t", items[0].nowStart)
+        assertEquals("Next", items[0].nextTitle)
+        assertEquals("t2", items[0].nextStart)
+        assertEquals("1", now.eventId)
+        assertEquals("2", next.eventId)
     }
 
     @Test

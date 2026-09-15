@@ -4,14 +4,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.testTag
 
 /**
@@ -20,11 +19,11 @@ import androidx.compose.ui.platform.testTag
  * [androidx.compose.ui.platform.ComposeView] as never scrolled, so scrolling back up
  * always fired reload.
  *
- * Uses stock [PullToRefreshContainer] (Material's elevated indicator disk + spinner).
- * [clipToBounds] keeps mid-pull drawing inside this host. Hub screens that place a
- * bouquet [androidx.compose.material3.ScrollableTabRow] above the list must also raise
- * that tab row with [androidx.compose.ui.zIndex] so Column draw order cannot let the
- * list's TopCenter indicator paint over tab labels (e.g. Provider on TV & Movies).
+ * Uses stock [PullToRefreshDefaults.Indicator] (Material's elevated indicator disk +
+ * spinner). [clipToBounds] keeps mid-pull drawing inside this host. Hub screens that
+ * place a bouquet [androidx.compose.material3.ScrollableTabRow] above the list must also
+ * raise that tab row with [androidx.compose.ui.zIndex] so Column draw order cannot let
+ * the list's TopCenter indicator paint over tab labels (e.g. Provider on TV & Movies).
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,31 +34,22 @@ fun DreamDroidPullRefresh(
     enabled: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val state = rememberPullToRefreshState(enabled = { enabled })
-
-    LaunchedEffect(refreshing) {
-        if (refreshing) {
-            state.startRefresh()
-        } else if (state.isRefreshing) {
-            state.endRefresh()
-        }
-    }
-
-    LaunchedEffect(state.isRefreshing) {
-        if (state.isRefreshing && !refreshing) {
-            onRefresh()
-        }
-    }
-
+    val state = rememberPullToRefreshState()
     Box(
         modifier
-            .nestedScroll(state.nestedScrollConnection)
+            .pullToRefresh(
+                isRefreshing = refreshing,
+                state = state,
+                enabled = enabled,
+                onRefresh = onRefresh
+            )
             .clipToBounds()
             .fillMaxSize()
     ) {
         content()
-        PullToRefreshContainer(
+        PullToRefreshDefaults.Indicator(
             state = state,
+            isRefreshing = refreshing,
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .testTag(PULL_REFRESH_INDICATOR_TAG)

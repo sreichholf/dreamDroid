@@ -144,7 +144,7 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
             DownloadProgress.EVENT_ID_DOWNLOADING_FILE -> message = mDownloadProgress.currentFile
 
             DownloadProgress.EVENT_ID_FINISHED -> {
-                Picon.clearCache()
+                Picon.clearCache(this)
                 if (!mDownloadProgress.error) {
                     message =
                         getString(R.string.picon_sync_finished, mDownloadProgress.downloadedFiles)

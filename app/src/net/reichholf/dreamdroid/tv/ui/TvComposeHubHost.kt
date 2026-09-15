@@ -4,8 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -36,7 +34,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -57,13 +54,11 @@ import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
-import net.reichholf.dreamdroid.ui.services.movieToExtendedHashMap
-import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
@@ -285,7 +280,6 @@ private fun openServiceStream(
     service: ServiceNowNext,
     bouquetRef: String?
 ) {
-    val map = serviceNowNextToExtendedHashMap(service)
     val title = service.now?.title?.takeIf { it.isNotEmpty() } ?: service.serviceName
     activity.startActivity(
         IntentFactory.getStreamServiceIntent(
@@ -293,20 +287,19 @@ private fun openServiceStream(
             service.serviceReference,
             title,
             bouquetRef,
-            map
+            service
         )
     )
 }
 
 private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
-    val map = movieToExtendedHashMap(movie)
     activity.startActivity(
         IntentFactory.getStreamFileIntent(
             activity,
             movie.reference,
             movie.fileName,
             movie.title,
-            map
+            movie
         )
     )
 }
@@ -545,27 +538,9 @@ private fun HubServiceCard(service: ServiceNowNext, onClick: () -> Unit) {
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {
         Column {
-            AndroidView(
-                factory = { ctx ->
-                    ImageView(ctx).apply {
-                        scaleType = ImageView.ScaleType.FIT_CENTER
-                        adjustViewBounds = true
-                        layoutParams = ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                        )
-                    }
-                },
-                update = { imageView ->
-                    Picon.setPiconForView(
-                        imageView.context,
-                        imageView,
-                        service.serviceReference,
-                        service.serviceName,
-                        "compose_tv_hub",
-                        null
-                    )
-                },
+            PiconImage(
+                reference = service.serviceReference,
+                name = service.serviceName,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(120.dp)

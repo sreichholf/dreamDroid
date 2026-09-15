@@ -1,6 +1,6 @@
 package net.reichholf.dreamdroid.room
 
-import androidx.room.Entity
+import androidx.room3.Entity
 
 /**
  * Freshness metadata for one MultiEPG bouquet time chunk (typically 24 h).

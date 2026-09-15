@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.zap
 
 import android.util.Log
-import android.widget.ImageView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,18 +27,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.squareup.picasso.Callback
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 
 private const val TAG = "ZapScreen"
 
@@ -104,7 +99,6 @@ fun ZapScreen(
 @Composable
 private fun ZapServiceCard(service: Service, onClick: () -> Unit, onLongClick: () -> Unit) {
     var piconLoaded by remember(service.reference, service.name) { mutableStateOf(false) }
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -112,31 +106,14 @@ private fun ZapServiceCard(service: Service, onClick: () -> Unit, onLongClick: (
             .aspectRatio(16f / 9f)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
-        AndroidView(
-            factory = { ctx ->
-                ImageView(ctx).apply {
-                    scaleType = ImageView.ScaleType.FIT_CENTER
-                }
-            },
+        PiconImage(
+            reference = service.reference,
+            name = service.name,
             modifier = Modifier.fillMaxSize(),
-            update = { view ->
-                Picon.setPiconForView(
-                    context,
-                    view,
-                    service.reference,
-                    service.name,
-                    Statics.TAG_PICON,
-                    object : Callback {
-                        override fun onSuccess() {
-                            piconLoaded = true
-                        }
-
-                        override fun onError(e: Exception?) {
-                            Log.w(TAG, "Error loading picon for ${service.name}")
-                            piconLoaded = false
-                        }
-                    }
-                )
+            onSuccess = { piconLoaded = true },
+            onError = {
+                Log.w(TAG, "Error loading picon for ${service.name}")
+                piconLoaded = false
             }
         )
         if (!piconLoaded) {

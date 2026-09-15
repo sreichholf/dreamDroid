@@ -18,7 +18,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
 
 data class MovieDetailContent(
     val title: String,
@@ -48,32 +47,6 @@ fun Movie.toMovieDetailContent(): MovieDetailContent {
         fileSize = fileSizeReadable
     )
 }
-
-fun HashMovie.toMovieDetailContent(): MovieDetailContent = MovieDetailContent(
-    title = title().orEmpty(),
-    serviceName = serviceName().orEmpty(),
-    description = description().orEmpty(),
-    descriptionExtended = descriptionExtended(),
-    tags = tags(),
-    length = length().orEmpty(),
-    date = timeReadable().orEmpty(),
-    fileSize = fileSizeReadable().orEmpty()
-)
-
-fun HashMovie.toTypedMovie(): Movie = Movie(
-    reference = reference().orEmpty(),
-    title = title().orEmpty(),
-    description = description().orEmpty(),
-    descriptionExtended = descriptionExtended(),
-    serviceName = serviceName().orEmpty(),
-    time = time().orEmpty(),
-    timeReadable = timeReadable().orEmpty(),
-    length = length().orEmpty(),
-    tags = getString(HashMovie.KEY_TAGS, "").orEmpty(),
-    fileName = fileName().orEmpty(),
-    fileSize = fileSize().orEmpty(),
-    fileSizeReadable = fileSizeReadable().orEmpty()
-)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable

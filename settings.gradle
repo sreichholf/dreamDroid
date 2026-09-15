@@ -5,9 +5,9 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        // Match root ext.kotlin_version (2.2.10). Needed so Room generates
+        // Match root ext.kotlin_version (2.4.20). Needed so Room generates
         // AppDatabase_Impl for Kotlin Profile/AppDatabase (annotationProcessor alone does not).
-        id 'com.google.devtools.ksp' version '2.2.10-2.0.2'
+        id 'com.google.devtools.ksp' version '2.3.12'
     }
 }
 dependencyResolutionManagement {
@@ -15,10 +15,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url "https://jitpack.io" }
     }
 }
 
 include ':app'
-include ':libraries:AttributionPresenter:library'
-include ':libraries:simple-gauge-android:gaugelibrary'

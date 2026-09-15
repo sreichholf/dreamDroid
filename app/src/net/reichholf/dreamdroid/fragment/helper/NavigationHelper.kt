@@ -1,29 +1,26 @@
 package net.reichholf.dreamdroid.fragment.helper
 
 import android.content.Context
-import android.os.Bundle
 import android.util.SparseArray
 import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
-import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
+import net.reichholf.dreamdroid.enigma.PowerState
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.launchPowerStateSetLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.launchSleepTimerLoad
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Message
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
+import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -64,28 +61,11 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     protected fun getMainActivity(): MainActivity = mActivity
 
-    protected fun clearBackStack() {
-        // Pop the backstack completely everytime the user navigates "away"
-        // Avoid's "stacking" fragments due to back-button behaviour that feels
-        // really mysterious
-        val fm = getMainActivity().supportFragmentManager
-        if (fm.backStackEntryCount > 0) {
-            fm.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-        }
-    }
-
     /**
-     * Open a migrated phone NavHost leaf. If [PhoneNavHostFragment] is already the
-     * detail pane, navigate in-graph; otherwise mount the host with [route] as start.
+     * Open a migrated phone NavHost leaf via the activity-owned [PhoneNavHandle].
      */
     protected fun navigatePhoneNavRoot(route: String) {
-        val detail = getMainActivity().supportFragmentManager
-            .findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment && detail.navigateToRoute(route)) {
-            return
-        }
-        clearBackStack()
-        getMainActivity().showDetails(PhoneNavHostFragment.newInstance(route))
+        getMainActivity().phoneNav.navigateToRoute(route)
     }
 
     fun onDestroy() {
@@ -99,12 +79,12 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     protected fun getText(resId: Int): CharSequence = mActivity.getText(resId)
 
-    private fun onPowerStateSet(success: Boolean, result: ExtendedHashMap, resultText: String?) {
+    private fun onPowerStateSet(success: Boolean, result: PowerState, resultText: String?) {
         if (!success) {
             showToast(resultText)
             return
         }
-        val isRunning = result[PowerState.KEY_IN_STANDBY] as Boolean
+        val isRunning = result.isRunning == true
         if (isRunning) {
             showToast(getString(R.string.is_running))
         } else {
@@ -116,9 +96,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     fun onProfileChanged() {
         mShc = SimpleHttpClient.getInstance()
-        val detail = getMainActivity().supportFragmentManager
-            .findFragmentById(R.id.detail_view)
-        (detail as? PhoneNavHostFragment)?.onActiveProfileChanged()
+        getMainActivity().phoneNav.onActiveProfileChanged()
     }
 
     protected fun setSelectedItem(itemId: Int) {
@@ -154,59 +132,31 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
         when (itemId) {
             R.id.menu_navigation_message -> {
-                val messageHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (!(messageHost is PhoneNavHostFragment && messageHost.navigateToSendMessage())) {
-                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
-                    val host = getMainActivity().supportFragmentManager
-                        .findFragmentById(R.id.detail_view)
-                    (host as? PhoneNavHostFragment)?.navigateToSendMessage()
-                }
+                getMainActivity().phoneNav.navigateToSendMessage()
             }
 
             Statics.ITEM_TOGGLE_STANDBY ->
-                setPowerState(PowerState.STATE_TOGGLE)
+                setPowerState(PowerStateKeys.STATE_TOGGLE)
 
             Statics.ITEM_RESTART_GUI ->
-                setPowerState(PowerState.STATE_GUI_RESTART)
+                setPowerState(PowerStateKeys.STATE_GUI_RESTART)
 
             Statics.ITEM_REBOOT ->
-                setPowerState(PowerState.STATE_SYSTEM_REBOOT)
+                setPowerState(PowerStateKeys.STATE_SYSTEM_REBOOT)
 
             Statics.ITEM_SHUTDOWN ->
-                setPowerState(PowerState.STATE_SHUTDOWN)
+                setPowerState(PowerStateKeys.STATE_SHUTDOWN)
 
             R.id.menu_navigation_power -> {
-                val powerHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (!(powerHost is PhoneNavHostFragment && powerHost.navigateToPower())) {
-                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
-                    val host = getMainActivity().supportFragmentManager
-                        .findFragmentById(R.id.detail_view)
-                    (host as? PhoneNavHostFragment)?.navigateToPower()
-                }
+                getMainActivity().phoneNav.navigateToPower()
             }
 
             R.id.menu_navigation_about -> {
-                val aboutHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (!(aboutHost is PhoneNavHostFragment && aboutHost.navigateToAbout())) {
-                    navigatePhoneNavRoot(PhoneNavRoutes.SETTINGS)
-                    val host = getMainActivity().supportFragmentManager
-                        .findFragmentById(R.id.detail_view)
-                    (host as? PhoneNavHostFragment)?.navigateToAbout()
-                }
+                getMainActivity().phoneNav.navigateToAbout()
             }
 
             R.id.menu_navigation_changelog -> {
-                val changelogHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (
-                    changelogHost !is PhoneNavHostFragment ||
-                    !changelogHost.navigateToChangelog()
-                ) {
-                    getMainActivity().showChangeLog(false)
-                }
+                getMainActivity().showChangeLog(false)
             }
 
             R.id.menu_navigation_sleeptimer ->
@@ -219,11 +169,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
                 navigateToMultiEpg()
 
             R.id.menu_navigation_backup -> {
-                val backupHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (!(backupHost is PhoneNavHostFragment && backupHost.navigateToBackup())) {
-                    navigatePhoneNavRoot(PhoneNavRoutes.BACKUP)
-                }
+                getMainActivity().phoneNav.navigateToBackup()
             }
         }
         getMainActivity().showContent()
@@ -234,40 +180,16 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      * EPG drawer root needs default bouquet ref/name extras (not a plain route map entry).
      */
     protected fun navigateToEpg() {
-        val epgArgs = Bundle()
         val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
-        epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref)
         val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
-        epgArgs.putString(Event.KEY_SERVICE_NAME, name)
-
-        val detail = getMainActivity().supportFragmentManager
-            .findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment && detail.navigateToEpg(ref, name)) {
-            return
-        }
-        clearBackStack()
-        getMainActivity().showDetails(
-            PhoneNavHostFragment.newInstance(PhoneNavRoutes.EPG, epgArgs)
-        )
+        getMainActivity().phoneNav.navigateToEpg(ref, name)
     }
 
     /** MultiEPG drawer root — same default bouquet extras as list EPG. */
     protected fun navigateToMultiEpg() {
-        val epgArgs = Bundle()
         val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
-        epgArgs.putString(Event.KEY_SERVICE_REFERENCE, ref)
         val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
-        epgArgs.putString(Event.KEY_SERVICE_NAME, name)
-
-        val detail = getMainActivity().supportFragmentManager
-            .findFragmentById(R.id.detail_view)
-        if (detail is PhoneNavHostFragment && detail.navigateToMultiEpg(ref, name)) {
-            return
-        }
-        clearBackStack()
-        getMainActivity().showDetails(
-            PhoneNavHostFragment.newInstance(PhoneNavRoutes.MULTI_EPG, epgArgs)
-        )
+        getMainActivity().phoneNav.navigateToMultiEpg(ref, name)
     }
 
     /**
@@ -277,7 +199,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      */
     fun onSetSleepTimer(time: String?, action: String?, enabled: Boolean) {
         val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("cmd", SleepTimer.CMD_SET))
+        params.add(NameValuePair("cmd", SleepTimerKeys.CMD_SET))
         params.add(NameValuePair("time", time))
         params.add(NameValuePair("action", action))
 
@@ -297,30 +219,16 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     private fun onSleepTimerSet(
         success: Boolean,
-        result: ExtendedHashMap,
+        result: SleepTimer,
         openDialog: Boolean,
         errorText: String?
     ) {
         if (success) {
             if (openDialog) {
-                val sleepHost = getMainActivity().supportFragmentManager
-                    .findFragmentById(R.id.detail_view)
-                if (!(
-                        sleepHost is PhoneNavHostFragment && sleepHost.navigateToSleepTimer(
-                            result
-                        )
-                        )
-                ) {
-                    navigatePhoneNavRoot(PhoneNavRoutes.HUB)
-                    val host = getMainActivity().supportFragmentManager
-                        .findFragmentById(R.id.detail_view)
-                    if (host is PhoneNavHostFragment) {
-                        host.queueSleepTimer(result)
-                    }
-                }
+                getMainActivity().phoneNav.navigateToSleepTimer(result)
                 return
             }
-            val text = result.getString(SleepTimer.KEY_TEXT)
+            val text = result.text
             showToast(text)
         } else {
             showToast(getString(R.string.error))
@@ -339,9 +247,9 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
             }
     }
 
-    private fun onSimpleResult(success: Boolean, result: ExtendedHashMap, http: SimpleHttpClient) {
+    private fun onSimpleResult(success: Boolean, result: SimpleResult, http: SimpleHttpClient) {
         var toastText = getString(R.string.get_content_error)
-        val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+        val stateText = result.stateText
 
         if (stateText != null && stateText != "") {
             toastText = stateText
@@ -397,12 +305,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      * @param timeout Timeout for the message, 0 means no timeout will occur
      */
     fun onSendMessage(text: String?, type: String?, timeout: String?) {
-        val msg = ExtendedHashMap()
-        msg.put(Message.KEY_TEXT, text)
-        msg.put(Message.KEY_TYPE, type)
-        msg.put(Message.KEY_TIMEOUT, timeout)
-
-        execSimpleResultTask(MessageRequestHandler(), Message.getParams(msg))
+        execSimpleResultTask(MessageRequestHandler(), Message.getParams(text, type, timeout))
     }
 
     fun setAvailableFeatures() {

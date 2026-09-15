@@ -11,6 +11,7 @@ import java.io.FileNotFoundException
 import java.io.IOException
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.ProfileDaoBlocking
 
 /**
  * Created by GAigner on 01/09/18.
@@ -18,7 +19,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 class BackupService(context: Context) {
     private val mContext = context
     private val mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
-    private val mProfiles: Profile.ProfileDao = AppDatabase.profiles(context)
+    private val mProfiles: ProfileDaoBlocking = AppDatabase.profilesBlocking(context)
 
     fun getBackupData(): BackupData {
         val export = BackupData()

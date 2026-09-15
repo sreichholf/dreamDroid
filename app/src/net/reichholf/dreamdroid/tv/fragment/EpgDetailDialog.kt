@@ -16,8 +16,6 @@ import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Event as HashEvent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
@@ -25,7 +23,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * TV fullscreen EPG detail. Reuses phone [EpgDetailScreen] under [DreamDroidTheme]
- * with actions hidden (Phase 3.1b). Prefers typed [Event]; hash kept for legacy callers.
+ * with actions hidden (Phase 3.1b).
  */
 class EpgDetailDialog : DialogFragment() {
 
@@ -49,12 +47,8 @@ class EpgDetailDialog : DialogFragment() {
 
     private fun detailContent(minutesShort: String): EpgDetailContent? {
         val args = requireArguments()
-        val typed = args.getSerializable(ARG_TYPED_EVENT) as? Event
-        if (typed != null) {
-            return typed.toEpgDetailContent(minutesShort)
-        }
-        val hash = args.getSerializable(ARG_HASH_EVENT) as? ExtendedHashMap ?: return null
-        return hash.toEpgDetailContent(false, minutesShort)
+        val typed = args.getSerializable(ARG_TYPED_EVENT) as? Event ?: return null
+        return typed.toEpgDetailContent(minutesShort)
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -108,19 +102,10 @@ class EpgDetailDialog : DialogFragment() {
 
     companion object {
         private const val ARG_TYPED_EVENT = "typedEvent"
-        private const val ARG_HASH_EVENT = "Event"
 
         fun newInstance(epg: Event): EpgDetailDialog {
             val args = Bundle()
             args.putSerializable(ARG_TYPED_EVENT, epg)
-            val fragment = EpgDetailDialog()
-            fragment.arguments = args
-            return fragment
-        }
-
-        fun newInstance(epg: HashEvent): EpgDetailDialog {
-            val args = Bundle()
-            args.putSerializable(ARG_HASH_EVENT, epg)
             val fragment = EpgDetailDialog()
             fragment.arguments = args
             return fragment

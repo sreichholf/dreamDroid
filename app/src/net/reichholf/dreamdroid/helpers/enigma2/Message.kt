@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
 object Message {
@@ -11,11 +10,11 @@ object Message {
     const val MESSAGE_TYPE_INFO: String = "2"
     const val MESSAGE_TYPE_ERROR: String = "3"
 
-    fun getParams(message: ExtendedHashMap): ArrayList<NameValuePair> {
+    fun getParams(text: String?, type: String?, timeout: String?): ArrayList<NameValuePair> {
         val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("text", message.getString(KEY_TEXT)))
-        params.add(NameValuePair("type", message.getString(KEY_TYPE)))
-        params.add(NameValuePair("timeout", message.getString(KEY_TIMEOUT)))
+        params.add(NameValuePair("text", text))
+        params.add(NameValuePair("type", type))
+        params.add(NameValuePair("timeout", timeout))
         return params
     }
 }

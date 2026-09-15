@@ -12,15 +12,13 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
 import android.database.sqlite.SQLiteOpenHelper
-import android.os.Environment
 import android.util.Log
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
 import java.nio.channels.FileChannel
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Event
+import net.reichholf.dreamdroid.enigma.Event
 
 /**
  * @author sre
@@ -371,7 +369,7 @@ class DatabaseHelper(context: Context) :
         return p
     }
 
-    fun setEvents(events: ArrayList<ExtendedHashMap>): Int {
+    fun setEvents(events: ArrayList<Event>): Int {
         val db = writableDatabase
         db.beginTransaction()
         var success = 0
@@ -385,7 +383,7 @@ class DatabaseHelper(context: Context) :
         return success
     }
 
-    fun setEvent(event: ExtendedHashMap, db: SQLiteDatabase): Boolean {
+    fun setEvent(event: Event, db: SQLiteDatabase): Boolean {
         val values = eventToCv(event) ?: return false
 
         val id = values.getAsString(KEY_EVENT_ID)
@@ -393,41 +391,35 @@ class DatabaseHelper(context: Context) :
         return db.insert(EVENT_TABLE_NAME, null, values) > -1
     }
 
-    fun eventToCv(event: ExtendedHashMap): ContentValues? {
+    fun eventToCv(event: Event): ContentValues? {
         val values = ContentValues()
-        val _id: Int
-        val _start: Int
-        val _duration: Int
+        val id: Int
+        val start: Int
+        val duration: Int
         try {
-            _id = Integer.parseInt(event.getString(Event.KEY_EVENT_ID))
-            _start = Integer.parseInt(event.getString(Event.KEY_EVENT_START))
-            _duration = Integer.parseInt(event.getString(Event.KEY_EVENT_DURATION))
+            id = Integer.parseInt(event.eventId)
+            start = Integer.parseInt(event.start)
+            duration = Integer.parseInt(event.duration)
         } catch (nex: NumberFormatException) {
             return null
         }
 
-        values.put(KEY_EVENT_ID, _id)
-        values.put(KEY_EVENT_START, _start)
-        values.put(KEY_EVENT_DURATION, _duration)
-        values.put(KEY_EVENT_TITLE, event.getString(Event.KEY_EVENT_TITLE))
-        values.put(KEY_EVENT_DESCRIPTION, event.getString(Event.KEY_EVENT_DESCRIPTION))
-        values.put(
-            KEY_EVENT_DESCRIPTION_EXTENDED,
-            event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED)
-        )
-        values.put(KEY_EVENT_SERVICE_REFERENCE, event.getString(Event.KEY_SERVICE_REFERENCE))
+        values.put(KEY_EVENT_ID, id)
+        values.put(KEY_EVENT_START, start)
+        values.put(KEY_EVENT_DURATION, duration)
+        values.put(KEY_EVENT_TITLE, event.title)
+        values.put(KEY_EVENT_DESCRIPTION, event.description)
+        values.put(KEY_EVENT_DESCRIPTION_EXTENDED, event.descriptionExtended)
+        values.put(KEY_EVENT_SERVICE_REFERENCE, event.serviceReference)
         return values
     }
 
     fun exportDB(): Boolean {
-        val sd = Environment.getExternalStorageDirectory()
-        val data = Environment.getDataDirectory()
         var source: FileChannel? = null
         var destination: FileChannel? = null
-        val currentDBPath = "/data/net.reichholf.dreamdroid/databases/$DATABASE_NAME"
-        val backupDBPath = "$DATABASE_NAME.sqlite"
-        val currentDB = File(data, currentDBPath)
-        val backupDB = File(sd, backupDBPath)
+        val currentDB = mContext.getDatabasePath(DATABASE_NAME)
+        val backupDir = mContext.getExternalFilesDir(null) ?: mContext.filesDir
+        val backupDB = File(backupDir, "$DATABASE_NAME.sqlite")
         try {
             source = FileInputStream(currentDB).channel
             destination = FileOutputStream(backupDB).channel

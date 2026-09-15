@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.testsupport
 
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.FragmentContainerView
 import net.reichholf.dreamdroid.R
@@ -12,6 +13,7 @@ import net.reichholf.dreamdroid.R
 class FragmentHostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.Theme_DreamDroid_Night)
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(
             FragmentContainerView(this).apply {

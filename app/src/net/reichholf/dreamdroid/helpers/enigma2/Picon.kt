@@ -7,16 +7,15 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.content.Context
-import android.os.Environment
 import android.view.View
 import android.widget.ImageView
 import androidx.preference.PreferenceManager
-import com.squareup.picasso.Callback
-import com.squareup.picasso.Picasso
+import coil3.load
+import coil3.request.error
+import coil3.size.Scale
 import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
@@ -24,6 +23,12 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
  * @author sre
  */
 object Picon {
+    interface Callback {
+        fun onSuccess()
+
+        fun onError(error: Exception?)
+    }
+
     fun getBasepath(context: Context): String {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
         if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
@@ -33,31 +38,14 @@ object Picon {
             )
         }
 
-        if (!Environment.getExternalStorageDirectory().canWrite()) {
-            return String.format(
-                "%s%spicons%s",
-                context.filesDir.absolutePath,
-                File.separator,
-                File.separator
-            )
-        }
-
+        // App-specific storage: WRITE_EXTERNAL_STORAGE is a no-op when targeting 30+.
         return String.format(
-            "%s%sdreamDroid%spicons%s",
-            Environment.getExternalStorageDirectory().absolutePath,
-            File.separator,
+            "%s%spicons%s",
+            context.filesDir.absolutePath,
             File.separator,
             File.separator
         )
     }
-
-    fun getPiconFileName(context: Context, service: ExtendedHashMap, useName: Boolean): String? =
-        getPiconFileName(
-            context,
-            service.getString(Event.KEY_SERVICE_REFERENCE),
-            service.getString(Event.KEY_SERVICE_NAME),
-            useName
-        )
 
     fun getPiconFileName(
         context: Context,
@@ -90,32 +78,7 @@ object Picon {
         return fileName
     }
 
-    fun setPiconForView(
-        context: Context,
-        piconView: ImageView?,
-        service: ExtendedHashMap,
-        tag: String
-    ) {
-        setPiconForView(context, piconView, service, tag, null)
-    }
-
-    fun setPiconForView(
-        context: Context,
-        piconView: ImageView?,
-        service: ExtendedHashMap,
-        tag: String,
-        callback: Callback?
-    ) {
-        setPiconForView(
-            context,
-            piconView,
-            service.getString(Event.KEY_SERVICE_REFERENCE),
-            service.getString(Event.KEY_SERVICE_NAME),
-            tag,
-            callback
-        )
-    }
-
+    @Suppress("UNUSED_PARAMETER")
     fun setPiconForView(
         context: Context,
         piconView: ImageView?,
@@ -125,24 +88,36 @@ object Picon {
         callback: Callback?
     ) {
         if (piconView == null) return
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))) {
-            piconView.visibility = View.GONE
-            return
-        }
-        val useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
-        val fileName = getPiconFileName(context, reference, name, useName)
-        if (fileName == null) {
+        val uri = resolveLoadUri(context, reference, name)
+        if (uri == null) {
             piconView.visibility = View.GONE
             return
         }
         if (piconView.visibility != View.VISIBLE) {
             piconView.visibility = View.VISIBLE
         }
+        piconView.scaleType = ImageView.ScaleType.FIT_CENTER
+        PiconImageLoader.install(context)
+        piconView.load(uri) {
+            scale(Scale.FIT)
+            error(R.drawable.dreamdroid_logo_simple)
+            listener(
+                onSuccess = { _, _ -> callback?.onSuccess() },
+                onError = { _, result ->
+                    callback?.onError(result.throwable as? Exception)
+                }
+            )
+        }
+    }
 
-        val uri = getPiconUri(context, fileName)
-        Picasso.get().load(uri).fit().centerInside().tag(tag)
-            .error(R.drawable.dreamdroid_logo_simple).into(piconView, callback)
+    fun resolveLoadUri(context: Context, reference: String?, name: String?): String? {
+        val sp = PreferenceManager.getDefaultSharedPreferences(context)
+        if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))) {
+            return null
+        }
+        val useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
+        val fileName = getPiconFileName(context, reference, name, useName) ?: return null
+        return getPiconUri(context, fileName)
     }
 
     fun getPiconUri(context: Context, fileName: String?): String {
@@ -156,6 +131,7 @@ object Picon {
         return String.format("file://%s", fileName)
     }
 
-    fun clearCache() {
+    fun clearCache(context: Context) {
+        PiconImageLoader.clearCache(context)
     }
 }

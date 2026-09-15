@@ -6,13 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2
 
-import net.reichholf.dreamdroid.dataProviders.SaxDataProvider
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
+import net.reichholf.dreamdroid.enigma.StringListParser
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
-import net.reichholf.dreamdroid.parsers.GenericSaxParser
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleHandler
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SimpleListHandler
 
 /**
  * @author sre
@@ -43,17 +39,12 @@ object Request {
         return ByteArray(0)
     }
 
-    fun parse(xml: String?, result: ExtendedHashMap?, handler: E2SimpleHandler): Boolean {
-        val sdp = SaxDataProvider(GenericSaxParser())
-        handler.setMap(result)
-        sdp.getParser().setHandler(handler)
-        return sdp.parse(xml)
-    }
-
-    fun parseList(xml: String?, list: ArrayList<String>?, handler: E2SimpleListHandler): Boolean {
-        val sdp = SaxDataProvider(GenericSaxParser())
-        handler.setList(list)
-        sdp.setHandler(handler)
-        return sdp.parse(xml)
+    fun parseList(xml: String?, list: ArrayList<String>?, itemTag: String): Boolean {
+        if (xml == null || list == null) {
+            return false
+        }
+        val parsed = StringListParser.parse(xml, itemTag) ?: return false
+        list.addAll(parsed)
+        return true
     }
 }

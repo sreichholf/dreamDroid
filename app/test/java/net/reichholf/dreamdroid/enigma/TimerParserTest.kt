@@ -1,12 +1,12 @@
 package net.reichholf.dreamdroid.enigma
 
 import net.reichholf.dreamdroid.testutil.loadWebFixture
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Test
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
 
 class TimerParserTest {
     @Test
@@ -104,5 +104,27 @@ class TimerParserTest {
         assertTrue(timers[0].description.contains("Has"))
         assertTrue(timers[0].description.contains("control"))
         assertFalse(timers[0].description.contains("\u0001"))
+    }
+
+    @Test
+    fun readsCancledTypoTag() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2timerlist>
+            <e2timer>
+            <e2servicereference>1:0:1:1:1:1:0:0:0:0:</e2servicereference>
+            <e2servicename>TV</e2servicename>
+            <e2name>News</e2name>
+            <e2timebegin>1893456000</e2timebegin>
+            <e2timeend>1893459600</e2timeend>
+            <e2duration>3600</e2duration>
+            <e2cancled>True</e2cancled>
+            </e2timer>
+            </e2timerlist>
+        """.trimIndent()
+        val timers = TimerParser.parse(xml)
+        assertNotNull(timers)
+        assertEquals(1, timers!!.size)
+        assertEquals("True", timers[0].canceled)
     }
 }

@@ -7,9 +7,8 @@
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler
 
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2TagHandler
 
 /**
  * @author sre
  */
-class TagListRequestHandler : AbstractSimpleListRequestHandler(URIStore.TAGS, E2TagHandler())
+class TagListRequestHandler : AbstractSimpleListRequestHandler(URIStore.TAGS, "e2tag")

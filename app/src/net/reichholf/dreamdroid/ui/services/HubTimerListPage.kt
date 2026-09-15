@@ -33,13 +33,11 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler
@@ -49,21 +47,19 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
 /**
  * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
  *
  * Reload after timer edit:
  * - bump [remountEpoch] from HubDestination when returning, and/or
- * - register [HubTimerListSession] on [PhoneNavHostFragment.composeActivityResultListener]
+ * - register [HubTimerListSession] on [PhoneNavHandle.composeActivityResultListener]
  *   (this page does so while composed).
  */
 @Composable
-fun HubTimerListPage(
-    hostFragment: PhoneNavHostFragment,
-    remountEpoch: Int = 0,
-    modifier: Modifier = Modifier
-) {
+fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val scope = rememberCoroutineScope()
@@ -76,7 +72,7 @@ fun HubTimerListPage(
     val session = remember { HubTimerListSession() }
     var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
     session.activity = activity
     session.listState = listState
@@ -86,11 +82,11 @@ fun HubTimerListPage(
     session.onLoadJob = { loadJob = it }
     session.onMutateJob = { mutateJob = it }
 
-    DisposableEffect(hostFragment, session) {
+    DisposableEffect(handle, session) {
         // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
         // composeActivityResultListener. Session still implements ActivityResultListener
         // if a host prefers registering it instead of remountEpoch.
-        activity.addMenuProvider(session, hostFragment.viewLifecycleOwner)
+        activity.addMenuProvider(session)
         session.setToolbarTitle(context.getString(R.string.timer))
         val fab = activity.findViewById<FloatingActionButton?>(R.id.fab_main)
         fab?.let {
@@ -165,14 +161,14 @@ fun HubTimerListPage(
 
 /**
  * Owns timer-list load/mutations and activity-result reload for the hub Timers tab.
- * HubDestination may also assign this to [PhoneNavHostFragment.composeActivityResultListener]
+ * HubDestination may also assign this to [PhoneNavHandle.composeActivityResultListener]
  * when the timer page is selected (the page registers itself while composed).
  */
 class HubTimerListSession :
-    PhoneNavHostFragment.ActivityResultListener,
+    PhoneNavHandle.ActivityResultListener,
     MenuProvider {
 
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
     var listState: TimerListState? = null
@@ -185,8 +181,7 @@ class HubTimerListSession :
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
 
     private val timers = ArrayList<TypedTimer>()
-    private val mapList = ArrayList<ExtendedHashMap>()
-    private var selected: ExtendedHashMap = ExtendedHashMap()
+    private var selected: TypedTimer = TypedTimer()
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var mutateJob: Job? = null
@@ -203,7 +198,7 @@ class HubTimerListSession :
 
         override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
             val toggle = menu.findItem(R.id.menu_toggle_enabled)
-            if (selected.getString(Timer.KEY_DISABLED) == "0") {
+            if (selected.disabled == "0") {
                 toggle?.setTitle(R.string.disable)
             } else {
                 toggle?.setTitle(R.string.enable)
@@ -262,7 +257,6 @@ class HubTimerListSession :
             refreshState.setRefreshing(false)
             setToolbarTitle(ctx.getString(R.string.timer))
             timers.clear()
-            mapList.clear()
             state.replaceAll(emptyList())
             if (!result.success) {
                 onEmptyMessage?.invoke(result.errorText)
@@ -274,9 +268,6 @@ class HubTimerListSession :
             }
             onEmptyMessage?.invoke(null)
             timers.addAll(result.timers)
-            for (timer in result.timers) {
-                mapList.add(TimerListMapper.toExtendedHashMap(timer))
-            }
             state.replaceAll(timerListItemsFrom(ctx, timers))
         }
         onLoadJob?.invoke(loadJob)
@@ -288,8 +279,8 @@ class HubTimerListSession :
     }
 
     fun onItemClick(item: TimerListItem) {
-        if (item.index !in mapList.indices) return
-        selected = mapList[item.index]
+        if (item.index !in timers.indices) return
+        selected = timers[item.index]
         if (actionModeActive) {
             return
         }
@@ -297,23 +288,19 @@ class HubTimerListSession :
     }
 
     fun onItemLongClick(item: TimerListItem) {
-        if (item.index !in mapList.indices) return
-        selected = mapList[item.index]
+        if (item.index !in timers.indices) return
+        selected = timers[item.index]
         val act = activity ?: return
         actionMode = act.startSupportActionMode(actionModeCallback)
     }
 
-    private fun editTimer(timer: ExtendedHashMap, create: Boolean) {
-        val host = hostFragment ?: return
-        if (host.navigateToTimerEdit(timer, create)) {
-            return
-        }
-        val mph = activity as? MultiPaneHandler ?: return
-        Timer.edit(mph, timer, host, create)
+    private fun editTimer(timer: TypedTimer, create: Boolean) {
+        val host = handle ?: return
+        host.navigateToTimerEdit(timer, create)
     }
 
     private fun deleteTimerConfirm() {
-        val name = selected.getString(Timer.KEY_NAME)
+        val name = selected.name
         onRequestDeleteConfirm?.invoke(name.orEmpty())
     }
 
@@ -321,8 +308,8 @@ class HubTimerListSession :
         deleteTimer(selected)
     }
 
-    fun deleteTimer(timer: ExtendedHashMap) {
-        val host = hostFragment ?: return
+    fun deleteTimer(timer: TypedTimer) {
+        val host = handle ?: return
         val ctx = context ?: return
         progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
         val params = Timer.getDeleteParams(timer)
@@ -334,15 +321,12 @@ class HubTimerListSession :
         onMutateJob?.invoke(mutateJob)
     }
 
-    private fun toggleTimerEnabled(timer: ExtendedHashMap) {
-        val host = hostFragment ?: return
+    private fun toggleTimerEnabled(timer: TypedTimer) {
+        val host = handle ?: return
         val ctx = context ?: return
-        val timerNew = timer.clone()
-        if (timerNew.getString(Timer.KEY_DISABLED) == "1") {
-            timerNew.put(Timer.KEY_DISABLED, "0")
-        } else {
-            timerNew.put(Timer.KEY_DISABLED, "1")
-        }
+        val timerNew = timer.copy(
+            disabled = if (timer.disabled == "1") "0" else "1"
+        )
         progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
         val params = Timer.getSaveParams(timerNew, timer)
         mutateJob?.cancel()
@@ -354,7 +338,7 @@ class HubTimerListSession :
     }
 
     private fun cleanupTimerList() {
-        val host = hostFragment ?: return
+        val host = handle ?: return
         val ctx = context ?: return
         progress = IndeterminateProgressState(message = ctx.getString(R.string.cleaning_timerlist))
         mutateJob?.cancel()
@@ -368,13 +352,13 @@ class HubTimerListSession :
     }
 
     private fun onSimpleResult(
-        result: ExtendedHashMap,
+        result: SimpleResult,
         http: net.reichholf.dreamdroid.helpers.SimpleHttpClient
     ) {
         dismissProgress()
         val ctx = context ?: return
         var toastText = ctx.getText(R.string.get_content_error).toString()
-        val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+        val stateText = result.stateText
         when {
             !stateText.isNullOrEmpty() -> toastText = stateText
             http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()

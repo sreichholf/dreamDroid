@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces
 
 import java.util.ArrayList
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
@@ -17,6 +16,4 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 interface SimpleRequestInterface {
     fun get(shc: SimpleHttpClient?): String?
     fun get(shc: SimpleHttpClient?, params: ArrayList<NameValuePair>?): String?
-    fun parse(xml: String?, result: ExtendedHashMap?): Boolean
-    fun getDefault(): ExtendedHashMap
 }

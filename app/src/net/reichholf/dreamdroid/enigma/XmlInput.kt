@@ -1,8 +1,9 @@
 package net.reichholf.dreamdroid.enigma
 
 /**
- * Mirrors [net.reichholf.dreamdroid.parsers.GenericSaxParser] control-character
- * stripping so typed parsers survive the same messy Enigma2 XML payloads.
+ * Control-character stripping so Enigma2 XML parsers survive messy box payloads.
+ * Mild path: strip C0 controls (keep whitespace), `\u008A` → newline, `&nbsp;` → space.
+ * Aggressive path: `\p{C}` then `&nbsp;` → space.
  */
 internal object XmlInput {
     private val aggressiveControl = Regex("\\p{C}")

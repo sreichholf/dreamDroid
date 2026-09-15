@@ -21,7 +21,6 @@ import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
@@ -32,6 +31,7 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
  * MultiEPG destination with stale-while-revalidate sync:
@@ -40,14 +40,14 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
  */
 @Composable
 fun MultiEpgDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val scope = rememberCoroutineScope()
-    val leafArgs = hostFragment.epgLeafArguments()
+    val leafArgs = handle.epgLeafArguments()
     val bouquetRef = MultiEpgRestore.bouquetRef(
         leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE)
     )
@@ -101,7 +101,7 @@ fun MultiEpgDestination(
     }
 
     val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.hostFragment = hostFragment
+    dialogSession.handle = handle
     dialogSession.context = context
 
     DisposableEffect(bouquetName) {

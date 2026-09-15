@@ -25,13 +25,10 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
-import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -41,8 +38,9 @@ import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
-import net.reichholf.dreamdroid.ui.epg.EpgListMapper
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"
@@ -61,7 +59,7 @@ private val CurrentServiceNullableSaver = Saver<CurrentService?, Bundle>(
     }
 )
 
-private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
+private val EventNullableSaver = Saver<Event?, Bundle>(
     save = { item ->
         Bundle().apply {
             if (item != null) {
@@ -71,20 +69,20 @@ private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
     },
     restore = { bundle ->
         @Suppress("DEPRECATION")
-        bundle.getSerializable(KEY_SAVED_ITEM) as? ExtendedHashMap
+        bundle.getSerializable(KEY_SAVED_ITEM) as? Event
     }
 )
 
 /**
  * Phase 2.7c: Current Service as a direct Compose NavHost destination.
- * Dialog actions (EPG sheet → timer/IMDb/similar) are registered on [hostFragment].
+ * Dialog actions (EPG sheet → timer/IMDb/similar) are registered on [handle].
  *
  * [updateToolbarTitle] is false when hosted in [CurrentServiceSheet] so the hub
  * bouquet title is not overwritten.
  */
 @Composable
 fun CurrentServiceDestination(
-    hostFragment: PhoneNavHostFragment,
+    handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
     updateToolbarTitle: Boolean = true
 ) {
@@ -102,8 +100,8 @@ fun CurrentServiceDestination(
     var current by rememberSaveable(profileId, stateSaver = CurrentServiceNullableSaver) {
         mutableStateOf<CurrentService?>(null)
     }
-    var currentItem by rememberSaveable(stateSaver = ExtendedHashMapNullableSaver) {
-        mutableStateOf<ExtendedHashMap?>(null)
+    var currentItem by rememberSaveable(stateSaver = EventNullableSaver) {
+        mutableStateOf<Event?>(null)
     }
     var ready by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
@@ -115,7 +113,7 @@ fun CurrentServiceDestination(
     session.current = current
     session.currentItem = currentItem
     session.ready = ready
-    session.hostFragment = hostFragment
+    session.handle = handle
     session.context = context
 
     fun setToolbarTitle(title: String) {
@@ -154,7 +152,7 @@ fun CurrentServiceDestination(
         if (event == null) {
             return
         }
-        currentItem = EpgListMapper.toExtendedHashMap(event)
+        currentItem = event
         detailEvent = event
     }
 
@@ -212,12 +210,12 @@ fun CurrentServiceDestination(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    DisposableEffect(hostFragment, session) {
-        hostFragment.composeDialogActionListener = session
+    DisposableEffect(handle, session) {
+        handle.composeDialogActionListener = session
         setToolbarTitle(baseTitle)
         onDispose {
-            if (hostFragment.composeDialogActionListener === session) {
-                hostFragment.composeDialogActionListener = null
+            if (handle.composeDialogActionListener === session) {
+                handle.composeDialogActionListener = null
             }
             loadJob?.cancel()
             loadJob = null
@@ -284,9 +282,9 @@ fun CurrentServiceDestination(
 
 private class CurrentServiceSession : DialogActionListener {
     var current: CurrentService? = null
-    var currentItem: ExtendedHashMap? = null
+    var currentItem: Event? = null
     var ready: Boolean = false
-    var hostFragment: PhoneNavHostFragment? = null
+    var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
@@ -296,7 +294,7 @@ private class CurrentServiceSession : DialogActionListener {
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         val ctx = context ?: return
-        val host = hostFragment ?: return
+        val host = handle ?: return
         when (action) {
             Statics.ACTION_SET_TIMER -> {
                 val event = currentItem ?: return
@@ -307,7 +305,7 @@ private class CurrentServiceSession : DialogActionListener {
                 ) { _, result, http ->
                     dismissProgress()
                     var toastText = ctx.getText(R.string.get_content_error).toString()
-                    val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+                    val stateText = result.stateText
                     when {
                         !stateText.isNullOrEmpty() -> toastText = stateText
                         http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -322,7 +320,7 @@ private class CurrentServiceSession : DialogActionListener {
             }
 
             Statics.ACTION_FIND_SIMILAR -> {
-                val query = currentItem?.getString(EventKeys.KEY_EVENT_TITLE)
+                val query = currentItem?.title
                 host.navigateToEpgSearch(query)
             }
 
