@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.ui.timers
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
