@@ -83,6 +83,7 @@
             android:visibility="gone"
             app:elevation="6dp"
             app:icon="@drawable/ic_action_fab_add"
+            app:layout_behavior="net.reichholf.dreamdroid.ui.nav.DodgeShellChromeBehavior"
             app:pressedTranslationZ="12dp" />
 
         <!-- Gravity (not inside detail_view): same ScrollingViewBehavior overflow that clipped

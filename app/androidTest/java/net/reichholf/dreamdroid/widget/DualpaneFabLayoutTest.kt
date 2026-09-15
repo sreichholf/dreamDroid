@@ -9,6 +9,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.nav.DodgeShellChromeBehavior
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -24,6 +25,7 @@ class DualpaneFabLayoutTest {
         assertEquals(View.NO_ID, mainLp.anchorId)
         assertTrue((mainLp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
         assertTrue((mainLp.gravity and Gravity.END) == Gravity.END)
+        assertTrue(mainLp.behavior is DodgeShellChromeBehavior)
         // Reload FAB removed; id must not remain in the package resources.
         val reloadId = fabMain.context.resources.getIdentifier(
             "fab_reload",
