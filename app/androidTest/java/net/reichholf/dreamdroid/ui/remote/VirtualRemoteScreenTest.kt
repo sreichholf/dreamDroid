@@ -145,6 +145,34 @@ class VirtualRemoteScreenTest {
     }
 
     @Test
+    fun fullRemoteGrowsTowardPaneWidthOnTallHost() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                VirtualRemoteScreen(
+                    modifier = Modifier.size(360.dp, 800.dp),
+                    layout = VirtualRemoteLayout.Full,
+                    playButtonAsPlayPause = false,
+                    onKey = { _, _ -> }
+                )
+            }
+        }
+        val root = composeRule.onRoot().getBoundsInRoot()
+        val ok = composeRule.onNodeWithText("OK").getBoundsInRoot()
+        val tv = composeRule.onNodeWithText("TV").getBoundsInRoot()
+        val okWidth = ok.right - ok.left
+        composeRule.onNodeWithText("TV").assertIsDisplayed()
+        assertTrue(
+            "OK should grow past the 56dp XML key, was $okWidth",
+            okWidth.value > 58f
+        )
+        assertTrue("TV bottom=${tv.bottom} root=${root.bottom}", tv.bottom <= root.bottom)
+        assertTrue(
+            "OK center should stay near the pane center",
+            kotlin.math.abs(((ok.left + ok.right) / 2 - (root.left + root.right) / 2).value) < 24f
+        )
+    }
+
+    @Test
     fun layoutToggleSwitchesFullPadToQuickZap() {
         composeRule.setContent {
             DreamDroidTheme {

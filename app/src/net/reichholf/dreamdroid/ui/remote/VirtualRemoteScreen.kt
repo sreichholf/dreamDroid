@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -148,15 +147,14 @@ fun VirtualRemoteScreen(
                 sectionExtra = fit.sectionExtra.dp,
                 verticalPadding = fit.verticalPadding.dp,
                 labelSp = (12f * (fit.keyWidth / VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP))
-                    .coerceIn(9f, 12f),
+                    .coerceIn(9f, 16f),
                 iconDp = (24f * (fit.keyWidth / VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP))
-                    .coerceIn(16f, 24f)
+                    .coerceIn(16f, 32f)
                     .dp
             )
             val padMaxWidth = metrics.keyWidth * 5 + metrics.gap * 4
             val scroll = rememberScrollState()
             val padModifier = Modifier
-                .fillMaxWidth()
                 .widthIn(max = padMaxWidth)
                 .then(
                     if (fit.fitsWithoutScroll) {
@@ -165,10 +163,7 @@ fun VirtualRemoteScreen(
                         Modifier.verticalScroll(scroll)
                     }
                 )
-                .padding(
-                    horizontal = horizontalPad,
-                    vertical = metrics.verticalPadding / 2
-                )
+                .padding(vertical = metrics.verticalPadding / 2)
 
             CompositionLocalProvider(LocalRemoteMetrics provides metrics) {
                 Box(

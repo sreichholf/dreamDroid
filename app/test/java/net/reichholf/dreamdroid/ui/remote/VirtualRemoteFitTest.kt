@@ -19,7 +19,7 @@ class VirtualRemoteFitTest {
     }
 
     @Test
-    fun wideShortPhoneShrinksKeysSoFullPadFits() {
+    fun shortPaneFillsHeightWithoutOverflow() {
         val metrics = VirtualRemoteFit.metrics(
             availableWidthDp = 328f,
             availableHeightDp = 500f,
@@ -35,28 +35,66 @@ class VirtualRemoteFitTest {
             verticalPadding = metrics.verticalPadding,
             sectionExtra = metrics.sectionExtra
         )
-        assertTrue(
-            "pad height $height must fit in 500dp (keys ${metrics.keyWidth}x${metrics.keyHeight})",
-            height <= 500.5f
-        )
         assertTrue(metrics.fitsWithoutScroll)
-        assertTrue(metrics.keyWidth >= VirtualRemoteFit.MIN_KEY_WIDTH_DP)
-        assertTrue(
-            "keys must shrink below the 56dp XML preferred width",
-            metrics.keyWidth < VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP
-        )
+        assertEquals(500f, height, 1f)
+        assertTrue(metrics.keyWidth < VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP)
     }
 
     @Test
-    fun tallPaneKeepsPreferredKeyWidth() {
+    fun tallPaneGrowsUntilWidthIsSpent() {
+        val availableWidth = 328f
         val metrics = VirtualRemoteFit.metrics(
-            availableWidthDp = 328f,
+            availableWidthDp = availableWidth,
             availableHeightDp = 800f,
             layout = VirtualRemoteLayout.Full
         )
-        assertEquals(VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP, metrics.keyWidth, 0.01f)
-        assertEquals(VirtualRemoteFit.PREFERRED_KEY_HEIGHT_DP, metrics.keyHeight, 0.01f)
+        val padWidth = 5f * metrics.keyWidth + 4f * metrics.gap
+        val height = VirtualRemoteFit.padHeightDp(
+            layout = VirtualRemoteLayout.Full,
+            keyWidth = metrics.keyWidth,
+            keyHeight = metrics.keyHeight,
+            keyHeightLow = metrics.keyHeightLow,
+            navKeySize = metrics.navKeySize,
+            gap = metrics.gap,
+            verticalPadding = metrics.verticalPadding,
+            sectionExtra = metrics.sectionExtra
+        )
         assertTrue(metrics.fitsWithoutScroll)
+        assertEquals(availableWidth, padWidth, 1f)
+        assertTrue(
+            "full pad must grow past the 56dp XML key when height allows",
+            metrics.keyWidth > VirtualRemoteFit.PREFERRED_KEY_WIDTH_DP
+        )
+        assertTrue("grown pad must stay below the tall pane ($height)", height <= 800.5f)
+    }
+
+    @Test
+    fun quickZapGrowsToTheSameWidthAsFullWhenHeightAllows() {
+        val availableWidth = 328f
+        val full = VirtualRemoteFit.metrics(
+            availableWidthDp = availableWidth,
+            availableHeightDp = 800f,
+            layout = VirtualRemoteLayout.Full
+        )
+        val quick = VirtualRemoteFit.metrics(
+            availableWidthDp = availableWidth,
+            availableHeightDp = 800f,
+            layout = VirtualRemoteLayout.QuickZap
+        )
+        assertEquals(full.keyWidth, quick.keyWidth, 0.05f)
+        val quickHeight = VirtualRemoteFit.padHeightDp(
+            layout = VirtualRemoteLayout.QuickZap,
+            keyWidth = quick.keyWidth,
+            keyHeight = quick.keyHeight,
+            keyHeightLow = quick.keyHeightLow,
+            navKeySize = quick.navKeySize,
+            gap = quick.gap,
+            verticalPadding = quick.verticalPadding,
+            sectionExtra = quick.sectionExtra
+        )
+        assertTrue(quick.fitsWithoutScroll)
+        assertTrue(quickHeight < 800f)
+        assertTrue(quick.navKeySize > quick.keyWidth)
     }
 
     @Test
