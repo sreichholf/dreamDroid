@@ -34,7 +34,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,9 +59,9 @@ fun TimerEditScreen(
     modifier: Modifier = Modifier
 ) {
     // Hosted in a destination that already fits system windows.
-    // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
-    // Phone destinations use Coordinator [R.id.fab_main] (showSaveFab=false) because an
-    // in-content FAB sits in detail_view overflow / under the gesture bar.
+    // Default Scaffold safeDrawing insets would double-pad and lift a FAB (#263).
+    // Phone save is toolbar-only ([R.menu.save]); keep showSaveFab=false so this
+    // Scaffold does not add an in-content Save FAB on the same screen.
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -206,9 +205,7 @@ fun TimerEditScreen(
                 contentDescription = stringResource(R.string.tags),
                 onClick = onPickTags
             )
-            Spacer(
-                Modifier.height(dimensionResource(R.dimen.fab_margin_bottom) + 72.dp)
-            )
+            Spacer(Modifier.height(16.dp))
         }
     }
 }
