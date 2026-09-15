@@ -71,12 +71,11 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
         simpleRemote -> VirtualRemoteLayout.Simple
         else -> VirtualRemoteLayout.Full
     }
-    val baseTitle = if (quickZap) {
-        context.getString(R.string.app_name_release) + "::" + context.getString(R.string.quickzap)
-    } else {
-        context.getString(R.string.app_name_release) + "::" +
-            context.getString(R.string.virtual_remote)
-    }
+    val baseTitle = virtualRemoteToolbarTitle(
+        quickZap = quickZap,
+        virtualRemote = context.getString(R.string.virtual_remote),
+        quickZapLabel = context.getString(R.string.quickzap)
+    )
 
     fun setToolbarTitle() {
         (context as? AppCompatActivity)?.title = baseTitle
@@ -194,3 +193,10 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
         }
     }
 }
+
+/** Toolbar label for the pad. Feature name only, no `DreamDroid::` prefix. */
+internal fun virtualRemoteToolbarTitle(
+    quickZap: Boolean,
+    virtualRemote: String,
+    quickZapLabel: String
+): String = if (quickZap) quickZapLabel else virtualRemote
