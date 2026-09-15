@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import android.util.Log
+import android.view.View
+import android.widget.ImageView
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -45,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -56,11 +60,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.preference.PreferenceManager
+import com.squareup.picasso.Callback
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
@@ -72,6 +82,8 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+
+private const val TAG = "MultiEpgScreen"
 
 /** Default visible span (GraphMultiEPG default). */
 const val MULTI_EPG_VISIBLE_MINUTES: Int = MultiEpgZoom.DEFAULT_MINUTES
@@ -409,21 +421,15 @@ fun MultiEpgScreen(
                             .fillMaxWidth()
                             .height(rowHeight)
                     ) {
-                        Box(
+                        MultiEpgChannelLabel(
+                            serviceRef = channel.serviceRef,
+                            serviceName = channel.serviceName,
+                            style = channelStyle,
                             modifier = Modifier
                                 .width(channelLabelWidth)
                                 .fillMaxHeight()
-                                .padding(horizontal = 6.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = channel.serviceName,
-                                style = channelStyle,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-                        }
+                                .padding(horizontal = 6.dp)
+                        )
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -452,6 +458,79 @@ fun MultiEpgScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+/**
+ * Channel column: when picons are enabled and a picon loads, show it instead of
+ * the service name. The image fills the row height (minus hairline padding) and
+ * uses FIT_CENTER so Compact / Comfortable / font-scale rows all fit.
+ */
+@Composable
+private fun MultiEpgChannelLabel(
+    serviceRef: String,
+    serviceName: String,
+    style: TextStyle,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+    var piconLoaded by remember(serviceRef, serviceName, piconsEnabled) {
+        mutableStateOf(false)
+    }
+
+    Box(
+        modifier = modifier.testTag("multi_epg_channel_label"),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        if (piconsEnabled) {
+            AndroidView(
+                factory = { ctx ->
+                    ImageView(ctx).apply {
+                        scaleType = ImageView.ScaleType.FIT_CENTER
+                        adjustViewBounds = true
+                        contentDescription = serviceName
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = 2.dp)
+                    .testTag("multi_epg_channel_picon"),
+                update = { view ->
+                    view.contentDescription = serviceName
+                    Picon.setPiconForView(
+                        context,
+                        view,
+                        serviceRef,
+                        serviceName,
+                        Statics.TAG_PICON,
+                        object : Callback {
+                            override fun onSuccess() {
+                                piconLoaded = true
+                            }
+
+                            override fun onError(e: Exception?) {
+                                Log.w(TAG, "No MultiEPG picon for $serviceName")
+                                view.setImageDrawable(null)
+                                view.visibility = View.GONE
+                                piconLoaded = false
+                            }
+                        }
+                    )
+                }
+            )
+        }
+        if (!piconsEnabled || !piconLoaded) {
+            Text(
+                text = serviceName,
+                style = style,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.testTag("multi_epg_channel_name")
+            )
         }
     }
 }
