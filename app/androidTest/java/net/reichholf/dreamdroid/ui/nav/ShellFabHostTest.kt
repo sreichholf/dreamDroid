@@ -50,7 +50,8 @@ class ShellFabHostTest {
 
     @Test
     fun remountKeepsLabeledFabVisible() {
-        val fab = hostDualpaneShell { remount ->
+        val fab = hostDualpaneShell {
+            var remount by remember { mutableIntStateOf(0) }
             key(remount) {
                 BindShellFab(
                     contentDescription = "Add Profile",
@@ -58,6 +59,9 @@ class ShellFabHostTest {
                     onClick = {},
                     text = "Add Profile"
                 )
+            }
+            Column {
+                Button(onClick = { remount += 1 }) { Text("remount") }
             }
         }
         waitUntilVisible(fab)
@@ -73,33 +77,35 @@ class ShellFabHostTest {
 
     @Test
     fun successorBindKeepsFabVisibleAndUpdatesLabel() {
-        val fab = hostDualpaneShell { _ ->
+        val fab = hostDualpaneShell {
             var owner by remember { mutableIntStateOf(1) }
-            when (owner) {
-                1 -> BindShellFab(
-                    contentDescription = "Add Profile",
-                    iconRes = R.drawable.ic_action_fab_add,
-                    onClick = {},
-                    text = "Add Profile"
-                )
-
-                2 -> BindShellFab(
-                    contentDescription = "New timer",
-                    iconRes = R.drawable.ic_action_fab_add,
-                    onClick = {},
-                    text = "New timer"
-                )
+            val label = if (owner == 1) "Add Profile" else "New timer"
+            if (owner != 0) {
+                key(owner) {
+                    BindShellFab(
+                        contentDescription = label,
+                        iconRes = R.drawable.ic_action_fab_add,
+                        onClick = {},
+                        text = label
+                    )
+                }
             }
-            Button(onClick = { owner = 2 }) { Text("swap") }
-            Button(onClick = { owner = 0 }) { Text("clear") }
+            Column {
+                Button(onClick = { owner = 2 }) { Text("swap") }
+                Button(onClick = { owner = 0 }) { Text("clear") }
+            }
         }
         waitUntilVisible(fab)
         assertLabeled(fab, "Add Profile")
 
+        composeRule.onNodeWithText("swap").assertIsDisplayed()
         composeRule.onNodeWithText("swap").performClick()
         composeRule.waitForIdle()
         InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        waitUntilVisible(fab)
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            fab.visibility == View.VISIBLE &&
+                fab.contentDescription == "New timer"
+        }
         assertLabeled(fab, "New timer")
 
         composeRule.onNodeWithText("clear").performClick()
@@ -110,9 +116,7 @@ class ShellFabHostTest {
         }
     }
 
-    private fun hostDualpaneShell(
-        extra: @Composable (remount: Int) -> Unit
-    ): ExtendedFloatingActionButton {
+    private fun hostDualpaneShell(content: @Composable () -> Unit): ExtendedFloatingActionButton {
         val activity = composeRule.activity
         lateinit var fab: ExtendedFloatingActionButton
         composeRule.runOnUiThread {
@@ -133,11 +137,7 @@ class ShellFabHostTest {
             )
             shell.setContent {
                 DreamDroidTheme {
-                    var remount by remember { mutableIntStateOf(0) }
-                    extra(remount)
-                    Column {
-                        Button(onClick = { remount += 1 }) { Text("remount") }
-                    }
+                    content()
                 }
             }
         }
