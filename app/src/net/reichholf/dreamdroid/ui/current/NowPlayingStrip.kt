@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarDefaults
@@ -16,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -102,8 +104,14 @@ fun NowPlayingStrip(
                 }
             }
         }
+        // M3 full-width divider (outlineVariant / DividerDefaults) between the
+        // strip and the destination NavigationBar — same surface would otherwise
+        // blend the two chrome regions.
+        HorizontalDivider(modifier = Modifier.testTag(NOW_PLAYING_STRIP_DIVIDER_TAG))
     }
 }
+
+const val NOW_PLAYING_STRIP_DIVIDER_TAG = "now_playing_strip_divider"
 
 fun nowPlayingHeadline(
     ready: Boolean,
