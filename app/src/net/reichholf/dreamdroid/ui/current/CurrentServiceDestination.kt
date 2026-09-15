@@ -25,13 +25,11 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -41,7 +39,6 @@ import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
-import net.reichholf.dreamdroid.ui.epg.EpgListMapper
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 
 private const val KEY_SAVED_CURRENT = "current_service"
@@ -61,7 +58,7 @@ private val CurrentServiceNullableSaver = Saver<CurrentService?, Bundle>(
     }
 )
 
-private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
+private val EventNullableSaver = Saver<Event?, Bundle>(
     save = { item ->
         Bundle().apply {
             if (item != null) {
@@ -71,7 +68,7 @@ private val ExtendedHashMapNullableSaver = Saver<ExtendedHashMap?, Bundle>(
     },
     restore = { bundle ->
         @Suppress("DEPRECATION")
-        bundle.getSerializable(KEY_SAVED_ITEM) as? ExtendedHashMap
+        bundle.getSerializable(KEY_SAVED_ITEM) as? Event
     }
 )
 
@@ -102,8 +99,8 @@ fun CurrentServiceDestination(
     var current by rememberSaveable(profileId, stateSaver = CurrentServiceNullableSaver) {
         mutableStateOf<CurrentService?>(null)
     }
-    var currentItem by rememberSaveable(stateSaver = ExtendedHashMapNullableSaver) {
-        mutableStateOf<ExtendedHashMap?>(null)
+    var currentItem by rememberSaveable(stateSaver = EventNullableSaver) {
+        mutableStateOf<Event?>(null)
     }
     var ready by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
@@ -154,7 +151,7 @@ fun CurrentServiceDestination(
         if (event == null) {
             return
         }
-        currentItem = EpgListMapper.toExtendedHashMap(event)
+        currentItem = event
         detailEvent = event
     }
 
@@ -284,7 +281,7 @@ fun CurrentServiceDestination(
 
 private class CurrentServiceSession : DialogActionListener {
     var current: CurrentService? = null
-    var currentItem: ExtendedHashMap? = null
+    var currentItem: Event? = null
     var ready: Boolean = false
     var hostFragment: PhoneNavHostFragment? = null
     var context: android.content.Context? = null
@@ -307,7 +304,7 @@ private class CurrentServiceSession : DialogActionListener {
                 ) { _, result, http ->
                     dismissProgress()
                     var toastText = ctx.getText(R.string.get_content_error).toString()
-                    val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+                    val stateText = result.stateText
                     when {
                         !stateText.isNullOrEmpty() -> toastText = stateText
                         http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -322,7 +319,7 @@ private class CurrentServiceSession : DialogActionListener {
             }
 
             Statics.ACTION_FIND_SIMILAR -> {
-                val query = currentItem?.getString(EventKeys.KEY_EVENT_TITLE)
+                val query = currentItem?.title
                 host.navigateToEpgSearch(query)
             }
 

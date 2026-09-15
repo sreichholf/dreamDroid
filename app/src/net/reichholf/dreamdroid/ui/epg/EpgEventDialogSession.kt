@@ -9,12 +9,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -28,14 +26,14 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 class EpgEventDialogSession {
     var hostFragment: PhoneNavHostFragment? = null
     var context: android.content.Context? = null
-    var currentItem: ExtendedHashMap? = null
+    var currentItem: Event? = null
     var detailEvent by mutableStateOf<Event?>(null)
         private set
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
     fun showDetail(event: Event) {
         val display = event.withReadableTimes()
-        currentItem = EpgListMapper.toExtendedHashMap(display)
+        currentItem = display
         detailEvent = display
     }
 
@@ -58,7 +56,7 @@ class EpgEventDialogSession {
         ) { _, result, http ->
             dismissProgress()
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -76,7 +74,7 @@ class EpgEventDialogSession {
     fun onFindSimilar() {
         val host = hostFragment ?: return
         val item = currentItem ?: return
-        host.navigateToEpgSearch(item.getString(EventKeys.KEY_EVENT_TITLE))
+        host.navigateToEpgSearch(item.title)
     }
 
     fun onImdb() {

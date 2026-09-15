@@ -41,11 +41,11 @@ import net.reichholf.dreamdroid.ProfileChangedListener
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
@@ -138,13 +138,15 @@ class MainActivity :
         showDetails(host)
     }
 
-    private fun showProfileCheckFailed(result: ExtendedHashMap) {
+    private fun showProfileCheckFailed(result: ProfileCheckResult) {
         dismissSnackbar()
         mOpenStartOnProfileSuccess = true
-        var error: String? = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
-        error = result.getString(CheckProfile.KEY_ERROR_TEXT_EXT, error)
+        var error: String? = getString(result.errorTextId)
+        if (result.errorTextExt.isNotEmpty()) {
+            error = result.errorTextExt
+        }
         if (error.isNullOrEmpty()) {
-            error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+            error = getString(result.errorTextId)
         }
         val p = DreamDroid.getCurrentProfile()
         val title = String.format("%s@%s:%s", p.user, p.host, p.port)
@@ -215,23 +217,21 @@ class MainActivity :
         updateProfileCheckChecking(state)
     }
 
-    fun onProfileChecked(result: ExtendedHashMap) {
+    fun onProfileChecked(result: ProfileCheckResult) {
         if (isPaused() || checkNavigationHelper()) {
             return
         }
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
 
-        if (result[CheckProfile.KEY_HAS_ERROR] as Boolean &&
-            !(result[CheckProfile.KEY_SOFT_ERROR] as Boolean)
-        ) {
-            val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+        if (result.hasError && !result.isSoftError) {
+            val error = getString(result.errorTextId)
             setConnectionState(error, true)
             showProfileCheckFailed(result)
         } else {
             dismissSnackbar()
-            if (result[CheckProfile.KEY_SOFT_ERROR] as Boolean) {
-                val error = getString(result[CheckProfile.KEY_ERROR_TEXT] as Int)
+            if (result.isSoftError) {
+                val error = getString(result.errorTextId)
                 setConnectionState(error, true)
             } else {
                 setConnectionState(getString(R.string.ok), true)

@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.widget.ImageView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -23,14 +22,12 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 
 /** Compact now-playing chrome for the TV & Movies hub (status, not a destination). */
 @Composable
@@ -69,7 +66,7 @@ fun NowPlayingStrip(
                     if (piconsEnabled &&
                         (serviceReference.isNotEmpty() || serviceName.isNotEmpty())
                     ) {
-                        StripPicon(
+                        PiconImage(
                             reference = serviceReference,
                             name = serviceName,
                             modifier = Modifier
@@ -153,27 +150,4 @@ fun eventProgressFraction(event: Event?): Float {
     } catch (_: Exception) {
         0f
     }
-}
-
-@Composable
-private fun StripPicon(reference: String, name: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    AndroidView(
-        factory = { ctx ->
-            ImageView(ctx).apply {
-                scaleType = ImageView.ScaleType.FIT_CENTER
-            }
-        },
-        modifier = modifier,
-        update = { view ->
-            Picon.setPiconForView(
-                context,
-                view,
-                reference,
-                name,
-                Statics.TAG_PICON,
-                null
-            )
-        }
-    )
 }

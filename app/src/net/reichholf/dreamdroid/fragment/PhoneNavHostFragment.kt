@@ -17,13 +17,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.SleepTimer
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.fragment.abs.BaseFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.nav.NavExtras
@@ -56,18 +56,22 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditSession
  */
 data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action: String) {
     companion object {
-        fun from(timer: ExtendedHashMap): SleepTimerNavArgs {
+        fun from(timer: SleepTimer): SleepTimerNavArgs {
             var minutes = 90
             try {
-                minutes = Integer.parseInt(timer.getString(SleepTimer.KEY_MINUTES))
+                minutes = Integer.parseInt(timer.minutes)
             } catch (_: NumberFormatException) {
             }
-            val enabled = Python.TRUE == timer.getString(SleepTimer.KEY_ENABLED)
-            val action = timer.getString(SleepTimer.KEY_ACTION) ?: SleepTimer.ACTION_STANDBY
+            val enabled = Python.TRUE == timer.enabled
+            val action = timer.action ?: SleepTimerKeys.ACTION_STANDBY
             return SleepTimerNavArgs(minutes, enabled, action)
         }
 
-        fun defaults(): SleepTimerNavArgs = SleepTimerNavArgs(90, false, SleepTimer.ACTION_STANDBY)
+        fun defaults(): SleepTimerNavArgs = SleepTimerNavArgs(
+            90,
+            false,
+            SleepTimerKeys.ACTION_STANDBY
+        )
     }
 }
 
@@ -122,7 +126,7 @@ class PhoneNavHostFragment : BaseFragment() {
     private var timerEditSession: TimerEditSession? = null
     private var pendingProfileEditRequested: Boolean = false
     private var pendingProfileEdit: Profile? = null
-    private var pendingTimerEdit: ExtendedHashMap? = null
+    private var pendingTimerEdit: Timer? = null
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
     private var pendingSleepTimerArgs: SleepTimerNavArgs? = null
@@ -334,7 +338,7 @@ class PhoneNavHostFragment : BaseFragment() {
         return true
     }
 
-    fun navigateToSleepTimer(timer: ExtendedHashMap): Boolean {
+    fun navigateToSleepTimer(timer: SleepTimer): Boolean {
         pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
         val controller = navController
         if (controller == null) {
@@ -345,7 +349,7 @@ class PhoneNavHostFragment : BaseFragment() {
         return true
     }
 
-    fun queueSleepTimer(timer: ExtendedHashMap) {
+    fun queueSleepTimer(timer: SleepTimer) {
         pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
         pendingOpenSleepTimer = true
         flushPendingNavigations()
@@ -508,7 +512,7 @@ class PhoneNavHostFragment : BaseFragment() {
     }
 
     /** Queue timer edit until [attachNavController] (host was just mounted). */
-    fun queueTimerEdit(timer: ExtendedHashMap, create: Boolean) {
+    fun queueTimerEdit(timer: Timer, create: Boolean) {
         pendingTimerEdit = timer
         pendingTimerCreate = create
         flushPendingNavigations()
@@ -565,14 +569,13 @@ class PhoneNavHostFragment : BaseFragment() {
     fun navigateToProfileEdit(profile: Profile?): Boolean {
         val controller = navController ?: return false
         pushResultRequestCode(Statics.REQUEST_EDIT_PROFILE)
-        val data = ExtendedHashMap()
-        data.put("action", Intent.ACTION_EDIT)
-        if (profile != null) {
-            data.put("profile", profile)
+        val data = Bundle().apply {
+            putString(NavExtras.ACTION, Intent.ACTION_EDIT)
+            if (profile != null) {
+                putSerializable(NavExtras.DATA, profile)
+            }
         }
-        profileEditArgs = Bundle().apply {
-            putSerializable(NavExtras.DATA, data)
-        }
+        profileEditArgs = data
         profileEditTag = if (profile != null) {
             "profile_edit:${profile.id}"
         } else {
@@ -620,17 +623,18 @@ class PhoneNavHostFragment : BaseFragment() {
      * Push timer create/edit. Service pick uses [navigateToTimerServicePick].
      * Result goes through [deliverPickResult] with [Statics.REQUEST_EDIT_TIMER].
      */
-    fun navigateToTimerEdit(timer: ExtendedHashMap, create: Boolean): Boolean {
+    fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean {
         val controller = navController ?: return false
         pushResultRequestCode(Statics.REQUEST_EDIT_TIMER)
-        val data = ExtendedHashMap()
-        data.put("timer", timer)
-        data.put("action", if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT)
         timerEditArgs = Bundle().apply {
-            putSerializable(NavExtras.DATA, data)
+            putSerializable(NavExtras.DATA, timer)
+            putString(
+                NavExtras.ACTION,
+                if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT
+            )
         }
-        val ref = timer.getString(Timer.KEY_REFERENCE).orEmpty()
-        val begin = timer.getString(Timer.KEY_BEGIN).orEmpty()
+        val ref = timer.reference
+        val begin = timer.begin
         timerEditTag = if (create) {
             "timer_edit:new:$begin"
         } else {

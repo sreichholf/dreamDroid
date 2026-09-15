@@ -1,190 +1,146 @@
 package net.reichholf.dreamdroid.enigma
 
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
-import org.xml.sax.Attributes
-import org.xml.sax.InputSource
-import org.xml.sax.helpers.DefaultHandler
+import org.xmlpull.v1.XmlPullParser
 
 object MovieParser {
     /**
      * @return parsed movies, or null when XML cannot be parsed (distinct from a valid empty list).
      */
-    fun parse(xml: String): List<Movie>? {
-        if (xml.isEmpty()) {
-            return null
+    fun parse(xml: String): List<Movie>? =
+        parseEnigmaXml(xml, emptyResult = null, onFail = null) { parser ->
+            parseMovieList(parser)
         }
-        return parseSanitized(xml, aggressive = false)
-            ?: parseSanitized(xml, aggressive = true)
-    }
-
-    private fun parseSanitized(xml: String, aggressive: Boolean): List<Movie>? = try {
-        val handler = MovieListHandler()
-        val factory = SAXParserFactory.newInstance()
-        factory.isValidating = false
-        val reader = factory.newSAXParser().xmlReader
-        reader.contentHandler = handler
-        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-        handler.movies
-    } catch (e: Exception) {
-        null
-    }
 }
 
-private class MovieListHandler : DefaultHandler() {
+private fun parseMovieList(parser: XmlPullParser): List<Movie> {
     val movies = ArrayList<Movie>()
+    val reference = StringBuilder()
+    val title = StringBuilder()
+    val description = StringBuilder()
+    val descriptionExtended = StringBuilder()
+    val serviceName = StringBuilder()
+    val time = StringBuilder()
+    val length = StringBuilder()
+    val tags = StringBuilder()
+    val fileName = StringBuilder()
+    val fileSize = StringBuilder()
+    var current: StringBuilder? = null
+    var inMovie = false
 
-    private var inMovie = false
-    private var inReference = false
-    private var inTitle = false
-    private var inDescription = false
-    private var inDescriptionEx = false
-    private var inName = false
-    private var inTime = false
-    private var inLength = false
-    private var inTags = false
-    private var inFilename = false
-    private var inFilesize = false
+    var event = parser.eventType
+    while (event != XmlPullParser.END_DOCUMENT) {
+        when (event) {
+            XmlPullParser.START_TAG -> {
+                when (parser.localTag()) {
+                    "e2movie" -> {
+                        inMovie = true
+                        reference.setLength(0)
+                        title.setLength(0)
+                        description.setLength(0)
+                        descriptionExtended.setLength(0)
+                        serviceName.setLength(0)
+                        time.setLength(0)
+                        length.setLength(0)
+                        tags.setLength(0)
+                        fileName.setLength(0)
+                        fileSize.setLength(0)
+                        current = null
+                    }
 
-    private val reference = StringBuilder()
-    private val title = StringBuilder()
-    private val description = StringBuilder()
-    private val descriptionExtended = StringBuilder()
-    private val serviceName = StringBuilder()
-    private val time = StringBuilder()
-    private val length = StringBuilder()
-    private val tags = StringBuilder()
-    private val fileName = StringBuilder()
-    private val fileSize = StringBuilder()
+                    "e2servicereference" -> if (inMovie) current = reference
 
-    override fun startElement(
-        uri: String?,
-        localName: String?,
-        qName: String?,
-        attributes: Attributes?
-    ) {
-        when (tag(localName, qName)) {
-            "e2movie" -> {
-                inMovie = true
-                reference.setLength(0)
-                title.setLength(0)
-                description.setLength(0)
-                descriptionExtended.setLength(0)
-                serviceName.setLength(0)
-                time.setLength(0)
-                length.setLength(0)
-                tags.setLength(0)
-                fileName.setLength(0)
-                fileSize.setLength(0)
+                    "e2title" -> if (inMovie) current = title
+
+                    "e2description" -> if (inMovie) current = description
+
+                    "e2descriptionextended" -> if (inMovie) current = descriptionExtended
+
+                    "e2servicename" -> if (inMovie) current = serviceName
+
+                    "e2time" -> if (inMovie) current = time
+
+                    "e2length" -> if (inMovie) current = length
+
+                    "e2tags" -> if (inMovie) current = tags
+
+                    "e2filename" -> if (inMovie) current = fileName
+
+                    "e2filesize" -> if (inMovie) current = fileSize
+                }
             }
 
-            "e2servicereference" -> inReference = true
+            XmlPullParser.TEXT -> current?.let { parser.appendText(it) }
 
-            "e2title" -> inTitle = true
+            XmlPullParser.END_TAG -> {
+                when (parser.localTag()) {
+                    "e2movie" -> {
+                        inMovie = false
+                        current = null
+                        movies.add(
+                            buildMovie(
+                                reference = reference.toString(),
+                                title = title.toString(),
+                                description = description.toString(),
+                                descriptionExtended = descriptionExtended.toString(),
+                                serviceName = serviceName.toString(),
+                                timeRaw = time.toString(),
+                                length = length.toString(),
+                                tags = tags.toString(),
+                                fileName = fileName.toString(),
+                                fileSizeRaw = fileSize.toString()
+                            )
+                        )
+                    }
 
-            "e2description" -> inDescription = true
-
-            "e2descriptionextended" -> inDescriptionEx = true
-
-            "e2servicename" -> inName = true
-
-            "e2time" -> inTime = true
-
-            "e2length" -> inLength = true
-
-            "e2tags" -> inTags = true
-
-            "e2filename" -> inFilename = true
-
-            "e2filesize" -> inFilesize = true
-        }
-    }
-
-    override fun endElement(uri: String?, localName: String?, qName: String?) {
-        when (tag(localName, qName)) {
-            "e2movie" -> {
-                inMovie = false
-                movies.add(buildMovie())
-            }
-
-            "e2servicereference" -> inReference = false
-
-            "e2title" -> inTitle = false
-
-            "e2description" -> inDescription = false
-
-            "e2descriptionextended" -> inDescriptionEx = false
-
-            "e2servicename" -> inName = false
-
-            "e2time" -> inTime = false
-
-            "e2length" -> inLength = false
-
-            "e2tags" -> inTags = false
-
-            "e2filename" -> inFilename = false
-
-            "e2filesize" -> inFilesize = false
-        }
-    }
-
-    override fun characters(ch: CharArray, start: Int, length: Int) {
-        if (!inMovie) {
-            return
-        }
-        when {
-            inReference -> reference.append(ch, start, length)
-            inTitle -> title.append(ch, start, length)
-            inDescription -> description.append(ch, start, length)
-            inDescriptionEx -> descriptionExtended.append(ch, start, length)
-            inName -> serviceName.append(ch, start, length)
-            inTime -> time.append(ch, start, length)
-            inLength -> this.length.append(ch, start, length)
-            inTags -> tags.append(ch, start, length)
-            inFilename -> fileName.append(ch, start, length)
-            inFilesize -> fileSize.append(ch, start, length)
-        }
-    }
-
-    private fun buildMovie(): Movie {
-        val timeRaw = time.toString()
-        var sizeRaw = fileSize.toString()
-        var sizeReadable = ""
-        if (sizeRaw.isNotEmpty()) {
-            var forCalc = sizeRaw
-            if (Python.NONE == forCalc) {
-                forCalc = "0"
-            }
-            try {
-                var size = forCalc.toLong()
-                size /= (1024 * 1024)
-                sizeReadable = "$size MB"
-            } catch (e: NumberFormatException) {
-                sizeReadable = ""
+                    else -> current = null
+                }
             }
         }
-        return Movie(
-            reference = reference.toString(),
-            title = title.toString(),
-            description = description.toString(),
-            descriptionExtended = descriptionExtended.toString(),
-            serviceName = serviceName.toString().replace("\\p{Cntrl}".toRegex(), ""),
-            time = timeRaw,
-            timeReadable = if (timeRaw.isNotEmpty()) DateTime.getDateTimeString(timeRaw) else "",
-            length = length.toString(),
-            tags = tags.toString(),
-            fileName = fileName.toString(),
-            fileSize = sizeRaw,
-            fileSizeReadable = sizeReadable
-        )
+        event = parser.next()
     }
+    return movies
+}
 
-    private fun tag(localName: String?, qName: String?): String {
-        val raw = if (!localName.isNullOrEmpty()) localName else (qName ?: "")
-        val colon = raw.lastIndexOf(':')
-        return if (colon >= 0) raw.substring(colon + 1) else raw
+private fun buildMovie(
+    reference: String,
+    title: String,
+    description: String,
+    descriptionExtended: String,
+    serviceName: String,
+    timeRaw: String,
+    length: String,
+    tags: String,
+    fileName: String,
+    fileSizeRaw: String
+): Movie {
+    var sizeReadable = ""
+    if (fileSizeRaw.isNotEmpty()) {
+        var forCalc = fileSizeRaw
+        if (Python.NONE == forCalc) {
+            forCalc = "0"
+        }
+        try {
+            var size = forCalc.toLong()
+            size /= (1024 * 1024)
+            sizeReadable = "$size MB"
+        } catch (e: NumberFormatException) {
+            sizeReadable = ""
+        }
     }
+    return Movie(
+        reference = reference,
+        title = title,
+        description = description,
+        descriptionExtended = descriptionExtended,
+        serviceName = serviceName.stripCntrl(),
+        time = timeRaw,
+        timeReadable = if (timeRaw.isNotEmpty()) DateTime.getDateTimeString(timeRaw) else "",
+        length = length,
+        tags = tags,
+        fileName = fileName,
+        fileSize = fileSizeRaw,
+        fileSizeReadable = sizeReadable
+    )
 }

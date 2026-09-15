@@ -39,19 +39,13 @@ import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchEpgNowNextLoad
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.enigma2.Movie
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog
 import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.services.movieFromExtendedHashMap
-import net.reichholf.dreamdroid.ui.services.movieToExtendedHashMap
-import net.reichholf.dreamdroid.ui.services.serviceNowNextFromExtendedHashMap
-import net.reichholf.dreamdroid.ui.services.serviceNowNextToExtendedHashMap
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
 import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
 import net.reichholf.dreamdroid.ui.video.showEpgDetail
@@ -427,21 +421,21 @@ class VideoOverlayFragment :
 
     private fun zap() {
         if (Service.isMarker(mServiceRef)) return
-        val serviceInfoHash = serviceInfoForIntent()
+        val serviceInfo = serviceInfoForIntent()
         val streamingIntent =
             IntentFactory.getStreamServiceIntent(
                 requireActivity(),
                 mServiceRef!!,
                 mTitle ?: "",
                 mBouquetRef,
-                serviceInfoHash
+                serviceInfo as? ServiceNowNext
             )
         val zapExtras =
             VideoPlayback.overlayExtrasForZap(mTitle, mServiceRef, mBouquetRef)
         requireArguments().putString(TITLE, zapExtras.title)
         requireArguments().putString(SERVICE_REFERENCE, zapExtras.serviceRef)
         requireArguments().putString(BOUQUET_REFERENCE, zapExtras.bouquetRef)
-        requireArguments().putSerializable(SERVICE_INFO, serviceInfoHash)
+        requireArguments().putSerializable(SERVICE_INFO, serviceInfo)
         (requireActivity() as VideoActivity).handleIntent(streamingIntent)
 
         onServiceInfoChanged(true)
@@ -479,18 +473,21 @@ class VideoOverlayFragment :
         mBouquetRef = incoming.bouquetRef
 
         @Suppress("DEPRECATION")
-        val serviceInfoHash = extras.get(SERVICE_INFO) as ExtendedHashMap?
-        if (serviceInfoHash != null) {
-            if (serviceInfoHash.containsKey(Movie.KEY_FILE_NAME)) {
-                mMovie = movieFromExtendedHashMap(serviceInfoHash)
+        when (val serviceInfo = extras.get(SERVICE_INFO)) {
+            is EnigmaMovie -> {
+                mMovie = serviceInfo
                 mCurrentService = null
-            } else {
-                mCurrentService = serviceNowNextFromExtendedHashMap(serviceInfoHash)
+            }
+
+            is ServiceNowNext -> {
+                mCurrentService = serviceInfo
                 mMovie = null
             }
-        } else if (refsChanged) {
-            mMovie = null
-            mCurrentService = null
+
+            else -> if (refsChanged) {
+                mMovie = null
+                mCurrentService = null
+            }
         }
 
         if ((titleChanged || refsChanged) && view != null && this::mHandler.isInitialized) {
@@ -501,12 +498,12 @@ class VideoOverlayFragment :
         }
     }
 
-    private fun serviceInfoForIntent(): ExtendedHashMap? {
+    private fun serviceInfoForIntent(): java.io.Serializable? {
         if (mMovie != null) {
-            return movieToExtendedHashMap(mMovie!!)
+            return mMovie
         }
         if (mCurrentService != null) {
-            return serviceNowNextToExtendedHashMap(mCurrentService!!)
+            return mCurrentService
         }
         return null
     }

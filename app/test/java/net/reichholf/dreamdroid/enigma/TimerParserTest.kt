@@ -105,4 +105,26 @@ class TimerParserTest {
         assertTrue(timers[0].description.contains("control"))
         assertFalse(timers[0].description.contains("\u0001"))
     }
+
+    @Test
+    fun readsCancledTypoTag() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2timerlist>
+            <e2timer>
+            <e2servicereference>1:0:1:1:1:1:0:0:0:0:</e2servicereference>
+            <e2servicename>TV</e2servicename>
+            <e2name>News</e2name>
+            <e2timebegin>1893456000</e2timebegin>
+            <e2timeend>1893459600</e2timeend>
+            <e2duration>3600</e2duration>
+            <e2cancled>True</e2cancled>
+            </e2timer>
+            </e2timerlist>
+        """.trimIndent()
+        val timers = TimerParser.parse(xml)
+        assertNotNull(timers)
+        assertEquals(1, timers!!.size)
+        assertEquals("True", timers[0].canceled)
+    }
 }

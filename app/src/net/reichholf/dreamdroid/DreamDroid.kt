@@ -28,6 +28,7 @@ import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -87,6 +88,7 @@ class DreamDroid : Application() {
         loadCurrentProfile(this)
 
         handleProfileSwitch(this)
+        PiconImageLoader.install(this)
     }
 
     private fun handleProfileSwitch(context: Context) {

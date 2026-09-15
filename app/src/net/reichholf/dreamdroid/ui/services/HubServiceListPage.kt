@@ -45,7 +45,6 @@ import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Service
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -322,7 +321,7 @@ class HubServiceListSession : MenuProvider {
             listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -375,7 +374,7 @@ class HubServiceListSession : MenuProvider {
                                     ref,
                                     name,
                                     currentRef,
-                                    serviceNowNextToExtendedHashMap(row)
+                                    row
                                 )
                             )
                         } catch (_: ActivityNotFoundException) {

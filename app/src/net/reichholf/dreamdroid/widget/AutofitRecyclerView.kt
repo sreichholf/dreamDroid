@@ -3,9 +3,9 @@ package net.reichholf.dreamdroid.widget
 import android.content.Context
 import android.util.AttributeSet
 import androidx.recyclerview.widget.GridLayoutManager
-import com.simplecityapps.recyclerview_fastscroll.views.FastScrollRecyclerView
+import androidx.recyclerview.widget.RecyclerView
 
-class AutofitRecyclerView : FastScrollRecyclerView {
+class AutofitRecyclerView : RecyclerView {
     private var mColumnWidth = -1
     private var mSpanCount = 4
     private var mMaxSpanCount = DEFAULT_MAX_SPAN_COUNT

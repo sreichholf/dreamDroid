@@ -22,7 +22,6 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.nav.NavExtras
@@ -39,11 +38,11 @@ fun ProfileEditDestination(hostFragment: PhoneNavHostFragment, modifier: Modifie
     val args = hostFragment.profileEditLeafArguments()
 
     @Suppress("DEPRECATION")
-    val extras = args.getSerializable(NavExtras.DATA) as? ExtendedHashMap
+    val extras = args.getSerializable(NavExtras.DATA) as? Profile
+    val action = args.getString(NavExtras.ACTION)
     val initialProfile = remember(tag, remount) {
-        val fromExtras = extras?.get("profile") as? Profile
         when {
-            Intent.ACTION_EDIT == extras?.get("action") && fromExtras != null -> fromExtras
+            Intent.ACTION_EDIT == action && extras != null -> extras
             else -> Profile.getDefault()
         }
     }

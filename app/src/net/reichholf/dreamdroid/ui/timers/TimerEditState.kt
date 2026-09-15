@@ -9,13 +9,13 @@ import androidx.compose.ui.platform.ViewCompositionStrategy
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerKeys
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
- * Compose form state for timer create/edit. Persist [ExtendedHashMap] on the fragment
+ * Compose form state for timer create/edit. Persist [Timer] on the fragment
  * for save/pick edges; sync display fields here.
  */
 class TimerEditState {
@@ -30,40 +30,40 @@ class TimerEditState {
     var repeatedLabel by mutableStateOf("")
     var serviceName by mutableStateOf("")
     var tagsLabel by mutableStateOf("")
-    var afterEventIndex by mutableIntStateOf(Timer.Afterevents.AUTO.intValue())
+    var afterEventIndex by mutableIntStateOf(TimerKeys.Afterevents.AUTO.intValue())
     var locationIndex by mutableIntStateOf(0)
     var afterEventOptions by mutableStateOf<List<String>>(emptyList())
     var locationOptions by mutableStateOf<List<String>>(emptyList())
     var saveError by mutableStateOf("")
 
     fun loadFrom(
-        timer: ExtendedHashMap,
+        timer: Timer,
         afterEvents: List<String>,
         locations: List<String>,
         repeatedLabel: String
     ) {
-        name = timer.getString(Timer.KEY_NAME).orEmpty()
-        description = timer.getString(Timer.KEY_DESCRIPTION).orEmpty()
-        enabled = DateTime.parseTimestamp(timer.getString(Timer.KEY_DISABLED)) == 0
-        zap = DateTime.parseTimestamp(timer.getString(Timer.KEY_JUST_PLAY)) == 1
-        serviceName = timer.getString(Timer.KEY_SERVICE_NAME).orEmpty()
+        name = timer.name
+        description = timer.description
+        enabled = DateTime.parseTimestamp(timer.disabled) == 0
+        zap = DateTime.parseTimestamp(timer.justPlay) == 1
+        serviceName = timer.serviceName
         afterEventOptions = afterEvents
         locationOptions = locations
-        afterEventIndex = DateTime.parseTimestamp(timer.getString(Timer.KEY_AFTER_EVENT))
+        afterEventIndex = DateTime.parseTimestamp(timer.afterEvent)
             .coerceIn(0, (afterEvents.size - 1).coerceAtLeast(0))
 
-        val timerLoc = timer.getString(Timer.KEY_LOCATION)
+        val timerLoc = timer.location
         locationIndex = 0
-        if (timerLoc != null) {
+        if (timerLoc.isNotEmpty()) {
             val idx = locations.indexOf(timerLoc)
             if (idx >= 0) locationIndex = idx
         }
 
-        val begin = DateTime.parseTimestamp(timer.getString(Timer.KEY_BEGIN))
-        val end = DateTime.parseTimestamp(timer.getString(Timer.KEY_END))
+        val begin = DateTime.parseTimestamp(timer.begin)
+        val end = DateTime.parseTimestamp(timer.end)
         setBeginEndLabels(begin, end)
         this.repeatedLabel = repeatedLabel
-        tagsLabel = timer.getString(Timer.KEY_TAGS).orEmpty()
+        tagsLabel = timer.tags
     }
 
     fun setBeginEndLabels(beginSeconds: Int, endSeconds: Int) {
@@ -77,15 +77,22 @@ class TimerEditState {
         endTime = timeFormat.format(end)
     }
 
-    fun applyTo(timer: ExtendedHashMap) {
-        timer.put(Timer.KEY_NAME, name)
-        timer.put(Timer.KEY_DESCRIPTION, description)
-        timer.put(Timer.KEY_DISABLED, if (enabled) "0" else "1")
-        timer.put(Timer.KEY_JUST_PLAY, if (zap) "1" else "0")
-        timer.put(Timer.KEY_AFTER_EVENT, afterEventIndex.toString())
-        if (locationOptions.isNotEmpty() && locationIndex in locationOptions.indices) {
-            timer.put(Timer.KEY_LOCATION, locationOptions[locationIndex])
+    fun applyTo(timer: Timer): Timer {
+        val location = if (locationOptions.isNotEmpty() &&
+            locationIndex in locationOptions.indices
+        ) {
+            locationOptions[locationIndex]
+        } else {
+            timer.location
         }
+        return timer.copy(
+            name = name,
+            description = description,
+            disabled = if (enabled) "0" else "1",
+            justPlay = if (zap) "1" else "0",
+            afterEvent = afterEventIndex.toString(),
+            location = location
+        )
     }
 }
 

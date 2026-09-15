@@ -6,11 +6,18 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler
 
+import net.reichholf.dreamdroid.enigma.SleepTimer
+import net.reichholf.dreamdroid.enigma.SleepTimerParser
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.parsers.enigma2.saxhandler.E2SleepTimerHandler
 
 /**
  * @author sre
  */
-class SleepTimerRequestHandler :
-    AbstractSimpleRequestHandler(URIStore.SLEEPTIMER, E2SleepTimerHandler())
+class SleepTimerRequestHandler : AbstractSimpleRequestHandler(URIStore.SLEEPTIMER) {
+    fun parseSleepTimer(xml: String?): SleepTimer {
+        if (xml == null) {
+            return SleepTimer()
+        }
+        return SleepTimerParser.parse(xml) ?: SleepTimer()
+    }
+}

@@ -10,20 +10,21 @@ import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
+import net.reichholf.dreamdroid.enigma.PowerState
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.launchPowerStateSetLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.launchSleepTimerLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Message
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
+import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -99,12 +100,12 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     protected fun getText(resId: Int): CharSequence = mActivity.getText(resId)
 
-    private fun onPowerStateSet(success: Boolean, result: ExtendedHashMap, resultText: String?) {
+    private fun onPowerStateSet(success: Boolean, result: PowerState, resultText: String?) {
         if (!success) {
             showToast(resultText)
             return
         }
-        val isRunning = result[PowerState.KEY_IN_STANDBY] as Boolean
+        val isRunning = result.isRunning == true
         if (isRunning) {
             showToast(getString(R.string.is_running))
         } else {
@@ -165,16 +166,16 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
             }
 
             Statics.ITEM_TOGGLE_STANDBY ->
-                setPowerState(PowerState.STATE_TOGGLE)
+                setPowerState(PowerStateKeys.STATE_TOGGLE)
 
             Statics.ITEM_RESTART_GUI ->
-                setPowerState(PowerState.STATE_GUI_RESTART)
+                setPowerState(PowerStateKeys.STATE_GUI_RESTART)
 
             Statics.ITEM_REBOOT ->
-                setPowerState(PowerState.STATE_SYSTEM_REBOOT)
+                setPowerState(PowerStateKeys.STATE_SYSTEM_REBOOT)
 
             Statics.ITEM_SHUTDOWN ->
-                setPowerState(PowerState.STATE_SHUTDOWN)
+                setPowerState(PowerStateKeys.STATE_SHUTDOWN)
 
             R.id.menu_navigation_power -> {
                 val powerHost = getMainActivity().supportFragmentManager
@@ -277,7 +278,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      */
     fun onSetSleepTimer(time: String?, action: String?, enabled: Boolean) {
         val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("cmd", SleepTimer.CMD_SET))
+        params.add(NameValuePair("cmd", SleepTimerKeys.CMD_SET))
         params.add(NameValuePair("time", time))
         params.add(NameValuePair("action", action))
 
@@ -297,7 +298,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
 
     private fun onSleepTimerSet(
         success: Boolean,
-        result: ExtendedHashMap,
+        result: SleepTimer,
         openDialog: Boolean,
         errorText: String?
     ) {
@@ -320,7 +321,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
                 }
                 return
             }
-            val text = result.getString(SleepTimer.KEY_TEXT)
+            val text = result.text
             showToast(text)
         } else {
             showToast(getString(R.string.error))
@@ -339,9 +340,9 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
             }
     }
 
-    private fun onSimpleResult(success: Boolean, result: ExtendedHashMap, http: SimpleHttpClient) {
+    private fun onSimpleResult(success: Boolean, result: SimpleResult, http: SimpleHttpClient) {
         var toastText = getString(R.string.get_content_error)
-        val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+        val stateText = result.stateText
 
         if (stateText != null && stateText != "") {
             toastText = stateText
@@ -397,12 +398,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      * @param timeout Timeout for the message, 0 means no timeout will occur
      */
     fun onSendMessage(text: String?, type: String?, timeout: String?) {
-        val msg = ExtendedHashMap()
-        msg.put(Message.KEY_TEXT, text)
-        msg.put(Message.KEY_TYPE, type)
-        msg.put(Message.KEY_TIMEOUT, timeout)
-
-        execSimpleResultTask(MessageRequestHandler(), Message.getParams(msg))
+        execSimpleResultTask(MessageRequestHandler(), Message.getParams(text, type, timeout))
     }
 
     fun setAvailableFeatures() {

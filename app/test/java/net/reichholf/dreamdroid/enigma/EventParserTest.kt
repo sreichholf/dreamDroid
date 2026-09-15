@@ -75,4 +75,52 @@ class EventParserTest {
         assertTrue(events[0].description.contains("control"))
         assertFalse(events[0].description.contains("\u0001"))
     }
+
+    @Test
+    fun concatenatesSplitTitleTextNodes() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2eventlist>
+            <e2event>
+            <e2eventid>1</e2eventid>
+            <e2eventstart>1893456000</e2eventstart>
+            <e2eventduration>60</e2eventduration>
+            <e2eventcurrenttime>1893456000</e2eventcurrenttime>
+            <e2eventtitle>Tag<!--split-->esschau</e2eventtitle>
+            <e2eventdescription/>
+            <e2eventdescriptionextended/>
+            <e2eventservicereference>1:0:1:1:1:1:0:0:0:0:</e2eventservicereference>
+            <e2eventservicename>TV</e2eventservicename>
+            </e2event>
+            </e2eventlist>
+        """.trimIndent()
+        val events = EventParser.parse(xml)
+        assertEquals(1, events.size)
+        assertEquals("Tagesschau", events[0].title)
+    }
+
+    @Test
+    fun skipsDateTimeWhenStartIsPythonNone() {
+        val xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <e2eventlist>
+            <e2event>
+            <e2eventid>1</e2eventid>
+            <e2eventstart>None</e2eventstart>
+            <e2eventduration>3600</e2eventduration>
+            <e2eventcurrenttime>None</e2eventcurrenttime>
+            <e2eventtitle>News</e2eventtitle>
+            <e2eventdescription/>
+            <e2eventdescriptionextended/>
+            <e2eventservicereference>1:0:1:1:1:1:0:0:0:0:</e2eventservicereference>
+            <e2eventservicename>TV</e2eventservicename>
+            </e2event>
+            </e2eventlist>
+        """.trimIndent()
+        val events = EventParser.parse(xml)
+        assertEquals(1, events.size)
+        assertEquals("None", events[0].start)
+        assertEquals("", events[0].startReadable)
+        assertEquals("", events[0].durationReadable)
+    }
 }

@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.ui.signal
 
-import android.graphics.Color
-import android.view.ViewGroup
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,13 +21,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.ekndev.gaugelibrary.HalfGauge
-import com.ekndev.gaugelibrary.Range
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Signal
 
@@ -82,7 +77,6 @@ fun SignalScreen(
     onAcousticChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val onSurface = MaterialTheme.colorScheme.onSurface.toArgb()
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -115,38 +109,11 @@ fun SignalScreen(
             )
         }
 
-        AndroidView(
-            factory = { ctx ->
-                HalfGauge(ctx).apply {
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT
-                    )
-                    setValueColor(onSurface)
-                    setMinValueTextColor(onSurface)
-                    setMaxValueTextColor(onSurface)
-                    setNeedleColor(onSurface)
-                    addRange(range("#ce0000", 0.0, 50.0))
-                    addRange(range("#e37700", 50.0, 65.0))
-                    addRange(range("#e3e500", 65.0, 80.0))
-                    addRange(range("#00b20b", 80.0, 100.0))
-                    minValue = 0.0
-                    maxValue = 100.0
-                    value = 0.0
-                }
-            },
+        SignalGauge(
+            percent = state.snrPercent,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(300.dp),
-            update = { gauge ->
-                gauge.setValueColor(onSurface)
-                gauge.setMinValueTextColor(onSurface)
-                gauge.setMaxValueTextColor(onSurface)
-                gauge.setNeedleColor(onSurface)
-                if (gauge.value != state.snrPercent.toDouble()) {
-                    gauge.value = state.snrPercent.toDouble()
-                }
-            }
+                .height(300.dp)
         )
 
         MetricRow(label = "SNRdb", value = state.snrDbRaw)
@@ -199,13 +166,7 @@ private fun MetricRow(label: String, value: String) {
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier.weight(1f),
-            textAlign = androidx.compose.ui.text.style.TextAlign.End
+            textAlign = TextAlign.End
         )
     }
-}
-
-private fun range(color: String, from: Double, to: Double): Range = Range().apply {
-    setColor(Color.parseColor(color))
-    setFrom(from)
-    setTo(to)
 }

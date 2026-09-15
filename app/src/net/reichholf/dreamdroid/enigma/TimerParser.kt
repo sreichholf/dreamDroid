@@ -1,335 +1,255 @@
 package net.reichholf.dreamdroid.enigma
 
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
-import org.xml.sax.Attributes
-import org.xml.sax.InputSource
-import org.xml.sax.helpers.DefaultHandler
+import org.xmlpull.v1.XmlPullParser
 
 object TimerParser {
     /**
      * @return parsed timers, or null when XML cannot be parsed (distinct from a valid empty list).
      */
-    fun parse(xml: String): List<Timer>? {
-        if (xml.isEmpty()) {
-            return null
+    fun parse(xml: String): List<Timer>? =
+        parseEnigmaXml(xml, emptyResult = null, onFail = null) { parser ->
+            parseTimerList(parser)
         }
-        return parseSanitized(xml, aggressive = false)
-            ?: parseSanitized(xml, aggressive = true)
-    }
-
-    private fun parseSanitized(xml: String, aggressive: Boolean): List<Timer>? = try {
-        val handler = TimerListHandler()
-        val factory = SAXParserFactory.newInstance()
-        factory.isValidating = false
-        val reader = factory.newSAXParser().xmlReader
-        reader.contentHandler = handler
-        reader.parse(InputSource(StringReader(XmlInput.sanitize(xml, aggressive))))
-        handler.timers
-    } catch (e: Exception) {
-        null
-    }
 }
 
-private class TimerListHandler : DefaultHandler() {
+private fun parseTimerList(parser: XmlPullParser): List<Timer> {
     val timers = ArrayList<Timer>()
+    val reference = StringBuilder()
+    val serviceName = StringBuilder()
+    val eit = StringBuilder()
+    val name = StringBuilder()
+    val description = StringBuilder()
+    val descriptionExtended = StringBuilder()
+    val disabled = StringBuilder()
+    val begin = StringBuilder()
+    val end = StringBuilder()
+    val duration = StringBuilder()
+    val startPrepare = StringBuilder()
+    val justPlay = StringBuilder()
+    val afterEvent = StringBuilder()
+    val location = StringBuilder()
+    val tags = StringBuilder()
+    val logEntries = StringBuilder()
+    val fileName = StringBuilder()
+    val backOff = StringBuilder()
+    val nextActivation = StringBuilder()
+    val firstTryPrepare = StringBuilder()
+    val state = StringBuilder()
+    val repeated = StringBuilder()
+    val dontSave = StringBuilder()
+    val canceled = StringBuilder()
+    val toggleDisabled = StringBuilder()
+    var current: StringBuilder? = null
+    var inTimer = false
 
-    private var inTimer = false
-    private var inReference = false
-    private var inServiceName = false
-    private var inEit = false
-    private var inName = false
-    private var inDescription = false
-    private var inDescriptionEx = false
-    private var inDisabled = false
-    private var inBegin = false
-    private var inEnd = false
-    private var inDuration = false
-    private var inStartPrepare = false
-    private var inJustPlay = false
-    private var inAfterEvent = false
-    private var inLocation = false
-    private var inTags = false
-    private var inLogEntries = false
-    private var inFileName = false
-    private var inBackOff = false
-    private var inNextActivation = false
-    private var inFirstTryPrepare = false
-    private var inState = false
-    private var inRepeated = false
-    private var inDontSave = false
-    private var inCanceled = false
-    private var inToggleDisabled = false
+    var event = parser.eventType
+    while (event != XmlPullParser.END_DOCUMENT) {
+        when (event) {
+            XmlPullParser.START_TAG -> {
+                when (parser.localTag()) {
+                    "e2timer" -> {
+                        inTimer = true
+                        reference.setLength(0)
+                        serviceName.setLength(0)
+                        eit.setLength(0)
+                        name.setLength(0)
+                        description.setLength(0)
+                        descriptionExtended.setLength(0)
+                        disabled.setLength(0)
+                        begin.setLength(0)
+                        end.setLength(0)
+                        duration.setLength(0)
+                        startPrepare.setLength(0)
+                        justPlay.setLength(0)
+                        afterEvent.setLength(0)
+                        location.setLength(0)
+                        tags.setLength(0)
+                        logEntries.setLength(0)
+                        fileName.setLength(0)
+                        backOff.setLength(0)
+                        nextActivation.setLength(0)
+                        firstTryPrepare.setLength(0)
+                        state.setLength(0)
+                        repeated.setLength(0)
+                        dontSave.setLength(0)
+                        canceled.setLength(0)
+                        toggleDisabled.setLength(0)
+                        current = null
+                    }
 
-    private val reference = StringBuilder()
-    private val serviceName = StringBuilder()
-    private val eit = StringBuilder()
-    private val name = StringBuilder()
-    private val description = StringBuilder()
-    private val descriptionExtended = StringBuilder()
-    private val disabled = StringBuilder()
-    private val begin = StringBuilder()
-    private val end = StringBuilder()
-    private val duration = StringBuilder()
-    private val startPrepare = StringBuilder()
-    private val justPlay = StringBuilder()
-    private val afterEvent = StringBuilder()
-    private val location = StringBuilder()
-    private val tags = StringBuilder()
-    private val logEntries = StringBuilder()
-    private val fileName = StringBuilder()
-    private val backOff = StringBuilder()
-    private val nextActivation = StringBuilder()
-    private val firstTryPrepare = StringBuilder()
-    private val state = StringBuilder()
-    private val repeated = StringBuilder()
-    private val dontSave = StringBuilder()
-    private val canceled = StringBuilder()
-    private val toggleDisabled = StringBuilder()
+                    "e2servicereference" -> if (inTimer) current = reference
 
-    override fun startElement(
-        uri: String?,
-        localName: String?,
-        qName: String?,
-        attributes: Attributes?
-    ) {
-        when (tag(localName, qName)) {
-            "e2timer" -> {
-                inTimer = true
-                clearBuilders()
+                    "e2servicename" -> if (inTimer) current = serviceName
+
+                    "e2eit" -> if (inTimer) current = eit
+
+                    "e2name" -> if (inTimer) current = name
+
+                    "e2description" -> if (inTimer) current = description
+
+                    "e2descriptionextended" -> if (inTimer) current = descriptionExtended
+
+                    "e2disabled" -> if (inTimer) current = disabled
+
+                    "e2timebegin" -> if (inTimer) current = begin
+
+                    "e2timeend" -> if (inTimer) current = end
+
+                    "e2duration" -> if (inTimer) current = duration
+
+                    "e2startprepare" -> if (inTimer) current = startPrepare
+
+                    "e2justplay" -> if (inTimer) current = justPlay
+
+                    "e2afterevent" -> if (inTimer) current = afterEvent
+
+                    "e2location" -> if (inTimer) current = location
+
+                    "e2tags" -> if (inTimer) current = tags
+
+                    "e2logentries" -> if (inTimer) current = logEntries
+
+                    "e2filename" -> if (inTimer) current = fileName
+
+                    "e2backoff" -> if (inTimer) current = backOff
+
+                    "e2nextactivation" -> if (inTimer) current = nextActivation
+
+                    "e2firsttryprepare" -> if (inTimer) current = firstTryPrepare
+
+                    "e2state" -> if (inTimer) current = state
+
+                    "e2repeated" -> if (inTimer) current = repeated
+
+                    "e2dontsave" -> if (inTimer) current = dontSave
+
+                    "e2cancled" -> if (inTimer) current = canceled
+
+                    "e2toggledisabled" -> if (inTimer) current = toggleDisabled
+                }
             }
 
-            "e2servicereference" -> inReference = true
+            XmlPullParser.TEXT -> current?.let { parser.appendText(it) }
 
-            "e2servicename" -> inServiceName = true
+            XmlPullParser.END_TAG -> {
+                when (parser.localTag()) {
+                    "e2timer" -> {
+                        inTimer = false
+                        current = null
+                        timers.add(
+                            buildTimer(
+                                reference = reference.toString().trim(),
+                                serviceName = serviceName.toString(),
+                                eit = eit.toString().trim(),
+                                name = name.toString().trim(),
+                                description = description.toString(),
+                                descriptionExtended = descriptionExtended.toString(),
+                                disabled = disabled.toString().trim(),
+                                beginRaw = begin.toString().trim(),
+                                endRaw = end.toString().trim(),
+                                durationRaw = duration.toString().trim(),
+                                startPrepare = startPrepare.toString().trim(),
+                                justPlay = justPlay.toString().trim(),
+                                afterEvent = afterEvent.toString().trim(),
+                                location = location.toString().trim(),
+                                tags = tags.toString().trim(),
+                                logEntries = logEntries.toString(),
+                                fileName = fileName.toString().trim(),
+                                backOff = backOff.toString().trim(),
+                                nextActivation = nextActivation.toString().trim(),
+                                firstTryPrepare = firstTryPrepare.toString().trim(),
+                                state = state.toString().trim(),
+                                repeated = repeated.toString().trim(),
+                                dontSave = dontSave.toString().trim(),
+                                canceled = canceled.toString().trim(),
+                                toggleDisabled = toggleDisabled.toString().trim()
+                            )
+                        )
+                    }
 
-            "e2eit" -> inEit = true
-
-            "e2name" -> inName = true
-
-            "e2description" -> inDescription = true
-
-            "e2descriptionextended" -> inDescriptionEx = true
-
-            "e2disabled" -> inDisabled = true
-
-            "e2timebegin" -> inBegin = true
-
-            "e2timeend" -> inEnd = true
-
-            "e2duration" -> inDuration = true
-
-            "e2startprepare" -> inStartPrepare = true
-
-            "e2justplay" -> inJustPlay = true
-
-            "e2afterevent" -> inAfterEvent = true
-
-            "e2location" -> inLocation = true
-
-            "e2tags" -> inTags = true
-
-            "e2logentries" -> inLogEntries = true
-
-            "e2filename" -> inFileName = true
-
-            "e2backoff" -> inBackOff = true
-
-            "e2nextactivation" -> inNextActivation = true
-
-            "e2firsttryprepare" -> inFirstTryPrepare = true
-
-            "e2state" -> inState = true
-
-            "e2repeated" -> inRepeated = true
-
-            "e2dontsave" -> inDontSave = true
-
-            "e2cancled" -> inCanceled = true
-
-            "e2toggledisabled" -> inToggleDisabled = true
-        }
-    }
-
-    override fun endElement(uri: String?, localName: String?, qName: String?) {
-        when (tag(localName, qName)) {
-            "e2timer" -> {
-                inTimer = false
-                timers.add(buildTimer())
-            }
-
-            "e2servicereference" -> inReference = false
-
-            "e2servicename" -> inServiceName = false
-
-            "e2eit" -> inEit = false
-
-            "e2name" -> inName = false
-
-            "e2description" -> inDescription = false
-
-            "e2descriptionextended" -> inDescriptionEx = false
-
-            "e2disabled" -> inDisabled = false
-
-            "e2timebegin" -> inBegin = false
-
-            "e2timeend" -> inEnd = false
-
-            "e2duration" -> inDuration = false
-
-            "e2startprepare" -> inStartPrepare = false
-
-            "e2justplay" -> inJustPlay = false
-
-            "e2afterevent" -> inAfterEvent = false
-
-            "e2location" -> inLocation = false
-
-            "e2tags" -> inTags = false
-
-            "e2logentries" -> inLogEntries = false
-
-            "e2filename" -> inFileName = false
-
-            "e2backoff" -> inBackOff = false
-
-            "e2nextactivation" -> inNextActivation = false
-
-            "e2firsttryprepare" -> inFirstTryPrepare = false
-
-            "e2state" -> inState = false
-
-            "e2repeated" -> inRepeated = false
-
-            "e2dontsave" -> inDontSave = false
-
-            "e2cancled" -> inCanceled = false
-
-            "e2toggledisabled" -> inToggleDisabled = false
-        }
-    }
-
-    override fun characters(ch: CharArray, startIdx: Int, length: Int) {
-        if (!inTimer) {
-            return
-        }
-        when {
-            inReference -> reference.append(ch, startIdx, length)
-            inServiceName -> serviceName.append(ch, startIdx, length)
-            inEit -> eit.append(ch, startIdx, length)
-            inName -> name.append(ch, startIdx, length)
-            inDescription -> description.append(ch, startIdx, length)
-            inDescriptionEx -> descriptionExtended.append(ch, startIdx, length)
-            inDisabled -> disabled.append(ch, startIdx, length)
-            inBegin -> begin.append(ch, startIdx, length)
-            inEnd -> end.append(ch, startIdx, length)
-            inDuration -> duration.append(ch, startIdx, length)
-            inStartPrepare -> startPrepare.append(ch, startIdx, length)
-            inJustPlay -> justPlay.append(ch, startIdx, length)
-            inAfterEvent -> afterEvent.append(ch, startIdx, length)
-            inLocation -> location.append(ch, startIdx, length)
-            inTags -> tags.append(ch, startIdx, length)
-            inLogEntries -> logEntries.append(ch, startIdx, length)
-            inFileName -> fileName.append(ch, startIdx, length)
-            inBackOff -> backOff.append(ch, startIdx, length)
-            inNextActivation -> nextActivation.append(ch, startIdx, length)
-            inFirstTryPrepare -> firstTryPrepare.append(ch, startIdx, length)
-            inState -> state.append(ch, startIdx, length)
-            inRepeated -> repeated.append(ch, startIdx, length)
-            inDontSave -> dontSave.append(ch, startIdx, length)
-            inCanceled -> canceled.append(ch, startIdx, length)
-            inToggleDisabled -> toggleDisabled.append(ch, startIdx, length)
-        }
-    }
-
-    private fun clearBuilders() {
-        reference.setLength(0)
-        serviceName.setLength(0)
-        eit.setLength(0)
-        name.setLength(0)
-        description.setLength(0)
-        descriptionExtended.setLength(0)
-        disabled.setLength(0)
-        begin.setLength(0)
-        end.setLength(0)
-        duration.setLength(0)
-        startPrepare.setLength(0)
-        justPlay.setLength(0)
-        afterEvent.setLength(0)
-        location.setLength(0)
-        tags.setLength(0)
-        logEntries.setLength(0)
-        fileName.setLength(0)
-        backOff.setLength(0)
-        nextActivation.setLength(0)
-        firstTryPrepare.setLength(0)
-        state.setLength(0)
-        repeated.setLength(0)
-        dontSave.setLength(0)
-        canceled.setLength(0)
-        toggleDisabled.setLength(0)
-    }
-
-    private fun buildTimer(): Timer {
-        val beginRaw = begin.toString().trim()
-        val endRaw = end.toString().trim()
-        val durationRaw = duration.toString().trim()
-
-        var beginReadable = ""
-        var endReadable = ""
-        var durationReadable = ""
-        if (beginRaw.isNotEmpty() && Python.NONE != beginRaw) {
-            beginReadable = DateTime.getYearDateTimeString(beginRaw)
-        }
-        if (endRaw.isNotEmpty() && Python.NONE != endRaw) {
-            endReadable = DateTime.getYearDateTimeString(endRaw)
-        }
-        if (durationRaw.isNotEmpty() && Python.NONE != durationRaw) {
-            durationReadable = try {
-                DateTime.getDurationString(durationRaw, null) ?: durationRaw
-            } catch (e: NumberFormatException) {
-                durationRaw
+                    else -> current = null
+                }
             }
         }
+        event = parser.next()
+    }
+    return timers
+}
 
-        return Timer(
-            reference = reference.toString().trim(),
-            serviceName = serviceName.toString().replace("\\p{Cntrl}".toRegex(), "").trim(),
-            eit = eit.toString().trim(),
-            name = name.toString().trim(),
-            description = description.toString(),
-            descriptionExtended = descriptionExtended.toString(),
-            disabled = disabled.toString().trim(),
-            begin = beginRaw,
-            end = endRaw,
-            duration = durationRaw,
-            beginReadable = beginReadable,
-            endReadable = endReadable,
-            durationReadable = durationReadable,
-            startPrepare = startPrepare.toString().trim(),
-            justPlay = justPlay.toString().trim(),
-            afterEvent = afterEvent.toString().trim(),
-            location = location.toString().trim(),
-            tags = tags.toString().trim(),
-            logEntries = logEntries.toString(),
-            fileName = fileName.toString().trim(),
-            backOff = backOff.toString().trim(),
-            nextActivation = nextActivation.toString().trim(),
-            firstTryPrepare = firstTryPrepare.toString().trim(),
-            state = state.toString().trim(),
-            repeated = repeated.toString().trim(),
-            dontSave = dontSave.toString().trim(),
-            canceled = canceled.toString().trim(),
-            toggleDisabled = toggleDisabled.toString().trim()
-        )
+private fun buildTimer(
+    reference: String,
+    serviceName: String,
+    eit: String,
+    name: String,
+    description: String,
+    descriptionExtended: String,
+    disabled: String,
+    beginRaw: String,
+    endRaw: String,
+    durationRaw: String,
+    startPrepare: String,
+    justPlay: String,
+    afterEvent: String,
+    location: String,
+    tags: String,
+    logEntries: String,
+    fileName: String,
+    backOff: String,
+    nextActivation: String,
+    firstTryPrepare: String,
+    state: String,
+    repeated: String,
+    dontSave: String,
+    canceled: String,
+    toggleDisabled: String
+): Timer {
+    var beginReadable = ""
+    var endReadable = ""
+    var durationReadable = ""
+    if (beginRaw.isNotEmpty() && Python.NONE != beginRaw) {
+        beginReadable = DateTime.getYearDateTimeString(beginRaw)
+    }
+    if (endRaw.isNotEmpty() && Python.NONE != endRaw) {
+        endReadable = DateTime.getYearDateTimeString(endRaw)
+    }
+    if (durationRaw.isNotEmpty() && Python.NONE != durationRaw) {
+        durationReadable = try {
+            DateTime.getDurationString(durationRaw, null) ?: durationRaw
+        } catch (e: NumberFormatException) {
+            durationRaw
+        }
     }
 
-    private fun tag(localName: String?, qName: String?): String {
-        val raw = if (!localName.isNullOrEmpty()) localName else (qName ?: "")
-        val colon = raw.lastIndexOf(':')
-        return if (colon >= 0) raw.substring(colon + 1) else raw
-    }
+    return Timer(
+        reference = reference,
+        serviceName = serviceName.stripCntrl().trim(),
+        eit = eit,
+        name = name,
+        description = description,
+        descriptionExtended = descriptionExtended,
+        disabled = disabled,
+        begin = beginRaw,
+        end = endRaw,
+        duration = durationRaw,
+        beginReadable = beginReadable,
+        endReadable = endReadable,
+        durationReadable = durationReadable,
+        startPrepare = startPrepare,
+        justPlay = justPlay,
+        afterEvent = afterEvent,
+        location = location,
+        tags = tags,
+        logEntries = logEntries,
+        fileName = fileName,
+        backOff = backOff,
+        nextActivation = nextActivation,
+        firstTryPrepare = firstTryPrepare,
+        state = state,
+        repeated = repeated,
+        dontSave = dontSave,
+        canceled = canceled,
+        toggleDisabled = toggleDisabled
+    )
 }

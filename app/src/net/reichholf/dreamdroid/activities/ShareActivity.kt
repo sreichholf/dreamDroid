@@ -21,8 +21,8 @@ import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -160,7 +160,7 @@ class ShareActivity : AppCompatActivity() {
         }
     }
 
-    fun onSimpleResult(success: Boolean, result: ExtendedHashMap?, http: SimpleHttpClient) {
+    fun onSimpleResult(success: Boolean, result: SimpleResult?, http: SimpleHttpClient) {
         mListState.progress = null
 
         if (mTitle == null) mTitle = "..."

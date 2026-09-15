@@ -9,7 +9,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 
@@ -22,7 +21,7 @@ fun LifecycleOwner.launchCheckProfileLoad(
     profile: Profile,
     context: Context,
     onProgress: (state: String) -> Unit,
-    onResult: (result: ExtendedHashMap?) -> Unit
+    onResult: (result: ProfileCheckResult?) -> Unit
 ): Job = lifecycleScope.launch {
     onProgress(context.getString(R.string.checking))
     val result = withContext(Dispatchers.IO) {

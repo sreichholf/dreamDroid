@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.activities.abs
 
 import android.Manifest
-import android.app.Activity
 import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
@@ -13,23 +12,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
-import com.squareup.picasso.OkHttp3Downloader
-import com.squareup.picasso.Picasso
-import java.security.GeneralSecurityException
-import java.security.KeyStore
-import java.util.Arrays
 import javax.net.ssl.HttpsURLConnection
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManagerFactory
-import javax.net.ssl.X509TrustManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.PiconSyncService
-import net.reichholf.dreamdroid.ssl.DreamDroidTrustManager
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import okhttp3.Credentials
-import okhttp3.OkHttpClient
-import okhttp3.Response
 
 /**
  * Created by Stephan on 06.11.13.
@@ -38,56 +26,12 @@ open class BaseActivity :
     AppCompatActivity(),
     DialogActionListener,
     SharedPreferences.OnSharedPreferenceChangeListener {
-    private var mTrustManager: DreamDroidTrustManager? = null
-
-    private fun responseCount(response: Response): Int {
-        var result = 1
-        var prior = response.priorResponse
-        while (prior != null) {
-            result++
-            prior = prior.priorResponse
-        }
-        return result
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         try {
-            mTrustManager = DreamDroidTrustManager(this)
-
-            val sc = SSLContext.getInstance("TLS")
-            sc.init(
-                null,
-                arrayOf<X509TrustManager>(mTrustManager!!),
-                java.security.SecureRandom()
-            )
             HttpsURLConnection.setFollowRedirects(false)
-            // Picasso w/ OkHttpClient. Do not mutate process-wide
+            // Coil ImageLoader w/ OkHttpClient. Do not mutate process-wide
             // HttpsURLConnection defaults; trust-all is per OkHttp client.
-            val clientBuilder = OkHttpClient.Builder()
-            clientBuilder
-                .authenticator { _, response ->
-                    if (responseCount(response) >= 3) {
-                        null
-                    } else {
-                        val username = response.request.url.username
-                        val password = response.request.url.password
-                        val cred = Credentials.basic(username, password)
-                        response.request.newBuilder().header("Authorization", cred).build()
-                    }
-                }
-                .sslSocketFactory(sc.socketFactory, systemDefaultTrustManager())
-                // OkHttp 4: avoid okhttp3.internal.*; match HttpsURLConnection verifier wrap.
-                .hostnameVerifier(
-                    mTrustManager!!.wrapHostnameVerifier(
-                        HttpsURLConnection.getDefaultHostnameVerifier()
-                    )
-                )
-            val builder = Picasso.Builder(applicationContext)
-            builder.downloader(OkHttp3Downloader(clientBuilder.build()))
-            try {
-                Picasso.setSingletonInstance(builder.build())
-            } catch (_: IllegalStateException) {
-            }
+            PiconImageLoader.install(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -212,22 +156,5 @@ open class BaseActivity :
         const val REQUEST_PERMISSION_WRITE_EXTERNAL_STORAGE_BACKUP: Int = 3
 
         private val TAG: String = BaseActivity::class.java.simpleName
-
-        private fun systemDefaultTrustManager(): X509TrustManager {
-            try {
-                val trustManagerFactory =
-                    TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-                trustManagerFactory.init(null as KeyStore?)
-                val trustManagers = trustManagerFactory.trustManagers
-                if (trustManagers.size != 1 || trustManagers[0] !is X509TrustManager) {
-                    throw IllegalStateException(
-                        "Unexpected default trust managers:" + Arrays.toString(trustManagers)
-                    )
-                }
-                return trustManagers[0] as X509TrustManager
-            } catch (e: GeneralSecurityException) {
-                throw AssertionError() // The system has no TLS. Just give up.
-            }
-        }
     }
 }

@@ -36,16 +36,15 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchMovieListLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler
@@ -225,7 +224,7 @@ class HubMovieListSession : MenuProvider {
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
 
     private val movies = ArrayList<Movie>()
-    private var selectedMovie: ExtendedHashMap? = null
+    private var selectedMovie: Movie? = null
     private var tagsChanged = false
     private var reloadOnSimpleResult = false
     private var loadGeneration = 0
@@ -316,7 +315,7 @@ class HubMovieListSession : MenuProvider {
             return
         }
         val typed = movies[index]
-        selectedMovie = movieToExtendedHashMap(typed)
+        selectedMovie = typed
         val ctx = context ?: return
         val instantZap = PreferenceManager.getDefaultSharedPreferences(ctx)
             .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
@@ -367,7 +366,7 @@ class HubMovieListSession : MenuProvider {
             listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -390,13 +389,13 @@ class HubMovieListSession : MenuProvider {
         ) { _, result, http ->
             dismissProgress()
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
             }
             toast(toastText)
-            if (reloadOnSimpleResult && Python.TRUE == result.getString(SimpleResult.KEY_STATE)) {
+            if (reloadOnSimpleResult && Python.TRUE == result.state) {
                 reloadOnSimpleResult = false
                 reload()
             }
@@ -409,35 +408,28 @@ class HubMovieListSession : MenuProvider {
         val movie = selectedMovie
         when (action) {
             R.id.menu_info -> {
-                val descriptionEx = movie?.getString(MovieKeys.KEY_DESCRIPTION_EXTENDED)
-                if (descriptionEx.isNullOrEmpty()) {
+                if (movie == null || movie.descriptionExtended.isEmpty()) {
                     toast(ctx.getString(R.string.no_epg_available))
                     return true
                 }
-                val typed = findSelectedTypedMovie()
-                val content = if (typed != null) {
-                    typed.toMovieDetailContent()
-                } else {
-                    net.reichholf.dreamdroid.helpers.enigma2.Movie(movie).toMovieDetailContent()
-                }
-                onShowDetail?.invoke(content)
+                onShowDetail?.invoke(movie.toMovieDetailContent())
             }
 
             R.id.menu_zap -> {
-                val ref = movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty()
+                val ref = movie?.reference.orEmpty()
                 if (ref.isNotEmpty()) {
                     zapTo(ref)
                 }
             }
 
             R.id.menu_delete -> {
-                onRequestDeleteConfirm?.invoke(movie?.getString(MovieKeys.KEY_TITLE).orEmpty())
+                onRequestDeleteConfirm?.invoke(movie?.title.orEmpty())
             }
 
             Statics.ACTION_DELETE_CONFIRMED -> deleteMovie()
 
             R.id.menu_download -> {
-                val file = movie?.getString(MovieKeys.KEY_FILE_NAME).orEmpty()
+                val file = movie?.fileName.orEmpty()
                 val params = arrayListOf(NameValuePair("file", file))
                 val url = SimpleHttpClient.getInstance().buildUrl(URIStore.FILE, params)
                 ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
@@ -449,9 +441,9 @@ class HubMovieListSession : MenuProvider {
                     activity.startActivity(
                         IntentFactory.getStreamFileIntent(
                             activity,
-                            movie?.getString(MovieKeys.KEY_REFERENCE).orEmpty(),
-                            movie?.getString(MovieKeys.KEY_FILE_NAME),
-                            movie?.getString(MovieKeys.KEY_TITLE),
+                            movie?.reference.orEmpty(),
+                            movie?.fileName,
+                            movie?.title,
                             movie
                         )
                     )
@@ -463,13 +455,6 @@ class HubMovieListSession : MenuProvider {
             else -> return false
         }
         return true
-    }
-
-    private fun findSelectedTypedMovie(): Movie? {
-        val movie = selectedMovie ?: return null
-        val ref = movie.getString(MovieKeys.KEY_REFERENCE)
-        val file = movie.getString(MovieKeys.KEY_FILE_NAME)
-        return movies.firstOrNull { it.reference == ref && it.fileName == file }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

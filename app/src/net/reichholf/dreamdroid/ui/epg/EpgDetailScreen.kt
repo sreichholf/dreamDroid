@@ -18,8 +18,6 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.withReadableTimes
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 
 data class EpgDetailContent(
     val title: String,
@@ -65,25 +63,6 @@ fun Event.toEpgDetailContentOrUnavailable(
         descriptionExtended = event.descriptionExtended.replace("\\n", "\n"),
         dateLine = dateLine,
         isNext = false
-    )
-}
-
-fun ExtendedHashMap.toEpgDetailContent(showNext: Boolean, minutesShort: String): EpgDetailContent? {
-    val prefix = if (showNext) EventKeys.PREFIX_NEXT else ""
-    val title = getString(prefix + EventKeys.KEY_EVENT_TITLE) ?: "N/A"
-    val date = getString(prefix + EventKeys.KEY_EVENT_START_READABLE)
-    if (title == "N/A" || date == null) return null
-    val duration = getString(prefix + EventKeys.KEY_EVENT_DURATION_READABLE).orEmpty()
-    val dateLine = "$date ($duration $minutesShort)"
-    return EpgDetailContent(
-        title = title,
-        serviceName = getString(EventKeys.KEY_SERVICE_NAME).orEmpty(),
-        description = getString(prefix + EventKeys.KEY_EVENT_DESCRIPTION, "").orEmpty(),
-        descriptionExtended = getString(
-            prefix + EventKeys.KEY_EVENT_DESCRIPTION_EXTENDED
-        ).orEmpty().replace("\\n", "\n"),
-        dateLine = dateLine,
-        isNext = showNext
     )
 }
 

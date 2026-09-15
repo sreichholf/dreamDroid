@@ -12,8 +12,6 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as HashMovie
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -100,17 +98,7 @@ class MovieDetailDialogHostTest {
     }
 
     @Test
-    fun typedAndHashMappersMatch() {
-        val map = ExtendedHashMap()
-        map.put(HashMovie.KEY_TITLE, "Film")
-        map.put(HashMovie.KEY_SERVICE_NAME, "ARD")
-        map.put(HashMovie.KEY_DESCRIPTION, "Short")
-        map.put(HashMovie.KEY_DESCRIPTION_EXTENDED, "Long\\nLine")
-        map.put(HashMovie.KEY_TAGS, "A B")
-        map.put(HashMovie.KEY_LENGTH, "01:00")
-        map.put(HashMovie.KEY_TIME_READABLE, "today")
-        map.put(HashMovie.KEY_FILE_SIZE_READABLE, "1 GB")
-        val hash = HashMovie(map)
+    fun typedMapperSplitsTagsAndUnescapesNewlines() {
         val typed = Movie(
             title = "Film",
             serviceName = "ARD",
@@ -121,10 +109,14 @@ class MovieDetailDialogHostTest {
             timeReadable = "today",
             fileSizeReadable = "1 GB"
         )
-        val fromHash = hash.toMovieDetailContent()
         val fromTyped = typed.toMovieDetailContent()
-        assertEquals(fromHash, fromTyped)
+        assertEquals("Film", fromTyped.title)
+        assertEquals("ARD", fromTyped.serviceName)
+        assertEquals("Short", fromTyped.description)
         assertEquals(listOf("A", "B"), fromTyped.tags)
         assertEquals("Long\nLine", fromTyped.descriptionExtended)
+        assertEquals("01:00", fromTyped.length)
+        assertEquals("today", fromTyped.date)
+        assertEquals("1 GB", fromTyped.fileSize)
     }
 }

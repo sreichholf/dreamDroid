@@ -9,20 +9,20 @@ package net.reichholf.dreamdroid.helpers.enigma2
 import android.app.Activity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import java.util.Calendar
 import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 
 /**
- * @author sreichholf
+ * Timer XML field names, after-event enums, and request helpers. UI uses [TypedTimer].
  */
 class Timer {
     enum class TimerStates(private val value: Int) {
@@ -85,107 +85,85 @@ class Timer {
         const val KEY_CANCELED: String = "canceled"
         const val KEY_TOGGLE_DISABLED: String = "toggledisabled"
 
-        fun getInitialTimer(): ExtendedHashMap {
-            val timer = ExtendedHashMap()
-            timer.put(KEY_DESCRIPTION, "")
-            timer.put(KEY_LOCATION, "/hdd/movie/")
-            timer.put(KEY_DISABLED, "0") // enabled
-            timer.put(KEY_JUST_PLAY, "0") // record
-            timer.put(KEY_AFTER_EVENT, Afterevents.AUTO.toString()) // auto
-            timer.put(KEY_REPEATED, "0") // One-Time-Event
-
+        fun getInitialTimer(): TypedTimer {
             val cal = GregorianCalendar.getInstance()
             cal.time = Date()
-
             val s = cal.timeInMillis / 1000
             val e = s + 3600
-
-            timer.put(KEY_BEGIN, s.toString())
-            timer.put(KEY_END, e.toString())
-
-            return timer
-        }
-
-        fun createByEvent(event: ExtendedHashMap): ExtendedHashMap {
-            val timer = getInitialTimer()
-
-            val start = event.getString(Event.KEY_EVENT_START)
-            val duration = DateTime.parseTimestamp(event.getString(Event.KEY_EVENT_DURATION))
-            val end = duration + DateTime.parseTimestamp(start)
-
-            timer.put(KEY_BEGIN, start)
-            timer.put(KEY_END, end.toString())
-            timer.put(KEY_NAME, event.getString(Event.KEY_EVENT_TITLE))
-            timer.put(KEY_DESCRIPTION, event.getString(Event.KEY_EVENT_DESCRIPTION))
-            timer.put(
-                KEY_DESCRIPTION_EXTENDED,
-                event.getString(Event.KEY_EVENT_DESCRIPTION_EXTENDED)
+            return TypedTimer(
+                description = "",
+                location = "/hdd/movie/",
+                disabled = "0",
+                justPlay = "0",
+                afterEvent = Afterevents.AUTO.toString(),
+                repeated = "0",
+                begin = s.toString(),
+                end = e.toString()
             )
-            timer.put(KEY_SERVICE_NAME, event.getString(Event.KEY_SERVICE_NAME))
-            timer.put(KEY_REFERENCE, event.getString(Event.KEY_SERVICE_REFERENCE))
-
-            return timer
         }
 
-        fun getSaveParams(
-            timer: ExtendedHashMap,
-            timerOld: ExtendedHashMap?
-        ): ArrayList<NameValuePair> {
+        fun createByEvent(event: Event): TypedTimer {
+            val duration = DateTime.parseTimestamp(event.duration)
+            val end = duration + DateTime.parseTimestamp(event.start)
+            return getInitialTimer().copy(
+                begin = event.start,
+                end = end.toString(),
+                name = event.title,
+                description = event.description,
+                descriptionExtended = event.descriptionExtended,
+                serviceName = event.serviceName,
+                reference = event.serviceReference
+            )
+        }
+
+        fun getSaveParams(timer: TypedTimer, timerOld: TypedTimer?): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
-
-            params.add(NameValuePair("sRef", timer.getString(KEY_REFERENCE)))
-            params.add(NameValuePair("begin", timer.getString(KEY_BEGIN)))
-            params.add(NameValuePair("end", timer.getString(KEY_END)))
-            params.add(NameValuePair("name", timer.getString(KEY_NAME)))
-            params.add(NameValuePair("description", timer.getString(KEY_DESCRIPTION)))
-            params.add(NameValuePair("dirname", timer.getString(KEY_LOCATION)))
-            params.add(NameValuePair("tags", timer.getString(KEY_TAGS)))
-            params.add(NameValuePair("eit", timer.getString(KEY_EIT)))
-            params.add(NameValuePair("disabled", timer.getString(KEY_DISABLED)))
-            params.add(NameValuePair("justplay", timer.getString(KEY_JUST_PLAY)))
-            params.add(NameValuePair("afterevent", timer.getString(KEY_AFTER_EVENT)))
-            params.add(NameValuePair("repeated", timer.getString(KEY_REPEATED)))
-
+            params.add(NameValuePair("sRef", timer.reference))
+            params.add(NameValuePair("begin", timer.begin))
+            params.add(NameValuePair("end", timer.end))
+            params.add(NameValuePair("name", timer.name))
+            params.add(NameValuePair("description", timer.description))
+            params.add(NameValuePair("dirname", timer.location))
+            params.add(NameValuePair("tags", timer.tags))
+            params.add(NameValuePair("eit", timer.eit))
+            params.add(NameValuePair("disabled", timer.disabled))
+            params.add(NameValuePair("justplay", timer.justPlay))
+            params.add(NameValuePair("afterevent", timer.afterEvent))
+            params.add(NameValuePair("repeated", timer.repeated))
             if (timerOld != null) {
-                params.add(NameValuePair("channelOld", timerOld.getString(KEY_REFERENCE)))
-                params.add(NameValuePair("beginOld", timerOld.getString(KEY_BEGIN)))
-                params.add(NameValuePair("endOld", timerOld.getString(KEY_END)))
+                params.add(NameValuePair("channelOld", timerOld.reference))
+                params.add(NameValuePair("beginOld", timerOld.begin))
+                params.add(NameValuePair("endOld", timerOld.end))
                 params.add(NameValuePair("deleteOldOnSave", "1"))
             } else {
                 params.add(NameValuePair("deleteOldOnSave", "0"))
             }
-
             return params
         }
 
-        fun getEventIdParams(event: ExtendedHashMap): ArrayList<NameValuePair> {
+        fun getEventIdParams(event: Event): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", event.getString(Event.KEY_SERVICE_REFERENCE)))
-            params.add(NameValuePair("eventid", event.getString(Event.KEY_EVENT_ID)))
+            params.add(NameValuePair("sRef", event.serviceReference))
+            params.add(NameValuePair("eventid", event.eventId))
             return params
         }
 
-        fun getDeleteParams(timer: ExtendedHashMap): ArrayList<NameValuePair> {
+        fun getDeleteParams(timer: TypedTimer): ArrayList<NameValuePair> {
             val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", timer.getString(KEY_REFERENCE)))
-            params.add(NameValuePair("begin", timer.getString(KEY_BEGIN)))
-            params.add(NameValuePair("end", timer.getString(KEY_END)))
+            params.add(NameValuePair("sRef", timer.reference))
+            params.add(NameValuePair("begin", timer.begin))
+            params.add(NameValuePair("end", timer.end))
             return params
         }
 
-        fun editUsingEvent(mph: MultiPaneHandler?, event: ExtendedHashMap, target: Fragment) {
+        fun editUsingEvent(mph: MultiPaneHandler?, event: Event, target: Fragment) {
             edit(mph, createByEvent(event), target, true)
         }
 
-        fun edit(
-            mph: MultiPaneHandler?,
-            timer: ExtendedHashMap?,
-            target: Fragment,
-            create: Boolean
-        ) {
+        fun edit(mph: MultiPaneHandler?, timer: TypedTimer, target: Fragment, create: Boolean) {
             var walker = target.parentFragment
             while (walker != null) {
-                if (walker is PhoneNavHostFragment && walker.navigateToTimerEdit(timer!!, create)) {
+                if (walker is PhoneNavHostFragment && walker.navigateToTimerEdit(timer, create)) {
                     return
                 }
                 walker = walker.parentFragment
@@ -196,11 +174,11 @@ class Timer {
                 return
             }
             val detail = activity.supportFragmentManager.findFragmentById(R.id.detail_view)
-            if (detail is PhoneNavHostFragment && detail.navigateToTimerEdit(timer!!, create)) {
+            if (detail is PhoneNavHostFragment && detail.navigateToTimerEdit(timer, create)) {
                 return
             }
             val host = PhoneNavHostFragment.newInstance(PhoneNavRoutes.HUB)
-            host.queueTimerEdit(timer!!, create)
+            host.queueTimerEdit(timer, create)
             if (activity is MainActivity) {
                 activity.showDetails(host)
             } else if (mph != null) {

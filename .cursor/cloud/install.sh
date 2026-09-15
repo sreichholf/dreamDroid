@@ -13,6 +13,8 @@ SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
 SDK_PACKAGES=(
   "platform-tools"
   "platforms;android-34"
+  "platforms;android-36"
+  "platforms;android-37"
   "build-tools;36.0.0"
   "emulator"
   "$SYSTEM_IMAGE"

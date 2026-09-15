@@ -1,89 +1,59 @@
 package net.reichholf.dreamdroid.enigma
 
-import java.io.StringReader
-import javax.xml.parsers.SAXParserFactory
-import org.xml.sax.Attributes
-import org.xml.sax.InputSource
-import org.xml.sax.helpers.DefaultHandler
+import org.xmlpull.v1.XmlPullParser
 
 object ServiceParser {
-    fun parse(xml: String): List<Service> {
-        if (xml.isEmpty()) {
-            return emptyList()
+    fun parse(xml: String): List<Service> =
+        parseEnigmaXml(xml, emptyResult = emptyList(), onFail = emptyList()) { parser ->
+            parseServiceList(parser)
         }
-        return try {
-            val handler = ServiceListHandler()
-            val factory = SAXParserFactory.newInstance()
-            factory.isValidating = false
-            val reader = factory.newSAXParser().xmlReader
-            reader.contentHandler = handler
-            reader.parse(InputSource(StringReader(xml)))
-            handler.services
-        } catch (e: Exception) {
-            emptyList()
-        }
-    }
 }
 
-private class ServiceListHandler : DefaultHandler() {
+private fun parseServiceList(parser: XmlPullParser): List<Service> {
     val services = ArrayList<Service>()
-    private var inService = false
-    private var inReference = false
-    private var inName = false
-    private val reference = StringBuilder()
-    private val name = StringBuilder()
+    val reference = StringBuilder()
+    val name = StringBuilder()
+    var current: StringBuilder? = null
+    var inService = false
 
-    override fun startElement(
-        uri: String?,
-        localName: String?,
-        qName: String?,
-        attributes: Attributes?
-    ) {
-        when (tag(localName, qName)) {
-            "e2service" -> {
-                inService = true
-                reference.setLength(0)
-                name.setLength(0)
+    var event = parser.eventType
+    while (event != XmlPullParser.END_DOCUMENT) {
+        when (event) {
+            XmlPullParser.START_TAG -> {
+                when (parser.localTag()) {
+                    "e2service" -> {
+                        inService = true
+                        reference.setLength(0)
+                        name.setLength(0)
+                        current = null
+                    }
+
+                    "e2servicereference" -> if (inService) current = reference
+
+                    "e2servicename" -> if (inService) current = name
+                }
             }
 
-            "e2servicereference" -> inReference = true
+            XmlPullParser.TEXT -> current?.let { parser.appendText(it) }
 
-            "e2servicename" -> inName = true
-        }
-    }
+            XmlPullParser.END_TAG -> {
+                when (parser.localTag()) {
+                    "e2service" -> {
+                        inService = false
+                        current = null
+                        services.add(
+                            Service(
+                                reference.toString(),
+                                name.toString().stripCntrl()
+                            )
+                        )
+                    }
 
-    override fun endElement(uri: String?, localName: String?, qName: String?) {
-        when (tag(localName, qName)) {
-            "e2service" -> {
-                inService = false
-                services.add(
-                    Service(
-                        reference.toString(),
-                        name.toString().replace("\\p{Cntrl}".toRegex(), "")
-                    )
-                )
+                    else -> current = null
+                }
             }
-
-            "e2servicereference" -> inReference = false
-
-            "e2servicename" -> inName = false
         }
+        event = parser.next()
     }
-
-    override fun characters(ch: CharArray, start: Int, length: Int) {
-        if (!inService) {
-            return
-        }
-        if (inReference) {
-            reference.append(ch, start, length)
-        } else if (inName) {
-            name.append(ch, start, length)
-        }
-    }
-
-    private fun tag(localName: String?, qName: String?): String {
-        val raw = if (!localName.isNullOrEmpty()) localName else (qName ?: "")
-        val colon = raw.lastIndexOf(':')
-        return if (colon >= 0) raw.substring(colon + 1) else raw
-    }
+    return services
 }

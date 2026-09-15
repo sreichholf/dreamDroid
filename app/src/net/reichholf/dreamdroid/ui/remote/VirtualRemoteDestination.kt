@@ -31,7 +31,6 @@ import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
@@ -118,8 +117,8 @@ fun VirtualRemoteDestination(hostFragment: PhoneNavHostFragment, modifier: Modif
             ->
             var hasError = false
             var toastText = context.getString(R.string.get_content_error)
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
-            val state = result.getString(SimpleResult.KEY_STATE)
+            val stateText = result.stateText
+            val state = result.state
             if (stateText.isNullOrEmpty()) {
                 hasError = true
             }

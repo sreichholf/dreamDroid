@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.screenshot
 
 import android.graphics.Bitmap
-import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,11 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.github.chrisbanes.photoview.PhotoView
 import net.reichholf.dreamdroid.R
 
 class ScreenshotUiState {
@@ -90,24 +85,10 @@ fun ScreenshotScreen(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            AndroidView(
-                factory = { context ->
-                    PhotoView(context).apply {
-                        setBackgroundColor(AndroidColor.BLACK)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxSize()
-                    .semantics { contentDescription = screenshotLabel },
-                update = { photoView ->
-                    val bmp = state.bitmap
-                    if (bmp != null) {
-                        photoView.setImageBitmap(bmp)
-                        photoView.attacher.update()
-                    } else {
-                        photoView.setImageDrawable(null)
-                    }
-                }
+            ZoomableScreenshot(
+                bitmap = state.bitmap,
+                contentDescription = screenshotLabel,
+                modifier = Modifier.fillMaxSize()
             )
 
             if (state.loading) {

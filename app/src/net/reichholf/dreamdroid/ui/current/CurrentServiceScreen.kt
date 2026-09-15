@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.widget.ImageView
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,13 +25,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 
 class CurrentServiceUiState {
     var serviceName by mutableStateOf("")
@@ -139,7 +136,7 @@ fun CurrentServiceScreen(
             if (piconsEnabled &&
                 (state.serviceReference.isNotEmpty() || state.serviceName.isNotEmpty())
             ) {
-                ServicePicon(
+                PiconImage(
                     reference = state.serviceReference,
                     name = state.serviceName,
                     modifier = Modifier
@@ -265,27 +262,4 @@ private fun EventBlock(
             modifier = Modifier.fillMaxWidth()
         )
     }
-}
-
-@Composable
-private fun ServicePicon(reference: String, name: String, modifier: Modifier = Modifier) {
-    val context = LocalContext.current
-    AndroidView(
-        factory = { ctx ->
-            ImageView(ctx).apply {
-                scaleType = ImageView.ScaleType.FIT_CENTER
-            }
-        },
-        modifier = modifier,
-        update = { view ->
-            Picon.setPiconForView(
-                context,
-                view,
-                reference,
-                name,
-                Statics.TAG_PICON,
-                null
-            )
-        }
-    )
 }

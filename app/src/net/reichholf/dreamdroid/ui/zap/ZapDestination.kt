@@ -25,13 +25,12 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.SimpleResult
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
@@ -201,7 +200,7 @@ private class ZapSession :
             listOf(NameValuePair("sRef", ref))
         ) { _, result, http ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.getString(SimpleResult.KEY_STATE_TEXT)
+            val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
                 http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
@@ -243,8 +242,8 @@ private class ZapSession :
             return
         }
         @Suppress("DEPRECATION")
-        val bouquetMap = data?.getSerializableExtra(KEY_BOUQUET) as? ExtendedHashMap
-        val bouquet = ZapListMapper.bouquetFrom(bouquetMap)
+        val bouquet = data?.getSerializableExtra(KEY_BOUQUET) as? Service
+            ?: Service("", "")
         if (bouquet.reference != bouquetRef) {
             bouquetRef = bouquet.reference
             bouquetName = bouquet.name

@@ -26,12 +26,11 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadEventList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -275,11 +274,11 @@ private class EpgBouquetSession :
             return
         }
         @Suppress("DEPRECATION")
-        val service = data?.getSerializableExtra(KEY_BOUQUET) as? ExtendedHashMap ?: return
-        val reference = service.getString(Service.KEY_REFERENCE).orEmpty()
+        val service = data?.getSerializableExtra(KEY_BOUQUET) as? Service ?: return
+        val reference = service.reference
         if (reference != bouquetRef) {
             bouquetRef = reference
-            bouquetName = service.getString(Service.KEY_NAME).orEmpty()
+            bouquetName = service.name
             onBouquetRef?.invoke(bouquetRef)
             onBouquetName?.invoke(bouquetName)
             listState?.scrollToTop()

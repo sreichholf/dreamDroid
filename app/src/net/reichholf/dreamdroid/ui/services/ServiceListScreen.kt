@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.services
 
-import android.widget.ImageView
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
@@ -30,20 +29,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.preference.PreferenceManager
 import kotlin.math.roundToInt
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event
-import net.reichholf.dreamdroid.helpers.enigma2.Picon
-import net.reichholf.dreamdroid.helpers.enigma2.Service
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 
 /** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
 typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
@@ -214,23 +205,11 @@ private fun EventTimeRow(
 
 @Composable
 private fun ServicePicon(item: ServiceListItem) {
-    val context = LocalContext.current
-    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
-    if (!piconsEnabled) {
-        return
-    }
-    AndroidView(
-        factory = { ctx -> ImageView(ctx) },
+    PiconImage(
+        reference = item.reference,
+        name = item.name,
         modifier = Modifier
             .padding(end = 8.dp)
-            .size(width = 48.dp, height = 30.dp),
-        update = { view ->
-            val map = ExtendedHashMap()
-            map.put(Service.KEY_REFERENCE, item.reference)
-            map.put(Event.KEY_SERVICE_REFERENCE, item.reference)
-            map.put(Event.KEY_SERVICE_NAME, item.name)
-            Picon.setPiconForView(context, view, map, Statics.TAG_PICON)
-        }
+            .size(width = 48.dp, height = 30.dp)
     )
 }

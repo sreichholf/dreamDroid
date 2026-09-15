@@ -8,9 +8,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -28,7 +26,7 @@ class TimerServicePickScreenTest {
     }
 
     @Test
-    fun serviceRowsClickAndMapToHashEdge() {
+    fun serviceRowsClickAndKeepTypedFields() {
         val channel = Service("1:0:1:6DCA:44D:1:C00000:0:0:0:", "Das Erste HD")
         var clicked: Service? = null
         composeRule.setContent {
@@ -41,8 +39,7 @@ class TimerServicePickScreenTest {
         }
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed().performClick()
         assertEquals(channel, clicked)
-        val map = ZapListMapper.toBouquetMap(clicked)
-        assertEquals("Das Erste HD", map.getString(ServiceKeys.KEY_NAME))
-        assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", map.getString(ServiceKeys.KEY_REFERENCE))
+        assertEquals("Das Erste HD", clicked!!.name)
+        assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", clicked!!.reference)
     }
 }

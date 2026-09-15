@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
@@ -81,7 +82,9 @@ fun SendMessageScreen(state: SendMessageUiState, modifier: Modifier = Modifier) 
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded)
                     },
-                    modifier = Modifier.menuAnchor(),
+                    modifier = Modifier.menuAnchor(
+                        ExposedDropdownMenuAnchorType.PrimaryNotEditable
+                    ),
                     textStyle = MaterialTheme.typography.bodyLarge.copy(
                         color = MaterialTheme.colorScheme.onSurface
                     )

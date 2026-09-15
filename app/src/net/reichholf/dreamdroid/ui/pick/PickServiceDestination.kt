@@ -20,11 +20,10 @@ import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.fragment.PhoneNavHostFragment
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
  * Phase 2.7f: bouquet/service picker as a direct Compose NavHost destination.
- * Result Intent still carries [KEY_BOUQUET] ExtendedHashMap for Zap / EPG consumers.
+ * Result Intent carries typed [net.reichholf.dreamdroid.enigma.Service] as [KEY_BOUQUET].
  */
 @Composable
 fun PickServiceDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
@@ -92,7 +91,7 @@ fun PickServiceDestination(hostFragment: PhoneNavHostFragment, modifier: Modifie
             emptyMessage = emptyMessage,
             onItemClick = { service ->
                 val data = Intent().apply {
-                    putExtra(KEY_BOUQUET, ZapListMapper.toBouquetMap(service))
+                    putExtra(KEY_BOUQUET, service)
                 }
                 hostFragment.deliverPickResult(Activity.RESULT_OK, data)
             }

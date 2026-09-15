@@ -44,7 +44,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 
 /**
- * Enigma2 HTTP client. Phase SOTA: OkHttp (aligned with Picasso) instead of
+ * Enigma2 HTTP client. OkHttp (aligned with Coil for picons) instead of
  * [HttpURLConnection]. Public API unchanged for callers.
  */
 class SimpleHttpClient {

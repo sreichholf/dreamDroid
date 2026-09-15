@@ -31,7 +31,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
  * Phase 2.7g: timer service picker (bouquet → channel) as a Compose destination.
- * Result Intent carries [NavExtras.DATA] ExtendedHashMap for timer edit.
+ * Result Intent carries typed [Service] as [NavExtras.DATA] for timer edit.
  */
 @Composable
 fun TimerServicePickDestination(hostFragment: PhoneNavHostFragment, modifier: Modifier = Modifier) {
@@ -164,7 +164,7 @@ private class TimerServicePickSession {
             return
         }
         val data = Intent().apply {
-            putExtra(NavExtras.DATA, ZapListMapper.toBouquetMap(service))
+            putExtra(NavExtras.DATA, service)
         }
         host.deliverPickResult(Activity.RESULT_OK, data)
     }

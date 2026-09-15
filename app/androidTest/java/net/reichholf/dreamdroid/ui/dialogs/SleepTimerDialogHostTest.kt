@@ -1,15 +1,14 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
-import android.view.View
-import android.view.ViewGroup
-import android.widget.NumberPicker
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,7 +23,6 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.rememberSleepTimerNavArgs
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -94,11 +92,9 @@ class SleepTimerDialogHostTest {
         composeRule.onNodeWithText("Activate").assertIsNotSelected()
         composeRule.onNodeWithText("Shutdown").assertIsSelected()
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
-        composeRule.runOnIdle {
-            val picker = findNumberPicker()
-            assertNotNull("sleep timer minutes picker", picker)
-            assertEquals(queued.minutes, picker!!.value)
-        }
+        composeRule.onNodeWithTag(SLEEP_TIMER_MINUTES_TAG)
+            .assertIsDisplayed()
+            .assertTextContains(queued.minutes.toString())
     }
 }
 
@@ -111,27 +107,4 @@ private class SleepTimerArgsQueue(initial: SleepTimerNavArgs) {
         pending = null
         return args
     }
-}
-
-private fun findNumberPicker(): NumberPicker? {
-    val wmgClass = Class.forName("android.view.WindowManagerGlobal")
-    val instance = wmgClass.getMethod("getInstance").invoke(null)
-    val viewsField = wmgClass.getDeclaredField("mViews")
-    viewsField.isAccessible = true
-    @Suppress("UNCHECKED_CAST")
-    val roots = viewsField.get(instance) as List<View>
-    for (root in roots) {
-        findNumberPicker(root)?.let { return it }
-    }
-    return null
-}
-
-private fun findNumberPicker(root: View): NumberPicker? {
-    if (root is NumberPicker) return root
-    if (root is ViewGroup) {
-        for (i in 0 until root.childCount) {
-            findNumberPicker(root.getChildAt(i))?.let { return it }
-        }
-    }
-    return null
 }

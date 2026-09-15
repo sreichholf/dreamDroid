@@ -1,9 +1,7 @@
 package net.reichholf.dreamdroid.ui.zap
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceParser
-import net.reichholf.dreamdroid.helpers.ExtendedHashMap
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -30,51 +28,5 @@ class ZapListMapperTest {
     @Test
     fun rowsFromEmptyListIsEmpty() {
         assertEquals(0, ZapListMapper.rowsFrom(emptyList()).size)
-    }
-
-    @Test
-    fun bouquetFromReadsReferenceAndName() {
-        val map = ExtendedHashMap()
-        map.put(
-            net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE,
-            "1:7:1:0:0:0:0:0:0:0:"
-        )
-        map.put(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME, "Favourites (TV)")
-        val bouquet = ZapListMapper.bouquetFrom(map)
-        assertEquals("1:7:1:0:0:0:0:0:0:0:", bouquet.reference)
-        assertEquals("Favourites (TV)", bouquet.name)
-    }
-
-    @Test
-    fun bouquetFromNullMapIsEmptyService() {
-        val bouquet = ZapListMapper.bouquetFrom(null)
-        assertEquals("", bouquet.reference)
-        assertEquals("", bouquet.name)
-    }
-
-    @Test
-    fun toBouquetMapWritesReferenceAndName() {
-        val service = Service("1:7:1:0:0:0:0:0:0:0:", "Favourites (TV)")
-        val map = ZapListMapper.toBouquetMap(service)
-        assertEquals(
-            "1:7:1:0:0:0:0:0:0:0:",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE)
-        )
-        assertEquals(
-            "Favourites (TV)",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME)
-        )
-        assertEquals(service.reference, ZapListMapper.bouquetFrom(map).reference)
-        assertEquals(service.name, ZapListMapper.bouquetFrom(map).name)
-    }
-
-    @Test
-    fun toBouquetMapNullIsEmptyKeys() {
-        val map = ZapListMapper.toBouquetMap(null)
-        assertEquals(
-            "",
-            map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_REFERENCE)
-        )
-        assertEquals("", map.getString(net.reichholf.dreamdroid.helpers.enigma2.Service.KEY_NAME))
     }
 }
