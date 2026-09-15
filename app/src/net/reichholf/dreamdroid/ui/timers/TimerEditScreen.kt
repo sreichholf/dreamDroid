@@ -1,48 +1,29 @@
 package net.reichholf.dreamdroid.ui.timers
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.compose.EditDropdownField
+import net.reichholf.dreamdroid.ui.compose.EditFormColumn
+import net.reichholf.dreamdroid.ui.compose.EditFormSection
+import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
+import net.reichholf.dreamdroid.ui.compose.EditPairedRow
+import net.reichholf.dreamdroid.ui.compose.EditPickField
+import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimerEditScreen(
     state: TimerEditState,
@@ -77,13 +58,10 @@ fun TimerEditScreen(
         },
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
+        EditFormColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (state.saveError.isNotEmpty()) {
                 Text(
@@ -92,241 +70,95 @@ fun TimerEditScreen(
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
-            OutlinedTextField(
-                value = state.name,
-                onValueChange = { state.name = it },
-                label = { Text(stringResource(R.string.title)) },
-                singleLine = true,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = "Title" },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
+            EditFormSection(title = stringResource(R.string.timer)) {
+                EditOutlinedTextField(
+                    value = state.name,
+                    onValueChange = { state.name = it },
+                    label = stringResource(R.string.title),
+                    contentDescription = "Title"
                 )
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                CheckRow(
+                EditOutlinedTextField(
+                    value = state.description,
+                    onValueChange = { state.description = it },
+                    label = stringResource(R.string.description),
+                    singleLine = false,
+                    contentDescription = "Description"
+                )
+                EditSwitchRow(
                     checked = state.enabled,
                     onCheckedChange = { state.enabled = it },
                     label = stringResource(R.string.enabled)
                 )
-                CheckRow(
+                EditSwitchRow(
                     checked = state.zap,
                     onCheckedChange = { state.zap = it },
                     label = stringResource(R.string.zap)
                 )
             }
-            OutlinedTextField(
-                value = state.description,
-                onValueChange = { state.description = it },
-                label = { Text(stringResource(R.string.description)) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .semantics { contentDescription = "Description" },
-                textStyle = MaterialTheme.typography.bodyLarge.copy(
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            )
 
-            SectionHeader(stringResource(R.string.begin_time))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SelectableValue(
-                    value = state.beginDate,
-                    contentDescription = stringResource(R.string.begin_date),
-                    onClick = onPickBeginDate,
-                    modifier = Modifier.weight(1f)
-                )
-                SelectableValue(
-                    value = state.beginTime,
-                    contentDescription = stringResource(R.string.begin_time),
-                    onClick = onPickBeginTime,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-
-            SectionHeader(stringResource(R.string.end_time))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                SelectableValue(
-                    value = state.endDate,
-                    contentDescription = stringResource(R.string.end_date),
-                    onClick = onPickEndDate,
-                    modifier = Modifier.weight(1f)
-                )
-                SelectableValue(
-                    value = state.endTime,
-                    contentDescription = stringResource(R.string.end_time),
-                    onClick = onPickEndTime,
-                    modifier = Modifier.weight(1f)
+            EditFormSection {
+                EditPairedRow {
+                    EditPickField(
+                        value = state.beginDate,
+                        label = stringResource(R.string.begin_date),
+                        onClick = onPickBeginDate,
+                        modifier = Modifier.weight(1f)
+                    )
+                    EditPickField(
+                        value = state.beginTime,
+                        label = stringResource(R.string.begin_time),
+                        onClick = onPickBeginTime,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                EditPairedRow {
+                    EditPickField(
+                        value = state.endDate,
+                        label = stringResource(R.string.end_date),
+                        onClick = onPickEndDate,
+                        modifier = Modifier.weight(1f)
+                    )
+                    EditPickField(
+                        value = state.endTime,
+                        label = stringResource(R.string.end_time),
+                        onClick = onPickEndTime,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                EditPickField(
+                    value = state.repeatedLabel.ifEmpty { stringResource(R.string.none) },
+                    label = stringResource(R.string.repeatings),
+                    onClick = onPickRepeated
                 )
             }
 
-            SectionHeader(stringResource(R.string.repeatings))
-            SelectableValue(
-                value = state.repeatedLabel.ifEmpty { stringResource(R.string.none) },
-                contentDescription = stringResource(R.string.repeatings),
-                onClick = onPickRepeated
-            )
-
-            SectionHeader(stringResource(R.string.service))
-            SelectableValue(
-                value = state.serviceName.ifEmpty { "…" },
-                contentDescription = stringResource(R.string.service),
-                onClick = onPickService
-            )
-
-            SectionHeader(stringResource(R.string.afterevent))
-            DropdownField(
-                options = state.afterEventOptions,
-                selectedIndex = state.afterEventIndex,
-                onSelected = { state.afterEventIndex = it },
-                contentDescription = stringResource(R.string.afterevent)
-            )
-
-            SectionHeader(stringResource(R.string.location))
-            DropdownField(
-                options = state.locationOptions,
-                selectedIndex = state.locationIndex,
-                onSelected = { state.locationIndex = it },
-                contentDescription = stringResource(R.string.location)
-            )
-
-            SectionHeader(stringResource(R.string.tags))
-            TappableValueField(
-                value = state.tagsLabel.ifEmpty { "…" },
-                contentDescription = stringResource(R.string.tags),
-                onClick = onPickTags
-            )
-            Spacer(Modifier.height(16.dp))
-        }
-    }
-}
-
-@Composable
-private fun SectionHeader(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier.padding(top = 8.dp, bottom = 2.dp)
-    )
-}
-
-@Composable
-private fun CheckRow(checked: Boolean, onCheckedChange: (Boolean) -> Unit, label: String) {
-    Row(
-        modifier = Modifier.toggleable(
-            value = checked,
-            onValueChange = onCheckedChange,
-            role = Role.Checkbox
-        ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(checked = checked, onCheckedChange = null)
-        Text(
-            text = label,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(start = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun SelectableValue(
-    value: String,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = value,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp, horizontal = 4.dp)
-            .semantics { this.contentDescription = contentDescription }
-    )
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TappableValueField(value: String, contentDescription: String, onClick: () -> Unit) {
-    Box(modifier = Modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            enabled = false,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
-            colors = OutlinedTextFieldDefaults.colors(
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable(onClick = onClick, role = Role.Button)
-                .semantics { this.contentDescription = contentDescription }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DropdownField(
-    options: List<String>,
-    selectedIndex: Int,
-    onSelected: (Int) -> Unit,
-    contentDescription: String
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val label = options.getOrElse(selectedIndex) { "" }
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = it },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            value = label,
-            onValueChange = {},
-            readOnly = true,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-            modifier = Modifier
-                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                .fillMaxWidth()
-                .semantics { this.contentDescription = contentDescription },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        )
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEachIndexed { index, option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onSelected(index)
-                        expanded = false
-                    }
+            EditFormSection {
+                EditPickField(
+                    value = state.serviceName.ifEmpty { "…" },
+                    label = stringResource(R.string.service),
+                    onClick = onPickService
                 )
+                EditDropdownField(
+                    options = state.afterEventOptions,
+                    selectedIndex = state.afterEventIndex,
+                    onSelected = { state.afterEventIndex = it },
+                    label = stringResource(R.string.afterevent)
+                )
+                EditDropdownField(
+                    options = state.locationOptions,
+                    selectedIndex = state.locationIndex,
+                    onSelected = { state.locationIndex = it },
+                    label = stringResource(R.string.location)
+                )
+                EditPickField(
+                    value = state.tagsLabel.ifEmpty { "…" },
+                    label = stringResource(R.string.tags),
+                    onClick = onPickTags
+                )
+            }
+
+            if (showSaveFab) {
+                Spacer(Modifier.height(72.dp))
             }
         }
     }
