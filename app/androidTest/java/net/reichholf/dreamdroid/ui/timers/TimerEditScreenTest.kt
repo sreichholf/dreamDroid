@@ -4,11 +4,13 @@ import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -71,7 +73,27 @@ class TimerEditScreenTest {
         composeRule.onNodeWithText("Enabled").assertIsDisplayed()
         composeRule.onNodeWithText("Zap").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Description").assertIsDisplayed()
-        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("Das Erste HD").performScrollTo().assertIsDisplayed()
+
+        val enabled = composeRule.onNodeWithText("Enabled").getBoundsInRoot()
+        val zap = composeRule.onNodeWithText("Zap").getBoundsInRoot()
+        assertTrue(
+            "Enabled and Zap should stack, enabled=$enabled zap=$zap",
+            zap.top >= enabled.bottom
+        )
+        assertTrue(
+            "Switch rows are at least 56.dp, height=${enabled.height}",
+            enabled.height >= 56.dp
+        )
+        val beginDate = composeRule.onNodeWithContentDescription("Begin date")
+            .performScrollTo()
+            .getBoundsInRoot()
+        val beginTime = composeRule.onNodeWithContentDescription("Begin time")
+            .getBoundsInRoot()
+        assertTrue(
+            "Begin date and time stay on one row, date=$beginDate time=$beginTime",
+            kotlin.math.abs((beginDate.top - beginTime.top).value) < 8f
+        )
     }
 
     @Test
