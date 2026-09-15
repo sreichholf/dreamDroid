@@ -1,10 +1,8 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
@@ -112,7 +110,6 @@ class ProfileEditScreenTest {
     fun lastMoviesSwitchClearsHostBottomInsetWithoutScaffoldFab() {
         val state = ProfileEditState.fromProfile(Profile.getDefault())
         composeRule.setContent {
-            val insetPx = with(LocalDensity.current) { 48.dp.roundToPx() }
             DreamDroidTheme {
                 Box(Modifier.fillMaxSize().testTag("host")) {
                     Box(
@@ -120,7 +117,7 @@ class ProfileEditScreenTest {
                             .fillMaxSize()
                             .phoneNavDestinationViewport(
                                 shellBarVisible = false,
-                                bottomSafe = WindowInsets(bottom = insetPx)
+                                bottomInset = 48.dp
                             )
                     ) {
                         ProfileEditScreen(

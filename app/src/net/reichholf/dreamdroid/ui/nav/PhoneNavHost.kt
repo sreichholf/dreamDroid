@@ -18,6 +18,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
@@ -86,8 +87,20 @@ fun PhoneNavHost(
     }
     // Shell destination bar lives for the NavHost lifetime; hubs only publish Snapshot state.
     ProvideShellDestinationBar {
-        val shellBarVisible = LocalShellDestinationBarController.current.content !is
-            ShellDestinationBarContent.Hidden
+        val controller = LocalShellDestinationBarController.current
+        DisposableEffect(handle, controller) {
+            val state = handle as? PhoneNavHostState
+            state?.shellDestinationBarController = controller
+            onDispose {
+                if (state?.shellDestinationBarController === controller) {
+                    state.shellDestinationBarController = null
+                }
+            }
+        }
+        val backStackEntry by navController.currentBackStackEntryAsState()
+        val shellBarVisible = PhoneNavRoutes.showsShellDestinationBar(
+            backStackEntry?.destination?.route
+        )
         PhoneNavHostGraph(
             handle = handle,
             navController = navController,

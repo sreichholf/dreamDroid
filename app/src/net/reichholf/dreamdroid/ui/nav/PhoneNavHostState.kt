@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
@@ -42,6 +44,7 @@ class PhoneNavHostState(
 
     @Volatile
     private var navController: NavHostController? = null
+    internal var shellDestinationBarController: ShellDestinationBarController? = null
     private val mainHandler = Handler(Looper.getMainLooper())
 
     override var composeDialogActionListener: DialogActionListener? = null
@@ -144,6 +147,11 @@ class PhoneNavHostState(
         controller.addOnDestinationChangedListener { _, dest, _ ->
             val previous = controller.previousBackStackEntry?.destination?.route
             highlighter.highlightDrawerForRoute(dest.route, previous)
+            applyShellDestinationBarForRoute(
+                dest.route,
+                shellDestinationBarController,
+                (lifecycleOwner as? Activity)?.findViewById(R.id.shell_destination_nav)
+            )
         }
         flushPendingNavigations()
     }

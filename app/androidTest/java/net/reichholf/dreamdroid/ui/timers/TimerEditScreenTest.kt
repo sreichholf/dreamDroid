@@ -3,11 +3,9 @@ package net.reichholf.dreamdroid.ui.timers
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
@@ -156,7 +154,6 @@ class TimerEditScreenTest {
             )
         }
         composeRule.setContent {
-            val insetPx = with(LocalDensity.current) { 48.dp.roundToPx() }
             DreamDroidTheme {
                 Box(Modifier.fillMaxSize().testTag("host")) {
                     Box(
@@ -164,7 +161,7 @@ class TimerEditScreenTest {
                             .fillMaxSize()
                             .phoneNavDestinationViewport(
                                 shellBarVisible = false,
-                                bottomSafe = WindowInsets(bottom = insetPx)
+                                bottomInset = 48.dp
                             )
                     ) {
                         TimerEditScreen(

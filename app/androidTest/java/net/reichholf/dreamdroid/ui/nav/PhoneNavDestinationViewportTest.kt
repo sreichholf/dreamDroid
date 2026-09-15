@@ -1,11 +1,9 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -23,14 +21,13 @@ class PhoneNavDestinationViewportTest {
     @Test
     fun leafViewportShrinksByBottomInsetWhenShellBarHidden() {
         composeRule.setContent {
-            val insetPx = with(LocalDensity.current) { 48.dp.roundToPx() }
             Box(Modifier.size(200.dp).testTag("host")) {
                 Box(
                     Modifier
                         .fillMaxSize()
                         .phoneNavDestinationViewport(
                             shellBarVisible = false,
-                            bottomSafe = WindowInsets(bottom = insetPx)
+                            bottomInset = 48.dp
                         )
                 ) {
                     Box(Modifier.fillMaxSize().testTag("leaf"))
@@ -49,14 +46,13 @@ class PhoneNavDestinationViewportTest {
     @Test
     fun hubViewportStaysFullWhenShellBarVisible() {
         composeRule.setContent {
-            val insetPx = with(LocalDensity.current) { 48.dp.roundToPx() }
             Box(Modifier.size(200.dp).testTag("host")) {
                 Box(
                     Modifier
                         .fillMaxSize()
                         .phoneNavDestinationViewport(
                             shellBarVisible = true,
-                            bottomSafe = WindowInsets(bottom = insetPx)
+                            bottomInset = 48.dp
                         )
                 ) {
                     Box(Modifier.fillMaxSize().testTag("leaf"))
