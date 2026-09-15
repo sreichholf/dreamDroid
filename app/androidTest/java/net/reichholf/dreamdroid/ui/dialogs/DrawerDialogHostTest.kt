@@ -83,6 +83,46 @@ class DrawerDialogHostTest {
     }
 
     @Test
+    fun sendMessageContentColorIsOnSurfaceInsideNavDialog() {
+        var localContent = Color.Unspecified
+        var onSurface = Color.Unspecified
+        composeRule.setContent {
+            DreamDroidTheme {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "home"
+                ) {
+                    composable("home") {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(PhoneNavRoutes.SEND_MESSAGE)
+                        }
+                    }
+                    dialog(PhoneNavRoutes.SEND_MESSAGE) {
+                        localContent = LocalContentColor.current
+                        onSurface = MaterialTheme.colorScheme.onSurface
+                        SendMessageDialog(
+                            onDismiss = { navController.popBackStack() },
+                            onSend = { _, _, _ -> }
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Send Message").assertIsDisplayed()
+        composeRule.onNodeWithText("Type").assertIsDisplayed()
+        composeRule.onNodeWithText("Timeout").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(onSurface, localContent)
+            assertTrue(
+                "night onSurface should be light, luminance=${onSurface.luminance()}",
+                onSurface.luminance() > 0.5f
+            )
+        }
+    }
+
+    @Test
     fun profileCheckFailedScreenShowsRecheckAndProfiles() {
         composeRule.setContent {
             DreamDroidTheme {

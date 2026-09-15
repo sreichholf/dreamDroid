@@ -169,6 +169,7 @@ fun EditOutlinedTextField(
     readOnly: Boolean = false,
     enabled: Boolean = true,
     trailingIcon: @Composable (() -> Unit)? = null,
+    suffix: String? = null,
     contentDescription: String = label
 ) {
     OutlinedTextField(
@@ -179,6 +180,9 @@ fun EditOutlinedTextField(
         readOnly = readOnly,
         enabled = enabled,
         trailingIcon = trailingIcon,
+        suffix = suffix?.let { suffixText ->
+            { Text(suffixText) }
+        },
         modifier = modifier
             .fillMaxWidth()
             .semantics { this.contentDescription = contentDescription },
