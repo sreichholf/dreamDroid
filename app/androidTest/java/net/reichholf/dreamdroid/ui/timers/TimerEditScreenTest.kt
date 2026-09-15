@@ -5,6 +5,8 @@ import android.content.Intent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -75,15 +77,16 @@ class TimerEditScreenTest {
         composeRule.onNodeWithContentDescription("Description").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD").performScrollTo().assertIsDisplayed()
 
-        val enabled = composeRule.onNodeWithText("Enabled").getBoundsInRoot()
-        val zap = composeRule.onNodeWithText("Zap").getBoundsInRoot()
+        val enabled = composeRule.onNode(hasText("Enabled") and isToggleable()).getBoundsInRoot()
+        val zap = composeRule.onNode(hasText("Zap") and isToggleable()).getBoundsInRoot()
         assertTrue(
             "Enabled and Zap should stack, enabled=$enabled zap=$zap",
             zap.top >= enabled.bottom
         )
+        val enabledHeight = enabled.bottom - enabled.top
         assertTrue(
-            "Switch rows are at least 56.dp, height=${enabled.height}",
-            enabled.height >= 56.dp
+            "Switch rows are at least 56.dp, height=$enabledHeight",
+            enabledHeight >= 56.dp
         )
         val beginDate = composeRule.onNodeWithContentDescription("Begin date")
             .performScrollTo()

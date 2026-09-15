@@ -19,7 +19,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
-import net.reichholf.dreamdroid.ui.compose.EditFormSubsection
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
 import net.reichholf.dreamdroid.ui.compose.EditPairedRow
 import net.reichholf.dreamdroid.ui.compose.EditPickField
@@ -98,37 +97,33 @@ fun TimerEditScreen(
             }
 
             EditFormSection {
-                EditFormSubsection(title = stringResource(R.string.begin_time)) {
-                    EditPairedRow {
-                        EditPickField(
-                            value = state.beginDate,
-                            label = stringResource(R.string.begin_date),
-                            onClick = onPickBeginDate,
-                            modifier = Modifier.weight(1f)
-                        )
-                        EditPickField(
-                            value = state.beginTime,
-                            label = stringResource(R.string.begin_time),
-                            onClick = onPickBeginTime,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                EditPairedRow {
+                    EditPickField(
+                        value = state.beginDate,
+                        label = stringResource(R.string.begin_date),
+                        onClick = onPickBeginDate,
+                        modifier = Modifier.weight(1f)
+                    )
+                    EditPickField(
+                        value = state.beginTime,
+                        label = stringResource(R.string.begin_time),
+                        onClick = onPickBeginTime,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
-                EditFormSubsection(title = stringResource(R.string.end_time)) {
-                    EditPairedRow {
-                        EditPickField(
-                            value = state.endDate,
-                            label = stringResource(R.string.end_date),
-                            onClick = onPickEndDate,
-                            modifier = Modifier.weight(1f)
-                        )
-                        EditPickField(
-                            value = state.endTime,
-                            label = stringResource(R.string.end_time),
-                            onClick = onPickEndTime,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
+                EditPairedRow {
+                    EditPickField(
+                        value = state.endDate,
+                        label = stringResource(R.string.end_date),
+                        onClick = onPickEndDate,
+                        modifier = Modifier.weight(1f)
+                    )
+                    EditPickField(
+                        value = state.endTime,
+                        label = stringResource(R.string.end_time),
+                        onClick = onPickEndTime,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 EditPickField(
                     value = state.repeatedLabel.ifEmpty { stringResource(R.string.none) },

@@ -136,12 +136,12 @@ fun EditSwitchRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = EditForm.SwitchRowMinHeight)
+            .semantics(mergeDescendants = true) { contentDescription = label }
             .toggleable(
                 value = checked,
                 onValueChange = onCheckedChange,
                 role = Role.Switch
-            )
-            .semantics { contentDescription = label },
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(

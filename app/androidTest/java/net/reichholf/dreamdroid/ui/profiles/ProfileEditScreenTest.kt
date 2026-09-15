@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
@@ -127,9 +129,11 @@ class ProfileEditScreenTest {
 
         composeRule.onAllNodesWithText("Login")[0].performScrollTo()
         composeRule.onAllNodesWithText("Login")[1].performScrollTo()
-        val liveLogin = composeRule.onAllNodesWithText("Login")[0].getBoundsInRoot()
-        val moviesLogin = composeRule.onAllNodesWithText("Login")[1].getBoundsInRoot()
-        val moviesHttps = composeRule.onAllNodesWithText("https")[1]
+        val liveLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())[0]
+            .getBoundsInRoot()
+        val moviesLogin = composeRule.onAllNodes(hasText("Login") and isToggleable())[1]
+            .getBoundsInRoot()
+        val moviesHttps = composeRule.onAllNodes(hasText("https") and isToggleable())[1]
             .performScrollTo()
             .getBoundsInRoot()
         assertTrue(
@@ -140,9 +144,10 @@ class ProfileEditScreenTest {
             "Movies https should sit under Movies Login, login=$moviesLogin https=$moviesHttps",
             moviesHttps.top >= moviesLogin.bottom
         )
+        val moviesHttpsHeight = moviesHttps.bottom - moviesHttps.top
         assertTrue(
-            "Switch rows are at least 56.dp, height=${moviesHttps.height}",
-            moviesHttps.height >= 56.dp
+            "Switch rows are at least 56.dp, height=$moviesHttpsHeight",
+            moviesHttpsHeight >= 56.dp
         )
     }
 
