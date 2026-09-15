@@ -43,7 +43,6 @@ class DreamDroidThemeTest {
         var onSurface = Color.Unspecified
         var primary = Color.Unspecified
         var outlineVariant = Color.Unspecified
-        var surfaceVariant = Color.Unspecified
         var surfaceContainerHigh = Color.Unspecified
         var surfaceContainerHighest = Color.Unspecified
         var dateContainer = Color.Unspecified
@@ -62,7 +61,6 @@ class DreamDroidThemeTest {
                 onSurface = scheme.onSurface
                 primary = scheme.primary
                 outlineVariant = scheme.outlineVariant
-                surfaceVariant = scheme.surfaceVariant
                 surfaceContainerHigh = scheme.surfaceContainerHigh
                 surfaceContainerHighest = scheme.surfaceContainerHighest
                 val dateColors = DatePickerDefaults.colors()
@@ -88,9 +86,9 @@ class DreamDroidThemeTest {
             assertEquals(primary, dateSelected)
             assertEquals(outlineVariant, dateDivider)
             assertEquals(primary, timeSelector)
-            // Compose BOM 2024.04 DatePicker/TimePicker still read Surface / SurfaceVariant
-            // for some slots; surfaceContainer* is filled for later Material 3.
-            assertEquals(surfaceVariant, timeClock)
+            // Current Material 3 TimePickerDefaults uses surfaceContainerHighest
+            // for the clock dial (older BOMs used surfaceVariant).
+            assertEquals(surfaceContainerHighest, timeClock)
             assertTrue(
                 "date picker headline should be light, luminance=${dateHeadline.luminance()}",
                 dateHeadline.luminance() > 0.5f

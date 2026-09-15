@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.tools
 
 import android.util.TypedValue
+import android.view.ContextThemeWrapper
 import androidx.annotation.AttrRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -8,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
+import net.reichholf.dreamdroid.ui.theme.isDreamDroidDark
 
 @Composable
 fun ToolsDestinationBar(
@@ -46,6 +48,14 @@ private fun destinationIconAttr(dest: ToolsDestination): Int = when (dest) {
 private fun resolveThemeDrawable(@AttrRes attr: Int): Int {
     val context = LocalContext.current
     val typed = TypedValue()
-    context.theme.resolveAttribute(attr, typed, true)
+    if (context.theme.resolveAttribute(attr, typed, true) && typed.resourceId != 0) {
+        return typed.resourceId
+    }
+    val themeRes = if (isDreamDroidDark(context)) {
+        R.style.Theme_DreamDroid_Night
+    } else {
+        R.style.Theme_DreamDroid
+    }
+    ContextThemeWrapper(context, themeRes).theme.resolveAttribute(attr, typed, true)
     return typed.resourceId
 }
