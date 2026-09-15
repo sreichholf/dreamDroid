@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.view.View
+import android.view.ViewGroup
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
@@ -119,6 +120,11 @@ class ShellFabHostTest {
             activity.setContentView(R.layout.dualpane)
             fab = activity.findViewById(R.id.fab_main)
             val shell = activity.findViewById<ComposeView>(R.id.shell_destination_nav)
+            shell.visibility = View.VISIBLE
+            shell.layoutParams = shell.layoutParams.apply {
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+                height = ViewGroup.LayoutParams.MATCH_PARENT
+            }
             shell.setViewTreeLifecycleOwner(activity)
             shell.setViewTreeViewModelStoreOwner(activity)
             shell.setViewTreeSavedStateRegistryOwner(activity)
