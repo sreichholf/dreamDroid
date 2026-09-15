@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeReques
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
@@ -83,9 +84,15 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         session.ensureLocationsAndTagsThenReload()
     }
 
+    val saveLabel = context.getString(R.string.save)
+    BindShellFab(
+        contentDescription = saveLabel,
+        iconRes = R.drawable.ic_action_save,
+        onClick = { session.saveTimer() }
+    )
     TimerEditScreen(
         state = session.editState,
-        saveLabel = context.getString(R.string.save),
+        saveLabel = saveLabel,
         onSave = { session.saveTimer() },
         onPickBeginDate = { session.pickBeginDate() },
         onPickBeginTime = { session.pickBeginTime() },
@@ -94,6 +101,7 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         onPickRepeated = { showRepeatingsPicker = true },
         onPickService = { session.pickService() },
         onPickTags = { showTagsPicker = true },
+        showSaveFab = false,
         modifier = modifier
     )
 

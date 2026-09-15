@@ -59,6 +59,9 @@ fun MultiChoiceAlertDialog(
                     .heightIn(max = 360.dp)
                     .verticalScroll(rememberScrollState())
             ) {
+                if (items.isEmpty()) {
+                    Text(stringResource(R.string.no_list_item))
+                }
                 items.forEachIndexed { index, label ->
                     Row(
                         modifier = Modifier

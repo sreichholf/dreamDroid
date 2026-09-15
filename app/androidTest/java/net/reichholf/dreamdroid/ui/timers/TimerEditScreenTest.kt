@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.timers
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -74,6 +75,44 @@ class TimerEditScreenTest {
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Save").assertIsDisplayed().performClick()
         assertEquals(1, saveClicks)
+    }
+
+    @Test
+    fun tagsFieldScrollsIntoViewAndOpensPickerWithoutScaffoldFab() {
+        val state = TimerEditState().also {
+            it.loadFrom(
+                sampleTimer().copy(tags = "News"),
+                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
+                locations = listOf("/hdd/movie/", "/media/hdd/"),
+                repeatedLabel = "None"
+            )
+        }
+        var tagPicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                TimerEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {},
+                    onPickBeginDate = {},
+                    onPickBeginTime = {},
+                    onPickEndDate = {},
+                    onPickEndTime = {},
+                    onPickRepeated = {},
+                    onPickService = {},
+                    onPickTags = { tagPicks++ },
+                    showSaveFab = false
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Save").assertDoesNotExist()
+        composeRule.onNodeWithText("News").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Tags")
+            .performScrollTo()
+            .assertIsDisplayed()
+            .performClick()
+        assertEquals(1, tagPicks)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.profiles
 
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -67,6 +68,25 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithContentDescription("Save").assertIsDisplayed()
         // Login section hidden by default
         composeRule.onNodeWithText("User").assertDoesNotExist()
+    }
+
+    @Test
+    fun lastFieldsScrollIntoViewWithoutScaffoldFab() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {},
+                    showSaveFab = false
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Save").assertDoesNotExist()
+        composeRule.onNodeWithText("Streaming").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
     }
 
     @Test

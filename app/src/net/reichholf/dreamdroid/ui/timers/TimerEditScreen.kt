@@ -2,11 +2,14 @@ package net.reichholf.dreamdroid.ui.timers
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
@@ -21,6 +24,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -51,19 +56,24 @@ fun TimerEditScreen(
     onPickRepeated: () -> Unit,
     onPickService: () -> Unit,
     onPickTags: () -> Unit,
+    showSaveFab: Boolean = true,
     modifier: Modifier = Modifier
 ) {
     // Hosted in a destination that already fits system windows.
     // Default Scaffold safeDrawing insets would double-pad and lift the FAB (#263).
+    // Phone destinations use Coordinator [R.id.fab_main] (showSaveFab=false) because an
+    // in-content FAB sits in detail_view overflow / under the gesture bar.
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
-            FloatingActionButton(onClick = onSave) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_action_save),
-                    contentDescription = saveLabel
-                )
+            if (showSaveFab) {
+                FloatingActionButton(onClick = onSave) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_action_save),
+                        contentDescription = saveLabel
+                    )
+                }
             }
         },
         containerColor = MaterialTheme.colorScheme.background
@@ -191,10 +201,13 @@ fun TimerEditScreen(
             )
 
             SectionHeader(stringResource(R.string.tags))
-            SelectableValue(
+            TappableValueField(
                 value = state.tagsLabel.ifEmpty { "…" },
                 contentDescription = stringResource(R.string.tags),
                 onClick = onPickTags
+            )
+            Spacer(
+                Modifier.height(dimensionResource(R.dimen.fab_margin_bottom) + 72.dp)
             )
         }
     }
@@ -246,6 +259,35 @@ private fun SelectableValue(
             .padding(vertical = 10.dp, horizontal = 4.dp)
             .semantics { this.contentDescription = contentDescription }
     )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TappableValueField(value: String, contentDescription: String, onClick: () -> Unit) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {},
+            readOnly = true,
+            enabled = false,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
+            modifier = Modifier.fillMaxWidth(),
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                disabledBorderColor = MaterialTheme.colorScheme.outline,
+                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        )
+        Box(
+            modifier = Modifier
+                .matchParentSize()
+                .clickable(onClick = onClick, role = Role.Button)
+                .semantics { this.contentDescription = contentDescription }
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

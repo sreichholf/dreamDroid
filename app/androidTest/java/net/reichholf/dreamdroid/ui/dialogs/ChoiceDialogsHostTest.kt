@@ -13,6 +13,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -63,6 +64,27 @@ class ChoiceDialogsHostTest {
                 onSurface.luminance() > 0.5f
             )
         }
+    }
+
+    @Test
+    fun multiChoiceEmptyShowsNoItemsMessage() {
+        val emptyMessage = InstrumentationRegistry.getInstrumentation()
+            .targetContext
+            .getString(R.string.no_list_item)
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiChoiceAlertDialog(
+                    title = "Pick tags",
+                    items = emptyList(),
+                    initialChecked = booleanArrayOf(),
+                    onDismiss = {},
+                    onConfirm = {}
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Pick tags").assertIsDisplayed()
+        composeRule.onNodeWithText(emptyMessage).assertIsDisplayed()
     }
 
     @Test
