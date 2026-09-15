@@ -1,13 +1,19 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
@@ -127,5 +133,75 @@ class ServiceListScreenTest {
         // Second row must not report the fragment-root origin (0,0) used by the old PopupMenu bug.
         assertTrue("expected tapX >= 0, got $tapX", tapX >= 0)
         assertTrue("expected second-row tapY > 0, got $tapY", tapY > 0)
+    }
+
+    @Test
+    fun progressStripOmitsTrackAndStopIndicator() {
+        var primary = 0
+        var track = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                primary = MaterialTheme.colorScheme.primary.toArgb()
+                track = MaterialTheme.colorScheme.secondaryContainer.toArgb()
+                ServiceListScreen(
+                    items = listOf(
+                        ServiceListItem(
+                            index = 0,
+                            reference = "1:0:1:1:1:1:1:0:0:0:",
+                            name = "ARD",
+                            kind = ServiceRowKind.CHANNEL,
+                            nowTitle = "Tagesschau",
+                            nowStart = "20:00",
+                            nowDuration = "+20",
+                            progressMax = 10,
+                            progress = 4
+                        )
+                    ),
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
+                )
+            }
+        }
+        val bitmap = composeRule
+            .onNodeWithTag(SERVICE_LIST_PROGRESS_TAG)
+            .captureToImage()
+            .asAndroidBitmap()
+        val yMid = bitmap.height / 2
+        val xFill = (bitmap.width * 0.2f).toInt().coerceIn(0, bitmap.width - 1)
+        val fillPx = bitmap.getPixel(xFill, yMid)
+        assertTrue(
+            "current progress should be primary, not the M3 track under it " +
+                "(fill=#${Integer.toHexString(fillPx)} primary=#${Integer.toHexString(primary)} " +
+                "track=#${Integer.toHexString(track)})",
+            rgbDistance(fillPx, primary) < 40 &&
+                rgbDistance(fillPx, primary) < rgbDistance(fillPx, track)
+        )
+        val xStopFrom = (bitmap.width * 0.9f).toInt().coerceIn(0, bitmap.width - 1)
+        var stopHits = 0
+        var y = 0
+        while (y < bitmap.height) {
+            var x = xStopFrom
+            while (x < bitmap.width) {
+                if (rgbDistance(bitmap.getPixel(x, y), primary) < 40) {
+                    stopHits++
+                }
+                x++
+            }
+            y++
+        }
+        assertTrue(
+            "right edge must not draw the M3 stop indicator (hits=$stopHits)",
+            stopHits == 0
+        )
+    }
+
+    private fun rgbDistance(a: Int, b: Int): Int {
+        val ar = (a shr 16) and 0xff
+        val ag = (a shr 8) and 0xff
+        val ab = a and 0xff
+        val br = (b shr 16) and 0xff
+        val bg = (b shr 8) and 0xff
+        val bb = b and 0xff
+        return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
     }
 }
