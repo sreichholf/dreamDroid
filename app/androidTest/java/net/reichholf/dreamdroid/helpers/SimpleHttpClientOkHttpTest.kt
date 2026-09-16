@@ -117,6 +117,29 @@ class SimpleHttpClientOkHttpTest {
     }
 
     @Test
+    fun defaultConnectionTimeoutIsFifteenSeconds() {
+        assertEquals(15_000, SimpleHttpClient.DEFAULT_CONNECTION_TIMEOUT_MILLIS)
+        val client = clientForServer()
+        assertEquals(
+            SimpleHttpClient.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
+            client.connectionTimeoutMillis()
+        )
+    }
+
+    @Test
+    fun fetchPageContent_survivesDelayPastFormerThreeSecondTimeout() {
+        server.enqueue(
+            MockResponse()
+                .setHeadersDelay(4, TimeUnit.SECONDS)
+                .setBody("slow-ok")
+        )
+        val client = clientForServer()
+        assertTrue(client.fetchPageContent("/web/about"))
+        assertEquals("slow-ok", client.pageContentString)
+        assertFalse(client.hasError())
+    }
+
+    @Test
     fun fetchPageContent_interruptCancelsSocket() {
         val taken = CountDownLatch(1)
         val hold = CountDownLatch(1)

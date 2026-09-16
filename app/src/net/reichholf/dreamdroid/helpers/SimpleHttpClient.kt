@@ -57,7 +57,7 @@ class SimpleHttpClient {
     private var errorTextId: Int = -1
     private var error: Boolean = false
     private var rememberedReturnCode: Int = 0
-    private var timeoutMillis: Int = 3000
+    private var timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
 
     private var okHttpClient: OkHttpClient? = null
     private var okHttpTimeoutMillis: Int = -1
@@ -473,11 +473,21 @@ class SimpleHttpClient {
         timeoutMillis = millis
     }
 
+    fun connectionTimeoutMillis(): Int = timeoutMillis
+
     companion object {
         val LOG_TAG: String = SimpleHttpClient::class.java.simpleName
 
         const val BIG_BUCK_BUNNY_URL: String =
             "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov"
+
+        /**
+         * Connect, read, and write timeout for Enigma2 HTTP.
+         *
+         * Movie lists on a spinning HDD can stall several seconds while the disc
+         * spins up and the box reads the recording index.
+         */
+        const val DEFAULT_CONNECTION_TIMEOUT_MILLIS: Int = 15_000
 
         fun getInstance(): SimpleHttpClient = SimpleHttpClient()
 
