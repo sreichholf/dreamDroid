@@ -2,5 +2,5 @@
 <resources>
     <integer name="max_grid_col_default">-1</integer>
     <integer name="hw_accel_default">1</integer> <!-- auto -->
-    <integer name="theme_default">1</integer> <!-- Day -->
+    <integer name="theme_default">1</integer> <!-- Night -->
 </resources>

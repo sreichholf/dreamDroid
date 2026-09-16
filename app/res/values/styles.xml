@@ -32,17 +32,15 @@
     <style name="CardListView.Light" parent="CardListView" />
 
     <style name="SimpleHeaderSmall" parent="@style/TextAppearance.Material3.TitleSmall">
-        <item name="android:textAllCaps">true</item>
         <item name="android:paddingStart">6dp</item>
         <item name="android:paddingEnd">3dp</item>
-        <item name="android:textColor">?attr/colorAccent</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="SimpleHeaderMedium" parent="@style/TextAppearance.Material3.TitleMedium">
-        <item name="android:textAllCaps">true</item>
         <item name="android:paddingStart">6dp</item>
         <item name="android:paddingEnd">3dp</item>
-        <item name="android:textColor">?attr/colorAccent</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
     </style>
 
     <style name="ButtonPanel" />
@@ -91,14 +89,10 @@
 
     <style name="Button" parent="Widget.Material3.Button" />
 
-    <style name="FloatingActionButton.Primary" parent="Widget.Material3.FloatingActionButton.Primary">
-        <item name="backgroundTint">?attr/colorAccent</item>
-    </style>
+    <style name="FloatingActionButton.Primary" parent="Widget.Material3.FloatingActionButton.Primary" />
 
     <style name="ExtendedFloatingActionButton.Primary"
-        parent="Widget.Material3.ExtendedFloatingActionButton.Primary">
-        <item name="backgroundTint">?attr/colorAccent</item>
-    </style>
+        parent="Widget.Material3.ExtendedFloatingActionButton.Primary" />
 
     <style name="Drawer" parent="Widget.Material3.FloatingActionButton.Primary" />
 
@@ -111,23 +105,26 @@
 
     <style name="ShapeAppearance.DreamDroid.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">4dp</item>
+        <item name="cornerSize">8dp</item>
     </style>
 
     <style name="ShapeAppearance.DreamDroid.MediumComponent" parent="ShapeAppearance.Material3.MediumComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">4dp</item>
+        <item name="cornerSize">12dp</item>
     </style>
 
     <style name="ShapeAppearance.DreamDroid.LargeComponent" parent="ShapeAppearance.Material3.LargeComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">8dp</item>
+        <item name="cornerSize">16dp</item>
     </style>
 
-    <style name="ToolbarStyle" parent="@style/Widget.MaterialComponents.Toolbar.PrimarySurface">
+    <style name="ToolbarStyle" parent="@style/Widget.Material3.Toolbar">
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
     </style>
 
     <style name="ActionModeStyle" parent="@style/Widget.Material3.ActionMode">
-        <item name="background">@color/material_blue_grey_800</item>
+        <item name="background">?attr/colorSurfaceContainerHigh</item>
     </style>
 </resources>
