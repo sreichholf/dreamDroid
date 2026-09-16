@@ -17,7 +17,6 @@ One PR per item unless asked otherwise. Do not fold these into unrelated chrome 
 | Item | Notes |
 | --- | --- |
 | Tablet `NavigationRail` | `layout-sw720dp/dualpane.xml` is still `DrawerLayout` + toolbar. Needs a new shell slot; must not regress phone `NavigationBar` / FAB dodge. |
-| EPG search `SearchView` | Lists are Compose; query chrome is still AppCompat `SearchView` in `MainActivity` / `menu/search.xml`. Replace with Compose `SearchBar` (keep `ACTION_SEARCH`). |
 | Modal mutation progress | `IndeterminateProgressHost` is a blocking `BasicAlertDialog` spinner (profile detect, timer/movie save/delete, share import). Prefer in-content progress or a snackbar, one surface at a time. |
 | Video overlay shell | `VideoOverlayFragment` + `VideoActivity` are not a phone NavHost leaf. Zap list still uses Leanback `HorizontalGridView`. Keep libVLC unless asked for Media3. |
 | Glance-only widget | Dense RCU keys still go through `AndroidRemoteViews`. Full Glance only if it can express that grid. |
