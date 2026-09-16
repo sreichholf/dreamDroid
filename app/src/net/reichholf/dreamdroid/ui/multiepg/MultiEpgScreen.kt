@@ -305,12 +305,27 @@ fun MultiEpgScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp, vertical = 2.dp),
+                    .padding(horizontal = 4.dp, vertical = 2.dp)
+                    .testTag("multi_epg_chrome"),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Bouquet name lives on the activity toolbar; keep this row for
-                // Now / ±day / zoom so it does not duplicate the title chrome.
-                Spacer(modifier = Modifier.weight(1f))
+                // Bouquet name lives on the activity toolbar. The visible
+                // calendar day is the chrome title beside Now / ±day / zoom.
+                if (dayLabel.isNotEmpty()) {
+                    Text(
+                        text = dayLabel,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
+                            .testTag("multi_epg_day_label")
+                    )
+                } else {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
                 if (loading) {
                     CircularProgressIndicator(
                         modifier = Modifier
@@ -340,19 +355,6 @@ fun MultiEpgScreen(
                     onVisibleMinutesChange = { minutes ->
                         onVisibleMinutesChange?.invoke(minutes)
                     }
-                )
-            }
-
-            if (dayLabel.isNotEmpty()) {
-                Text(
-                    text = dayLabel,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .padding(horizontal = 12.dp, vertical = 0.dp)
-                        .testTag("multi_epg_day_label")
                 )
             }
 

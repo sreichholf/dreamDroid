@@ -537,6 +537,39 @@ class MultiEpgScreenTest {
     }
 
     @Test
+    fun dayLabelSharesRowWithDayButtons() {
+        val start = 1_700_000_000L
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = oneChannel(start),
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onPrevDay = {},
+                    onNextDay = {},
+                    onEventClick = {}
+                )
+            }
+        }
+        val day = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
+        val nextDay = composeRule.onNodeWithText("+1d").fetchSemanticsNode()
+        assertTrue(
+            "day label should share the +1d chrome row",
+            day.boundsInRoot.top < nextDay.boundsInRoot.bottom &&
+                nextDay.boundsInRoot.top < day.boundsInRoot.bottom
+        )
+        assertTrue(
+            "day label should sit to the left of +1d",
+            day.boundsInRoot.right <= nextDay.boundsInRoot.left
+        )
+    }
+
+    @Test
     fun originJumpKeepsScrolledProgrammeAndDayLabel() {
         val origin = 1_700_000_000L
         val visibleOffsetSec = 21L * 3600L
