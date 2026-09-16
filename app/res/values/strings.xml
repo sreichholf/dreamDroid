@@ -416,4 +416,6 @@
     <string name="dynamic_theme_colors_long">Use dynamic theme colors\nChanging this will RESTART the app!</string>
     <string name="dynamic_theme_colors">Dynamic theme colors</string>
     <string name="trust_all_certs">All certificates</string>
+    <string name="trust_all_certs_confirm_title">Trust all certificates?</string>
+    <string name="trust_all_certs_confirm">dreamDroid will not verify this profile\'s HTTPS certificate. Use this only for self-signed certificates on your own receiver. This can be dangerous.</string>
 </resources>

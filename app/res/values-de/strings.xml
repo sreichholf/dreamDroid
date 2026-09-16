@@ -368,4 +368,6 @@
     <string name="dynamic_theme_colors">Dynamisches Farbschema</string>
     <string name="app_name_tv_release">dreamDroidTV</string>
     <string name="trust_all_certs">Alle Zertifikate</string>
+    <string name="trust_all_certs_confirm_title">Allen Zertifikaten vertrauen?</string>
+    <string name="trust_all_certs_confirm">dreamDroid prüft das HTTPS-Zertifikat dieses Profils nicht. Verwenden Sie dies nur für selbst signierte Zertifikate auf Ihrem eigenen Receiver. Das kann gefährlich sein.</string>
 </resources>

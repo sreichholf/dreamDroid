@@ -10,6 +10,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -22,6 +26,7 @@ import net.reichholf.dreamdroid.ui.compose.EditFormSubsection
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
 import net.reichholf.dreamdroid.ui.compose.EditPairedRow
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 
 @Composable
 fun ProfileEditScreen(
@@ -31,6 +36,7 @@ fun ProfileEditScreen(
     showSaveFab: Boolean = true,
     modifier: Modifier = Modifier
 ) {
+    var showTrustAllCertsWarning by remember { mutableStateOf(false) }
     // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
     // and lift the FAB (#263). Bottom inset is PhoneNavHost when the shell
     // destination bar is hidden. Phone ProfileEditDestination passes
@@ -93,7 +99,13 @@ fun ProfileEditScreen(
                 if (state.ssl) {
                     EditSwitchRow(
                         checked = state.trustAllCerts,
-                        onCheckedChange = { state.trustAllCerts = it },
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                showTrustAllCertsWarning = true
+                            } else {
+                                state.trustAllCerts = false
+                            }
+                        },
                         label = stringResource(R.string.trust_all_certs)
                     )
                 }
@@ -157,6 +169,15 @@ fun ProfileEditScreen(
                 Spacer(Modifier.height(72.dp))
             }
         }
+    }
+    if (showTrustAllCertsWarning) {
+        ConfirmAlertDialog(
+            title = stringResource(R.string.trust_all_certs_confirm_title),
+            message = stringResource(R.string.trust_all_certs_confirm),
+            onDismiss = { showTrustAllCertsWarning = false },
+            onConfirm = { state.trustAllCerts = true },
+            confirmLabel = stringResource(R.string.enable)
+        )
     }
 }
 
