@@ -45,7 +45,7 @@ fun DestinationBar(
                 icon = {
                     Icon(
                         painter = painterResource(item.iconRes),
-                        contentDescription = label
+                        contentDescription = null
                     )
                 },
                 label = { Text(label) }

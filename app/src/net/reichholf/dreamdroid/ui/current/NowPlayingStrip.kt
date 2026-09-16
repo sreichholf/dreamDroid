@@ -5,12 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -50,8 +50,8 @@ fun NowPlayingStrip(
     val description = "$label. $headline"
     Column(modifier.fillMaxWidth()) {
         Surface(
-            color = NavigationBarDefaults.containerColor,
-            tonalElevation = NavigationBarDefaults.Elevation,
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 0.dp,
             modifier = Modifier
                 .fillMaxWidth()
                 .semantics {
@@ -64,6 +64,7 @@ fun NowPlayingStrip(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
+                        .heightIn(min = 48.dp)
                         .padding(horizontal = 16.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {

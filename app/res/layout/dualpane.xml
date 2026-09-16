@@ -12,8 +12,7 @@
         android:id="@+id/coordinator_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginBottom="20dp"
-        android:background="?attr/colorOnSurfaceInverse"
+        android:background="?attr/colorSurface"
         android:layout_weight="1">
 
         <com.google.android.material.appbar.AppBarLayout
@@ -78,13 +77,12 @@
 
     <LinearLayout
         android:id="@+id/navigation_view"
-        android:layout_width="wrap_content"
+        android:layout_width="360dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="?attr/colorSurface"
         android:clickable="true"
         android:focusable="true"
-        android:minWidth="280dp"
         android:orientation="vertical">
 
         <include layout="@layout/navigation_header"/>
