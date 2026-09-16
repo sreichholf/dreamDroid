@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.app.Activity
 import android.net.Uri
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -13,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -22,12 +24,14 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.ui.about.AboutDialog
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.dialogs.ChangelogDialog
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
 import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
 import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
@@ -109,6 +113,16 @@ fun PhoneNavHost(
                 .fillMaxSize()
                 .phoneNavDestinationViewport(shellBarVisible)
         )
+        val leaveConfirm by handle.leaveConfirmRequestedFlow().collectAsState()
+        if (leaveConfirm) {
+            val context = LocalContext.current
+            ConfirmAlertDialog(
+                title = stringResource(R.string.leave_confirm),
+                message = stringResource(R.string.leave_confirm_long),
+                onDismiss = { handle.clearLeaveConfirm() },
+                onConfirm = { (context as? Activity)?.finish() }
+            )
+        }
     }
 }
 

@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.activities
 
 import android.app.SearchManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -32,7 +31,6 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.BuildConfig
@@ -110,12 +108,7 @@ class MainActivity :
             val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
                 .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
             if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
-                MaterialAlertDialogBuilder(this@MainActivity)
-                    .setTitle(R.string.leave_confirm)
-                    .setMessage(R.string.leave_confirm_long)
-                    .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
+                phoneNav.requestLeaveConfirm()
             } else {
                 finish()
             }

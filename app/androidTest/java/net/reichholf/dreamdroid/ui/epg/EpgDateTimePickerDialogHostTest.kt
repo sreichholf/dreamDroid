@@ -95,6 +95,7 @@ class EpgDateTimePickerDialogHostTest {
             }
         }
         composeRule.waitForIdle()
+        composeRule.onNodeWithText("Time").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Select hour").assertIsDisplayed()
         composeRule.onNodeWithText("OK").assertIsDisplayed().performClick()
         composeRule.waitForIdle()

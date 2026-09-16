@@ -81,6 +81,7 @@ fun EpgTimePickerDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         modifier = modifier,
+        title = { Text(stringResource(R.string.time)) },
         text = { TimePicker(state = timeState) },
         confirmButton = {
             TextButton(

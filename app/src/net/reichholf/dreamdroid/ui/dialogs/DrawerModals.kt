@@ -2,13 +2,21 @@ package net.reichholf.dreamdroid.ui.dialogs
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -29,25 +37,31 @@ fun PowerStateDialog(onDismiss: () -> Unit, onChoice: (Int) -> Unit) {
         PowerChoiceItem(Statics.ITEM_REBOOT, stringResource(R.string.reboot)),
         PowerChoiceItem(Statics.ITEM_SHUTDOWN, stringResource(R.string.shutdown))
     )
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.powercontrol)) },
-        text = {
-            PowerStateScreen(
-                items = items,
-                onItemClick = {
-                    onChoice(it.id)
-                    onDismiss()
-                }
-            )
-        },
-        confirmButton = {},
-        dismissButton = {
+    BasicAlertDialogSurface(onDismissRequest = onDismiss) {
+        Text(
+            text = stringResource(R.string.powercontrol),
+            style = MaterialTheme.typography.headlineSmall,
+            color = AlertDialogDefaults.titleContentColor
+        )
+        PowerStateScreen(
+            items = items,
+            onItemClick = {
+                onChoice(it.id)
+                onDismiss()
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.cancel))
             }
         }
-    )
+    }
 }
 
 @Composable
@@ -56,11 +70,25 @@ fun SendMessageDialog(
     onSend: (text: String, type: String, timeout: String) -> Unit
 ) {
     val state = remember { SendMessageUiState() }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.send_message)) },
-        text = { SendMessageScreen(state = state) },
-        confirmButton = {
+    BasicAlertDialogSurface(onDismissRequest = onDismiss) {
+        Text(
+            text = stringResource(R.string.send_message),
+            style = MaterialTheme.typography.headlineSmall,
+            color = AlertDialogDefaults.titleContentColor
+        )
+        SendMessageScreen(
+            state = state,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
             TextButton(
                 onClick = {
                     onSend(state.message, state.typeIndex.toString(), state.timeout)
@@ -69,13 +97,8 @@ fun SendMessageDialog(
             ) {
                 Text(stringResource(R.string.send))
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
         }
-    )
+    }
 }
 
 @Composable
@@ -89,11 +112,25 @@ fun SleepTimerDialog(
     val state = remember(initialMinutes, initialEnabled, initialAction) {
         SleepTimerUiState(initialMinutes, initialEnabled, initialAction)
     }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.sleeptimer)) },
-        text = { SleepTimerScreen(state = state) },
-        confirmButton = {
+    BasicAlertDialogSurface(onDismissRequest = onDismiss) {
+        Text(
+            text = stringResource(R.string.sleeptimer),
+            style = MaterialTheme.typography.headlineSmall,
+            color = AlertDialogDefaults.titleContentColor
+        )
+        SleepTimerScreen(
+            state = state,
+            modifier = Modifier.padding(top = 16.dp)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 8.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
             TextButton(
                 onClick = {
                     onSave(state.minutes.toString(), state.action, state.enabled)
@@ -102,13 +139,8 @@ fun SleepTimerDialog(
             ) {
                 Text(stringResource(R.string.save))
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
         }
-    )
+    }
 }
 
 @Composable

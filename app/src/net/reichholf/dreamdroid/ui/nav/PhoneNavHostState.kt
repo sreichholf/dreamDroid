@@ -76,6 +76,7 @@ class PhoneNavHostState(
     private val profileCheckUiState = MutableStateFlow<ProfileCheckUi>(
         ProfileCheckUi.Checking("")
     )
+    private val leaveConfirmRequestedState = MutableStateFlow(false)
     private val profileEditRemountState = MutableStateFlow(0)
     private val timerEditRemountState = MutableStateFlow(0)
     private val epgRemountState = MutableStateFlow(0)
@@ -257,6 +258,17 @@ class PhoneNavHostState(
     }
 
     override fun profileCheckUiFlow(): StateFlow<ProfileCheckUi> = profileCheckUiState.asStateFlow()
+
+    override fun leaveConfirmRequestedFlow(): StateFlow<Boolean> =
+        leaveConfirmRequestedState.asStateFlow()
+
+    override fun requestLeaveConfirm() {
+        leaveConfirmRequestedState.value = true
+    }
+
+    override fun clearLeaveConfirm() {
+        leaveConfirmRequestedState.value = false
+    }
 
     override fun updateProfileCheckUi(ui: ProfileCheckUi) {
         profileCheckUiState.value = ui
