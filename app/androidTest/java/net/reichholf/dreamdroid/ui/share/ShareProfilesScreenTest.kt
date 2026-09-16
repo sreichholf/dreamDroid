@@ -1,12 +1,17 @@
 package net.reichholf.dreamdroid.ui.share
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
@@ -42,10 +47,13 @@ class ShareProfilesScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Living Room").assertIsDisplayed()
+        composeRule.onNodeWithText("Living Room", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("dm7080.local").assertIsDisplayed()
         composeRule.onNodeWithText("Bedroom").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
     }
 
     @Test

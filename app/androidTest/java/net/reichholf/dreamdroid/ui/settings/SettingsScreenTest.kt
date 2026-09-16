@@ -5,11 +5,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -20,6 +22,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -54,7 +57,11 @@ class SettingsScreenTest {
         }
 
         composeRule.onNodeWithText("Video Player").assertIsDisplayed()
-        composeRule.onNodeWithText("Integrated video player").assertIsDisplayed()
+        composeRule.onNodeWithText("Integrated video player", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(24.dp)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+            .assertLeftPositionInRootIsEqualTo(8.dp)
         composeRule.onNodeWithText("Useability").assertIsDisplayed()
         composeRule.onNodeWithText("Start screen").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Now-playing strip").performScrollTo().assertIsDisplayed()

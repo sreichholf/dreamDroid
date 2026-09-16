@@ -10,8 +10,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -22,6 +21,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 
 @Composable
@@ -35,13 +37,18 @@ fun VirtualRemoteWidgetConfigScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .padding(vertical = 8.dp)
     ) {
         Text(
             text = stringResource(R.string.remote_widget_config_title_style),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            modifier = Modifier.padding(
+                start = ListRowHorizontalInset + 16.dp,
+                end = ListRowHorizontalInset + 16.dp,
+                top = 8.dp,
+                bottom = 8.dp
+            )
         )
         Column(modifier = Modifier.selectableGroup()) {
             StyleOptionRow(
@@ -59,32 +66,34 @@ fun VirtualRemoteWidgetConfigScreen(
             text = stringResource(R.string.remote_widget_config_title_profile),
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+            modifier = Modifier.padding(
+                start = ListRowHorizontalInset + 16.dp,
+                end = ListRowHorizontalInset + 16.dp,
+                top = 8.dp,
+                bottom = 8.dp
+            )
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
             items(profiles, key = { it.id }) { profile ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp)
-                        .clickable { onProfileClick(profile) },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = profile.name,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = profile.host,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+                ListRowSurface(modifier = Modifier.clickable { onProfileClick(profile) }) {
+                    ListItem(
+                        headlineContent = {
+                            Text(
+                                text = profile.name,
+                                style = MaterialTheme.typography.titleMedium,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        },
+                        supportingContent = {
+                            Text(
+                                text = profile.host,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        },
+                        colors = listRowItemColors(),
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 }
             }
         }
@@ -93,22 +102,25 @@ fun VirtualRemoteWidgetConfigScreen(
 
 @Composable
 private fun StyleOptionRow(label: String, selected: Boolean, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .selectable(
-                selected = selected,
-                onClick = onClick,
-                role = Role.RadioButton
-            )
-            .padding(horizontal = 8.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        RadioButton(selected = selected, onClick = null)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.padding(start = 8.dp)
+    ListRowSurface(
+        modifier = Modifier.selectable(
+            selected = selected,
+            onClick = onClick,
+            role = Role.RadioButton
         )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(selected = selected, onClick = null)
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
     }
 }

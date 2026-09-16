@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 
 data class BackupProfileToggle(val id: Int, val label: String, val checked: Boolean = true)
 
@@ -67,11 +69,13 @@ fun BackupScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(vertical = 16.dp)
     ) {
         Button(
             onClick = onImport,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = ListRowHorizontalInset)
         ) {
             Text(stringResource(R.string.backup_import))
         }
@@ -79,6 +83,7 @@ fun BackupScreen(
             onClick = onExport,
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(horizontal = ListRowHorizontalInset)
                 .padding(top = 8.dp)
         ) {
             Text(stringResource(R.string.backup_export))
@@ -95,29 +100,44 @@ fun BackupScreen(
                 text = stringResource(R.string.backup_profiles),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 8.dp)
+                modifier = Modifier.padding(
+                    start = ListRowHorizontalInset + 16.dp,
+                    end = ListRowHorizontalInset + 16.dp,
+                    bottom = 8.dp
+                )
             )
 
             state.profiles.forEach { profile ->
-                EditSwitchRow(
-                    checked = profile.checked,
-                    onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) },
-                    label = profile.label
-                )
+                ListRowSurface {
+                    EditSwitchRow(
+                        checked = profile.checked,
+                        onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) },
+                        label = profile.label,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
             }
 
             Text(
                 text = stringResource(R.string.backup_settings),
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                modifier = Modifier.padding(
+                    start = ListRowHorizontalInset + 16.dp,
+                    end = ListRowHorizontalInset + 16.dp,
+                    top = 16.dp,
+                    bottom = 8.dp
+                )
             )
 
-            EditSwitchRow(
-                checked = state.exportSettings,
-                onCheckedChange = { state.exportSettings = it },
-                label = stringResource(R.string.backup_export_settings)
-            )
+            ListRowSurface {
+                EditSwitchRow(
+                    checked = state.exportSettings,
+                    onCheckedChange = { state.exportSettings = it },
+                    label = stringResource(R.string.backup_export_settings),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
         }
     }
 }

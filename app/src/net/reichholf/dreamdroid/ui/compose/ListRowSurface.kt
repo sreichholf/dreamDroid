@@ -29,7 +29,11 @@ fun listRowItemColors() = ListItemDefaults.colors(containerColor = Color.Transpa
  * gutter left/right and between rows. The gutter (not a hairline) is the separator.
  */
 @Composable
-fun ListRowSurface(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun ListRowSurface(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -39,7 +43,7 @@ fun ListRowSurface(modifier: Modifier = Modifier, content: @Composable ColumnSco
             )
             .testTag(LIST_ROW_SURFACE_TAG)
             .then(modifier),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = color,
         shape = MaterialTheme.shapes.medium,
         content = { Column(content = content) }
     )
