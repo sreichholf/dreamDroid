@@ -207,7 +207,10 @@ private fun PhoneNavHostGraph(
         composable(
             route = PhoneNavRoutes.EPG_SEARCH,
             arguments = listOf(
-                navArgument(PhoneNavRoutes.ARG_QUERY) { type = NavType.StringType }
+                navArgument(PhoneNavRoutes.ARG_QUERY) {
+                    type = NavType.StringType
+                    defaultValue = ""
+                }
             )
         ) { entry ->
             val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()

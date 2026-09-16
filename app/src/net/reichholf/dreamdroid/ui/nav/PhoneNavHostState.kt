@@ -352,7 +352,6 @@ class PhoneNavHostState(
 
     override fun navigateToEpgSearch(query: String?): Boolean {
         val q = query.orEmpty()
-        if (q.isEmpty()) return false
         val controller = navController
         if (controller == null) {
             pendingEpgSearchQuery = q
@@ -360,6 +359,9 @@ class PhoneNavHostState(
         }
         val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH ||
             controller.currentDestination?.route?.startsWith("epg_search") == true
+        if (onSearch && q.isEmpty()) {
+            return true
+        }
         if (onSearch) {
             epgSearchRemountState.value = epgSearchRemountState.value + 1
         }

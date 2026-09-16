@@ -8,6 +8,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,7 +23,7 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
- * Phase 2.7f: EPG search results as a direct Compose NavHost destination.
+ * EPG search results as a Compose NavHost destination with Material 3 SearchBar.
  * Remount/reload is driven by [query] + host remount epoch for same-query resubmits.
  */
 @Composable
@@ -38,12 +39,15 @@ fun EpgSearchDestination(
     val refresh = remember { ComposeRefreshState() }
     var emptyMessage by remember { mutableStateOf<String?>(null) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
+    var draftQuery by rememberSaveable(query, remountEpoch) { mutableStateOf(query) }
+    var expanded by rememberSaveable(query, remountEpoch) {
+        mutableStateOf(query.isEmpty())
+    }
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
 
-    val baseTitle = context.getString(R.string.epg_search)
-    fun finishedTitle() = "$baseTitle - '$query'"
+    val searchTitle = context.getString(R.string.epg_search)
 
     fun setToolbarTitle(title: String) {
         (context as? AppCompatActivity)?.title = title
@@ -51,6 +55,7 @@ fun EpgSearchDestination(
 
     fun reload() {
         if (query.isEmpty()) {
+            refresh.setRefreshing(false)
             return
         }
         if (listState.items.isEmpty()) {
@@ -68,7 +73,7 @@ fun EpgSearchDestination(
                 URIStore.EPG_SEARCH
             )
             refresh.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
+            setToolbarTitle(searchTitle)
             if (!result.success) {
                 listState.replaceAll(emptyList())
                 emptyMessage = result.errorText
@@ -85,7 +90,7 @@ fun EpgSearchDestination(
     }
 
     DisposableEffect(handle, dialogSession) {
-        setToolbarTitle(finishedTitle())
+        setToolbarTitle(searchTitle)
         onDispose {
             loadJob?.cancel()
             loadJob = null
@@ -100,10 +105,22 @@ fun EpgSearchDestination(
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
         onRefresh = { reload() },
-        enabled = refresh.enabled,
+        enabled = refresh.enabled && query.isNotEmpty() && !expanded,
         modifier = modifier
     ) {
-        EpgBouquetScreen(
+        EpgSearchScreen(
+            query = draftQuery,
+            onQueryChange = { draftQuery = it },
+            onSearch = { submitted ->
+                val q = submitted.trim()
+                if (q.isEmpty()) {
+                    return@EpgSearchScreen
+                }
+                expanded = false
+                handle.navigateToEpgSearch(q)
+            },
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
             items = listState.items,
             listState = listState.listState,
             scrollEpoch = listState.scrollEpoch,
