@@ -9,9 +9,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
@@ -20,6 +22,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -33,13 +37,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import net.reichholf.dreamdroid.R
 
 /**
  * Material 3 compact-form metrics: 16.dp screen inset, 16.dp between fields and
@@ -59,6 +67,7 @@ fun EditFormColumn(modifier: Modifier = Modifier, content: @Composable ColumnSco
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(EditForm.ScreenPadding),
         verticalArrangement = Arrangement.spacedBy(EditForm.GroupSpacing),
@@ -164,14 +173,39 @@ fun EditOutlinedTextField(
     label: String,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Next,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
     password: Boolean = false,
     singleLine: Boolean = true,
     readOnly: Boolean = false,
     enabled: Boolean = true,
+    isError: Boolean = false,
+    supportingText: String? = null,
     trailingIcon: @Composable (() -> Unit)? = null,
     suffix: String? = null,
     contentDescription: String = label
 ) {
+    var passwordVisible by remember { mutableStateOf(false) }
+    val resolvedTrailingIcon: @Composable (() -> Unit)? = if (password) {
+        {
+            val show = stringResource(R.string.show_password)
+            val hide = stringResource(R.string.hide_password)
+            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                Icon(
+                    painter = painterResource(
+                        if (passwordVisible) {
+                            R.drawable.ic_visibility_off
+                        } else {
+                            R.drawable.ic_visibility
+                        }
+                    ),
+                    contentDescription = if (passwordVisible) hide else show
+                )
+            }
+        }
+    } else {
+        trailingIcon
+    }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -179,21 +213,38 @@ fun EditOutlinedTextField(
         singleLine = singleLine,
         readOnly = readOnly,
         enabled = enabled,
-        trailingIcon = trailingIcon,
+        isError = isError,
+        supportingText = supportingText?.let { message ->
+            { Text(message) }
+        },
+        trailingIcon = resolvedTrailingIcon,
         suffix = suffix?.let { suffixText ->
             { Text(suffixText) }
         },
         modifier = modifier
             .fillMaxWidth()
-            .semantics { this.contentDescription = contentDescription },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        visualTransformation = if (password) {
+            .then(
+                if (password) {
+                    Modifier
+                } else {
+                    Modifier.semantics { this.contentDescription = contentDescription }
+                }
+            ),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = keyboardType,
+            imeAction = imeAction
+        ),
+        keyboardActions = keyboardActions,
+        visualTransformation = if (password && !passwordVisible) {
             PasswordVisualTransformation()
         } else {
             VisualTransformation.None
         },
         textStyle = MaterialTheme.typography.bodyLarge.copy(
             color = MaterialTheme.colorScheme.onSurface
+        ),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     )
 }
@@ -220,6 +271,8 @@ fun EditPickField(
                 color = MaterialTheme.colorScheme.onSurface
             ),
             colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 disabledTextColor = MaterialTheme.colorScheme.onSurface,
                 disabledBorderColor = MaterialTheme.colorScheme.outline,
                 disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -265,6 +318,9 @@ fun EditDropdownField(
                 .semantics { this.contentDescription = contentDescription },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface
+            ),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )
         )
         ExposedDropdownMenu(

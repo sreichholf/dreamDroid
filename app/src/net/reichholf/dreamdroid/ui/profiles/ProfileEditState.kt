@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 class ProfileEditState {
     var name by mutableStateOf("")
     var host by mutableStateOf("")
+    var hostError by mutableStateOf<String?>(null)
     var streamHost by mutableStateOf("")
     var port by mutableStateOf("80")
     var streamPort by mutableStateOf("8001")
@@ -38,6 +39,7 @@ class ProfileEditState {
     fun loadFrom(profile: Profile) {
         name = profile.name.orEmpty()
         host = profile.host.orEmpty()
+        hostError = null
         streamHost = profile.streamHost.orEmpty()
         ssl = profile.ssl
         trustAllCerts = profile.allCertsTrusted
