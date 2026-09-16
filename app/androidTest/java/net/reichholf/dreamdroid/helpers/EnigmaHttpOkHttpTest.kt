@@ -4,7 +4,9 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import okhttp3.Credentials
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -12,6 +14,7 @@ import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -30,45 +33,6 @@ class EnigmaHttpOkHttpTest {
     @After
     fun stopServer() {
         server.shutdown()
-    }
-
-    @Test
-    fun pageUrl_httpHostAndQuery() {
-        val profile = Profile().apply {
-            host = "box.local"
-            port = 80
-            ssl = false
-            login = false
-        }
-        val url = EnigmaUrls.page(profile, "/web/about", ArrayList())
-        assertEquals("http://box.local:80/web/about?", url)
-    }
-
-    @Test
-    fun pageUrl_httpsWhenSsl() {
-        val profile = Profile().apply {
-            host = "box.local"
-            port = 443
-            ssl = true
-            login = false
-        }
-        val url = EnigmaUrls.page(profile, "/web/about", ArrayList())
-        assertTrue(url.startsWith("https://"))
-        assertTrue(url.contains("box.local:443/web/about"))
-    }
-
-    @Test
-    fun authedUrl_embedsUserInfo() {
-        val profile = Profile().apply {
-            host = "box.local"
-            port = 80
-            ssl = false
-            login = true
-            user = "root"
-            pass = "secret"
-        }
-        val url = EnigmaUrls.authed(profile, "/web/about", ArrayList())
-        assertTrue(url.contains("root:secret@box.local:80"))
     }
 
     @Test
@@ -217,51 +181,88 @@ class EnigmaHttpOkHttpTest {
     }
 
     @Test
-    fun serviceStreamUrl_httpOmitsUserInfo() {
-        val profile = Profile().apply {
-            host = "box.local"
-            streamPort = 8001
-            streamLogin = true
-            user = "root"
-            pass = "secret"
-            encoderStream = false
-        }
-        val url = EnigmaUrls.serviceStream(profile, "1:0:1")
-        assertFalse(url.contains("root:secret@"))
-        assertTrue(url.startsWith("http://"))
-        assertTrue(url.contains("box.local:8001/"))
+    fun fetch_prefixesMissingSlash() {
+        server.enqueue(MockResponse().setBody("ok"))
+        val result = clientForServer().fetch("web/about")
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("/web/about", server.takeRequest().requestUrl!!.encodedPath)
     }
 
     @Test
-    fun fileStreamUrl_httpOmitsUserInfo() {
-        val profile = Profile().apply {
-            host = "box.local"
-            filePort = 80
-            fileLogin = true
-            fileSsl = false
-            user = "root"
-            pass = "secret"
-            encoderStream = false
+    fun fetch_postsWhenFeatureEnabled() {
+        val previous = DreamDroid.featurePostRequest()
+        DreamDroid.setFeaturePostRequest(true)
+        try {
+            server.enqueue(MockResponse().setBody("ok"))
+            clientForServer().fetch("/web/about")
+            assertEquals("POST", server.takeRequest().method)
+        } finally {
+            DreamDroid.setFeaturePostRequest(previous)
         }
-        val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
-        assertFalse(url.contains("root:secret@"))
-        assertTrue(url.startsWith("http://"))
     }
 
     @Test
-    fun fileStreamUrl_httpsKeepsUserInfo() {
-        val profile = Profile().apply {
-            host = "box.local"
-            filePort = 443
-            fileLogin = true
-            fileSsl = true
-            user = "root"
-            pass = "secret"
-            encoderStream = false
+    fun fetch_405RetriesAsGet() {
+        val previous = DreamDroid.featurePostRequest()
+        DreamDroid.setFeaturePostRequest(true)
+        try {
+            server.enqueue(MockResponse().setResponseCode(405))
+            server.enqueue(MockResponse().setBody("ok-get"))
+            val result = clientForServer().fetch("/web/about")
+            assertTrue(result is EnigmaHttpResult.Success)
+            assertEquals("ok-get", (result as EnigmaHttpResult.Success).text)
+            assertEquals("POST", server.takeRequest().method)
+            assertEquals("GET", server.takeRequest().method)
+        } finally {
+            DreamDroid.setFeaturePostRequest(previous)
         }
-        val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
-        assertTrue(url.startsWith("https://"))
-        assertTrue(url.contains("root:secret@"))
+    }
+
+    @Test
+    fun fetch_sendsAuthorizationHeader() {
+        server.enqueue(MockResponse().setBody("ok"))
+        val profile =
+            Profile().apply {
+                host = "127.0.0.1"
+                port = server.port
+                ssl = false
+                login = true
+                user = "root"
+                pass = "secret"
+            }
+        EnigmaHttp(profile).fetch("/web/about")
+        assertEquals(
+            Credentials.basic("root", "secret"),
+            server.takeRequest().getHeader("Authorization")
+        )
+    }
+
+    @Test
+    fun fetch_screenshotOmitsSessionId() {
+        server.enqueue(MockResponse().setBody("png"))
+        val result = clientForServer(sessionId = "abc").fetch("/grab?")
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertNull(server.takeRequest().requestUrl!!.queryParameter("sessionid"))
+    }
+
+    @Test
+    fun fetch_httpErrorIsFailure() {
+        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
+        val result = clientForServer().fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Failure)
+    }
+
+    @Test
+    fun fetch_refusedConnectionIsFailure() {
+        val profile =
+            Profile().apply {
+                host = "127.0.0.1"
+                port = 1
+                ssl = false
+                login = false
+            }
+        val result = EnigmaHttp(profile, timeoutMillis = 2_000).fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Failure)
     }
 
     @Test
