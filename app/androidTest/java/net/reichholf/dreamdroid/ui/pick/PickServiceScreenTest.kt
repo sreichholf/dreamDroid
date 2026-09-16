@@ -50,7 +50,7 @@ class PickServiceScreenTest {
         }
         composeRule.onNodeWithText("Favourites (TV)", useUnmergedTree = true)
             .assertIsDisplayed()
-            .assertLeftPositionInRootIsEqualTo(16.dp)
+            .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("All Radio").assertIsDisplayed().performClick()
         assertEquals(radio, clicked)
     }

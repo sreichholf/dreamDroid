@@ -14,6 +14,8 @@ import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 @Composable
 fun PickServiceScreen(
@@ -44,16 +46,17 @@ fun PickServiceScreen(
 
 @Composable
 private fun BouquetRow(name: String, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }

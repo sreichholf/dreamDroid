@@ -21,6 +21,8 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import kotlin.math.roundToInt
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 typealias MovieListTap = (item: MovieListItem, windowX: Int, windowY: Int) -> Unit
 
@@ -54,32 +56,8 @@ private fun MovieRow(
         val bounds: Rect = coords?.boundsInWindow() ?: return 0 to 0
         return bounds.left.roundToInt() to bounds.top.roundToInt()
     }
-    ListItem(
-        headlineContent = {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        supportingContent = {
-            Column {
-                Text(
-                    text = item.serviceName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Text(
-                    text = listOf(item.time, item.length, item.fileSize).filter {
-                        it.isNotEmpty()
-                    }.joinToString("  "),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
+    ListRowSurface(
         modifier = Modifier
-            .fillMaxWidth()
             .onGloballyPositioned { coords = it }
             .combinedClickable(
                 onClick = {
@@ -91,5 +69,33 @@ private fun MovieRow(
                     onLongClick(x, y)
                 }
             )
-    )
+    ) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            supportingContent = {
+                Column {
+                    Text(
+                        text = item.serviceName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = listOf(item.time, item.length, item.fileSize).filter {
+                            it.isNotEmpty()
+                        }.joinToString("  "),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }

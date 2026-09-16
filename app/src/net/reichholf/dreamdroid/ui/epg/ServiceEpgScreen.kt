@@ -20,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 @Composable
 fun ServiceEpgScreen(
@@ -50,49 +52,50 @@ fun ServiceEpgScreen(
 
 @Composable
 private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        supportingContent = {
-            Column {
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                    Text(
-                        text = event.startReadable,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = event.durationReadable,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.weight(1f)
-                    )
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = event.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+            },
+            supportingContent = {
+                Column {
+                    Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                        Text(
+                            text = event.startReadable,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = event.durationReadable,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (event.descriptionExtended.isNotEmpty()) {
+                        Text(
+                            text = event.descriptionExtended,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 3,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    }
                 }
-                if (event.descriptionExtended.isNotEmpty()) {
-                    Text(
-                        text = event.descriptionExtended,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 3,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp)
-                    )
-                }
-            }
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
+            },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }

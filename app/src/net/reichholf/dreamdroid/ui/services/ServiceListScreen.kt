@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -38,6 +37,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 /** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
 typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
@@ -82,8 +84,7 @@ private fun ServiceRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = ListRowHorizontalInset + 16.dp, vertical = 8.dp)
                 .wrapContentHeight(Alignment.CenterVertically)
         )
         return
@@ -96,9 +97,8 @@ private fun ServiceRow(
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
-    Column(
+    ListRowSurface(
         modifier = Modifier
-            .fillMaxWidth()
             .onGloballyPositioned { coords = it }
             .combinedClickable(
                 onClick = {
@@ -164,7 +164,8 @@ private fun ServiceRow(
                     }
                 } else {
                     null
-                }
+                },
+            colors = listRowItemColors()
         )
     }
 }

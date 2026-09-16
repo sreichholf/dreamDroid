@@ -18,6 +18,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 @Composable
 fun TimerListScreen(
@@ -36,45 +38,48 @@ fun TimerListScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TimerRow(item: TimerListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        supportingContent = {
-            Column {
+    ListRowSurface(
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    ) {
+        ListItem(
+            headlineContent = {
                 Text(
-                    text = item.serviceName,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = item.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = "${item.begin} – ${item.end}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+            },
+            supportingContent = {
+                Column {
+                    Text(
+                        text = item.serviceName,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${item.begin} – ${item.end}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Text(
+                        text = "${item.action}  ${item.state}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            leadingContent = {
+                Box(
+                    Modifier
+                        .width(4.dp)
+                        .height(40.dp)
+                        .background(timerStateColor(item.stateColor))
                 )
-                Text(
-                    text = "${item.action}  ${item.state}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        },
-        leadingContent = {
-            Box(
-                Modifier
-                    .width(4.dp)
-                    .height(40.dp)
-                    .background(timerStateColor(item.stateColor))
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
-    )
+            },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
 
 @Composable
