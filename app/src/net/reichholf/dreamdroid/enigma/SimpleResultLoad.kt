@@ -2,38 +2,42 @@ package net.reichholf.dreamdroid.enigma
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 
 /**
- * Phase 2.2k: run a SimpleResult mutation via coroutines (no executor).
- * Dedicated [SimpleHttpClient] per call (same as SimpleResultTask).
+ * Run a SimpleResult mutation via coroutines.
  * Success requires a non-null parse with non-null "statetext" (matches the former task).
  */
 fun LifecycleOwner.launchSimpleResultLoad(
     requestHandler: SimpleResultRequestHandler,
     params: List<NameValuePair>,
-    onResult: (success: Boolean, result: SimpleResult, http: SimpleHttpClient) -> Unit
+    profile: Profile? = null,
+    onResult: (success: Boolean, result: SimpleResult, error: EnigmaHttpError?) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = SimpleHttpClient.getInstance()
-    val pair = withContext(Dispatchers.IO) {
-        val xml = requestHandler.get(http, ArrayList(params))
-        if (xml != null) {
-            val parsed = requestHandler.parseSimpleResult(xml)
-            if (parsed.stateText != null) {
-                true to parsed
-            } else {
-                false to SimpleResult()
+    val http = if (profile != null) EnigmaHttp(profile) else EnigmaHttp()
+    val outcome = withContext(Dispatchers.IO) {
+        when (val fetched = requestHandler.fetch(http, params)) {
+            is EnigmaHttpResult.Success -> {
+                val parsed = requestHandler.parseSimpleResult(fetched.text)
+                if (parsed.stateText != null) {
+                    Triple(true, parsed, null as EnigmaHttpError?)
+                } else {
+                    Triple(false, SimpleResult(), null)
+                }
             }
-        } else {
-            false to SimpleResult()
+
+            is EnigmaHttpResult.Failure ->
+                Triple(false, SimpleResult(), fetched.error)
         }
     }
-    onResult(pair.first, pair.second, http)
+    onResult(outcome.first, outcome.second, outcome.third)
 }

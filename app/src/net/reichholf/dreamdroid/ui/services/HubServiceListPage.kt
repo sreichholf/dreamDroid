@@ -320,12 +320,12 @@ class HubServiceListSession : MenuProvider {
         zapJob = host.launchSimpleResultLoad(
             ZapRequestHandler(),
             listOf(NameValuePair("sRef", ref))
-        ) { _, result, http ->
+        ) { _, result, error ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
-                http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
+                error != null -> toastText = error.resolve(ctx).orEmpty()
             }
             toast(toastText)
             onZapped?.invoke()

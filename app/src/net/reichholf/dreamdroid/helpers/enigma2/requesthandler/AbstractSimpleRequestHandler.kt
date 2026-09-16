@@ -6,8 +6,9 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requesthandler
 
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.Request
 import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.SimpleRequestInterface
 
@@ -15,8 +16,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.SimpleRequestI
  * @author sre
  */
 abstract class AbstractSimpleRequestHandler(protected var uri: String) : SimpleRequestInterface {
-    override fun get(shc: SimpleHttpClient?): String? = get(shc, ArrayList())
+    override fun get(http: EnigmaHttp, params: List<NameValuePair>): String? =
+        Request.get(http, uri, params)
 
-    override fun get(shc: SimpleHttpClient?, params: ArrayList<NameValuePair>?): String? =
-        Request.get(shc!!, uri, params)
+    override fun fetch(http: EnigmaHttp, params: List<NameValuePair>): EnigmaHttpResult =
+        http.fetch(uri, params)
 }

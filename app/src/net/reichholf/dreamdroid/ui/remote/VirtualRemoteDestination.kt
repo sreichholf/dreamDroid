@@ -114,7 +114,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
         handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
                 _,
                 result,
-                http
+                error
             ->
             var hasError = false
             var toastText = context.getString(R.string.get_content_error)
@@ -123,8 +123,8 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
             if (stateText.isNullOrEmpty()) {
                 hasError = true
             }
-            if (http.hasError()) {
-                toastText = toastText + "\n" + http.getErrorText(context).orEmpty()
+            if (error != null) {
+                toastText = toastText + "\n" + error.resolve(context).orEmpty()
                 hasError = true
             } else if (Python.FALSE == state) {
                 hasError = true

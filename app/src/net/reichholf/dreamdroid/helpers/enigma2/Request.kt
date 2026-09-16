@@ -7,37 +7,39 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import net.reichholf.dreamdroid.enigma.StringListParser
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 /**
  * @author sre
  */
 object Request {
-    fun get(shc: SimpleHttpClient, uri: String): String? = get(shc, uri, ArrayList())
+    fun fetch(
+        http: EnigmaHttp,
+        uri: String,
+        params: List<NameValuePair> = emptyList()
+    ): EnigmaHttpResult = http.fetch(uri, params)
 
-    fun get(shc: SimpleHttpClient, uri: String, params: ArrayList<NameValuePair>?): String? {
-        val p = params ?: ArrayList()
-        if (shc.fetchPageContent(uri, p)) {
-            return shc.pageContentString
+    fun get(http: EnigmaHttp, uri: String): String? = get(http, uri, emptyList())
+
+    fun get(http: EnigmaHttp, uri: String, params: List<NameValuePair>?): String? {
+        val p = params ?: emptyList()
+        return when (val result = http.fetch(uri, p)) {
+            is EnigmaHttpResult.Success -> result.text
+            is EnigmaHttpResult.Failure -> null
         }
-        return null
     }
 
-    fun getBytes(shc: SimpleHttpClient, uri: String, params: ArrayList<NameValuePair>?): ByteArray {
-        val p = params ?: ArrayList()
-        if (shc.fetchPageContent(uri, p)) {
-            return shc.bytes
+    fun getBytes(http: EnigmaHttp, uri: String, params: List<NameValuePair>?): ByteArray {
+        val p = params ?: emptyList()
+        return when (val result = http.fetch(uri, p)) {
+            is EnigmaHttpResult.Success -> result.bytes
+            is EnigmaHttpResult.Failure -> ByteArray(0)
         }
-        return ByteArray(0)
     }
 
-    fun getBytes(shc: SimpleHttpClient, uri: String?): ByteArray {
-        if (shc.fetchPageContent(uri!!)) {
-            return shc.bytes
-        }
-        return ByteArray(0)
-    }
+    fun getBytes(http: EnigmaHttp, uri: String): ByteArray = getBytes(http, uri, emptyList())
 
     fun parseList(xml: String?, list: ArrayList<String>?, itemTag: String): Boolean {
         if (xml == null || list == null) {

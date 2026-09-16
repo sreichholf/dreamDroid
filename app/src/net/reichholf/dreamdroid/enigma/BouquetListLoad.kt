@@ -7,7 +7,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 data class BouquetListLoadResult(
     val success: Boolean,
@@ -16,40 +15,30 @@ data class BouquetListLoadResult(
 )
 
 /**
- * Phase 2.7f: load TV+Radio bouquet roots without a Fragment owner.
+ * Load TV+Radio bouquet roots without a Fragment owner.
  * TV-root HTTP fail is failure even if radio later succeeds.
  */
 suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
-    val http = SimpleHttpClient.getInstance()
-    val client = EnigmaClient(http)
+    val client = EnigmaClient()
     val bouquets = Bouquets()
     val tvRef = context.resources.getStringArray(R.array.servicerefstv)[0]
     val radioRef = context.resources.getStringArray(R.array.servicerefsradio)[0]
     val tv = client.getServices(listOf(NameValuePair("sRef", tvRef)))
-    if (tv == null) {
-        return BouquetListLoadResult(
-            false,
-            bouquets,
-            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-        )
+    val tvList = tv.value
+    if (tvList == null) {
+        return BouquetListLoadResult(false, bouquets, tv.error.contentError(context))
     }
-    bouquets.tv.addAll(tv)
+    bouquets.tv.addAll(tvList)
     val radio = client.getServices(listOf(NameValuePair("sRef", radioRef)))
-    if (radio != null) {
-        bouquets.radio.addAll(radio)
+    val radioList = radio.value
+    if (radioList != null) {
+        bouquets.radio.addAll(radioList)
     }
-    val success = radio != null || tv.isNotEmpty()
-    val errorText = if (success) {
-        null
-    } else {
-        context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-    }
+    val success = radioList != null || tvList.isNotEmpty()
+    val errorText = if (success) null else radio.error.contentError(context)
     return BouquetListLoadResult(success, bouquets, errorText)
 }
 
-/**
- * Phase 2.2i: load TV+Radio bouquet roots via coroutines (no executor / runBlocking).
- */
 fun Fragment.launchBouquetListLoad(
     onResult: (success: Boolean, bouquets: Bouquets, errorText: String?) -> Unit
 ): Job {

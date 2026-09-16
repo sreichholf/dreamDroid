@@ -6,9 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 data class EpgNowNextLoadResult(
@@ -18,28 +16,18 @@ data class EpgNowNextLoadResult(
 )
 
 /**
- * Phase 2.7h: load typed hub now/next rows without a Fragment owner.
+ * Load typed hub now/next rows without a Fragment owner.
  * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadEpgNowNext(context: Context, params: List<NameValuePair>): EpgNowNextLoadResult {
-    val http = SimpleHttpClient.getInstance()
     val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
-    val fetched = EnigmaClient(http).getEpgNowNext(params, uri)
-    val success = fetched != null
-    val rows = fetched ?: emptyList()
-    val errorText = if (success) {
-        null
-    } else {
-        context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-    }
+    val response = EnigmaClient().getEpgNowNext(params, uri)
+    val success = response.value != null
+    val rows = response.value ?: emptyList()
+    val errorText = if (success) null else response.error.contentError(context)
     return EpgNowNextLoadResult(success, rows, errorText)
 }
 
-/**
- * Phase 2.2f: load typed hub now/next rows via coroutines (no executor / runBlocking).
- * Uses a dedicated [SimpleHttpClient] per load (same as GetEpgNowNextTask).
- * Null fetch is failure. Empty 200 stays an empty list.
- */
 fun Fragment.launchEpgNowNextLoad(
     params: List<NameValuePair>,
     onResult: (success: Boolean, rows: List<ServiceNowNext>, errorText: String?) -> Unit

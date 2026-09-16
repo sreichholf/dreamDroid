@@ -5,9 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 data class ServiceListLoadResult(
     val success: Boolean,
@@ -16,26 +14,17 @@ data class ServiceListLoadResult(
 )
 
 /**
- * Phase 2.7d: load typed service list without a Fragment owner.
+ * Load typed service list without a Fragment owner.
  * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadServiceList(context: Context, params: List<NameValuePair>): ServiceListLoadResult {
-    val http = SimpleHttpClient.getInstance()
-    val fetched = EnigmaClient(http).getServices(params)
-    val success = fetched != null
-    val services = fetched ?: emptyList()
-    val errorText = if (success) {
-        null
-    } else {
-        context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-    }
+    val response = EnigmaClient().getServices(params)
+    val success = response.value != null
+    val services = response.value ?: emptyList()
+    val errorText = if (success) null else response.error.contentError(context)
     return ServiceListLoadResult(success, services, errorText)
 }
 
-/**
- * Phase 2.2g: load typed service list via coroutines (no executor / runBlocking).
- * Uses a dedicated [SimpleHttpClient] per load (same as GetServiceListTask).
- */
 fun Fragment.launchServiceListLoad(
     params: List<NameValuePair>,
     onResult: (success: Boolean, services: List<Service>, errorText: String?) -> Unit

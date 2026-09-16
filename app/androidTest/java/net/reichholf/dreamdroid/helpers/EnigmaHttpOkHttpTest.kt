@@ -18,7 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class SimpleHttpClientOkHttpTest {
+class EnigmaHttpOkHttpTest {
     private lateinit var server: MockWebServer
 
     @Before
@@ -33,34 +33,32 @@ class SimpleHttpClientOkHttpTest {
     }
 
     @Test
-    fun buildUrl_httpHostAndQuery() {
+    fun pageUrl_httpHostAndQuery() {
         val profile = Profile().apply {
             host = "box.local"
             port = 80
             ssl = false
             login = false
         }
-        val client = SimpleHttpClient.getInstance(profile)
-        val url = client.buildUrl("/web/about", ArrayList())
+        val url = EnigmaUrls.page(profile, "/web/about", ArrayList())
         assertEquals("http://box.local:80/web/about?", url)
     }
 
     @Test
-    fun buildUrl_httpsWhenSsl() {
+    fun pageUrl_httpsWhenSsl() {
         val profile = Profile().apply {
             host = "box.local"
             port = 443
             ssl = true
             login = false
         }
-        val client = SimpleHttpClient.getInstance(profile)
-        val url = client.buildUrl("/web/about", ArrayList())
+        val url = EnigmaUrls.page(profile, "/web/about", ArrayList())
         assertTrue(url.startsWith("https://"))
         assertTrue(url.contains("box.local:443/web/about"))
     }
 
     @Test
-    fun buildAuthedUrl_embedsUserInfo() {
+    fun authedUrl_embedsUserInfo() {
         val profile = Profile().apply {
             host = "box.local"
             port = 80
@@ -69,27 +67,27 @@ class SimpleHttpClientOkHttpTest {
             user = "root"
             pass = "secret"
         }
-        val client = SimpleHttpClient.getInstance(profile)
-        val url = client.buildAuthedUrl("/web/about", ArrayList())
+        val url = EnigmaUrls.authed(profile, "/web/about", ArrayList())
         assertTrue(url.contains("root:secret@box.local:80"))
     }
 
     @Test
-    fun fetchPageContent_doesNotAppendSessionIdOntoCallerList() {
+    fun fetch_doesNotAppendSessionIdOntoCallerList() {
         server.enqueue(MockResponse().setBody("about-ok"))
         val client = clientForServer(sessionId = "abc")
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("sRef", "1:0:1"))
 
-        assertTrue(client.fetchPageContent("/web/about", params))
-        assertEquals("about-ok", client.pageContentString)
+        val result = client.fetch("/web/about", params)
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("about-ok", (result as EnigmaHttpResult.Success).text)
         assertEquals(1, params.size)
         assertEquals("sRef", params[0].key())
         assertEquals("1:0:1", params[0].value())
     }
 
     @Test
-    fun fetchPageContent_412RetrySendsOneFreshSessionId() {
+    fun fetch_412RetrySendsOneFreshSessionId() {
         server.dispatcher =
             object : Dispatcher() {
                 override fun dispatch(request: RecordedRequest): MockResponse {
@@ -111,36 +109,37 @@ class SimpleHttpClientOkHttpTest {
         val client = clientForServer(sessionId = "stale")
         val params = ArrayList<NameValuePair>()
 
-        assertTrue(client.fetchPageContent("/web/about", params))
-        assertEquals("about-ok", client.pageContentString)
+        val result = client.fetch("/web/about", params)
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("about-ok", (result as EnigmaHttpResult.Success).text)
         assertEquals(0, params.size)
     }
 
     @Test
     fun defaultConnectionTimeoutIsFifteenSeconds() {
-        assertEquals(15_000, SimpleHttpClient.DEFAULT_CONNECTION_TIMEOUT_MILLIS)
+        assertEquals(15_000, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS)
         val client = clientForServer()
         assertEquals(
-            SimpleHttpClient.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
+            EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
             client.connectionTimeoutMillis()
         )
     }
 
     @Test
-    fun fetchPageContent_survivesDelayPastFormerThreeSecondTimeout() {
+    fun fetch_survivesDelayPastFormerThreeSecondTimeout() {
         server.enqueue(
             MockResponse()
                 .setHeadersDelay(4, TimeUnit.SECONDS)
                 .setBody("slow-ok")
         )
         val client = clientForServer()
-        assertTrue(client.fetchPageContent("/web/about"))
-        assertEquals("slow-ok", client.pageContentString)
-        assertFalse(client.hasError())
+        val result = client.fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("slow-ok", (result as EnigmaHttpResult.Success).text)
     }
 
     @Test
-    fun fetchPageContent_interruptCancelsSocket() {
+    fun fetch_interruptCancelsSocket() {
         val taken = CountDownLatch(1)
         val hold = CountDownLatch(1)
         server.dispatcher =
@@ -157,7 +156,7 @@ class SimpleHttpClientOkHttpTest {
         var ok = true
         val worker =
             Thread {
-                ok = client.fetchPageContent("/web/about")
+                ok = client.fetch("/web/about") is EnigmaHttpResult.Success
                 finished.countDown()
             }
         try {
@@ -166,14 +165,13 @@ class SimpleHttpClientOkHttpTest {
             worker.interrupt()
             assertTrue(finished.await(3, TimeUnit.SECONDS))
             assertFalse(ok)
-            assertTrue(client.hasError())
         } finally {
             hold.countDown()
         }
     }
 
     @Test
-    fun fetchPageContent_overlapDoesNotSwapBodies() {
+    fun fetch_overlapDoesNotSwapBodies() {
         val firstTaken = CountDownLatch(1)
         val releaseFirst = CountDownLatch(1)
         server.dispatcher =
@@ -194,14 +192,21 @@ class SimpleHttpClientOkHttpTest {
         var firstOk = false
         var firstBody = ""
         Thread {
-            firstOk = client.fetchPageContent("/web/a")
-            firstBody = client.pageContentString
+            when (val result = client.fetch("/web/a")) {
+                is EnigmaHttpResult.Success -> {
+                    firstOk = true
+                    firstBody = result.text
+                }
+
+                is EnigmaHttpResult.Failure -> firstOk = false
+            }
             firstDone.countDown()
         }.start()
         try {
             assertTrue(firstTaken.await(5, TimeUnit.SECONDS))
-            assertTrue(client.fetchPageContent("/web/b"))
-            assertEquals("BBB", client.pageContentString)
+            val second = client.fetch("/web/b")
+            assertTrue(second is EnigmaHttpResult.Success)
+            assertEquals("BBB", (second as EnigmaHttpResult.Success).text)
         } finally {
             releaseFirst.countDown()
         }
@@ -209,11 +214,10 @@ class SimpleHttpClientOkHttpTest {
         if (firstOk) {
             assertEquals("AAA", firstBody)
         }
-        assertEquals("BBB", client.pageContentString)
     }
 
     @Test
-    fun buildServiceStreamUrl_httpOmitsUserInfo() {
+    fun serviceStreamUrl_httpOmitsUserInfo() {
         val profile = Profile().apply {
             host = "box.local"
             streamPort = 8001
@@ -222,14 +226,14 @@ class SimpleHttpClientOkHttpTest {
             pass = "secret"
             encoderStream = false
         }
-        val url = SimpleHttpClient.getInstance(profile).buildServiceStreamUrl("1:0:1")
+        val url = EnigmaUrls.serviceStream(profile, "1:0:1")
         assertFalse(url.contains("root:secret@"))
         assertTrue(url.startsWith("http://"))
         assertTrue(url.contains("box.local:8001/"))
     }
 
     @Test
-    fun buildFileStreamUrl_httpOmitsUserInfo() {
+    fun fileStreamUrl_httpOmitsUserInfo() {
         val profile = Profile().apply {
             host = "box.local"
             filePort = 80
@@ -239,13 +243,13 @@ class SimpleHttpClientOkHttpTest {
             pass = "secret"
             encoderStream = false
         }
-        val url = SimpleHttpClient.getInstance(profile).buildFileStreamUrl("1:0:1", "/tmp/a.ts")
+        val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
         assertFalse(url.contains("root:secret@"))
         assertTrue(url.startsWith("http://"))
     }
 
     @Test
-    fun buildFileStreamUrl_httpsKeepsUserInfo() {
+    fun fileStreamUrl_httpsKeepsUserInfo() {
         val profile = Profile().apply {
             host = "box.local"
             filePort = 443
@@ -255,7 +259,7 @@ class SimpleHttpClientOkHttpTest {
             pass = "secret"
             encoderStream = false
         }
-        val url = SimpleHttpClient.getInstance(profile).buildFileStreamUrl("1:0:1", "/tmp/a.ts")
+        val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
         assertTrue(url.startsWith("https://"))
         assertTrue(url.contains("root:secret@"))
     }
@@ -270,12 +274,12 @@ class SimpleHttpClientOkHttpTest {
             ssl = true
             allCertsTrusted = true
         }
-        SimpleHttpClient.getInstance(profile)
+        EnigmaHttp(profile)
         assertEquals(beforeFactory, HttpsURLConnection.getDefaultSSLSocketFactory())
         assertEquals(beforeVerifier, HttpsURLConnection.getDefaultHostnameVerifier())
     }
 
-    private fun clientForServer(sessionId: String? = null): SimpleHttpClient {
+    private fun clientForServer(sessionId: String? = null): EnigmaHttp {
         val profile =
             Profile().apply {
                 host = "127.0.0.1"
@@ -284,6 +288,6 @@ class SimpleHttpClientOkHttpTest {
                 login = false
                 this.sessionId = sessionId
             }
-        return SimpleHttpClient.getInstance(profile)
+        return EnigmaHttp(profile)
     }
 }

@@ -302,13 +302,13 @@ private class CurrentServiceSession : DialogActionListener {
                 host.launchSimpleResultLoad(
                     TimerAddByEventIdRequestHandler(),
                     Timer.getEventIdParams(event)
-                ) { _, result, http ->
+                ) { _, result, error ->
                     dismissProgress()
                     var toastText = ctx.getText(R.string.get_content_error).toString()
                     val stateText = result.stateText
                     when {
                         !stateText.isNullOrEmpty() -> toastText = stateText
-                        http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
+                        error != null -> toastText = error.resolve(ctx).orEmpty()
                     }
                     Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
                 }

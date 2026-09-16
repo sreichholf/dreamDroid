@@ -20,9 +20,10 @@ import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadMovieList
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
@@ -121,12 +122,13 @@ data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action:
 fun PhoneNavHandle.launchSimpleResultLoad(
     requestHandler: SimpleResultRequestHandler,
     params: List<NameValuePair>,
+    profile: Profile? = null,
     onResult: (
         success: Boolean,
         result: net.reichholf.dreamdroid.enigma.SimpleResult,
-        http: SimpleHttpClient
+        error: EnigmaHttpError?
     ) -> Unit
-): Job = lifecycleOwner.launchSimpleResultLoad(requestHandler, params, onResult)
+): Job = lifecycleOwner.launchSimpleResultLoad(requestHandler, params, profile, onResult)
 
 fun PhoneNavHandle.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,
@@ -145,7 +147,7 @@ fun PhoneNavHandle.launchMovieListLoad(
 ): Job {
     val context = lifecycleOwner as Context
     return lifecycleOwner.lifecycleScope.launch {
-        val http = SimpleHttpClient.getInstance()
+        val http = EnigmaHttp()
         withContext(Dispatchers.IO) {
             if (DreamDroid.getLocations().size <= 1) {
                 if (!DreamDroid.loadLocations(http)) {

@@ -27,7 +27,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
@@ -489,12 +489,12 @@ class DreamDroid : Application() {
          * @param shc
          */
         @Synchronized
-        fun loadLocations(shc: SimpleHttpClient): Boolean {
+        fun loadLocations(http: EnigmaHttp): Boolean {
             locationList.clear()
 
             var gotLoc = false
             val handler = LocationListRequestHandler()
-            val xml = handler.getList(shc)
+            val xml = handler.getList(http)
 
             if (xml != null) {
                 if (handler.parseList(xml, locationList)) {
@@ -517,13 +517,13 @@ class DreamDroid : Application() {
          * @param shc
          */
         @Synchronized
-        fun loadTags(shc: SimpleHttpClient): Boolean {
+        fun loadTags(http: EnigmaHttp): Boolean {
             tagList.clear()
             var gotTags = false
 
             val handler = TagListRequestHandler()
 
-            val xmlLoc = handler.getList(shc)
+            val xmlLoc = handler.getList(http)
 
             if (xmlLoc != null) {
                 if (handler.parseList(xmlLoc, tagList)) {

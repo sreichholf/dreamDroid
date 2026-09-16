@@ -3,42 +3,37 @@ package net.reichholf.dreamdroid.enigma
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
-class EnigmaClient(private val http: SimpleHttpClient) {
-    suspend fun getServices(params: List<NameValuePair> = emptyList()): List<Service>? =
-        withContext(Dispatchers.IO) {
-            val requestParams = ArrayList(params)
-            if (!http.fetchPageContent(URIStore.SERVICES, requestParams)) {
-                null
-            } else {
-                ServiceParser.parse(http.pageContentString)
-            }
+class EnigmaClient(private val http: EnigmaHttp = EnigmaHttp()) {
+    constructor(profile: Profile) : this(EnigmaHttp(profile))
+
+    suspend fun getServices(
+        params: List<NameValuePair> = emptyList()
+    ): EnigmaResponse<List<Service>> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.SERVICES, ArrayList(params)).mapParsed { xml ->
+            ServiceParser.parse(xml)
         }
+    }
 
     suspend fun getEvents(
         params: List<NameValuePair> = emptyList(),
         uri: String = URIStore.EPG_SERVICE
-    ): List<Event>? = withContext(Dispatchers.IO) {
-        val requestParams = ArrayList(params)
-        if (!http.fetchPageContent(uri, requestParams)) {
-            null
-        } else {
-            EventParser.parse(http.pageContentString)
+    ): EnigmaResponse<List<Event>> = withContext(Dispatchers.IO) {
+        http.fetch(uri, ArrayList(params)).mapParsed { xml ->
+            EventParser.parse(xml)
         }
     }
 
     suspend fun getEpgNowNext(
         params: List<NameValuePair> = emptyList(),
         uri: String = URIStore.EPG_NOWNEXT
-    ): List<ServiceNowNext>? = withContext(Dispatchers.IO) {
-        val requestParams = ArrayList(params)
-        if (!http.fetchPageContent(uri, requestParams)) {
-            null
-        } else {
-            val xml = http.pageContentString
+    ): EnigmaResponse<List<ServiceNowNext>> = withContext(Dispatchers.IO) {
+        http.fetch(uri, ArrayList(params)).mapParsed { xml ->
             if (uri == URIStore.EPG_NOWNEXT) {
                 EpgNowNextParser.parse(xml)
             } else {
@@ -55,45 +50,40 @@ class EnigmaClient(private val http: SimpleHttpClient) {
         }
     }
 
-    suspend fun getCurrent(): CurrentService? = withContext(Dispatchers.IO) {
-        if (!http.fetchPageContent(URIStore.CURRENT, ArrayList())) {
-            null
-        } else {
-            CurrentServiceParser.parse(http.pageContentString)
+    suspend fun getCurrent(): EnigmaResponse<CurrentService> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.CURRENT).mapParsed { xml ->
+            CurrentServiceParser.parse(xml)
         }
     }
 
-    suspend fun getDeviceInfo(): DeviceInfo? = withContext(Dispatchers.IO) {
-        if (!http.fetchPageContent(URIStore.DEVICE_INFO, ArrayList())) {
-            null
-        } else {
-            DeviceInfoParser.parse(http.pageContentString)
+    suspend fun getDeviceInfo(): EnigmaResponse<DeviceInfo> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.DEVICE_INFO).mapParsed { xml ->
+            DeviceInfoParser.parse(xml)
         }
     }
 
-    suspend fun getSignal(): Signal? = withContext(Dispatchers.IO) {
-        if (!http.fetchPageContent(URIStore.SIGNAL, ArrayList())) {
-            null
-        } else {
-            SignalParser.parse(http.pageContentString)
+    suspend fun getSignal(): EnigmaResponse<Signal> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.SIGNAL).mapParsed { xml ->
+            SignalParser.parse(xml)
         }
     }
 
-    suspend fun getTimers(): List<Timer>? = withContext(Dispatchers.IO) {
-        if (!http.fetchPageContent(URIStore.TIMER_LIST, ArrayList())) {
-            null
-        } else {
-            TimerParser.parse(http.pageContentString)
+    suspend fun getTimers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.TIMER_LIST).mapParsed { xml ->
+            TimerParser.parse(xml)
         }
     }
 
-    suspend fun getMovies(params: List<NameValuePair> = emptyList()): List<Movie>? =
+    suspend fun getMovies(params: List<NameValuePair> = emptyList()): EnigmaResponse<List<Movie>> =
         withContext(Dispatchers.IO) {
-            val requestParams = ArrayList(params)
-            if (!http.fetchPageContent(URIStore.MOVIES, requestParams)) {
-                null
-            } else {
-                MovieParser.parse(http.pageContentString)
+            http.fetch(URIStore.MOVIES, ArrayList(params)).mapParsed { xml ->
+                MovieParser.parse(xml)
             }
+        }
+
+    private fun <T> EnigmaHttpResult.mapParsed(parse: (String) -> T?): EnigmaResponse<T> =
+        when (this) {
+            is EnigmaHttpResult.Success -> EnigmaResponse(parse(text))
+            is EnigmaHttpResult.Failure -> EnigmaResponse(null, error)
         }
 }

@@ -8,7 +8,6 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
@@ -41,21 +40,21 @@ class EnigmaClientHttpFailTest {
     @Test
     fun getServices_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val services = EnigmaClient(clientForServer()).getServices()
+        val services = EnigmaClient(profileForServer()).getServices().value
         assertEquals(null, services)
     }
 
     @Test
     fun getServices_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val services = EnigmaClient(clientForServer()).getServices()
+        val services = EnigmaClient(profileForServer()).getServices().value
         assertEquals(emptyList<Service>(), services)
     }
 
     @Test
     fun getServices_200ReturnsFixtureNames() = runBlocking {
         server.enqueue(MockResponse().setBody(loadWebFixture("getservices.xml")))
-        val services = EnigmaClient(clientForServer()).getServices()!!
+        val services = EnigmaClient(profileForServer()).getServices().value!!
         assertEquals(3, services.size)
         assertEquals("Favourites (TV)", services[0].name)
         assertEquals("Das Erste HD", services[1].name)
@@ -65,28 +64,28 @@ class EnigmaClientHttpFailTest {
     @Test
     fun getEvents_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val events = EnigmaClient(clientForServer()).getEvents()
+        val events = EnigmaClient(profileForServer()).getEvents().value
         assertEquals(null, events)
     }
 
     @Test
     fun getEvents_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val events = EnigmaClient(clientForServer()).getEvents()
+        val events = EnigmaClient(profileForServer()).getEvents().value
         assertEquals(emptyList<Event>(), events)
     }
 
     @Test
     fun getEpgNowNext_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val rows = EnigmaClient(clientForServer()).getEpgNowNext()
+        val rows = EnigmaClient(profileForServer()).getEpgNowNext().value
         assertEquals(null, rows)
     }
 
     @Test
     fun getEpgNowNext_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val rows = EnigmaClient(clientForServer()).getEpgNowNext()
+        val rows = EnigmaClient(profileForServer()).getEpgNowNext().value
         assertEquals(emptyList<ServiceNowNext>(), rows)
     }
 
@@ -158,7 +157,4 @@ class EnigmaClientHttpFailTest {
         ssl = false
         login = false
     }
-
-    private fun clientForServer(): SimpleHttpClient =
-        SimpleHttpClient.getInstance(profileForServer())
 }

@@ -5,9 +5,9 @@ import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
-import net.reichholf.dreamdroid.helpers.enigma2.Request
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 data class ScreenshotLoadResult(val success: Boolean, val bytes: ByteArray?, val errorText: String?)
@@ -60,10 +60,13 @@ private fun hasMagic(bytes: ByteArray, magic: ByteArray): Boolean {
  * Phase 2.7c/d: load screenshot bytes without a Fragment owner.
  */
 suspend fun loadScreenshot(context: Context, params: List<NameValuePair>): ScreenshotLoadResult {
-    val http = SimpleHttpClient.getInstance()
-    val bytes = withContext(Dispatchers.IO) {
-        Request.getBytes(http, URIStore.SCREENSHOT, ArrayList(params))
+    val http = EnigmaHttp()
+    val fetched = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.SCREENSHOT, ArrayList(params))
     }
-    val httpErrorText = if (http.hasError()) http.getErrorText(context) else null
+    val (bytes, httpErrorText) = when (fetched) {
+        is EnigmaHttpResult.Success -> fetched.bytes to null
+        is EnigmaHttpResult.Failure -> ByteArray(0) to fetched.error.resolve(context)
+    }
     return screenshotPayloadResult(bytes, httpErrorText, context.getString(R.string.error))
 }

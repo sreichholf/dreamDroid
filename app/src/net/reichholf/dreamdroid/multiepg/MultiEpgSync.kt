@@ -9,8 +9,8 @@ import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgDao
@@ -152,7 +152,7 @@ class MultiEpgSync(
          *   and yields empty results (overflow in startTimeQuery).
          */
         fun httpFetch(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance()
+            http: EnigmaHttp = EnigmaHttp()
         ): suspend (String, Long, Long) -> List<Event> = { bouquetRef, timeSec, endTimeSec ->
             require(endTimeSec > timeSec) { "window end must be after start" }
             val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
@@ -163,23 +163,20 @@ class MultiEpgSync(
                     NameValuePair("endTime", durationMinutes.toString())
                 ),
                 URIStore.EPG_MULTI
-            ) ?: error("epgmulti request failed")
+            ).value ?: error("epgmulti request failed")
             events
         }
 
-        fun httpFetchTimers(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance()
-        ): suspend () -> List<Timer> = {
-            EnigmaClient(http).getTimers() ?: emptyList()
+        fun httpFetchTimers(http: EnigmaHttp = EnigmaHttp()): suspend () -> List<Timer> = {
+            EnigmaClient(http).getTimers().value ?: emptyList()
         }
 
         /** Bouquet members from `/web/getservices?sRef=`. HTTP failures throw. */
-        fun httpFetchBouquet(
-            http: SimpleHttpClient = SimpleHttpClient.getInstance()
-        ): suspend (String) -> List<Service> = { bouquetRef ->
-            EnigmaClient(http).getServices(
-                listOf(NameValuePair("sRef", bouquetRef))
-            ) ?: error("getservices request failed")
-        }
+        fun httpFetchBouquet(http: EnigmaHttp = EnigmaHttp()): suspend (String) -> List<Service> =
+            { bouquetRef ->
+                EnigmaClient(http).getServices(
+                    listOf(NameValuePair("sRef", bouquetRef))
+                ).value ?: error("getservices request failed")
+            }
     }
 }

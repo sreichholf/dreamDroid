@@ -8,7 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 
 /**
  * Phase 2.2r: prefetch locations/tags for Leanback RootBrowse.
@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.helpers.SimpleHttpClient
  */
 fun Fragment.launchTvBrowsePrefetch(onReady: () -> Unit): Job {
     return viewLifecycleOwner.lifecycleScope.launch {
-        val http = SimpleHttpClient.getInstance()
+        val http = EnigmaHttp()
         withContext(Dispatchers.IO) {
             if (DreamDroid.getLocations().size <= 1) {
                 if (!DreamDroid.loadLocations(http)) {
