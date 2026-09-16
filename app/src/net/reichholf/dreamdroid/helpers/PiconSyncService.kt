@@ -21,7 +21,7 @@ import org.apache.commons.net.ftp.FTPFileFilter
  * Created by Stephan on 05.02.2016.
  */
 class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalName) {
-    private val mId = 0x9923
+    private val id = 0x9923
 
     class DownloadProgress {
         var connected: Boolean = false
@@ -43,12 +43,12 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
         }
     }
 
-    protected lateinit var mNotifyManager: NotificationManagerCompat
-    protected lateinit var mNotificationBuilder: NotificationCompat.Builder
-    protected lateinit var mDownloadProgress: DownloadProgress
+    protected lateinit var notifyManager: NotificationManagerCompat
+    protected lateinit var notificationBuilder: NotificationCompat.Builder
+    protected lateinit var downloadProgress: DownloadProgress
 
     override fun onHandleIntent(intent: Intent?) {
-        mDownloadProgress = DownloadProgress()
+        downloadProgress = DownloadProgress()
         initNotifications()
         syncPicons()
     }
@@ -87,13 +87,13 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
 
             val filter = FTPFileFilter { file -> file.isFile && file.name.endsWith(".png") }
             val fileList = client.listFiles(null, filter)
-            mDownloadProgress.totalFiles = fileList.size
+            downloadProgress.totalFiles = fileList.size
             publishProgress(DownloadProgress.EVENT_ID_LISTING_READY)
             for (remoteFile in fileList) {
                 if (!remoteFile.isFile) continue
                 val fileName = remoteFile.name
 
-                mDownloadProgress.currentFile = fileName
+                downloadProgress.currentFile = fileName
                 publishProgress(DownloadProgress.EVENT_ID_DOWNLOADING_FILE)
 
                 val localFile = File(String.format("%s%s", localPath, fileName))
@@ -106,12 +106,12 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
                     Log.e(TAG, "Failed to download picon with filename $fileName")
                 }
                 outputStream.close()
-                mDownloadProgress.downloadedFiles++
+                downloadProgress.downloadedFiles++
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            mDownloadProgress.error = true
-            mDownloadProgress.errorText = e.message
+            downloadProgress.error = true
+            downloadProgress.errorText = e.message
             publishProgress(DownloadProgress.EVENT_ID_ERROR)
         }
         publishProgress(DownloadProgress.EVENT_ID_FINISHED)
@@ -119,11 +119,11 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
 
     fun initNotifications() {
         val context = applicationContext
-        mNotifyManager = NotificationManagerCompat.from(context)
-        mNotificationBuilder = NotificationCompat.Builder(context, "dreamdroid_picon_sync")
+        notifyManager = NotificationManagerCompat.from(context)
+        notificationBuilder = NotificationCompat.Builder(context, "dreamdroid_picon_sync")
 
         val bm = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
-        mNotificationBuilder.setContentTitle(context.getString(R.string.sync_picons))
+        notificationBuilder.setContentTitle(context.getString(R.string.sync_picons))
             .setLargeIcon(bm)
             .setSmallIcon(R.drawable.ic_action_refresh)
     }
@@ -141,29 +141,29 @@ class PiconSyncService : IntentService(PiconSyncService::class.java.canonicalNam
 
             DownloadProgress.EVENT_ID_LISTING_READY -> message = getString(R.string.checking)
 
-            DownloadProgress.EVENT_ID_DOWNLOADING_FILE -> message = mDownloadProgress.currentFile
+            DownloadProgress.EVENT_ID_DOWNLOADING_FILE -> message = downloadProgress.currentFile
 
             DownloadProgress.EVENT_ID_FINISHED -> {
                 Picon.clearCache(this)
-                if (!mDownloadProgress.error) {
+                if (!downloadProgress.error) {
                     message =
-                        getString(R.string.picon_sync_finished, mDownloadProgress.downloadedFiles)
+                        getString(R.string.picon_sync_finished, downloadProgress.downloadedFiles)
                 } else {
-                    message = mDownloadProgress.errorText ?: mDownloadProgress.currentFile
+                    message = downloadProgress.errorText ?: downloadProgress.currentFile
                 }
             }
         }
-        if (mDownloadProgress.totalFiles > 0) {
-            mNotificationBuilder.setContentText(message)
-                .setProgress(mDownloadProgress.totalFiles, mDownloadProgress.downloadedFiles, false)
+        if (downloadProgress.totalFiles > 0) {
+            notificationBuilder.setContentText(message)
+                .setProgress(downloadProgress.totalFiles, downloadProgress.downloadedFiles, false)
                 .setOngoing(true)
         } else {
-            mNotificationBuilder.setContentText(message).setOngoing(true)
+            notificationBuilder.setContentText(message).setOngoing(true)
         }
         if (eventid == DownloadProgress.EVENT_ID_FINISHED) {
-            mNotificationBuilder.setOngoing(false)
+            notificationBuilder.setOngoing(false)
         }
-        mNotifyManager.notify(mId, mNotificationBuilder.build())
+        notifyManager.notify(id, notificationBuilder.build())
     }
 
     companion object {

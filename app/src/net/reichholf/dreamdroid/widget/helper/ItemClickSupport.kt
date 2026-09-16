@@ -7,26 +7,26 @@ import androidx.recyclerview.widget.RecyclerView
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 
-class ItemClickSupport private constructor(recyclerView: RecyclerView) {
-    private val mRecyclerView: RecyclerView = recyclerView
-    private val mTouchListener: TouchListener?
-    private var mOnItemClickListener: OnItemClickListener? = null
-    private var mOnItemLongClickListener: OnItemLongClickListener? = null
+class ItemClickSupport private constructor(private val recyclerView: RecyclerView) {
+    private val touchListener: TouchListener?
 
-    private val mOnClickListener = View.OnClickListener { v ->
-        val listener = mOnItemClickListener
+    private var clickListener: OnItemClickListener? = null
+    private var longClickListener: OnItemLongClickListener? = null
+
+    private val onClickListener = View.OnClickListener { v ->
+        val listener = clickListener
         if (listener != null) {
-            val holder = mRecyclerView.getChildViewHolder(v)
-            listener.onItemClick(mRecyclerView, v, holder.bindingAdapterPosition, v.id.toLong())
+            val holder = recyclerView.getChildViewHolder(v)
+            listener.onItemClick(recyclerView, v, holder.bindingAdapterPosition, v.id.toLong())
         }
     }
 
-    private val mOnLongClickListener = View.OnLongClickListener { v ->
-        val listener = mOnItemLongClickListener
+    private val onLongClickListener = View.OnLongClickListener { v ->
+        val listener = longClickListener
         if (listener != null) {
-            val holder = mRecyclerView.getChildViewHolder(v)
+            val holder = recyclerView.getChildViewHolder(v)
             return@OnLongClickListener listener.onItemLongClick(
-                mRecyclerView,
+                recyclerView,
                 v,
                 holder.bindingAdapterPosition,
                 v.id.toLong()
@@ -35,13 +35,13 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
         false
     }
 
-    private val mAttachListener = object : RecyclerView.OnChildAttachStateChangeListener {
+    private val attachListener = object : RecyclerView.OnChildAttachStateChangeListener {
         override fun onChildViewAttachedToWindow(view: View) {
-            if (mOnItemClickListener != null) {
-                view.setOnClickListener(mOnClickListener)
+            if (clickListener != null) {
+                view.setOnClickListener(onClickListener)
             }
-            if (mOnItemLongClickListener != null) {
-                view.setOnLongClickListener(mOnLongClickListener)
+            if (longClickListener != null) {
+                view.setOnLongClickListener(onLongClickListener)
             }
         }
 
@@ -52,31 +52,31 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
         // the ID must be declared in XML, used to avoid
         // replacing the ItemClickSupport without removing
         // the old one from the RecyclerView
-        mRecyclerView.setTag(R.id.recyclerview_item_click_support, this)
+        recyclerView.setTag(R.id.recyclerview_item_click_support, this)
         if (DreamDroid.isTV(recyclerView.context)) {
-            mRecyclerView.addOnChildAttachStateChangeListener(mAttachListener)
-            mTouchListener = null
+            recyclerView.addOnChildAttachStateChangeListener(attachListener)
+            touchListener = null
         } else {
-            mTouchListener = TouchListener(recyclerView)
-            recyclerView.addOnItemTouchListener(mTouchListener)
+            touchListener = TouchListener(recyclerView)
+            recyclerView.addOnItemTouchListener(touchListener)
         }
     }
 
     fun setOnItemClickListener(listener: OnItemClickListener?): ItemClickSupport {
-        mOnItemClickListener = listener
+        clickListener = listener
         return this
     }
 
     fun setOnItemLongClickListener(listener: OnItemLongClickListener?): ItemClickSupport {
-        mOnItemLongClickListener = listener
+        longClickListener = listener
         return this
     }
 
     private fun detach(view: RecyclerView) {
-        if (mTouchListener != null) {
-            view.removeOnItemTouchListener(mTouchListener)
+        if (touchListener != null) {
+            view.removeOnItemTouchListener(touchListener)
         } else {
-            view.removeOnChildAttachStateChangeListener(mAttachListener)
+            view.removeOnChildAttachStateChangeListener(attachListener)
         }
         view.setTag(R.id.recyclerview_item_click_support, null)
     }
@@ -97,7 +97,7 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
             position: Int,
             id: Long
         ): Boolean {
-            val listener = mOnItemClickListener
+            val listener = clickListener
             if (listener != null && position >= 0) {
                 view.playSoundEffect(SoundEffectConstants.CLICK)
                 listener.onItemClick(parent, view, position, id)
@@ -112,7 +112,7 @@ class ItemClickSupport private constructor(recyclerView: RecyclerView) {
             position: Int,
             id: Long
         ): Boolean {
-            val listener = mOnItemLongClickListener
+            val listener = longClickListener
             if (listener != null && position >= 0) {
                 view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
                 return listener.onItemLongClick(parent, view, position, id)

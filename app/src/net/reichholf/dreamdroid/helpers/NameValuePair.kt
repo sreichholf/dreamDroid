@@ -3,13 +3,10 @@ package net.reichholf.dreamdroid.helpers
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
-class NameValuePair(key: String, value: String?) {
-    private val mKey: String = key
-    private val mValue: String? = value
+class NameValuePair(val key: String, private val rawValue: String?) {
+    fun key(): String = key
 
-    fun key(): String = mKey
-
-    fun value(): String = mValue ?: ""
+    fun value(): String = rawValue ?: ""
 
     companion object {
         fun toString(pair: NameValuePair): String {

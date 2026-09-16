@@ -82,8 +82,8 @@ class DreamDroid : Application() {
         }
 
         initChannels()
-        sLocations = ArrayList()
-        sTags = ArrayList()
+        locationList = ArrayList()
+        tagList = ArrayList()
 
         loadCurrentProfile(this)
 
@@ -265,17 +265,17 @@ class DreamDroid : Application() {
 
         var DATE_LOCALE_WO: Boolean = false
 
-        private var sFeatureSleeptimer: Boolean = true
-        private var sFeatureNowNext: Boolean = true
-        private var sDumpXml: Boolean = false
+        private var sleepTimerEnabled: Boolean = true
+        private var nowNextEnabled: Boolean = true
+        private var xmlDump: Boolean = false
 
-        private var sProfile: Profile? = null
-        private var sLocations: ArrayList<String> = ArrayList()
-        private var sTags: ArrayList<String> = ArrayList()
+        private var profile: Profile? = null
+        private var locationList: ArrayList<String> = ArrayList()
+        private var tagList: ArrayList<String> = ArrayList()
 
-        private var sCurrentProfileChangedListener: ProfileChangedListener? = null
+        private var profileChangedListener: ProfileChangedListener? = null
 
-        private var sFeaturePostRequest: Boolean = true
+        private var postRequestEnabled: Boolean = true
 
         fun getAppContext(): Context? {
             if (instance != null) {
@@ -316,37 +316,37 @@ class DreamDroid : Application() {
         }
 
         fun disableNowNext() {
-            sFeatureNowNext = false
+            nowNextEnabled = false
         }
 
         fun enableNowNext() {
-            sFeatureNowNext = true
+            nowNextEnabled = true
         }
 
-        fun featureNowNext(): Boolean = sFeatureNowNext
+        fun featureNowNext(): Boolean = nowNextEnabled
 
-        fun featurePostRequest(): Boolean = sFeaturePostRequest
+        fun featurePostRequest(): Boolean = postRequestEnabled
 
         fun setFeaturePostRequest(enabled: Boolean) {
-            sFeaturePostRequest = enabled
+            postRequestEnabled = enabled
         }
 
         fun disableSleepTimer() {
-            sFeatureSleeptimer = false
+            sleepTimerEnabled = false
         }
 
         fun enableSleepTimer() {
-            sFeatureSleeptimer = true
+            sleepTimerEnabled = true
         }
 
-        fun featureSleepTimer(): Boolean = sFeatureSleeptimer
+        fun featureSleepTimer(): Boolean = sleepTimerEnabled
 
-        fun getCurrentProfile(): Profile = sProfile!!
+        fun getCurrentProfile(): Profile = profile!!
 
         fun loadCurrentProfile(context: Context) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val profileId = sp.getInt(CURRENT_PROFILE, 1)
-            if (sProfile != null && sProfile!!.id == profileId) {
+            if (profile != null && profile!!.id == profileId) {
                 return
             }
 
@@ -396,7 +396,7 @@ class DreamDroid : Application() {
             if (!setCurrentProfile(context, profileId)) {
                 // However we got here... we're creating an
                 // "do-not-crash-default-profile now
-                sProfile = Profile(
+                profile = Profile(
                     null,
                     "Demo",
                     "dreamdroid.org",
@@ -423,34 +423,34 @@ class DreamDroid : Application() {
         fun setCurrentProfile(context: Context, id: Int): Boolean =
             setCurrentProfile(context, id, false)
 
-        fun dumpXml(): Boolean = sDumpXml
+        fun dumpXml(): Boolean = xmlDump
 
         /**
          * @param id
          * @return
          */
         fun setCurrentProfile(context: Context, id: Int, forceEvent: Boolean): Boolean {
-            sDumpXml = PreferenceManager.getDefaultSharedPreferences(context)
+            xmlDump = PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean("xml_debug", false)
 
-            var oldProfile = sProfile
+            var oldProfile = profile
             if (oldProfile == null) {
                 oldProfile = Profile.getDefault()
             }
 
-            sProfile = AppDatabase.profilesBlocking(context).getProfile(id)
+            profile = AppDatabase.profilesBlocking(context).getProfile(id)
 
-            if (sProfile != null) {
+            if (profile != null) {
                 val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
                 editor.putInt(CURRENT_PROFILE, id)
                 editor.apply()
-                if (!sProfile!!.hasSameSettings(oldProfile) || forceEvent) {
+                if (!profile!!.hasSameSettings(oldProfile) || forceEvent) {
                     // reset locations and tags, they will be reloaded when needed the next time
-                    sLocations.clear()
-                    sTags.clear()
+                    locationList.clear()
+                    tagList.clear()
                     activeProfileChanged()
-                } else if (sProfile!!.id == oldProfile.id) {
-                    sProfile!!.sessionId = oldProfile.sessionId
+                } else if (profile!!.id == oldProfile.id) {
+                    profile!!.sessionId = oldProfile.sessionId
                 }
                 return true
             } else {
@@ -460,65 +460,65 @@ class DreamDroid : Application() {
         }
 
         fun setCurrentProfile(profile: Profile) {
-            sProfile = profile
+            this.profile = profile
         }
 
         fun profileChanged(context: Context, p: Profile) {
-            if (p.id == sProfile!!.id) {
+            if (p.id == profile!!.id) {
                 reloadCurrentProfile(context)
             }
         }
 
         private fun activeProfileChanged() {
-            if (sCurrentProfileChangedListener != null) {
-                sCurrentProfileChangedListener!!.onProfileChanged(sProfile!!)
+            if (profileChangedListener != null) {
+                profileChangedListener!!.onProfileChanged(profile!!)
             }
         }
 
         fun setCurrentProfileChangedListener(listener: ProfileChangedListener?) {
-            sCurrentProfileChangedListener = listener
+            profileChangedListener = listener
         }
 
         /**
          * @return
          */
         fun reloadCurrentProfile(ctx: Context): Boolean =
-            setCurrentProfile(ctx, sProfile!!.id ?: -1, true)
+            setCurrentProfile(ctx, profile!!.id ?: -1, true)
 
         /**
          * @param shc
          */
         @Synchronized
         fun loadLocations(shc: SimpleHttpClient): Boolean {
-            sLocations.clear()
+            locationList.clear()
 
             var gotLoc = false
             val handler = LocationListRequestHandler()
             val xml = handler.getList(shc)
 
             if (xml != null) {
-                if (handler.parseList(xml, sLocations)) {
+                if (handler.parseList(xml, locationList)) {
                     gotLoc = true
                 }
             }
 
             if (!gotLoc) {
                 Log.e(LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
-                sLocations = ArrayList()
-                sLocations.add("/hdd/movie")
+                locationList = ArrayList()
+                locationList.add("/hdd/movie")
             }
 
             return gotLoc
         }
 
-        fun getLocations(): ArrayList<String> = sLocations
+        fun getLocations(): ArrayList<String> = locationList
 
         /**
          * @param shc
          */
         @Synchronized
         fun loadTags(shc: SimpleHttpClient): Boolean {
-            sTags.clear()
+            tagList.clear()
             var gotTags = false
 
             val handler = TagListRequestHandler()
@@ -526,20 +526,20 @@ class DreamDroid : Application() {
             val xmlLoc = handler.getList(shc)
 
             if (xmlLoc != null) {
-                if (handler.parseList(xmlLoc, sTags)) {
+                if (handler.parseList(xmlLoc, tagList)) {
                     gotTags = true
                 }
             }
 
             if (!gotTags) {
                 Log.e(LOG_TAG, "Error parsing Tags, no more Tags will be available")
-                sTags = ArrayList()
+                tagList = ArrayList()
             }
 
             return gotTags
         }
 
-        fun getTags(): ArrayList<String> = sTags
+        fun getTags(): ArrayList<String> = tagList
 
         @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
         fun scheduleBackup(context: Context) {

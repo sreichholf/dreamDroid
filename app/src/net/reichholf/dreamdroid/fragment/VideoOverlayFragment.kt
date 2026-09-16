@@ -67,56 +67,56 @@ class VideoOverlayFragment :
     ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
-    protected var mSurfaceHeight: Int = 0
-    protected var mSurfaceWidth: Int = 0
+    protected var surfaceHeight: Int = 0
+    protected var surfaceWidth: Int = 0
 
-    protected var mTitle: String? = null
-    protected var mServiceRef: String? = null
-    protected var mBouquetRef: String? = null
+    protected var title: String? = null
+    protected var serviceRef: String? = null
+    protected var bouquetRef: String? = null
 
-    protected lateinit var mServiceList: ArrayList<ServiceNowNext>
-    protected var mCurrentService: ServiceNowNext? = null
-    protected var mMovie: EnigmaMovie? = null
+    protected lateinit var serviceList: ArrayList<ServiceNowNext>
+    protected var currentService: ServiceNowNext? = null
+    protected var movie: EnigmaMovie? = null
 
-    protected lateinit var mHandler: Handler
-    protected lateinit var mAutoHideRunnable: Runnable
-    protected lateinit var mIssueReloadRunnable: Runnable
+    protected lateinit var handler: Handler
+    protected lateinit var autoHideRunnable: Runnable
+    protected lateinit var issueReloadRunnable: Runnable
 
-    protected var mItemClickSupport: ItemClickSupport? = null
+    protected var itemClickSupport: ItemClickSupport? = null
 
-    protected var mOverlayRoot: View? = null
-    protected var mServicesView: RecyclerView? = null
-    protected var mComposeOverlay: ComposeView? = null
+    protected var overlayRoot: View? = null
+    protected var servicesView: RecyclerView? = null
+    protected var composeOverlay: ComposeView? = null
 
-    protected val mOverlayUiState: VideoOverlayUiState = VideoOverlayUiState()
+    protected val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
-    private var mGestureDector: GestureDetectorCompat? = null
-    private lateinit var mAudioManager: AudioManager
-    private var mAudioMaxVol: Int = 0
-    private var mVolume: Float = 0f
-    private var mServicesViewVisible: Boolean = false
+    private var gestureDetector: GestureDetectorCompat? = null
+    private lateinit var audioManager: AudioManager
+    private var audioMaxVol: Int = 0
+    private var volume: Float = 0f
+    private var servicesViewVisible: Boolean = false
 
-    private var mLoadJob: Job? = null
+    private var loadJob: Job? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         @Suppress("DEPRECATION")
         retainInstance = true
         setHasOptionsMenu(true)
         super.onCreate(savedInstanceState)
-        mServiceList = ArrayList()
-        mHandler = Handler(Looper.getMainLooper())
-        mServicesViewVisible = false
-        mAutoHideRunnable = Runnable { hideOverlays() }
-        mIssueReloadRunnable = Runnable { reload() }
+        serviceList = ArrayList()
+        handler = Handler(Looper.getMainLooper())
+        servicesViewVisible = false
+        autoHideRunnable = Runnable { hideOverlays() }
+        issueReloadRunnable = Runnable { reload() }
         applyPlaybackExtras(requireArguments())
 
-        mAudioManager =
+        audioManager =
             requireActivity().applicationContext.getSystemService(
                 Context.AUDIO_SERVICE
             ) as AudioManager
-        mAudioMaxVol = mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
+        audioMaxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
 
-        mVolume = -1f
+        volume = -1f
 
         autohide()
     }
@@ -127,11 +127,11 @@ class VideoOverlayFragment :
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.video_player_overlay, container, false)
-        mOverlayRoot = view.findViewById(R.id.overlay_root)
-        mServicesView = view.findViewById(R.id.servicelist)
-        mComposeOverlay = view.findViewById(R.id.compose_overlay)
-        mComposeOverlay!!.bindVideoOverlayScreen(
-            state = mOverlayUiState,
+        overlayRoot = view.findViewById(R.id.overlay_root)
+        servicesView = view.findViewById(R.id.servicelist)
+        composeOverlay = view.findViewById(R.id.compose_overlay)
+        composeOverlay!!.bindVideoOverlayScreen(
+            state = overlayUiState,
             onPlay = { onPlay() },
             onRewind = { onRewind() },
             onForward = { onForward() },
@@ -141,7 +141,7 @@ class VideoOverlayFragment :
             onSubtitle = { onSelectSubtitleTrack() },
             onSeekChange = { progress -> seek(progress) }
         )
-        mOverlayUiState.onChoiceAction = { actionId, dialogTag ->
+        overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
         return view
@@ -150,7 +150,7 @@ class VideoOverlayFragment :
     @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val servicesView = mServicesView
+        val servicesView = this.servicesView
         if (servicesView != null) {
             if (DreamDroid.isTV(requireContext())) {
                 val gridView = servicesView as HorizontalGridView
@@ -158,8 +158,8 @@ class VideoOverlayFragment :
             } else {
                 servicesView.layoutManager = GridLayoutManager(requireActivity(), 1)
             }
-            if (mServiceList.isEmpty()) {
-                mOverlayUiState.showListButton = false
+            if (serviceList.isEmpty()) {
+                overlayUiState.showListButton = false
             }
             servicesView.addItemDecoration(
                 SpacesItemDecoration(
@@ -168,10 +168,10 @@ class VideoOverlayFragment :
                     )
                 )
             )
-            mItemClickSupport = ItemClickSupport.addTo(servicesView)
-            mItemClickSupport!!.setOnItemClickListener(this)
+            itemClickSupport = ItemClickSupport.addTo(servicesView)
+            itemClickSupport!!.setOnItemClickListener(this)
 
-            servicesView.adapter = ServiceAdapter(requireActivity(), mServiceList)
+            servicesView.adapter = ServiceAdapter(requireActivity(), serviceList)
             servicesView.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -179,15 +179,15 @@ class VideoOverlayFragment :
                         if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                             autohide()
                         } else {
-                            mHandler.removeCallbacks(mAutoHideRunnable)
+                            handler.removeCallbacks(autoHideRunnable)
                         }
                     }
                 }
             )
-            mServicesViewVisible = servicesView.visibility == View.VISIBLE
+            servicesViewVisible = servicesView.visibility == View.VISIBLE
         }
 
-        mGestureDector =
+        gestureDetector =
             GestureDetectorCompat(
                 requireActivity(),
                 object : GestureDetector.SimpleOnGestureListener() {
@@ -238,26 +238,26 @@ class VideoOverlayFragment :
         requireActivity().findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
             val metrics = DisplayMetrics()
             requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
-            if (mSurfaceHeight == 0) {
-                mSurfaceHeight = min(metrics.widthPixels, metrics.heightPixels)
+            if (surfaceHeight == 0) {
+                surfaceHeight = min(metrics.widthPixels, metrics.heightPixels)
             }
-            if (mSurfaceWidth == 0) {
-                mSurfaceWidth = max(metrics.widthPixels, metrics.heightPixels)
+            if (surfaceWidth == 0) {
+                surfaceWidth = max(metrics.widthPixels, metrics.heightPixels)
             }
-            mGestureDector!!.onTouchEvent(event)
+            gestureDetector!!.onTouchEvent(event)
             true
         }
     }
 
     protected fun onRewind() {
         val p = VLCPlayer.get()!!
-        p.setPosition(max(0.0f, p.getPosition() - sSeekStepSize))
+        p.setPosition(max(0.0f, p.getPosition() - seekStepSize))
         autohide()
     }
 
     protected fun onForward() {
         val p = VLCPlayer.get()!!
-        p.setPosition(max(0.0f, p.getPosition() + sSeekStepSize))
+        p.setPosition(max(0.0f, p.getPosition() + seekStepSize))
         autohide()
     }
 
@@ -268,8 +268,8 @@ class VideoOverlayFragment :
 
     fun onUpdateButtons() {
         val player = VLCPlayer.get() ?: return
-        mOverlayUiState.showAudioButton = player.getAudioTracksCount() > 0
-        mOverlayUiState.showSubtitleButton = player.getSubtitleTracksCount() > 0
+        overlayUiState.showAudioButton = player.getAudioTracksCount() > 0
+        overlayUiState.showSubtitleButton = player.getSubtitleTracksCount() > 0
     }
 
     private fun onSelectAudioTrack() {
@@ -291,19 +291,19 @@ class VideoOverlayFragment :
     }
 
     private fun onInfo() {
-        if (mMovie == null && mCurrentService == null) return
+        if (movie == null && currentService == null) return
 
-        if (mMovie != null) {
+        if (movie != null) {
             if (DreamDroid.isTV(requireContext())) {
-                MovieDetailDialog.newInstance(mMovie!!)
+                MovieDetailDialog.newInstance(movie!!)
                     .show(parentFragmentManager, "details_dialog_tv")
             } else {
-                mOverlayUiState.showMovieDetail(mMovie!!)
+                overlayUiState.showMovieDetail(movie!!)
             }
             return
         }
 
-        var event = mCurrentService!!.now
+        var event = currentService!!.now
         if (event == null) {
             event =
                 Event(
@@ -314,8 +314,8 @@ class VideoOverlayFragment :
                     "",
                     "",
                     "",
-                    mCurrentService!!.serviceReference,
-                    mCurrentService!!.serviceName,
+                    currentService!!.serviceReference,
+                    currentService!!.serviceName,
                     "",
                     "",
                     ""
@@ -325,17 +325,17 @@ class VideoOverlayFragment :
             EpgDetailDialog.newInstance(event)
                 .show(parentFragmentManager, "details_dialog_tv")
         } else {
-            mOverlayUiState.showEpgDetail(requireContext(), event)
+            overlayUiState.showEpgDetail(requireContext(), event)
         }
     }
 
     private fun onList() {
-        if (!mServicesViewVisible) {
-            mServicesViewVisible = true
+        if (!servicesViewVisible) {
+            servicesViewVisible = true
             showZapOverlays()
         } else {
             hideZapOverlays()
-            mServicesViewVisible = false
+            servicesViewVisible = false
         }
     }
 
@@ -351,27 +351,27 @@ class VideoOverlayFragment :
         }
         val labels = descriptions.map { it.name }
         val ids = IntArray(descriptions.size) { idx -> descriptions[idx].id }
-        mOverlayUiState.showChoice(title, labels, ids, dialogTag)
+        overlayUiState.showChoice(title, labels, ids, dialogTag)
     }
 
     private fun onVolumeTouch(distanceY: Float) {
-        val delta = (distanceY / mSurfaceHeight) * 100
+        val delta = (distanceY / surfaceHeight) * 100
         var currentVolume =
-            mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / mAudioMaxVol.toFloat() * 100
-        if (mVolume > 0) {
-            currentVolume = mVolume
+            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC) / audioMaxVol.toFloat() * 100
+        if (volume > 0) {
+            currentVolume = volume
         }
 
         currentVolume += delta
         currentVolume = max(min(currentVolume, 100f), 0f)
-        mVolume = currentVolume
-        setVolume((currentVolume / 100 * mAudioMaxVol).toInt())
+        volume = currentVolume
+        setVolume((currentVolume / 100 * audioMaxVol).toInt())
     }
 
     protected fun setVolume(volume: Int) {
-        val currentVol = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
+        val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         if (volume != currentVol) {
-            mAudioManager.setStreamVolume(
+            audioManager.setStreamVolume(
                 AudioManager.STREAM_MUSIC,
                 volume,
                 AudioManager.FLAG_SHOW_UI
@@ -380,7 +380,7 @@ class VideoOverlayFragment :
     }
 
     private fun onBrightnessTouch(distanceY: Float) {
-        val delta = distanceY / mSurfaceHeight
+        val delta = distanceY / surfaceHeight
         val window = requireActivity().window
         val layoutParams = window.attributes
         layoutParams.screenBrightness = min(max(layoutParams.screenBrightness + delta, 0.01f), 1f)
@@ -407,46 +407,46 @@ class VideoOverlayFragment :
     }
 
     private fun applyServiceList(services: ArrayList<ServiceNowNext>) {
-        mServiceList.clear()
-        mServicesView?.adapter?.notifyDataSetChanged()
-        mServiceList.addAll(services)
-        for (service in mServiceList) {
-            if (service.serviceReference == mServiceRef) {
-                val oldService = mCurrentService
-                mCurrentService = service
-                mMovie = null
-                val eventid = mCurrentService!!.now?.eventId ?: "-1"
+        serviceList.clear()
+        servicesView?.adapter?.notifyDataSetChanged()
+        serviceList.addAll(services)
+        for (service in serviceList) {
+            if (service.serviceReference == serviceRef) {
+                val oldService = currentService
+                currentService = service
+                movie = null
+                val eventid = currentService!!.now?.eventId ?: "-1"
                 val oldEventId = oldService?.now?.eventId ?: "-2"
                 if (oldService == null || eventid != oldEventId) {
                     onServiceInfoChanged(false)
                 }
             }
-            mServicesView?.adapter?.notifyDataSetChanged()
+            servicesView?.adapter?.notifyDataSetChanged()
         }
-        if (mServiceList.isEmpty()) {
-            mOverlayUiState.showListButton = false
+        if (serviceList.isEmpty()) {
+            overlayUiState.showListButton = false
             hideZapOverlays()
         } else {
-            mOverlayUiState.showListButton = true
-            if (isOverlaysVisible() && mServicesViewVisible) {
+            overlayUiState.showListButton = true
+            if (isOverlaysVisible() && servicesViewVisible) {
                 showZapOverlays()
             }
         }
     }
 
     private fun zap() {
-        if (Service.isMarker(mServiceRef)) return
+        if (Service.isMarker(serviceRef)) return
         val serviceInfo = serviceInfoForIntent()
         val streamingIntent =
             IntentFactory.getStreamServiceIntent(
                 requireActivity(),
-                mServiceRef!!,
-                mTitle ?: "",
-                mBouquetRef,
+                serviceRef!!,
+                title ?: "",
+                bouquetRef,
                 serviceInfo as? ServiceNowNext
             )
         val zapExtras =
-            VideoPlayback.overlayExtrasForZap(mTitle, mServiceRef, mBouquetRef)
+            VideoPlayback.overlayExtrasForZap(title, serviceRef, bouquetRef)
         requireArguments().putString(TITLE, zapExtras.title)
         requireArguments().putString(SERVICE_REFERENCE, zapExtras.serviceRef)
         requireArguments().putString(BOUQUET_REFERENCE, zapExtras.bouquetRef)
@@ -478,34 +478,34 @@ class VideoOverlayFragment :
             }
         }
 
-        if (!this::mServiceList.isInitialized) return
+        if (!this::serviceList.isInitialized) return
 
         val refsChanged =
-            incoming.serviceRef != mServiceRef || incoming.bouquetRef != mBouquetRef
-        val titleChanged = incoming.title != mTitle
-        mTitle = incoming.title
-        mServiceRef = incoming.serviceRef
-        mBouquetRef = incoming.bouquetRef
+            incoming.serviceRef != serviceRef || incoming.bouquetRef != bouquetRef
+        val titleChanged = incoming.title != title
+        title = incoming.title
+        serviceRef = incoming.serviceRef
+        bouquetRef = incoming.bouquetRef
 
         @Suppress("DEPRECATION")
         when (val serviceInfo = extras.get(SERVICE_INFO)) {
             is EnigmaMovie -> {
-                mMovie = serviceInfo
-                mCurrentService = null
+                movie = serviceInfo
+                currentService = null
             }
 
             is ServiceNowNext -> {
-                mCurrentService = serviceInfo
-                mMovie = null
+                currentService = serviceInfo
+                movie = null
             }
 
             else -> if (refsChanged) {
-                mMovie = null
-                mCurrentService = null
+                movie = null
+                currentService = null
             }
         }
 
-        if ((titleChanged || refsChanged) && view != null && this::mHandler.isInitialized) {
+        if ((titleChanged || refsChanged) && view != null && this::handler.isInitialized) {
             onServiceInfoChanged(true)
             if (isResumed) {
                 reload()
@@ -514,50 +514,50 @@ class VideoOverlayFragment :
     }
 
     private fun serviceInfoForIntent(): java.io.Serializable? {
-        if (mMovie != null) {
-            return mMovie
+        if (movie != null) {
+            return movie
         }
-        if (mCurrentService != null) {
-            return mCurrentService
+        if (currentService != null) {
+            return currentService
         }
         return null
     }
 
     private fun getPreviousServiceInfo(): ServiceNowNext? {
-        val index = VideoPlayback.previousIndex(getCurrentServiceIndex(), mServiceList.size)
+        val index = VideoPlayback.previousIndex(getCurrentServiceIndex(), serviceList.size)
         if (index < 0) return null
-        return mServiceList[index]
+        return serviceList[index]
     }
 
     private fun previous() {
         val serviceInfo = getPreviousServiceInfo() ?: return
-        mCurrentService = serviceInfo
-        mMovie = null
-        mServiceRef = mCurrentService!!.serviceReference
-        mTitle = mCurrentService!!.serviceName
+        currentService = serviceInfo
+        movie = null
+        serviceRef = currentService!!.serviceReference
+        title = currentService!!.serviceName
         zap()
     }
 
     private fun getNextServiceInfo(): ServiceNowNext? {
-        val index = VideoPlayback.nextIndex(getCurrentServiceIndex(), mServiceList.size)
+        val index = VideoPlayback.nextIndex(getCurrentServiceIndex(), serviceList.size)
         if (index < 0) return null
-        return mServiceList[index]
+        return serviceList[index]
     }
 
     private fun next() {
         val serviceInfo = getNextServiceInfo() ?: return
-        mCurrentService = serviceInfo
-        mMovie = null
-        mServiceRef = mCurrentService!!.serviceReference
-        mTitle = mCurrentService!!.serviceName
+        currentService = serviceInfo
+        movie = null
+        serviceRef = currentService!!.serviceReference
+        title = currentService!!.serviceName
         zap()
     }
 
     private fun getCurrentServiceIndex(): Int {
-        if (mServiceList.isEmpty()) return -1
+        if (serviceList.isEmpty()) return -1
         var idx = 0
-        for (service in mServiceList) {
-            if (service.serviceReference == mServiceRef) return idx
+        for (service in serviceList) {
+            if (service.serviceReference == serviceRef) return idx
             idx++
         }
         return -1
@@ -570,9 +570,9 @@ class VideoOverlayFragment :
         } else {
             updateViews()
         }
-        if (mCurrentService == null && mMovie == null) return
-        mHandler.removeCallbacks(mIssueReloadRunnable)
-        val now = mCurrentService?.now
+        if (currentService == null && movie == null) return
+        handler.removeCallbacks(issueReloadRunnable)
+        val now = currentService?.now
         val start = now?.start
         val duration = now?.duration
         if (
@@ -591,27 +591,27 @@ class VideoOverlayFragment :
                 delay = nowMs // outdated, reload in few seconds
             }
             delay += 2000
-            mHandler.postDelayed(mIssueReloadRunnable, delay)
+            handler.postDelayed(issueReloadRunnable, delay)
         } else {
             Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!")
-            mHandler.postDelayed(mIssueReloadRunnable, 300000)
+            handler.postDelayed(issueReloadRunnable, 300000)
         }
     }
 
     fun reload() {
-        if (mBouquetRef.isNullOrEmpty() || activity == null) return
+        if (bouquetRef.isNullOrEmpty() || activity == null) return
         if (!isAdded || view == null) return
         cancelLoad()
-        val params = arrayListOf(NameValuePair("bRef", mBouquetRef))
-        mLoadJob =
+        val params = arrayListOf(NameValuePair("bRef", bouquetRef))
+        loadJob =
             launchEpgNowNextLoad(params) { success, rows, errorText ->
                 onEpgNowNextReady(success, rows, errorText)
             }
     }
 
     private fun cancelLoad() {
-        mLoadJob?.cancel()
-        mLoadJob = null
+        loadJob?.cancel()
+        loadJob = null
     }
 
     private fun onEpgNowNextReady(
@@ -633,57 +633,57 @@ class VideoOverlayFragment :
         val player = VLCPlayer.get() ?: return
         val fpos = pos.toFloat()
         var length = player.getLength()
-        length = if (length > 0) length / 1000 else sFakeLength.toLong()
+        length = if (length > 0) length / 1000 else FAKE_LENGTH.toLong()
         player.setPosition(fpos / length)
     }
 
     private fun isRecording(): Boolean {
-        val isDreamboxRecording = mMovie != null
+        val isDreamboxRecording = movie != null
         return VLCPlayer.get()!!.isSeekable() || isDreamboxRecording
     }
 
     private fun updateViews() {
         if (view == null) return
 
-        mOverlayUiState.title = mTitle ?: ""
+        overlayUiState.title = title ?: ""
         val player = VLCPlayer.get()
-        mOverlayUiState.showPvrControls = player != null && player.isSeekable()
+        overlayUiState.showPvrControls = player != null && player.isSeekable()
 
-        if (mMovie != null || mCurrentService != null) {
-            mOverlayUiState.showInfoButton = true
+        if (movie != null || currentService != null) {
+            overlayUiState.showInfoButton = true
             if (isRecording()) {
-                val movieTitle = mMovie?.title
-                mOverlayUiState.title =
-                    if (!movieTitle.isNullOrEmpty()) movieTitle else (mTitle ?: "")
-            } else if (mCurrentService != null) {
-                val serviceName = mCurrentService!!.serviceName
-                mOverlayUiState.title =
-                    if (serviceName.isNotEmpty()) serviceName else (mTitle ?: "")
-                val now = mCurrentService!!.now
-                mOverlayUiState.nowStart = now?.startTimeReadable ?: ""
-                mOverlayUiState.nowTitle = now?.title ?: ""
-                mOverlayUiState.nowDuration = now?.durationReadable ?: ""
-                mOverlayUiState.showNow = true
+                val movieTitle = movie?.title
+                overlayUiState.title =
+                    if (!movieTitle.isNullOrEmpty()) movieTitle else (title ?: "")
+            } else if (currentService != null) {
+                val serviceName = currentService!!.serviceName
+                overlayUiState.title =
+                    if (serviceName.isNotEmpty()) serviceName else (title ?: "")
+                val now = currentService!!.now
+                overlayUiState.nowStart = now?.startTimeReadable ?: ""
+                overlayUiState.nowTitle = now?.title ?: ""
+                overlayUiState.nowDuration = now?.durationReadable ?: ""
+                overlayUiState.showNow = true
             }
 
-            val nextEvent = mCurrentService?.next
+            val nextEvent = currentService?.next
             val next = nextEvent?.title
             val hasNext = !next.isNullOrEmpty()
             if (hasNext) {
-                mOverlayUiState.nextStart = nextEvent?.startTimeReadable ?: ""
-                mOverlayUiState.nextTitle = nextEvent?.title ?: ""
-                mOverlayUiState.nextDuration = nextEvent?.durationReadable ?: ""
-                mOverlayUiState.hasNext = true
+                overlayUiState.nextStart = nextEvent?.startTimeReadable ?: ""
+                overlayUiState.nextTitle = nextEvent?.title ?: ""
+                overlayUiState.nextDuration = nextEvent?.durationReadable ?: ""
+                overlayUiState.hasNext = true
             } else {
-                mOverlayUiState.hasNext = false
+                overlayUiState.hasNext = false
             }
         } else {
-            mOverlayUiState.showNow = false
-            mOverlayUiState.hasNext = false
-            mOverlayUiState.showInfoButton = false
+            overlayUiState.showNow = false
+            overlayUiState.hasNext = false
+            overlayUiState.showInfoButton = false
         }
         updateProgress()
-        mServicesView?.adapter?.notifyDataSetChanged()
+        servicesView?.adapter?.notifyDataSetChanged()
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -691,16 +691,16 @@ class VideoOverlayFragment :
         if (view == null) return
         val player = VLCPlayer.get()
         val isSeekable = player != null && player.isSeekable()
-        mOverlayUiState.seekable = isSeekable
+        overlayUiState.seekable = isSeekable
         var len = -1L
         var cur = -1L
-        if (mMovie != null || mCurrentService != null) {
+        if (movie != null || currentService != null) {
             if (isRecording()) {
                 var duration = if (player != null) player.getLength() / 1000 else 0L
                 if (duration <= 0) {
                     val textLen =
-                        if (mMovie != null && !mMovie!!.length.isNullOrEmpty()) {
-                            mMovie!!.length
+                        if (movie != null && !movie!!.length.isNullOrEmpty()) {
+                            movie!!.length
                         } else {
                             "00:00"
                         }
@@ -715,16 +715,16 @@ class VideoOverlayFragment :
                 }
                 if (duration > 0 && player != null) {
                     val pos = (duration * player.getPosition()).toLong()
-                    mOverlayUiState.nowStart = DateTime.minutesAndSeconds(pos.toInt())
-                    mOverlayUiState.nowTitle = mMovie?.serviceName ?: ""
-                    mOverlayUiState.nowDuration = DateTime.minutesAndSeconds(duration.toInt())
-                    mOverlayUiState.showNow = true
+                    overlayUiState.nowStart = DateTime.minutesAndSeconds(pos.toInt())
+                    overlayUiState.nowTitle = movie?.serviceName ?: ""
+                    overlayUiState.nowDuration = DateTime.minutesAndSeconds(duration.toInt())
+                    overlayUiState.showNow = true
                 } else {
-                    mOverlayUiState.showNow = false
+                    overlayUiState.showNow = false
                 }
-                mOverlayUiState.hasNext = false
-            } else if (mCurrentService?.now != null) {
-                val now = mCurrentService!!.now!!
+                overlayUiState.hasNext = false
+            } else if (currentService?.now != null) {
+                val now = currentService!!.now!!
                 val duration = now.duration
                 val start = now.start
 
@@ -749,18 +749,18 @@ class VideoOverlayFragment :
         }
 
         if (player != null && len <= 0 && isSeekable) {
-            len = sFakeLength.toLong()
+            len = FAKE_LENGTH.toLong()
             cur = (len * player.getPosition()).toLong()
         }
 
         if (len > 0 && cur >= 0) {
-            mOverlayUiState.progressEnabled = true
-            mOverlayUiState.progressMax = len.toInt()
-            mOverlayUiState.progress = cur.toInt()
+            overlayUiState.progressEnabled = true
+            overlayUiState.progressMax = len.toInt()
+            overlayUiState.progress = cur.toInt()
         } else {
-            mOverlayUiState.progressEnabled = false
-            mOverlayUiState.progressMax = 0
-            mOverlayUiState.progress = 0
+            overlayUiState.progressEnabled = false
+            overlayUiState.progressMax = 0
+            overlayUiState.progress = 0
         }
     }
 
@@ -771,15 +771,15 @@ class VideoOverlayFragment :
     }
 
     override fun onPause() {
-        mHandler.removeCallbacks(mAutoHideRunnable)
-        mHandler.removeCallbacks(mIssueReloadRunnable)
+        handler.removeCallbacks(autoHideRunnable)
+        handler.removeCallbacks(issueReloadRunnable)
         cancelLoad()
         super.onPause()
     }
 
     fun autohide() {
-        mHandler.removeCallbacks(mAutoHideRunnable)
-        mHandler.postDelayed(mAutoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT.toLong())
+        handler.removeCallbacks(autoHideRunnable)
+        handler.postDelayed(autoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT.toLong())
     }
 
     override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
@@ -795,29 +795,29 @@ class VideoOverlayFragment :
             return
         }
         if (view == null) return
-        mHandler.removeCallbacks(mAutoHideRunnable)
+        handler.removeCallbacks(autoHideRunnable)
         updateViews()
-        if (mServicesViewVisible) {
+        if (servicesViewVisible) {
             showZapOverlays()
         }
-        fadeInView(mOverlayRoot)
+        fadeInView(overlayRoot)
         autohide()
     }
 
     fun hideOverlays() {
         if (view == null) return
-        mHandler.removeCallbacks(mAutoHideRunnable)
+        handler.removeCallbacks(autoHideRunnable)
         hideZapOverlays()
-        fadeOutView(mOverlayRoot)
+        fadeOutView(overlayRoot)
     }
 
     private fun showZapOverlays() {
-        if (mServiceList.isEmpty()) {
+        if (serviceList.isEmpty()) {
             hideZapOverlays()
             return
         }
         if (view == null) return
-        val servicesView = mServicesView
+        val servicesView = this.servicesView
         if (servicesView != null) {
             servicesView.layoutManager!!.scrollToPosition(getCurrentServiceIndex())
             fadeInView(servicesView)
@@ -827,17 +827,17 @@ class VideoOverlayFragment :
 
     private fun hideZapOverlays() {
         if (view == null) return
-        fadeOutView(mServicesView)
+        fadeOutView(servicesView)
     }
 
     private fun fadeInView(v: View?) {
         if (v == null || v.visibility == View.VISIBLE) return
         v.visibility = View.VISIBLE
         v.alpha = 0.0f
-        v.animate().alpha(sOverlayAlpha).setListener(
+        v.animate().alpha(overlayAlpha).setListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    v.alpha = sOverlayAlpha
+                    v.alpha = overlayAlpha
                 }
             }
         )
@@ -889,13 +889,13 @@ class VideoOverlayFragment :
     }
 
     override fun onItemClick(recyclerView: RecyclerView, v: View, position: Int, id: Long) {
-        val row = mServiceList[position]
+        val row = serviceList[position]
         val serviceRef = row.serviceReference
         if (Service.isMarker(serviceRef)) return
-        mCurrentService = row
-        mMovie = null
-        mServiceRef = serviceRef
-        mTitle = row.serviceName
+        currentService = row
+        movie = null
+        this.serviceRef = serviceRef
+        title = row.serviceName
         zap()
     }
 
@@ -978,12 +978,12 @@ class VideoOverlayFragment :
         const val DIALOG_TAG_SUBTITLE_TRACK: String = "dialog_subtitle_track"
 
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
-        private const val sFakeLength: Int = 10000
+        private const val FAKE_LENGTH: Int = 10000
 
         private val LOG_TAG: String = VideoOverlayFragment::class.java.simpleName
 
-        var sOverlayAlpha: Float = 0.85f
+        var overlayAlpha: Float = 0.85f
 
-        var sSeekStepSize: Float = 0.02f
+        var seekStepSize: Float = 0.02f
     }
 }

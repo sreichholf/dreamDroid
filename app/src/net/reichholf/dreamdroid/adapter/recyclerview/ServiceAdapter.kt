@@ -24,11 +24,11 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
  * Created by Stephan on 14.05.2015.
  */
 open class ServiceAdapter(
-    protected var mContext: Context,
-    protected var mData: ArrayList<ServiceNowNext>
+    protected var context: Context,
+    protected var data: ArrayList<ServiceNowNext>
 ) : RecyclerView.Adapter<ServiceAdapter.ServiceViewHolder>() {
 
-    override fun getItemCount(): Int = mData.size
+    override fun getItemCount(): Int = data.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ServiceViewHolder {
         val inflater = LayoutInflater.from(parent.context)
@@ -39,7 +39,7 @@ open class ServiceAdapter(
     }
 
     override fun onBindViewHolder(holder: ServiceViewHolder, position: Int) {
-        val service = mData[position]
+        val service = data[position]
         val nextEvent = service.next
         val next = nextEvent?.title
         val hasNext = !next.isNullOrEmpty()
@@ -61,7 +61,7 @@ open class ServiceAdapter(
             holder.picon.visibility = View.GONE
             holder.progress.visibility = View.GONE
             holder.root.cardElevation =
-                mContext.resources.getDimension(R.dimen.cardview_elevation)
+                context.resources.getDimension(R.dimen.cardview_elevation)
             holder.root.isClickable = false
             holder.serviceName.text = service.serviceName
             return
@@ -69,7 +69,7 @@ open class ServiceAdapter(
         holder.parentNow.visibility = View.VISIBLE
 
         Picon.setPiconForView(
-            mContext,
+            context,
             holder.picon,
             ref,
             service.serviceName,
@@ -77,7 +77,7 @@ open class ServiceAdapter(
             null
         )
         holder.root.cardElevation =
-            mContext.resources.getDimension(R.dimen.cardview_elevation)
+            context.resources.getDimension(R.dimen.cardview_elevation)
         holder.root.isClickable = false
         holder.parentService.visibility = View.VISIBLE
         holder.parentMarker.visibility = View.GONE

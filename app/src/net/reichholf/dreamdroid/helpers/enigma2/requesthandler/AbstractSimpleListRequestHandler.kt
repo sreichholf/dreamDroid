@@ -13,10 +13,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.Request
  * @author sre
  */
 abstract class AbstractSimpleListRequestHandler(
-    private val mUri: String,
+    private val uri: String,
     private val itemTag: String
 ) {
-    fun getList(shc: SimpleHttpClient): String? = Request.get(shc, mUri)
+    fun getList(shc: SimpleHttpClient): String? = Request.get(shc, uri)
 
     fun parseList(xml: String?, list: ArrayList<String>): Boolean =
         Request.parseList(xml, list, itemTag)

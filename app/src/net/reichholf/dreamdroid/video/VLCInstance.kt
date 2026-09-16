@@ -31,27 +31,27 @@ object VLCInstance {
     const val TAG = "VLC/UiTools/VLCInstance"
 
     @Volatile
-    private var sLibVLC: LibVLC? = null
+    private var libVLC: LibVLC? = null
 
     @Synchronized
     fun get(): LibVLC {
-        var instance = sLibVLC
+        var instance = libVLC
         if (instance == null) {
             val context = DreamDroid.getAppContext()
             val options = ArrayList<String>()
             options.add("--http-reconnect")
             instance = LibVLC(context, options)
-            sLibVLC = instance
+            libVLC = instance
         }
         return instance
     }
 
     @Synchronized
     fun restart() {
-        val instance = sLibVLC
+        val instance = libVLC
         if (instance != null) {
             instance.release()
-            sLibVLC = null
+            libVLC = null
             get()
         }
     }

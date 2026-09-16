@@ -12,12 +12,12 @@ import org.videolan.libvlc.interfaces.IVLCVout
  * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
  */
 class VLCPlayer {
-    protected var mCurrentMedia: Media? = null
+    protected var currentMedia: Media? = null
 
     fun deinit() {
         detach()
-        sMediaPlayer?.release()
-        sMediaPlayer = null
+        vlcMediaPlayer?.release()
+        vlcMediaPlayer = null
     }
 
     fun attach(
@@ -35,7 +35,7 @@ class VLCPlayer {
     }
 
     fun detach() {
-        val mp = sMediaPlayer ?: return
+        val mp = vlcMediaPlayer ?: return
         val vlcVout = mp.vlcVout
         if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
             return
@@ -49,12 +49,12 @@ class VLCPlayer {
     }
 
     fun playUri(uri: Uri, flags: Int) {
-        val previous = mCurrentMedia
+        val previous = currentMedia
         val media = Media(VLCInstance.get(), uri)
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
         media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-        mCurrentMedia = media
+        currentMedia = media
         val mp = getMediaPlayer() ?: return
         if (previous != null && previous !== media) {
             previous.setEventListener(null)
@@ -66,7 +66,7 @@ class VLCPlayer {
     }
 
     fun play() {
-        val media = mCurrentMedia ?: return
+        val media = currentMedia ?: return
         val mp = getMediaPlayer()!!
         val sameMedia = media == mp.media
         if (!sameMedia) {
@@ -119,7 +119,7 @@ class VLCPlayer {
     }
 
     fun stop() {
-        val mp = sMediaPlayer ?: return
+        val mp = vlcMediaPlayer ?: return
         mp.stop()
         val media = mp.media as Media?
         if (media != null) {
@@ -143,26 +143,26 @@ class VLCPlayer {
     }
 
     companion object {
-        var sPlayer: VLCPlayer? = null
+        var player: VLCPlayer? = null
 
         @Volatile
-        var sMediaPlayer: MediaPlayer? = null
+        var vlcMediaPlayer: MediaPlayer? = null
 
         const val MEDIA_HWACCEL_DISABLED = 0x00
         const val MEDIA_HWACCEL_ENABLED = 0x01
         const val MEDIA_HWACCEL_FORCE = 0x02
 
         fun release() {
-            val player = sPlayer ?: return
-            player.deinit()
-            sPlayer = null
+            val current = player ?: return
+            current.deinit()
+            player = null
         }
 
         fun get(): VLCPlayer? {
-            if (sPlayer == null) {
-                sPlayer = VLCPlayer()
+            if (player == null) {
+                player = VLCPlayer()
             }
-            return sPlayer
+            return player
         }
 
         protected fun init() {
@@ -171,14 +171,14 @@ class VLCPlayer {
             mp.setScale(0f)
             mp.setVideoTrackEnabled(true)
             mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0)
-            sMediaPlayer = mp
+            vlcMediaPlayer = mp
         }
 
         fun getMediaPlayer(): MediaPlayer? {
-            if (sMediaPlayer == null) {
+            if (vlcMediaPlayer == null) {
                 init()
             }
-            return sMediaPlayer
+            return vlcMediaPlayer
         }
     }
 }

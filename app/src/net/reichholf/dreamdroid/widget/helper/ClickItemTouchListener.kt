@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 
 abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListener {
-    private val mGestureDetector: GestureDetectorCompat =
+    private val gestureDetector: GestureDetectorCompat =
         GestureDetectorCompat(hostView.context, ItemClickGestureListener(hostView))
 
     private fun isAttachedToWindow(hostView: RecyclerView): Boolean =
@@ -25,7 +25,7 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
         if (!isAttachedToWindow(recyclerView) || !hasAdapter(recyclerView)) {
             return false
         }
-        mGestureDetector.onTouchEvent(event)
+        gestureDetector.onTouchEvent(event)
         return false
     }
 
@@ -49,30 +49,30 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
         id: Long
     ): Boolean
 
-    private inner class ItemClickGestureListener(private val mHostView: RecyclerView) :
+    private inner class ItemClickGestureListener(private val hostView: RecyclerView) :
         SimpleOnGestureListener() {
-        private var mTargetChild: View? = null
+        private var targetChild: View? = null
 
         override fun onDown(event: MotionEvent): Boolean {
             val x = event.x.toInt()
             val y = event.y.toInt()
-            mTargetChild = mHostView.findChildViewUnder(x.toFloat(), y.toFloat())
-            return mTargetChild != null
+            targetChild = hostView.findChildViewUnder(x.toFloat(), y.toFloat())
+            return targetChild != null
         }
 
         override fun onShowPress(event: MotionEvent) {
-            mTargetChild?.isPressed = true
+            targetChild?.isPressed = true
         }
 
         override fun onSingleTapUp(event: MotionEvent): Boolean {
             var handled = false
-            val target = mTargetChild
+            val target = targetChild
             if (target != null) {
                 target.isPressed = false
-                val position = mHostView.getChildAdapterPosition(target)
-                val id = mHostView.adapter!!.getItemId(position)
-                handled = performItemClick(mHostView, target, position, id)
-                mTargetChild = null
+                val position = hostView.getChildAdapterPosition(target)
+                val id = hostView.adapter!!.getItemId(position)
+                handled = performItemClick(hostView, target, position, id)
+                targetChild = null
             }
             return handled
         }
@@ -83,23 +83,23 @@ abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListe
             v: Float,
             v2: Float
         ): Boolean {
-            val target = mTargetChild
+            val target = targetChild
             if (target != null) {
                 target.isPressed = false
-                mTargetChild = null
+                targetChild = null
                 return true
             }
             return false
         }
 
         override fun onLongPress(event: MotionEvent) {
-            val target = mTargetChild ?: return
-            val position = mHostView.getChildAdapterPosition(target)
-            val id = mHostView.adapter!!.getItemId(position)
-            val handled = performItemLongClick(mHostView, target, position, id)
+            val target = targetChild ?: return
+            val position = hostView.getChildAdapterPosition(target)
+            val id = hostView.adapter!!.getItemId(position)
+            val handled = performItemLongClick(hostView, target, position, id)
             if (handled) {
                 target.isPressed = false
-                mTargetChild = null
+                targetChild = null
             }
         }
     }

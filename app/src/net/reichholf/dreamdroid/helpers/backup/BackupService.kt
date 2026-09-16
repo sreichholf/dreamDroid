@@ -16,19 +16,18 @@ import net.reichholf.dreamdroid.room.ProfileDaoBlocking
 /**
  * Created by GAigner on 01/09/18.
  */
-class BackupService(context: Context) {
-    private val mContext = context
-    private val mPreferences = PreferenceManager.getDefaultSharedPreferences(mContext)
-    private val mProfiles: ProfileDaoBlocking = AppDatabase.profilesBlocking(context)
+class BackupService(private val context: Context) {
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private val profileDao: ProfileDaoBlocking = AppDatabase.profilesBlocking(context)
 
     fun getBackupData(): BackupData {
         val export = BackupData()
-        for ((key, value) in mPreferences.all) {
+        for ((key, value) in preferences.all) {
             export.addGenericSetting(
                 GenericSetting(key, value!!.toString(), value.javaClass.simpleName)
             )
         }
-        for (profile in mProfiles.getProfiles()) {
+        for (profile in profileDao.getProfiles()) {
             export.addProfile(profile)
         }
         return export
@@ -51,18 +50,18 @@ class BackupService(context: Context) {
                 System.currentTimeMillis() / 1000
             )
             contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true)
-            val fileUri = mContext.contentResolver.insert(
+            val fileUri = context.contentResolver.insert(
                 MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
                 contentValues
             ) ?: return false
 
-            val os = mContext.contentResolver.openOutputStream(fileUri, "w") ?: return false
+            val os = context.contentResolver.openOutputStream(fileUri, "w") ?: return false
             os.write(jsonContent.toByteArray())
             os.close()
 
             contentValues.clear()
             contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 0)
-            mContext.contentResolver.update(fileUri, contentValues, null, null)
+            context.contentResolver.update(fileUri, contentValues, null, null)
             return true
         } catch (e: FileNotFoundException) {
             Log.e(TAG, "Export unable to create export file to write the backup to.", e)
@@ -78,17 +77,17 @@ class BackupService(context: Context) {
         val gson = GsonBuilder().create()
         val backupData = gson.fromJson(content, BackupData::class.java)
 
-        val profiles = backupData.getProfiles()
+        val profiles = backupData.profiles
         for (profile in profiles) {
             val existingProfile = getProfileFromDB(profile.name ?: "")
             if (existingProfile != null) {
-                mProfiles.deleteProfile(existingProfile)
+                profileDao.deleteProfile(existingProfile)
             }
             profile.id = null
-            profile.id = mProfiles.addProfile(profile).toInt()
+            profile.id = profileDao.addProfile(profile).toInt()
         }
-        val settings = backupData.getSettings() ?: return
-        val editor = mPreferences.edit()
+        val settings = backupData.settings ?: return
+        val editor = preferences.edit()
         for (setting in settings) {
             applyImportedSetting(editor, setting)
         }
@@ -96,9 +95,9 @@ class BackupService(context: Context) {
     }
 
     private fun applyImportedSetting(editor: SharedPreferences.Editor, setting: GenericSetting) {
-        val key = setting.getKey()
-        val value = setting.getValue()
-        when (setting.getType()) {
+        val key = setting.key
+        val value = setting.value
+        when (setting.type) {
             "Boolean" -> editor.putBoolean(key, value.toBoolean())
             "Integer" -> editor.putInt(key, value.toInt())
             "Long" -> editor.putLong(key, value.toLong())
@@ -108,7 +107,7 @@ class BackupService(context: Context) {
     }
 
     private fun getProfileFromDB(profileName: String): Profile? {
-        for (profile in mProfiles.getProfiles()) {
+        for (profile in profileDao.getProfiles()) {
             if (profile.name == profileName) {
                 return profile
             }

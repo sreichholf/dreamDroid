@@ -23,10 +23,8 @@ import net.reichholf.dreamdroid.enigma.Event
 /**
  * @author sre
  */
-class DatabaseHelper(context: Context) :
+class DatabaseHelper(private val context: Context) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
-
-    private val mContext: Context = context
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(PROFILES_TABLE_CREATE)
@@ -127,7 +125,7 @@ class DatabaseHelper(context: Context) :
             return // this was lossy
         }
         if (scheduleBackup) {
-            DreamDroid.scheduleBackup(mContext)
+            DreamDroid.scheduleBackup(context)
         }
     }
 
@@ -179,7 +177,7 @@ class DatabaseHelper(context: Context) :
         if (id > -1) {
             db.close()
             p.id = id.toInt()
-            DreamDroid.scheduleBackup(mContext)
+            DreamDroid.scheduleBackup(context)
             return true
         }
         db.close()
@@ -199,8 +197,8 @@ class DatabaseHelper(context: Context) :
         )
         db.close()
         if (numRows == 1) {
-            DreamDroid.scheduleBackup(mContext)
-            DreamDroid.profileChanged(mContext, p)
+            DreamDroid.scheduleBackup(context)
+            DreamDroid.profileChanged(context, p)
             return true
         }
         return false
@@ -214,7 +212,7 @@ class DatabaseHelper(context: Context) :
         val numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + (p.id ?: -1), null)
         db.close()
         if (numRows == 1) {
-            DreamDroid.scheduleBackup(mContext)
+            DreamDroid.scheduleBackup(context)
             return true
         }
         return false
@@ -417,8 +415,8 @@ class DatabaseHelper(context: Context) :
     fun exportDB(): Boolean {
         var source: FileChannel? = null
         var destination: FileChannel? = null
-        val currentDB = mContext.getDatabasePath(DATABASE_NAME)
-        val backupDir = mContext.getExternalFilesDir(null) ?: mContext.filesDir
+        val currentDB = context.getDatabasePath(DATABASE_NAME)
+        val backupDir = context.getExternalFilesDir(null) ?: context.filesDir
         val backupDB = File(backupDir, "$DATABASE_NAME.sqlite")
         try {
             source = FileInputStream(currentDB).channel

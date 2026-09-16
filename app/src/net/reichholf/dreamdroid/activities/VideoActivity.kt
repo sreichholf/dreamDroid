@@ -45,24 +45,24 @@ class VideoActivity :
     DialogActionListener,
     MediaPlayer.EventListener {
 
-    var mSurfaceFrame: FrameLayout? = null
-    var mSurfaceView: SurfaceView? = null
-    lateinit var mSubtitlesSurfaceView: SurfaceView
-    var mPlayer: VLCPlayer? = null
-    var mOverlayFragment: VideoOverlayFragment? = null
+    var surfaceFrame: FrameLayout? = null
+    var surfaceView: SurfaceView? = null
+    lateinit var subtitlesSurfaceView: SurfaceView
+    var player: VLCPlayer? = null
+    var overlayFragment: VideoOverlayFragment? = null
 
-    var mOnLayoutChangeListener: View.OnLayoutChangeListener? = null
+    var onLayoutChangeListener: View.OnLayoutChangeListener? = null
 
-    var mCurrentScreenOrientation: Int = 0
+    var currentScreenOrientation: Int = 0
 
-    var mVideoWidth: Int = 0
-    var mVideoHeight: Int = 0
-    var mVideoVisibleWidth: Int = 0
-    var mVideoVisibleHeight: Int = 0
-    var mSarNum: Int = 0
-    var mSarDen: Int = 0
+    var videoWidth: Int = 0
+    var videoHeight: Int = 0
+    var videoVisibleWidth: Int = 0
+    var videoVisibleHeight: Int = 0
+    var sarNum: Int = 0
+    var sarDen: Int = 0
 
-    private val mHandler = Handler(Looper.getMainLooper())
+    private val handler = Handler(Looper.getMainLooper())
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -73,17 +73,17 @@ class VideoActivity :
         localNetworkPermissionRequest.ensure(this)
         setContentView(R.layout.video_player)
         surfaceFrameAddLayoutListener(true)
-        mCurrentScreenOrientation = resources.configuration.orientation
+        currentScreenOrientation = resources.configuration.orientation
         title = ""
         initializeOverlay()
     }
 
     private fun surfaceFrameAddLayoutListener(add: Boolean) {
-        if (mSurfaceFrame == null || add == (mOnLayoutChangeListener != null)) return
+        if (surfaceFrame == null || add == (onLayoutChangeListener != null)) return
         if (add) {
-            mOnLayoutChangeListener =
+            onLayoutChangeListener =
                 object : View.OnLayoutChangeListener {
-                    private val mRunnable = Runnable { changeSurfaceLayout() }
+                    private val runnable = Runnable { changeSurfaceLayout() }
 
                     override fun onLayoutChange(
                         v: View,
@@ -100,16 +100,16 @@ class VideoActivity :
                             bottom != oldBottom
                         ) {
                             /* changeSurfaceLayout need to be called after the layout changed */
-                            mHandler.removeCallbacks(mRunnable)
-                            mHandler.post(mRunnable)
+                            handler.removeCallbacks(runnable)
+                            handler.post(runnable)
                         }
                     }
                 }
-            mSurfaceFrame!!.addOnLayoutChangeListener(mOnLayoutChangeListener)
+            surfaceFrame!!.addOnLayoutChangeListener(onLayoutChangeListener)
             changeSurfaceLayout()
         } else {
-            mSurfaceFrame!!.removeOnLayoutChangeListener(mOnLayoutChangeListener)
-            mOnLayoutChangeListener = null
+            surfaceFrame!!.removeOnLayoutChangeListener(onLayoutChangeListener)
+            onLayoutChangeListener = null
         }
     }
 
@@ -120,7 +120,7 @@ class VideoActivity :
 
     override fun onResume() {
         super.onResume()
-        mOverlayFragment!!.showOverlays()
+        overlayFragment!!.showOverlays()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -129,7 +129,7 @@ class VideoActivity :
     }
 
     override fun onPause() {
-        mOverlayFragment!!.hideOverlays()
+        overlayFragment!!.hideOverlays()
         super.onPause()
     }
 
@@ -159,15 +159,15 @@ class VideoActivity :
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        mCurrentScreenOrientation = newConfig.orientation
+        currentScreenOrientation = newConfig.orientation
         changeSurfaceLayout()
     }
 
     fun handleIntent(intent: Intent) {
         setIntent(intent)
         if (Intent.ACTION_VIEW != intent.action) return
-        mOverlayFragment?.applyPlaybackExtras(intent.extras)
-        val player = mPlayer ?: return
+        overlayFragment?.applyPlaybackExtras(intent.extras)
+        val player = this.player ?: return
         val data = intent.data ?: return
         val accel =
             Integer.parseInt(
@@ -182,19 +182,19 @@ class VideoActivity :
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
-        mOverlayFragment!!.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
+        overlayFragment!!.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
 
     private fun initialize() {
         cleanup()
-        mPlayer = VLCPlayer.get()
+        player = VLCPlayer.get()
 
-        mSurfaceFrame = findViewById(R.id.player_surface_frame)
-        mSurfaceView = findViewById(R.id.player_surface)
-        mSubtitlesSurfaceView = findViewById(R.id.subtitles_surface)
-        mSubtitlesSurfaceView.setZOrderMediaOverlay(true)
-        mSubtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
+        surfaceFrame = findViewById(R.id.player_surface_frame)
+        surfaceView = findViewById(R.id.player_surface)
+        subtitlesSurfaceView = findViewById(R.id.subtitles_surface)
+        subtitlesSurfaceView.setZOrderMediaOverlay(true)
+        subtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
 
-        mPlayer!!.attach(this, mSurfaceView, mSubtitlesSurfaceView)
+        player!!.attach(this, surfaceView, subtitlesSurfaceView)
 
         VLCPlayer.getMediaPlayer()!!.vlcVout.addCallback(this)
         VLCPlayer.getMediaPlayer()!!.setEventListener(this)
@@ -204,12 +204,12 @@ class VideoActivity :
     }
 
     private fun initializeOverlay() {
-        if (mOverlayFragment == null) {
-            mOverlayFragment =
+        if (overlayFragment == null) {
+            overlayFragment =
                 supportFragmentManager.findFragmentByTag("video_overlay_fragment")
                     as VideoOverlayFragment?
         }
-        val existing = mOverlayFragment
+        val existing = overlayFragment
         if (existing != null) {
             existing.applyPlaybackExtras(intent.extras)
             return
@@ -217,7 +217,7 @@ class VideoActivity :
 
         val overlay = VideoOverlayFragment()
         overlay.arguments = intent.extras
-        mOverlayFragment = overlay
+        overlayFragment = overlay
         supportFragmentManager.commit {
             replace(R.id.overlay, overlay, "video_overlay_fragment")
         }
@@ -228,21 +228,21 @@ class VideoActivity :
     }
 
     private fun cleanup(force: Boolean) {
-        if (mPlayer == null && force) mPlayer = VLCPlayer.get()
-        if (mPlayer == null) return
-        mPlayer!!.detach()
-        mPlayer = null
-        mSurfaceView = null
+        if (player == null && force) player = VLCPlayer.get()
+        if (player == null) return
+        player!!.detach()
+        player = null
+        surfaceView = null
         VLCPlayer.getMediaPlayer()!!.vlcVout.removeCallback(this)
         VLCPlayer.getMediaPlayer()!!.setEventListener(null)
     }
 
     protected fun onMediaPlaying() {
-        if (mVideoWidth * mVideoHeight == 0) {
-            mVideoHeight = mPlayer!!.getVideoHeight()
-            mVideoWidth = mPlayer!!.getVideoWidth()
-            mVideoVisibleWidth = mVideoWidth
-            mVideoVisibleHeight = mVideoHeight
+        if (videoWidth * videoHeight == 0) {
+            videoHeight = player!!.getVideoHeight()
+            videoWidth = player!!.getVideoWidth()
+            videoVisibleWidth = videoWidth
+            videoVisibleHeight = videoHeight
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             setPictureInPictureParams(getPipParams())
@@ -250,7 +250,7 @@ class VideoActivity :
     }
 
     protected fun changeSurfaceLayout() {
-        if (mPlayer == null) return
+        if (player == null) return
         var sw: Int
         var sh: Int
 
@@ -259,7 +259,7 @@ class VideoActivity :
         sh = window.decorView.height
 
         // DecorView size ignores orientation sometimes; swap width/height if needed.
-        val isPortrait = mCurrentScreenOrientation == Configuration.ORIENTATION_PORTRAIT
+        val isPortrait = currentScreenOrientation == Configuration.ORIENTATION_PORTRAIT
 
         if ((sw > sh && isPortrait) || (sw < sh && !isPortrait)) {
             val w = sw
@@ -278,19 +278,19 @@ class VideoActivity :
             vlcVout.setWindowSize(sw, sh)
         }
 
-        val surface = mSurfaceView!!
-        val subtitlesSurface = mSubtitlesSurfaceView
-        val surfaceFrame = mSurfaceFrame!!
+        val surface = surfaceView!!
+        val subtitlesSurface = subtitlesSurfaceView
+        val surfaceFrame = this.surfaceFrame!!
         var lp = surface.layoutParams
 
-        if (mVideoWidth * mVideoHeight == 0) {
-            mVideoHeight = mPlayer!!.getVideoHeight()
-            mVideoWidth = mPlayer!!.getVideoWidth()
-            mVideoVisibleWidth = mVideoWidth
-            mVideoVisibleHeight = mVideoHeight
+        if (videoWidth * videoHeight == 0) {
+            videoHeight = this.player!!.getVideoHeight()
+            videoWidth = this.player!!.getVideoWidth()
+            videoVisibleWidth = videoWidth
+            videoVisibleHeight = videoHeight
         }
 
-        if (mVideoWidth * mVideoHeight == 0 || isInPictureInPictureMode) {
+        if (videoWidth * videoHeight == 0 || isInPictureInPictureMode) {
             /* Case of OpenGL vouts: handles the placement of the video using MediaPlayer API */
             lp.width = LayoutParams.MATCH_PARENT
             lp.height = LayoutParams.MATCH_PARENT
@@ -299,7 +299,7 @@ class VideoActivity :
             lp.width = LayoutParams.MATCH_PARENT
             lp.height = LayoutParams.MATCH_PARENT
             surfaceFrame.layoutParams = lp
-            if (player != null && mVideoWidth * mVideoHeight == 0) {
+            if (player != null && videoWidth * videoHeight == 0) {
                 player.setAspectRatio(null)
                 player.setScale(0f)
             }
@@ -315,14 +315,14 @@ class VideoActivity :
         // compute the aspect ratio
         val ar: Double
         val vw: Double
-        if (mSarDen == mSarNum) {
+        if (sarDen == sarNum) {
             /* No indication about the density, assuming 1:1 */
-            vw = mVideoVisibleWidth.toDouble()
-            ar = mVideoVisibleWidth.toDouble() / mVideoVisibleHeight.toDouble()
+            vw = videoVisibleWidth.toDouble()
+            ar = videoVisibleWidth.toDouble() / videoVisibleHeight.toDouble()
         } else {
             /* Use the specified aspect ratio */
-            vw = mVideoVisibleWidth * mSarNum.toDouble() / mSarDen
-            ar = vw / mVideoVisibleHeight
+            vw = videoVisibleWidth * sarNum.toDouble() / sarDen
+            ar = vw / videoVisibleHeight
         }
 
         var dw = sw.toDouble()
@@ -337,8 +337,8 @@ class VideoActivity :
         }
 
         // set display size
-        lp.width = ceil(dw * mVideoWidth / mVideoVisibleWidth).toInt()
-        lp.height = ceil(dh * mVideoHeight / mVideoVisibleHeight).toInt()
+        lp.width = ceil(dw * videoWidth / videoVisibleWidth).toInt()
+        lp.height = ceil(dh * videoHeight / videoVisibleHeight).toInt()
         surface.layoutParams = lp
         subtitlesSurface.layoutParams = lp
 
@@ -354,8 +354,8 @@ class VideoActivity :
 
     protected fun getPipParams(): PictureInPictureParams {
         val sourceRectHint = Rect()
-        mSurfaceView!!.getGlobalVisibleRect(sourceRectHint)
-        val ar = Rational(mVideoWidth, mVideoHeight)
+        surfaceView!!.getGlobalVisibleRect(sourceRectHint)
+        val ar = Rational(videoWidth, videoHeight)
         val builder = PictureInPictureParams.Builder()
         if (ar.isFinite && !ar.isZero) {
             builder.setAspectRatio(ar)
@@ -405,12 +405,12 @@ class VideoActivity :
         sarNum: Int,
         sarDen: Int
     ) {
-        mVideoWidth = width
-        mVideoHeight = height
-        mVideoVisibleWidth = visibleWidth
-        mVideoVisibleHeight = visibleHeight
-        mSarNum = sarNum
-        mSarDen = sarDen
+        videoWidth = width
+        videoHeight = height
+        videoVisibleWidth = visibleWidth
+        videoVisibleHeight = visibleHeight
+        this.sarNum = sarNum
+        this.sarDen = sarDen
         changeSurfaceLayout()
     }
 
@@ -435,8 +435,8 @@ class VideoActivity :
     override fun onSurfacesDestroyed(vlcVout: IVLCVout) {}
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        if (mOverlayFragment == null) return
-        mOverlayFragment!!.onDialogAction(action, details, dialogTag)
+        if (overlayFragment == null) return
+        overlayFragment!!.onDialogAction(action, details, dialogTag)
     }
 
     override fun finish() {
@@ -445,7 +445,7 @@ class VideoActivity :
     }
 
     override fun onEvent(event: MediaPlayer.Event) {
-        mOverlayFragment!!.onUpdateButtons()
+        overlayFragment!!.onUpdateButtons()
         when (event.type) {
             MediaPlayer.Event.Playing -> {
                 onMediaPlaying()
@@ -463,7 +463,7 @@ class VideoActivity :
 
             MediaPlayer.Event.EndReached -> finish()
         }
-        mOverlayFragment!!.onEvent(event)
+        overlayFragment!!.onEvent(event)
     }
 
     companion object {
