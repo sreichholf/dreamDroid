@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -284,5 +286,75 @@ class ProfileEditScreenTest {
         val saved = AppDatabase.profilesBlocking(context).getProfiles()
             .any { it.name == "f05-empty-host" }
         assertFalse(saved)
+    }
+
+    @Test
+    fun enablingAllCertificatesShowsWarningAndCancelLeavesOff() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("All certificates").assertIsDisplayed().assertIsOff()
+        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("Trust all certificates?").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "dreamDroid will not verify this profile's HTTPS certificate. " +
+                "Use this only for self-signed certificates on your own receiver. " +
+                "This can be dangerous."
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("Cancel").performClick()
+        composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
+        composeRule.onNodeWithText("All certificates").assertIsOff()
+        assertFalse(state.trustAllCerts)
+    }
+
+    @Test
+    fun enablingAllCertificatesConfirmTurnsSwitchOn() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("Enable").performClick()
+        composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
+        composeRule.onNodeWithText("All certificates").assertIsOn()
+        assertTrue(state.trustAllCerts)
+    }
+
+    @Test
+    fun disablingAllCertificatesDoesNotShowWarning() {
+        val profile = Profile.getDefault()
+        profile.allCertsTrusted = true
+        val state = ProfileEditState.fromProfile(profile)
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("All certificates").assertIsOn()
+        composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
+        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
+        composeRule.onNodeWithText("All certificates").assertIsOff()
+        assertFalse(state.trustAllCerts)
     }
 }
