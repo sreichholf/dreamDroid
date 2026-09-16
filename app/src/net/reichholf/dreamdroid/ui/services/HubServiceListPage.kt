@@ -88,7 +88,7 @@ fun HubServiceListPage(
     val session = remember { HubServiceListSession() }
     session.handle = handle
     session.context = context
-    session.popupRoot = view as? ViewGroup
+    session.popupRoot = AnchorPopup.overlayRoot(view)
     session.currentRef = currentRef
     session.currentName = currentName
     session.listState = listState

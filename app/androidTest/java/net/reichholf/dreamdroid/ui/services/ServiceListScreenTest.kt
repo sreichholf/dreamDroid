@@ -134,9 +134,14 @@ class ServiceListScreenTest {
         }
         composeRule.onNodeWithText("ZDF").performClick()
         composeRule.waitForIdle()
-        // Second row must not report the fragment-root origin (0,0) used by the old PopupMenu bug.
-        assertTrue("expected tapX >= 0, got $tapX", tapX >= 0)
-        assertTrue("expected second-row tapY > 0, got $tapY", tapY > 0)
+        val zdf = composeRule.onNodeWithText("ZDF", useUnmergedTree = true).getBoundsInRoot()
+        val tapXDp = with(composeRule.density) { tapX.toDp() }
+        val tapYDp = with(composeRule.density) { tapY.toDp() }
+        assertTrue("expected tapX > 0 (not origin), got $tapXDp", tapXDp > 0.dp)
+        assertTrue(
+            "expected second-row tapY near the ZDF tile, tapY=$tapYDp tile=$zdf",
+            tapYDp > 40.dp && tapYDp <= zdf.bottom
+        )
     }
 
     @Test
