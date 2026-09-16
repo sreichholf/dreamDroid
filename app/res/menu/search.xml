@@ -6,7 +6,6 @@
         android:id="@+id/action_search"
         android:icon="@drawable/ic_action_search"
         android:title="@string/epg_search"
-        dreamDroid:actionViewClass="androidx.appcompat.widget.SearchView"
-        dreamDroid:showAsAction="always|collapseActionView"/>
+        dreamDroid:showAsAction="always"/>
 
 </menu>

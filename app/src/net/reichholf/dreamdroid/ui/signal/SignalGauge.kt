@@ -38,28 +38,23 @@ val SignalGaugeValueColorArgb =
 
 var SemanticsPropertyReceiver.signalGaugeValueColorArgb by SignalGaugeValueColorArgb
 
-private val RangeRed = Color(0xFFCE0000)
-private val RangeOrange = Color(0xFFE37700)
-private val RangeYellow = Color(0xFFE3E500)
-private val RangeGreen = Color(0xFF00B20B)
-
 /** Matches simple-gauge-android HalfGauge: 120° sweep starting at 210°. */
 private const val ArcStartAngle = 210f
 private const val ArcSweepAngle = 120f
 
 private data class GaugeRange(val color: Color, val from: Float, val to: Float)
 
-private val SnrRanges = listOf(
-    GaugeRange(RangeRed, 0f, 50f),
-    GaugeRange(RangeOrange, 50f, 65f),
-    GaugeRange(RangeYellow, 65f, 80f),
-    GaugeRange(RangeGreen, 80f, 100f)
-)
-
 @Composable
 fun SignalGauge(percent: Int, modifier: Modifier = Modifier) {
-    val onSurface = MaterialTheme.colorScheme.onSurface
+    val scheme = MaterialTheme.colorScheme
+    val onSurface = scheme.onSurface
     val onSurfaceArgb = onSurface.toArgb()
+    val ranges = listOf(
+        GaugeRange(scheme.error, 0f, 50f),
+        GaugeRange(scheme.tertiary, 50f, 65f),
+        GaugeRange(scheme.primary, 65f, 80f),
+        GaugeRange(scheme.primaryContainer, 80f, 100f)
+    )
     val value = percent.coerceIn(0, 100)
     val textMeasurer = rememberTextMeasurer()
     val valueStyle = MaterialTheme.typography.headlineMedium.copy(color = onSurface)
@@ -81,7 +76,12 @@ fun SignalGauge(percent: Int, modifier: Modifier = Modifier) {
         )
         val radius = maxRadius - strokeWidth / 2f
         val center = Offset(x = size.width / 2f, y = size.height * 0.58f)
-        drawSnrRanges(center = center, radius = radius, strokeWidth = strokeWidth)
+        drawSnrRanges(
+            center = center,
+            radius = radius,
+            strokeWidth = strokeWidth,
+            ranges = ranges
+        )
         drawNeedle(
             center = center,
             radius = radius,
@@ -114,12 +114,17 @@ fun SignalGauge(percent: Int, modifier: Modifier = Modifier) {
     }
 }
 
-private fun DrawScope.drawSnrRanges(center: Offset, radius: Float, strokeWidth: Float) {
+private fun DrawScope.drawSnrRanges(
+    center: Offset,
+    radius: Float,
+    strokeWidth: Float,
+    ranges: List<GaugeRange>
+) {
     val diameter = radius * 2f
     val topLeft = Offset(center.x - radius, center.y - radius)
     val arcSize = Size(diameter, diameter)
     val style = Stroke(width = strokeWidth, cap = StrokeCap.Butt)
-    for (range in SnrRanges) {
+    for (range in ranges) {
         val start = ArcStartAngle + ArcSweepAngle * (range.from / 100f)
         val sweep = ArcSweepAngle * ((range.to - range.from) / 100f) + 0.5f
         drawArc(

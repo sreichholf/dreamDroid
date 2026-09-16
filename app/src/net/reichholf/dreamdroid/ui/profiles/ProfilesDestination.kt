@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.profiles
 
-import android.app.Activity
 import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
@@ -8,6 +7,18 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -15,17 +26,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
-import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
@@ -73,8 +84,19 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
 
     var showDetectProgress by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
+    var discoveredDevices by remember { mutableStateOf<List<Profile>?>(null) }
+    var discoveryFailed by remember { mutableStateOf(false) }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.onDetectProgressChanged = { showDetectProgress = it }
+    session.onDiscoveryResult = { found ->
+        if (found.isEmpty()) {
+            discoveredDevices = null
+            discoveryFailed = true
+        } else {
+            discoveryFailed = false
+            discoveredDevices = found
+        }
+    }
 
     ProfilesScreen(
         profiles = listState.items,
@@ -98,14 +120,100 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             onConfirm = {
                 session.deleteProfileConfirmed()
                 showDeleteConfirm = null
+            },
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
+        )
+    }
+    discoveredDevices?.let { found ->
+        AutodiscoveryDevicesDialog(
+            devices = found,
+            onDismiss = { discoveredDevices = null },
+            onPick = { index ->
+                session.editDetectedProfile(index)
+                discoveredDevices = null
+            },
+            onReload = {
+                discoveredDevices = null
+                session.reloadDetectedDevices()
+            },
+            onAddAll = {
+                session.addAllDetected()
+                discoveredDevices = null
+            }
+        )
+    }
+    if (discoveryFailed) {
+        AlertDialog(
+            onDismissRequest = { discoveryFailed = false },
+            title = { Text(stringResource(R.string.autodiscover_dreamboxes)) },
+            text = { Text(stringResource(R.string.autodiscovery_failed)) },
+            confirmButton = {
+                TextButton(onClick = { discoveryFailed = false }) {
+                    Text(stringResource(R.string.ok))
+                }
             }
         )
     }
 }
 
+@Composable
+private fun AutodiscoveryDevicesDialog(
+    devices: List<Profile>,
+    onDismiss: () -> Unit,
+    onPick: (Int) -> Unit,
+    onReload: () -> Unit,
+    onAddAll: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.autodiscover_dreamboxes)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 360.dp)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                devices.forEachIndexed { index, profile ->
+                    val label = String.format("%s (%s)", profile.name, profile.host)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 56.dp)
+                            .selectable(
+                                selected = false,
+                                role = Role.RadioButton,
+                                onClick = { onPick(index) }
+                            ),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        RadioButton(selected = false, onClick = null)
+                        Text(
+                            text = label,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onReload) {
+                Text(stringResource(R.string.reload))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onAddAll) {
+                Text(stringResource(R.string.add_all))
+            }
+        }
+    )
+}
+
 private class ProfilesSession : MenuProvider {
     var handle: PhoneNavHandle? = null
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
+    var onDiscoveryResult: ((ArrayList<Profile>) -> Unit)? = null
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
     var listState: ProfilesListState? = null
@@ -216,7 +324,9 @@ private class ProfilesSession : MenuProvider {
 
     private fun detectDevices() {
         val host = handle ?: return
-        val act = activity ?: return
+        if (activity == null) {
+            return
+        }
         val cached = detectedProfiles
         if (cached == null) {
             cancelDetect()
@@ -244,59 +354,53 @@ private class ProfilesSession : MenuProvider {
         reloadProfiles()
     }
 
+    fun reloadDetectedDevices() {
+        detectedProfiles = null
+        detectDevices()
+    }
+
+    fun addAllDetected() {
+        addAllDetectedDevices()
+    }
+
+    fun editDetectedProfile(index: Int) {
+        val found = detectedProfiles ?: return
+        if (index in found.indices) {
+            selected = found[index]
+            editProfile()
+        }
+    }
+
     private fun onDevicesDetected(found: ArrayList<Profile>) {
-        val act = activity ?: return
         onDetectProgressChanged?.invoke(false)
         detectedProfiles = found
-        val builder = MaterialAlertDialogBuilder(act)
-        builder.setTitle(R.string.autodiscover_dreamboxes)
-        if (found.isNotEmpty()) {
-            val items = Array(found.size) { i ->
-                String.format("%s (%s)", found[i].name, found[i].host)
-            }
-            builder
-                .setItems(items) { _, which ->
-                    selected = found[which]
-                    editProfile()
-                }
-                .setPositiveButton(R.string.reload) { _, _ ->
-                    detectedProfiles = null
-                    detectDevices()
-                }
-                .setNegativeButton(R.string.add_all) { _, _ -> addAllDetectedDevices() }
-        } else {
-            builder.setMessage(R.string.autodiscovery_failed)
-            builder.setNeutralButton(android.R.string.ok) { _, _ -> }
-        }
-        builder.show()
+        onDiscoveryResult?.invoke(found)
     }
 
-    private fun onItemClicked(id: Int): Boolean {
-        val mph = activity as? MultiPaneHandler
-        return when (id) {
-            Statics.ITEM_ADD_PROFILE -> {
-                createProfile()
-                true
-            }
-
-            Statics.ITEM_DETECT_DEVICES -> {
-                detectDevices()
-                true
-            }
-
-            Statics.ITEM_EDIT -> {
-                editProfile()
-                true
-            }
-
-            Statics.ITEM_DELETE -> {
-                onRequestDeleteConfirm?.invoke(selected.name.orEmpty())
-                true
-            }
-
-            else -> false
+    private fun onItemClicked(id: Int): Boolean = when (id) {
+        Statics.ITEM_ADD_PROFILE -> {
+            createProfile()
+            true
         }
+
+        Statics.ITEM_DETECT_DEVICES -> {
+            detectDevices()
+            true
+        }
+
+        Statics.ITEM_EDIT -> {
+            editProfile()
+            true
+        }
+
+        Statics.ITEM_DELETE -> {
+            onRequestDeleteConfirm?.invoke(selected.name.orEmpty())
+            true
+        }
+
+        else -> false
     }
+
     fun deleteProfileConfirmed() {
         val ctx = context ?: return
         toast(deleteConfirmedProfile(ctx, selected))

@@ -1,9 +1,11 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -50,7 +52,9 @@ class ServiceEpgScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(16.dp)
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
         composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
         assertEquals(second, clicked)

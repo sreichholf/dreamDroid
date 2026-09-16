@@ -2,22 +2,44 @@ package net.reichholf.dreamdroid.ui.theme
 
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.unit.dp
+import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 
+private val DreamDroidShapes = Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(28.dp)
+)
+
 @Composable
-fun DreamDroidTheme(content: @Composable () -> Unit) {
-    val dark = isDreamDroidDark(LocalContext.current)
-    val scheme = if (dark) dreamDroidDarkColorScheme() else dreamDroidLightColorScheme()
-    MaterialTheme(colorScheme = scheme) {
+fun DreamDroidTheme(forceDark: Boolean? = null, content: @Composable () -> Unit) {
+    val context = LocalContext.current
+    val dark = forceDark ?: isDreamDroidDark(context)
+    val scheme = if (Build.VERSION.SDK_INT >= 31 && usesDynamicThemeColors(context)) {
+        if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    } else if (dark) {
+        dreamDroidDarkColorScheme()
+    } else {
+        dreamDroidLightColorScheme()
+    }
+    MaterialTheme(colorScheme = scheme, shapes = DreamDroidShapes) {
         // Dialog-hosted ComposeView inherits View contentColor (black in night). Override so
         // Text() without an explicit color uses the DreamDroid scheme, not the XML dialog.
         CompositionLocalProvider(LocalContentColor provides scheme.onSurface, content = content)
@@ -33,6 +55,14 @@ fun isDreamDroidDark(context: Context): Boolean = when (DreamDroid.getThemeType(
         val night = context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         night == Configuration.UI_MODE_NIGHT_YES
     }
+}
+
+fun usesDynamicThemeColors(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < 31) {
+        return false
+    }
+    return PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, false)
 }
 
 // surfaceContainer* / outlineVariant must be set. lightColorScheme/darkColorScheme

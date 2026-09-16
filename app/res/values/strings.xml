@@ -39,6 +39,7 @@
     <string name="begin_time">Begin time</string>
     <string name="repeatings">Repeatings</string>
     <string name="end_time">End time</string>
+    <string name="time">Time</string>
     <string name="services">Services</string>
     <string name="movies">Movies</string>
     <string name="device_info">Device Information</string>
@@ -58,6 +59,8 @@
     <string name="multiepg_now">Now</string>
     <string name="multiepg_prev_day">−1d</string>
     <string name="multiepg_next_day">+1d</string>
+    <string name="previous_day">Previous day</string>
+    <string name="next_day">Next day</string>
     <string name="multiepg_today">Today</string>
     <string name="multiepg_empty">No EPG data for this bouquet window.</string>
     <string name="multiepg_timer_record">Recording timer</string>
@@ -84,6 +87,8 @@
     <string name="user_long">Username for login</string>
     <string name="pass">Password</string>
     <string name="pass_long">Password for the login</string>
+    <string name="show_password">Show password</string>
+    <string name="hide_password">Hide password</string>
     <string name="saving">Saving. Please wait&#8230;</string>
     <string name="deleting">Deleting. Please wait&#8230;</string>
     <string name="delete_confirm">Really delete?</string>

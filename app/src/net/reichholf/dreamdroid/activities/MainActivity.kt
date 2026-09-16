@@ -8,7 +8,6 @@ package net.reichholf.dreamdroid.activities
 
 import android.app.SearchManager
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.res.Configuration
@@ -22,7 +21,6 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.ui.platform.ComposeView
 import androidx.drawerlayout.widget.DrawerLayout
@@ -32,7 +30,6 @@ import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.BuildConfig
@@ -66,7 +63,6 @@ class MainActivity :
     MultiPaneHandler,
     ProfileChangedListener,
     DialogActionListener,
-    SearchView.OnQueryTextListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
 
@@ -110,12 +106,7 @@ class MainActivity :
             val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
                 .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
             if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
-                MaterialAlertDialogBuilder(this@MainActivity)
-                    .setTitle(R.string.leave_confirm)
-                    .setMessage(R.string.leave_confirm_long)
-                    .setPositiveButton(R.string.ok) { _, _ -> finish() }
-                    .setNegativeButton(R.string.cancel, null)
-                    .show()
+                phoneNav.requestLeaveConfirm()
             } else {
                 finish()
             }
@@ -273,15 +264,13 @@ class MainActivity :
         handleSearchIntent(intent)
     }
 
-    /** System / SearchView ACTION_SEARCH — same path as the toolbar query submit. */
+    /** System ACTION_SEARCH — same path as submitting the destination SearchBar. */
     private fun handleSearchIntent(intent: Intent?) {
         if (intent == null || Intent.ACTION_SEARCH != intent.action) {
             return
         }
-        val query = intent.getStringExtra(SearchManager.QUERY)
-        if (query != null) {
-            onQueryTextSubmit(query)
-        }
+        val query = intent.getStringExtra(SearchManager.QUERY).orEmpty()
+        phoneNav.navigateToEpgSearch(query)
     }
 
     /**
@@ -390,23 +379,7 @@ class MainActivity :
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
-
         menuInflater.inflate(R.menu.search, menu)
-
-        // Get the SearchView and set the searchable configuration
-        val searchManager = getSystemService(Context.SEARCH_SERVICE) as SearchManager
-        val searchView = menu.findItem(R.id.action_search).actionView as SearchView
-        // Assumes current activity is the searchable activity
-        searchView.setSearchableInfo(searchManager.getSearchableInfo(componentName))
-        searchView.setIconifiedByDefault(false)
-        @Suppress("SENSELESS_COMPARISON")
-        if (searchView == null) { // WAIT, WHAT?
-            Log.w(TAG, "This is just wrong, there is no searchView?!")
-            return true
-        }
-        searchView.queryHint = getString(R.string.epg_search_hint)
-        searchView.setOnQueryTextListener(this)
-
         return true
     }
 
@@ -533,6 +506,11 @@ class MainActivity :
                 if (isNavigationDrawerVisible()) {
                     toggle()
                 }
+            }
+
+            R.id.action_search -> {
+                phoneNav.navigateToEpgSearch("")
+                return true
             }
         }
         return super.onOptionsItemSelected(item)
@@ -807,30 +785,6 @@ class MainActivity :
             }
         }
     }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextSubmit
-     * (java.lang.String)
-     */
-    override fun onQueryTextSubmit(query: String?): Boolean {
-        if (query.isNullOrEmpty()) {
-            return true
-        }
-        phoneNav.navigateToEpgSearch(query)
-        return true
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * android.support.v7.widget.SearchView.OnQueryTextListener#onQueryTextChange
-     * (java.lang.String)
-     */
-    override fun onQueryTextChange(newText: String?): Boolean = false
 
     companion object {
         private val TAG: String = MainActivity::class.java.simpleName

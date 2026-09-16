@@ -1,11 +1,10 @@
 package net.reichholf.dreamdroid.ui.compose
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
-import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -21,7 +20,7 @@ import androidx.compose.ui.platform.testTag
  *
  * Uses stock [PullToRefreshDefaults.Indicator] (Material's elevated indicator disk +
  * spinner). [clipToBounds] keeps mid-pull drawing inside this host. Hub screens that
- * place a bouquet [androidx.compose.material3.ScrollableTabRow] above the list must also
+ * place a bouquet [androidx.compose.material3.SecondaryScrollableTabRow] above the list must also
  * raise that tab row with [androidx.compose.ui.zIndex] so Column draw order cannot let
  * the list's TopCenter indicator paint over tab labels (e.g. Provider on TV & Movies).
  */
@@ -35,26 +34,26 @@ fun DreamDroidPullRefresh(
     content: @Composable BoxScope.() -> Unit
 ) {
     val state = rememberPullToRefreshState()
-    Box(
-        modifier
-            .pullToRefresh(
-                isRefreshing = refreshing,
+    PullToRefreshBox(
+        isRefreshing = refreshing,
+        onRefresh = {
+            if (enabled) {
+                onRefresh()
+            }
+        },
+        modifier = modifier.clipToBounds().fillMaxSize(),
+        state = state,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
                 state = state,
-                enabled = enabled,
-                onRefresh = onRefresh
+                isRefreshing = refreshing,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .testTag(PULL_REFRESH_INDICATOR_TAG)
             )
-            .clipToBounds()
-            .fillMaxSize()
-    ) {
-        content()
-        PullToRefreshDefaults.Indicator(
-            state = state,
-            isRefreshing = refreshing,
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .testTag(PULL_REFRESH_INDICATOR_TAG)
-        )
-    }
+        },
+        content = content
+    )
 }
 
 const val PULL_REFRESH_INDICATOR_TAG = "pull_refresh_indicator"

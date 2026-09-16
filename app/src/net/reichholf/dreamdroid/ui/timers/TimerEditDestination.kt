@@ -19,14 +19,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
-import com.google.android.material.datepicker.MaterialDatePicker
-import com.google.android.material.timepicker.MaterialTimePicker
-import com.google.android.material.timepicker.TimeFormat
 import java.util.Calendar
 import java.util.Collections
+import java.util.TimeZone
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
@@ -41,6 +38,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeReques
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
+import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
@@ -62,6 +61,8 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
     }
     var showRepeatingsPicker by remember { mutableStateOf(false) }
     var showTagsPicker by remember { mutableStateOf(false) }
+    var pickerKind by remember { mutableStateOf<TimerEditPicker?>(null) }
+    val is24Hour = DateFormat.is24HourFormat(context)
 
     DisposableEffect(handle, session, tag, remount) {
         handle.composeActivityResultListener = session
@@ -87,10 +88,10 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         state = session.editState,
         saveLabel = context.getString(R.string.save),
         onSave = { session.saveTimer() },
-        onPickBeginDate = { session.pickBeginDate() },
-        onPickBeginTime = { session.pickBeginTime() },
-        onPickEndDate = { session.pickEndDate() },
-        onPickEndTime = { session.pickEndTime() },
+        onPickBeginDate = { pickerKind = TimerEditPicker.BeginDate },
+        onPickBeginTime = { pickerKind = TimerEditPicker.BeginTime },
+        onPickEndDate = { pickerKind = TimerEditPicker.EndDate },
+        onPickEndTime = { pickerKind = TimerEditPicker.EndTime },
         onPickRepeated = { showRepeatingsPicker = true },
         onPickService = { session.pickService() },
         onPickTags = { showTagsPicker = true },
@@ -127,7 +128,56 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         )
     }
 
+    when (pickerKind) {
+        TimerEditPicker.BeginDate -> EpgDatePickerDialog(
+            initialTimeSec = session.begin,
+            onDismiss = { pickerKind = null },
+            onConfirm = { utcDateMillis ->
+                session.applyPickedDate(isBegin = true, utcDateMillis = utcDateMillis)
+                pickerKind = null
+            }
+        )
+
+        TimerEditPicker.EndDate -> EpgDatePickerDialog(
+            initialTimeSec = session.end,
+            onDismiss = { pickerKind = null },
+            onConfirm = { utcDateMillis ->
+                session.applyPickedDate(isBegin = false, utcDateMillis = utcDateMillis)
+                pickerKind = null
+            }
+        )
+
+        TimerEditPicker.BeginTime -> EpgTimePickerDialog(
+            initialTimeSec = session.begin,
+            is24Hour = is24Hour,
+            onDismiss = { pickerKind = null },
+            onConfirm = { hour, minute ->
+                session.applyPickedTime(isBegin = true, hourOfDay = hour, minute = minute)
+                pickerKind = null
+            }
+        )
+
+        TimerEditPicker.EndTime -> EpgTimePickerDialog(
+            initialTimeSec = session.end,
+            is24Hour = is24Hour,
+            onDismiss = { pickerKind = null },
+            onConfirm = { hour, minute ->
+                session.applyPickedTime(isBegin = false, hourOfDay = hour, minute = minute)
+                pickerKind = null
+            }
+        )
+
+        null -> Unit
+    }
+
     IndeterminateProgressHost(session.progress)
+}
+
+private enum class TimerEditPicker {
+    BeginDate,
+    BeginTime,
+    EndDate,
+    EndTime
 }
 
 /**
@@ -224,70 +274,19 @@ class TimerEditSession(
         }
     }
 
-    fun pickBeginDate() {
-        val ctx = context ?: return
-        val picker = MaterialDatePicker.Builder.datePicker()
-            .setSelection(calendar(begin).timeInMillis)
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            onDateSet(true, picker.selection as Long)
-        }
-        (ctx as MultiPaneHandler).showDialogFragment(picker, "dialog_pick_begin_date")
+    fun applyPickedDate(isBegin: Boolean, utcDateMillis: Long) {
+        val utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+        utc.timeInMillis = utcDateMillis
+        onDateSet(
+            isBegin,
+            utc.get(Calendar.YEAR),
+            utc.get(Calendar.MONTH),
+            utc.get(Calendar.DAY_OF_MONTH)
+        )
     }
 
-    fun pickBeginTime() {
-        val ctx = context ?: return
-        val cal = calendar(begin)
-        val timeFormat = if (DateFormat.is24HourFormat(
-                ctx
-            )
-        ) {
-            TimeFormat.CLOCK_24H
-        } else {
-            TimeFormat.CLOCK_12H
-        }
-        val picker = MaterialTimePicker.Builder()
-            .setHour(cal.get(Calendar.HOUR_OF_DAY))
-            .setMinute(cal.get(Calendar.MINUTE))
-            .setTimeFormat(timeFormat)
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            onTimeSet(true, picker.hour, picker.minute)
-        }
-        (ctx as MultiPaneHandler).showDialogFragment(picker, "dialog_pick_begin_time")
-    }
-
-    fun pickEndDate() {
-        val ctx = context ?: return
-        val picker = MaterialDatePicker.Builder.datePicker()
-            .setSelection(calendar(end).timeInMillis)
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            onDateSet(false, picker.selection as Long)
-        }
-        (ctx as MultiPaneHandler).showDialogFragment(picker, "dialog_pick_end_date")
-    }
-
-    fun pickEndTime() {
-        val ctx = context ?: return
-        val cal = calendar(end)
-        val timeFormat = if (DateFormat.is24HourFormat(
-                ctx
-            )
-        ) {
-            TimeFormat.CLOCK_24H
-        } else {
-            TimeFormat.CLOCK_12H
-        }
-        val picker = MaterialTimePicker.Builder()
-            .setHour(cal.get(Calendar.HOUR_OF_DAY))
-            .setMinute(cal.get(Calendar.MINUTE))
-            .setTimeFormat(timeFormat)
-            .build()
-        picker.addOnPositiveButtonClickListener {
-            onTimeSet(false, picker.hour, picker.minute)
-        }
-        (ctx as MultiPaneHandler).showDialogFragment(picker, "dialog_pick_end_time")
+    fun applyPickedTime(isBegin: Boolean, hourOfDay: Int, minute: Int) {
+        onTimeSet(isBegin, hourOfDay, minute)
     }
 
     fun ensureLocationsAndTagsThenReload() {
@@ -403,16 +402,6 @@ class TimerEditSession(
 
     private fun calendar(time: Int): Calendar = Calendar.getInstance().apply {
         timeInMillis = time.toLong() * 1000
-    }
-
-    private fun onDateSet(isBegin: Boolean, millis: Long) {
-        val c = Calendar.getInstance().apply { timeInMillis = millis }
-        onDateSet(
-            isBegin,
-            c.get(Calendar.YEAR),
-            c.get(Calendar.MONTH),
-            c.get(Calendar.DAY_OF_MONTH)
-        )
     }
 
     private fun onDateSet(isBegin: Boolean, year: Int, month: Int, day: Int) {

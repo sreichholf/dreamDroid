@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -59,7 +59,7 @@ fun TvMoviesHeader(
         }
         if (rows.isNotEmpty()) {
             val tabIndex = selectedRow.coerceIn(0, rows.lastIndex)
-            ScrollableTabRow(selectedTabIndex = tabIndex) {
+            SecondaryScrollableTabRow(selectedTabIndex = tabIndex) {
                 rows.forEachIndexed { index, title ->
                     Tab(
                         selected = index == tabIndex,

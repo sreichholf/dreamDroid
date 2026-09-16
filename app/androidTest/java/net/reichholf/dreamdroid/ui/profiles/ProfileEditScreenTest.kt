@@ -218,6 +218,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Enable Login").performClick()
         composeRule.onNodeWithText("User").assertIsDisplayed()
         composeRule.onNodeWithText("Password").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Show password").assertIsDisplayed()
         composeRule.onNodeWithText("root").assertIsDisplayed()
 
         composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
@@ -275,14 +276,21 @@ class ProfileEditScreenTest {
                         val profile = Profile.getDefault()
                         state.applyTo(profile)
                         outcome = persistEditedProfile(context, profile)
+                        if (outcome?.saved != true) {
+                            state.hostError = context.getString(
+                                net.reichholf.dreamdroid.R.string.host_empty
+                            )
+                        }
                     }
                 )
             }
         }
 
         composeRule.onNodeWithContentDescription("Save").performClick()
+        composeRule.waitForIdle()
         assertEquals("The host name cannot be empty!", outcome!!.message)
         assertFalse(outcome!!.saved)
+        composeRule.onNodeWithText("The host name cannot be empty!").assertIsDisplayed()
         val saved = AppDatabase.profilesBlocking(context).getProfiles()
             .any { it.name == "f05-empty-host" }
         assertFalse(saved)

@@ -2,8 +2,7 @@
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/navigation_header_height"
-    android:theme="@style/ThemeOverlay.AppCompat.Dark">
+    android:layout_height="@dimen/navigation_header_height">
 
     <ImageView
         android:layout_width="match_parent"
@@ -36,7 +35,6 @@
 
             <TextView
                 android:id="@+id/drawer_profile_name"
-                style="@style/TextAppearance.AppCompat.Body2"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
@@ -45,11 +43,12 @@
                 android:layout_marginRight="@dimen/icon_margin"
                 android:layout_toLeftOf="@+id/imageView2"
                 android:layout_toStartOf="@+id/imageView2"
-                android:text="Name"/>
+                android:text="Name"
+                android:textAppearance="@style/TextAppearance.Material3.TitleMedium"
+                android:textColor="@android:color/white"/>
 
             <TextView
                 android:id="@+id/drawer_profile_status"
-                style="@style/TextAppearance.AppCompat.Caption"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
@@ -60,7 +59,9 @@
                 android:layout_marginTop="@dimen/recylcerview_content_margin"
                 android:layout_toLeftOf="@+id/imageView2"
                 android:layout_toStartOf="@+id/imageView2"
-                android:text="Status"/>
+                android:text="Status"
+                android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+                android:textColor="#B3FFFFFF"/>
 
             <ImageView
                 android:id="@+id/imageView2"

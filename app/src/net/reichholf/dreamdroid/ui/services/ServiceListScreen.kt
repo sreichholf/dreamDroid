@@ -7,14 +7,15 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -56,7 +57,7 @@ fun ServiceListScreen(
     onItemLongClick: ServiceListTap,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
+    LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { "${it.index}:${it.reference}" }) { item ->
             ServiceRow(
                 item = item,
@@ -79,7 +80,11 @@ private fun ServiceRow(
             text = item.name,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
+                .padding(horizontal = 16.dp)
+                .wrapContentHeight(Alignment.CenterVertically)
         )
         return
     }
@@ -88,10 +93,12 @@ private fun ServiceRow(
         val bounds: Rect = coords?.boundsInWindow() ?: return 0 to 0
         return bounds.left.roundToInt() to bounds.top.roundToInt()
     }
-    Card(
+    val hasNowNext =
+        item.kind == ServiceRowKind.CHANNEL &&
+            (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .onGloballyPositioned { coords = it }
             .combinedClickable(
                 onClick = {
@@ -102,29 +109,24 @@ private fun ServiceRow(
                     val (x, y) = windowTopLeft()
                     onLongClick(x, y)
                 }
-            ),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+            )
     ) {
-        Column(Modifier.fillMaxWidth()) {
-            if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
-                // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
-                LinearProgressIndicator(
-                    progress = { item.progress.toFloat() / item.progressMax.toFloat() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(ProgressBarHeight)
-                        .testTag(SERVICE_LIST_PROGRESS_TAG),
-                    trackColor = Color.Transparent,
-                    strokeCap = StrokeCap.Butt,
-                    gapSize = 0.dp,
-                    drawStopIndicator = {}
-                )
-            }
-            Column(
+        if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
+            // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
+            LinearProgressIndicator(
+                progress = { item.progress.toFloat() / item.progressMax.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
-            ) {
+                    .height(ProgressBarHeight)
+                    .testTag(SERVICE_LIST_PROGRESS_TAG),
+                trackColor = Color.Transparent,
+                strokeCap = StrokeCap.Butt,
+                gapSize = 0.dp,
+                drawStopIndicator = {}
+            )
+        }
+        ListItem(
+            headlineContent = {
                 Text(
                     text = item.name,
                     style = MaterialTheme.typography.titleMedium,
@@ -132,40 +134,38 @@ private fun ServiceRow(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (item.kind == ServiceRowKind.CHANNEL &&
-                    (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        ServicePicon(item)
-                        Column(modifier = Modifier.weight(1f)) {
-                            if (item.nowTitle.isNotEmpty()) {
-                                EventTimeRow(
-                                    start = item.nowStart,
-                                    title = item.nowTitle,
-                                    endValue = item.nowDuration,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                            if (item.nextTitle.isNotEmpty()) {
-                                EventTimeRow(
-                                    start = item.nextStart,
-                                    title = item.nextTitle,
-                                    endValue = item.nextDuration,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+            },
+            supportingContent =
+                if (hasNowNext) {
+                    {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ServicePicon(item)
+                            Column(modifier = Modifier.weight(1f)) {
+                                if (item.nowTitle.isNotEmpty()) {
+                                    EventTimeRow(
+                                        start = item.nowStart,
+                                        title = item.nowTitle,
+                                        endValue = item.nowDuration,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                }
+                                if (item.nextTitle.isNotEmpty()) {
+                                    EventTimeRow(
+                                        start = item.nextStart,
+                                        title = item.nextTitle,
+                                        endValue = item.nextDuration,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
                     }
+                } else {
+                    null
                 }
-            }
-        }
+        )
     }
 }
 
@@ -218,6 +218,7 @@ private fun ServicePicon(item: ServiceListItem) {
     PiconImage(
         reference = item.reference,
         name = item.name,
+        contentDescription = null,
         modifier = Modifier
             .padding(end = 8.dp)
             .size(width = 48.dp, height = 30.dp)

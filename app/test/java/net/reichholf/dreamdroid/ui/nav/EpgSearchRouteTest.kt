@@ -45,4 +45,11 @@ class EpgSearchRouteTest {
     fun graphPatternStillStartsWithEpgSearch() {
         assertTrue(PhoneNavRoutes.EPG_SEARCH.startsWith("epg_search"))
     }
+
+    @Test
+    fun emptyQueryKeepsTheSearchRoute() {
+        val route = PhoneNavRoutes.epgSearchRoute("")
+        assertEquals("epg_search", route.substringBefore('?'))
+        assertEquals("", PhoneNavRoutes.queryFromEpgSearchRoute(route))
+    }
 }

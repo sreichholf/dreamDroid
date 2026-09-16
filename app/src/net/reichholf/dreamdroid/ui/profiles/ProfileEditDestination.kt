@@ -56,9 +56,11 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
     fun save() {
         editState.applyTo(currentProfile)
         val outcome = persistEditedProfile(context, currentProfile)
-        toast(outcome.message)
         if (outcome.saved) {
+            toast(outcome.message)
             handle.deliverPickResult(Activity.RESULT_OK, null)
+        } else {
+            editState.hostError = context.getString(R.string.host_empty)
         }
     }
 

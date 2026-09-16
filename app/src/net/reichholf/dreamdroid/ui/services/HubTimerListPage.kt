@@ -9,10 +9,6 @@ import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.view.ActionMode
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -30,7 +25,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
@@ -43,6 +37,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
@@ -117,21 +112,18 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         enabled = refresh.enabled,
         modifier = modifier
     ) {
-        Box(Modifier.fillMaxSize()) {
+        if (listState.items.isEmpty()) {
+            ListEmptyState(
+                loading = refresh.isRefreshing,
+                message = emptyMessage,
+                onRetry = { session.reload() }
+            )
+        } else {
             TimerListScreen(
                 items = listState.items,
                 onItemClick = { session.onItemClick(it) },
                 onItemLongClick = { session.onItemLongClick(it) }
             )
-            val message = emptyMessage
-            if (message != null && listState.items.isEmpty()) {
-                Text(
-                    text = message,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
         }
     }
 
@@ -143,7 +135,9 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
             onConfirm = {
                 session.confirmDeleteSelected()
                 showDeleteConfirm = null
-            }
+            },
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
         )
     }
 

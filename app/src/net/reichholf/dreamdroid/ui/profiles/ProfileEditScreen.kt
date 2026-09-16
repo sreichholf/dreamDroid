@@ -79,8 +79,13 @@ fun ProfileEditScreen(
                 EditPairedRow {
                     EditOutlinedTextField(
                         value = state.host,
-                        onValueChange = { state.host = it },
+                        onValueChange = {
+                            state.host = it
+                            state.hostError = null
+                        },
                         label = stringResource(R.string.host_long),
+                        isError = state.hostError != null,
+                        supportingText = state.hostError,
                         modifier = Modifier.weight(1f)
                     )
                     EditOutlinedTextField(

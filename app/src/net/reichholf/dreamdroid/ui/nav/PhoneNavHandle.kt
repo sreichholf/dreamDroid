@@ -52,6 +52,9 @@ interface PhoneNavHandle {
     fun epgRemountFlow(): StateFlow<Int>
     fun epgSearchRemountFlow(): StateFlow<Int>
     fun profileCheckUiFlow(): StateFlow<ProfileCheckUi>
+    fun leaveConfirmRequestedFlow(): StateFlow<Boolean>
+    fun requestLeaveConfirm()
+    fun clearLeaveConfirm()
 
     fun startRoute(): String
     fun epgLeafArguments(): Bundle

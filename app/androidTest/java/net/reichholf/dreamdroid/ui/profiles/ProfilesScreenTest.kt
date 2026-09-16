@@ -1,8 +1,10 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -61,7 +63,9 @@ class ProfilesScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Demo").assertIsDisplayed()
+        composeRule.onNodeWithText("Demo", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(16.dp)
         composeRule.onNodeWithText("dreamdroid.org").assertIsDisplayed()
     }
 

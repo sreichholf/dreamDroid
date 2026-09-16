@@ -34,7 +34,10 @@ class DreamDroidThemeTest {
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
-        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+        ).edit()
+            .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
+            .putBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, false)
+            .commit()
     }
 
     @Test

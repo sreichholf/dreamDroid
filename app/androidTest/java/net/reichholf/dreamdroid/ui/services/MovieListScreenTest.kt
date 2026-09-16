@@ -1,8 +1,10 @@
 package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -42,7 +44,9 @@ class MovieListScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Recorded film").assertIsDisplayed()
+        composeRule.onNodeWithText("Recorded film", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(16.dp)
         composeRule.onNodeWithText("ZDF").assertIsDisplayed()
     }
 }

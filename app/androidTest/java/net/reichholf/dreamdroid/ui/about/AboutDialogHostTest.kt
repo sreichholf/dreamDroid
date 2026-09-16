@@ -9,6 +9,7 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
@@ -73,5 +74,34 @@ class AboutDialogHostTest {
                 onSurface.luminance() > 0.5f
             )
         }
+    }
+
+    @Test
+    fun licensesReplacesAboutInsteadOfStacking() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = "home"
+                ) {
+                    composable("home") {
+                        LaunchedEffect(Unit) {
+                            navController.navigate(PhoneNavRoutes.ABOUT)
+                        }
+                    }
+                    dialog(PhoneNavRoutes.ABOUT) {
+                        AboutDialog(onDismiss = { navController.popBackStack() })
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("About").assertIsDisplayed()
+        composeRule.onNodeWithText("Licenses").assertIsDisplayed().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("About").assertDoesNotExist()
+        composeRule.onNodeWithText("AndroidX").assertIsDisplayed()
+        composeRule.onNodeWithText("Licenses").assertIsDisplayed()
     }
 }

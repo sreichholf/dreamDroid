@@ -5,11 +5,16 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.Locale
@@ -182,5 +187,39 @@ class SettingsScreenTest {
         }
 
         composeRule.onNodeWithText("Startbildschirm").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun switchRowsMeetMinHeightAndListDialogRadioRowsMeetMinHeight() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = SettingsState.create(context)
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    state = state,
+                    onThemeChanged = {},
+                    onDynamicColorsChanged = {},
+                    onSyncPicons = {}
+                )
+            }
+        }
+
+        val switchRow = composeRule.onNode(hasText("Integrated video player") and isToggleable())
+            .getBoundsInRoot()
+        val switchHeight = switchRow.bottom - switchRow.top
+        assertTrue(
+            "Switch rows are at least 56.dp, height=$switchHeight",
+            switchHeight >= 56.dp
+        )
+
+        composeRule.onNodeWithText("MultiEPG text size").performScrollTo().performClick()
+        composeRule.waitForIdle()
+        val radioRow = composeRule.onNode(hasText("Compact") and isSelectable())
+            .getBoundsInRoot()
+        val radioHeight = radioRow.bottom - radioRow.top
+        assertTrue(
+            "List preference radio rows are at least 56.dp, height=$radioHeight",
+            radioHeight >= 56.dp
+        )
     }
 }

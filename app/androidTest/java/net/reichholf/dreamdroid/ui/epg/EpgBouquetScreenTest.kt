@@ -2,11 +2,13 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -60,7 +62,9 @@ class EpgBouquetScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Tagesschau", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .assertLeftPositionInRootIsEqualTo(16.dp)
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()

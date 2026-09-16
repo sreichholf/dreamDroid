@@ -6,9 +6,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsOff
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isSelectable
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -206,5 +214,69 @@ class ChoiceDialogsHostTest {
                 onSurface.luminance() > 0.5f
             )
         }
+    }
+
+    @Test
+    fun simpleChoiceRowsAreRadioButtons() {
+        var chosen = -1
+        composeRule.setContent {
+            DreamDroidTheme {
+                SimpleChoiceAlertDialog(
+                    title = "Audio tracks",
+                    items = listOf("Track 1", "Track 2"),
+                    onDismiss = {},
+                    onChoice = { chosen = it }
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        val row = composeRule.onNode(hasText("Track 1") and isSelectable())
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        val height = row.bottom - row.top
+        assertTrue("choice rows are at least 56.dp, height=$height", height >= 56.dp)
+        composeRule.onNode(hasText("Track 1") and isSelectable()).performClick()
+        composeRule.runOnIdle { assertEquals(0, chosen) }
+    }
+
+    @Test
+    fun multiChoiceRowsAreCheckboxes() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiChoiceAlertDialog(
+                    title = "Pick tags",
+                    items = listOf("News", "Sport"),
+                    initialChecked = booleanArrayOf(true, false),
+                    onDismiss = {},
+                    onConfirm = {}
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNode(hasText("News") and isToggleable()).assertIsOn()
+        composeRule.onNode(hasText("Sport") and isToggleable()).assertIsOff()
+        val row = composeRule.onNode(hasText("News") and isToggleable()).getBoundsInRoot()
+        val height = row.bottom - row.top
+        assertTrue("choice rows are at least 56.dp, height=$height", height >= 56.dp)
+    }
+
+    @Test
+    fun destructiveConfirmUsesDeleteLabel() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                ConfirmAlertDialog(
+                    title = "Delete?",
+                    message = "Really delete this item?",
+                    onDismiss = {},
+                    onConfirm = {},
+                    confirmLabel = "Delete",
+                    destructive = true
+                )
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Delete").assertIsDisplayed()
+        composeRule.onNodeWithText("OK").assertDoesNotExist()
+        composeRule.onNodeWithText("Cancel").assertIsDisplayed()
     }
 }

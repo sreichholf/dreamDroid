@@ -64,7 +64,7 @@ Prefer resource ids and visible text over coordinates. About lives at the bottom
 | Profile name / status | `...:id/drawer_profile_name`, `...:id/drawer_profile_status` |
 | TV & Movies | text `TV & Movies` |
 | EPG / Virtual Remote / Zap | text `EPG`, `Virtual Remote`, `Zap` |
-| About | Settings, then text `About` (modal; migrating off DialogFragment per Phase 2.1g-ii) |
+| About | Settings, then text `About` (Compose dialog) |
 | Add Profile FAB | `...:id/fab_main` content-desc from `R.string.profile_add` (shell XML FAB) || Autodiscovery | text `Dreambox Autodiscovery` |
 | TV/Radio/Movies/Timer tabs | text `TV`, `Radio`, `Movies`, `Timer` |
 | Now strip | text `Now` (English) / `Es läuft` (German) on TV & Movies (Settings → Now-playing strip; default on) |

@@ -40,7 +40,7 @@ fun VirtualRemoteWidgetConfigScreen(
         Text(
             text = stringResource(R.string.remote_widget_config_title_style),
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
         Column(modifier = Modifier.selectableGroup()) {
@@ -58,7 +58,7 @@ fun VirtualRemoteWidgetConfigScreen(
         Text(
             text = stringResource(R.string.remote_widget_config_title_profile),
             style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
         )
         LazyColumn(modifier = Modifier.fillMaxSize()) {
@@ -69,8 +69,9 @@ fun VirtualRemoteWidgetConfigScreen(
                         .padding(vertical = 4.dp)
                         .clickable { onProfileClick(profile) },
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
