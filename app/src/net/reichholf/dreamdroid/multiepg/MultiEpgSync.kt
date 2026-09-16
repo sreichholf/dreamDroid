@@ -120,6 +120,9 @@ class MultiEpgSync(
             )
             withContext(Dispatchers.IO) {
                 dao.replaceChunk(meta, entities)
+                dao.pruneOlderThan(
+                    MultiEpgWindows.retentionCutoffSec(clockMs() / 1000L)
+                )
             }
             val result = withContext(Dispatchers.IO) {
                 dao.eventsOverlapping(

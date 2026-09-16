@@ -80,4 +80,21 @@ interface EpgDao {
 
     @Query("DELETE FROM epg_chunk WHERE profileId = :profileId")
     suspend fun deleteChunksForProfile(profileId: Int)
+
+    /**
+     * Programmes whose end (`start + duration`) is at or before [cutoffSec].
+     * Spanning rows that still overlap the retention window stay.
+     */
+    @Query("DELETE FROM epg_event WHERE (start + duration) <= :cutoffSec")
+    suspend fun deleteEventsEndedAtOrBefore(cutoffSec: Long)
+
+    /** Chunks whose exclusive [EpgChunkMetaEntity.windowEnd] is at or before [cutoffSec]. */
+    @Query("DELETE FROM epg_chunk WHERE windowEnd <= :cutoffSec")
+    suspend fun deleteChunksEndedAtOrBefore(cutoffSec: Long)
+
+    @Transaction
+    suspend fun pruneOlderThan(cutoffSec: Long) {
+        deleteEventsEndedAtOrBefore(cutoffSec)
+        deleteChunksEndedAtOrBefore(cutoffSec)
+    }
 }

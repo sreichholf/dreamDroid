@@ -11,6 +11,11 @@ object MultiEpgWindows {
     const val CHUNK_SECONDS: Long = 24L * 60L * 60L
     const val DEFAULT_TTL_MS: Long = 25L * 60L * 1000L
 
+    /** Drop cached programmes/chunks that ended at least this long ago. */
+    const val RETENTION_SECONDS: Long = 2L * CHUNK_SECONDS
+
+    fun retentionCutoffSec(nowSec: Long): Long = nowSec - RETENTION_SECONDS
+
     /** Hard cap so a wild visible range cannot request an unbounded dump. */
     const val MAX_SLIDING_CHUNKS: Int = 8
 

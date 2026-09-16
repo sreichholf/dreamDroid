@@ -26,17 +26,24 @@ import com.google.android.material.color.DynamicColors
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.GregorianCalendar
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * @author sre
  */
 class DreamDroid : Application() {
+
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /*
      * (non-Javadoc)
@@ -89,6 +96,20 @@ class DreamDroid : Application() {
 
         handleProfileSwitch(this)
         PiconImageLoader.install(this)
+        pruneExpiredMultiEpgCache()
+    }
+
+    private fun pruneExpiredMultiEpgCache() {
+        ioScope.launch {
+            try {
+                val nowSec = System.currentTimeMillis() / 1000L
+                AppDatabase.epg(this@DreamDroid).pruneOlderThan(
+                    MultiEpgWindows.retentionCutoffSec(nowSec)
+                )
+            } catch (t: Throwable) {
+                Log.w(LOG_TAG, "MultiEPG cache prune failed", t)
+            }
+        }
     }
 
     private fun handleProfileSwitch(context: Context) {

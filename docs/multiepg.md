@@ -15,7 +15,7 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
 | **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` — `time` unix seconds, `endTime` **minutes of duration** (default 24 h cache chunk); never unbounded |
 | **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
-| **Sync** | Room cache + ~20–30 min TTL; **one** in-flight request; no idle background sync in v1 |
+| **Sync** | Room cache + ~20–30 min TTL; 2-day retention prune; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
 | **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays from `/web/timerlist` (shipped) |
 | **Next** | Phase 0 spike on a real Dreambox → then Phase 1+ implementation |
@@ -129,7 +129,7 @@ Open MultiEPG(bouquet B)
             → upsert Room → paint
   → pan the sliding window → fetch chunks that enter at the front/back (dedupe in-flight); drop painted chunks that left the padded viewport
   → pull-to-refresh → invalidate chunk + refetch
-  → leave screen → cancel HTTP; keep Room until TTL/evict
+  → leave screen → cancel HTTP; keep Room until TTL expires or the 2-day retention prune
 ```
 
 | Rule | Default |
@@ -139,6 +139,7 @@ Open MultiEPG(bouquet B)
 | Visible span | Default 2 h UI (data chunk still 24 h) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
 | TTL | ~20–30 minutes |
+| Retention | Drop Room events/chunks that ended **≥ 2 days** ago; prune on process start and after each chunk write |
 | Idle background sync | **No** in v1 |
 | Cache store | **Room** EPG entities (do **not** revive orphan `DatabaseHelper.events`) |
 | Fallback | Throttled serial `/web/epgservice` per channel only if `epgmulti` unavailable |
@@ -293,7 +294,7 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 | 1 | Navigation | Keep list EPG; add drawer **MultiEPG** |
 | 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
 | 3 | Prefetch | +24 h Room chunks |
-| 4 | Cache TTL | ~20–30 min; no idle sync |
+| 4 | Cache TTL | ~20–30 min; 2-day retention prune; no idle sync |
 | 5 | Fallback | Defer `epgservice` fallback until spike proves need |
 | 6 | TV | Phone-only v1 |
 | 7 | Timer bars | v1.1 (`show_record_clocks`) |
