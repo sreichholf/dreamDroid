@@ -25,7 +25,7 @@ Default proof for Compose and in-app UI:
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest
 ```
 
-Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are moving to Compose Material 3 / Navigation `dialog` destinations (see `docs/modernize-dreamdroid.md` Phase **2.1g-ii**); host tests in composition or a NavHost `dialog` route. While a DialogFragment/`ComposeView` host still exists, the test must use that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
@@ -53,4 +53,4 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 - `main` is the rewrite. Do not merge rewrite work into `master`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
-- Material 3 leftovers after the P0–P2 pass (tablet `NavigationRail`, EPG `SearchView`, modal mutation progress, service-row track) live in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md) under **Material 3 UX leftovers**. Do not quietly fold them into unrelated PRs; the service-row progress track is an intentional keep ([#421](https://github.com/sreichholf/dreamDroid/pull/421)).
+- Remaining modernization work (tablet rail, EPG `SearchView`, modal mutation progress, overlay shell, and the intentional service-row track keep) lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md) **Still to do**. Do not quietly fold those into unrelated PRs.
