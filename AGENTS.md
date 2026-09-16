@@ -53,3 +53,4 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 - `main` is the rewrite. Do not merge rewrite work into `master`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
+- Material 3 leftovers after the P0–P2 pass (tablet `NavigationRail`, EPG `SearchView`, modal mutation progress, service-row track) live in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md) under **Material 3 UX leftovers**. Do not quietly fold them into unrelated PRs; the service-row progress track is an intentional keep ([#421](https://github.com/sreichholf/dreamDroid/pull/421)).

@@ -618,6 +618,17 @@ Historical “keepers” (DialogFragments, RemoteViews widgets, Leanback shell, 
 | VLC overlay | Java `VideoOverlayFragment` (Compose chrome already) | Kotlin Compose destination / fragment | follow-on after dialogs beachhead or with player work |
 | TV hub shell | Leanback browse ([#241](https://github.com/sreichholf/dreamDroid/pull/241) B) | Full Compose TV hub | **3.1c-iv** (already scheduled) |
 
+### Material 3 UX leftovers (after [#430](https://github.com/sreichholf/dreamDroid/pull/430))
+
+P0–P2 M3 gaps from the UX review are in [#430](https://github.com/sreichholf/dreamDroid/pull/430). These were **deferred on purpose** — do not treat them as forgotten, and do not silently “complete” them inside an unrelated chrome PR.
+
+| Item | Why it was left | Follow-up |
+| --- | --- | --- |
+| Tablet `NavigationRail` | `layout-sw720dp/dualpane.xml` still uses `DrawerLayout` + `MaterialToolbar`. A rail needs a new shell slot (not a drop-in for the phone `DestinationBar`). | Dedicated tablet-shell PR: `NavigationRail` (and possibly `ModalNavigationDrawer`) without regressing phone `NavigationBar` / Coordinator FAB dodge. |
+| EPG search `SearchView` | `MainActivity` still implements `SearchView.OnQueryTextListener`; `app/res/menu/search.xml` uses `androidx.appcompat.widget.SearchView` as the toolbar `actionView`. Bouquet/search lists are Compose; the query chrome is not. | Replace with Compose `SearchBar` / `DockedSearchBar` (or a toolbar `OutlinedTextField`) owned by the EPG search destination. Keep `ACTION_SEARCH` / searchable config working. |
+| Blocking `IndeterminateProgressDialog` on mutations | DialogFragment chassis is gone; callers still show a modal `BasicAlertDialog` + spinner (`IndeterminateProgressHost`) for save/delete/detect. M3 prefers inline progress on the screen that owns the mutation. | Callers today: profile autodiscover (`ProfilesDestination`), timer save (`TimerEditDestination`), movie/timer list delete (`HubMovieListPage` / `HubTimerListPage`), current-service save, EPG timer save, share-profile import. Replace with in-content progress (list overlay, button loading, or a non-blocking snackbar) one surface at a time. |
+| Service-row progress track | Transparent track, `StrokeCap.Butt`, no stop indicator. | **Keep.** Fixed in [#421](https://github.com/sreichholf/dreamDroid/pull/421). Do not “restore” a Material track/stop on `ServiceList` / now-playing strips. |
+
 ### Sensible wave-2 shapes (pick one, do not do all at once)
 
 1. **Finish TV & Movies** — Compose channel/movie/timer rows, drop `ServiceAdapter` on the pager path, feed typed `Service`/`Movie`/`Timer`. Highest continuity with #169. **Done on `main` as #170.**
