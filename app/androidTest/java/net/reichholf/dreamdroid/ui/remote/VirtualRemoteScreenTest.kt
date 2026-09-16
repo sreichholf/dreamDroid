@@ -53,6 +53,12 @@ class VirtualRemoteScreenTest {
         composeRule.onNodeWithContentDescription("Up").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Play").assertIsDisplayed()
         composeRule.onNodeWithText("TV").assertIsDisplayed()
+        composeRule.onNodeWithText("R").assertIsDisplayed()
+        composeRule.onNodeWithText("G").assertIsDisplayed()
+        composeRule.onNodeWithText("Y").assertIsDisplayed()
+        composeRule.onNodeWithText("B").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Red").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Blue").assertIsDisplayed()
     }
 
     @Test

@@ -137,7 +137,7 @@ fun VideoOverlayScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .semantics { contentDescription = "overlay_title" }
+                .testTag("overlay_title")
         )
 
         if (state.showNow) {
@@ -417,7 +417,7 @@ fun ComposeView.bindVideoOverlayScreen(
     isFocusableInTouchMode = true
     val firstControlFocus = FocusRequester()
     setContent {
-        DreamDroidTheme {
+        DreamDroidTheme(forceDark = true) {
             VideoOverlayScreen(
                 state = state,
                 onPlay = onPlay,

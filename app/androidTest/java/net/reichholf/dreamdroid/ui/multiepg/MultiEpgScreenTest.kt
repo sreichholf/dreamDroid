@@ -17,6 +17,7 @@ import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -422,8 +423,8 @@ class MultiEpgScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("−1d").performClick()
-        composeRule.onNodeWithText("+1d").performClick()
+        composeRule.onNodeWithContentDescription("Previous day").performClick()
+        composeRule.onNodeWithContentDescription("Next day").performClick()
         composeRule.waitForIdle()
         assertEquals(1, prev)
         assertEquals(1, next)
@@ -557,14 +558,14 @@ class MultiEpgScreenTest {
             }
         }
         val day = composeRule.onNodeWithTag("multi_epg_day_label").fetchSemanticsNode()
-        val nextDay = composeRule.onNodeWithText("+1d").fetchSemanticsNode()
+        val nextDay = composeRule.onNodeWithContentDescription("Next day").fetchSemanticsNode()
         assertTrue(
-            "day label should share the +1d chrome row",
+            "day label should share the next-day chrome row",
             day.boundsInRoot.top < nextDay.boundsInRoot.bottom &&
                 nextDay.boundsInRoot.top < day.boundsInRoot.bottom
         )
         assertTrue(
-            "day label should sit to the left of +1d",
+            "day label should sit to the left of next day",
             day.boundsInRoot.right <= nextDay.boundsInRoot.left
         )
     }

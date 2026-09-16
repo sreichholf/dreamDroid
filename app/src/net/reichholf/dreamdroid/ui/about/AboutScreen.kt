@@ -76,23 +76,24 @@ fun AboutScreen(content: AboutContent, onLicensesClick: () -> Unit, modifier: Mo
 @Composable
 fun AboutDialog(onDismiss: () -> Unit, content: AboutContent = rememberAboutContent()) {
     var showLicenses by remember { mutableStateOf(false) }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(content.title) },
-        text = {
-            AboutScreen(
-                content = content,
-                onLicensesClick = { showLicenses = true }
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.close))
-            }
-        }
-    )
     if (showLicenses) {
         LicensesDialog(onDismiss = { showLicenses = false })
+    } else {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text(content.title) },
+            text = {
+                AboutScreen(
+                    content = content,
+                    onLicensesClick = { showLicenses = true }
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(stringResource(R.string.close))
+                }
+            }
+        )
     }
 }
 

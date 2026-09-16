@@ -21,11 +21,15 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -289,6 +293,10 @@ fun MultiEpgScreen(
             MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
         }
     }
+    val isCurrentDay = remember(visibleStartSec, nowSec, originForLayout, timelineEndSec) {
+        timelineEndSec > originForLayout &&
+            MultiEpgTimeLabels.sameLocalDay(visibleStartSec, nowSec)
+    }
 
     DreamDroidPullRefresh(
         refreshing = pullRefreshing,
@@ -314,8 +322,8 @@ fun MultiEpgScreen(
                 if (dayLabel.isNotEmpty()) {
                     Text(
                         text = dayLabel,
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier
@@ -338,16 +346,24 @@ fun MultiEpgScreen(
                     )
                 }
                 if (onPrevDay != null) {
-                    TextButton(onClick = onPrevDay) {
-                        Text(stringResource(R.string.multiepg_prev_day))
+                    IconButton(onClick = onPrevDay) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_left),
+                            contentDescription = stringResource(R.string.previous_day)
+                        )
                     }
                 }
-                TextButton(onClick = onJumpToNow) {
-                    Text(stringResource(R.string.multiepg_now))
-                }
+                FilterChip(
+                    selected = isCurrentDay,
+                    onClick = onJumpToNow,
+                    label = { Text(stringResource(R.string.multiepg_now)) }
+                )
                 if (onNextDay != null) {
-                    TextButton(onClick = onNextDay) {
-                        Text(stringResource(R.string.multiepg_next_day))
+                    IconButton(onClick = onNextDay) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_chevron_right),
+                            contentDescription = stringResource(R.string.next_day)
+                        )
                     }
                 }
                 MultiEpgZoomButton(
@@ -611,7 +627,7 @@ private fun MultiEpgChannelTimeline(
     // Match list-EPG cards: surfaceVariant bars, not loud primaryContainer demo chrome.
     val trackColor = MaterialTheme.colorScheme.surface
     val barColor = MaterialTheme.colorScheme.surfaceVariant
-    val onBar = MaterialTheme.colorScheme.onSurface
+    val onBar = MaterialTheme.colorScheme.onSurfaceVariant
     val nowColor = MaterialTheme.colorScheme.primary
     val timelineEndSec = timelineStartSec + ((timelineWidth / minuteWidth) * 60f).toLong()
 
@@ -729,25 +745,44 @@ private fun ProgrammeBar(
                     R.string.multiepg_timer_zap
                 }
             )
-            Icon(
-                painter = painterResource(R.drawable.ic_multiepg_clock),
-                contentDescription = clockCd,
-                tint = if (record) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.tertiary
-                },
+            val clockTint = if (record) {
+                MaterialTheme.colorScheme.primary
+            } else {
+                MaterialTheme.colorScheme.tertiary
+            }
+            Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
                     .size(clockSize)
-                    .testTag(
-                        if (record) {
-                            "multi_epg_timer_record"
-                        } else {
-                            "multi_epg_timer_zap"
-                        }
-                    )
-            )
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_multiepg_clock),
+                    contentDescription = clockCd,
+                    tint = clockTint,
+                    modifier = Modifier
+                        .matchParentSize()
+                        .testTag(
+                            if (record) {
+                                "multi_epg_timer_record"
+                            } else {
+                                "multi_epg_timer_zap"
+                            }
+                        )
+                )
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(clockSize * 0.35f)
+                        .background(
+                            color = clockTint,
+                            shape = if (record) {
+                                CircleShape
+                            } else {
+                                RoundedCornerShape(1.dp)
+                            }
+                        )
+                )
+            }
         }
     }
 }

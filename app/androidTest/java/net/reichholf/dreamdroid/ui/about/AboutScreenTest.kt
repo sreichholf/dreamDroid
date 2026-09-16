@@ -5,8 +5,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -57,6 +60,22 @@ class AboutScreenTest {
                 onSurface.luminance() > 0.5f
             )
         }
+    }
+
+    @Test
+    fun licensesRowsAreLinksWithWebsiteDescription() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                LicensesScreen(licenses = dreamDroidLicenses())
+            }
+        }
+        composeRule.onNodeWithText("AndroidX").assertIsDisplayed()
+        val row = composeRule.onNodeWithContentDescription(
+            "AndroidX https://developer.android.com/jetpack/androidx/",
+            substring = true
+        ).assertIsDisplayed().getBoundsInRoot()
+        val height = row.bottom - row.top
+        assertTrue("license rows are at least 48.dp, height=$height", height >= 48.dp)
     }
 }
 

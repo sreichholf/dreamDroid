@@ -16,6 +16,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 
@@ -76,43 +79,11 @@ fun LicensesDialog(
     onDismiss: () -> Unit,
     licenses: List<ThirdPartyLicense> = dreamDroidLicenses()
 ) {
-    val uriHandler = LocalUriHandler.current
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.licenses)) },
         text = {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(max = 420.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                licenses.forEach { entry ->
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { uriHandler.openUri(entry.website) }
-                            .padding(vertical = 4.dp)
-                    ) {
-                        Text(
-                            text = entry.name,
-                            style = MaterialTheme.typography.titleSmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = entry.copyright,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Text(
-                            text = entry.license,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            LicensesScreen(licenses = licenses)
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
@@ -120,4 +91,50 @@ fun LicensesDialog(
             }
         }
     )
+}
+
+@Composable
+fun LicensesScreen(
+    licenses: List<ThirdPartyLicense> = dreamDroidLicenses(),
+    modifier: Modifier = Modifier
+) {
+    val uriHandler = LocalUriHandler.current
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(max = 420.dp)
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        licenses.forEach { entry ->
+            val linkDescription = "${entry.name} ${entry.website}"
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+                    .semantics(mergeDescendants = true) {
+                        contentDescription = linkDescription
+                    }
+                    .clickable { uriHandler.openUri(entry.website) }
+                    .padding(vertical = 4.dp)
+            ) {
+                Text(
+                    text = entry.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    textDecoration = TextDecoration.Underline
+                )
+                Text(
+                    text = entry.copyright,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = entry.license,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
