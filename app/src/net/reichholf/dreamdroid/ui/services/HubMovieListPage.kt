@@ -37,9 +37,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
@@ -364,12 +364,12 @@ class HubMovieListSession : MenuProvider {
         zapJob = host.launchSimpleResultLoad(
             ZapRequestHandler(),
             listOf(NameValuePair("sRef", ref))
-        ) { _, result, http ->
+        ) { _, result, error ->
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
-                http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
+                error != null -> toastText = error.resolve(ctx).orEmpty()
             }
             toast(toastText)
         }
@@ -386,13 +386,13 @@ class HubMovieListSession : MenuProvider {
         deleteJob = host.launchSimpleResultLoad(
             MovieDeleteRequestHandler(),
             MovieKeys.getDeleteParams(movie)
-        ) { _, result, http ->
+        ) { _, result, error ->
             dismissProgress()
             var toastText = ctx.getText(R.string.get_content_error).toString()
             val stateText = result.stateText
             when {
                 !stateText.isNullOrEmpty() -> toastText = stateText
-                http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
+                error != null -> toastText = error.resolve(ctx).orEmpty()
             }
             toast(toastText)
             if (reloadOnSimpleResult && Python.TRUE == result.state) {
@@ -431,7 +431,11 @@ class HubMovieListSession : MenuProvider {
             R.id.menu_download -> {
                 val file = movie?.fileName.orEmpty()
                 val params = arrayListOf(NameValuePair("file", file))
-                val url = SimpleHttpClient.getInstance().buildUrl(URIStore.FILE, params)
+                val url = EnigmaUrls.page(
+                    DreamDroid.getCurrentProfile(),
+                    URIStore.FILE,
+                    params
+                )
                 ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
             }
 

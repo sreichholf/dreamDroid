@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 
 object IntentFactory {
     fun queryIMDb(context: Context, event: Event) {
@@ -58,7 +58,7 @@ object IntentFactory {
         serviceInfo: ServiceNowNext?
     ): Intent = streamIntent(
         context,
-        SimpleHttpClient.getInstance().buildStreamUrl(ref),
+        EnigmaUrls.stream(DreamDroid.getCurrentProfile(), ref),
         "Service-Streaming URL set to",
         title,
         ref,
@@ -73,7 +73,11 @@ object IntentFactory {
         title: String?,
         fileInfo: Movie?
     ): Intent {
-        val uriString = SimpleHttpClient.getInstance().buildFileStreamUrl(ref, fileName)
+        val uriString = EnigmaUrls.fileStream(
+            DreamDroid.getCurrentProfile(),
+            ref,
+            fileName
+        )
         Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '$uriString'")
         val intent = getVideoIntent(context, uriString)
         intent.putExtra("title", title)

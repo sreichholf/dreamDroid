@@ -12,9 +12,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
 
 /**
@@ -50,25 +51,27 @@ object WidgetRemoteRequest {
             intent.getIntExtra(KEY_WIDGETID, -1)
         ) ?: return
 
-        val shc = SimpleHttpClient.getInstance(profile)
+        val http = EnigmaHttp(profile)
         val handler = RemoteCommandRequestHandler()
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("command", intent.getStringExtra(KEY_KEYID)))
         params.add(NameValuePair("rcu", "advanced"))
-        val xml = handler.get(shc, params)
+        when (val fetched = handler.fetch(http, params)) {
+            is EnigmaHttpResult.Success -> {
+                val result = handler.parseSimpleResult(fetched.text)
+                if (Python.FALSE == result.state) {
+                    val stateText = result.stateText
+                    val errorText = stateText ?: context.getString(R.string.connection_error)
+                    Log.w(TAG, stateText.orEmpty())
+                    showToast(context, errorText)
+                }
+            }
 
-        if (xml != null) {
-            val result = handler.parseSimpleResult(xml)
-            if (Python.FALSE == result.state) {
-                val stateText = result.stateText
-                val errorText = stateText ?: context.getString(R.string.connection_error)
-                Log.w(TAG, stateText.orEmpty())
+            is EnigmaHttpResult.Failure -> {
+                val errorText = fetched.error.resolve(context).orEmpty()
+                Log.w(TAG, errorText)
                 showToast(context, errorText)
             }
-        } else if (shc.hasError()) {
-            val errorText = shc.getErrorText(context).orEmpty()
-            Log.w(TAG, errorText)
-            showToast(context, errorText)
         }
     }
 

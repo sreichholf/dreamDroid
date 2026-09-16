@@ -3,41 +3,41 @@ package net.reichholf.dreamdroid.enigma
 import android.content.Context
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.PowerStateRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SleepTimerRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler
 
 /**
- * Phase 2.2l: volume / power / sleeptimer mutations via coroutines (no executor).
- * Dedicated [SimpleHttpClient] per call (same as the former AsyncTasks).
+ * Volume / power / sleeptimer mutations via coroutines.
  */
 
 fun LifecycleOwner.launchVolumeSetLoad(
     params: List<NameValuePair>,
     onResult: (success: Boolean, volume: Volume) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = SimpleHttpClient.getInstance()
+    val http = EnigmaHttp()
     val pair = withContext(Dispatchers.IO) {
         val handler = VolumeRequestHandler()
-        val xml = handler.get(http, ArrayList(params))
-        if (xml != null) {
-            val volume = VolumeParser.parse(xml) ?: Volume()
-            if (volume.current != null) {
-                true to volume
-            } else {
-                false to Volume()
+        when (val fetched = handler.fetch(http, params)) {
+            is EnigmaHttpResult.Success -> {
+                val volume = VolumeParser.parse(fetched.text) ?: Volume()
+                if (volume.current != null) {
+                    true to volume
+                } else {
+                    false to Volume()
+                }
             }
-        } else {
-            false to Volume()
+
+            is EnigmaHttpResult.Failure -> false to Volume()
         }
     }
     onResult(pair.first, pair.second)
@@ -48,14 +48,15 @@ fun LifecycleOwner.launchPowerStateSetLoad(
     context: Context,
     onResult: (success: Boolean, result: PowerState, errorText: String?) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = SimpleHttpClient.getInstance()
+    val http = EnigmaHttp()
     val triple = withContext(Dispatchers.IO) {
         val handler = PowerStateRequestHandler()
-        val xml = handler.get(http, PowerStateKeys.getStateParams(state))
-        if (xml != null) {
-            Triple(true, PowerStateParser.parse(xml) ?: PowerState(), null as String?)
-        } else {
-            Triple(false, PowerState(), errorText(context, http))
+        when (val fetched = handler.fetch(http, PowerStateKeys.getStateParams(state))) {
+            is EnigmaHttpResult.Success ->
+                Triple(true, PowerStateParser.parse(fetched.text) ?: PowerState(), null as String?)
+
+            is EnigmaHttpResult.Failure ->
+                Triple(false, PowerState(), fetched.error.contentError(context))
         }
     }
     onResult(triple.first, triple.second, triple.third)
@@ -72,26 +73,22 @@ fun LifecycleOwner.launchSleepTimerLoad(
         errorText: String?
     ) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = SimpleHttpClient.getInstance()
+    val http = EnigmaHttp()
     val outcome = withContext(Dispatchers.IO) {
         val handler = SleepTimerRequestHandler()
-        val xml = handler.get(http, ArrayList(params))
-        if (xml != null) {
-            val result = SleepTimerParser.parse(xml) ?: SleepTimer()
-            if (result.enabled != null) {
-                Triple(true, result, null as String?)
-            } else {
-                Triple(false, SleepTimer(), errorText(context, http))
+        when (val fetched = handler.fetch(http, params)) {
+            is EnigmaHttpResult.Success -> {
+                val result = SleepTimerParser.parse(fetched.text) ?: SleepTimer()
+                if (result.enabled != null) {
+                    Triple(true, result, null as String?)
+                } else {
+                    Triple(false, SleepTimer(), context.getString(R.string.get_content_error))
+                }
             }
-        } else {
-            Triple(false, SleepTimer(), errorText(context, http))
+
+            is EnigmaHttpResult.Failure ->
+                Triple(false, SleepTimer(), fetched.error.contentError(context))
         }
     }
     onResult(outcome.first, outcome.second, openDialog, outcome.third)
-}
-
-private fun errorText(context: Context, http: SimpleHttpClient): String = if (http.hasError()) {
-    context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-} else {
-    context.getString(R.string.get_content_error)
 }

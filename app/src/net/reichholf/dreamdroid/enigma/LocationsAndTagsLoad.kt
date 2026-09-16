@@ -11,11 +11,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 
 /**
  * Phase 2.2j: prefetch locations/tags via coroutines (no executor).
- * Uses a dedicated [SimpleHttpClient] per load (same as GetLocationsAndTagsTask).
+ * Prefetch locations/tags via coroutines.
  * Always calls [onReady] when finished (matches the former task, which ignored load failures).
  */
 fun LifecycleOwner.launchLocationsAndTagsLoad(
@@ -23,7 +23,7 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,
     onReady: () -> Unit
 ): Job = lifecycleScope.launch {
-    val http = SimpleHttpClient.getInstance()
+    val http = EnigmaHttp()
     if (DreamDroid.getLocations().size == 0) {
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
             return@launch

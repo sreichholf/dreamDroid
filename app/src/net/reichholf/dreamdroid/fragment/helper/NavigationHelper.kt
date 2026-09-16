@@ -14,9 +14,9 @@ import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.launchPowerStateSetLoad
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.launchSleepTimerLoad
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Message
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
@@ -39,8 +39,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
 
     protected var simpleResultJob: Job? = null
 
-    protected var shc: SimpleHttpClient? = null
-
     protected var selectedItemId: Int = drawerState.selectedItemId
 
     init {
@@ -50,13 +48,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
                 onNavigationItemClick(itemId)
             }
         }
-    }
-
-    protected fun getHttpClient(): SimpleHttpClient {
-        if (shc == null) {
-            shc = SimpleHttpClient.getInstance()
-        }
-        return shc!!
     }
 
     protected fun getMainActivity(): MainActivity = activity
@@ -95,7 +86,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     protected fun getString(resId: Int): String = activity.getString(resId)
 
     fun onProfileChanged() {
-        shc = SimpleHttpClient.getInstance()
         getMainActivity().phoneNav.onActiveProfileChanged()
     }
 
@@ -241,20 +231,20 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     ) {
         simpleResultJob?.cancel(null)
         simpleResultJob =
-            activity.launchSimpleResultLoad(handler, params) { success, result, http ->
+            activity.launchSimpleResultLoad(handler, params) { _, result, error ->
                 simpleResultJob = null
-                onSimpleResult(success, result, http)
+                onSimpleResult(result, error)
             }
     }
 
-    private fun onSimpleResult(success: Boolean, result: SimpleResult, http: SimpleHttpClient) {
+    private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
         var toastText = getString(R.string.get_content_error)
         val stateText = result.stateText
 
         if (stateText != null && stateText != "") {
             toastText = stateText
-        } else if (http.hasError()) {
-            toastText = http.getErrorText(getContext()) ?: toastText
+        } else if (error != null) {
+            toastText = error.resolve(getContext()) ?: toastText
         }
 
         showToast(toastText)

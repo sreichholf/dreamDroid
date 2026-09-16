@@ -52,8 +52,8 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
 import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.enigma.loadServiceList
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
@@ -242,7 +242,7 @@ private data class HubLoadResult(
  */
 private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
     withContext(Dispatchers.IO) {
-        val http = SimpleHttpClient.getInstance()
+        val http = EnigmaHttp()
         if (DreamDroid.getLocations().size <= 1) {
             if (!DreamDroid.loadLocations(http)) {
                 Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")

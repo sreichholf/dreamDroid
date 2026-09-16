@@ -6,14 +6,14 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces
 
-import java.util.ArrayList
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 /**
  * @author sre
  */
 interface SimpleRequestInterface {
-    fun get(shc: SimpleHttpClient?): String?
-    fun get(shc: SimpleHttpClient?, params: ArrayList<NameValuePair>?): String?
+    fun get(http: EnigmaHttp, params: List<NameValuePair> = emptyList()): String?
+    fun fetch(http: EnigmaHttp, params: List<NameValuePair> = emptyList()): EnigmaHttpResult
 }

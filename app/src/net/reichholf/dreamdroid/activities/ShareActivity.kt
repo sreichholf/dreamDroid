@@ -24,9 +24,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -40,7 +40,6 @@ import net.reichholf.dreamdroid.ui.share.bindShareProfilesScreen
  */
 class ShareActivity : AppCompatActivity() {
     private var simpleResultJob: Job? = null
-    private var shc: SimpleHttpClient? = null
     private lateinit var listState: ShareProfilesListState
     private var shareTitle: String? = null
 
@@ -80,7 +79,6 @@ class ShareActivity : AppCompatActivity() {
         var url: String? = null
         val i = intent
         val extras = i.extras
-        shc = SimpleHttpClient.getInstance(p)
         if (Intent.ACTION_SEND == i.action) {
             url = extras!!.getString(Intent.EXTRA_TEXT)
         } else if (Intent.ACTION_VIEW == i.action) {
@@ -124,7 +122,7 @@ class ShareActivity : AppCompatActivity() {
             Log.i(LOG_TAG, ref)
             val params = ArrayList<NameValuePair>()
             params.add(NameValuePair("file", ref))
-            execSimpleResultTask(params)
+            execSimpleResultTask(params, p)
         } else {
             finish()
         }
@@ -152,26 +150,26 @@ class ShareActivity : AppCompatActivity() {
         }
     }
 
-    fun execSimpleResultTask(params: ArrayList<NameValuePair>) {
+    fun execSimpleResultTask(params: ArrayList<NameValuePair>, profile: Profile) {
         simpleResultJob?.cancel(null)
         listState.progress = IndeterminateProgressState(
             title = getString(R.string.loading),
             message = getString(R.string.loading)
         )
         val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
-        simpleResultJob = launchSimpleResultLoad(handler, params) { _, result, http ->
+        simpleResultJob = launchSimpleResultLoad(handler, params, profile) { _, result, error ->
             simpleResultJob = null
-            onSimpleResult(true, result, http)
+            onSimpleResult(result, error)
         }
     }
 
-    fun onSimpleResult(success: Boolean, result: SimpleResult?, http: SimpleHttpClient) {
+    fun onSimpleResult(result: SimpleResult?, error: EnigmaHttpError?) {
         listState.progress = null
 
         if (shareTitle == null) shareTitle = "..."
         var toastText = getString(R.string.sent_as, shareTitle)
-        if (http.hasError()) {
-            toastText = http.getErrorText(this) ?: toastText
+        if (error != null) {
+            toastText = error.resolve(this) ?: toastText
         }
 
         showToast(toastText)

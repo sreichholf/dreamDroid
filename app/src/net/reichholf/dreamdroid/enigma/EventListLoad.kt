@@ -5,9 +5,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 data class EventListLoadResult(
@@ -17,7 +15,7 @@ data class EventListLoadResult(
 )
 
 /**
- * Phase 2.7f: load typed EPG event lists without a Fragment owner.
+ * Load typed EPG event lists without a Fragment owner.
  * Null fetch is failure. Empty 200 stays an empty list.
  */
 suspend fun loadEventList(
@@ -25,21 +23,13 @@ suspend fun loadEventList(
     params: List<NameValuePair>,
     uri: String = URIStore.EPG_SERVICE
 ): EventListLoadResult {
-    val http = SimpleHttpClient.getInstance()
-    val fetched = EnigmaClient(http).getEvents(params, uri)
-    val success = fetched != null
-    val events = fetched ?: emptyList()
-    val errorText = if (success) {
-        null
-    } else {
-        context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-    }
+    val response = EnigmaClient().getEvents(params, uri)
+    val success = response.value != null
+    val events = response.value ?: emptyList()
+    val errorText = if (success) null else response.error.contentError(context)
     return EventListLoadResult(success, events, errorText)
 }
 
-/**
- * Phase 2.2h: load typed EPG event lists via coroutines (no executor / runBlocking).
- */
 fun Fragment.launchEventListLoad(
     params: List<NameValuePair>,
     uri: String = URIStore.EPG_SERVICE,

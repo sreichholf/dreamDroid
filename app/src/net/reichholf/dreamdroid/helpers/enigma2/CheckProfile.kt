@@ -13,7 +13,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.ProfileCheckEntry
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 
 object CheckProfile {
     const val LOG_TAG: String = "CheckProfile"
@@ -46,13 +48,17 @@ object CheckProfile {
                 val port = profile.port
                 if (port > 0 && port <= 65535) {
                     resultList.add(entry(R.string.port, false, port.toString()))
-                    val shc = SimpleHttpClient.getInstance(profile)
+                    val http = EnigmaHttp(profile)
                     var xml = profile.cachedDeviceInfo
+                    var fetchError: EnigmaHttpError? = null
                     if (xml == null) {
-                        xml = Request.get(shc, URIStore.DEVICE_INFO)
+                        when (val fetched = http.fetch(URIStore.DEVICE_INFO)) {
+                            is EnigmaHttpResult.Success -> xml = fetched.text
+                            is EnigmaHttpResult.Failure -> fetchError = fetched.error
+                        }
                     }
 
-                    if (xml != null && !shc.hasError()) {
+                    if (xml != null) {
                         val deviceInfo = DeviceInfoParser.parse(xml)
 
                         if (deviceInfo != null && !deviceInfo.isEmpty()) {
@@ -107,8 +113,8 @@ object CheckProfile {
                             hasError = true
                             errorTextId = R.string.get_content_error
                         }
-                    } else if (shc.hasError()) {
-                        val ext = shc.getErrorText(context)
+                    } else if (fetchError != null) {
+                        val ext = fetchError.resolve(context)
                         resultList.add(
                             entry(
                                 R.string.connection,

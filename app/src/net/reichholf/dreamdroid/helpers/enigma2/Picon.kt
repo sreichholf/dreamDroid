@@ -16,8 +16,8 @@ import coil3.size.Scale
 import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 /**
  * @author sre
@@ -126,7 +126,11 @@ object Picon {
         ) {
             val params = ArrayList<NameValuePair>()
             params.add(NameValuePair("file", fileName))
-            return SimpleHttpClient.getInstance().buildAuthedUrl(URIStore.FILE, params)
+            return EnigmaUrls.authed(
+                DreamDroid.getCurrentProfile(),
+                URIStore.FILE,
+                params
+            )
         }
         return String.format("file://%s", fileName)
     }

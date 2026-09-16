@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
@@ -305,8 +306,8 @@ class HubTimerListSession :
         val params = Timer.getDeleteParams(timer)
         mutateJob?.cancel()
         mutateJob =
-            host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, http ->
-                onSimpleResult(result, http)
+            host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, error ->
+                onSimpleResult(result, error)
             }
         onMutateJob?.invoke(mutateJob)
     }
@@ -321,8 +322,8 @@ class HubTimerListSession :
         val params = Timer.getSaveParams(timerNew, timer)
         mutateJob?.cancel()
         mutateJob =
-            host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, http ->
-                onSimpleResult(result, http)
+            host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, error ->
+                onSimpleResult(result, error)
             }
         onMutateJob?.invoke(mutateJob)
     }
@@ -335,23 +336,20 @@ class HubTimerListSession :
         mutateJob = host.launchSimpleResultLoad(
             TimerCleanupRequestHandler(),
             emptyList()
-        ) { _, result, http ->
-            onSimpleResult(result, http)
+        ) { _, result, error ->
+            onSimpleResult(result, error)
         }
         onMutateJob?.invoke(mutateJob)
     }
 
-    private fun onSimpleResult(
-        result: SimpleResult,
-        http: net.reichholf.dreamdroid.helpers.SimpleHttpClient
-    ) {
+    private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
         dismissProgress()
         val ctx = context ?: return
         var toastText = ctx.getText(R.string.get_content_error).toString()
         val stateText = result.stateText
         when {
             !stateText.isNullOrEmpty() -> toastText = stateText
-            http.hasError() -> toastText = http.getErrorText(ctx).orEmpty()
+            error != null -> toastText = error.resolve(ctx).orEmpty()
         }
         toast(toastText)
         reload()

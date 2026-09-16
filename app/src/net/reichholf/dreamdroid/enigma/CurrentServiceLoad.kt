@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.SimpleHttpClient
 
 data class CurrentServiceLoadResult(
     val success: Boolean,
@@ -10,20 +9,14 @@ data class CurrentServiceLoadResult(
     val errorText: String?
 )
 
-/**
- * Phase 2.7c: load typed current service without a Fragment owner.
- * Dedicated [SimpleHttpClient] per call (cancel does not abort I/O).
- */
+/** Load typed current service without a Fragment owner. */
 suspend fun loadCurrentService(context: Context): CurrentServiceLoadResult {
-    val http = SimpleHttpClient.getInstance()
-    val current = EnigmaClient(http).getCurrent()
+    val response = EnigmaClient().getCurrent()
+    val current = response.value
     val success = current != null
     val errorText = when {
         success -> null
-
-        http.hasError() ->
-            context.getString(R.string.get_content_error) + "\n" + http.getErrorText(context)
-
+        response.error != null -> response.error.contentError(context)
         else -> context.getString(R.string.error_parsing)
     }
     return CurrentServiceLoadResult(success, current, errorText)
