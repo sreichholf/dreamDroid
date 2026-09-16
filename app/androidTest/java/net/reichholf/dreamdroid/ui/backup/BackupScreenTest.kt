@@ -3,8 +3,12 @@ package net.reichholf.dreamdroid.ui.backup
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.gson.GsonBuilder
@@ -77,6 +81,13 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Export settings").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
+        val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
+            .getBoundsInRoot()
+        val exportHeight = exportSettings.bottom - exportSettings.top
+        assertTrue(
+            "Switch rows are at least 56.dp, height=$exportHeight",
+            exportHeight >= 56.dp
+        )
     }
 
     @Test

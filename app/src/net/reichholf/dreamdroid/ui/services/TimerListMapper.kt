@@ -9,7 +9,6 @@ import net.reichholf.dreamdroid.enigma.Timer
 fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListItem> {
     val states = context.resources.getTextArray(R.array.timer_state)
     val actions = context.resources.getTextArray(R.array.timer_action)
-    val colors = context.resources.getIntArray(R.array.timer_state_color)
     return timers.mapIndexed { index, timer ->
         var actionId = 0
         try {
@@ -26,7 +25,6 @@ fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListIte
         }
         val action = if (actionId in actions.indices) actions[actionId].toString() else ""
         val state = if (stateId in states.indices) states[stateId].toString() else ""
-        val color = if (stateId in colors.indices) colors[stateId] else 0
         TimerListItem(
             index = index,
             name = timer.name,
@@ -35,7 +33,8 @@ fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListIte
             end = timer.endReadable,
             action = action,
             state = state,
-            stateColor = color
+            // Semantic Enigma2 state id; TimerListScreen maps 0-4 from ColorScheme.
+            stateColor = stateId
         )
     }
 }

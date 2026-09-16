@@ -92,11 +92,11 @@ class ServiceListScreenTest {
                 )
             }
         }
-        // Card padding 12dp + list horizontal padding 8dp = 20dp from root.
-        // useUnmergedTree: combinedClickable merges semantics up to the Card (left=8dp).
+        // ListItem start inset is 16.dp (edge-to-edge list, no 8.dp gutter).
+        // useUnmergedTree: combinedClickable merges semantics up to the row.
         composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
             .assertIsDisplayed()
-            .assertLeftPositionInRootIsEqualTo(20.dp)
+            .assertLeftPositionInRootIsEqualTo(16.dp)
     }
 
     @Test
@@ -162,7 +162,7 @@ class ServiceListScreenTest {
                 )
             }
         }
-        // combinedClickable on the Card merges semantics; capture the bar itself.
+        // combinedClickable on the row merges semantics; capture the bar itself.
         val bitmap = composeRule
             .onNodeWithTag(SERVICE_LIST_PROGRESS_TAG, useUnmergedTree = true)
             .captureToImage()

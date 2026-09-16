@@ -5,11 +5,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -22,7 +20,6 @@ import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.dp
 import kotlin.math.roundToInt
 
 typealias MovieListTap = (item: MovieListItem, windowX: Int, windowY: Int) -> Unit
@@ -34,7 +31,7 @@ fun MovieListScreen(
     onItemLongClick: MovieListTap,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
+    LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { it.index }) { item ->
             MovieRow(
                 item = item,
@@ -57,10 +54,32 @@ private fun MovieRow(
         val bounds: Rect = coords?.boundsInWindow() ?: return 0 to 0
         return bounds.left.roundToInt() to bounds.top.roundToInt()
     }
-    Card(
+    ListItem(
+        headlineContent = {
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = {
+            Column {
+                Text(
+                    text = item.serviceName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                Text(
+                    text = listOf(item.time, item.length, item.fileSize).filter {
+                        it.isNotEmpty()
+                    }.joinToString("  "),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        },
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
             .onGloballyPositioned { coords = it }
             .combinedClickable(
                 onClick = {
@@ -71,27 +90,6 @@ private fun MovieRow(
                     val (x, y) = windowTopLeft()
                     onLongClick(x, y)
                 }
-            ),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(Modifier.padding(12.dp)) {
-            Text(
-                text = item.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
             )
-            Text(
-                text = item.serviceName,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Text(
-                text = listOf(item.time, item.length, item.fileSize).filter {
-                    it.isNotEmpty()
-                }.joinToString("  "),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-    }
+    )
 }

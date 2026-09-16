@@ -61,7 +61,7 @@ fun ProfileCheckScreen(
                 Text(
                     text = stringResource(R.string.connection_error),
                     style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )

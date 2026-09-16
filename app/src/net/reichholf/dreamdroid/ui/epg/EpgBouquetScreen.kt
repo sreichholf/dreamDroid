@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,8 +14,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -24,14 +22,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.preference.PreferenceManager
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 
 const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
@@ -63,34 +65,25 @@ fun EpgBouquetScreen(
         }
     }
 
+    val loadingLabel = stringResource(R.string.loading)
     Column(modifier = modifier.fillMaxSize()) {
         if (timeJump != null) {
             EpgTimeJumpBar(timeJump)
         }
         if (items.isEmpty()) {
-            Box(
+            ListEmptyState(
+                loading = emptyMessage == loadingLabel,
+                message = emptyMessage,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (emptyMessage != null) {
-                    Text(
-                        text = emptyMessage,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp)
-                    )
-                }
-            }
+                    .fillMaxWidth()
+            )
         } else {
             LazyColumn(
                 state = listState,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp)
             ) {
                 items(
                     items,
@@ -156,67 +149,74 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
 
 @Composable
 private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                PiconImage(
-                    reference = event.serviceReference,
-                    name = event.serviceName,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .width(57.dp)
-                        .height(36.dp)
+    val context = LocalContext.current
+    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+    ListItem(
+        headlineContent = {
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        supportingContent = {
+            Column {
+                Text(
+                    text = event.serviceName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
-                Column(modifier = Modifier.weight(1f)) {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                     Text(
-                        text = event.title,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Text(
-                        text = event.serviceName,
+                        text = event.startReadable,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = event.durationReadable,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                if (event.descriptionExtended.isNotEmpty()) {
+                    Text(
+                        text = event.descriptionExtended,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
                     )
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                Text(
-                    text = event.startReadable,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f)
-                )
-                Text(
-                    text = event.durationReadable,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            if (event.descriptionExtended.isNotEmpty()) {
-                Text(
-                    text = event.descriptionExtended,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 4.dp)
-                )
-            }
-        }
-    }
+        },
+        leadingContent =
+            if (piconsEnabled) {
+                {
+                    PiconImage(
+                        reference = event.serviceReference,
+                        name = event.serviceName,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(57.dp)
+                            .height(36.dp)
+                    )
+                }
+            } else {
+                null
+            },
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    )
 }

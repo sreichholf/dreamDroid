@@ -9,11 +9,6 @@ import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -22,21 +17,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -49,6 +39,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
@@ -137,20 +128,11 @@ fun HubMovieListPage(
         modifier = modifier
     ) {
         if (listState.items.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                if (emptyMessage != null) {
-                    Text(
-                        text = emptyMessage.orEmpty(),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.padding(24.dp)
-                    )
-                }
-            }
+            ListEmptyState(
+                loading = refresh.isRefreshing,
+                message = emptyMessage,
+                onRetry = { session.reload() }
+            )
         } else {
             MovieListScreen(
                 items = listState.items,
@@ -192,7 +174,9 @@ fun HubMovieListPage(
             onConfirm = {
                 session.deleteMovie()
                 showDeleteConfirm = null
-            }
+            },
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
         )
     }
 

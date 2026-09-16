@@ -5,18 +5,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,7 +26,7 @@ fun TimerListScreen(
     onItemLongClick: (TimerListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 8.dp)) {
+    LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { it.index }) { item ->
             TimerRow(item, onClick = { onItemClick(item) }, onLongClick = { onItemLongClick(item) })
         }
@@ -41,26 +36,16 @@ fun TimerListScreen(
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun TimerRow(item: TimerListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(Modifier.height(IntrinsicSize.Min)) {
-            Box(
-                Modifier
-                    .width(4.dp)
-                    .fillMaxHeight()
-                    .background(Color(item.stateColor))
+    ListItem(
+        headlineContent = {
+            Text(
+                text = item.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Column(Modifier.padding(12.dp)) {
-                Text(
-                    text = item.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+        },
+        supportingContent = {
+            Column {
                 Text(
                     text = item.serviceName,
                     style = MaterialTheme.typography.bodyMedium,
@@ -77,6 +62,29 @@ private fun TimerRow(item: TimerListItem, onClick: () -> Unit, onLongClick: () -
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
+        },
+        leadingContent = {
+            Box(
+                Modifier
+                    .width(4.dp)
+                    .height(40.dp)
+                    .background(timerStateColor(item.stateColor))
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+    )
+}
+
+@Composable
+private fun timerStateColor(stateId: Int): Color {
+    val scheme = MaterialTheme.colorScheme
+    return when (stateId) {
+        0 -> scheme.tertiary
+        1 -> scheme.error
+        2 -> scheme.primary
+        3 -> scheme.primary
+        else -> scheme.outline
     }
 }
