@@ -14,9 +14,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requestinterfaces.SimpleRequestI
 /**
  * @author sre
  */
-abstract class AbstractSimpleRequestHandler(protected var mUri: String) : SimpleRequestInterface {
+abstract class AbstractSimpleRequestHandler(protected var uri: String) : SimpleRequestInterface {
     override fun get(shc: SimpleHttpClient?): String? = get(shc, ArrayList())
 
     override fun get(shc: SimpleHttpClient?, params: ArrayList<NameValuePair>?): String? =
-        Request.get(shc!!, mUri, params)
+        Request.get(shc!!, uri, params)
 }

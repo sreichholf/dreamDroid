@@ -70,28 +70,28 @@ class MainActivity :
     SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
 
-    private var mSlider: Boolean = false
-    private var mIsDrawerOpen: Boolean = false
-    private lateinit var mActiveProfile: TextView
-    private lateinit var mConnectionState: TextView
+    private var slider: Boolean = false
+    private var isDrawerOpenNotified: Boolean = false
+    private lateinit var activeProfile: TextView
+    private lateinit var connectionState: TextView
 
-    private var mCheckProfileJob: Job? = null
+    private var checkProfileJob: Job? = null
 
-    private var mNavigationHelper: NavigationHelper? = null
-    private var mDrawerListState: DrawerListState? = null
-    private var mDetailFragment: Fragment? = null
+    private var navigationHelper: NavigationHelper? = null
+    private var drawerListState: DrawerListState? = null
+    private var detailFragment: Fragment? = null
     lateinit var phoneNav: PhoneNavHostState
         private set
 
-    private lateinit var mDrawerToggle: ActionBarDrawerToggle
-    private lateinit var mDrawerLayout: DrawerLayout
+    private lateinit var drawerToggle: ActionBarDrawerToggle
+    private lateinit var drawerLayout: DrawerLayout
 
-    private var mSnackbar: Snackbar? = null
+    private var snackbar: Snackbar? = null
 
     /** When true, a successful profile check opens the start route (after Recheck). */
-    private var mOpenStartOnProfileSuccess: Boolean = false
+    private var openStartOnProfileSuccess: Boolean = false
 
-    private lateinit var mCurrentProfile: Profile
+    private lateinit var currentProfile: Profile
 
     /**
      * Lowest-priority back handler: drawer close, then NavHost pop (service EPG, etc.), then
@@ -123,8 +123,8 @@ class MainActivity :
     }
 
     private fun dismissSnackbar() {
-        mSnackbar?.dismiss()
-        mSnackbar = null
+        snackbar?.dismiss()
+        snackbar = null
     }
 
     private fun showProfileCheckChecking(message: String) {
@@ -135,7 +135,7 @@ class MainActivity :
 
     private fun showProfileCheckFailed(result: ProfileCheckResult) {
         dismissSnackbar()
-        mOpenStartOnProfileSuccess = true
+        openStartOnProfileSuccess = true
         var error: String? = getString(result.errorTextId)
         if (result.errorTextExt.isNotEmpty()) {
             error = result.errorTextExt
@@ -156,7 +156,7 @@ class MainActivity :
     }
 
     fun recheckProfileAfterFailure() {
-        // Keep mOpenStartOnProfileSuccess so a later success opens the start route.
+        // Keep openStartOnProfileSuccess so a later success opens the start route.
         showProfileCheckChecking(getString(R.string.checking_connection))
         val p = DreamDroid.getCurrentProfile()
         p.cachedDeviceInfo = null
@@ -164,13 +164,13 @@ class MainActivity :
     }
 
     fun openProfilesFromProfileCheckFailed() {
-        mOpenStartOnProfileSuccess = false
+        openStartOnProfileSuccess = false
         if (phoneNav.isOnProfileCheckRoute()) {
             // Keep the gate under Profiles so Back returns to the check.
             phoneNav.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
             return
         }
-        mNavigationHelper?.navigateTo(R.id.menu_navigation_profiles)
+        navigationHelper?.navigateTo(R.id.menu_navigation_profiles)
     }
 
     private fun leaveProfileCheckGate(isFirstStart: Boolean) {
@@ -185,9 +185,9 @@ class MainActivity :
             return
         }
         if (isFirstStart) {
-            mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
+            navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
         } else {
-            mNavigationHelper!!.navigateTo(StartScreen.menuId(this))
+            navigationHelper!!.navigateTo(StartScreen.menuId(this))
         }
     }
 
@@ -219,15 +219,15 @@ class MainActivity :
             } else {
                 setConnectionState(getString(R.string.ok), true)
             }
-            mNavigationHelper!!.setAvailableFeatures()
-            val openStart = mOpenStartOnProfileSuccess
-            mOpenStartOnProfileSuccess = false
+            navigationHelper!!.setAvailableFeatures()
+            val openStart = openStartOnProfileSuccess
+            openStartOnProfileSuccess = false
             val onGate = phoneNav.isOnProfileCheckRoute()
             if (onGate || openStart) {
                 // Leave PROFILE_CHECK on the back stack so Back returns to the gate.
                 leaveProfileCheckGate(isFirstStart)
             } else if (isFirstStart) {
-                mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
+                navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
             }
         }
 
@@ -245,8 +245,8 @@ class MainActivity :
         // Register before fragments/Compose so those BackHandlers outrank leave-confirm.
         onBackPressedDispatcher.addCallback(this, leaveAppCallback)
 
-        mIsDrawerOpen = false
-        mCurrentProfile = Profile.getDefault()
+        isDrawerOpenNotified = false
+        currentProfile = Profile.getDefault()
         phoneNav = PhoneNavHostState(this, this)
         if (savedInstanceState != null) {
             phoneNav.restoreState(savedInstanceState)
@@ -320,8 +320,8 @@ class MainActivity :
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         // Sync the toggle state after onRestoreInstanceState has occurred.
-        if (mSlider) {
-            mDrawerToggle.syncState()
+        if (slider) {
+            drawerToggle.syncState()
         }
     }
 
@@ -340,15 +340,15 @@ class MainActivity :
     private fun checkNavigationHelper(): Boolean = checkNavigationHelper(false)
 
     private fun checkNavigationHelper(isResume: Boolean): Boolean {
-        if (mNavigationHelper == null) {
-            // TODO preserve/restore mNavigationHelper properly
+        if (navigationHelper == null) {
+            // TODO preserve/restore navigationHelper properly
             // Keep DrawerListState across pause/resume so the Compose drawer
             // highlight survives helper recreation (NavigationView used to keep
             // checked state on the view itself).
-            if (mDrawerListState == null) {
-                mDrawerListState = DrawerListState()
+            if (drawerListState == null) {
+                drawerListState = DrawerListState()
             }
-            mNavigationHelper = NavigationHelper(this, mDrawerListState!!)
+            navigationHelper = NavigationHelper(this, drawerListState!!)
             onProfileChanged(DreamDroid.getCurrentProfile(), isResume)
             return true
         }
@@ -356,7 +356,7 @@ class MainActivity :
     }
 
     override fun highlightDrawerForRoute(route: String?, previousRoute: String?) {
-        val state = mDrawerListState ?: return
+        val state = drawerListState ?: return
         val itemId = DrawerHighlight.itemIdForRoute(
             route,
             previousRoute
@@ -369,22 +369,22 @@ class MainActivity :
     }
 
     override fun onPause() {
-        mNavigationHelper?.onDestroy()
-        mNavigationHelper = null
+        navigationHelper?.onDestroy()
+        navigationHelper = null
         super.onPause()
     }
 
     override fun onStop() {
-        mCheckProfileJob?.cancel(null)
-        mCheckProfileJob = null
+        checkProfileJob?.cancel(null)
+        checkProfileJob = null
         super.onStop()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         // Pass any configuration change to the drawer toggle
-        if (mSlider) {
-            mDrawerToggle.onConfigurationChanged(newConfig)
+        if (slider) {
+            drawerToggle.onConfigurationChanged(newConfig)
         }
     }
 
@@ -411,10 +411,10 @@ class MainActivity :
     }
 
     private fun getCurrentDetailFragment(): Fragment? {
-        if (mDetailFragment == null) {
-            mDetailFragment = supportFragmentManager.findFragmentById(R.id.detail_view)
+        if (detailFragment == null) {
+            detailFragment = supportFragmentManager.findFragmentById(R.id.detail_view)
         }
-        return mDetailFragment
+        return detailFragment
     }
 
     /**
@@ -446,20 +446,20 @@ class MainActivity :
 
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
 
-        mSlider = findViewById<View?>(R.id.drawer_layout) != null
-        if (mSlider) {
+        slider = findViewById<View?>(R.id.drawer_layout) != null
+        if (slider) {
             supportActionBar!!.setDisplayHomeAsUpEnabled(true)
             supportActionBar!!.setHomeButtonEnabled(true)
 
-            mDrawerLayout = findViewById(R.id.drawer_layout)
-            mDrawerToggle = object : ActionBarDrawerToggle(
+            drawerLayout = findViewById(R.id.drawer_layout)
+            drawerToggle = object : ActionBarDrawerToggle(
                 this, /* host Activity */
-                mDrawerLayout, /* DrawerLayout object */
+                drawerLayout, /* DrawerLayout object */
                 R.string.drawer_open, /* "open drawer" description for accessibility */
                 R.string.drawer_close /* "close drawer" description for accessibility */
             ) {
                 override fun onDrawerClosed(view: View) {
-                    mIsDrawerOpen = false
+                    isDrawerOpenNotified = false
                     supportInvalidateOptionsMenu()
                     val callbackHandler = getCurrentDetailFragment() as ActivityCallbackHandler?
                     callbackHandler?.onDrawerClosed()
@@ -471,32 +471,32 @@ class MainActivity :
                 }
 
                 override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                    if (isDrawerOpen || mIsDrawerOpen) {
+                    if (isDrawerOpen || isDrawerOpenNotified) {
                         return
                     }
-                    mIsDrawerOpen = true
+                    isDrawerOpenNotified = true
                     val callbackHandler = getCurrentDetailFragment() as ActivityCallbackHandler?
                     callbackHandler?.onDrawerOpened()
                 }
             }
-            mDrawerLayout.addDrawerListener(mDrawerToggle)
+            drawerLayout.addDrawerListener(drawerToggle)
 
             val profileChooser = findViewById<View>(R.id.drawer_profile)
             profileChooser.setOnClickListener {
                 checkNavigationHelper()
-                mNavigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
+                navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
             }
-            mActiveProfile = findViewById(R.id.drawer_profile_name)
-            mConnectionState = findViewById(R.id.drawer_profile_status)
+            activeProfile = findViewById(R.id.drawer_profile_name)
+            connectionState = findViewById(R.id.drawer_profile_status)
         } else {
             supportActionBar!!.setDisplayHomeAsUpEnabled(false)
         }
 
-        if (!this::mActiveProfile.isInitialized) {
-            mActiveProfile = TextView(this)
+        if (!this::activeProfile.isInitialized) {
+            activeProfile = TextView(this)
         }
-        if (!this::mConnectionState.isInitialized) {
-            mConnectionState = TextView(this)
+        if (!this::connectionState.isInitialized) {
+            connectionState = TextView(this)
         }
     }
 
@@ -513,8 +513,8 @@ class MainActivity :
     private fun showFragment(ft: FragmentTransaction, viewId: Int, fragment: Fragment) {
         if (fragment.isAdded) {
             Log.i(TAG, "Fragment ${(fragment as Any).javaClass.simpleName} already added, showing")
-            if (mDetailFragment != null && !fragment.isVisible) {
-                ft.hide(mDetailFragment!!)
+            if (detailFragment != null && !fragment.isVisible) {
+                ft.hide(detailFragment!!)
             }
             ft.show(fragment)
         } else {
@@ -524,7 +524,7 @@ class MainActivity :
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (mSlider && mDrawerToggle.onOptionsItemSelected(item)) {
+        if (slider && drawerToggle.onOptionsItemSelected(item)) {
             return true
         }
 
@@ -539,29 +539,29 @@ class MainActivity :
     }
 
     fun isNavigationDrawerVisible(): Boolean {
-        if (mSlider) {
+        if (slider) {
             val navigationView = findViewById<View?>(R.id.navigation_view)
-            return navigationView != null && mDrawerLayout.isDrawerOpen(navigationView)
+            return navigationView != null && drawerLayout.isDrawerOpen(navigationView)
         }
         return false
     }
 
     fun toggle() {
-        if (mSlider) {
+        if (slider) {
             val navigationView = findViewById<View?>(R.id.navigation_view)
             if (navigationView != null) {
                 if (isNavigationDrawerVisible()) {
-                    mDrawerLayout.closeDrawer(navigationView)
+                    drawerLayout.closeDrawer(navigationView)
                 } else {
-                    mDrawerLayout.openDrawer(navigationView)
+                    drawerLayout.openDrawer(navigationView)
                 }
             }
         }
     }
 
     fun showContent() {
-        if (mSlider) {
-            mDrawerLayout.closeDrawers()
+        if (slider) {
+            drawerLayout.closeDrawers()
         }
     }
 
@@ -582,19 +582,19 @@ class MainActivity :
 
         setProfileName()
         if (p.cachedDeviceInfo == null) {
-            if (p == mCurrentProfile && mCheckProfileJob != null) {
+            if (p == currentProfile && checkProfileJob != null) {
                 return
             }
-            mCurrentProfile = p
-            mCheckProfileJob?.cancel(null)
-            mCheckProfileJob = null
+            currentProfile = p
+            checkProfileJob?.cancel(null)
+            checkProfileJob = null
             showProfileCheckChecking(getString(R.string.checking_connection))
-            mCheckProfileJob = launchCheckProfileLoad(
+            checkProfileJob = launchCheckProfileLoad(
                 p,
                 getProfileCheckContext(),
                 { state -> onProfileCheckProgress(state) },
                 { result ->
-                    mCheckProfileJob = null
+                    checkProfileJob = null
                     if (result != null) {
                         onProfileChecked(result)
                     }
@@ -603,21 +603,21 @@ class MainActivity :
         } else {
             onProfileChecked(CheckProfile.checkProfile(p, this))
         }
-        mNavigationHelper?.onProfileChanged()
+        navigationHelper?.onProfileChanged()
     }
 
     /**
      *
      */
     fun setProfileName() {
-        mActiveProfile.text = DreamDroid.getCurrentProfile().name
+        activeProfile.text = DreamDroid.getCurrentProfile().name
     }
 
     /**
      * @param state String representing the current connection state
      */
     private fun setConnectionState(state: String, finished: Boolean) {
-        mConnectionState.text = state
+        connectionState.text = state
     }
 
     /*
@@ -643,8 +643,8 @@ class MainActivity :
             return
         }
         val ft = supportFragmentManager.beginTransaction()
-        if (mDetailFragment != null &&
-            mDetailFragment!!.isVisible &&
+        if (detailFragment != null &&
+            detailFragment!!.isVisible &&
             PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
                 true
@@ -719,7 +719,7 @@ class MainActivity :
     override val isDrawerOpen: Boolean
         get() = isNavigationDrawerVisible()
 
-    fun isSlidingMenu(): Boolean = mSlider
+    fun isSlidingMenu(): Boolean = slider
 
     fun finish(finishFragment: Boolean) {
         if (finishFragment) {
@@ -731,15 +731,15 @@ class MainActivity :
     }
 
     override fun onFragmentResume(fragment: Fragment) {
-        if (fragment != mDetailFragment) {
-            mDetailFragment = fragment
+        if (fragment != detailFragment) {
+            detailFragment = fragment
             showDetails(fragment)
         }
     }
 
     override fun onFragmentPause(fragment: Fragment) {
-        if (fragment == mDetailFragment) {
-            mDetailFragment = null
+        if (fragment == detailFragment) {
+            detailFragment = null
         }
     }
 
@@ -777,7 +777,7 @@ class MainActivity :
             return
         }
         getCurrentDetailFragment()
-        if (mDetailFragment != null) {
+        if (detailFragment != null) {
             val content = getDetailContentFragment()
             if (content is DialogActionListener) {
                 content.onDialogAction(action, details, dialogTag)
@@ -787,15 +787,15 @@ class MainActivity :
     }
 
     fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
-        mNavigationHelper?.onSetSleepTimer(time, action, enabled)
+        navigationHelper?.onSetSleepTimer(time, action, enabled)
     }
 
     fun onDrawerPowerChoice(action: Int) {
-        mNavigationHelper?.onDialogAction(action, null, null)
+        navigationHelper?.onDialogAction(action, null, null)
     }
 
     fun onSendMessage(text: String, type: String, timeout: String) {
-        mNavigationHelper?.onSendMessage(text, type, timeout)
+        navigationHelper?.onSendMessage(text, type, timeout)
     }
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {

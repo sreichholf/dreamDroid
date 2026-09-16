@@ -34,26 +34,26 @@ abstract class BaseFragment :
     IMutliPaneContent,
     IBaseFragment,
     DialogActionListener {
-    private var mHelper: FragmentHelper? = FragmentHelper()
-    protected var mShouldRetainInstance: Boolean = true
-    protected var mHasFabMain: Boolean = false
+    private var helper: FragmentHelper? = FragmentHelper()
+    protected var shouldRetainInstance: Boolean = true
+    protected var hasFabMain: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (mHelper == null) {
-            mHelper = FragmentHelper(this)
+        if (helper == null) {
+            helper = FragmentHelper(this)
         } else {
-            mHelper!!.bindToFragment(this)
+            helper!!.bindToFragment(this)
         }
-        mHelper!!.onCreate(savedInstanceState)
-        if (mShouldRetainInstance) {
+        helper!!.onCreate(savedInstanceState)
+        if (shouldRetainInstance) {
             retainInstance = true
         }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setFabEnabled(R.id.fab_main, mHasFabMain)
+        setFabEnabled(R.id.fab_main, hasFabMain)
     }
 
     protected fun setFabEnabled(id: Int, enabled: Boolean) {
@@ -69,27 +69,27 @@ abstract class BaseFragment :
     @Deprecated("Deprecated in Java")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        mHelper!!.onActivityCreated(savedInstanceState)
+        helper!!.onActivityCreated(savedInstanceState)
     }
 
     override fun onResume() {
         super.onResume()
-        mHelper!!.onResume()
+        helper!!.onResume()
     }
 
     override fun onPause() {
-        mHelper!!.onPause()
+        helper!!.onPause()
         super.onPause()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        mHelper!!.onSaveInstanceState(outState)
+        helper!!.onSaveInstanceState(outState)
         super.onSaveInstanceState(outState)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        val mph = mHelper?.getMultiPaneHandler() // TODO how do i reproduce this?
+        val mph = helper?.getMultiPaneHandler() // TODO how do i reproduce this?
         if (mph == null || !mph.isDrawerOpen) {
             createOptionsMenu(menu, inflater)
         }
@@ -106,24 +106,24 @@ abstract class BaseFragment :
 
     override fun hasHeader(): Boolean = false
 
-    fun getBaseTitle(): String? = mHelper!!.getBaseTitle()
+    fun getBaseTitle(): String? = helper!!.baseTitle
 
     fun setBaseTitle(baseTitle: String?) {
-        mHelper!!.setBaseTitle(baseTitle)
+        helper!!.baseTitle = baseTitle
     }
 
-    fun getCurrentTitle(): String? = mHelper!!.getCurrenTtitle()
+    fun getCurrentTitle(): String? = helper!!.getCurrenTtitle()
 
     fun setCurrentTitle(currentTitle: String?) {
-        mHelper!!.setCurrentTitle(currentTitle)
+        helper!!.currentTitle = currentTitle
     }
 
     fun initTitles(title: String?) {
-        mHelper!!.setBaseTitle(title)
-        mHelper!!.setCurrentTitle(title)
+        helper!!.baseTitle = title
+        helper!!.currentTitle = title
     }
 
-    override fun getMultiPaneHandler(): MultiPaneHandler = mHelper!!.getMultiPaneHandler()!!
+    override fun getMultiPaneHandler(): MultiPaneHandler = helper!!.getMultiPaneHandler()!!
 
     protected fun finish() {
         finish(Statics.RESULT_NONE, null)
@@ -134,7 +134,7 @@ abstract class BaseFragment :
     }
 
     protected fun finish(resultCode: Int, data: Intent?) {
-        mHelper!!.finish(resultCode, data)
+        helper!!.finish(resultCode, data)
     }
 
     protected fun getAppCompatActivity(): AppCompatActivity? = activity as AppCompatActivity?

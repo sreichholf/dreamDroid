@@ -30,36 +30,36 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 /**
  * Created by Stephan on 25.12.2015.
  */
-open class NavigationHelper(activity: MainActivity, protected val mDrawerState: DrawerListState) {
-    var mActivity: MainActivity = activity
+open class NavigationHelper(activity: MainActivity, protected val drawerState: DrawerListState) {
+    var activity: MainActivity = activity
 
-    protected var mPowerStateJob: Job? = null
+    protected var powerStateJob: Job? = null
 
-    protected var mSleepTimerJob: Job? = null
+    protected var sleepTimerJob: Job? = null
 
-    protected var mSimpleResultJob: Job? = null
+    protected var simpleResultJob: Job? = null
 
-    protected var mShc: SimpleHttpClient? = null
+    protected var shc: SimpleHttpClient? = null
 
-    protected var mSelectedItemId: Int = mDrawerState.selectedItemId
+    protected var selectedItemId: Int = drawerState.selectedItemId
 
     init {
         val drawerCompose = activity.findViewById<ComposeView>(R.id.drawer_compose)
         if (drawerCompose != null) {
-            drawerCompose.bindDrawerScreen(mDrawerState) { itemId ->
+            drawerCompose.bindDrawerScreen(drawerState) { itemId ->
                 onNavigationItemClick(itemId)
             }
         }
     }
 
     protected fun getHttpClient(): SimpleHttpClient {
-        if (mShc == null) {
-            mShc = SimpleHttpClient.getInstance()
+        if (shc == null) {
+            shc = SimpleHttpClient.getInstance()
         }
-        return mShc!!
+        return shc!!
     }
 
-    protected fun getMainActivity(): MainActivity = mActivity
+    protected fun getMainActivity(): MainActivity = activity
 
     /**
      * Open a migrated phone NavHost leaf via the activity-owned [PhoneNavHandle].
@@ -69,15 +69,15 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
     }
 
     fun onDestroy() {
-        mPowerStateJob?.cancel(null)
-        mPowerStateJob = null
-        mSleepTimerJob?.cancel(null)
-        mSleepTimerJob = null
-        mSimpleResultJob?.cancel(null)
-        mSimpleResultJob = null
+        powerStateJob?.cancel(null)
+        powerStateJob = null
+        sleepTimerJob?.cancel(null)
+        sleepTimerJob = null
+        simpleResultJob?.cancel(null)
+        simpleResultJob = null
     }
 
-    protected fun getText(resId: Int): CharSequence = mActivity.getText(resId)
+    protected fun getText(resId: Int): CharSequence = activity.getText(resId)
 
     private fun onPowerStateSet(success: Boolean, result: PowerState, resultText: String?) {
         if (!success) {
@@ -92,21 +92,21 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
         }
     }
 
-    protected fun getString(resId: Int): String = mActivity.getString(resId)
+    protected fun getString(resId: Int): String = activity.getString(resId)
 
     fun onProfileChanged() {
-        mShc = SimpleHttpClient.getInstance()
+        shc = SimpleHttpClient.getInstance()
         getMainActivity().phoneNav.onActiveProfileChanged()
     }
 
     protected fun setSelectedItem(itemId: Int) {
         if (isDialogItem(itemId)) return
         if (itemId == R.id.menu_navigation_profiles) {
-            mDrawerState.clearSelection()
+            drawerState.clearSelection()
             return
         }
-        mDrawerState.select(itemId)
-        mSelectedItemId = itemId
+        drawerState.select(itemId)
+        selectedItemId = itemId
     }
 
     fun navigateTo(itemId: Int) {
@@ -114,7 +114,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
     }
 
     protected fun isDialogItem(itemId: Int): Boolean {
-        for (id in sDialogItemIds) {
+        for (id in dialogItemIds) {
             if (id == itemId) return true
         }
         return false
@@ -123,7 +123,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
     protected fun onNavigationItemClick(itemId: Int): Boolean {
         setSelectedItem(itemId)
 
-        val navRoot = sNavRootRoutes.get(itemId)
+        val navRoot = navRootRoutes.get(itemId)
         if (navRoot != null) {
             navigatePhoneNavRoot(navRoot)
             getMainActivity().showContent()
@@ -239,10 +239,10 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
         handler: SimpleResultRequestHandler,
         params: ArrayList<NameValuePair>
     ) {
-        mSimpleResultJob?.cancel(null)
-        mSimpleResultJob =
-            mActivity.launchSimpleResultLoad(handler, params) { success, result, http ->
-                mSimpleResultJob = null
+        simpleResultJob?.cancel(null)
+        simpleResultJob =
+            activity.launchSimpleResultLoad(handler, params) { success, result, http ->
+                simpleResultJob = null
                 onSimpleResult(success, result, http)
             }
     }
@@ -268,14 +268,14 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
         params: ArrayList<NameValuePair>,
         showDialogOnFinish: Boolean
     ) {
-        mSleepTimerJob?.cancel(null)
+        sleepTimerJob?.cancel(null)
 
-        mSleepTimerJob = mActivity.launchSleepTimerLoad(
+        sleepTimerJob = activity.launchSleepTimerLoad(
             params,
             showDialogOnFinish,
-            mActivity
+            activity
         ) { success, result, openDialog, errorText ->
-            mSleepTimerJob = null
+            sleepTimerJob = null
             onSleepTimerSet(success, result, openDialog, errorText)
         }
     }
@@ -285,13 +285,13 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
      * `helpers.enigma2.PowerState.STATE_*`
      */
     protected fun setPowerState(state: String) {
-        mPowerStateJob?.cancel(null)
+        powerStateJob?.cancel(null)
 
-        mPowerStateJob = mActivity.launchPowerStateSetLoad(
+        powerStateJob = activity.launchPowerStateSetLoad(
             state,
-            mActivity
+            activity
         ) { success, result, errorText ->
-            mPowerStateJob = null
+            powerStateJob = null
             onPowerStateSet(success, result, errorText)
         }
     }
@@ -324,7 +324,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
     fun getContext(): Context = getMainActivity()
 
     companion object {
-        protected val sDialogItemIds: IntArray = intArrayOf(
+        protected val dialogItemIds: IntArray = intArrayOf(
             R.id.menu_navigation_sleeptimer,
             R.id.menu_navigation_message,
             R.id.menu_navigation_power,
@@ -333,7 +333,7 @@ open class NavigationHelper(activity: MainActivity, protected val mDrawerState: 
         )
 
         /** Drawer menu ids that open a PhoneNavHost root (no extras). EPG is separate. */
-        private val sNavRootRoutes: SparseArray<String> = SparseArray<String>().apply {
+        private val navRootRoutes: SparseArray<String> = SparseArray<String>().apply {
             put(R.id.menu_navigation_services, PhoneNavRoutes.HUB)
             put(R.id.menu_navigation_tools, PhoneNavRoutes.TOOLS)
             put(R.id.menu_navigation_current, PhoneNavRoutes.HUB)

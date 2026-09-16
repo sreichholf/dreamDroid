@@ -1,39 +1,27 @@
 package net.reichholf.dreamdroid.helpers.backup
 
 import android.net.Uri
+import com.google.gson.annotations.SerializedName
 import net.reichholf.dreamdroid.Profile
 
 class BackupData {
-    private var mSettings: MutableList<GenericSetting>? = ArrayList()
-    private var mProfiles: MutableList<Profile> = ArrayList()
-    private var mUri: Uri? = null
+    @SerializedName("mSettings")
+    var settings: MutableList<GenericSetting>? = ArrayList()
 
-    fun getSettings(): MutableList<GenericSetting>? = mSettings
+    @SerializedName("mProfiles")
+    var profiles: MutableList<Profile> = ArrayList()
+
+    @SerializedName("mUri")
+    var uri: Uri? = null
 
     fun addGenericSetting(genericSetting: GenericSetting) {
-        if (mSettings == null) {
-            mSettings = ArrayList()
+        if (settings == null) {
+            settings = ArrayList()
         }
-        mSettings!!.add(genericSetting)
+        settings!!.add(genericSetting)
     }
-
-    fun setSettings(settings: MutableList<GenericSetting>?) {
-        mSettings = settings
-    }
-
-    fun getProfiles(): MutableList<Profile> = mProfiles
 
     fun addProfile(profile: Profile) {
-        mProfiles.add(profile)
-    }
-
-    fun setProfiles(profiles: MutableList<Profile>) {
-        mProfiles = profiles
-    }
-
-    fun getUri(): Uri? = mUri
-
-    fun setUri(uri: Uri?) {
-        mUri = uri
+        profiles.add(profile)
     }
 }

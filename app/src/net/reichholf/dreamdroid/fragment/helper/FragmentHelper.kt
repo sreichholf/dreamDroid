@@ -17,41 +17,41 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.fragment.interfaces.IBaseFragment
 
 class FragmentHelper {
-    private var mFragment: Fragment? = null
-    protected var mCurrentTitle: String? = null
-    protected var mBaseTitle: String? = null
+    private var fragment: Fragment? = null
+    var currentTitle: String? = null
+    var baseTitle: String? = null
 
     constructor()
 
     constructor(fragment: Fragment?) {
-        mFragment = fragment
+        this.fragment = fragment
     }
 
     fun bindToFragment(fragment: Fragment?) {
-        mFragment = fragment
+        this.fragment = fragment
     }
 
-    fun getAppCompatActivity(): AppCompatActivity? = mFragment?.activity as AppCompatActivity?
+    fun getAppCompatActivity(): AppCompatActivity? = fragment?.activity as AppCompatActivity?
 
     fun onCreate(savedInstanceState: Bundle?) {
-        mBaseTitle = mFragment!!.getString(R.string.app_name_release)
-        mCurrentTitle = mBaseTitle
+        baseTitle = fragment!!.getString(R.string.app_name_release)
+        currentTitle = baseTitle
     }
 
     fun onActivityCreated(savedInstanceState: Bundle?) {
-        getAppCompatActivity()!!.title = mCurrentTitle
+        getAppCompatActivity()!!.title = currentTitle
         val header = getAppCompatActivity()!!.findViewById<View?>(R.id.content_header) ?: return
-        val hasHeader = (mFragment as IBaseFragment).hasHeader()
+        val hasHeader = (fragment as IBaseFragment).hasHeader()
         header.visibility = if (hasHeader) View.VISIBLE else View.GONE
     }
 
     fun onResume() {
-        getMultiPaneHandler()!!.onFragmentResume(mFragment!!)
+        getMultiPaneHandler()!!.onFragmentResume(fragment!!)
     }
 
     fun onPause() {
         val mph = getMultiPaneHandler()
-        mph?.onFragmentPause(mFragment!!)
+        mph?.onFragmentPause(fragment!!)
     }
 
     fun onSaveInstanceState(outState: Bundle) {
@@ -60,18 +60,8 @@ class FragmentHelper {
 
     fun getMultiPaneHandler(): MultiPaneHandler? = getAppCompatActivity() as MultiPaneHandler?
 
-    fun getBaseTitle(): String? = mBaseTitle
-
-    fun setBaseTitle(baseTitle: String?) {
-        mBaseTitle = baseTitle
-    }
-
     /** Keep Java typo for callers. */
-    fun getCurrenTtitle(): String? = mCurrentTitle
-
-    fun setCurrentTitle(currentTitle: String?) {
-        mCurrentTitle = currentTitle
-    }
+    fun getCurrenTtitle(): String? = currentTitle
 
     fun finish(resultCode: Int, data: Intent?) {
         val handle = (getAppCompatActivity() as? MainActivity)?.phoneNav

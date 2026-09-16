@@ -17,7 +17,7 @@ max_line_length = 100
 ktlint_code_style = android_studio
 ij_kotlin_imports_layout = *
 ktlint_function_naming_ignore_when_annotated_with = Composable, Test
-# Converted Java still uses mFoo / Hungarian leftovers; do not fail CI on those.
+# Mixed const-style vars (DATE_LOCALE_WO) and Java getX wrappers remain; Hungarian m/s is gone.
 ktlint_standard_property-naming = disabled
 ktlint_standard_backing-property-naming = disabled
 # Several files hold more than one type (Load results, ScreenshotSave, etc.).

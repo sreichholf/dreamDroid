@@ -6,9 +6,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class AutofitRecyclerView : RecyclerView {
-    private var mColumnWidth = -1
-    private var mSpanCount = 4
-    private var mMaxSpanCount = DEFAULT_MAX_SPAN_COUNT
+    private var columnWidthPx = -1
+    private var spanCount = 4
+    private var spanCountLimit = DEFAULT_MAX_SPAN_COUNT
 
     constructor(context: Context) : super(context) {
         init(context, null)
@@ -27,11 +27,11 @@ class AutofitRecyclerView : RecyclerView {
     }
 
     fun setMaxSpanCount(maxSpanCount: Int) {
-        mMaxSpanCount = maxSpanCount
+        spanCountLimit = maxSpanCount
     }
 
     fun setColumnWidth(columnWidth: Int) {
-        mColumnWidth = columnWidth
+        columnWidthPx = columnWidth
         invalidate()
     }
 
@@ -39,20 +39,20 @@ class AutofitRecyclerView : RecyclerView {
         if (attrs != null) {
             val attrsArray = intArrayOf(android.R.attr.columnWidth)
             val array = context.obtainStyledAttributes(attrs, attrsArray)
-            mColumnWidth = array.getDimensionPixelSize(0, -1)
+            columnWidthPx = array.getDimensionPixelSize(0, -1)
             array.recycle()
         }
     }
 
     override fun onMeasure(widthSpec: Int, heightSpec: Int) {
         super.onMeasure(widthSpec, heightSpec)
-        if (mColumnWidth > 0) {
-            var newSpanCount = Math.max(1, measuredWidth / mColumnWidth)
-            if (mMaxSpanCount > 0) {
-                newSpanCount = Math.min(mMaxSpanCount, newSpanCount)
+        if (columnWidthPx > 0) {
+            var newSpanCount = Math.max(1, measuredWidth / columnWidthPx)
+            if (spanCountLimit > 0) {
+                newSpanCount = Math.min(spanCountLimit, newSpanCount)
             }
-            mSpanCount = newSpanCount
-            (layoutManager as GridLayoutManager).spanCount = mSpanCount
+            spanCount = newSpanCount
+            (layoutManager as GridLayoutManager).spanCount = spanCount
         }
     }
 

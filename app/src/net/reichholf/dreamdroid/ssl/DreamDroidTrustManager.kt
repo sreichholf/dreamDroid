@@ -19,8 +19,9 @@ class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
         DreamDroid.getCurrentProfile().allCertsTrusted
     )
 
-    private var mDefaultTrustManager: X509TrustManager? = getDefaultTrustManager()
-    private var mDefaultHostnameVerifier: HostnameVerifier? = null
+    private var platformTrustManager: X509TrustManager? = getDefaultTrustManager()
+
+    private var defaultHostnameVerifier: HostnameVerifier? = null
 
     fun getDefaultTrustManager(): X509TrustManager? {
         try {
@@ -38,7 +39,7 @@ class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
     }
 
     fun wrapHostnameVerifier(verifier: HostnameVerifier): HostnameVerifier {
-        mDefaultHostnameVerifier = verifier
+        defaultHostnameVerifier = verifier
         return this
     }
 
@@ -46,20 +47,20 @@ class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
 
     override fun verify(hostname: String?, session: SSLSession?): Boolean {
         if (trustAllCertificates()) return true
-        return mDefaultHostnameVerifier!!.verify(hostname, session)
+        return defaultHostnameVerifier!!.verify(hostname, session)
     }
 
     @Throws(CertificateException::class)
     override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {
         if (!trustAllCertificates()) {
-            mDefaultTrustManager!!.checkClientTrusted(chain, authType)
+            platformTrustManager!!.checkClientTrusted(chain, authType)
         }
     }
 
     @Throws(CertificateException::class)
     override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {
         if (!trustAllCertificates()) {
-            mDefaultTrustManager!!.checkServerTrusted(chain, authType)
+            platformTrustManager!!.checkServerTrusted(chain, authType)
         }
     }
 
@@ -67,7 +68,7 @@ class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
         if (trustAllCertificates()) {
             return arrayOf()
         }
-        return mDefaultTrustManager?.acceptedIssuers ?: emptyArray()
+        return platformTrustManager?.acceptedIssuers ?: emptyArray()
     }
 
     companion object {

@@ -39,13 +39,13 @@ import net.reichholf.dreamdroid.ui.share.bindShareProfilesScreen
  * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
  */
 class ShareActivity : AppCompatActivity() {
-    private var mSimpleResultJob: Job? = null
-    private var mShc: SimpleHttpClient? = null
-    private lateinit var mListState: ShareProfilesListState
-    private var mTitle: String? = null
+    private var simpleResultJob: Job? = null
+    private var shc: SimpleHttpClient? = null
+    private lateinit var listState: ShareProfilesListState
+    private var shareTitle: String? = null
 
-    private var mProfiles: List<Profile>? = null
-    private val mProfilesById: MutableMap<Int, Profile> = HashMap()
+    private var profiles: List<Profile>? = null
+    private val profilesById: MutableMap<Int, Profile> = HashMap()
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,10 +57,10 @@ class ShareActivity : AppCompatActivity() {
         title = getText(R.string.watch_on_dream)
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
-        mListState = ShareProfilesListState()
+        listState = ShareProfilesListState()
         val compose = findViewById<ComposeView>(R.id.compose_profiles)
-        compose.bindShareProfilesScreen(mListState) { item ->
-            val profile = mProfilesById[item.id]
+        compose.bindShareProfilesScreen(listState) { item ->
+            val profile = profilesById[item.id]
             if (profile != null) {
                 playOnDream(profile)
             }
@@ -69,9 +69,9 @@ class ShareActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        mListState.progress = null
-        mSimpleResultJob?.cancel(null)
-        mSimpleResultJob = null
+        listState.progress = null
+        simpleResultJob?.cancel(null)
+        simpleResultJob = null
         super.onDestroy()
     }
 
@@ -80,7 +80,7 @@ class ShareActivity : AppCompatActivity() {
         var url: String? = null
         val i = intent
         val extras = i.extras
-        mShc = SimpleHttpClient.getInstance(p)
+        shc = SimpleHttpClient.getInstance(p)
         if (Intent.ACTION_SEND == i.action) {
             url = extras!!.getString(Intent.EXTRA_TEXT)
         } else if (Intent.ACTION_VIEW == i.action) {
@@ -105,7 +105,7 @@ class ShareActivity : AppCompatActivity() {
                     if (tmp != null) title = tmp
                 }
             }
-            mTitle = title
+            shareTitle = title
 
             val uri = Uri.parse(url)
             url = URLEncoder.encode(url).replace("+", "%20")
@@ -132,17 +132,17 @@ class ShareActivity : AppCompatActivity() {
 
     fun load() {
         val dao = AppDatabase.profilesBlocking(this)
-        mProfiles = dao.getProfiles()
-        mProfilesById.clear()
-        val profiles = mProfiles!!
+        profiles = dao.getProfiles()
+        profilesById.clear()
+        val profiles = this.profiles!!
         if (profiles.size > 1) {
             val items = ArrayList<ProfileListItem>()
             for (m in profiles) {
                 val id = m.id ?: 0
-                mProfilesById[id] = m
+                profilesById[id] = m
                 items.add(ProfileListItem(id, m.name.orEmpty(), m.host.orEmpty(), false))
             }
-            mListState.replaceAll(items)
+            listState.replaceAll(items)
         } else {
             if (profiles.size == 1) {
                 playOnDream(profiles[0])
@@ -153,23 +153,23 @@ class ShareActivity : AppCompatActivity() {
     }
 
     fun execSimpleResultTask(params: ArrayList<NameValuePair>) {
-        mSimpleResultJob?.cancel(null)
-        mListState.progress = IndeterminateProgressState(
+        simpleResultJob?.cancel(null)
+        listState.progress = IndeterminateProgressState(
             title = getString(R.string.loading),
             message = getString(R.string.loading)
         )
         val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
-        mSimpleResultJob = launchSimpleResultLoad(handler, params) { _, result, http ->
-            mSimpleResultJob = null
+        simpleResultJob = launchSimpleResultLoad(handler, params) { _, result, http ->
+            simpleResultJob = null
             onSimpleResult(true, result, http)
         }
     }
 
     fun onSimpleResult(success: Boolean, result: SimpleResult?, http: SimpleHttpClient) {
-        mListState.progress = null
+        listState.progress = null
 
-        if (mTitle == null) mTitle = "..."
-        var toastText = getString(R.string.sent_as, mTitle)
+        if (shareTitle == null) shareTitle = "..."
+        var toastText = getString(R.string.sent_as, shareTitle)
         if (http.hasError()) {
             toastText = http.getErrorText(this) ?: toastText
         }

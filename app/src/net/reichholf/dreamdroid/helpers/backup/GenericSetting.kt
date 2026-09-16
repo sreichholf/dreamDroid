@@ -1,11 +1,9 @@
 package net.reichholf.dreamdroid.helpers.backup
 
+import com.google.gson.annotations.SerializedName
+
 class GenericSetting(
-    private val mKey: String,
-    private val mValue: String,
-    private val mType: String
-) {
-    fun getKey(): String = mKey
-    fun getType(): String = mType
-    fun getValue(): String = mValue
-}
+    @SerializedName("mKey") val key: String,
+    @SerializedName("mValue") val value: String,
+    @SerializedName("mType") val type: String
+)

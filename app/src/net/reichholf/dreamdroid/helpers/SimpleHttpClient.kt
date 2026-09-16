@@ -47,15 +47,18 @@ import okhttp3.Response
  * [HttpURLConnection]. Public API unchanged for callers.
  */
 class SimpleHttpClient {
-    private var mProfile: Profile? = null
-    private var mPrefix: String = "http://"
-    private var mFilePrefix: String = "http://"
-    private var mBytes: ByteArray = ByteArray(0)
-    private var mErrorText: String? = null
-    private var mErrorTextId: Int = -1
-    private var mError: Boolean = false
-    private var mRememberedReturnCode: Int = 0
-    private var mConnectionTimeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+    private var profile: Profile? = null
+    private var prefix: String = "http://"
+    private var filePrefix: String = "http://"
+
+    var bytes: ByteArray = ByteArray(0)
+        private set
+    private var errorText: String? = null
+    private var errorTextId: Int = -1
+    private var error: Boolean = false
+    private var rememberedReturnCode: Int = 0
+    private var timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+
     private var okHttpClient: OkHttpClient? = null
     private var okHttpTimeoutMillis: Int = -1
     private var okHttpSsl: Boolean? = null
@@ -66,12 +69,12 @@ class SimpleHttpClient {
     private val fetchEpoch = AtomicInteger(0)
 
     constructor() {
-        mProfile = null
+        profile = null
         init()
     }
 
     constructor(p: Profile?) {
-        mProfile = p
+        profile = p
         init()
     }
 
@@ -85,7 +88,7 @@ class SimpleHttpClient {
         if (!path.contains("?")) {
             path += "?"
         }
-        return mPrefix + mProfile!!.host + ":" + mProfile!!.port + path + parms
+        return prefix + profile!!.host + ":" + profile!!.port + path + parms
     }
 
     fun buildAuthedUrl(uri: String, parameters: List<NameValuePair>): String {
@@ -95,14 +98,14 @@ class SimpleHttpClient {
             path += "?"
         }
         var loginString = ""
-        if (mProfile!!.login) {
-            loginString = String.format("%s:%s@", mProfile!!.user, mProfile!!.pass)
+        if (profile!!.login) {
+            loginString = String.format("%s:%s@", profile!!.user, profile!!.pass)
         }
-        return mPrefix + loginString + mProfile!!.host + ":" + mProfile!!.port + path + parms
+        return prefix + loginString + profile!!.host + ":" + profile!!.port + path + parms
     }
 
     fun buildEncoderStreamUrl(ref: String): String {
-        if (mProfile!!.host == "dreamdroid.org") {
+        if (profile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
         var encoded = ref
@@ -111,26 +114,26 @@ class SimpleHttpClient {
         } catch (_: UnsupportedEncodingException) {
         }
         var streamLoginString = ""
-        if (mProfile!!.encoderLogin) {
-            streamLoginString = mProfile!!.encoderUser + ":" + mProfile!!.encoderPass + "@"
+        if (profile!!.encoderLogin) {
+            streamLoginString = profile!!.encoderUser + ":" + profile!!.encoderPass + "@"
         }
         return String.format(
             "rtsp://%s%s:%s/%s?ref=%s&video_bitrate=%s&audio_bitrate=%s",
             streamLoginString,
-            mProfile!!.streamHostOrHost,
-            mProfile!!.encoderPort,
-            mProfile!!.encoderPath,
+            profile!!.streamHostOrHost,
+            profile!!.encoderPort,
+            profile!!.encoderPath,
             encoded,
-            mProfile!!.encoderVideoBitrate,
-            mProfile!!.encoderAudioBitrate
+            profile!!.encoderVideoBitrate,
+            profile!!.encoderAudioBitrate
         )
     }
 
     fun buildStreamUrl(ref: String): String {
-        if (mProfile!!.host == "dreamdroid.org") {
+        if (profile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
-        return if (mProfile!!.encoderStream) {
+        return if (profile!!.encoderStream) {
             buildEncoderStreamUrl(ref)
         } else {
             buildServiceStreamUrl(ref)
@@ -138,7 +141,7 @@ class SimpleHttpClient {
     }
 
     fun buildServiceStreamUrl(ref: String): String {
-        if (mProfile!!.host == "dreamdroid.org") {
+        if (profile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
         var serviceRef = ref
@@ -156,34 +159,34 @@ class SimpleHttpClient {
         } catch (_: UnsupportedEncodingException) {
         }
         val streamLoginString = HttpUserInfo.embed(
-            enabled = mProfile!!.streamLogin,
-            user = mProfile!!.user,
-            pass = mProfile!!.pass,
+            enabled = profile!!.streamLogin,
+            user = profile!!.user,
+            pass = profile!!.pass,
             scheme = "http"
         )
-        return "http://" + streamLoginString + mProfile!!.streamHostOrHost + ":" +
-            mProfile!!.streamPort + "/" + serviceRef
+        return "http://" + streamLoginString + profile!!.streamHostOrHost + ":" +
+            profile!!.streamPort + "/" + serviceRef
     }
 
     fun buildFileStreamUrl(ref: String, fileName: String?): String {
-        if (mProfile!!.host == "dreamdroid.org") {
+        if (profile!!.host == "dreamdroid.org") {
             return BIG_BUCK_BUNNY_URL
         }
-        if (mProfile!!.encoderStream && ref.startsWith("1:")) {
+        if (profile!!.encoderStream && ref.startsWith("1:")) {
             return buildEncoderStreamUrl(ref)
         }
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("file", fileName))
         val parms = NameValuePair.toString(params)
-        val fileScheme = if (mProfile!!.fileSsl) "https" else "http"
+        val fileScheme = if (profile!!.fileSsl) "https" else "http"
         val fileAuthString = HttpUserInfo.embed(
-            enabled = mProfile!!.fileLogin,
-            user = mProfile!!.user,
-            pass = mProfile!!.pass,
+            enabled = profile!!.fileLogin,
+            user = profile!!.user,
+            pass = profile!!.pass,
             scheme = fileScheme
         )
-        return mFilePrefix + fileAuthString + mProfile!!.streamHostOrHost + ":" +
-            mProfile!!.filePort + URIStore.FILE + parms
+        return filePrefix + fileAuthString + profile!!.streamHostOrHost + ":" +
+            profile!!.filePort + URIStore.FILE + parms
     }
 
     fun fetchPageContent(uri: String): Boolean = fetchPageContent(uri, ArrayList())
@@ -191,21 +194,21 @@ class SimpleHttpClient {
     private fun isSessionLess(uri: String): Boolean = URIStore.SCREENSHOT == uri
 
     private fun authHeader(): String? {
-        if (!mProfile!!.login) return null
-        return Credentials.basic(mProfile!!.user.orEmpty(), mProfile!!.pass.orEmpty())
+        if (!profile!!.login) return null
+        return Credentials.basic(profile!!.user.orEmpty(), profile!!.pass.orEmpty())
     }
 
     private fun newClient(): OkHttpClient {
         val builder = OkHttpClient.Builder()
-            .connectTimeout(mConnectionTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
-            .readTimeout(mConnectionTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
-            .writeTimeout(mConnectionTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
+            .connectTimeout(timeoutMillis.toLong(), TimeUnit.MILLISECONDS)
+            .readTimeout(timeoutMillis.toLong(), TimeUnit.MILLISECONDS)
+            .writeTimeout(timeoutMillis.toLong(), TimeUnit.MILLISECONDS)
             .followRedirects(false)
             .followSslRedirects(false)
         val appContext = DreamDroid.getAppContext()
         if (appContext != null) {
             try {
-                val trustAll = mProfile?.allCertsTrusted == true
+                val trustAll = profile?.allCertsTrusted == true
                 val trustManager = DreamDroidTrustManager(appContext, trustAll)
                 val sc = SSLContext.getInstance("TLS")
                 sc.init(null, arrayOf<X509TrustManager>(trustManager), SecureRandom())
@@ -223,12 +226,12 @@ class SimpleHttpClient {
     }
 
     private fun httpClient(): OkHttpClient {
-        val ssl = mProfile?.ssl == true
-        val trustAll = mProfile?.allCertsTrusted == true
+        val ssl = profile?.ssl == true
+        val trustAll = profile?.allCertsTrusted == true
         val cached = okHttpClient
         if (
             cached != null &&
-            okHttpTimeoutMillis == mConnectionTimeoutMillis &&
+            okHttpTimeoutMillis == timeoutMillis &&
             okHttpSsl == ssl &&
             okHttpTrustAll == trustAll
         ) {
@@ -236,7 +239,7 @@ class SimpleHttpClient {
         }
         val created = newClient()
         okHttpClient = created
-        okHttpTimeoutMillis = mConnectionTimeoutMillis
+        okHttpTimeoutMillis = timeoutMillis
         okHttpSsl = ssl
         okHttpTrustAll = trustAll
         return created
@@ -280,10 +283,10 @@ class SimpleHttpClient {
         inFlight?.cancel()
         val epoch = fetchEpoch.incrementAndGet()
 
-        mErrorText = ""
-        mErrorTextId = -1
-        mError = false
-        mBytes = ByteArray(0)
+        errorText = ""
+        errorTextId = -1
+        error = false
+        bytes = ByteArray(0)
         var path = uri
         if (!path.startsWith("/")) {
             path = "/$path"
@@ -292,8 +295,8 @@ class SimpleHttpClient {
         var call: Call? = null
         try {
             val requestParams = ArrayList(parameters)
-            if (mProfile!!.sessionId != null && !isSessionLess(path)) {
-                requestParams.add(NameValuePair("sessionid", mProfile!!.sessionId))
+            if (profile!!.sessionId != null && !isSessionLess(path)) {
+                requestParams.add(NameValuePair("sessionid", profile!!.sessionId))
             }
             val urlString = buildUrl(path, requestParams)
             val requestBuilder = Request.Builder().url(urlString)
@@ -315,56 +318,56 @@ class SimpleHttpClient {
             }
         } catch (e: MalformedURLException) {
             if (epoch != fetchEpoch.get()) return false
-            mError = true
-            mErrorTextId = R.string.illegal_host
+            error = true
+            errorTextId = R.string.illegal_host
         } catch (e: UnknownHostException) {
             if (epoch != fetchEpoch.get()) return false
-            mError = true
-            mErrorText = null
-            mErrorTextId = R.string.host_not_found
+            error = true
+            errorText = null
+            errorTextId = R.string.host_not_found
         } catch (e: ProtocolException) {
             if (epoch != fetchEpoch.get()) return false
-            mError = true
-            mErrorText = e.localizedMessage
+            error = true
+            errorText = e.localizedMessage
         } catch (e: ConnectException) {
             if (epoch != fetchEpoch.get()) return false
-            mError = true
-            mErrorTextId = R.string.host_unreach
+            error = true
+            errorTextId = R.string.host_unreach
         } catch (e: IOException) {
             if (epoch != fetchEpoch.get()) return false
             when (val cause = e.cause) {
                 is UnknownHostException -> {
-                    mError = true
-                    mErrorText = null
-                    mErrorTextId = R.string.host_not_found
+                    error = true
+                    errorText = null
+                    errorTextId = R.string.host_not_found
                 }
 
                 is ConnectException -> {
-                    mError = true
-                    mErrorTextId = R.string.host_unreach
+                    error = true
+                    errorTextId = R.string.host_unreach
                 }
 
                 else -> {
                     e.printStackTrace()
-                    mError = true
-                    mErrorText = e.localizedMessage
+                    error = true
+                    errorText = e.localizedMessage
                 }
             }
         } catch (e: NullPointerException) {
             if (epoch != fetchEpoch.get()) return false
             e.printStackTrace()
-            mError = true
-            mErrorText = e.localizedMessage
+            error = true
+            errorText = e.localizedMessage
         } finally {
             val finished = call
             if (finished != null && inFlight === finished) {
                 inFlight = null
             }
-            if (mError && epoch == fetchEpoch.get()) {
-                if (mErrorText == null) {
-                    mErrorText = "Error text is null"
+            if (error && epoch == fetchEpoch.get()) {
+                if (errorText == null) {
+                    errorText = "Error text is null"
                 }
-                Log.e(LOG_TAG, mErrorText ?: "Error text is null")
+                Log.e(LOG_TAG, errorText ?: "Error text is null")
             }
         }
         return false
@@ -380,33 +383,33 @@ class SimpleHttpClient {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {
             if (code == HttpURLConnection.HTTP_BAD_METHOD &&
-                mRememberedReturnCode != HttpURLConnection.HTTP_BAD_METHOD
+                rememberedReturnCode != HttpURLConnection.HTTP_BAD_METHOD
             ) {
                 DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest())
-                mRememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD
+                rememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD
                 return fetchPageContent(uri, parameters)
             }
             if (code == HttpURLConnection.HTTP_PRECON_FAILED &&
-                mRememberedReturnCode != HttpURLConnection.HTTP_PRECON_FAILED
+                rememberedReturnCode != HttpURLConnection.HTTP_PRECON_FAILED
             ) {
                 createSession()
-                mRememberedReturnCode = HttpURLConnection.HTTP_PRECON_FAILED
+                rememberedReturnCode = HttpURLConnection.HTTP_PRECON_FAILED
                 return fetchPageContent(uri, parameters)
             }
             if (epoch != fetchEpoch.get()) return false
-            mRememberedReturnCode = 0
+            rememberedReturnCode = 0
             Log.e(LOG_TAG, code.toString())
             when (code) {
-                HttpURLConnection.HTTP_UNAUTHORIZED -> mErrorTextId = R.string.auth_error
-                else -> mErrorTextId = -1
+                HttpURLConnection.HTTP_UNAUTHORIZED -> errorTextId = R.string.auth_error
+                else -> errorTextId = -1
             }
-            mErrorText = response.message
-            mError = true
+            errorText = response.message
+            error = true
             return false
         }
         val body = response.body?.bytes() ?: ByteArray(0)
         if (epoch != fetchEpoch.get()) return false
-        mBytes = body
+        bytes = body
         if (DreamDroid.dumpXml()) {
             dumpToFile(urlString)
         }
@@ -414,14 +417,14 @@ class SimpleHttpClient {
     }
 
     private fun createSession() {
-        val shc = getInstance(mProfile)
+        val shc = getInstance(profile)
         shc.fetchPageContent(URIStore.SESSION)
         if (!shc.hasError()) {
             var content = shc.pageContentString
             content = content.replace(Regex("\\<.*?\\>"), "").trim()
-            mProfile!!.sessionId = content
+            profile!!.sessionId = content
         } else {
-            mProfile!!.sessionId = null
+            profile!!.sessionId = null
         }
     }
 
@@ -438,7 +441,7 @@ class SimpleHttpClient {
             dumpDir.mkdirs()
             file.createNewFile()
             BufferedOutputStream(FileOutputStream(file)).use { bos ->
-                bos.write(mBytes)
+                bos.write(bytes)
                 bos.flush()
             }
         } catch (e: IOException) {
@@ -447,34 +450,30 @@ class SimpleHttpClient {
     }
 
     val pageContentString: String
-        get() = String(mBytes)
-
-    /** Also exposed to Kotlin as `.bytes` (Request.getBytes). */
-    val bytes: ByteArray
-        get() = mBytes
+        get() = String(bytes)
 
     fun getErrorText(context: Context): String? {
-        if (mErrorTextId > 0) {
-            return context.getString(mErrorTextId)
+        if (errorTextId > 0) {
+            return context.getString(errorTextId)
         }
-        return mErrorText
+        return errorText
     }
 
-    fun hasError(): Boolean = mError
+    fun hasError(): Boolean = error
 
     fun applyConfig() {
-        if (mProfile == null) {
-            mProfile = DreamDroid.getCurrentProfile()
+        if (profile == null) {
+            profile = DreamDroid.getCurrentProfile()
         }
-        mPrefix = if (mProfile!!.ssl) "https://" else "http://"
-        mFilePrefix = if (mProfile!!.fileSsl) "https://" else "http://"
+        prefix = if (profile!!.ssl) "https://" else "http://"
+        filePrefix = if (profile!!.fileSsl) "https://" else "http://"
     }
 
     fun setConnectionTimeoutMillis(millis: Int) {
-        mConnectionTimeoutMillis = millis
+        timeoutMillis = millis
     }
 
-    fun connectionTimeoutMillis(): Int = mConnectionTimeoutMillis
+    fun connectionTimeoutMillis(): Int = timeoutMillis
 
     companion object {
         val LOG_TAG: String = SimpleHttpClient::class.java.simpleName
