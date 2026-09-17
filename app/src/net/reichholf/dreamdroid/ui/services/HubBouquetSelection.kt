@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
+import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 
 /**
@@ -40,4 +41,27 @@ internal fun buildDedicatedBouquets(
         items.add(Service(refs[i], labels[i]))
     }
     return items
+}
+
+/**
+ * HTTP bouquet roots, or Room user-bouquet tabs when the request failed and a
+ * strip exists. Dedicated Provider/All are still appended by
+ * [buildDedicatedBouquets] — they are not in [cachedTv]/[cachedRadio].
+ */
+internal fun bouquetsAfterHttpOrCache(
+    httpSuccess: Boolean,
+    http: Bouquets,
+    cachedTv: List<Service>,
+    cachedRadio: List<Service>
+): Pair<Bouquets, Boolean> {
+    if (httpSuccess) {
+        return http to false
+    }
+    if (cachedTv.isEmpty() && cachedRadio.isEmpty()) {
+        return http to false
+    }
+    val cached = Bouquets()
+    cached.tv.addAll(cachedTv)
+    cached.radio.addAll(cachedRadio)
+    return cached to true
 }
