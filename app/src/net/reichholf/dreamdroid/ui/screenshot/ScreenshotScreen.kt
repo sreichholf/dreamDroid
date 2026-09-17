@@ -22,6 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 class ScreenshotUiState {
     var bitmap by mutableStateOf<Bitmap?>(null)
@@ -35,7 +36,8 @@ fun ScreenshotScreen(
     onReload: () -> Unit,
     onShare: () -> Unit,
     onSave: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    grabBlocked: Boolean = false
 ) {
     val screenshotLabel = stringResource(R.string.screenshot)
     val reloadLabel = stringResource(R.string.reload)
@@ -55,7 +57,10 @@ fun ScreenshotScreen(
                     .padding(horizontal = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = onReload) {
+                IconButton(
+                    onClick = onReload,
+                    modifier = Modifier.onlineOnlyLook(grabBlocked)
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_refresh),
                         contentDescription = reloadLabel,

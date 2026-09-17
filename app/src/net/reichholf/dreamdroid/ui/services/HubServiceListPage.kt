@@ -53,6 +53,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -398,21 +399,23 @@ class HubServiceListSession : MenuProvider {
     fun zapTo(ref: String) {
         val host = handle ?: return
         val ctx = context ?: return
-        zapJob?.cancel()
-        zapJob = host.launchSimpleResultLoad(
-            ZapRequestHandler(),
-            listOf(NameValuePair("sRef", ref))
-        ) { _, result, error ->
-            var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.stateText
-            when {
-                !stateText.isNullOrEmpty() -> toastText = stateText
-                error != null -> toastText = error.resolve(ctx).orEmpty()
+        host.runOnlineOnly {
+            zapJob?.cancel()
+            zapJob = host.launchSimpleResultLoad(
+                ZapRequestHandler(),
+                listOf(NameValuePair("sRef", ref))
+            ) { _, result, error ->
+                var toastText = ctx.getText(R.string.get_content_error).toString()
+                val stateText = result.stateText
+                when {
+                    !stateText.isNullOrEmpty() -> toastText = stateText
+                    error != null -> toastText = error.resolve(ctx).orEmpty()
+                }
+                toast(toastText)
+                onZapped?.invoke()
             }
-            toast(toastText)
-            onZapped?.invoke()
+            onZapJob?.invoke(zapJob)
         }
-        onZapJob?.invoke(zapJob)
     }
 
     fun showPopupMenu(windowX: Int, windowY: Int, row: ServiceNowNext) {
@@ -449,19 +452,21 @@ class HubServiceListSession : MenuProvider {
                     }
 
                     R.id.menu_stream -> {
-                        try {
-                            val activity = ctx as AppCompatActivity
-                            activity.startActivity(
-                                IntentFactory.getStreamServiceIntent(
-                                    activity,
-                                    ref,
-                                    name,
-                                    currentRef,
-                                    row
+                        host.runOnlineOnly {
+                            try {
+                                val activity = ctx as AppCompatActivity
+                                activity.startActivity(
+                                    IntentFactory.getStreamServiceIntent(
+                                        activity,
+                                        ref,
+                                        name,
+                                        currentRef,
+                                        row
+                                    )
                                 )
-                            )
-                        } catch (_: ActivityNotFoundException) {
-                            toast(ctx.getText(R.string.missing_stream_player))
+                            } catch (_: ActivityNotFoundException) {
+                                toast(ctx.getText(R.string.missing_stream_player))
+                            }
                         }
                         true
                     }

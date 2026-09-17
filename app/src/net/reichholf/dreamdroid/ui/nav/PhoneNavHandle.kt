@@ -57,6 +57,9 @@ interface PhoneNavHandle {
     fun leaveConfirmRequestedFlow(): StateFlow<Boolean>
     fun requestLeaveConfirm()
     fun clearLeaveConfirm()
+    fun needsReceiverRequestedFlow(): StateFlow<Boolean>
+    fun requestNeedsReceiver()
+    fun clearNeedsReceiver()
 
     fun startRoute(): String
     fun epgLeafArguments(): Bundle
@@ -121,6 +124,14 @@ data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action:
             false,
             SleepTimerKeys.ACTION_STANDBY
         )
+    }
+}
+
+fun PhoneNavHandle.runOnlineOnly(action: () -> Unit) {
+    if (connectionStatusFlow().value.blocksMutations) {
+        requestNeedsReceiver()
+    } else {
+        action()
     }
 }
 

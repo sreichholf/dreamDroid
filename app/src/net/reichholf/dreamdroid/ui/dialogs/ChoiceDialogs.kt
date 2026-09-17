@@ -237,6 +237,25 @@ fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
 }
 
 @Composable
+fun ExplainAlertDialog(
+    title: String,
+    message: String,
+    onDismiss: () -> Unit,
+    confirmLabel: String = stringResource(R.string.ok)
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = { Text(message) },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(confirmLabel)
+            }
+        }
+    )
+}
+
+@Composable
 fun ConfirmAlertDialog(
     title: String,
     message: String,

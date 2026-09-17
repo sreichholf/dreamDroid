@@ -1,12 +1,17 @@
 package net.reichholf.dreamdroid.ui.session
 
+import android.content.Context
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * Session connectivity for the phone shell. [Session.Online] / [Session.Offline] are stored;
@@ -45,16 +50,50 @@ data class ConnectionStatus(
         Chip.Offline -> R.string.session_offline
         Chip.Checking -> R.string.session_checking
     }
+
+    /**
+     * Zap, remote keys, power, and other writes need [Session.Online]. Checking with a
+     * stored Online session stays writable; Offline and Auth (stored as Offline) block.
+     */
+    val blocksMutations: Boolean
+        get() = session != Session.Online
 }
 
 /**
  * Whether this profile has a use-driven cache that can paint the start route.
  *
- * Slice 2 always returns false (no TV/Radio tab strip). Later slices **extend** this
- * function with additional sources; they must not replace it with a weaker check.
- * MultiEPG chunks alone must not skip the ProfileCheck gate.
+ * Later slices **extend** this with additional sources; they must not replace it with
+ * a weaker check. MultiEPG chunks alone must not skip the ProfileCheck gate.
  */
-fun hasUseDrivenCache(profile: Profile): Boolean = false
+fun hasUseDrivenCache(tabStripRefs: Collection<String>): Boolean = tabStripRefs.isNotEmpty()
+
+fun hasUseDrivenCache(profile: Profile, context: Context): Boolean {
+    val id = profile.id ?: return false
+    return hasUseDrivenCache(
+        runBlocking(Dispatchers.IO) {
+            AppDatabase.roster(context).getTabStripRefs(id)
+        }
+    )
+}
+
+fun hasUseDrivenCache(profile: Profile): Boolean {
+    val context = DreamDroid.getAppContext() ?: return false
+    return hasUseDrivenCache(profile, context)
+}
+
+/** Skip the checking gate when the TV/Radio tab strip can paint the start route. */
+fun shouldShowProfileCheckCheckingUi(hasCache: Boolean): Boolean = !hasCache
+
+/**
+ * Unreachable/Auth with cache stay Offline on the start route. Other kinds keep the
+ * failed ProfileCheck gate even when cache exists.
+ */
+fun shouldShowProfileCheckFailedUi(hasCache: Boolean, failure: EnigmaFailure?): Boolean {
+    if (!hasCache) {
+        return true
+    }
+    return failure == null || !failure.allowsOfflineSession()
+}
 
 /**
  * Unreachable (except illegal host/port) and Auth can browse cache as Offline.

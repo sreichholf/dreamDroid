@@ -111,6 +111,28 @@ class DrawerScreenTest {
     }
 
     @Test
+    fun blockedBoxActionClickStillInvokesCallback() {
+        val state = DrawerListState()
+        var clicked = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                DrawerScreen(
+                    state = state,
+                    boxActionsBlocked = true,
+                    onItemClick = { clicked = it }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Power Control").performClick()
+        composeRule.waitForIdle()
+        assertEquals(R.id.menu_navigation_power, clicked)
+        composeRule.onNodeWithText("Send Message").performClick()
+        composeRule.waitForIdle()
+        assertEquals(R.id.menu_navigation_message, clicked)
+    }
+
+    @Test
     fun settingsRowSelects() {
         val state = DrawerListState()
         var clicked = 0

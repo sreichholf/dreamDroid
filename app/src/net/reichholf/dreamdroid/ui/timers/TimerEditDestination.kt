@@ -44,6 +44,7 @@ import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 private const val LOG_TAG = "TimerEditDestination"
 
@@ -336,14 +337,19 @@ class TimerEditSession(
     fun saveTimer() {
         val host = handle ?: return
         val ctx = context ?: return
-        Log.i(LOG_TAG, "saveTimer()")
-        editState.saveError = ""
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-        timer = editState.applyTo(timer)
-        val params = Timer.getSaveParams(timer, timerOld)
-        saveJob?.cancel()
-        saveJob = host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
-            onSaveResult(result)
+        host.runOnlineOnly {
+            Log.i(LOG_TAG, "saveTimer()")
+            editState.saveError = ""
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
+            timer = editState.applyTo(timer)
+            val params = Timer.getSaveParams(timer, timerOld)
+            saveJob?.cancel()
+            saveJob = host.launchSimpleResultLoad(
+                TimerChangeRequestHandler(),
+                params
+            ) { _, result, _ ->
+                onSaveResult(result)
+            }
         }
     }
 

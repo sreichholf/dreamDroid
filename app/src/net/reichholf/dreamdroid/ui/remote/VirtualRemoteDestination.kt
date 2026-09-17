@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Remote
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
 
@@ -100,44 +102,48 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
     }
 
     fun onKey(keyCode: Int, longClick: Boolean) {
-        val msec = if (longClick) 100L else 25L
-        vibrator?.vibrate(
-            VibrationEffect.createOneShot(msec, VibrationEffect.DEFAULT_AMPLITUDE)
-        )
-        val params = ArrayList<NameValuePair>().apply {
-            add(NameValuePair("command", keyCode.toString()))
-            add(NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"))
-            if (longClick) {
-                add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
+        handle.runOnlineOnly {
+            val msec = if (longClick) 100L else 25L
+            vibrator?.vibrate(
+                VibrationEffect.createOneShot(msec, VibrationEffect.DEFAULT_AMPLITUDE)
+            )
+            val params = ArrayList<NameValuePair>().apply {
+                add(NameValuePair("command", keyCode.toString()))
+                add(NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"))
+                if (longClick) {
+                    add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
+                }
             }
-        }
-        handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
-                _,
-                result,
-                error
-            ->
-            var hasError = false
-            var toastText = context.getString(R.string.get_content_error)
-            val stateText = result.stateText
-            val state = result.state
-            if (stateText.isNullOrEmpty()) {
-                hasError = true
-            }
-            if (error != null) {
-                toastText = toastText + "\n" + error.resolve(context).orEmpty()
-                hasError = true
-            } else if (Python.FALSE == state) {
-                hasError = true
-                toastText = stateText ?: toastText
-            }
-            if (hasError) {
-                Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
-            } else {
-                scheduleScreenshotReload()
+            handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
+                    _,
+                    result,
+                    error
+                ->
+                var hasError = false
+                var toastText = context.getString(R.string.get_content_error)
+                val stateText = result.stateText
+                val state = result.state
+                if (stateText.isNullOrEmpty()) {
+                    hasError = true
+                }
+                if (error != null) {
+                    toastText = toastText + "\n" + error.resolve(context).orEmpty()
+                    hasError = true
+                } else if (Python.FALSE == state) {
+                    hasError = true
+                    toastText = stateText ?: toastText
+                }
+                if (hasError) {
+                    Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
+                } else {
+                    scheduleScreenshotReload()
+                }
             }
         }
     }
 
+    val status by handle.connectionStatusFlow().collectAsState()
+    val keysBlocked = status.blocksMutations
     val toggleIcon = remember(context) {
         val typed = android.util.TypedValue()
         context.theme.resolveAttribute(R.attr.ic_menu_remote, typed, true)
@@ -160,6 +166,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
         if (showScreenshot) {
             Column(modifier = Modifier.fillMaxSize()) {
                 ScreenshotDestination(
+                    handle = handle,
                     actionsEnabled = false,
                     setTitle = false,
                     reloadTrigger = screenshotReload,
@@ -175,6 +182,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
                     onToggleLayout = { page = if (page == 0) 1 else 0 },
                     toggleIconRes = toggleIcon,
                     toggleContentDescription = toggleDescription,
+                    keysBlocked = keysBlocked,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 15.dp)
@@ -188,6 +196,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
                 onToggleLayout = { page = if (page == 0) 1 else 0 },
                 toggleIconRes = toggleIcon,
                 toggleContentDescription = toggleDescription,
+                keysBlocked = keysBlocked,
                 modifier = Modifier.fillMaxSize()
             )
         }

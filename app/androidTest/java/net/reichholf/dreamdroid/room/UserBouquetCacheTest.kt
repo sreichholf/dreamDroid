@@ -7,6 +7,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -251,6 +252,19 @@ class UserBouquetCacheTest {
         assertNull(
             UserBouquetCache.loadRosterNowNext(dao, PROFILE, nestedFolder.serviceReference)
         )
+    }
+
+    @Test
+    fun tabStripMakesHasUseDrivenCacheTrue() = runBlocking {
+        assertFalse(hasUseDrivenCache(dao.getTabStripRefs(PROFILE)))
+        UserBouquetCache.replaceTabStrip(
+            dao,
+            PROFILE,
+            UserBouquetCache.KIND_TV,
+            listOf(favourites, sports),
+            excluded
+        )
+        assertTrue(hasUseDrivenCache(dao.getTabStripRefs(PROFILE)))
     }
 
     companion object {

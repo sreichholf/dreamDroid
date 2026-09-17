@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,9 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadScreenshot
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Screenshot grab type / format constants (formerly on ScreenShotFragment).
@@ -69,10 +73,13 @@ fun ScreenshotDestination(
     actionsEnabled: Boolean = true,
     setTitle: Boolean = true,
     reloadTrigger: ScreenshotReloadTrigger? = null,
+    handle: PhoneNavHandle? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val blocked = status.blocksMutations
     val uiState = remember {
         ScreenshotUiState().apply { this.actionsEnabled = actionsEnabled }
     }
@@ -137,19 +144,26 @@ fun ScreenshotDestination(
     }
 
     fun reload() {
-        uiState.loading = true
-        loadJob?.cancel()
-        loadJob = scope.launch {
-            val result = loadScreenshot(context.applicationContext, buildParams())
-            uiState.loading = false
-            if (result.success && result.bytes != null) {
-                onAvailable(result.bytes)
-            } else {
-                toast(
-                    result.errorText?.takeIf { it.isNotEmpty() }
-                        ?: context.getString(R.string.error)
-                )
+        val grab = {
+            uiState.loading = true
+            loadJob?.cancel()
+            loadJob = scope.launch {
+                val result = loadScreenshot(context.applicationContext, buildParams())
+                uiState.loading = false
+                if (result.success && result.bytes != null) {
+                    onAvailable(result.bytes)
+                } else {
+                    toast(
+                        result.errorText?.takeIf { it.isNotEmpty() }
+                            ?: context.getString(R.string.error)
+                    )
+                }
             }
+        }
+        if (handle != null) {
+            handle.runOnlineOnly(grab)
+        } else if (!blocked) {
+            grab()
         }
     }
 
@@ -270,6 +284,7 @@ fun ScreenshotDestination(
 
     ScreenshotScreen(
         state = uiState,
+        grabBlocked = blocked,
         onReload = { reload() },
         onShare = { share() },
         onSave = { saveToFile(false) },

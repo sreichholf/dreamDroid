@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -30,6 +31,8 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 class CurrentServiceUiState {
     var serviceName by mutableStateOf("")
@@ -119,6 +122,7 @@ fun CurrentServiceScreen(
         else -> unavailable
     }
     val canStream = state.serviceReference.isNotEmpty()
+    val streamBlocked = SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
 
     Column(
         modifier = modifier
@@ -194,6 +198,7 @@ fun CurrentServiceScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp)
+                    .onlineOnlyLook(streamBlocked)
             ) {
                 Text(stringResource(R.string.stream_current))
             }

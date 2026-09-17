@@ -11,6 +11,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -18,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.withReadableTimes
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 data class EpgDetailContent(
     val title: String,
@@ -119,6 +123,8 @@ fun EpgDetailScreen(
     /** Phone bottom sheet caps body height; TV fullscreen passes null. */
     bodyHeightCap: Dp? = 360.dp
 ) {
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val timerWritesBlocked = status.blocksMutations
     // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
     Column(modifier = modifier.fillMaxWidth()) {
         Column(
@@ -146,10 +152,20 @@ fun EpgDetailScreen(
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 16.dp)
             ) {
-                Button(onClick = onSetTimer, modifier = Modifier.fillMaxWidth()) {
+                Button(
+                    onClick = onSetTimer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onlineOnlyLook(timerWritesBlocked)
+                ) {
                     Text(stringResource(R.string.set_timer))
                 }
-                TextButton(onClick = onEditTimer, modifier = Modifier.fillMaxWidth()) {
+                TextButton(
+                    onClick = onEditTimer,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .onlineOnlyLook(timerWritesBlocked)
+                ) {
                     Text(stringResource(R.string.edit_timer))
                 }
                 TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {

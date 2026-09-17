@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"
@@ -160,11 +161,13 @@ fun CurrentServiceDestination(
         if (!currentServiceCanStream(current)) {
             return
         }
-        val service = current?.service
-        val ref = service?.reference.orEmpty()
-        val name = service?.name.orEmpty()
-        val activity = context as AppCompatActivity
-        activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+        handle.runOnlineOnly {
+            val service = current?.service
+            val ref = service?.reference.orEmpty()
+            val name = service?.name.orEmpty()
+            val activity = context as AppCompatActivity
+            activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+        }
     }
 
     fun onNowOrNextOrStream(action: Int) {
@@ -298,25 +301,31 @@ private class CurrentServiceSession : DialogActionListener {
         when (action) {
             Statics.ACTION_SET_TIMER -> {
                 val event = currentItem ?: return
-                progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-                host.launchSimpleResultLoad(
-                    TimerAddByEventIdRequestHandler(),
-                    Timer.getEventIdParams(event)
-                ) { _, result, error ->
-                    dismissProgress()
-                    var toastText = ctx.getText(R.string.get_content_error).toString()
-                    val stateText = result.stateText
-                    when {
-                        !stateText.isNullOrEmpty() -> toastText = stateText
-                        error != null -> toastText = error.resolve(ctx).orEmpty()
+                host.runOnlineOnly {
+                    progress = IndeterminateProgressState(
+                        message = ctx.getString(R.string.saving)
+                    )
+                    host.launchSimpleResultLoad(
+                        TimerAddByEventIdRequestHandler(),
+                        Timer.getEventIdParams(event)
+                    ) { _, result, error ->
+                        dismissProgress()
+                        var toastText = ctx.getText(R.string.get_content_error).toString()
+                        val stateText = result.stateText
+                        when {
+                            !stateText.isNullOrEmpty() -> toastText = stateText
+                            error != null -> toastText = error.resolve(ctx).orEmpty()
+                        }
+                        Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
                     }
-                    Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
                 }
             }
 
             Statics.ACTION_EDIT_TIMER -> {
                 val event = currentItem ?: return
-                host.navigateToTimerEdit(Timer.createByEvent(event), true)
+                host.runOnlineOnly {
+                    host.navigateToTimerEdit(Timer.createByEvent(event), true)
+                }
             }
 
             Statics.ACTION_FIND_SIMILAR -> {

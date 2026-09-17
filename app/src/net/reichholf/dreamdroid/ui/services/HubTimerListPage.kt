@@ -12,6 +12,7 @@ import androidx.appcompat.view.ActionMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,6 +49,8 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
@@ -101,11 +104,14 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
     }
 
     val newTimerLabel = stringResource(R.string.new_timer)
+    val timerWritesBlocked =
+        SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
     BindShellFab(
         contentDescription = newTimerLabel,
         iconRes = R.drawable.ic_action_fab_add,
         onClick = { session.createTimer() },
-        text = newTimerLabel
+        text = newTimerLabel,
+        lookDisabled = timerWritesBlocked
     )
 
     LaunchedEffect(remountEpoch) {
@@ -315,8 +321,11 @@ class HubTimerListSession :
     }
 
     fun createTimer() {
-        selected = Timer.getInitialTimer()
-        editTimer(selected, create = true)
+        val host = handle ?: return
+        host.runOnlineOnly {
+            selected = Timer.getInitialTimer()
+            editTimer(selected, create = true)
+        }
     }
 
     fun onItemClick(item: TimerListItem) {
@@ -352,44 +361,58 @@ class HubTimerListSession :
     fun deleteTimer(timer: TypedTimer) {
         val host = handle ?: return
         val ctx = context ?: return
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
-        val params = Timer.getDeleteParams(timer)
-        mutateJob?.cancel()
-        mutateJob =
-            host.launchSimpleResultLoad(TimerDeleteRequestHandler(), params) { _, result, error ->
-                onSimpleResult(result, error)
-            }
-        onMutateJob?.invoke(mutateJob)
+        host.runOnlineOnly {
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
+            val params = Timer.getDeleteParams(timer)
+            mutateJob?.cancel()
+            mutateJob =
+                host.launchSimpleResultLoad(
+                    TimerDeleteRequestHandler(),
+                    params
+                ) { _, result, error ->
+                    onSimpleResult(result, error)
+                }
+            onMutateJob?.invoke(mutateJob)
+        }
     }
 
     private fun toggleTimerEnabled(timer: TypedTimer) {
         val host = handle ?: return
         val ctx = context ?: return
-        val timerNew = timer.copy(
-            disabled = if (timer.disabled == "1") "0" else "1"
-        )
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-        val params = Timer.getSaveParams(timerNew, timer)
-        mutateJob?.cancel()
-        mutateJob =
-            host.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, error ->
-                onSimpleResult(result, error)
-            }
-        onMutateJob?.invoke(mutateJob)
+        host.runOnlineOnly {
+            val timerNew = timer.copy(
+                disabled = if (timer.disabled == "1") "0" else "1"
+            )
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
+            val params = Timer.getSaveParams(timerNew, timer)
+            mutateJob?.cancel()
+            mutateJob =
+                host.launchSimpleResultLoad(
+                    TimerChangeRequestHandler(),
+                    params
+                ) { _, result, error ->
+                    onSimpleResult(result, error)
+                }
+            onMutateJob?.invoke(mutateJob)
+        }
     }
 
     private fun cleanupTimerList() {
         val host = handle ?: return
         val ctx = context ?: return
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.cleaning_timerlist))
-        mutateJob?.cancel()
-        mutateJob = host.launchSimpleResultLoad(
-            TimerCleanupRequestHandler(),
-            emptyList()
-        ) { _, result, error ->
-            onSimpleResult(result, error)
+        host.runOnlineOnly {
+            progress = IndeterminateProgressState(
+                message = ctx.getString(R.string.cleaning_timerlist)
+            )
+            mutateJob?.cancel()
+            mutateJob = host.launchSimpleResultLoad(
+                TimerCleanupRequestHandler(),
+                emptyList()
+            ) { _, result, error ->
+                onSimpleResult(result, error)
+            }
+            onMutateJob?.invoke(mutateJob)
         }
-        onMutateJob?.invoke(mutateJob)
     }
 
     private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {

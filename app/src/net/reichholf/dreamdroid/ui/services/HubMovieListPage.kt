@@ -50,6 +50,7 @@ import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchMovieListLoad
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -344,47 +345,51 @@ class HubMovieListSession : MenuProvider {
     fun zapTo(ref: String) {
         val host = handle ?: return
         val ctx = context ?: return
-        zapJob?.cancel()
-        zapJob = host.launchSimpleResultLoad(
-            ZapRequestHandler(),
-            listOf(NameValuePair("sRef", ref))
-        ) { _, result, error ->
-            var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.stateText
-            when {
-                !stateText.isNullOrEmpty() -> toastText = stateText
-                error != null -> toastText = error.resolve(ctx).orEmpty()
+        host.runOnlineOnly {
+            zapJob?.cancel()
+            zapJob = host.launchSimpleResultLoad(
+                ZapRequestHandler(),
+                listOf(NameValuePair("sRef", ref))
+            ) { _, result, error ->
+                var toastText = ctx.getText(R.string.get_content_error).toString()
+                val stateText = result.stateText
+                when {
+                    !stateText.isNullOrEmpty() -> toastText = stateText
+                    error != null -> toastText = error.resolve(ctx).orEmpty()
+                }
+                toast(toastText)
             }
-            toast(toastText)
+            onZapJob?.invoke(zapJob)
         }
-        onZapJob?.invoke(zapJob)
     }
 
     fun deleteMovie() {
         val host = handle ?: return
         val ctx = context ?: return
         val movie = selectedMovie ?: return
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
-        reloadOnSimpleResult = true
-        deleteJob?.cancel()
-        deleteJob = host.launchSimpleResultLoad(
-            MovieDeleteRequestHandler(),
-            MovieKeys.getDeleteParams(movie)
-        ) { _, result, error ->
-            dismissProgress()
-            var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.stateText
-            when {
-                !stateText.isNullOrEmpty() -> toastText = stateText
-                error != null -> toastText = error.resolve(ctx).orEmpty()
+        host.runOnlineOnly {
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
+            reloadOnSimpleResult = true
+            deleteJob?.cancel()
+            deleteJob = host.launchSimpleResultLoad(
+                MovieDeleteRequestHandler(),
+                MovieKeys.getDeleteParams(movie)
+            ) { _, result, error ->
+                dismissProgress()
+                var toastText = ctx.getText(R.string.get_content_error).toString()
+                val stateText = result.stateText
+                when {
+                    !stateText.isNullOrEmpty() -> toastText = stateText
+                    error != null -> toastText = error.resolve(ctx).orEmpty()
+                }
+                toast(toastText)
+                if (reloadOnSimpleResult && Python.TRUE == result.state) {
+                    reloadOnSimpleResult = false
+                    reload()
+                }
             }
-            toast(toastText)
-            if (reloadOnSimpleResult && Python.TRUE == result.state) {
-                reloadOnSimpleResult = false
-                reload()
-            }
+            onDeleteJob?.invoke(deleteJob)
         }
-        onDeleteJob?.invoke(deleteJob)
     }
 
     fun onMovieAction(action: Int): Boolean {
@@ -424,19 +429,22 @@ class HubMovieListSession : MenuProvider {
             }
 
             R.id.menu_stream -> {
-                try {
-                    val activity = ctx as AppCompatActivity
-                    activity.startActivity(
-                        IntentFactory.getStreamFileIntent(
-                            activity,
-                            movie?.reference.orEmpty(),
-                            movie?.fileName,
-                            movie?.title,
-                            movie
+                val host = handle ?: return false
+                host.runOnlineOnly {
+                    try {
+                        val activity = ctx as AppCompatActivity
+                        activity.startActivity(
+                            IntentFactory.getStreamFileIntent(
+                                activity,
+                                movie?.reference.orEmpty(),
+                                movie?.fileName,
+                                movie?.title,
+                                movie
+                            )
                         )
-                    )
-                } catch (_: ActivityNotFoundException) {
-                    toast(ctx.getText(R.string.missing_stream_player))
+                    } catch (_: ActivityNotFoundException) {
+                        toast(ctx.getText(R.string.missing_stream_player))
+                    }
                 }
             }
 

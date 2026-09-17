@@ -214,6 +214,8 @@
     <string name="session_online">Online</string>
     <string name="session_offline">Offline</string>
     <string name="session_checking">Checking</string>
+    <string name="session_needs_receiver">Needs the receiver</string>
+    <string name="session_needs_receiver_long">Connect to the receiver to use this.</string>
     <string name="error">ERROR!</string>
     <string name="check_connectivity">Check connectivity</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>

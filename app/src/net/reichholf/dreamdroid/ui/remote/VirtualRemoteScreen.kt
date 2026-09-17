@@ -56,6 +56,7 @@ import androidx.core.widget.ImageViewCompat
 import kotlin.math.abs
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 enum class VirtualRemoteLayout {
     Full,
@@ -105,7 +106,8 @@ fun VirtualRemoteScreen(
     modifier: Modifier = Modifier,
     onToggleLayout: (() -> Unit)? = null,
     toggleIconRes: Int = R.drawable.ic_action_list,
-    toggleContentDescription: String? = null
+    toggleContentDescription: String? = null,
+    keysBlocked: Boolean = false
 ) {
     val view = LocalView.current
     val density = LocalDensity.current
@@ -174,7 +176,7 @@ fun VirtualRemoteScreen(
                     }
                 ) {
                     Column(
-                        modifier = padModifier,
+                        modifier = padModifier.onlineOnlyLook(keysBlocked),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(
                             metrics.gap * 2 + metrics.sectionExtra
