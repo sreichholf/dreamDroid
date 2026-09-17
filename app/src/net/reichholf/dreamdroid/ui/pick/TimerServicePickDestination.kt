@@ -17,12 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.NavExtras
@@ -192,6 +195,33 @@ private class TimerServicePickSession {
             refreshState.setRefreshing(false)
             setToolbarTitle(ctx.getString(R.string.service))
             if (!result.success) {
+                val profileId = DreamDroid.getCurrentProfile().id
+                val cached = if (profileId != null) {
+                    val dao = AppDatabase.roster(ctx)
+                    val cachedRows = ArrayList(
+                        UserBouquetCache.loadTabStripServices(
+                            dao,
+                            profileId,
+                            UserBouquetCache.KIND_TV
+                        )
+                    )
+                    cachedRows.addAll(
+                        UserBouquetCache.loadTabStripServices(
+                            dao,
+                            profileId,
+                            UserBouquetCache.KIND_RADIO
+                        )
+                    )
+                    cachedRows
+                } else {
+                    emptyList()
+                }
+                if (cached.isNotEmpty()) {
+                    bouquets = cached
+                    onEmptyMessage?.invoke(null)
+                    state.replaceAll(cached)
+                    return@launch
+                }
                 state.replaceAll(emptyList())
                 onEmptyMessage?.invoke(result.errorText)
                 return@launch
@@ -237,6 +267,27 @@ private class TimerServicePickSession {
             refreshState.setRefreshing(false)
             setToolbarTitle(title)
             if (!result.success) {
+                val profileId = DreamDroid.getCurrentProfile().id
+                val cached = if (profileId != null) {
+                    UserBouquetCache.loadRosterServices(
+                        AppDatabase.roster(ctx),
+                        profileId,
+                        bouquetRef
+                    )
+                } else {
+                    null
+                }
+                if (cached != null) {
+                    val rows = ZapListMapper.rowsFrom(cached)
+                    if (rows.isEmpty()) {
+                        state.replaceAll(emptyList())
+                        onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+                    } else {
+                        onEmptyMessage?.invoke(null)
+                        state.replaceAll(rows)
+                    }
+                    return@launch
+                }
                 state.replaceAll(emptyList())
                 onEmptyMessage?.invoke(result.errorText)
                 return@launch

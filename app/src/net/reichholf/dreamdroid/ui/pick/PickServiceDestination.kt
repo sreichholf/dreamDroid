@@ -15,8 +15,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadBouquetList
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -52,6 +55,32 @@ fun PickServiceDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
             refresh.setRefreshing(false)
             setToolbarTitle(context.getString(R.string.services))
             if (!result.success) {
+                val profileId = DreamDroid.getCurrentProfile().id
+                val cached = if (profileId != null) {
+                    val dao = AppDatabase.roster(context)
+                    val rows = ArrayList(
+                        UserBouquetCache.loadTabStripServices(
+                            dao,
+                            profileId,
+                            UserBouquetCache.KIND_TV
+                        )
+                    )
+                    rows.addAll(
+                        UserBouquetCache.loadTabStripServices(
+                            dao,
+                            profileId,
+                            UserBouquetCache.KIND_RADIO
+                        )
+                    )
+                    rows
+                } else {
+                    emptyList()
+                }
+                if (cached.isNotEmpty()) {
+                    listState.replaceAll(cached)
+                    emptyMessage = null
+                    return@launch
+                }
                 listState.replaceAll(emptyList())
                 emptyMessage = result.errorText
                 return@launch

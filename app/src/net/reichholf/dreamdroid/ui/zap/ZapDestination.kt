@@ -32,6 +32,8 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -176,6 +178,27 @@ private class ZapSession :
             refreshState.setRefreshing(false)
             setToolbarTitle(finishedTitle())
             if (!result.success) {
+                val profileId = DreamDroid.getCurrentProfile().id
+                val cached = if (profileId != null) {
+                    UserBouquetCache.loadRosterServices(
+                        AppDatabase.roster(ctx),
+                        profileId,
+                        bouquetRef
+                    )
+                } else {
+                    null
+                }
+                if (cached != null) {
+                    val rows = ZapListMapper.rowsFrom(cached)
+                    if (rows.isEmpty()) {
+                        state.replaceAll(emptyList())
+                        onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+                    } else {
+                        onEmptyMessage?.invoke(null)
+                        state.replaceAll(rows)
+                    }
+                    return@launch
+                }
                 state.replaceAll(emptyList())
                 onEmptyMessage?.invoke(result.errorText)
                 return@launch

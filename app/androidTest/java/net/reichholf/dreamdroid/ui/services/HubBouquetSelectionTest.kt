@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
+import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -59,5 +60,45 @@ class HubBouquetSelectionTest {
             ),
             built
         )
+    }
+
+    @Test
+    fun httpFailPaintsCachedUserBouquetTabs() {
+        val (painted, usedCache) = bouquetsAfterHttpOrCache(
+            httpSuccess = false,
+            http = Bouquets(),
+            cachedTv = items,
+            cachedRadio = emptyList()
+        )
+        assertEquals(true, usedCache)
+        assertEquals(items, painted.tv.toList())
+        assertEquals(emptyList<Service>(), painted.radio.toList())
+    }
+
+    @Test
+    fun httpFailWithoutCacheKeepsEmptyHttpBouquets() {
+        val http = Bouquets()
+        val (painted, usedCache) = bouquetsAfterHttpOrCache(
+            httpSuccess = false,
+            http = http,
+            cachedTv = emptyList(),
+            cachedRadio = emptyList()
+        )
+        assertEquals(false, usedCache)
+        assertEquals(http, painted)
+    }
+
+    @Test
+    fun httpSuccessIgnoresCachedStrip() {
+        val http = Bouquets()
+        http.tv.add(sports)
+        val (painted, usedCache) = bouquetsAfterHttpOrCache(
+            httpSuccess = true,
+            http = http,
+            cachedTv = items,
+            cachedRadio = emptyList()
+        )
+        assertEquals(false, usedCache)
+        assertEquals(listOf(sports), painted.tv.toList())
     }
 }

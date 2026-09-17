@@ -11,7 +11,9 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 data class BouquetListLoadResult(
     val success: Boolean,
     val bouquets: Bouquets,
-    val errorText: String?
+    val errorText: String?,
+    val tvLoaded: Boolean = false,
+    val radioLoaded: Boolean = false
 )
 
 /**
@@ -26,7 +28,13 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
     val tv = client.getServices(listOf(NameValuePair("sRef", tvRef)))
     val tvList = tv.value
     if (tvList == null) {
-        return BouquetListLoadResult(false, bouquets, tv.error.contentError(context))
+        return BouquetListLoadResult(
+            success = false,
+            bouquets = bouquets,
+            errorText = tv.error.contentError(context),
+            tvLoaded = false,
+            radioLoaded = false
+        )
     }
     bouquets.tv.addAll(tvList)
     val radio = client.getServices(listOf(NameValuePair("sRef", radioRef)))
@@ -36,7 +44,13 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
     }
     val success = radioList != null || tvList.isNotEmpty()
     val errorText = if (success) null else radio.error.contentError(context)
-    return BouquetListLoadResult(success, bouquets, errorText)
+    return BouquetListLoadResult(
+        success = success,
+        bouquets = bouquets,
+        errorText = errorText,
+        tvLoaded = true,
+        radioLoaded = radioList != null
+    )
 }
 
 fun Fragment.launchBouquetListLoad(
