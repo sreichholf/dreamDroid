@@ -190,7 +190,7 @@ private fun PhoneNavHostGraph(
             HubDestination(handle = handle)
         }
         composable(PhoneNavRoutes.TOOLS) {
-            ToolsHubDestination()
+            ToolsHubDestination(handle = handle)
         }
         composable(PhoneNavRoutes.PROFILE_CHECK) {
             ProfileCheckDestination(handle = handle)

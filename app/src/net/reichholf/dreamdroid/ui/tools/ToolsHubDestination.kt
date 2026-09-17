@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
@@ -29,7 +30,7 @@ import net.reichholf.dreamdroid.ui.signal.SignalDestination
  * (Coordinator slot owned by [net.reichholf.dreamdroid.ui.nav.ProvideShellDestinationBar]).
  */
 @Composable
-fun ToolsHubDestination(modifier: Modifier = Modifier) {
+fun ToolsHubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     var selected by rememberSaveable { mutableStateOf(ToolsDestination.SCREENSHOT) }
     val destinationBarState = remember { ToolsHubState() }
     destinationBarState.selected = selected
@@ -55,9 +56,9 @@ fun ToolsHubDestination(modifier: Modifier = Modifier) {
                     .fillMaxSize()
             ) {
                 when (selected) {
-                    ToolsDestination.SCREENSHOT -> ScreenshotDestination()
+                    ToolsDestination.SCREENSHOT -> ScreenshotDestination(handle = handle)
                     ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
-                    ToolsDestination.SIGNAL -> SignalDestination()
+                    ToolsDestination.SIGNAL -> SignalDestination(handle = handle)
                 }
             }
             // Reserve space for the Coordinator-hosted destination bar.

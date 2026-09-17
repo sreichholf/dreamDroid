@@ -143,27 +143,31 @@ fun ScreenshotDestination(
         return params
     }
 
-    fun reload() {
-        val grab = {
-            uiState.loading = true
-            loadJob?.cancel()
-            loadJob = scope.launch {
-                val result = loadScreenshot(context.applicationContext, buildParams())
-                uiState.loading = false
-                if (result.success && result.bytes != null) {
-                    onAvailable(result.bytes)
-                } else {
-                    toast(
-                        result.errorText?.takeIf { it.isNotEmpty() }
-                            ?: context.getString(R.string.error)
-                    )
-                }
+    fun grabFromReceiver() {
+        if (blocked) {
+            return
+        }
+        uiState.loading = true
+        loadJob?.cancel()
+        loadJob = scope.launch {
+            val result = loadScreenshot(context.applicationContext, buildParams())
+            uiState.loading = false
+            if (result.success && result.bytes != null) {
+                onAvailable(result.bytes)
+            } else {
+                toast(
+                    result.errorText?.takeIf { it.isNotEmpty() }
+                        ?: context.getString(R.string.error)
+                )
             }
         }
+    }
+
+    fun onUserReload() {
         if (handle != null) {
-            handle.runOnlineOnly(grab)
+            handle.runOnlineOnly { grabFromReceiver() }
         } else if (!blocked) {
-            grab()
+            grabFromReceiver()
         }
     }
 
@@ -269,7 +273,7 @@ fun ScreenshotDestination(
 
     LaunchedEffect(Unit) {
         if (rawImage.isEmpty()) {
-            reload()
+            grabFromReceiver()
         } else {
             onAvailable(rawImage)
         }
@@ -278,14 +282,14 @@ fun ScreenshotDestination(
     val triggerTick = reloadTrigger?.tick ?: 0
     LaunchedEffect(triggerTick) {
         if (triggerTick > 0) {
-            reload()
+            grabFromReceiver()
         }
     }
 
     ScreenshotScreen(
         state = uiState,
         grabBlocked = blocked,
-        onReload = { reload() },
+        onReload = { onUserReload() },
         onShare = { share() },
         onSave = { saveToFile(false) },
         modifier = modifier
