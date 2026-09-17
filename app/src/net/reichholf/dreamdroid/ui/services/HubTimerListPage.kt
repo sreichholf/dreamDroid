@@ -278,29 +278,34 @@ class HubTimerListSession :
         val generation = beginLoad()
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
-            val result = loadTimers(ctx.applicationContext)
-            if (generation != loadGeneration) {
-                return@launch
-            }
-            if (result.success) {
-                persistSnapshot(result.timers)
-                applyLoadResult(generation, true, result.timers, null)
-                return@launch
-            }
-            val dao = timerDao
-            val pid = profileId
-            val cached = if (dao != null && pid != null) {
-                TimerSnapshotStore.load(dao, pid)
-            } else {
-                null
-            }
-            if (cached != null) {
-                applyLoadResult(generation, true, cached, null)
-            } else {
-                applyLoadResult(generation, false, emptyList(), result.errorText)
-            }
+            loadAndApply(generation)
         }
         onLoadJob?.invoke(loadJob)
+    }
+
+    suspend fun loadAndApply(generation: Int) {
+        val ctx = context ?: return
+        val result = loadTimers(ctx.applicationContext)
+        if (generation != loadGeneration) {
+            return
+        }
+        if (result.success) {
+            persistSnapshot(result.timers)
+            applyLoadResult(generation, true, result.timers, null)
+            return
+        }
+        val dao = timerDao
+        val pid = profileId
+        val cached = if (dao != null && pid != null) {
+            TimerSnapshotStore.load(dao, pid)
+        } else {
+            null
+        }
+        if (cached != null) {
+            applyLoadResult(generation, true, cached, null)
+        } else {
+            applyLoadResult(generation, false, emptyList(), result.errorText)
+        }
     }
 
     private suspend fun persistSnapshot(loaded: List<TypedTimer>) {

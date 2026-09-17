@@ -118,7 +118,7 @@ class TimerSnapshotStoreTest {
         session.loadTimers = {
             TimerListLoadResult(true, listOf(sampleTimer(name = "News")), null)
         }
-        session.reload()
+        session.loadAndApply(session.beginLoad())
         val loaded = TimerSnapshotStore.load(dao, PROFILE)
         assertEquals(listOf("News"), loaded?.map { it.name })
         assertEquals(listOf("News"), session.listState!!.items.map { it.name })
@@ -132,7 +132,7 @@ class TimerSnapshotStoreTest {
         session.loadTimers = {
             TimerListLoadResult(false, listOf(sampleTimer(name = "Ghost")), "timeout")
         }
-        session.reload()
+        session.loadAndApply(session.beginLoad())
         assertNull(TimerSnapshotStore.load(dao, PROFILE))
         assertEquals(0, dao.snapshotCount(PROFILE))
         assertEquals("timeout", emptyMessage)
@@ -149,7 +149,7 @@ class TimerSnapshotStoreTest {
         session.loadTimers = {
             TimerListLoadResult(false, emptyList(), "timeout")
         }
-        session.reload()
+        session.loadAndApply(session.beginLoad())
         val loaded = TimerSnapshotStore.load(dao, PROFILE)
         assertEquals(listOf("News", "Sport"), loaded?.map { it.name })
         assertEquals(listOf("News", "Sport"), session.listState!!.items.map { it.name })
@@ -165,7 +165,7 @@ class TimerSnapshotStoreTest {
         session.loadTimers = {
             TimerListLoadResult(false, emptyList(), "timeout")
         }
-        session.reload()
+        session.loadAndApply(session.beginLoad())
         assertEquals(emptyList<Timer>(), TimerSnapshotStore.load(dao, PROFILE))
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         assertEquals(context.getString(R.string.no_list_item), emptyMessage)
