@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.multiepg
 
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Service
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
@@ -21,6 +23,20 @@ class MultiEpgRosterFetchTest {
         )
         assertSame(previous, applied.roster)
         assertEquals("getservices down", applied.errorMessage)
+    }
+
+    @Test
+    fun failedGetservicesUsesFormatErrorForEnigmaFailure() {
+        val previous = playableMultiEpgRoster(
+            listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
+        )
+        val applied = applyBouquetRoster(
+            previous,
+            MultiEpgRosterFetch(error = EnigmaFailureException(EnigmaFailure.Auth)),
+            formatError = { "authorization failed" }
+        )
+        assertSame(previous, applied.roster)
+        assertEquals("authorization failed", applied.errorMessage)
     }
 
     @Test

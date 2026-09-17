@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
+import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -83,7 +84,7 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             } catch (t: Throwable) {
                 context.getString(
                     R.string.multiepg_sync_test_fail,
-                    t.message ?: t.javaClass.simpleName
+                    t.toEnigmaDisplayMessage(context)
                 )
             }
             withContext(Dispatchers.Main.immediate) {

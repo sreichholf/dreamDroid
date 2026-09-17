@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import okhttp3.Credentials
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -118,9 +119,17 @@ class EnigmaHttpOkHttpTest {
         client.setConnectionTimeoutMillis(15_000)
         val finished = CountDownLatch(1)
         var ok = true
+        var failure: EnigmaFailure? = null
         val worker =
             Thread {
-                ok = client.fetch("/web/about") is EnigmaHttpResult.Success
+                when (val result = client.fetch("/web/about")) {
+                    is EnigmaHttpResult.Success -> ok = true
+
+                    is EnigmaHttpResult.Failure -> {
+                        ok = false
+                        failure = result.error.failure
+                    }
+                }
                 finished.countDown()
             }
         try {
@@ -129,6 +138,7 @@ class EnigmaHttpOkHttpTest {
             worker.interrupt()
             assertTrue(finished.await(3, TimeUnit.SECONDS))
             assertFalse(ok)
+            assertEquals(EnigmaFailure.Cancelled, failure)
         } finally {
             hold.countDown()
         }
@@ -250,6 +260,17 @@ class EnigmaHttpOkHttpTest {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
         val result = clientForServer().fetch("/web/about")
         assertTrue(result is EnigmaHttpResult.Failure)
+        val failure = (result as EnigmaHttpResult.Failure).error.failure
+        assertTrue(failure is EnigmaFailure.Http)
+        assertEquals(500, (failure as EnigmaFailure.Http).code)
+    }
+
+    @Test
+    fun fetch_401IsAuthFailure() {
+        server.enqueue(MockResponse().setResponseCode(401).setBody("nope"))
+        val result = clientForServer().fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Failure)
+        assertEquals(EnigmaFailure.Auth, (result as EnigmaHttpResult.Failure).error.failure)
     }
 
     @Test
