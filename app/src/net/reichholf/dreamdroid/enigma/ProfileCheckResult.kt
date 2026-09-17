@@ -13,5 +13,6 @@ data class ProfileCheckResult(
     val isSoftError: Boolean = false,
     val errorTextId: Int = -1,
     val errorTextExt: String = "",
-    val entries: List<ProfileCheckEntry> = emptyList()
+    val entries: List<ProfileCheckEntry> = emptyList(),
+    val failure: EnigmaFailure? = null
 )

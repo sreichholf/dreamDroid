@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckEntry
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
@@ -38,6 +39,7 @@ object CheckProfile {
         var isSoftError = false
         var errorTextId = -1
         var errorTextExt = ""
+        var failure: EnigmaFailure? = null
 
         val host = profile.host
 
@@ -112,6 +114,7 @@ object CheckProfile {
                             )
                             hasError = true
                             errorTextId = R.string.get_content_error
+                            failure = EnigmaFailure.Parse
                         }
                     } else if (fetchError != null) {
                         val ext = fetchError.resolve(context)
@@ -127,6 +130,7 @@ object CheckProfile {
                         hasError = true
                         errorTextId = R.string.connection_error
                         errorTextExt = ext ?: ""
+                        failure = fetchError.failure
                     } else if (xml == null) {
                         resultList.add(
                             entry(
@@ -138,6 +142,7 @@ object CheckProfile {
                         )
                         hasError = true
                         errorTextId = R.string.get_content_error
+                        failure = EnigmaFailure.Parse
                     }
                 } else {
                     resultList.add(
@@ -150,6 +155,10 @@ object CheckProfile {
                     )
                     hasError = true
                     errorTextId = R.string.port_out_of_range
+                    failure = EnigmaFailure.Unreachable(
+                        EnigmaFailure.UnreachableReason.IllegalHost,
+                        port.toString()
+                    )
                 }
             } else {
                 resultList.add(
@@ -157,6 +166,10 @@ object CheckProfile {
                 )
                 hasError = true
                 errorTextId = R.string.illegal_host
+                failure = EnigmaFailure.Unreachable(
+                    EnigmaFailure.UnreachableReason.IllegalHost,
+                    host.toString()
+                )
             }
         }
 
@@ -165,7 +178,8 @@ object CheckProfile {
             isSoftError = isSoftError,
             errorTextId = errorTextId,
             errorTextExt = errorTextExt,
-            entries = resultList
+            entries = resultList,
+            failure = failure
         )
     }
 

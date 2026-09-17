@@ -28,6 +28,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
@@ -52,6 +53,7 @@ interface PhoneNavHandle {
     fun epgRemountFlow(): StateFlow<Int>
     fun epgSearchRemountFlow(): StateFlow<Int>
     fun profileCheckUiFlow(): StateFlow<ProfileCheckUi>
+    fun connectionStatusFlow(): StateFlow<ConnectionStatus>
     fun leaveConfirmRequestedFlow(): StateFlow<Boolean>
     fun requestLeaveConfirm()
     fun clearLeaveConfirm()

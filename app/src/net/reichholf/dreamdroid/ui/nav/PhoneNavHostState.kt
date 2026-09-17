@@ -21,6 +21,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
@@ -258,6 +260,9 @@ class PhoneNavHostState(
     }
 
     override fun profileCheckUiFlow(): StateFlow<ProfileCheckUi> = profileCheckUiState.asStateFlow()
+
+    override fun connectionStatusFlow(): StateFlow<ConnectionStatus> =
+        SessionConnectionHolder.shared.status
 
     override fun leaveConfirmRequestedFlow(): StateFlow<Boolean> =
         leaveConfirmRequestedState.asStateFlow()

@@ -54,6 +54,8 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 
 /**
  * @author sre
@@ -187,7 +189,8 @@ class MainActivity :
     fun getProfileCheckContext(): Context = this
 
     private fun onProfileCheckProgress(state: String) {
-        setConnectionState(state, false)
+        SessionConnectionHolder.shared.beginChecking()
+        bindDrawerConnectionChip()
         updateProfileCheckChecking(state)
     }
 
@@ -197,19 +200,16 @@ class MainActivity :
         }
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
+        val hasCache = hasUseDrivenCache(DreamDroid.getCurrentProfile())
+        SessionConnectionHolder.shared.applyProfileCheckResult(result, hasCache)
+        bindDrawerConnectionChip()
 
         if (result.hasError && !result.isSoftError) {
-            val error = getString(result.errorTextId)
-            setConnectionState(error, true)
+            // Slice 2: keep the ProfileCheck gate. Do not skip for Unreachable/Auth;
+            // hasUseDrivenCache is false until the tab strip exists (slice 3).
             showProfileCheckFailed(result)
         } else {
             dismissSnackbar()
-            if (result.isSoftError) {
-                val error = getString(result.errorTextId)
-                setConnectionState(error, true)
-            } else {
-                setConnectionState(getString(R.string.ok), true)
-            }
             navigationHelper!!.setAvailableFeatures()
             val openStart = openStartOnProfileSuccess
             openStartOnProfileSuccess = false
@@ -366,6 +366,8 @@ class MainActivity :
     override fun onStop() {
         checkProfileJob?.cancel(null)
         checkProfileJob = null
+        SessionConnectionHolder.shared.cancelChecking()
+        bindDrawerConnectionChip()
         super.onStop()
     }
 
@@ -461,6 +463,7 @@ class MainActivity :
             }
             activeProfile = findViewById(R.id.drawer_profile_name)
             connectionState = findViewById(R.id.drawer_profile_status)
+            bindDrawerConnectionChip()
         } else {
             supportActionBar!!.setDisplayHomeAsUpEnabled(false)
         }
@@ -558,6 +561,10 @@ class MainActivity :
             return
         }
 
+        if (p.id != currentProfile.id) {
+            SessionConnectionHolder.shared.resetForProfileChange()
+            bindDrawerConnectionChip()
+        }
         setProfileName()
         if (p.cachedDeviceInfo == null) {
             if (p == currentProfile && checkProfileJob != null) {
@@ -567,6 +574,8 @@ class MainActivity :
             checkProfileJob?.cancel(null)
             checkProfileJob = null
             showProfileCheckChecking(getString(R.string.checking_connection))
+            SessionConnectionHolder.shared.beginChecking()
+            bindDrawerConnectionChip()
             checkProfileJob = launchCheckProfileLoad(
                 p,
                 getProfileCheckContext(),
@@ -579,6 +588,7 @@ class MainActivity :
                 }
             )
         } else {
+            currentProfile = p
             onProfileChecked(CheckProfile.checkProfile(p, this))
         }
         navigationHelper?.onProfileChanged()
@@ -591,11 +601,11 @@ class MainActivity :
         activeProfile.text = DreamDroid.getCurrentProfile().name
     }
 
-    /**
-     * @param state String representing the current connection state
-     */
-    private fun setConnectionState(state: String, finished: Boolean) {
-        connectionState.text = state
+    private fun bindDrawerConnectionChip() {
+        if (!this::connectionState.isInitialized || !this::phoneNav.isInitialized) {
+            return
+        }
+        connectionState.setText(phoneNav.connectionStatusFlow().value.chipLabelRes())
     }
 
     /*

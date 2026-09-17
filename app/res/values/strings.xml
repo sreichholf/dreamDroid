@@ -211,6 +211,9 @@
     <string name="not_available">Not available</string>
     <string name="checking">checking&#8230;</string>
     <string name="checking_connection">Checking connection&#8230;</string>
+    <string name="session_online">Online</string>
+    <string name="session_offline">Offline</string>
+    <string name="session_checking">Checking</string>
     <string name="error">ERROR!</string>
     <string name="check_connectivity">Check connectivity</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>
