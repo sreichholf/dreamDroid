@@ -19,6 +19,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -27,15 +28,17 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.MovieDao
+import net.reichholf.dreamdroid.room.MovieSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -59,6 +62,7 @@ private const val MODE_TIMER = "Timer"
 @Composable
 fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
     var mode by rememberSaveable { mutableStateOf(MODE_TV) }
     var currentTv by rememberSaveable { mutableStateOf<String?>(null) }
     var currentRadio by rememberSaveable { mutableStateOf<String?>(null) }
@@ -71,6 +75,15 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     var bouquetError by remember { mutableStateOf<String?>(null) }
     var locationsReady by remember {
         mutableStateOf(DreamDroid.getLocations().isNotEmpty())
+    }
+    var movieLocations by remember {
+        mutableStateOf(
+            if (DreamDroid.getLocations().isNotEmpty()) {
+                DreamDroid.getLocations().toList()
+            } else {
+                emptyList()
+            }
+        )
     }
 
     val movieSession = remember { HubMovieListSession() }
@@ -89,10 +102,6 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             context.resources.getStringArray(R.array.servicerefsradio)
         )
     }
-    val movieLocations = remember(locationsReady) {
-        if (locationsReady) DreamDroid.getLocations().toList() else emptyList()
-    }
-
     val rows = when (mode) {
         MODE_TV -> tvBouquets.map { it.name }
         MODE_RADIO -> radioBouquets.map { it.name }
@@ -273,7 +282,7 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
 
             MODE_MOVIES -> {
                 if (locationsReady) {
-                    selectedRow = indexOfLocation(DreamDroid.getLocations().toList(), currentMovie)
+                    selectedRow = indexOfLocation(movieLocations, currentMovie)
                 }
             }
 
@@ -284,10 +293,20 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     DisposableEffect(handle) {
         val job = handle.launchLocationsAndTagsLoad(
             onProgress = { _, _ -> },
-            onReady = {
-                locationsReady = true
-                if (mode == MODE_MOVIES) {
-                    selectedRow = indexOfLocation(DreamDroid.getLocations().toList(), currentMovie)
+            onReady = { },
+            onLocationsResult = { success ->
+                scope.launch {
+                    val painted = movieLocationsAfterHttpOrCache(
+                        AppDatabase.movie(context),
+                        DreamDroid.getCurrentProfile().id,
+                        success,
+                        DreamDroid.getLocations().toList()
+                    )
+                    movieLocations = painted
+                    locationsReady = true
+                    if (mode == MODE_MOVIES) {
+                        selectedRow = indexOfLocation(painted, currentMovie)
+                    }
                 }
             }
         )
@@ -428,4 +447,28 @@ private fun indexOfLocation(items: List<String>, location: String?): Int {
     if (location.isNullOrEmpty() || items.isEmpty()) return 0
     val idx = items.indexOf(location)
     return if (idx >= 0) idx else 0
+}
+
+/**
+ * HTTP movie locations, or the Room strip when the request failed and a strip
+ * exists. Dedicated Provider/All tabs are N/A for movies.
+ */
+internal suspend fun movieLocationsAfterHttpOrCache(
+    dao: MovieDao?,
+    profileId: Int?,
+    httpSuccess: Boolean,
+    liveLocations: List<String>
+): List<String> {
+    if (httpSuccess) {
+        if (dao != null && profileId != null) {
+            MovieSnapshotStore.replaceLocations(dao, profileId, liveLocations)
+        }
+        return liveLocations
+    }
+    val cached = if (dao != null && profileId != null) {
+        MovieSnapshotStore.loadLocations(dao, profileId)
+    } else {
+        null
+    }
+    return cached ?: liveLocations
 }
