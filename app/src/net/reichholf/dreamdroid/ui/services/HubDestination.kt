@@ -35,6 +35,8 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
@@ -197,12 +199,55 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             }
         }
         val result = loadBouquetList(context.applicationContext)
-        bouquets = result.bouquets
-        bouquetError = result.errorText
+        val profileId = DreamDroid.getCurrentProfile().id
+        val excluded = UserBouquetCache.excludedHubTabRefs(context)
+        var painted = result.bouquets
+        var usedCache = false
+        if (profileId != null) {
+            val dao = AppDatabase.roster(context)
+            if (result.tvLoaded) {
+                UserBouquetCache.replaceTabStrip(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_TV,
+                    result.bouquets.tv,
+                    excluded
+                )
+            }
+            if (result.radioLoaded) {
+                UserBouquetCache.replaceTabStrip(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_RADIO,
+                    result.bouquets.radio,
+                    excluded
+                )
+            }
+            val cachedTv = UserBouquetCache.loadTabStripServices(
+                dao,
+                profileId,
+                UserBouquetCache.KIND_TV
+            )
+            val cachedRadio = UserBouquetCache.loadTabStripServices(
+                dao,
+                profileId,
+                UserBouquetCache.KIND_RADIO
+            )
+            val resolved = bouquetsAfterHttpOrCache(
+                result.success,
+                result.bouquets,
+                cachedTv,
+                cachedRadio
+            )
+            painted = resolved.first
+            usedCache = resolved.second
+        }
+        bouquets = painted
+        bouquetError = if (usedCache) null else result.errorText
         when (mode) {
             MODE_TV -> {
                 val list = buildDedicatedBouquets(
-                    result.bouquets.tv,
+                    painted.tv,
                     context.resources.getStringArray(R.array.servicelist_dedicated),
                     context.resources.getStringArray(R.array.servicerefstv)
                 )
@@ -217,7 +262,7 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
 
             MODE_RADIO -> {
                 val list = buildDedicatedBouquets(
-                    result.bouquets.radio,
+                    painted.radio,
                     context.resources.getStringArray(R.array.servicelist_dedicated),
                     context.resources.getStringArray(R.array.servicerefsradio)
                 )

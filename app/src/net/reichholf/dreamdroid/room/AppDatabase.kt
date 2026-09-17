@@ -16,9 +16,12 @@ import net.reichholf.dreamdroid.Profile
     entities = [
         Profile::class,
         EpgEventEntity::class,
-        EpgChunkMetaEntity::class
+        EpgChunkMetaEntity::class,
+        BouquetTabEntity::class,
+        ServiceRosterEntity::class,
+        RosterContainerEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,6 +29,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun profileDao(): Profile.ProfileDao
 
     abstract fun epgDao(): EpgDao
+
+    abstract fun rosterDao(): RosterDao
 
     companion object {
         const val DATABASE_NAME: String = "dreambox"
@@ -121,6 +126,45 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_4_5: Migration = object : Migration(4, 5) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `bouquet_tab` (
+                        `profileId` INTEGER NOT NULL,
+                        `kind` TEXT NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `serviceRef` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `kind`, `position`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `service_roster` (
+                        `profileId` INTEGER NOT NULL,
+                        `containerRef` TEXT NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `serviceRef` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `kind` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `containerRef`, `position`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `roster_container` (
+                        `profileId` INTEGER NOT NULL,
+                        `containerRef` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `containerRef`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         var db: AppDatabase? = null
 
@@ -133,7 +177,12 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DATABASE_NAME
                 )
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                    .addMigrations(
+                        MIGRATION_1_2,
+                        MIGRATION_2_3,
+                        MIGRATION_3_4,
+                        MIGRATION_4_5
+                    )
                     .configureRoomDriver()
                     .build()
                     .also { db = it }
@@ -158,6 +207,8 @@ abstract class AppDatabase : RoomDatabase() {
             ProfileDaoBlocking(database(context).profileDao())
 
         fun epg(context: Context): EpgDao = database(context).epgDao()
+
+        fun roster(context: Context): RosterDao = database(context).rosterDao()
 
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =

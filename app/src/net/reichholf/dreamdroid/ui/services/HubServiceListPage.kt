@@ -39,6 +39,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.RosterDao
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
@@ -106,6 +108,9 @@ fun HubServiceListPage(
     session.rootRef = bouquetRef
     session.rootName = bouquetName
     session.onZapped = onZapped
+    session.profileId = DreamDroid.getCurrentProfile().id
+    session.rosterDao = AppDatabase.roster(context)
+    session.excludedTabRefs = UserBouquetCache.excludedHubTabRefs(context)
 
     BackHandler(enabled = historyDepth > 0) {
         session.navigateUp()
@@ -188,6 +193,9 @@ class HubServiceListSession : MenuProvider {
     var onLoadJob: ((Job?) -> Unit)? = null
     var onZapJob: ((Job?) -> Unit)? = null
     var onZapped: (() -> Unit)? = null
+    var profileId: Int? = null
+    var rosterDao: RosterDao? = null
+    var excludedTabRefs: Set<String> = emptySet()
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var zapJob: Job? = null
@@ -222,6 +230,27 @@ class HubServiceListSession : MenuProvider {
             onEmptyMessage?.invoke(null)
             this.rows?.addAll(rows)
             state.replaceAll(serviceListItemsFromNowNext(rows))
+        }
+        persistRoster(rows)
+    }
+
+    private fun persistRoster(rows: List<ServiceNowNext>) {
+        val dao = rosterDao ?: return
+        val pid = profileId ?: return
+        val coroutineScope = scope ?: return
+        val persistRef = currentRef
+        val persistTabRoot = rootRef
+        val persistRows = rows.toList()
+        val excluded = excludedTabRefs
+        coroutineScope.launch {
+            UserBouquetCache.persistRosterIfCacheable(
+                dao = dao,
+                profileId = pid,
+                ref = persistRef,
+                tabRootRef = persistTabRoot,
+                rows = persistRows,
+                excludedTabRefs = excluded
+            )
         }
     }
 
@@ -260,7 +289,22 @@ class HubServiceListSession : MenuProvider {
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
             val result = loadEpgNowNext(ctx.applicationContext, httpParams())
-            applyLoadResult(generation, result.success, result.rows, result.errorText)
+            if (result.success) {
+                applyLoadResult(generation, true, result.rows, null)
+                return@launch
+            }
+            val dao = rosterDao
+            val pid = profileId
+            val cached = if (dao != null && pid != null) {
+                UserBouquetCache.loadRosterNowNext(dao, pid, currentRef)
+            } else {
+                null
+            }
+            if (cached != null) {
+                applyLoadResult(generation, true, cached, null)
+            } else {
+                applyLoadResult(generation, false, emptyList(), result.errorText)
+            }
         }
         onLoadJob?.invoke(loadJob)
     }
