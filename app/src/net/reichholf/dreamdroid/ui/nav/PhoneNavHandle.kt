@@ -148,10 +148,16 @@ fun PhoneNavHandle.launchSimpleResultLoad(
 
 fun PhoneNavHandle.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,
-    onReady: () -> Unit
+    onReady: () -> Unit,
+    onLocationsResult: ((success: Boolean) -> Unit)? = null
 ): Job {
     val context = lifecycleOwner as Context
-    return lifecycleOwner.launchLocationsAndTagsLoad(context, onProgress, onReady)
+    return lifecycleOwner.launchLocationsAndTagsLoad(
+        context,
+        onProgress,
+        onReady,
+        onLocationsResult
+    )
 }
 
 fun PhoneNavHandle.launchDetectDevicesLoad(onResult: (profiles: ArrayList<Profile>) -> Unit): Job =
