@@ -21,6 +21,7 @@ import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
@@ -96,7 +97,8 @@ fun MultiEpgDestination(
                 R.string.multiepg_sync_test_no_bouquet
             ),
             fetchTimers = MultiEpgSync.httpFetchTimers(),
-            loadBouquetServices = MultiEpgSync.httpFetchBouquet()
+            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
+            formatError = { error -> error.toEnigmaDisplayMessage(context) }
         )
     }
 

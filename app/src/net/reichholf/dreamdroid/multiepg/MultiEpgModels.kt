@@ -47,12 +47,18 @@ data class MultiEpgRosterFetch(
  * Keep the last-good playable roster when getservices fails. A successful empty
  * list still replaces the roster (the bouquet really has no playable rows).
  */
-fun applyBouquetRoster(previous: List<Service>, fetch: MultiEpgRosterFetch): AppliedBouquetRoster {
+fun applyBouquetRoster(
+    previous: List<Service>,
+    fetch: MultiEpgRosterFetch,
+    formatError: (Throwable) -> String = { error ->
+        error.message ?: error.javaClass.simpleName
+    }
+): AppliedBouquetRoster {
     val error = fetch.error
     if (error != null) {
         return AppliedBouquetRoster(
             roster = previous,
-            errorMessage = error.message ?: error.javaClass.simpleName
+            errorMessage = formatError(error)
         )
     }
     return AppliedBouquetRoster(

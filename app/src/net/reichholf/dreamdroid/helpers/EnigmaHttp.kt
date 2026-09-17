@@ -7,17 +7,13 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InterruptedIOException
-import java.net.ConnectException
 import java.net.HttpURLConnection
-import java.net.MalformedURLException
-import java.net.ProtocolException
-import java.net.UnknownHostException
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
 import okhttp3.Callback
@@ -26,12 +22,11 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 
-data class EnigmaHttpError(val message: String? = null, val messageId: Int = -1) {
+/** Adapter so existing callers keep compiling while failures are [EnigmaFailure]. */
+data class EnigmaHttpError(val failure: EnigmaFailure) {
     fun resolve(context: Context): String? {
-        if (messageId > 0) {
-            return context.getString(messageId)
-        }
-        return message
+        val text = failure.userMessage(context)
+        return text.takeIf { it.isNotEmpty() }
     }
 }
 
@@ -72,7 +67,7 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
         }
 
         var call: Call? = null
-        var failure: EnigmaHttpError? = null
+        var mapped: EnigmaFailure? = null
         try {
             val requestParams = ArrayList(parameters)
             if (profile.sessionId != null && !isSessionLess(path)) {
@@ -96,28 +91,14 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
             executeInterruptibly(call).use { response ->
                 return handleResponse(path, parameters, urlString, response, epoch)
             }
-        } catch (e: MalformedURLException) {
-            failure = EnigmaHttpError(messageId = R.string.illegal_host)
-        } catch (e: UnknownHostException) {
-            failure = EnigmaHttpError(messageId = R.string.host_not_found)
-        } catch (e: ProtocolException) {
-            failure = EnigmaHttpError(message = e.localizedMessage)
-        } catch (e: ConnectException) {
-            failure = EnigmaHttpError(messageId = R.string.host_unreach)
-        } catch (e: IOException) {
-            failure = when (val cause = e.cause) {
-                is UnknownHostException -> EnigmaHttpError(messageId = R.string.host_not_found)
-
-                is ConnectException -> EnigmaHttpError(messageId = R.string.host_unreach)
-
-                else -> {
-                    e.printStackTrace()
-                    EnigmaHttpError(message = e.localizedMessage)
-                }
+        } catch (e: Exception) {
+            if (e is java.util.concurrent.CancellationException) {
+                throw e
             }
-        } catch (e: NullPointerException) {
-            e.printStackTrace()
-            failure = EnigmaHttpError(message = e.localizedMessage)
+            mapped = EnigmaFailure.fromThrowable(e)
+            if (mapped is EnigmaFailure.Unknown) {
+                e.printStackTrace()
+            }
         } finally {
             val finished = call
             if (finished != null && inFlight === finished) {
@@ -125,15 +106,13 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
             }
         }
         if (epoch != fetchEpoch.get()) {
-            return EnigmaHttpResult.Failure(EnigmaHttpError())
+            return cancelledResult()
         }
-        val error = failure ?: EnigmaHttpError(message = "Error text is null")
-        if (error.message == null && error.messageId <= 0) {
-            Log.e(LOG_TAG, "Error text is null")
-        } else {
-            Log.e(LOG_TAG, error.message ?: "Error text is null")
+        val failure = mapped ?: EnigmaFailure.Unknown("Error text is null")
+        if (failure !is EnigmaFailure.Cancelled) {
+            Log.e(LOG_TAG, failure.toString())
         }
-        return EnigmaHttpResult.Failure(error)
+        return EnigmaHttpResult.Failure(EnigmaHttpError(failure))
     }
 
     private fun handleResponse(
@@ -160,22 +139,17 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
                 return fetch(uri, parameters)
             }
             if (epoch != fetchEpoch.get()) {
-                return EnigmaHttpResult.Failure(EnigmaHttpError())
+                return cancelledResult()
             }
             rememberedReturnCode = 0
             Log.e(LOG_TAG, code.toString())
-            val messageId = if (code == HttpURLConnection.HTTP_UNAUTHORIZED) {
-                R.string.auth_error
-            } else {
-                -1
-            }
             return EnigmaHttpResult.Failure(
-                EnigmaHttpError(message = response.message, messageId = messageId)
+                EnigmaHttpError(EnigmaFailure.fromHttpStatus(code, response.message))
             )
         }
         val body = response.body?.bytes() ?: ByteArray(0)
         if (epoch != fetchEpoch.get()) {
-            return EnigmaHttpResult.Failure(EnigmaHttpError())
+            return cancelledResult()
         }
         if (DreamDroid.dumpXml()) {
             dumpToFile(urlString, body)
@@ -222,6 +196,9 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
     }
 
     private fun httpClient() = EnigmaOkHttp.client(timeoutMillis, profile.allCertsTrusted)
+
+    private fun cancelledResult(): EnigmaHttpResult =
+        EnigmaHttpResult.Failure(EnigmaHttpError(EnigmaFailure.Cancelled))
 
     private fun executeInterruptibly(call: Call): Response {
         val responseRef = AtomicReference<Response>()

@@ -36,7 +36,10 @@ class MultiEpgSession(
     private val profileId: () -> Int,
     private val noBouquetMessage: String,
     private val fetchTimers: suspend () -> List<Timer> = { emptyList() },
-    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() }
+    private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
+    private val formatError: (Throwable) -> String = { error ->
+        error.message ?: error.javaClass.simpleName
+    }
 ) {
     var bouquetRef: String = ""
         private set
@@ -153,7 +156,7 @@ class MultiEpgSession(
                 }
                 val fetched = rosterDeferred.await()
                 gridMutex.withLock {
-                    val applied = applyBouquetRoster(bouquetRoster, fetched)
+                    val applied = applyBouquetRoster(bouquetRoster, fetched, formatError)
                     bouquetRoster = applied.roster
                     if (applied.errorMessage != null) {
                         errorMessage = applied.errorMessage
@@ -181,7 +184,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = t.message ?: t.javaClass.simpleName
+                errorMessage = formatError(t)
             } finally {
                 pullRefreshing = false
                 endSync()
@@ -241,7 +244,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = t.message ?: t.javaClass.simpleName
+                errorMessage = formatError(t)
             } finally {
                 endSync()
             }
@@ -270,7 +273,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = t.message ?: t.javaClass.simpleName
+                errorMessage = formatError(t)
             } finally {
                 endSync()
             }

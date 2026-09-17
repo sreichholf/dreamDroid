@@ -9,6 +9,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -159,15 +160,14 @@ class MultiEpgSync(
         ): suspend (String, Long, Long) -> List<Event> = { bouquetRef, timeSec, endTimeSec ->
             require(endTimeSec > timeSec) { "window end must be after start" }
             val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
-            val events = EnigmaClient(http).getEvents(
+            EnigmaClient(http).getEvents(
                 listOf(
                     NameValuePair("bRef", bouquetRef),
                     NameValuePair("time", timeSec.toString()),
                     NameValuePair("endTime", durationMinutes.toString())
                 ),
                 URIStore.EPG_MULTI
-            ).value ?: error("epgmulti request failed")
-            events
+            ).valueOrThrow()
         }
 
         fun httpFetchTimers(http: EnigmaHttp = EnigmaHttp()): suspend () -> List<Timer> = {
@@ -179,7 +179,7 @@ class MultiEpgSync(
             { bouquetRef ->
                 EnigmaClient(http).getServices(
                     listOf(NameValuePair("sRef", bouquetRef))
-                ).value ?: error("getservices request failed")
+                ).valueOrThrow()
             }
     }
 }
