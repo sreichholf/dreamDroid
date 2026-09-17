@@ -17,13 +17,17 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
  * Phase 2.2j: prefetch locations/tags via coroutines (no executor).
  * Prefetch locations/tags via coroutines.
  * Always calls [onReady] when finished (matches the former task, which ignored load failures).
+ * [onLocationsResult] reports whether locations came from a successful receiver parse
+ * (not the `/hdd/movie` fallback).
  */
 fun LifecycleOwner.launchLocationsAndTagsLoad(
     context: Context,
     onProgress: (title: String, progress: String) -> Unit,
-    onReady: () -> Unit
+    onReady: () -> Unit,
+    onLocationsResult: ((success: Boolean) -> Unit)? = null
 ): Job = lifecycleScope.launch {
     val http = EnigmaHttp()
+    var locationsOk = DreamDroid.locationsLoadedFromReceiver()
     if (DreamDroid.getLocations().size == 0) {
         if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
             return@launch
@@ -33,7 +37,7 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
             context.getString(R.string.locations) + " - " +
                 context.getString(R.string.fetching_data)
         )
-        withContext(Dispatchers.IO) {
+        locationsOk = withContext(Dispatchers.IO) {
             DreamDroid.loadLocations(http)
         }
     }
@@ -53,6 +57,7 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
     if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
         return@launch
     }
+    onLocationsResult?.invoke(locationsOk)
     onReady()
 }
 

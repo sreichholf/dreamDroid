@@ -211,10 +211,19 @@ class ConnectionStatusTest {
     }
 
     @Test
-    fun hasUseDrivenCacheIsFalseUntilTabStrip() {
+    fun hasUseDrivenCacheGainsTabStripMovieAndTimerSources() {
         assertFalse(hasUseDrivenCache(emptyList()))
         assertFalse(hasUseDrivenCache(Profile().apply { id = 1 }))
         assertTrue(hasUseDrivenCache(listOf("1:7:1:FROM BOUQUET \"userbouquet.fav.tv\"")))
+        assertTrue(hasUseDrivenCache(emptyList(), hasMovieLocationStrip = true))
+        assertTrue(hasUseDrivenCache(emptyList(), hasTimerSnapshot = true))
+        assertFalse(
+            hasUseDrivenCache(
+                emptyList(),
+                hasMovieLocationStrip = false,
+                hasTimerSnapshot = false
+            )
+        )
     }
 
     @Test

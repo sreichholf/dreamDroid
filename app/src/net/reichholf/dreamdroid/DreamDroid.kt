@@ -294,6 +294,13 @@ class DreamDroid : Application() {
         private var locationList: ArrayList<String> = ArrayList()
         private var tagList: ArrayList<String> = ArrayList()
 
+        /**
+         * True when [locationList] came from a successful locations HTTP parse.
+         * False for empty, profile reset, or the `/hdd/movie` load-failure fallback.
+         */
+        @Volatile
+        private var locationsFromReceiver: Boolean = false
+
         private var profileChangedListener: ProfileChangedListener? = null
 
         private var postRequestEnabled: Boolean = true
@@ -468,6 +475,7 @@ class DreamDroid : Application() {
                 if (!profile!!.hasSameSettings(oldProfile) || forceEvent) {
                     // reset locations and tags, they will be reloaded when needed the next time
                     locationList.clear()
+                    locationsFromReceiver = false
                     tagList.clear()
                     activeProfileChanged()
                 } else if (profile!!.id == oldProfile.id) {
@@ -512,6 +520,7 @@ class DreamDroid : Application() {
         @Synchronized
         fun loadLocations(http: EnigmaHttp): Boolean {
             locationList.clear()
+            locationsFromReceiver = false
 
             var gotLoc = false
             val handler = LocationListRequestHandler()
@@ -527,12 +536,16 @@ class DreamDroid : Application() {
                 Log.e(LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
                 locationList = ArrayList()
                 locationList.add("/hdd/movie")
+            } else {
+                locationsFromReceiver = true
             }
 
             return gotLoc
         }
 
         fun getLocations(): ArrayList<String> = locationList
+
+        fun locationsLoadedFromReceiver(): Boolean = locationsFromReceiver
 
         /**
          * @param shc

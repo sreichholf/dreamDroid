@@ -21,9 +21,13 @@ import net.reichholf.dreamdroid.Profile
         ServiceRosterEntity::class,
         RosterContainerEntity::class,
         TimerSnapshotEntity::class,
-        TimerListEntity::class
+        TimerListEntity::class,
+        MovieLocationMetaEntity::class,
+        MovieLocationStripEntity::class,
+        MovieListMetaEntity::class,
+        MovieListEntity::class
     ],
-    version = 6,
+    version = 7,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -35,6 +39,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun rosterDao(): RosterDao
 
     abstract fun timerDao(): TimerDao
+
+    abstract fun movieDao(): MovieDao
 
     companion object {
         const val DATABASE_NAME: String = "dreambox"
@@ -219,6 +225,60 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_6_7: Migration = object : Migration(6, 7) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `movie_location_meta` (
+                        `profileId` INTEGER NOT NULL,
+                        PRIMARY KEY(`profileId`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `movie_location_strip` (
+                        `profileId` INTEGER NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `dirname` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `position`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `movie_list_meta` (
+                        `profileId` INTEGER NOT NULL,
+                        `dirname` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `dirname`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `movie_list` (
+                        `profileId` INTEGER NOT NULL,
+                        `dirname` TEXT NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `reference` TEXT NOT NULL,
+                        `title` TEXT NOT NULL,
+                        `description` TEXT NOT NULL,
+                        `descriptionExtended` TEXT NOT NULL,
+                        `serviceName` TEXT NOT NULL,
+                        `time` TEXT NOT NULL,
+                        `timeReadable` TEXT NOT NULL,
+                        `length` TEXT NOT NULL,
+                        `tags` TEXT NOT NULL,
+                        `fileName` TEXT NOT NULL,
+                        `fileSize` TEXT NOT NULL,
+                        `fileSizeReadable` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `dirname`, `position`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         var db: AppDatabase? = null
 
@@ -236,7 +296,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_2_3,
                         MIGRATION_3_4,
                         MIGRATION_4_5,
-                        MIGRATION_5_6
+                        MIGRATION_5_6,
+                        MIGRATION_6_7
                     )
                     .configureRoomDriver()
                     .build()
@@ -266,6 +327,8 @@ abstract class AppDatabase : RoomDatabase() {
         fun roster(context: Context): RosterDao = database(context).rosterDao()
 
         fun timer(context: Context): TimerDao = database(context).timerDao()
+
+        fun movie(context: Context): MovieDao = database(context).movieDao()
 
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =

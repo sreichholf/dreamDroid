@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -24,9 +25,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.MovieListLoadResult
+import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -37,6 +41,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.MovieDao
+import net.reichholf.dreamdroid.room.MovieSnapshotStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
@@ -48,7 +55,6 @@ import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchMovieListLoad
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.widget.AnchorPopup
@@ -73,6 +79,7 @@ fun HubMovieListPage(
 ) {
     val context = LocalContext.current
     val view = LocalView.current
+    val scope = rememberCoroutineScope()
     val listState = remember { MovieListState() }
     val refresh = remember { ComposeRefreshState() }
     var emptyMessage by remember { mutableStateOf<String?>(null) }
@@ -93,6 +100,7 @@ fun HubMovieListPage(
     session.locationIndex = locationIndex
     session.listState = listState
     session.refresh = refresh
+    session.scope = scope
     session.selectedTags = ArrayList(selectedTags)
     session.onSelectedTags = { selectedTags = it.toList() }
     session.onEmptyMessage = { emptyMessage = it }
@@ -101,6 +109,8 @@ fun HubMovieListPage(
     session.onDeleteJob = { deleteJob = it }
     session.onRequestTagPicker = { showTagPicker = true }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
+    session.profileId = DreamDroid.getCurrentProfile().id
+    session.movieDao = AppDatabase.movie(context)
 
     DisposableEffect(handle, session) {
         val activity = context as? AppCompatActivity
@@ -198,6 +208,7 @@ class HubMovieListSession : MenuProvider {
     var locationIndex: Int = -1
     var listState: MovieListState? = null
     var refresh: ComposeRefreshState? = null
+    var scope: kotlinx.coroutines.CoroutineScope? = null
     var selectedTags: ArrayList<String> = ArrayList()
     var onSelectedTags: ((List<String>) -> Unit)? = null
     var onEmptyMessage: ((String?) -> Unit)? = null
@@ -207,6 +218,14 @@ class HubMovieListSession : MenuProvider {
     var onShowDetail: ((MovieDetailContent) -> Unit)? = null
     var onRequestTagPicker: (() -> Unit)? = null
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
+    var profileId: Int? = null
+    var movieDao: MovieDao? = null
+    var loadMovies: suspend (
+        android.content.Context,
+        List<NameValuePair>
+    ) -> MovieListLoadResult = { context, params ->
+        loadMovieList(context, params)
+    }
 
     private val movies = ArrayList<Movie>()
     private var selectedMovie: Movie? = null
@@ -275,10 +294,10 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun reload() {
-        val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
+        val coroutineScope = scope ?: return
         if (state.items.isEmpty()) {
             onEmptyMessage?.invoke(ctx.getString(R.string.loading))
         } else {
@@ -288,10 +307,48 @@ class HubMovieListSession : MenuProvider {
         setToolbarTitle(ctx.getString(R.string.loading))
         val generation = beginLoad()
         loadJob?.cancel()
-        loadJob = host.launchMovieListLoad(httpParams()) { success, next, errorText ->
-            applyLoadResult(generation, success, next, errorText)
+        loadJob = coroutineScope.launch {
+            loadAndApply(generation)
         }
         onLoadJob?.invoke(loadJob)
+    }
+
+    suspend fun loadAndApply(generation: Int) {
+        val ctx = context ?: return
+        val result = loadMovies(ctx.applicationContext, httpParams())
+        if (generation != loadGeneration) {
+            return
+        }
+        if (result.success) {
+            persistMovies(result.movies)
+            applyLoadResult(generation, true, result.movies, null)
+            return
+        }
+        if (selectedTags.isNotEmpty()) {
+            applyLoadResult(generation, false, emptyList(), result.errorText)
+            return
+        }
+        val dao = movieDao
+        val pid = profileId
+        val cached = if (dao != null && pid != null) {
+            MovieSnapshotStore.loadMovies(dao, pid, location)
+        } else {
+            null
+        }
+        if (cached != null) {
+            applyLoadResult(generation, true, cached, null)
+        } else {
+            applyLoadResult(generation, false, emptyList(), result.errorText)
+        }
+    }
+
+    private suspend fun persistMovies(loaded: List<Movie>) {
+        if (selectedTags.isNotEmpty()) {
+            return
+        }
+        val dao = movieDao ?: return
+        val pid = profileId ?: return
+        MovieSnapshotStore.replaceMovies(dao, pid, location, loaded)
     }
 
     fun onItemClick(item: MovieListItem, isLong: Boolean, windowX: Int, windowY: Int) {
