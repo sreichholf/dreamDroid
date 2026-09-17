@@ -130,7 +130,7 @@ class UserBouquetEpgFillTest {
         val sync = syncReturning(channelEvent(channel))
         val refs = listOf(tv[0], tv[1], tv[2])
         for (ref in refs) {
-            UserBouquetEpgFill.ensureNowChunk(
+            val events = UserBouquetEpgFill.ensureNowChunk(
                 sync = sync,
                 rosterDao = db.rosterDao(),
                 profileId = PROFILE,
@@ -139,20 +139,22 @@ class UserBouquetEpgFillTest {
                 excludedTabRefs = excluded,
                 unixSec = nowSec
             )
+            assertTrue(events.isEmpty())
             val chunk = MultiEpgWindows.chunkContaining(nowSec)
             assertNull(db.epgDao().getChunk(PROFILE, ref, chunk.startSec))
         }
-        UserBouquetEpgFill.ensureNowChunk(
+        val defaultProvider = UserBouquetEpgFill.ensureNowChunk(
             sync = sync,
             rosterDao = db.rosterDao(),
             profileId = PROFILE,
             containerRef = tv[1],
             tabRootRef = tv[1],
             excludedTabRefs = excluded,
-            unixSec = nowSec
+            unixSec = nowSec,
+            forceRefresh = true
         )
-        val chunk = MultiEpgWindows.chunkContaining(nowSec)
-        assertNull(db.epgDao().getChunk(PROFILE, tv[1], chunk.startSec))
+        assertTrue(defaultProvider.isEmpty())
+        assertEquals(0, fetches.get())
     }
 
     private suspend fun seedFavouritesTab() {

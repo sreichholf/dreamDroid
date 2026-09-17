@@ -30,7 +30,12 @@ class MultiEpgSync(
     private val mutex = Mutex()
     private val inFlight = HashMap<ChunkKey, CompletableDeferred<List<Event>>>()
 
-    data class ChunkKey(val profileId: Int, val bouquetRef: String, val windowStart: Long)
+    data class ChunkKey(
+        val profileId: Int,
+        val bouquetRef: String,
+        val windowStart: Long,
+        val persist: Boolean
+    )
 
     data class CachedChunk(
         val events: List<Event>,
@@ -76,7 +81,7 @@ class MultiEpgSync(
         persist: Boolean = true
     ): List<Event> {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
-        val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist)
         val now = clockMs()
 
         if (persist && !forceRefresh) {

@@ -57,7 +57,10 @@ internal fun List<Event>.toEpgEventEntities(
     val out = ArrayList<EpgEventEntity>(size)
     for (event in this) {
         val ref = event.serviceReference.trim()
-        if (ref.isEmpty()) {
+        if (ref.isEmpty() ||
+            EnigmaService.isDirectory(ref) ||
+            EnigmaService.isMarker(ref)
+        ) {
             continue
         }
         val pos = posByRef.getOrPut(ref) { posByRef.size }
