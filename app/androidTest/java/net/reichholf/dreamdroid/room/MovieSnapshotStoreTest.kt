@@ -10,9 +10,12 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.services.HubMovieListSession
 import net.reichholf.dreamdroid.ui.services.MovieListState
 import net.reichholf.dreamdroid.ui.services.movieLocationsAfterHttpOrCache
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -156,6 +159,25 @@ class MovieSnapshotStoreTest {
     }
 
     @Test
+    fun failedHttpWithTagsDoesNotPaintUnfilteredCache() = runBlocking {
+        MovieSnapshotStore.replaceMovies(dao, PROFILE, HDD, listOf(sampleMovie(title = "News")))
+        val session = movieSession(this, HDD)
+        session.selectedTags = arrayListOf("sports")
+        var emptyMessage: String? = null
+        session.onEmptyMessage = { emptyMessage = it }
+        session.loadMovies = { _, _ ->
+            MovieListLoadResult(false, emptyList(), "timeout")
+        }
+        session.loadAndApply(session.beginLoad())
+        assertEquals(
+            listOf("News"),
+            MovieSnapshotStore.loadMovies(dao, PROFILE, HDD)?.map { it.title }
+        )
+        assertEquals("timeout", emptyMessage)
+        assertEquals(emptyList<String>(), session.listState!!.items.map { it.title })
+    }
+
+    @Test
     fun failedHttpOnWrittenEmptyKeepsNoListItemCopy() = runBlocking {
         MovieSnapshotStore.replaceMovies(dao, PROFILE, HDD, emptyList())
         val session = movieSession(this, HDD)
@@ -191,6 +213,29 @@ class MovieSnapshotStoreTest {
         assertEquals(listOf("/hdd/movie"), painted)
         assertNull(MovieSnapshotStore.loadLocations(dao, PROFILE))
         assertEquals(0, dao.locationMetaCount(PROFILE))
+    }
+
+    @Test
+    fun locationStripExtendsHasUseDrivenCacheWithoutTabStrip() = runBlocking {
+        assertFalse(
+            hasUseDrivenCache(
+                emptyList(),
+                dao.locationMetaCount(PROFILE) > 0
+            )
+        )
+        MovieSnapshotStore.replaceLocations(dao, PROFILE, listOf(HDD))
+        assertTrue(
+            hasUseDrivenCache(
+                emptyList(),
+                dao.locationMetaCount(PROFILE) > 0
+            )
+        )
+        assertFalse(
+            hasUseDrivenCache(
+                emptyList(),
+                dao.locationMetaCount(OTHER_PROFILE) > 0
+            )
+        )
     }
 
     @Test

@@ -60,20 +60,28 @@ data class ConnectionStatus(
 }
 
 /**
- * Whether this profile has a use-driven cache that can paint the start route.
+ * Whether this profile has a use-driven cache that can paint a hub start surface
+ * (TV/Radio tab strip, Movies location strip, or Timer snapshot).
  *
  * Later slices **extend** this with additional sources; they must not replace it with
  * a weaker check. MultiEPG chunks alone must not skip the ProfileCheck gate.
  */
-fun hasUseDrivenCache(tabStripRefs: Collection<String>): Boolean = tabStripRefs.isNotEmpty()
+fun hasUseDrivenCache(
+    tabStripRefs: Collection<String>,
+    hasMovieLocationStrip: Boolean = false,
+    hasTimerSnapshot: Boolean = false
+): Boolean = tabStripRefs.isNotEmpty() || hasMovieLocationStrip || hasTimerSnapshot
 
 fun hasUseDrivenCache(profile: Profile, context: Context): Boolean {
     val id = profile.id ?: return false
-    return hasUseDrivenCache(
-        runBlocking(Dispatchers.IO) {
-            AppDatabase.roster(context).getTabStripRefs(id)
-        }
-    )
+    return runBlocking(Dispatchers.IO) {
+        val db = AppDatabase.database(context)
+        hasUseDrivenCache(
+            db.rosterDao().getTabStripRefs(id),
+            db.movieDao().locationMetaCount(id) > 0,
+            db.timerDao().snapshotCount(id) > 0
+        )
+    }
 }
 
 fun hasUseDrivenCache(profile: Profile): Boolean {

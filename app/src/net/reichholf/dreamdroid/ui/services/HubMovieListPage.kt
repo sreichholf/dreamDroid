@@ -324,6 +324,10 @@ class HubMovieListSession : MenuProvider {
             applyLoadResult(generation, true, result.movies, null)
             return
         }
+        if (selectedTags.isNotEmpty()) {
+            applyLoadResult(generation, false, emptyList(), result.errorText)
+            return
+        }
         val dao = movieDao
         val pid = profileId
         val cached = if (dao != null && pid != null) {
