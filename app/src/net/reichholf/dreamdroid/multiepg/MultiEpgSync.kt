@@ -30,7 +30,12 @@ class MultiEpgSync(
     private val mutex = Mutex()
     private val inFlight = HashMap<ChunkKey, CompletableDeferred<List<Event>>>()
 
-    data class ChunkKey(val profileId: Int, val bouquetRef: String, val windowStart: Long)
+    data class ChunkKey(
+        val profileId: Int,
+        val bouquetRef: String,
+        val windowStart: Long,
+        val persist: Boolean
+    )
 
     data class CachedChunk(
         val events: List<Event>,
@@ -65,18 +70,21 @@ class MultiEpgSync(
      * Ensure the 24 h chunk containing [unixSec] is available.
      * When [forceRefresh] is false, a fresh TTL hit returns Room rows without hitting the box.
      * When [forceRefresh] is true (pull-to-refresh), always refetch (still single-flight).
+     * When [persist] is false, still fetch for display but do not write Room
+     * (Provider / All Services / aggregate index).
      */
     suspend fun ensureChunk(
         profileId: Int,
         bouquetRef: String,
         unixSec: Long,
-        forceRefresh: Boolean = false
+        forceRefresh: Boolean = false,
+        persist: Boolean = true
     ): List<Event> {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
-        val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist)
         val now = clockMs()
 
-        if (!forceRefresh) {
+        if (persist && !forceRefresh) {
             val cached = withContext(Dispatchers.IO) {
                 dao.getChunk(profileId, bouquetRef, chunk.startSec)
             }
@@ -112,6 +120,11 @@ class MultiEpgSync(
         try {
             val events = fetch(bouquetRef, chunk.startSec, chunk.endSec)
             val entities = events.toEpgEventEntities(profileId, bouquetRef)
+            if (!persist) {
+                val result = entities.map { it.toEvent() }
+                deferred.complete(result)
+                return result
+            }
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
                 bouquetRef = bouquetRef,

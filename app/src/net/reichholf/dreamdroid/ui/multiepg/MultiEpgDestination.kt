@@ -23,13 +23,16 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
+import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
+import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -82,11 +85,15 @@ fun MultiEpgDestination(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    val sync = remember(context) {
-        MultiEpgSync(
-            dao = AppDatabase.epg(context),
-            fetch = MultiEpgSync.httpFetch()
-        )
+    val sync = remember(context) { MultiEpgSyncHolder.shared(context) }
+    val persistGate = remember(context) {
+        MultiEpgPersistGate(UserBouquetCache.excludedHubTabRefs(context))
+    }
+    LaunchedEffect(Unit) {
+        val profileId = DreamDroid.getCurrentProfile().id
+        if (profileId != null) {
+            persistGate.knownTabRefs = AppDatabase.roster(context).getTabStripRefs(profileId)
+        }
     }
     val session = remember(sync, scope, context) {
         MultiEpgSession(
@@ -98,7 +105,8 @@ fun MultiEpgDestination(
             ),
             fetchTimers = MultiEpgSync.httpFetchTimers(),
             loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
-            formatError = { error -> error.toEnigmaDisplayMessage(context) }
+            formatError = { error -> error.toEnigmaDisplayMessage(context) },
+            persistBouquet = persistGate::persist
         )
     }
 
@@ -179,4 +187,16 @@ fun MultiEpgDestination(
         modifier = modifier
     )
     EpgEventDetailSheetHost(session = dialogSession)
+}
+
+internal class MultiEpgPersistGate(private val excludedTabRefs: Collection<String>) {
+    @Volatile
+    var knownTabRefs: Collection<String> = emptyList()
+
+    fun persist(ref: String): Boolean = EnigmaService.isCacheableUserBouquetContainer(
+        ref,
+        ref,
+        knownTabRefs,
+        excludedTabRefs
+    )
 }

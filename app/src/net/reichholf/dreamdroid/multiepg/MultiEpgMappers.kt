@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.multiepg
 
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.withReadableTimes
+import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
 import net.reichholf.dreamdroid.room.EpgEventEntity
 
 internal fun Event.toEpgEventEntity(
@@ -12,6 +13,9 @@ internal fun Event.toEpgEventEntity(
     val id = eventId.trim()
     val ref = serviceReference.trim()
     if (id.isEmpty() || ref.isEmpty()) {
+        return null
+    }
+    if (EnigmaService.isDirectory(ref) || EnigmaService.isMarker(ref)) {
         return null
     }
     val startSec = start.toLongOrNull() ?: return null
@@ -53,7 +57,10 @@ internal fun List<Event>.toEpgEventEntities(
     val out = ArrayList<EpgEventEntity>(size)
     for (event in this) {
         val ref = event.serviceReference.trim()
-        if (ref.isEmpty()) {
+        if (ref.isEmpty() ||
+            EnigmaService.isDirectory(ref) ||
+            EnigmaService.isMarker(ref)
+        ) {
             continue
         }
         val pos = posByRef.getOrPut(ref) { posByRef.size }
