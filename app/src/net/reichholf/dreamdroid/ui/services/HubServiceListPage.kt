@@ -38,7 +38,12 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
+import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
+import net.reichholf.dreamdroid.multiepg.overlayNowNext
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.room.RosterDao
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
@@ -110,6 +115,7 @@ fun HubServiceListPage(
     session.onZapped = onZapped
     session.profileId = DreamDroid.getCurrentProfile().id
     session.rosterDao = AppDatabase.roster(context)
+    session.epgDao = AppDatabase.epg(context)
     session.excludedTabRefs = UserBouquetCache.excludedHubTabRefs(context)
 
     BackHandler(enabled = historyDepth > 0) {
@@ -195,6 +201,7 @@ class HubServiceListSession : MenuProvider {
     var onZapped: (() -> Unit)? = null
     var profileId: Int? = null
     var rosterDao: RosterDao? = null
+    var epgDao: EpgDao? = null
     var excludedTabRefs: Set<String> = emptySet()
     private var loadGeneration = 0
     private var loadJob: Job? = null
@@ -232,6 +239,33 @@ class HubServiceListSession : MenuProvider {
             state.replaceAll(serviceListItemsFromNowNext(rows))
         }
         persistRoster(rows)
+    }
+
+    private fun fillEpgNowChunk() {
+        val ctx = context ?: return
+        val dao = rosterDao ?: return
+        val pid = profileId ?: return
+        val coroutineScope = scope ?: return
+        val persistRef = currentRef
+        val persistTabRoot = rootRef
+        val excluded = excludedTabRefs
+        coroutineScope.launch {
+            try {
+                UserBouquetEpgFill.ensureNowChunk(
+                    sync = MultiEpgSyncHolder.shared(ctx),
+                    rosterDao = dao,
+                    profileId = pid,
+                    containerRef = persistRef,
+                    tabRootRef = persistTabRoot,
+                    excludedTabRefs = excluded,
+                    unixSec = System.currentTimeMillis() / 1000L
+                )
+            } catch (t: Throwable) {
+                if (t is kotlinx.coroutines.CancellationException) {
+                    throw t
+                }
+            }
+        }
     }
 
     private fun persistRoster(rows: List<ServiceNowNext>) {
@@ -291,6 +325,7 @@ class HubServiceListSession : MenuProvider {
             val result = loadEpgNowNext(ctx.applicationContext, httpParams())
             if (result.success) {
                 applyLoadResult(generation, true, result.rows, null)
+                fillEpgNowChunk()
                 return@launch
             }
             val dao = rosterDao
@@ -301,7 +336,26 @@ class HubServiceListSession : MenuProvider {
                 null
             }
             if (cached != null) {
-                applyLoadResult(generation, true, cached, null)
+                val nowSec = System.currentTimeMillis() / 1000L
+                val epg = epgDao
+                val overlayPid = pid
+                val events = if (epg != null && overlayPid != null) {
+                    val chunk = MultiEpgWindows.chunkContaining(nowSec)
+                    epg.eventsOverlapping(
+                        overlayPid,
+                        currentRef,
+                        chunk.startSec,
+                        chunk.endSec
+                    )
+                } else {
+                    emptyList()
+                }
+                applyLoadResult(
+                    generation,
+                    true,
+                    overlayNowNext(cached, events, nowSec),
+                    null
+                )
             } else {
                 applyLoadResult(generation, false, emptyList(), result.errorText)
             }

@@ -39,7 +39,8 @@ class MultiEpgSession(
     private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
     private val formatError: (Throwable) -> String = { error ->
         error.message ?: error.javaClass.simpleName
-    }
+    },
+    private val persistBouquet: (String) -> Boolean = { true }
 ) {
     var bouquetRef: String = ""
         private set
@@ -147,7 +148,8 @@ class MultiEpgSession(
                     }
                 }
                 val id = profileId()
-                val peek = if (!forceRefresh) {
+                val persist = persistBouquet(ref)
+                val peek = if (!forceRefresh && persist) {
                     withContext(Dispatchers.IO) {
                         sync.peekChunk(id, ref, anchorSec)
                     }
@@ -174,7 +176,8 @@ class MultiEpgSession(
                         profileId = id,
                         bouquetRef = ref,
                         unixSec = anchorSec,
-                        forceRefresh = forceRefresh
+                        forceRefresh = forceRefresh,
+                        persist = persistBouquet(ref)
                     )
                 }
                 val chunk = MultiEpgWindows.chunkContaining(anchorSec)
@@ -296,8 +299,13 @@ class MultiEpgSession(
             return
         }
         val id = profileId()
-        val peek = withContext(Dispatchers.IO) {
-            sync.peekChunk(id, ref, unixSec)
+        val persist = persistBouquet(ref)
+        val peek = if (persist) {
+            withContext(Dispatchers.IO) {
+                sync.peekChunk(id, ref, unixSec)
+            }
+        } else {
+            null
         }
         if (peek != null && peek.events.isNotEmpty()) {
             putWindow(peek.windowStart, peek.events)
@@ -306,7 +314,7 @@ class MultiEpgSession(
             }
         }
         val events = withContext(Dispatchers.IO) {
-            sync.ensureChunk(id, ref, unixSec)
+            sync.ensureChunk(id, ref, unixSec, persist = persist)
         }
         putWindow(chunk.startSec, events)
     }

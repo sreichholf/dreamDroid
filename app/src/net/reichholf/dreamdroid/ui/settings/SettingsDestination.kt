@@ -20,8 +20,10 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
-import net.reichholf.dreamdroid.multiepg.MultiEpgSync
+import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
+import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
@@ -60,16 +62,16 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         scope.launch {
             val started = System.currentTimeMillis()
             val message = try {
-                // ttlMs=0 forces a network fetch every tap (useful for box load checks).
-                val sync = MultiEpgSync(
-                    dao = AppDatabase.epg(context),
-                    fetch = MultiEpgSync.httpFetch(),
-                    ttlMs = 0L
-                )
-                val events = sync.ensureChunk(
-                    profileId = profile.id ?: -1,
-                    bouquetRef = bouquet,
-                    unixSec = System.currentTimeMillis() / 1000L
+                val profileId = profile.id ?: -1
+                val events = UserBouquetEpgFill.ensureNowChunk(
+                    sync = MultiEpgSyncHolder.shared(context),
+                    rosterDao = AppDatabase.roster(context),
+                    profileId = profileId,
+                    containerRef = bouquet,
+                    tabRootRef = bouquet,
+                    excludedTabRefs = UserBouquetCache.excludedHubTabRefs(context),
+                    unixSec = System.currentTimeMillis() / 1000L,
+                    forceRefresh = true
                 )
                 val ms = System.currentTimeMillis() - started
                 if (events.isEmpty()) {
