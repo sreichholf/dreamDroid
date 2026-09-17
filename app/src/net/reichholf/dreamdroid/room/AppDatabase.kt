@@ -19,9 +19,11 @@ import net.reichholf.dreamdroid.Profile
         EpgChunkMetaEntity::class,
         BouquetTabEntity::class,
         ServiceRosterEntity::class,
-        RosterContainerEntity::class
+        RosterContainerEntity::class,
+        TimerSnapshotEntity::class,
+        TimerListEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,6 +33,8 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun epgDao(): EpgDao
 
     abstract fun rosterDao(): RosterDao
+
+    abstract fun timerDao(): TimerDao
 
     companion object {
         const val DATABASE_NAME: String = "dreambox"
@@ -165,6 +169,56 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `timer_snapshot` (
+                        `profileId` INTEGER NOT NULL,
+                        PRIMARY KEY(`profileId`)
+                    )
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `timer_list` (
+                        `profileId` INTEGER NOT NULL,
+                        `position` INTEGER NOT NULL,
+                        `reference` TEXT NOT NULL,
+                        `serviceName` TEXT NOT NULL,
+                        `eit` TEXT NOT NULL,
+                        `name` TEXT NOT NULL,
+                        `description` TEXT NOT NULL,
+                        `descriptionExtended` TEXT NOT NULL,
+                        `disabled` TEXT NOT NULL,
+                        `begin` TEXT NOT NULL,
+                        `end` TEXT NOT NULL,
+                        `duration` TEXT NOT NULL,
+                        `beginReadable` TEXT NOT NULL,
+                        `endReadable` TEXT NOT NULL,
+                        `durationReadable` TEXT NOT NULL,
+                        `startPrepare` TEXT NOT NULL,
+                        `justPlay` TEXT NOT NULL,
+                        `afterEvent` TEXT NOT NULL,
+                        `location` TEXT NOT NULL,
+                        `tags` TEXT NOT NULL,
+                        `logEntries` TEXT NOT NULL,
+                        `fileName` TEXT NOT NULL,
+                        `backOff` TEXT NOT NULL,
+                        `nextActivation` TEXT NOT NULL,
+                        `firstTryPrepare` TEXT NOT NULL,
+                        `state` TEXT NOT NULL,
+                        `repeated` TEXT NOT NULL,
+                        `dontSave` TEXT NOT NULL,
+                        `canceled` TEXT NOT NULL,
+                        `toggleDisabled` TEXT NOT NULL,
+                        PRIMARY KEY(`profileId`, `position`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         var db: AppDatabase? = null
 
@@ -181,7 +235,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_1_2,
                         MIGRATION_2_3,
                         MIGRATION_3_4,
-                        MIGRATION_4_5
+                        MIGRATION_4_5,
+                        MIGRATION_5_6
                     )
                     .configureRoomDriver()
                     .build()
@@ -209,6 +264,8 @@ abstract class AppDatabase : RoomDatabase() {
         fun epg(context: Context): EpgDao = database(context).epgDao()
 
         fun roster(context: Context): RosterDao = database(context).rosterDao()
+
+        fun timer(context: Context): TimerDao = database(context).timerDao()
 
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =

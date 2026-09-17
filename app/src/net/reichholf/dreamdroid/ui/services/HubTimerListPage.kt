@@ -27,6 +27,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
+import net.reichholf.dreamdroid.enigma.TimerListLoadResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -35,6 +36,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.TimerDao
+import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
@@ -76,6 +80,8 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
     session.onEmptyMessage = { emptyMessage = it }
     session.onLoadJob = { loadJob = it }
     session.onMutateJob = { mutateJob = it }
+    session.profileId = DreamDroid.getCurrentProfile().id
+    session.timerDao = AppDatabase.timer(context)
 
     DisposableEffect(handle, session) {
         // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
@@ -162,6 +168,10 @@ class HubTimerListSession :
     var onEmptyMessage: ((String?) -> Unit)? = null
     var onLoadJob: ((Job?) -> Unit)? = null
     var onMutateJob: ((Job?) -> Unit)? = null
+    var profileId: Int? = null
+    var timerDao: TimerDao? = null
+    var loadTimers: suspend (android.content.Context) -> TimerListLoadResult =
+        { context -> loadTimerList(context) }
 
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
 
@@ -220,9 +230,42 @@ class HubTimerListSession :
         Toast.makeText(ctx, message, Toast.LENGTH_LONG).show()
     }
 
-    fun reload() {
+    fun beginLoad(): Int = ++loadGeneration
+
+    fun applyLoadResult(
+        generation: Int,
+        success: Boolean,
+        loaded: List<TypedTimer>,
+        errorText: String?
+    ) {
+        if (generation != loadGeneration) {
+            return
+        }
         val ctx = context ?: return
         val state = listState ?: return
+        val refreshState = refresh ?: return
+        refreshState.setRefreshing(false)
+        setToolbarTitle(ctx.getString(R.string.timer))
+        timers.clear()
+        state.replaceAll(emptyList())
+        if (!success) {
+            onEmptyMessage?.invoke(errorText)
+            return
+        }
+        if (loaded.isEmpty()) {
+            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+            return
+        }
+        onEmptyMessage?.invoke(null)
+        timers.addAll(loaded)
+        state.replaceAll(timerListItemsFrom(ctx, timers))
+    }
+
+    fun reload() {
+        val ctx = context ?: return
+        if (listState == null) {
+            return
+        }
         val refreshState = refresh ?: return
         val coroutineScope = scope ?: return
         if (timers.isEmpty()) {
@@ -232,30 +275,43 @@ class HubTimerListSession :
         }
         refreshState.setRefreshing(true)
         setToolbarTitle(ctx.getString(R.string.loading))
-        val generation = ++loadGeneration
+        val generation = beginLoad()
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
-            val result = loadTimerList(ctx.applicationContext)
-            if (generation != loadGeneration) {
-                return@launch
-            }
-            refreshState.setRefreshing(false)
-            setToolbarTitle(ctx.getString(R.string.timer))
-            timers.clear()
-            state.replaceAll(emptyList())
-            if (!result.success) {
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
-            }
-            if (result.timers.isEmpty()) {
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-                return@launch
-            }
-            onEmptyMessage?.invoke(null)
-            timers.addAll(result.timers)
-            state.replaceAll(timerListItemsFrom(ctx, timers))
+            loadAndApply(generation)
         }
         onLoadJob?.invoke(loadJob)
+    }
+
+    suspend fun loadAndApply(generation: Int) {
+        val ctx = context ?: return
+        val result = loadTimers(ctx.applicationContext)
+        if (generation != loadGeneration) {
+            return
+        }
+        if (result.success) {
+            persistSnapshot(result.timers)
+            applyLoadResult(generation, true, result.timers, null)
+            return
+        }
+        val dao = timerDao
+        val pid = profileId
+        val cached = if (dao != null && pid != null) {
+            TimerSnapshotStore.load(dao, pid)
+        } else {
+            null
+        }
+        if (cached != null) {
+            applyLoadResult(generation, true, cached, null)
+        } else {
+            applyLoadResult(generation, false, emptyList(), result.errorText)
+        }
+    }
+
+    private suspend fun persistSnapshot(loaded: List<TypedTimer>) {
+        val dao = timerDao ?: return
+        val pid = profileId ?: return
+        TimerSnapshotStore.replace(dao, pid, loaded)
     }
 
     fun createTimer() {
