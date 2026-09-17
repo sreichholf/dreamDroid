@@ -14,6 +14,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -42,6 +43,24 @@ class EnigmaClientHttpFailTest {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
         val services = EnigmaClient(profileForServer()).getServices().value
         assertEquals(null, services)
+    }
+
+    @Test
+    fun getServices_http500IsHttpFailure() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
+        val response = EnigmaClient(profileForServer()).getServices()
+        assertEquals(null, response.value)
+        val failure = response.error!!.failure
+        assertTrue(failure is EnigmaFailure.Http)
+        assertEquals(500, (failure as EnigmaFailure.Http).code)
+    }
+
+    @Test
+    fun getServices_http401IsAuthFailure() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(401).setBody("nope"))
+        val response = EnigmaClient(profileForServer()).getServices()
+        assertEquals(null, response.value)
+        assertEquals(EnigmaFailure.Auth, response.error!!.failure)
     }
 
     @Test

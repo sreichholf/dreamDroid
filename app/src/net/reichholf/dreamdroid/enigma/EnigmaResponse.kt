@@ -8,4 +8,14 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 data class EnigmaResponse<T>(val value: T?, val error: EnigmaHttpError? = null)
 
 fun EnigmaHttpError?.contentError(context: Context): String =
-    context.getString(R.string.get_content_error) + "\n" + (this?.resolve(context) ?: "")
+    context.getString(R.string.get_content_error) +
+        "\n" +
+        (this?.failure?.userMessage(context) ?: "")
+
+fun <T> EnigmaResponse<T>.valueOrThrow(): T {
+    val value = this.value
+    if (value != null) {
+        return value
+    }
+    throw EnigmaFailureException(error?.failure ?: EnigmaFailure.Parse)
+}
