@@ -54,7 +54,7 @@ class ServiceEpgScreenTest {
         }
         composeRule.onNodeWithText("Tagesschau", useUnmergedTree = true)
             .assertIsDisplayed()
-            .assertLeftPositionInRootIsEqualTo(16.dp)
+            .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
         composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
         assertEquals(second, clicked)

@@ -87,7 +87,7 @@ fun HubMovieListPage(
 
     session.handle = handle
     session.context = context
-    session.popupRoot = view.rootView as? ViewGroup ?: view as? ViewGroup
+    session.popupRoot = AnchorPopup.overlayRoot(view)
     session.location = location
     session.locationIndex = locationIndex
     session.listState = listState

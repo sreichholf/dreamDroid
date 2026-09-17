@@ -34,10 +34,17 @@ object AnchorPopup {
         }
     }
 
+    /**
+     * Overlay parent that honors [FrameLayout.LayoutParams] margins. [androidx.compose.ui.platform.LocalView]
+     * is AndroidComposeView, which ignores those margins and pins the menu at (0, 0).
+     */
+    fun overlayRoot(view: View): ViewGroup =
+        (view.rootView as? ViewGroup) ?: (view as? ViewGroup) ?: error("no ViewGroup for popup")
+
     /** Convert window coordinates to offsets inside [root]. */
     fun showAtWindow(root: ViewGroup, windowX: Int, windowY: Int, configurer: Configurer) {
         val loc = IntArray(2)
-        root.getLocationOnScreen(loc)
+        root.getLocationInWindow(loc)
         showAt(root, windowX - loc[0], windowY - loc[1], configurer)
     }
 }

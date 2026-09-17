@@ -1,12 +1,15 @@
 package net.reichholf.dreamdroid.ui.backup
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
@@ -18,6 +21,7 @@ import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.BackupService
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -81,6 +85,9 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Export settings").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+            .assertLeftPositionInRootIsEqualTo(8.dp)
         val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
             .getBoundsInRoot()
         val exportHeight = exportSettings.bottom - exportSettings.top

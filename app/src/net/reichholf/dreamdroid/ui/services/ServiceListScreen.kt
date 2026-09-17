@@ -1,13 +1,10 @@
 package net.reichholf.dreamdroid.ui.services
 
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -19,25 +16,20 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.layout.LayoutCoordinates
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import kotlin.math.roundToInt
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowAnchoredClickable
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 /** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
 typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
@@ -68,7 +60,6 @@ fun ServiceListScreen(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun ServiceRow(
     item: ServiceListItem,
@@ -82,34 +73,16 @@ private fun ServiceRow(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 48.dp)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = ListRowHorizontalInset + 16.dp, vertical = 8.dp)
                 .wrapContentHeight(Alignment.CenterVertically)
         )
         return
     }
-    var coords by remember { mutableStateOf<LayoutCoordinates?>(null) }
-    fun windowTopLeft(): Pair<Int, Int> {
-        val bounds: Rect = coords?.boundsInWindow() ?: return 0 to 0
-        return bounds.left.roundToInt() to bounds.top.roundToInt()
-    }
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coords = it }
-            .combinedClickable(
-                onClick = {
-                    val (x, y) = windowTopLeft()
-                    onClick(x, y)
-                },
-                onLongClick = {
-                    val (x, y) = windowTopLeft()
-                    onLongClick(x, y)
-                }
-            )
+    ListRowSurface(
+        modifier = Modifier.listRowAnchoredClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
@@ -164,7 +137,8 @@ private fun ServiceRow(
                     }
                 } else {
                     null
-                }
+                },
+            colors = listRowItemColors()
         )
     }
 }

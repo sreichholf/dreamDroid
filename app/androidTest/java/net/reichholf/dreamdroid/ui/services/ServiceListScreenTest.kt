@@ -3,10 +3,13 @@ package net.reichholf.dreamdroid.ui.services
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -15,6 +18,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -92,11 +96,11 @@ class ServiceListScreenTest {
                 )
             }
         }
-        // ListItem start inset is 16.dp (edge-to-edge list, no 8.dp gutter).
+        // Tile inset 8.dp + ListItem start 16.dp.
         // useUnmergedTree: combinedClickable merges semantics up to the row.
         composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
             .assertIsDisplayed()
-            .assertLeftPositionInRootIsEqualTo(16.dp)
+            .assertLeftPositionInRootIsEqualTo(24.dp)
     }
 
     @Test
@@ -130,9 +134,47 @@ class ServiceListScreenTest {
         }
         composeRule.onNodeWithText("ZDF").performClick()
         composeRule.waitForIdle()
-        // Second row must not report the fragment-root origin (0,0) used by the old PopupMenu bug.
-        assertTrue("expected tapX >= 0, got $tapX", tapX >= 0)
-        assertTrue("expected second-row tapY > 0, got $tapY", tapY > 0)
+        val zdf = composeRule.onNodeWithText("ZDF", useUnmergedTree = true).getBoundsInRoot()
+        val tapXDp = with(composeRule.density) { tapX.toDp() }
+        val tapYDp = with(composeRule.density) { tapY.toDp() }
+        assertTrue("expected tapX > 0 (not origin), got $tapXDp", tapXDp > 0.dp)
+        assertTrue(
+            "expected second-row tapY near the ZDF tile, tapY=$tapYDp tile=$zdf",
+            tapYDp > 40.dp && tapYDp <= zdf.bottom
+        )
+    }
+
+    @Test
+    fun channelRowsAreInsetTonalTilesWithAGap() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                ServiceListScreen(
+                    items = listOf(
+                        ServiceListItem(
+                            index = 0,
+                            reference = "1:0:1:1:1:1:1:0:0:0:",
+                            name = "ARD",
+                            kind = ServiceRowKind.CHANNEL
+                        ),
+                        ServiceListItem(
+                            index = 1,
+                            reference = "1:0:1:2:1:1:1:0:0:0:",
+                            name = "ZDF",
+                            kind = ServiceRowKind.CHANNEL
+                        )
+                    ),
+                    onItemClick = { _, _, _ -> },
+                    onItemLongClick = { _, _, _ -> }
+                )
+            }
+        }
+        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)
+        tiles.assertCountEquals(2)
+        tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
+        val first = tiles[0].getBoundsInRoot()
+        val second = tiles[1].getBoundsInRoot()
+        val gap = second.top - first.bottom
+        assertTrue("expected a gutter between tiles, gap=$gap", gap >= 3.dp)
     }
 
     @Test

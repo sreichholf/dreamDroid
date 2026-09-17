@@ -14,9 +14,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
@@ -30,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringArrayResource
@@ -40,6 +37,9 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 @Composable
@@ -322,7 +322,6 @@ fun SettingsScreen(
             }
         )
 
-        HorizontalDivider(modifier = Modifier.padding(top = 16.dp, bottom = 4.dp))
         ActionPreferenceRow(stringResource(R.string.about), DreamDroid.VERSION_STRING, onAbout)
         ActionPreferenceRow(stringResource(R.string.changelog), null, onChangelog)
         ActionPreferenceRow(stringResource(R.string.backup), null, onBackup)
@@ -370,7 +369,12 @@ internal fun PreferenceCategoryHeader(title: String) {
         text = title,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 20.dp, bottom = 8.dp)
+        modifier = Modifier.padding(
+            start = ListRowHorizontalInset + 16.dp,
+            end = ListRowHorizontalInset + 16.dp,
+            top = 20.dp,
+            bottom = 8.dp
+        )
     )
 }
 
@@ -383,44 +387,48 @@ internal fun SwitchPreferenceRow(
     enabled: Boolean = true
 ) {
     val contentAlpha = if (enabled) 1f else 0.38f
-    ListItem(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .semantics(mergeDescendants = true) {}
-            .toggleable(
-                value = checked,
-                enabled = enabled,
-                role = Role.Switch,
-                onValueChange = onCheckedChange
-            ),
-        headlineContent = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
-            )
-        },
-        supportingContent = if (!summary.isNullOrEmpty()) {
-            {
+    ListRowSurface {
+        ListItem(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .semantics(mergeDescendants = true) {}
+                .toggleable(
+                    value = checked,
+                    enabled = enabled,
+                    role = Role.Switch,
+                    onValueChange = onCheckedChange
+                ),
+            headlineContent = {
                 Text(
-                    text = summary,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
+                    text = title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
                 )
-            }
-        } else {
-            null
-        },
-        trailingContent = {
-            Switch(
-                checked = checked,
-                onCheckedChange = null,
-                enabled = enabled
-            )
-        },
-        colors = ListItemDefaults.colors(containerColor = Color.Transparent)
-    )
+            },
+            supportingContent = if (!summary.isNullOrEmpty()) {
+                {
+                    Text(
+                        text = summary,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(
+                            alpha = contentAlpha
+                        )
+                    )
+                }
+            } else {
+                null
+            },
+            trailingContent = {
+                Switch(
+                    checked = checked,
+                    onCheckedChange = null,
+                    enabled = enabled
+                )
+            },
+            colors = listRowItemColors()
+        )
+    }
 }
 
 @Composable
@@ -441,24 +449,25 @@ internal fun ActionPreferenceRow(
     enabled: Boolean = true
 ) {
     val contentAlpha = if (enabled) 1f else 0.38f
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
-        )
-        if (!summary.isNullOrEmpty()) {
-            Spacer(modifier = Modifier.height(2.dp))
+    ListRowSurface(modifier = Modifier.clickable(enabled = enabled, onClick = onClick)) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
             Text(
-                text = summary,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = contentAlpha)
             )
+            if (!summary.isNullOrEmpty()) {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = summary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = contentAlpha)
+                )
+            }
         }
     }
 }

@@ -10,6 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 
 @Composable
@@ -30,23 +32,24 @@ fun ShareProfilesScreen(
 
 @Composable
 private fun ShareProfileRow(profile: ProfileListItem, onClick: () -> Unit) {
-    ListItem(
-        headlineContent = {
-            Text(
-                text = profile.name,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-        },
-        supportingContent = {
-            Text(
-                text = profile.host,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
+        ListItem(
+            headlineContent = {
+                Text(
+                    text = profile.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            supportingContent = {
+                Text(
+                    text = profile.host,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }

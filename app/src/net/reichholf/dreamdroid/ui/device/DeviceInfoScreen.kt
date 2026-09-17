@@ -17,6 +17,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 
 data class DeviceInfoRow(val title: String, val subtitle: String)
 
@@ -87,7 +89,7 @@ fun DeviceInfoScreen(state: DeviceInfoUiState, modifier: Modifier = Modifier) {
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(vertical = 8.dp)
     ) {
         DeviceInfoField(
             label = stringResource(R.string.gui_version),
@@ -132,22 +134,25 @@ fun DeviceInfoScreen(state: DeviceInfoUiState, modifier: Modifier = Modifier) {
 
 @Composable
 private fun DeviceInfoField(label: String, value: String) {
-    Text(
-        text = label,
-        style = MaterialTheme.typography.titleSmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 4.dp)
-    )
-    Text(
-        text = value,
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurface,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp, top = 2.dp)
-    )
+    ListRowSurface {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(top = 2.dp)
+            )
+        }
+    }
 }
 
 @Composable
@@ -163,46 +168,58 @@ private fun DeviceInfoSection(
         color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 4.dp)
+            .padding(
+                start = ListRowHorizontalInset + 16.dp,
+                end = ListRowHorizontalInset + 16.dp,
+                top = 12.dp,
+                bottom = 4.dp
+            )
     )
     if (!ready) {
-        Text(
-            text = loading,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 2.dp)
-        )
+        ListRowSurface {
+            Text(
+                text = loading,
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
         return
     }
     if (rows.isEmpty()) {
-        Text(
-            text = "—",
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 8.dp, top = 2.dp)
-        )
+        ListRowSurface {
+            Text(
+                text = "—",
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+        }
         return
     }
     rows.forEach { row ->
-        Text(
-            text = row.title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 2.dp)
-        )
-        Text(
-            text = row.subtitle,
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 6.dp)
-        )
+        ListRowSurface {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                Text(
+                    text = row.title,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = row.subtitle,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
+                )
+            }
+        }
     }
 }

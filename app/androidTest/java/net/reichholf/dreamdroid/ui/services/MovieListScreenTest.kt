@@ -46,7 +46,7 @@ class MovieListScreenTest {
         }
         composeRule.onNodeWithText("Recorded film", useUnmergedTree = true)
             .assertIsDisplayed()
-            .assertLeftPositionInRootIsEqualTo(16.dp)
+            .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("ZDF").assertIsDisplayed()
     }
 }

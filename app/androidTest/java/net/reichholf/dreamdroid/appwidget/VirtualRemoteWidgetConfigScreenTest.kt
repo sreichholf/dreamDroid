@@ -4,13 +4,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -60,6 +65,9 @@ class VirtualRemoteWidgetConfigScreenTest {
         composeRule.onNodeWithText("Bedroom").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
         assertTrue(lastFullAtClick == true)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(4)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+            .assertLeftPositionInRootIsEqualTo(8.dp)
 
         composeRule.onNodeWithText("QuickZap Layout (Simple)").performClick()
         composeRule.onNodeWithText("Living Room").performClick()

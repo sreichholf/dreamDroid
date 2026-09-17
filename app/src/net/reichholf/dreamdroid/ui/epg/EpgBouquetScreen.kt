@@ -34,6 +34,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
@@ -152,71 +154,72 @@ private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
     val context = LocalContext.current
     val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
         .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
-    ListItem(
-        headlineContent = {
-            Text(
-                text = event.title,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        supportingContent = {
-            Column {
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
+        ListItem(
+            headlineContent = {
                 Text(
-                    text = event.serviceName,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    text = event.title,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                    Text(
-                        text = event.startReadable,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Text(
-                        text = event.durationReadable,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        textAlign = TextAlign.End,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                if (event.descriptionExtended.isNotEmpty()) {
-                    Text(
-                        text = event.descriptionExtended,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 4.dp)
-                    )
-                }
-            }
-        },
-        leadingContent =
-            if (piconsEnabled) {
-                {
-                    PiconImage(
-                        reference = event.serviceReference,
-                        name = event.serviceName,
-                        contentDescription = null,
-                        modifier = Modifier
-                            .width(57.dp)
-                            .height(36.dp)
-                    )
-                }
-            } else {
-                null
             },
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-    )
+            supportingContent = {
+                Column {
+                    Text(
+                        text = event.serviceName,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                        Text(
+                            text = event.startReadable,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Text(
+                            text = event.durationReadable,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    if (event.descriptionExtended.isNotEmpty()) {
+                        Text(
+                            text = event.descriptionExtended,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 4.dp)
+                        )
+                    }
+                }
+            },
+            leadingContent =
+                if (piconsEnabled) {
+                    {
+                        PiconImage(
+                            reference = event.serviceReference,
+                            name = event.serviceName,
+                            contentDescription = null,
+                            modifier = Modifier
+                                .width(57.dp)
+                                .height(36.dp)
+                        )
+                    }
+                } else {
+                    null
+                },
+            colors = listRowItemColors(),
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
 }
