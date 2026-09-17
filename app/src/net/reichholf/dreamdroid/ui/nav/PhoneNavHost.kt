@@ -32,6 +32,7 @@ import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.dialogs.ChangelogDialog
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.ExplainAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
 import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
 import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
@@ -123,6 +124,14 @@ fun PhoneNavHost(
                 onConfirm = { (context as? Activity)?.finish() }
             )
         }
+        val needsReceiver by handle.needsReceiverRequestedFlow().collectAsState()
+        if (needsReceiver) {
+            ExplainAlertDialog(
+                title = stringResource(R.string.session_needs_receiver),
+                message = stringResource(R.string.session_needs_receiver_long),
+                onDismiss = { handle.clearNeedsReceiver() }
+            )
+        }
     }
 }
 
@@ -142,10 +151,10 @@ private fun PhoneNavHostGraph(
             DeviceInfoDestination()
         }
         composable(PhoneNavRoutes.SIGNAL) {
-            SignalDestination()
+            SignalDestination(handle = handle)
         }
         composable(PhoneNavRoutes.SCREENSHOT) {
-            ScreenshotDestination()
+            ScreenshotDestination(handle = handle)
         }
         composable(PhoneNavRoutes.CURRENT) {
             CurrentServiceDestination(handle = handle)
@@ -181,7 +190,7 @@ private fun PhoneNavHostGraph(
             HubDestination(handle = handle)
         }
         composable(PhoneNavRoutes.TOOLS) {
-            ToolsHubDestination()
+            ToolsHubDestination(handle = handle)
         }
         composable(PhoneNavRoutes.PROFILE_CHECK) {
             ProfileCheckDestination(handle = handle)

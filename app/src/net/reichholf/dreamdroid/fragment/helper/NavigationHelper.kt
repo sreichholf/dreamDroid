@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.bindDrawerScreen
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 /**
  * Created by Stephan on 25.12.2015.
@@ -122,23 +123,35 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
 
         when (itemId) {
             R.id.menu_navigation_message -> {
-                getMainActivity().phoneNav.navigateToSendMessage()
+                getMainActivity().phoneNav.runOnlineOnly {
+                    getMainActivity().phoneNav.navigateToSendMessage()
+                }
             }
 
             Statics.ITEM_TOGGLE_STANDBY ->
-                setPowerState(PowerStateKeys.STATE_TOGGLE)
+                getMainActivity().phoneNav.runOnlineOnly {
+                    setPowerState(PowerStateKeys.STATE_TOGGLE)
+                }
 
             Statics.ITEM_RESTART_GUI ->
-                setPowerState(PowerStateKeys.STATE_GUI_RESTART)
+                getMainActivity().phoneNav.runOnlineOnly {
+                    setPowerState(PowerStateKeys.STATE_GUI_RESTART)
+                }
 
             Statics.ITEM_REBOOT ->
-                setPowerState(PowerStateKeys.STATE_SYSTEM_REBOOT)
+                getMainActivity().phoneNav.runOnlineOnly {
+                    setPowerState(PowerStateKeys.STATE_SYSTEM_REBOOT)
+                }
 
             Statics.ITEM_SHUTDOWN ->
-                setPowerState(PowerStateKeys.STATE_SHUTDOWN)
+                getMainActivity().phoneNav.runOnlineOnly {
+                    setPowerState(PowerStateKeys.STATE_SHUTDOWN)
+                }
 
             R.id.menu_navigation_power -> {
-                getMainActivity().phoneNav.navigateToPower()
+                getMainActivity().phoneNav.runOnlineOnly {
+                    getMainActivity().phoneNav.navigateToPower()
+                }
             }
 
             R.id.menu_navigation_about -> {
@@ -150,7 +163,9 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
             }
 
             R.id.menu_navigation_sleeptimer ->
-                getSleepTimer(true)
+                getMainActivity().phoneNav.runOnlineOnly {
+                    getSleepTimer(true)
+                }
 
             R.id.menu_navigation_epg ->
                 navigateToEpg()
@@ -188,18 +203,20 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
      * @param enabled
      */
     fun onSetSleepTimer(time: String?, action: String?, enabled: Boolean) {
-        val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("cmd", SleepTimerKeys.CMD_SET))
-        params.add(NameValuePair("time", time))
-        params.add(NameValuePair("action", action))
+        getMainActivity().phoneNav.runOnlineOnly {
+            val params = ArrayList<NameValuePair>()
+            params.add(NameValuePair("cmd", SleepTimerKeys.CMD_SET))
+            params.add(NameValuePair("time", time))
+            params.add(NameValuePair("action", action))
 
-        if (enabled) {
-            params.add(NameValuePair("enabled", Python.TRUE))
-        } else {
-            params.add(NameValuePair("enabled", Python.FALSE))
+            if (enabled) {
+                params.add(NameValuePair("enabled", Python.TRUE))
+            } else {
+                params.add(NameValuePair("enabled", Python.FALSE))
+            }
+
+            execSleepTimerTask(params, false)
         }
-
-        execSleepTimerTask(params, false)
     }
 
     protected fun getSleepTimer(showDialogOnFinish: Boolean) {
@@ -275,14 +292,16 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
      * `helpers.enigma2.PowerState.STATE_*`
      */
     protected fun setPowerState(state: String) {
-        powerStateJob?.cancel(null)
+        getMainActivity().phoneNav.runOnlineOnly {
+            powerStateJob?.cancel(null)
 
-        powerStateJob = activity.launchPowerStateSetLoad(
-            state,
-            activity
-        ) { success, result, errorText ->
-            powerStateJob = null
-            onPowerStateSet(success, result, errorText)
+            powerStateJob = activity.launchPowerStateSetLoad(
+                state,
+                activity
+            ) { success, result, errorText ->
+                powerStateJob = null
+                onPowerStateSet(success, result, errorText)
+            }
         }
     }
 
@@ -295,7 +314,9 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
      * @param timeout Timeout for the message, 0 means no timeout will occur
      */
     fun onSendMessage(text: String?, type: String?, timeout: String?) {
-        execSimpleResultTask(MessageRequestHandler(), Message.getParams(text, type, timeout))
+        getMainActivity().phoneNav.runOnlineOnly {
+            execSimpleResultTask(MessageRequestHandler(), Message.getParams(text, type, timeout))
+        }
     }
 
     fun setAvailableFeatures() {

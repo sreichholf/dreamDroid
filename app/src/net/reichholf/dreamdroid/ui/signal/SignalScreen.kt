@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Signal
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 class SignalUiState {
     var enabled by mutableStateOf(true)
@@ -75,11 +76,13 @@ fun SignalScreen(
     state: SignalUiState,
     onEnabledChange: (Boolean) -> Unit,
     onAcousticChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    meterBlocked: Boolean = false
 ) {
     Column(
         modifier = modifier
             .fillMaxSize()
+            .onlineOnlyLook(meterBlocked)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
@@ -89,6 +92,10 @@ fun SignalScreen(
                 .toggleable(
                     value = state.enabled,
                     onValueChange = {
+                        if (meterBlocked) {
+                            onEnabledChange(it)
+                            return@toggleable
+                        }
                         state.enabled = it
                         onEnabledChange(it)
                     },

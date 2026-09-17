@@ -153,6 +153,7 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     destinationBarState.onDestinationSelected = { selectDestination(it) }
 
     HubNowPlaying(
+        handle = handle,
         reloadEpoch = nowPlayingReloadEpoch,
         hubState = destinationBarState
     )

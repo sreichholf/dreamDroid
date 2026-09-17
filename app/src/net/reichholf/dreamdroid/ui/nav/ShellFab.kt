@@ -35,11 +35,12 @@ fun BindShellFab(
     contentDescription: String,
     @DrawableRes iconRes: Int,
     onClick: () -> Unit,
-    text: String? = null
+    text: String? = null,
+    lookDisabled: Boolean = false
 ) {
     val view = LocalView.current
     val latestOnClick by rememberUpdatedState(onClick)
-    DisposableEffect(view, contentDescription, iconRes, text) {
+    DisposableEffect(view, contentDescription, iconRes, text, lookDisabled) {
         val activity = view.context.findActivity()
         val fab = activity?.findViewById<ExtendedFloatingActionButton>(R.id.fab_main)
         val epoch = if (fab != null) {
@@ -48,6 +49,7 @@ fun BindShellFab(
                 contentDescription = contentDescription,
                 iconRes = iconRes,
                 text = text,
+                lookDisabled = lookDisabled,
                 clickListener = View.OnClickListener { latestOnClick() },
                 longClickListener = View.OnLongClickListener { clicked ->
                     Toast.makeText(
@@ -87,12 +89,15 @@ internal fun presentShellFab(
     @DrawableRes iconRes: Int,
     text: String?,
     clickListener: View.OnClickListener,
-    longClickListener: View.OnLongClickListener
+    longClickListener: View.OnLongClickListener,
+    lookDisabled: Boolean = false
 ): Int {
     val epoch = ShellFabBindEpoch.claim()
     button.contentDescription = contentDescription
     button.setIconResource(iconRes)
     applyShellFabLabel(button, text)
+    button.alpha = if (lookDisabled) 0.38f else 1f
+    button.isEnabled = true
     button.setOnClickListener(clickListener)
     button.setOnLongClickListener(longClickListener)
     button.show()
@@ -110,6 +115,7 @@ internal fun releaseShellFab(
             return@Runnable
         }
         applyShellFabLabel(button, text = null)
+        button.alpha = 1f
         button.setOnClickListener(null)
         button.setOnLongClickListener(null)
         button.hide()

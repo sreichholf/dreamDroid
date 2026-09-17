@@ -56,6 +56,8 @@ import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
+import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
 
 /**
  * @author sre
@@ -200,14 +202,16 @@ class MainActivity :
         }
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
-        val hasCache = hasUseDrivenCache(DreamDroid.getCurrentProfile())
+        val hasCache = hasUseDrivenCache(DreamDroid.getCurrentProfile(), this)
         SessionConnectionHolder.shared.applyProfileCheckResult(result, hasCache)
         bindDrawerConnectionChip()
 
         if (result.hasError && !result.isSoftError) {
-            // Slice 2: keep the ProfileCheck gate. Do not skip for Unreachable/Auth;
-            // hasUseDrivenCache is false until the tab strip exists (slice 3).
-            showProfileCheckFailed(result)
+            if (shouldShowProfileCheckFailedUi(hasCache, result.failure)) {
+                showProfileCheckFailed(result)
+            } else if (phoneNav.isOnProfileCheckRoute()) {
+                leaveProfileCheckGate(isFirstStart)
+            }
         } else {
             dismissSnackbar()
             navigationHelper!!.setAvailableFeatures()
@@ -573,7 +577,10 @@ class MainActivity :
             currentProfile = p
             checkProfileJob?.cancel(null)
             checkProfileJob = null
-            showProfileCheckChecking(getString(R.string.checking_connection))
+            val hasCache = hasUseDrivenCache(p, this)
+            if (shouldShowProfileCheckCheckingUi(hasCache)) {
+                showProfileCheckChecking(getString(R.string.checking_connection))
+            }
             SessionConnectionHolder.shared.beginChecking()
             bindDrawerConnectionChip()
             checkProfileJob = launchCheckProfileLoad(

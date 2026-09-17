@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +29,8 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.loadSignal
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 private const val TAG = "SignalDestination"
 private const val MAX_SNR_DB = 20
@@ -39,10 +42,12 @@ private const val MIN_DELAY = 150
  * Phase 2.7c: Signal meter as a direct Compose NavHost destination (no nested Fragment).
  */
 @Composable
-fun SignalDestination(modifier: Modifier = Modifier) {
+fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val uiState = remember { SignalUiState() }
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val blocked = status.blocksMutations
     val handler = remember { Handler(Looper.getMainLooper()) }
     var isUpdating by remember { mutableStateOf(false) }
     var signalGeneration by remember { mutableIntStateOf(0) }
@@ -100,6 +105,9 @@ fun SignalDestination(modifier: Modifier = Modifier) {
     }
 
     fun reload() {
+        if (SessionConnectionHolder.shared.status.value.blocksMutations) {
+            return
+        }
         startTime = System.currentTimeMillis()
         setToolbarTitle("$baseTitle - ${context.getString(R.string.loading)}")
         if (isUpdating) {
@@ -143,11 +151,15 @@ fun SignalDestination(modifier: Modifier = Modifier) {
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(blocked) {
         val activity = context as? AppCompatActivity
         activity?.title = baseTitle
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        startPolling()
+        if (blocked) {
+            stopPolling()
+        } else {
+            startPolling()
+        }
         onDispose {
             stopPolling()
             activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
@@ -156,8 +168,11 @@ fun SignalDestination(modifier: Modifier = Modifier) {
 
     SignalScreen(
         state = uiState,
+        meterBlocked = blocked,
         onEnabledChange = { enabled ->
-            if (enabled) {
+            if (blocked) {
+                handle?.requestNeedsReceiver()
+            } else if (enabled) {
                 startPolling()
             } else {
                 stopPolling()

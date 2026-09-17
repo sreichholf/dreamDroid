@@ -10,6 +10,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -18,6 +20,8 @@ import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.epg.EpgDetailBody
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContent
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 /**
  * EPG-style now/next body with a single Stream action (no timer / IMDb / similar).
@@ -38,6 +42,7 @@ fun NowPlayingDetailScreen(
         ?.withServiceName("")
         ?.toEpgDetailContent(minutesShort)
     val canStream = currentServiceCanStream(current)
+    val streamBlocked = SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
     val emptyTitle = when {
         loading && current == null -> stringResource(R.string.loading)
         else -> serviceName.ifEmpty { stringResource(R.string.not_available) }
@@ -78,6 +83,7 @@ fun NowPlayingDetailScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
                     .padding(bottom = 16.dp)
+                    .onlineOnlyLook(streamBlocked)
             ) {
                 Text(stringResource(R.string.stream_current))
             }

@@ -21,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 private const val TAG = "ZapScreen"
 
@@ -99,11 +102,13 @@ fun ZapScreen(
 @Composable
 private fun ZapServiceCard(service: Service, onClick: () -> Unit, onLongClick: () -> Unit) {
     var piconLoaded by remember(service.reference, service.name) { mutableStateOf(false) }
+    val zapBlocked = SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
             .aspectRatio(16f / 9f)
+            .onlineOnlyLook(zapBlocked)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         PiconImage(

@@ -24,6 +24,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 
 private const val POLL_MS = 30_000L
@@ -35,7 +37,7 @@ private const val PROFILE_WAIT_MS = 20_000L
  * [DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP] is off.
  */
 @Composable
-fun HubNowPlaying(reloadEpoch: Int, hubState: TvMoviesHubState) {
+fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHubState) {
     val context = LocalContext.current
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -99,11 +101,13 @@ fun HubNowPlaying(reloadEpoch: Int, hubState: TvMoviesHubState) {
         if (!currentServiceCanStream(shown)) {
             return
         }
-        val service = shown?.service
-        val ref = service?.reference.orEmpty()
-        val name = service?.name.orEmpty()
-        val activity = context as AppCompatActivity
-        activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+        handle.runOnlineOnly {
+            val service = shown?.service
+            val ref = service?.reference.orEmpty()
+            val name = service?.name.orEmpty()
+            val activity = context as AppCompatActivity
+            activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+        }
     }
 
     LaunchedEffect(profileId) {

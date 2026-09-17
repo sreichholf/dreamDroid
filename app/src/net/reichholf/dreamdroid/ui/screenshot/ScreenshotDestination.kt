@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,6 +34,9 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadScreenshot
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Screenshot grab type / format constants (formerly on ScreenShotFragment).
@@ -69,10 +73,13 @@ fun ScreenshotDestination(
     actionsEnabled: Boolean = true,
     setTitle: Boolean = true,
     reloadTrigger: ScreenshotReloadTrigger? = null,
+    handle: PhoneNavHandle? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val blocked = status.blocksMutations
     val uiState = remember {
         ScreenshotUiState().apply { this.actionsEnabled = actionsEnabled }
     }
@@ -136,7 +143,10 @@ fun ScreenshotDestination(
         return params
     }
 
-    fun reload() {
+    fun grabFromReceiver() {
+        if (blocked) {
+            return
+        }
         uiState.loading = true
         loadJob?.cancel()
         loadJob = scope.launch {
@@ -150,6 +160,14 @@ fun ScreenshotDestination(
                         ?: context.getString(R.string.error)
                 )
             }
+        }
+    }
+
+    fun onUserReload() {
+        if (handle != null) {
+            handle.runOnlineOnly { grabFromReceiver() }
+        } else if (!blocked) {
+            grabFromReceiver()
         }
     }
 
@@ -255,7 +273,7 @@ fun ScreenshotDestination(
 
     LaunchedEffect(Unit) {
         if (rawImage.isEmpty()) {
-            reload()
+            grabFromReceiver()
         } else {
             onAvailable(rawImage)
         }
@@ -264,13 +282,14 @@ fun ScreenshotDestination(
     val triggerTick = reloadTrigger?.tick ?: 0
     LaunchedEffect(triggerTick) {
         if (triggerTick > 0) {
-            reload()
+            grabFromReceiver()
         }
     }
 
     ScreenshotScreen(
         state = uiState,
-        onReload = { reload() },
+        grabBlocked = blocked,
+        onReload = { onUserReload() },
         onShare = { share() },
         onSave = { saveToFile(false) },
         modifier = modifier

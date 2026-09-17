@@ -206,4 +206,23 @@ class VirtualRemoteScreenTest {
         composeRule.onNodeWithText("OK").assertIsDisplayed()
         composeRule.onNodeWithText("V+").assertIsDisplayed()
     }
+
+    @Test
+    fun blockedKeysStillReceiveClicks() {
+        var keyCode = -1
+        composeRule.setContent {
+            DreamDroidTheme {
+                VirtualRemoteScreen(
+                    layout = VirtualRemoteLayout.QuickZap,
+                    playButtonAsPlayPause = false,
+                    keysBlocked = true,
+                    onKey = { code, _ -> keyCode = code }
+                )
+            }
+        }
+        composeRule.onNodeWithText("OK").assertIsDisplayed()
+        composeRule.onNodeWithText("OK").performClick()
+        composeRule.waitForIdle()
+        assertTrue("blocked OK should still fire onKey, was $keyCode", keyCode >= 0)
+    }
 }

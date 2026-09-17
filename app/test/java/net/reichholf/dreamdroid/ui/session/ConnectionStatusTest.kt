@@ -212,7 +212,48 @@ class ConnectionStatusTest {
 
     @Test
     fun hasUseDrivenCacheIsFalseUntilTabStrip() {
-        val profile = Profile().apply { id = 1 }
-        assertFalse(hasUseDrivenCache(profile))
+        assertFalse(hasUseDrivenCache(emptyList()))
+        assertFalse(hasUseDrivenCache(Profile().apply { id = 1 }))
+        assertTrue(hasUseDrivenCache(listOf("1:7:1:FROM BOUQUET \"userbouquet.fav.tv\"")))
+    }
+
+    @Test
+    fun blocksMutationsUnlessSessionIsOnline() {
+        assertTrue(ConnectionStatus().blocksMutations)
+        assertTrue(
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Offline,
+                checking = false
+            ).blocksMutations
+        )
+        assertFalse(
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Online,
+                checking = true
+            ).blocksMutations
+        )
+        assertFalse(
+            ConnectionStatus(session = ConnectionStatus.Session.Online).blocksMutations
+        )
+    }
+
+    @Test
+    fun profileCheckCheckingUiSkipsWhenCacheExists() {
+        assertTrue(shouldShowProfileCheckCheckingUi(hasCache = false))
+        assertFalse(shouldShowProfileCheckCheckingUi(hasCache = true))
+    }
+
+    @Test
+    fun profileCheckFailedUiSkipsUnreachableWithCache() {
+        val unreachable = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Timeout)
+        assertTrue(shouldShowProfileCheckFailedUi(hasCache = false, failure = unreachable))
+        assertFalse(shouldShowProfileCheckFailedUi(hasCache = true, failure = unreachable))
+        assertFalse(shouldShowProfileCheckFailedUi(hasCache = true, failure = EnigmaFailure.Auth))
+        assertTrue(
+            shouldShowProfileCheckFailedUi(
+                hasCache = true,
+                failure = EnigmaFailure.Http(500, "Server Error")
+            )
+        )
     }
 }

@@ -171,6 +171,8 @@
     <string name="session_online">Online</string>
     <string name="session_offline">Offline</string>
     <string name="session_checking">Prüfung</string>
+    <string name="session_needs_receiver">Empfänger erforderlich</string>
+    <string name="session_needs_receiver_long">Verbinden Sie sich mit dem Empfänger, um das zu nutzen.</string>
     <string name="error">FEHLER!</string>
     <string name="check_connectivity">Verbindung prüfen</string>
     <string name="version_too_low">Version &lt; 1.6</string>

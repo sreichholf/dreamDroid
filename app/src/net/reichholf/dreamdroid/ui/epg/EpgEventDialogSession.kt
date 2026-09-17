@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 /**
  * Shared EPG detail-sheet actions for bouquet / service / search / hub destinations.
@@ -50,26 +51,30 @@ class EpgEventDialogSession {
         val host = handle ?: return
         val ctx = context ?: return
         val item = currentItem ?: return
-        progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-        host.launchSimpleResultLoad(
-            TimerAddByEventIdRequestHandler(),
-            Timer.getEventIdParams(item)
-        ) { _, result, error ->
-            dismissProgress()
-            var toastText = ctx.getText(R.string.get_content_error).toString()
-            val stateText = result.stateText
-            when {
-                !stateText.isNullOrEmpty() -> toastText = stateText
-                error != null -> toastText = error.resolve(ctx).orEmpty()
+        host.runOnlineOnly {
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
+            host.launchSimpleResultLoad(
+                TimerAddByEventIdRequestHandler(),
+                Timer.getEventIdParams(item)
+            ) { _, result, error ->
+                dismissProgress()
+                var toastText = ctx.getText(R.string.get_content_error).toString()
+                val stateText = result.stateText
+                when {
+                    !stateText.isNullOrEmpty() -> toastText = stateText
+                    error != null -> toastText = error.resolve(ctx).orEmpty()
+                }
+                Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
             }
-            Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
         }
     }
 
     fun onEditTimer() {
         val host = handle ?: return
         val item = currentItem ?: return
-        host.navigateToTimerEdit(Timer.createByEvent(item), true)
+        host.runOnlineOnly {
+            host.navigateToTimerEdit(Timer.createByEvent(item), true)
+        }
     }
 
     fun onFindSimilar() {
