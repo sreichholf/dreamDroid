@@ -168,6 +168,9 @@
     <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
     <string name="checking">prüfe…</string>
+    <string name="session_online">Online</string>
+    <string name="session_offline">Offline</string>
+    <string name="session_checking">Prüfung</string>
     <string name="error">FEHLER!</string>
     <string name="check_connectivity">Verbindung prüfen</string>
     <string name="version_too_low">Version &lt; 1.6</string>
