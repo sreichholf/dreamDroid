@@ -364,13 +364,9 @@ class HubServiceListSession : MenuProvider {
     }
 
     private suspend fun applyCachedRoster(generation: Int): Boolean {
-        val dao = rosterDao
-        val pid = profileId
-        val cached = if (dao != null && pid != null) {
-            UserBouquetCache.loadRosterNowNext(dao, pid, currentRef)
-        } else {
-            null
-        } ?: return false
+        val dao = rosterDao ?: return false
+        val pid = profileId ?: return false
+        val cached = UserBouquetCache.loadRosterNowNext(dao, pid, currentRef) ?: return false
         val nowSec = System.currentTimeMillis() / 1000L
         val epg = epgDao
         val events = if (epg != null) {
