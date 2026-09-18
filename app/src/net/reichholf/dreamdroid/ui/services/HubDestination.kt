@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -45,6 +46,8 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
 
 private const val MODE_TV = "TV"
 private const val MODE_RADIO = "Radio"
@@ -200,60 +203,9 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         }
     }
 
-    LaunchedEffect(Unit) {
-        // Cold start often composes the hub (changelog / early navigate) before
-        // CheckProfile finishes; wait briefly so bouquet HTTP uses a ready client.
-        withTimeoutOrNull(20_000) {
-            while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
-                delay(100)
-            }
-        }
-        val result = loadBouquetList(context.applicationContext)
-        val profileId = DreamDroid.getCurrentProfile().id
-        val excluded = UserBouquetCache.excludedHubTabRefs(context)
-        var painted = result.bouquets
-        var usedCache = false
-        if (profileId != null) {
-            val dao = AppDatabase.roster(context)
-            if (result.tvLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_TV,
-                    result.bouquets.tv,
-                    excluded
-                )
-            }
-            if (result.radioLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO,
-                    result.bouquets.radio,
-                    excluded
-                )
-            }
-            val cachedTv = UserBouquetCache.loadTabStripServices(
-                dao,
-                profileId,
-                UserBouquetCache.KIND_TV
-            )
-            val cachedRadio = UserBouquetCache.loadTabStripServices(
-                dao,
-                profileId,
-                UserBouquetCache.KIND_RADIO
-            )
-            val resolved = bouquetsAfterHttpOrCache(
-                result.success,
-                result.bouquets,
-                cachedTv,
-                cachedRadio
-            )
-            painted = resolved.first
-            usedCache = resolved.second
-        }
+    fun applyPaintedBouquets(painted: Bouquets, error: String?) {
         bouquets = painted
-        bouquetError = if (usedCache) null else result.errorText
+        bouquetError = error
         when (mode) {
             MODE_TV -> {
                 val list = buildDedicatedBouquets(
@@ -289,6 +241,84 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
 
             else -> selectedRow = 0
         }
+    }
+
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(connectionSession) {
+        val profileId = DreamDroid.getCurrentProfile().id
+        val excluded = UserBouquetCache.excludedHubTabRefs(context)
+        val dao = if (profileId != null) AppDatabase.roster(context) else null
+        val cachedTv = if (dao != null && profileId != null) {
+            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_TV)
+        } else {
+            emptyList()
+        }
+        val cachedRadio = if (dao != null && profileId != null) {
+            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_RADIO)
+        } else {
+            emptyList()
+        }
+        val hasStrip = cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()
+        if (hasStrip) {
+            val cached = Bouquets()
+            cached.tv.addAll(cachedTv)
+            cached.radio.addAll(cachedRadio)
+            applyPaintedBouquets(cached, error = null)
+        }
+        val status = SessionConnectionHolder.shared.status.value
+        if (status.shouldSkipReceiverHttp(hasStrip)) {
+            return@LaunchedEffect
+        }
+        if (shouldWaitForDeviceInfo(hasStrip)) {
+            // Cold start often composes the hub before CheckProfile finishes;
+            // wait so bouquet HTTP uses a ready client when Room cannot paint.
+            withTimeoutOrNull(20_000) {
+                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
+                    delay(100)
+                }
+            }
+        }
+        val result = loadBouquetList(context.applicationContext)
+        var painted = result.bouquets
+        var usedCache = false
+        if (dao != null && profileId != null) {
+            if (result.tvLoaded) {
+                UserBouquetCache.replaceTabStrip(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_TV,
+                    result.bouquets.tv,
+                    excluded
+                )
+            }
+            if (result.radioLoaded) {
+                UserBouquetCache.replaceTabStrip(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_RADIO,
+                    result.bouquets.radio,
+                    excluded
+                )
+            }
+            val resolved = bouquetsAfterHttpOrCache(
+                result.success,
+                result.bouquets,
+                UserBouquetCache.loadTabStripServices(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_TV
+                ),
+                UserBouquetCache.loadTabStripServices(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_RADIO
+                )
+            )
+            painted = resolved.first
+            usedCache = resolved.second
+        }
+        applyPaintedBouquets(painted, if (usedCache) null else result.errorText)
     }
 
     DisposableEffect(handle) {

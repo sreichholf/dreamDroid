@@ -92,6 +92,50 @@ class NowPlayingStripTest {
                 unavailableText = "Not available"
             )
         )
+        assertEquals(
+            "Offline",
+            nowPlayingHeadline(
+                ready = true,
+                serviceName = "",
+                eventTitle = "",
+                loadingText = "Loading",
+                unavailableText = nowPlayingFallbackText(
+                    sessionOffline = true,
+                    offlineText = "Offline",
+                    unavailableText = "Not available"
+                )
+            )
+        )
+        assertEquals(
+            "Not available",
+            nowPlayingFallbackText(
+                sessionOffline = false,
+                offlineText = "Offline",
+                unavailableText = "Not available"
+            )
+        )
+    }
+
+    @Test
+    fun offlineStripShowsOfflineHeadline() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                NowPlayingStrip(
+                    label = "Now",
+                    headline = nowPlayingFallbackText(
+                        sessionOffline = true,
+                        offlineText = "Offline",
+                        unavailableText = "Not available"
+                    ),
+                    progress = 0f,
+                    serviceReference = "",
+                    serviceName = "",
+                    onClick = {}
+                )
+            }
+        }
+        composeRule.onNodeWithText("Offline").assertIsDisplayed()
+        composeRule.onNodeWithText("Not available").assertDoesNotExist()
     }
 
     @Test

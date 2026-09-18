@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -14,13 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.loadEventList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Phase 2.7f: per-service EPG as a direct Compose NavHost destination.
@@ -53,7 +57,7 @@ fun ServiceEpgDestination(
         (context as? AppCompatActivity)?.title = title
     }
 
-    fun reload() {
+    fun reload(forceRefresh: Boolean = false) {
         if (serviceRef.isEmpty()) {
             handle.popNavBackStack()
             return
@@ -67,25 +71,59 @@ fun ServiceEpgDestination(
         setToolbarTitle(context.getString(R.string.loading))
         loadJob?.cancel()
         loadJob = scope.launch {
+            val profileId = DreamDroid.getCurrentProfile().id
+            val dao = AppDatabase.epg(context)
+            val status = SessionConnectionHolder.shared.status.value
+            val nowSec = System.currentTimeMillis() / 1000L
+            suspend fun paintCache(): Boolean {
+                val cached = if (profileId != null) {
+                    ListEpgCache.loadServiceEvents(dao, profileId, serviceRef, nowSec)
+                } else {
+                    null
+                } ?: return false
+                refresh.setRefreshing(false)
+                setToolbarTitle(finishedTitle())
+                if (cached.isEmpty()) {
+                    listState.replaceAll(emptyList())
+                    emptyMessage = context.getString(R.string.no_list_item)
+                } else {
+                    emptyMessage = null
+                    listState.replaceAll(cached)
+                }
+                return true
+            }
+            val hadCache = if (!forceRefresh) {
+                paintCache()
+            } else {
+                false
+            }
+            if (!forceRefresh && status.shouldSkipReceiverHttp(hadCache)) {
+                return@launch
+            }
             val result = loadEventList(
                 context.applicationContext,
                 listOf(NameValuePair("sRef", serviceRef)),
                 URIStore.EPG_SERVICE
             )
-            refresh.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
-            if (!result.success) {
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
+            if (result.success) {
+                refresh.setRefreshing(false)
+                setToolbarTitle(finishedTitle())
+                if (result.events.isEmpty()) {
+                    listState.replaceAll(emptyList())
+                    emptyMessage = context.getString(R.string.no_list_item)
+                } else {
+                    emptyMessage = null
+                    listState.replaceAll(result.events)
+                }
                 return@launch
             }
-            if (result.events.isEmpty()) {
-                listState.replaceAll(emptyList())
-                emptyMessage = context.getString(R.string.no_list_item)
-            } else {
-                emptyMessage = null
-                listState.replaceAll(result.events)
+            if (paintCache()) {
+                return@launch
             }
+            refresh.setRefreshing(false)
+            setToolbarTitle(finishedTitle())
+            listState.replaceAll(emptyList())
+            emptyMessage = result.errorText
         }
     }
 
@@ -98,7 +136,9 @@ fun ServiceEpgDestination(
         }
     }
 
-    LaunchedEffect(serviceRef) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(serviceRef, connectionSession) {
         if (serviceRef.isEmpty()) {
             handle.popNavBackStack()
         } else {
@@ -108,7 +148,7 @@ fun ServiceEpgDestination(
 
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
-        onRefresh = { reload() },
+        onRefresh = { reload(forceRefresh = true) },
         enabled = refresh.enabled,
         modifier = modifier
     ) {

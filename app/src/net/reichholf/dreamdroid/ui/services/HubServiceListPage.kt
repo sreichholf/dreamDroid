@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -11,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +32,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
@@ -54,6 +57,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -149,7 +153,9 @@ fun HubServiceListPage(
         currentName = bouquetName
     }
 
-    LaunchedEffect(currentRef, currentName) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(currentRef, currentName, connectionSession) {
         session.currentRef = currentRef
         session.currentName = currentName
         session.reload()
@@ -157,7 +163,7 @@ fun HubServiceListPage(
 
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload() },
+        onRefresh = { session.reload(forceRefresh = true) },
         enabled = refresh.enabled,
         modifier = modifier
     ) {
@@ -165,7 +171,7 @@ fun HubServiceListPage(
             ListEmptyState(
                 loading = refresh.isRefreshing,
                 message = emptyMessage,
-                onRetry = { session.reload() }
+                onRetry = { session.reload(forceRefresh = true) }
             )
         } else {
             ServiceListScreen(
@@ -204,6 +210,13 @@ class HubServiceListSession : MenuProvider {
     var rosterDao: RosterDao? = null
     var epgDao: EpgDao? = null
     var excludedTabRefs: Set<String> = emptySet()
+    var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
+        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+    }
+    var loadNowNext: suspend (Context, List<NameValuePair>) -> EpgNowNextLoadResult =
+        { context, params ->
+            loadEpgNowNext(context, params)
+        }
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var zapJob: Job? = null
@@ -214,7 +227,8 @@ class HubServiceListSession : MenuProvider {
         generation: Int,
         success: Boolean,
         rows: List<ServiceNowNext>,
-        errorText: String?
+        errorText: String?,
+        persist: Boolean = true
     ) {
         if (generation != loadGeneration) {
             return
@@ -239,7 +253,9 @@ class HubServiceListSession : MenuProvider {
             this.rows?.addAll(rows)
             state.replaceAll(serviceListItemsFromNowNext(rows))
         }
-        persistRoster(rows)
+        if (persist) {
+            persistRoster(rows)
+        }
     }
 
     private fun fillEpgNowChunk() {
@@ -308,7 +324,7 @@ class HubServiceListSession : MenuProvider {
         return listOf(NameValuePair(param, currentRef))
     }
 
-    fun reload() {
+    fun reload(forceRefresh: Boolean = false) {
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -323,45 +339,54 @@ class HubServiceListSession : MenuProvider {
         val generation = beginLoad()
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
-            val result = loadEpgNowNext(ctx.applicationContext, httpParams())
-            if (result.success) {
-                applyLoadResult(generation, true, result.rows, null)
-                fillEpgNowChunk()
-                return@launch
-            }
-            val dao = rosterDao
-            val pid = profileId
-            val cached = if (dao != null && pid != null) {
-                UserBouquetCache.loadRosterNowNext(dao, pid, currentRef)
-            } else {
-                null
-            }
-            if (cached != null) {
-                val nowSec = System.currentTimeMillis() / 1000L
-                val epg = epgDao
-                val overlayPid = pid
-                val events = if (epg != null && overlayPid != null) {
-                    val chunk = MultiEpgWindows.chunkContaining(nowSec)
-                    epg.eventsOverlapping(
-                        overlayPid,
-                        currentRef,
-                        chunk.startSec,
-                        chunk.endSec
-                    )
-                } else {
-                    emptyList()
-                }
-                applyLoadResult(
-                    generation,
-                    true,
-                    overlayNowNext(cached, events, nowSec),
-                    null
-                )
-            } else {
-                applyLoadResult(generation, false, emptyList(), result.errorText)
-            }
+            loadAndApply(generation, forceRefresh)
         }
         onLoadJob?.invoke(loadJob)
+    }
+
+    suspend fun loadAndApply(generation: Int, forceRefresh: Boolean = false) {
+        val ctx = context ?: return
+        if (!forceRefresh) {
+            val hadCache = applyCachedRoster(generation)
+            if (shouldSkipReceiverHttp(hadCache)) {
+                return
+            }
+        }
+        val result = loadNowNext(ctx.applicationContext, httpParams())
+        if (generation != loadGeneration) {
+            return
+        }
+        if (result.success) {
+            applyLoadResult(generation, true, result.rows, null)
+            fillEpgNowChunk()
+            return
+        }
+        if (applyCachedRoster(generation)) {
+            return
+        }
+        applyLoadResult(generation, false, emptyList(), result.errorText)
+    }
+
+    private suspend fun applyCachedRoster(generation: Int): Boolean {
+        val dao = rosterDao ?: return false
+        val pid = profileId ?: return false
+        val cached = UserBouquetCache.loadRosterNowNext(dao, pid, currentRef) ?: return false
+        val nowSec = System.currentTimeMillis() / 1000L
+        val epg = epgDao
+        val events = if (epg != null) {
+            val chunk = MultiEpgWindows.chunkContaining(nowSec)
+            epg.eventsOverlapping(pid, currentRef, chunk.startSec, chunk.endSec)
+        } else {
+            emptyList()
+        }
+        applyLoadResult(
+            generation,
+            true,
+            overlayNowNext(cached, events, nowSec),
+            null,
+            persist = false
+        )
+        return true
     }
 
     fun onItemClick(item: ServiceListItem, isLong: Boolean, windowX: Int, windowY: Int) {

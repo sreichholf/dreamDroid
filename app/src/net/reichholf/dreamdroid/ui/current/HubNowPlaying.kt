@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +28,8 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 private const val POLL_MS = 30_000L
 private const val PROFILE_WAIT_MS = 20_000L
@@ -77,10 +80,23 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val loadingText = stringResource(R.string.loading)
-    val unavailableText = stringResource(R.string.not_available)
-    val shown = current.takeIf { gate.lastGoodProfileId == profileId }
+    val session = SessionConnectionHolder.shared.status.collectAsState().value.session
+    val unavailableText = nowPlayingFallbackText(
+        sessionOffline = session == ConnectionStatus.Session.Offline,
+        offlineText = stringResource(R.string.session_offline),
+        unavailableText = stringResource(R.string.not_available)
+    )
+    val shown = current.takeIf {
+        gate.lastGoodProfileId == profileId && session != ConnectionStatus.Session.Offline
+    }
 
     fun reload() {
+        if (SessionConnectionHolder.shared.status.value.session ==
+            ConnectionStatus.Session.Offline
+        ) {
+            ready = true
+            return
+        }
         val generation = gate.beginLoad()
         val loadProfileId = DreamDroid.getCurrentProfile().id ?: -1
         loadJob?.cancel()
@@ -110,12 +126,18 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
         }
     }
 
-    LaunchedEffect(profileId) {
+    LaunchedEffect(profileId, session) {
         current = gate.visible(profileId)
         ready = current != null
-        withTimeoutOrNull(PROFILE_WAIT_MS) {
-            while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
-                delay(100)
+        if (session == ConnectionStatus.Session.Offline) {
+            ready = true
+            return@LaunchedEffect
+        }
+        if (session != ConnectionStatus.Session.Online) {
+            withTimeoutOrNull(PROFILE_WAIT_MS) {
+                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
+                    delay(100)
+                }
             }
         }
         reload()

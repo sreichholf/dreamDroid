@@ -68,6 +68,21 @@ class TvMoviesScreenTest {
     }
 
     @Test
+    fun nowStripShowsOfflineHeadline() {
+        val state = TvMoviesHubState().apply {
+            nowPlayingHeadline = "Offline"
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                TvMoviesShellChrome(state = state)
+            }
+        }
+        composeRule.onNodeWithText("Now").assertIsDisplayed()
+        composeRule.onNodeWithText("Offline").assertIsDisplayed()
+        composeRule.onNodeWithText("Not available").assertDoesNotExist()
+    }
+
+    @Test
     fun hidesNowStripWhenDisabled() {
         val state = TvMoviesHubState().apply {
             nowPlayingStripEnabled = false

@@ -57,6 +57,12 @@ data class ConnectionStatus(
      */
     val blocksMutations: Boolean
         get() = session != Session.Online
+
+    /**
+     * First paint should not wait on Enigma HTTP when Offline and a use-driven
+     * cache can already paint. Pull-to-refresh still forces a live fetch.
+     */
+    fun shouldSkipReceiverHttp(hasCache: Boolean): Boolean = hasCache && session == Session.Offline
 }
 
 /**
@@ -88,6 +94,9 @@ fun hasUseDrivenCache(profile: Profile): Boolean {
     val context = DreamDroid.getAppContext() ?: return false
     return hasUseDrivenCache(profile, context)
 }
+
+/** Skip the hub 20s device-info wait when Room can paint the start surface. */
+fun shouldWaitForDeviceInfo(hasCache: Boolean): Boolean = !hasCache
 
 /** Skip the checking gate when the TV/Radio tab strip can paint the start route. */
 fun shouldShowProfileCheckCheckingUi(hasCache: Boolean): Boolean = !hasCache

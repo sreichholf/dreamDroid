@@ -247,6 +247,19 @@ class ConnectionStatusTest {
     }
 
     @Test
+    fun skipReceiverHttpOnlyWhenOfflineAndCacheExists() {
+        val offline = ConnectionStatus(session = ConnectionStatus.Session.Offline)
+        val online = ConnectionStatus(session = ConnectionStatus.Session.Online)
+        val checking = ConnectionStatus(checking = true)
+        assertTrue(offline.shouldSkipReceiverHttp(hasCache = true))
+        assertFalse(offline.shouldSkipReceiverHttp(hasCache = false))
+        assertFalse(online.shouldSkipReceiverHttp(hasCache = true))
+        assertFalse(checking.shouldSkipReceiverHttp(hasCache = true))
+        assertFalse(shouldWaitForDeviceInfo(hasCache = true))
+        assertTrue(shouldWaitForDeviceInfo(hasCache = false))
+    }
+
+    @Test
     fun profileCheckCheckingUiSkipsWhenCacheExists() {
         assertTrue(shouldShowProfileCheckCheckingUi(hasCache = false))
         assertFalse(shouldShowProfileCheckCheckingUi(hasCache = true))
