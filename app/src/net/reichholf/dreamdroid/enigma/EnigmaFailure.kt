@@ -105,6 +105,12 @@ sealed class EnigmaFailure {
 /** Thrown when MultiEPG (and similar) must fail a fetch with a typed [EnigmaFailure]. */
 class EnigmaFailureException(val failure: EnigmaFailure) : Exception()
 
+/** DNS / connect / timeout / SSL belong on the session chip, not in-content copy. */
+fun Throwable.isUnreachableEnigmaFailure(): Boolean {
+    val exception = this as? EnigmaFailureException ?: return false
+    return exception.failure is EnigmaFailure.Unreachable
+}
+
 fun Throwable.toEnigmaDisplayMessage(context: Context): String {
     if (this is EnigmaFailureException) {
         return failure.userMessage(context)

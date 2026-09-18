@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.multiepg
 
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaServiceFlags
 
 /** One programme bar in the MultiEPG grid (precomputed unix bounds). */
@@ -58,7 +59,11 @@ fun applyBouquetRoster(
     if (error != null) {
         return AppliedBouquetRoster(
             roster = previous,
-            errorMessage = formatError(error)
+            errorMessage = if (error.isUnreachableEnigmaFailure()) {
+                null
+            } else {
+                formatError(error)
+            }
         )
     }
     return AppliedBouquetRoster(

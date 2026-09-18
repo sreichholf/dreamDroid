@@ -6,6 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
@@ -13,6 +15,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -667,6 +670,175 @@ class MultiEpgSessionTest {
         assertEquals(null, session.errorMessage)
         session.cancel()
         hang.cancel()
+    }
+
+    @Test
+    fun offlineEventsWithoutChunkMetaPaintWithoutHttp() = runBlocking {
+        val hang = CompletableDeferred<Unit>()
+        val fetches = AtomicInteger(0)
+        val bouquetCalls = AtomicInteger(0)
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val bouquet = "bouquet-a"
+        db.epgDao().upsertEvents(
+            listOf(
+                programme(id = "e-room", title = "HubFill", start = t0)
+            ).toEpgEventEntities(1, bouquet)
+        )
+        assertNull(
+            db.epgDao().getChunk(1, bouquet, MultiEpgWindows.chunkContaining(t0).startSec)
+        )
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ ->
+                fetches.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 1_000L
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            persistBouquet = { false },
+            isSessionOffline = { true },
+            loadBouquetServices = {
+                bouquetCalls.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            }
+        )
+        session.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
+        assertEquals("HubFill", titleOnFocusedChunk(session, t0))
+        assertEquals(0, fetches.get())
+        assertEquals(0, bouquetCalls.get())
+        assertEquals(null, session.errorMessage)
+        session.cancel()
+        hang.cancel()
+    }
+
+    @Test
+    fun offlineSkipDoesNotWaitOnHangingGetservices() = runBlocking {
+        val hang = CompletableDeferred<Unit>()
+        val fetches = AtomicInteger(0)
+        val bouquetCalls = AtomicInteger(0)
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ ->
+                fetches.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 1_000L
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            persistBouquet = { false },
+            isSessionOffline = { true },
+            loadBouquetServices = {
+                bouquetCalls.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            }
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        session.awaitIdle()
+        assertEquals(0, fetches.get())
+        assertEquals(0, bouquetCalls.get())
+        assertEquals(null, session.errorMessage)
+        session.cancel()
+        hang.cancel()
+    }
+
+    @Test
+    fun checkingOverlapPeekStillHitsHttp() = runBlocking {
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val bouquet = "bouquet-a"
+        db.epgDao().upsertEvents(
+            listOf(
+                programme(id = "e-room", title = "HubFill", start = t0)
+            ).toEpgEventEntities(1, bouquet)
+        )
+        val fetches = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.incrementAndGet()
+                listOf(programme(id = "e-$time", title = "Live", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 1_000L
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet"
+        )
+        session.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
+        session.awaitIdle()
+        assertTrue(fetches.get() >= 1)
+        assertEquals("Live", titleOnFocusedChunk(session, t0))
+    }
+
+    @Test
+    fun offlinePullRefreshUnreachableKeepsGridWithoutHostError() = runBlocking {
+        val fetches = AtomicInteger(0)
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (fetches.incrementAndGet() > 1) {
+                    throw EnigmaFailureException(
+                        EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                    )
+                }
+                listOf(programme(id = "e-$time", title = "Cached", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        sync.ensureChunk(1, "bouquet-a", t0)
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            persistBouquet = { false },
+            isSessionOffline = { true },
+            loadBouquetServices = {
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            }
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        session.awaitIdle()
+        assertEquals("Cached", titleOnFocusedChunk(session, t0))
+        assertEquals(null, session.errorMessage)
+
+        session.load(t0, forceRefresh = true, isPull = true)
+        session.awaitIdle()
+        assertEquals("Cached", titleOnFocusedChunk(session, t0))
+        assertEquals(null, session.errorMessage)
+        assertTrue(fetches.get() >= 2)
     }
 
     @Test

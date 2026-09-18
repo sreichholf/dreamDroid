@@ -46,24 +46,46 @@ class MultiEpgSync(
     )
 
     /**
-     * Room peek for the chunk containing [unixSec], ignoring TTL.
-     * Used to paint immediately while a background refresh runs.
+     * Room peek for the bouquet at [unixSec], ignoring TTL.
+     * A stored chunk meta hits the UTC window; otherwise events overlapping
+     * now for 24 h (same query as [net.reichholf.dreamdroid.ui.epg.ListEpgCache])
+     * still paint even when hub fill never wrote `epg_chunk`.
      */
     suspend fun peekChunk(profileId: Int, bouquetRef: String, unixSec: Long): CachedChunk? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
         val meta = withContext(Dispatchers.IO) {
             dao.getChunk(profileId, bouquetRef, chunk.startSec)
-        } ?: return null
-        val events = withContext(Dispatchers.IO) {
+        }
+        if (meta != null) {
+            val events = withContext(Dispatchers.IO) {
+                dao.eventsOverlapping(
+                    profileId,
+                    bouquetRef,
+                    chunk.startSec,
+                    chunk.endSec
+                ).map { it.toEvent() }
+            }
+            val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
+            return CachedChunk(events, chunk.startSec, chunk.endSec, meta.fetchedAtMs, fresh)
+        }
+        val overlapping = withContext(Dispatchers.IO) {
             dao.eventsOverlapping(
                 profileId,
                 bouquetRef,
-                chunk.startSec,
-                chunk.endSec
+                unixSec,
+                unixSec + chunkSeconds
             ).map { it.toEvent() }
         }
-        val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
-        return CachedChunk(events, chunk.startSec, chunk.endSec, meta.fetchedAtMs, fresh)
+        if (overlapping.isEmpty()) {
+            return null
+        }
+        return CachedChunk(
+            events = overlapping,
+            windowStart = chunk.startSec,
+            windowEnd = chunk.endSec,
+            fetchedAtMs = 0L,
+            fresh = false
+        )
     }
 
     /**

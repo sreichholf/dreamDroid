@@ -19,11 +19,13 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
 
 /**
  * Stale-while-revalidate MultiEPG grid session: peek Room, refresh and prefetch
  * in the background, keep stale rows on error, replace on bouquet/profile remount.
- * Offline with a chunk or roster paints Room and skips Enigma HTTP.
+ * Offline skips Enigma HTTP (pull-to-refresh still fetches). Room paints from a
+ * stored chunk or from events overlapping now for 24 h, like list EPG.
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
  * is the earliest start among programmes overlapping [originFloorSec] ("now"),
@@ -44,6 +46,7 @@ class MultiEpgSession(
     },
     private val persistBouquet: (String) -> Boolean = { true },
     private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
+    private val isSessionOffline: () -> Boolean = { false },
     private val loadCachedRoster: suspend (Int, String) -> List<Service>? =
         { _, _ -> null },
     private val loadCachedTimers: suspend (Int) -> List<Timer>? = { null }
@@ -159,7 +162,8 @@ class MultiEpgSession(
                     }
                 }
                 val hasCache = peek != null || cachedRoster != null
-                if (!forceRefresh && shouldSkipReceiverHttp(hasCache)) {
+                val skipHttp = isSessionOffline() || shouldSkipReceiverHttp(hasCache)
+                if (!forceRefresh && skipHttp) {
                     val cachedTimers = withContext(Dispatchers.IO) {
                         loadCachedTimers(id)
                     }
@@ -218,7 +222,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = formatError(t)
+                surfaceError(t)
             } finally {
                 pullRefreshing = false
                 endSync()
@@ -279,7 +283,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = formatError(t)
+                surfaceError(t)
             } finally {
                 endSync()
             }
@@ -308,7 +312,7 @@ class MultiEpgSession(
                 if (t is kotlinx.coroutines.CancellationException) {
                     throw t
                 }
-                errorMessage = formatError(t)
+                surfaceError(t)
             } finally {
                 endSync()
             }
@@ -421,6 +425,12 @@ class MultiEpgSession(
         gridMutex.withLock {
             timers = list
             timerClocks = buildMultiEpgTimerClocks(channels, timers)
+        }
+    }
+
+    private fun surfaceError(t: Throwable) {
+        if (!t.isUnreachableEnigmaFailure()) {
+            errorMessage = formatError(t)
         }
     }
 

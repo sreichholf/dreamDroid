@@ -37,6 +37,7 @@ import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -105,6 +106,10 @@ fun MultiEpgDestination(
             persistBouquet = persistGate::persist,
             shouldSkipReceiverHttp = { hasCache ->
                 SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+            },
+            isSessionOffline = {
+                SessionConnectionHolder.shared.status.value.session ==
+                    ConnectionStatus.Session.Offline
             },
             loadCachedRoster = { profileId, ref ->
                 UserBouquetCache.loadRosterServices(

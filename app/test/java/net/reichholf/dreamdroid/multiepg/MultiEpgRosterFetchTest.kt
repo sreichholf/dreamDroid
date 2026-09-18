@@ -40,6 +40,24 @@ class MultiEpgRosterFetchTest {
     }
 
     @Test
+    fun unreachableGetservicesDoesNotSetErrorMessage() {
+        val previous = playableMultiEpgRoster(
+            listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
+        )
+        val applied = applyBouquetRoster(
+            previous,
+            MultiEpgRosterFetch(
+                error = EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            ),
+            formatError = { "host_not_found" }
+        )
+        assertSame(previous, applied.roster)
+        assertEquals(null, applied.errorMessage)
+    }
+
+    @Test
     fun successfulEmptyRosterReplacesPrevious() {
         val previous = listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
         val applied = applyBouquetRoster(previous, MultiEpgRosterFetch(emptyList()))
