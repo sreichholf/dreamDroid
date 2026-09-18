@@ -1,5 +1,8 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.462
+* NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
+
 ## 2.0.461
 * NEU: MultiEPG — grafische EPG-Übersicht
 * NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)

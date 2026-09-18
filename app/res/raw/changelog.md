@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.462
+* NEW: Settings option to reset the offline cache (current profile or all profiles)
+
 ## 2.0.461
 * NEW: MultiEPG — graphical EPG grid
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
