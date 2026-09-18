@@ -177,6 +177,10 @@
     <string name="profile">Profile</string>
     <string name="auto_switch_profile_wifi_based">Auto Profile switch</string>
     <string name="auto_switch_profile_wifi_based_long">Automatically switch profile based on Wifi connection</string>
+    <string name="reset_cache">Reset cache</string>
+    <string name="reset_cache_long">Clear the offline cache for this profile</string>
+    <string name="reset_cache_confirm">Delete the offline cache for the current profile? Lists, EPG, timers, and movies will be fetched again when the receiver is reachable.</string>
+    <string name="reset_cache_done">Cache reset</string>
     <string name="profile_name">Profile name</string>
     <string name="profile_updated">Updated profile</string>
     <string name="profile_added">Added profile</string>

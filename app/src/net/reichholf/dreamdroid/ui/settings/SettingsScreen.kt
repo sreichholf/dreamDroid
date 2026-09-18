@@ -40,6 +40,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 @Composable
@@ -52,10 +53,12 @@ fun SettingsScreen(
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
+    onResetCache: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
     var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
+    var resetConfirm by remember { mutableStateOf(false) }
 
     val themeEntries = stringArrayResource(R.array.theme_option_entries)
     val themeValues = stringArrayResource(R.array.theme_option_values)
@@ -322,6 +325,12 @@ fun SettingsScreen(
             }
         )
 
+        ActionPreferenceRow(
+            title = stringResource(R.string.reset_cache),
+            summary = stringResource(R.string.reset_cache_long),
+            onClick = { resetConfirm = true }
+        )
+
         ActionPreferenceRow(stringResource(R.string.about), DreamDroid.VERSION_STRING, onAbout)
         ActionPreferenceRow(stringResource(R.string.changelog), null, onChangelog)
         ActionPreferenceRow(stringResource(R.string.backup), null, onBackup)
@@ -349,6 +358,16 @@ fun SettingsScreen(
                 state.setString(dialog.key, value)
                 editDialog = null
             }
+        )
+    }
+
+    if (resetConfirm) {
+        ConfirmAlertDialog(
+            title = stringResource(R.string.reset_cache),
+            message = stringResource(R.string.reset_cache_confirm),
+            onDismiss = { resetConfirm = false },
+            onConfirm = onResetCache,
+            destructive = true
         )
     }
 }
@@ -561,7 +580,8 @@ fun ComposeView.bindSettingsScreen(
     onMultiEpgSyncTest: () -> Unit = {},
     onAbout: () -> Unit,
     onChangelog: () -> Unit,
-    onBackup: () -> Unit
+    onBackup: () -> Unit,
+    onResetCache: () -> Unit = {}
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -574,7 +594,8 @@ fun ComposeView.bindSettingsScreen(
                 onMultiEpgSyncTest = onMultiEpgSyncTest,
                 onAbout = onAbout,
                 onChangelog = onChangelog,
-                onBackup = onBackup
+                onBackup = onBackup,
+                onResetCache = onResetCache
             )
         }
     }

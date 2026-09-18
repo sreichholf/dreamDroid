@@ -136,6 +136,10 @@
     <string name="profile">Profil</string>
     <string name="auto_switch_profile_wifi_based">Automatischer Profilwechsel</string>
     <string name="auto_switch_profile_wifi_based_long">Automatisch das Profil wechseln, wenn WLAN verbunden oder getrennt wird.</string>
+    <string name="reset_cache">Cache zurücksetzen</string>
+    <string name="reset_cache_long">Offline-Cache für dieses Profil löschen</string>
+    <string name="reset_cache_confirm">Offline-Cache des aktuellen Profils löschen? Listen, EPG, Timer und Filme werden erneut geladen, sobald der Empfänger erreichbar ist.</string>
+    <string name="reset_cache_done">Cache zurückgesetzt</string>
     <string name="profile_name">Profilname</string>
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>

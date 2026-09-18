@@ -95,4 +95,18 @@ interface MovieDao {
         """
     )
     suspend fun movieListMetaCount(profileId: Int, dirname: String): Int
+
+    @Query("DELETE FROM movie_list WHERE profileId = :profileId")
+    suspend fun deleteMovieRowsForProfile(profileId: Int)
+
+    @Query("DELETE FROM movie_list_meta WHERE profileId = :profileId")
+    suspend fun deleteMovieListMetaForProfile(profileId: Int)
+
+    @Transaction
+    suspend fun deleteAllForProfile(profileId: Int) {
+        deleteLocationStrip(profileId)
+        deleteLocationMeta(profileId)
+        deleteMovieRowsForProfile(profileId)
+        deleteMovieListMetaForProfile(profileId)
+    }
 }

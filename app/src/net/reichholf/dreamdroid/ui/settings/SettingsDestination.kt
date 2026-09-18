@@ -23,8 +23,10 @@ import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Phase 2.7e: Settings as a direct Compose NavHost destination.
@@ -95,6 +97,21 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         }
     }
 
+    fun resetUseDrivenCache() {
+        val profileId = DreamDroid.getCurrentProfile().id
+        if (profileId == null) {
+            Toast.makeText(context, R.string.reset_cache_done, Toast.LENGTH_SHORT).show()
+            return
+        }
+        scope.launch {
+            UseDrivenCache.clearForProfile(AppDatabase.database(context), profileId)
+            SessionConnectionHolder.shared.onUseDrivenCacheCleared()
+            withContext(Dispatchers.Main.immediate) {
+                Toast.makeText(context, R.string.reset_cache_done, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     SettingsScreen(
         state = state,
         onThemeChanged = {
@@ -123,6 +140,7 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         onBackup = {
             handle.navigateToBackup()
         },
+        onResetCache = { resetUseDrivenCache() },
         modifier = modifier
     )
 }
