@@ -149,6 +149,13 @@ fun nowPlayingFallbackText(
     unavailableText: String
 ): String = if (sessionOffline) offlineText else unavailableText
 
+/** Offline strip header is Connection, not Now — Offline is status, not a programme. */
+fun nowPlayingLabelText(
+    sessionOffline: Boolean,
+    connectionText: String,
+    currentServiceText: String
+): String = if (sessionOffline) connectionText else currentServiceText
+
 fun eventProgressFraction(event: Event?): Float {
     if (event == null) {
         return 0f

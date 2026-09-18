@@ -19,6 +19,7 @@ class TvMoviesHubState {
     var onDestinationSelected: (TvMoviesDestination) -> Unit = {}
 
     var nowPlayingStripEnabled by mutableStateOf(true)
+    var nowPlayingLabel by mutableStateOf("")
     var nowPlayingHeadline by mutableStateOf("")
     var nowPlayingProgress by mutableStateOf(0f)
     var nowPlayingReference by mutableStateOf("")

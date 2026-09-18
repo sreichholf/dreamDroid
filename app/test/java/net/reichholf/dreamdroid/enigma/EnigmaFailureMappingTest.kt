@@ -13,6 +13,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.Python
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -139,6 +140,18 @@ class EnigmaFailureMappingTest {
             }
         assertEquals(true, outcome.first)
         assertNull(outcome.third)
+    }
+
+    @Test
+    fun unreachableExceptionIsUnreachableEnigmaFailure() {
+        val thrown =
+            EnigmaFailureException(
+                EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+            )
+        assertTrue(thrown.isUnreachableEnigmaFailure())
+        assertTrue(UnknownHostException("box.local").isUnreachableEnigmaFailure())
+        assertFalse(EnigmaFailureException(EnigmaFailure.Auth).isUnreachableEnigmaFailure())
+        assertFalse(IOException("boom").isUnreachableEnigmaFailure())
     }
 
     @Test

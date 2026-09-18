@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.current
 
+import android.content.res.Configuration
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -12,7 +13,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -114,14 +117,34 @@ class NowPlayingStripTest {
                 unavailableText = "Not available"
             )
         )
+        assertEquals(
+            "Connection",
+            nowPlayingLabelText(
+                sessionOffline = true,
+                connectionText = "Connection",
+                currentServiceText = "Now"
+            )
+        )
+        assertEquals(
+            "Now",
+            nowPlayingLabelText(
+                sessionOffline = false,
+                connectionText = "Connection",
+                currentServiceText = "Now"
+            )
+        )
     }
 
     @Test
-    fun offlineStripShowsOfflineHeadline() {
+    fun offlineStripShowsConnectionOffline() {
         composeRule.setContent {
             DreamDroidTheme {
                 NowPlayingStrip(
-                    label = "Now",
+                    label = nowPlayingLabelText(
+                        sessionOffline = true,
+                        connectionText = "Connection",
+                        currentServiceText = "Now"
+                    ),
                     headline = nowPlayingFallbackText(
                         sessionOffline = true,
                         offlineText = "Offline",
@@ -134,8 +157,21 @@ class NowPlayingStripTest {
                 )
             }
         }
+        composeRule.onNodeWithText("Connection").assertIsDisplayed()
         composeRule.onNodeWithText("Offline").assertIsDisplayed()
+        composeRule.onNodeWithText("Now").assertDoesNotExist()
         composeRule.onNodeWithText("Not available").assertDoesNotExist()
+    }
+
+    @Test
+    fun germanConnectionResourceIsVerbindung() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(Locale.GERMAN)
+        val de = context.createConfigurationContext(config)
+        assertEquals("Verbindung", de.getString(R.string.connection))
+        assertEquals("Es läuft", de.getString(R.string.current_service))
+        assertEquals("Offline", de.getString(R.string.session_offline))
     }
 
     @Test

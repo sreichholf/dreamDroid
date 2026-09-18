@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.multiepg
 
+import java.net.UnknownHostException
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Service
@@ -37,6 +38,38 @@ class MultiEpgRosterFetchTest {
         )
         assertSame(previous, applied.roster)
         assertEquals("authorization failed", applied.errorMessage)
+    }
+
+    @Test
+    fun unreachableGetservicesDoesNotSetErrorMessage() {
+        val previous = playableMultiEpgRoster(
+            listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
+        )
+        val applied = applyBouquetRoster(
+            previous,
+            MultiEpgRosterFetch(
+                error = EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            ),
+            formatError = { "host_not_found" }
+        )
+        assertSame(previous, applied.roster)
+        assertEquals(null, applied.errorMessage)
+    }
+
+    @Test
+    fun rawUnknownHostDoesNotSetErrorMessage() {
+        val previous = playableMultiEpgRoster(
+            listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
+        )
+        val applied = applyBouquetRoster(
+            previous,
+            MultiEpgRosterFetch(error = UnknownHostException("box.local")),
+            formatError = { "host_not_found" }
+        )
+        assertSame(previous, applied.roster)
+        assertEquals(null, applied.errorMessage)
     }
 
     @Test

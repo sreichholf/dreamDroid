@@ -101,7 +101,9 @@ fun TvMoviesShellChrome(state: TvMoviesHubState, modifier: Modifier = Modifier) 
     Column(modifier.fillMaxWidth()) {
         if (state.nowPlayingStripEnabled) {
             NowPlayingStrip(
-                label = stringResource(R.string.current_service),
+                label = state.nowPlayingLabel.ifEmpty {
+                    stringResource(R.string.current_service)
+                },
                 headline = state.nowPlayingHeadline,
                 progress = state.nowPlayingProgress,
                 serviceReference = state.nowPlayingReference,
