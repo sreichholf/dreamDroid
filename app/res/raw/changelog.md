@@ -1,6 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.462
+* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable
+* UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
 * NEW: Settings option to reset the offline cache (current profile or all profiles)
 
 ## 2.0.461
