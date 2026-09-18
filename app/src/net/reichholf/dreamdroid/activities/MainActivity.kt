@@ -61,10 +61,11 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
-import net.reichholf.dreamdroid.ui.session.OFFLINE_REACHABILITY_INTERVAL_MS
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
-import net.reichholf.dreamdroid.ui.session.probeOfflineSessionIfNeeded
+import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
 
@@ -259,7 +260,7 @@ class MainActivity :
         }
         initViews()
         bindPhoneNavCompose()
-        startOfflineReachabilityProbe()
+        startSessionReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
         PreferenceManager.getDefaultSharedPreferences(
             this
@@ -269,15 +270,17 @@ class MainActivity :
     }
 
     /**
-     * While resumed and Offline, re-run CheckProfile every 30s (and immediately
-     * on resume) so the chip can go Online without reselecting the profile.
-     * Does not show Checking; failed probes stay Offline.
+     * While resumed, ping the box every 30s (and immediately on resume) so Online
+     * can become Offline and Unreachable Offline can recover without reselecting
+     * the profile. Auth / illegal host are not polled. Does not flash Checking.
      */
-    private fun startOfflineReachabilityProbe() {
+    private fun startSessionReachabilityProbe() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    val recovered = probeOfflineSessionIfNeeded(
+                    val previousSession =
+                        SessionConnectionHolder.shared.status.value.session
+                    val ran = probeSessionReachabilityIfNeeded(
                         holder = SessionConnectionHolder.shared,
                         hasCache = hasUseDrivenCache(
                             DreamDroid.getCurrentProfile(),
@@ -292,11 +295,16 @@ class MainActivity :
                             }
                         }
                     )
-                    if (recovered) {
-                        navigationHelper?.setAvailableFeatures()
+                    if (ran) {
                         bindDrawerConnectionChip()
+                        val session = SessionConnectionHolder.shared.status.value.session
+                        if (session == ConnectionStatus.Session.Online &&
+                            previousSession != ConnectionStatus.Session.Online
+                        ) {
+                            navigationHelper?.setAvailableFeatures()
+                        }
                     }
-                    delay(OFFLINE_REACHABILITY_INTERVAL_MS)
+                    delay(SESSION_REACHABILITY_INTERVAL_MS)
                 }
             }
         }
