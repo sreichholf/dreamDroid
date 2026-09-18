@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -40,7 +41,6 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -133,7 +133,9 @@ fun EpgBouquetDestination(
         onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) }
     )
 
-    LaunchedEffect(remountEpoch, bouquetRef) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(remountEpoch, bouquetRef, connectionSession) {
         val args = handle.epgLeafArguments()
         val ref = args.getString(
             net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
@@ -210,8 +212,8 @@ internal class EpgBouquetSession :
     var onLoadJob: ((Job?) -> Unit)? = null
     var profileId: Int? = null
     var epgDao: EpgDao? = null
-    var isSessionOnline: () -> Boolean = {
-        SessionConnectionHolder.shared.status.value.session == ConnectionStatus.Session.Online
+    var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
+        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
     }
     var loadEvents: suspend (
         Context,
@@ -272,8 +274,12 @@ internal class EpgBouquetSession :
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
-        val skipHttp = !forceRefresh && !isSessionOnline()
-        if (skipHttp && applyCachedEvents()) {
+        val hadCache = if (!forceRefresh) {
+            applyCachedEvents()
+        } else {
+            false
+        }
+        if (!forceRefresh && shouldSkipReceiverHttp(hadCache)) {
             return
         }
         val result = loadEvents(

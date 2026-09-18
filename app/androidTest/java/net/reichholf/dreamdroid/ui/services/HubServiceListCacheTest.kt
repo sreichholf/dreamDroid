@@ -10,6 +10,7 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -61,7 +62,11 @@ class HubServiceListCacheTest {
         session.profileId = PROFILE
         session.rosterDao = dao
         session.epgDao = db.epgDao()
-        session.isSessionOnline = { false }
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Offline
+            ).shouldSkipReceiverHttp(hasCache)
+        }
         session.loadNowNext = { _, _ ->
             httpCalls.incrementAndGet()
             EpgNowNextLoadResult(false, emptyList(), "host_not_found")
@@ -101,7 +106,11 @@ class HubServiceListCacheTest {
         session.profileId = PROFILE
         session.rosterDao = dao
         session.epgDao = db.epgDao()
-        session.isSessionOnline = { false }
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Offline
+            ).shouldSkipReceiverHttp(hasCache)
+        }
         session.loadNowNext = { _, _ ->
             httpCalls.incrementAndGet()
             EpgNowNextLoadResult(false, emptyList(), "host_not_found")
@@ -109,6 +118,53 @@ class HubServiceListCacheTest {
         session.loadAndApply(session.beginLoad(), forceRefresh = true)
         assertEquals(1, httpCalls.get())
         assertEquals(listOf("Das Erste HD"), session.listState!!.items.map { it.name })
+    }
+
+    @Test
+    fun checkingWithCachePaintsThenHitsHttp() = runBlocking {
+        val dao = db.rosterDao()
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val excluded = UserBouquetCache.excludedHubTabRefs(context)
+        UserBouquetCache.replaceTabStrip(
+            dao,
+            PROFILE,
+            UserBouquetCache.KIND_TV,
+            listOf(favourites),
+            excluded
+        )
+        UserBouquetCache.persistRosterIfCacheable(
+            dao,
+            PROFILE,
+            favourites.reference,
+            favourites.reference,
+            listOf(channel),
+            excluded
+        )
+        val live = ServiceNowNext(
+            serviceReference = channel.serviceReference,
+            serviceName = "Live HD"
+        )
+        val httpCalls = AtomicInteger(0)
+        val session = HubServiceListSession()
+        session.context = context
+        session.listState = ServiceListState()
+        session.refresh = ComposeRefreshState()
+        session.currentRef = favourites.reference
+        session.rootRef = favourites.reference
+        session.profileId = PROFILE
+        session.rosterDao = dao
+        session.epgDao = db.epgDao()
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(checking = true).shouldSkipReceiverHttp(hasCache)
+        }
+        session.loadNowNext = { _, _ ->
+            assertEquals(listOf("Das Erste HD"), session.listState!!.items.map { it.name })
+            httpCalls.incrementAndGet()
+            EpgNowNextLoadResult(true, listOf(live), null)
+        }
+        session.loadAndApply(session.beginLoad(), forceRefresh = false)
+        assertEquals(1, httpCalls.get())
+        assertEquals(listOf("Live HD"), session.listState!!.items.map { it.name })
     }
 
     companion object {

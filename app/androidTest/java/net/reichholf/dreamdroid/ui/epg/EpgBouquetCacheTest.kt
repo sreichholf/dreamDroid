@@ -4,12 +4,14 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.EventListLoadResult
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgEventEntity
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -51,7 +53,11 @@ class EpgBouquetCacheTest {
         session.profileId = PROFILE
         session.epgDao = dao
         session.onEmptyMessage = { emptyMessage = it }
-        session.isSessionOnline = { false }
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Offline
+            ).shouldSkipReceiverHttp(hasCache)
+        }
         session.loadEvents = { _, _ ->
             httpCalls.incrementAndGet()
             EventListLoadResult(false, emptyList(), "host_not_found")
@@ -59,6 +65,39 @@ class EpgBouquetCacheTest {
         session.loadAndApply(forceRefresh = false)
         assertEquals(0, httpCalls.get())
         assertEquals(listOf("News"), session.listState!!.items.map { it.title })
+        assertNull(emptyMessage)
+    }
+
+    @Test
+    fun checkingWithCachePaintsThenHitsHttp() = runBlocking {
+        val dao = db.epgDao()
+        val chunk = MultiEpgWindows.chunkContaining(NOW)
+        dao.replaceChunk(
+            EpgChunkMetaEntity(PROFILE, BOUQUET, chunk.startSec, chunk.endSec, 1L),
+            listOf(sampleEvent())
+        )
+        val httpCalls = AtomicInteger(0)
+        var emptyMessage: String? = null
+        val session = EpgBouquetSession()
+        session.context = InstrumentationRegistry.getInstrumentation().targetContext
+        session.listState = EpgBouquetListState()
+        session.refresh = ComposeRefreshState()
+        session.bouquetRef = BOUQUET
+        session.timeSec = NOW.toInt()
+        session.profileId = PROFILE
+        session.epgDao = dao
+        session.onEmptyMessage = { emptyMessage = it }
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(checking = true).shouldSkipReceiverHttp(hasCache)
+        }
+        session.loadEvents = { _, _ ->
+            assertEquals(listOf("News"), session.listState!!.items.map { it.title })
+            httpCalls.incrementAndGet()
+            EventListLoadResult(true, listOf(Event(title = "Live News")), null)
+        }
+        session.loadAndApply(forceRefresh = false)
+        assertEquals(1, httpCalls.get())
+        assertEquals(listOf("Live News"), session.listState!!.items.map { it.title })
         assertNull(emptyMessage)
     }
 
@@ -80,7 +119,7 @@ class EpgBouquetCacheTest {
         session.profileId = PROFILE
         session.epgDao = dao
         session.onEmptyMessage = { emptyMessage = it }
-        session.isSessionOnline = { true }
+        session.shouldSkipReceiverHttp = { false }
         session.loadEvents = { _, _ ->
             EventListLoadResult(false, emptyList(), "host_not_found")
         }

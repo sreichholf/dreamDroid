@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,7 +24,6 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -73,8 +73,7 @@ fun ServiceEpgDestination(
         loadJob = scope.launch {
             val profileId = DreamDroid.getCurrentProfile().id
             val dao = AppDatabase.epg(context)
-            val online = SessionConnectionHolder.shared.status.value.session ==
-                ConnectionStatus.Session.Online
+            val status = SessionConnectionHolder.shared.status.value
             val nowSec = System.currentTimeMillis() / 1000L
             suspend fun paintCache(): Boolean {
                 val cached = if (profileId != null) {
@@ -93,7 +92,12 @@ fun ServiceEpgDestination(
                 }
                 return true
             }
-            if (!forceRefresh && !online && paintCache()) {
+            val hadCache = if (!forceRefresh) {
+                paintCache()
+            } else {
+                false
+            }
+            if (!forceRefresh && status.shouldSkipReceiverHttp(hadCache)) {
                 return@launch
             }
             val result = loadEventList(
@@ -132,7 +136,9 @@ fun ServiceEpgDestination(
         }
     }
 
-    LaunchedEffect(serviceRef) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(serviceRef, connectionSession) {
         if (serviceRef.isEmpty()) {
             handle.popNavBackStack()
         } else {

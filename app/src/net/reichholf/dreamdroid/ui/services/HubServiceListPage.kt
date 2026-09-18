@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -56,7 +57,6 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
@@ -153,7 +153,9 @@ fun HubServiceListPage(
         currentName = bouquetName
     }
 
-    LaunchedEffect(currentRef, currentName) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(currentRef, currentName, connectionSession) {
         session.currentRef = currentRef
         session.currentName = currentName
         session.reload()
@@ -208,8 +210,8 @@ class HubServiceListSession : MenuProvider {
     var rosterDao: RosterDao? = null
     var epgDao: EpgDao? = null
     var excludedTabRefs: Set<String> = emptySet()
-    var isSessionOnline: () -> Boolean = {
-        SessionConnectionHolder.shared.status.value.session == ConnectionStatus.Session.Online
+    var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
+        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
     }
     var loadNowNext: suspend (Context, List<NameValuePair>) -> EpgNowNextLoadResult =
         { context, params ->
@@ -344,9 +346,11 @@ class HubServiceListSession : MenuProvider {
 
     suspend fun loadAndApply(generation: Int, forceRefresh: Boolean = false) {
         val ctx = context ?: return
-        val skipHttp = !forceRefresh && !isSessionOnline()
-        if (skipHttp && applyCachedRoster(generation)) {
-            return
+        if (!forceRefresh) {
+            val hadCache = applyCachedRoster(generation)
+            if (shouldSkipReceiverHttp(hadCache)) {
+                return
+            }
         }
         val result = loadNowNext(ctx.applicationContext, httpParams())
         if (generation != loadGeneration) {

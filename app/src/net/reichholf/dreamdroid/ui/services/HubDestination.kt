@@ -14,6 +14,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
@@ -242,7 +243,9 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         }
     }
 
-    LaunchedEffect(Unit) {
+    val connectionSession =
+        SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(connectionSession) {
         val profileId = DreamDroid.getCurrentProfile().id
         val excluded = UserBouquetCache.excludedHubTabRefs(context)
         val dao = if (profileId != null) AppDatabase.roster(context) else null
