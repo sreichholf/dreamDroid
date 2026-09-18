@@ -109,10 +109,10 @@ class SettingsScreenTest {
     }
 
     @Test
-    fun resetCacheConfirmInvokesCallbackAndCancelDoesNot() {
+    fun resetCacheChoiceInvokesCallbackAndCancelDoesNot() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val state = SettingsState.create(context)
-        var resets = 0
+        val resets = mutableListOf<Boolean>()
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
@@ -120,24 +120,28 @@ class SettingsScreenTest {
                     onThemeChanged = {},
                     onDynamicColorsChanged = {},
                     onSyncPicons = {},
-                    onResetCache = { resets++ }
+                    onResetCache = { resets.add(it) }
                 )
             }
         }
 
         composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
         composeRule.waitForIdle()
-        composeRule.onNodeWithText(
-            context.getString(R.string.reset_cache_confirm)
-        ).assertIsDisplayed()
+        composeRule.onNodeWithText("Current profile").assertIsDisplayed()
+        composeRule.onNodeWithText("All profiles").assertIsDisplayed()
         composeRule.onNodeWithText("Cancel").performClick()
         composeRule.waitForIdle()
-        assertEquals(0, resets)
+        assertEquals(emptyList<Boolean>(), resets)
 
         composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
-        composeRule.onNodeWithText("OK").performClick()
+        composeRule.onNodeWithText("Current profile").performClick()
         composeRule.waitForIdle()
-        assertEquals(1, resets)
+        assertEquals(listOf(false), resets)
+
+        composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
+        composeRule.onNodeWithText("All profiles").performClick()
+        composeRule.waitForIdle()
+        assertEquals(listOf(false, true), resets)
     }
 
     @Test

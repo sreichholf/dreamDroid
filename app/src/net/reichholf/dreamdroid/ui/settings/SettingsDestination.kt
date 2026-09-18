@@ -97,14 +97,17 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         }
     }
 
-    fun resetUseDrivenCache() {
-        val profileId = DreamDroid.getCurrentProfile().id
-        if (profileId == null) {
-            Toast.makeText(context, R.string.reset_cache_done, Toast.LENGTH_SHORT).show()
-            return
-        }
+    fun resetUseDrivenCache(allProfiles: Boolean) {
         scope.launch {
-            UseDrivenCache.clearForProfile(AppDatabase.database(context), profileId)
+            val db = AppDatabase.database(context)
+            if (allProfiles) {
+                UseDrivenCache.clearAll(db)
+            } else {
+                val profileId = DreamDroid.getCurrentProfile().id
+                if (profileId != null) {
+                    UseDrivenCache.clearForProfile(db, profileId)
+                }
+            }
             SessionConnectionHolder.shared.onUseDrivenCacheCleared()
             withContext(Dispatchers.Main.immediate) {
                 Toast.makeText(context, R.string.reset_cache_done, Toast.LENGTH_SHORT).show()
@@ -140,7 +143,7 @@ fun SettingsDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         onBackup = {
             handle.navigateToBackup()
         },
-        onResetCache = { resetUseDrivenCache() },
+        onResetCache = { allProfiles -> resetUseDrivenCache(allProfiles) },
         modifier = modifier
     )
 }

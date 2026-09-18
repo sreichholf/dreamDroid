@@ -112,4 +112,20 @@ interface RosterDao {
         deleteRosterRowsForProfile(profileId)
         deleteRosterContainersForProfile(profileId)
     }
+
+    @Query("DELETE FROM bouquet_tab")
+    suspend fun deleteAllTabStrips()
+
+    @Query("DELETE FROM service_roster")
+    suspend fun deleteAllRosterRows()
+
+    @Query("DELETE FROM roster_container")
+    suspend fun deleteAllRosterContainers()
+
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllTabStrips()
+        deleteAllRosterRows()
+        deleteAllRosterContainers()
+    }
 }

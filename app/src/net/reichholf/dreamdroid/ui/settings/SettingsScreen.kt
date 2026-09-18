@@ -40,7 +40,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 @Composable
@@ -53,12 +53,12 @@ fun SettingsScreen(
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
-    onResetCache: () -> Unit = {},
+    onResetCache: (allProfiles: Boolean) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
     var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
-    var resetConfirm by remember { mutableStateOf(false) }
+    var resetChoice by remember { mutableStateOf(false) }
 
     val themeEntries = stringArrayResource(R.array.theme_option_entries)
     val themeValues = stringArrayResource(R.array.theme_option_values)
@@ -328,7 +328,7 @@ fun SettingsScreen(
         ActionPreferenceRow(
             title = stringResource(R.string.reset_cache),
             summary = stringResource(R.string.reset_cache_long),
-            onClick = { resetConfirm = true }
+            onClick = { resetChoice = true }
         )
 
         ActionPreferenceRow(stringResource(R.string.about), DreamDroid.VERSION_STRING, onAbout)
@@ -361,13 +361,15 @@ fun SettingsScreen(
         )
     }
 
-    if (resetConfirm) {
-        ConfirmAlertDialog(
+    if (resetChoice) {
+        SimpleChoiceAlertDialog(
             title = stringResource(R.string.reset_cache),
-            message = stringResource(R.string.reset_cache_confirm),
-            onDismiss = { resetConfirm = false },
-            onConfirm = onResetCache,
-            destructive = true
+            items = listOf(
+                stringResource(R.string.reset_cache_current),
+                stringResource(R.string.reset_cache_all)
+            ),
+            onDismiss = { resetChoice = false },
+            onChoice = { index -> onResetCache(index == RESET_CACHE_ALL) }
         )
     }
 }
@@ -381,6 +383,8 @@ internal data class ListDialogSpec(
 )
 
 internal data class EditDialogSpec(val title: String, val value: String, val key: String)
+
+internal const val RESET_CACHE_ALL = 1
 
 @Composable
 internal fun PreferenceCategoryHeader(title: String) {
@@ -581,7 +585,7 @@ fun ComposeView.bindSettingsScreen(
     onAbout: () -> Unit,
     onChangelog: () -> Unit,
     onBackup: () -> Unit,
-    onResetCache: () -> Unit = {}
+    onResetCache: (allProfiles: Boolean) -> Unit = {}
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {

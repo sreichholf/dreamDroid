@@ -112,6 +112,36 @@ class UseDrivenCacheTest {
         )
     }
 
+    @Test
+    fun clearAllDropsEveryProfile() = runBlocking {
+        seedProfile(PROFILE)
+        seedProfile(OTHER)
+
+        UseDrivenCache.clearAll(db)
+
+        assertFalse(
+            hasUseDrivenCache(
+                db.rosterDao().getTabStripRefs(PROFILE),
+                db.movieDao().locationMetaCount(PROFILE) > 0,
+                db.timerDao().snapshotCount(PROFILE) > 0
+            )
+        )
+        assertFalse(
+            hasUseDrivenCache(
+                db.rosterDao().getTabStripRefs(OTHER),
+                db.movieDao().locationMetaCount(OTHER) > 0,
+                db.timerDao().snapshotCount(OTHER) > 0
+            )
+        )
+        assertNull(
+            UserBouquetCache.loadRosterNowNext(db.rosterDao(), OTHER, favourites.reference)
+        )
+        assertNull(db.epgDao().getChunk(OTHER, favourites.reference, WINDOW_START))
+        assertNull(TimerSnapshotStore.load(db.timerDao(), OTHER))
+        assertNull(MovieSnapshotStore.loadLocations(db.movieDao(), OTHER))
+        assertNull(MovieSnapshotStore.loadMovies(db.movieDao(), OTHER, HDD))
+    }
+
     private suspend fun seedProfile(profileId: Int) {
         UserBouquetCache.replaceTabStrip(
             db.rosterDao(),

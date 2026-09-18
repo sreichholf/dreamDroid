@@ -52,4 +52,16 @@ interface TimerDao {
         deleteTimerRows(profileId)
         deleteSnapshot(profileId)
     }
+
+    @Query("DELETE FROM timer_list")
+    suspend fun deleteAllTimerRows()
+
+    @Query("DELETE FROM timer_snapshot")
+    suspend fun deleteAllSnapshots()
+
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllTimerRows()
+        deleteAllSnapshots()
+    }
 }

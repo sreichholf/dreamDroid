@@ -109,4 +109,24 @@ interface MovieDao {
         deleteMovieRowsForProfile(profileId)
         deleteMovieListMetaForProfile(profileId)
     }
+
+    @Query("DELETE FROM movie_location_strip")
+    suspend fun deleteAllLocationStrips()
+
+    @Query("DELETE FROM movie_location_meta")
+    suspend fun deleteAllLocationMeta()
+
+    @Query("DELETE FROM movie_list")
+    suspend fun deleteAllMovieRows()
+
+    @Query("DELETE FROM movie_list_meta")
+    suspend fun deleteAllMovieListMeta()
+
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllLocationStrips()
+        deleteAllLocationMeta()
+        deleteAllMovieRows()
+        deleteAllMovieListMeta()
+    }
 }

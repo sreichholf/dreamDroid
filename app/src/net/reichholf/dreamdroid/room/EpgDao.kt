@@ -110,6 +110,18 @@ interface EpgDao {
         deleteChunksForProfile(profileId)
     }
 
+    @Query("DELETE FROM epg_event")
+    suspend fun deleteAllEvents()
+
+    @Query("DELETE FROM epg_chunk")
+    suspend fun deleteAllChunks()
+
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllEvents()
+        deleteAllChunks()
+    }
+
     /**
      * Programmes whose end (`start + duration`) is at or before [cutoffSec].
      * Spanning rows that still overlap the retention window stay.
