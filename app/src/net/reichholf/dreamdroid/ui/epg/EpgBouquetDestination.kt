@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
 import android.view.Menu
@@ -26,15 +27,21 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.EventListLoadResult
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadEventList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
@@ -94,6 +101,8 @@ fun EpgBouquetDestination(
     session.onWaitingForPicker = { waitingForPicker = it }
     session.onEmptyMessage = { emptyMessage = it }
     session.onLoadJob = { loadJob = it }
+    session.profileId = DreamDroid.getCurrentProfile().id
+    session.epgDao = AppDatabase.epg(context)
 
     DisposableEffect(handle, session, dialogSession, remountEpoch) {
         handle.composeActivityResultListener = session
@@ -142,7 +151,7 @@ fun EpgBouquetDestination(
 
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload() },
+        onRefresh = { session.reload(forceRefresh = true) },
         enabled = refresh.enabled,
         modifier = modifier
     ) {
@@ -181,7 +190,7 @@ fun EpgBouquetDestination(
     EpgEventDetailSheetHost(dialogSession)
 }
 
-private class EpgBouquetSession :
+internal class EpgBouquetSession :
     PhoneNavHandle.ActivityResultListener,
     MenuProvider {
     var handle: PhoneNavHandle? = null
@@ -199,6 +208,17 @@ private class EpgBouquetSession :
     var onWaitingForPicker: ((Boolean) -> Unit)? = null
     var onEmptyMessage: ((String?) -> Unit)? = null
     var onLoadJob: ((Job?) -> Unit)? = null
+    var profileId: Int? = null
+    var epgDao: EpgDao? = null
+    var isSessionOnline: () -> Boolean = {
+        SessionConnectionHolder.shared.status.value.session == ConnectionStatus.Session.Online
+    }
+    var loadEvents: suspend (
+        Context,
+        List<NameValuePair>
+    ) -> EventListLoadResult = { context, params ->
+        loadEventList(context, params, URIStore.EPG_BOUQUET)
+    }
     private var loadJob: Job? = null
 
     fun setToolbarTitle(title: String) {
@@ -219,7 +239,7 @@ private class EpgBouquetSession :
         reload()
     }
 
-    fun reload() {
+    fun reload(forceRefresh: Boolean = false) {
         val host = handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
@@ -243,30 +263,64 @@ private class EpgBouquetSession :
         setToolbarTitle(ctx.getString(R.string.loading))
         loadJob?.cancel()
         loadJob = coroutineScope.launch {
-            val result = loadEventList(
-                ctx.applicationContext,
-                listOf(
-                    NameValuePair("bRef", bouquetRef),
-                    NameValuePair("time", timeSec.toString())
-                ),
-                URIStore.EPG_BOUQUET
-            )
-            refreshState.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
-            if (!result.success) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
-            }
-            if (result.events.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                state.replaceAll(result.events)
-            }
+            loadAndApply(forceRefresh)
         }
         onLoadJob?.invoke(loadJob)
+    }
+
+    suspend fun loadAndApply(forceRefresh: Boolean = false) {
+        val ctx = context ?: return
+        val state = listState ?: return
+        val refreshState = refresh ?: return
+        val skipHttp = !forceRefresh && !isSessionOnline()
+        if (skipHttp && applyCachedEvents()) {
+            return
+        }
+        val result = loadEvents(
+            ctx.applicationContext,
+            listOf(
+                NameValuePair("bRef", bouquetRef),
+                NameValuePair("time", timeSec.toString())
+            )
+        )
+        if (result.success) {
+            applyEvents(result.events)
+            return
+        }
+        if (applyCachedEvents()) {
+            return
+        }
+        refreshState.setRefreshing(false)
+        setToolbarTitle(finishedTitle())
+        state.replaceAll(emptyList())
+        onEmptyMessage?.invoke(result.errorText)
+    }
+
+    private suspend fun applyCachedEvents(): Boolean {
+        val dao = epgDao
+        val pid = profileId
+        val cached = if (dao != null && pid != null) {
+            ListEpgCache.loadBouquetEvents(dao, pid, bouquetRef, timeSec.toLong())
+        } else {
+            null
+        } ?: return false
+        applyEvents(cached)
+        return true
+    }
+
+    private fun applyEvents(events: List<Event>) {
+        val ctx = context ?: return
+        val state = listState ?: return
+        val refreshState = refresh ?: return
+        refreshState.setRefreshing(false)
+        setToolbarTitle(finishedTitle())
+        if (events.isEmpty()) {
+            state.replaceAll(emptyList())
+            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
+        } else {
+            onEmptyMessage?.invoke(null)
+            state.replaceAll(events)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

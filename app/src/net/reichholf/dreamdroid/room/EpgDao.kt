@@ -75,6 +75,29 @@ interface EpgDao {
         windowEnd: Long
     ): List<EpgEventEntity>
 
+    @Query(
+        """
+        SELECT * FROM epg_event
+        WHERE profileId = :profileId
+          AND serviceRef = :serviceRef
+          AND (start + duration) > :fromSec
+        ORDER BY start ASC
+        """
+    )
+    suspend fun eventsForServiceFrom(
+        profileId: Int,
+        serviceRef: String,
+        fromSec: Long
+    ): List<EpgEventEntity>
+
+    @Query(
+        """
+        SELECT COUNT(*) FROM epg_event
+        WHERE profileId = :profileId AND serviceRef = :serviceRef
+        """
+    )
+    suspend fun eventCountForService(profileId: Int, serviceRef: String): Int
+
     @Query("DELETE FROM epg_event WHERE profileId = :profileId")
     suspend fun deleteEventsForProfile(profileId: Int)
 
