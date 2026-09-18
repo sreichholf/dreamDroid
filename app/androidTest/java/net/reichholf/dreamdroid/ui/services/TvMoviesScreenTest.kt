@@ -68,8 +68,9 @@ class TvMoviesScreenTest {
     }
 
     @Test
-    fun nowStripShowsOfflineHeadline() {
+    fun nowStripShowsConnectionOffline() {
         val state = TvMoviesHubState().apply {
+            nowPlayingLabel = "Connection"
             nowPlayingHeadline = "Offline"
         }
         composeRule.setContent {
@@ -77,8 +78,9 @@ class TvMoviesScreenTest {
                 TvMoviesShellChrome(state = state)
             }
         }
-        composeRule.onNodeWithText("Now").assertIsDisplayed()
+        composeRule.onNodeWithText("Connection").assertIsDisplayed()
         composeRule.onNodeWithText("Offline").assertIsDisplayed()
+        composeRule.onNodeWithText("Now").assertDoesNotExist()
         composeRule.onNodeWithText("Not available").assertDoesNotExist()
     }
 

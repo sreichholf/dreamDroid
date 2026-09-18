@@ -65,6 +65,7 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
     }
     hubState.nowPlayingStripEnabled = enabled
     if (!enabled) {
+        hubState.nowPlayingLabel = ""
         hubState.nowPlayingHeadline = ""
         hubState.nowPlayingProgress = 0f
         hubState.nowPlayingReference = ""
@@ -81,13 +82,14 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val loadingText = stringResource(R.string.loading)
     val session = SessionConnectionHolder.shared.status.collectAsState().value.session
+    val sessionOffline = session == ConnectionStatus.Session.Offline
     val unavailableText = nowPlayingFallbackText(
-        sessionOffline = session == ConnectionStatus.Session.Offline,
+        sessionOffline = sessionOffline,
         offlineText = stringResource(R.string.session_offline),
         unavailableText = stringResource(R.string.not_available)
     )
     val shown = current.takeIf {
-        gate.lastGoodProfileId == profileId && session != ConnectionStatus.Session.Offline
+        gate.lastGoodProfileId == profileId && !sessionOffline
     }
 
     fun reload() {
@@ -162,6 +164,11 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
 
     val service = shown?.service
     val now = shown?.now
+    hubState.nowPlayingLabel = nowPlayingLabelText(
+        sessionOffline = sessionOffline,
+        connectionText = stringResource(R.string.connection),
+        currentServiceText = stringResource(R.string.current_service)
+    )
     hubState.nowPlayingHeadline = nowPlayingHeadline(
         ready = ready,
         serviceName = service?.name.orEmpty(),
