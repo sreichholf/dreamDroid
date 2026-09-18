@@ -70,6 +70,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("MultiEPG text size").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Picons").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Use Picons").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Reset cache").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("About").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Changelog").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Backup").performScrollTo().assertIsDisplayed()
@@ -105,6 +106,42 @@ class SettingsScreenTest {
         assertTrue(about)
         assertTrue(changelog)
         assertTrue(backup)
+    }
+
+    @Test
+    fun resetCacheChoiceInvokesCallbackAndCancelDoesNot() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = SettingsState.create(context)
+        val resets = mutableListOf<Boolean>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    state = state,
+                    onThemeChanged = {},
+                    onDynamicColorsChanged = {},
+                    onSyncPicons = {},
+                    onResetCache = { resets.add(it) }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Current profile").assertIsDisplayed()
+        composeRule.onNodeWithText("All profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("Cancel").performClick()
+        composeRule.waitForIdle()
+        assertEquals(emptyList<Boolean>(), resets)
+
+        composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
+        composeRule.onNodeWithText("Current profile").performClick()
+        composeRule.waitForIdle()
+        assertEquals(listOf(false), resets)
+
+        composeRule.onNodeWithText("Reset cache").performScrollTo().performClick()
+        composeRule.onNodeWithText("All profiles").performClick()
+        composeRule.waitForIdle()
+        assertEquals(listOf(false, true), resets)
     }
 
     @Test

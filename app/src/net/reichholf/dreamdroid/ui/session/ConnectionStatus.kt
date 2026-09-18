@@ -149,6 +149,17 @@ class SessionConnectionHolder {
         statusState.value = ConnectionStatus(checking = true)
     }
 
+    /**
+     * Drop Offline once this profile's use-driven cache is gone. Online and
+     * in-flight Checking stay; Offline without cache is not a valid session.
+     */
+    fun onUseDrivenCacheCleared() {
+        val current = statusState.value
+        if (current.session == ConnectionStatus.Session.Offline) {
+            statusState.value = current.copy(session = null)
+        }
+    }
+
     fun onSuccess(nowMs: Long = System.currentTimeMillis()) {
         statusState.value = ConnectionStatus(
             session = ConnectionStatus.Session.Online,

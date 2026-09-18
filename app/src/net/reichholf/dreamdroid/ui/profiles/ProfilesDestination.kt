@@ -34,11 +34,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
@@ -419,6 +422,11 @@ internal fun deleteConfirmedProfile(context: Context, profile: Profile): String 
     val deletedId = profile.id
     val currentId = DreamDroid.getCurrentProfile().id
     AppDatabase.profilesBlocking(context).deleteProfile(profile)
+    if (deletedId != null) {
+        runBlocking(Dispatchers.IO) {
+            UseDrivenCache.clearForProfile(AppDatabase.database(context), deletedId)
+        }
+    }
     if (deletedId != null && deletedId == currentId) {
         val next = AppDatabase.profilesBlocking(context).getProfiles()
             .firstOrNull { it.id != null && it.id != deletedId }

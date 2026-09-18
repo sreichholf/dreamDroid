@@ -96,4 +96,36 @@ interface RosterDao {
         """
     )
     suspend fun rosterContainerCount(profileId: Int, containerRef: String): Int
+
+    @Query("DELETE FROM bouquet_tab WHERE profileId = :profileId")
+    suspend fun deleteTabStripForProfile(profileId: Int)
+
+    @Query("DELETE FROM service_roster WHERE profileId = :profileId")
+    suspend fun deleteRosterRowsForProfile(profileId: Int)
+
+    @Query("DELETE FROM roster_container WHERE profileId = :profileId")
+    suspend fun deleteRosterContainersForProfile(profileId: Int)
+
+    @Transaction
+    suspend fun deleteAllForProfile(profileId: Int) {
+        deleteTabStripForProfile(profileId)
+        deleteRosterRowsForProfile(profileId)
+        deleteRosterContainersForProfile(profileId)
+    }
+
+    @Query("DELETE FROM bouquet_tab")
+    suspend fun deleteAllTabStrips()
+
+    @Query("DELETE FROM service_roster")
+    suspend fun deleteAllRosterRows()
+
+    @Query("DELETE FROM roster_container")
+    suspend fun deleteAllRosterContainers()
+
+    @Transaction
+    suspend fun deleteAll() {
+        deleteAllTabStrips()
+        deleteAllRosterRows()
+        deleteAllRosterContainers()
+    }
 }

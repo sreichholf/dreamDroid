@@ -177,6 +177,11 @@
     <string name="profile">Profile</string>
     <string name="auto_switch_profile_wifi_based">Auto Profile switch</string>
     <string name="auto_switch_profile_wifi_based_long">Automatically switch profile based on Wifi connection</string>
+    <string name="reset_cache">Reset cache</string>
+    <string name="reset_cache_long">Clear the offline cache for this profile or all profiles</string>
+    <string name="reset_cache_current">Current profile</string>
+    <string name="reset_cache_all">All profiles</string>
+    <string name="reset_cache_done">Cache reset</string>
     <string name="profile_name">Profile name</string>
     <string name="profile_updated">Updated profile</string>
     <string name="profile_added">Added profile</string>

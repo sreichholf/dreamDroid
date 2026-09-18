@@ -211,6 +211,22 @@ class ConnectionStatusTest {
     }
 
     @Test
+    fun clearingUseDrivenCacheDropsOfflineSessionOnly() {
+        val holder = SessionConnectionHolder()
+        val unreachable = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Timeout)
+        holder.onFailure(unreachable, hasCache = true)
+        assertEquals(ConnectionStatus.Session.Offline, holder.status.value.session)
+        holder.onUseDrivenCacheCleared()
+        assertNull(holder.status.value.session)
+        assertEquals(unreachable, holder.status.value.lastFailure)
+
+        holder.onSuccess(nowMs = 140L)
+        holder.onUseDrivenCacheCleared()
+        assertEquals(ConnectionStatus.Session.Online, holder.status.value.session)
+        assertEquals(140L, holder.status.value.lastUpdatedMs)
+    }
+
+    @Test
     fun hasUseDrivenCacheGainsTabStripMovieAndTimerSources() {
         assertFalse(hasUseDrivenCache(emptyList()))
         assertFalse(hasUseDrivenCache(Profile().apply { id = 1 }))
