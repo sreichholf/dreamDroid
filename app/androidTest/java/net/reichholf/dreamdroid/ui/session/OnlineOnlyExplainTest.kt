@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.session
 
+import android.content.res.Configuration
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.ExplainAlertDialog
@@ -127,5 +129,17 @@ class OnlineOnlyExplainTest {
         composeRule.waitForIdle()
         assertEquals(1, enableClicks)
         composeRule.onNodeWithText("Needs the receiver").assertIsDisplayed()
+    }
+
+    @Test
+    fun germanNeedsReceiverLongUsesNaturalCopy() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(context.resources.configuration)
+        config.setLocale(Locale.GERMAN)
+        val de = context.createConfigurationContext(config)
+        assertEquals(
+            "Diese Funktion benötigt eine Verbindung zur Box",
+            de.getString(R.string.session_needs_receiver_long)
+        )
     }
 }

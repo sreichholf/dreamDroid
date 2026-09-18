@@ -142,6 +142,13 @@ fun nowPlayingHeadline(
     }
 }
 
+/** Live `/web/getcurrent` is Online-only; Offline uses the session word, not last-good. */
+fun nowPlayingFallbackText(
+    sessionOffline: Boolean,
+    offlineText: String,
+    unavailableText: String
+): String = if (sessionOffline) offlineText else unavailableText
+
 fun eventProgressFraction(event: Event?): Float {
     if (event == null) {
         return 0f

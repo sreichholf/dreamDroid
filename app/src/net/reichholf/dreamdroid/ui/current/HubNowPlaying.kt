@@ -80,8 +80,12 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
     var showSheet by rememberSaveable { mutableStateOf(false) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     val loadingText = stringResource(R.string.loading)
-    val unavailableText = stringResource(R.string.not_available)
     val session = SessionConnectionHolder.shared.status.collectAsState().value.session
+    val unavailableText = nowPlayingFallbackText(
+        sessionOffline = session == ConnectionStatus.Session.Offline,
+        offlineText = stringResource(R.string.session_offline),
+        unavailableText = stringResource(R.string.not_available)
+    )
     val shown = current.takeIf {
         gate.lastGoodProfileId == profileId && session != ConnectionStatus.Session.Offline
     }
