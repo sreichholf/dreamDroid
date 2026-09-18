@@ -346,7 +346,7 @@ class MultiEpgSession(
             }
         }
         val hasCache = peek != null || eventsByWindow.isNotEmpty()
-        if (shouldSkipReceiverHttp(hasCache)) {
+        if (isSessionOffline() || shouldSkipReceiverHttp(hasCache)) {
             return
         }
         val events = withContext(Dispatchers.IO) {

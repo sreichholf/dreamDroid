@@ -107,8 +107,9 @@ class EnigmaFailureException(val failure: EnigmaFailure) : Exception()
 
 /** DNS / connect / timeout / SSL belong on the session chip, not in-content copy. */
 fun Throwable.isUnreachableEnigmaFailure(): Boolean {
-    val exception = this as? EnigmaFailureException ?: return false
-    return exception.failure is EnigmaFailure.Unreachable
+    val failure =
+        (this as? EnigmaFailureException)?.failure ?: EnigmaFailure.fromThrowable(this)
+    return failure is EnigmaFailure.Unreachable
 }
 
 fun Throwable.toEnigmaDisplayMessage(context: Context): String {

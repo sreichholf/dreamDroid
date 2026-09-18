@@ -842,6 +842,60 @@ class MultiEpgSessionTest {
     }
 
     @Test
+    fun offlineVisibleWindowDoesNotHitHttp() = runBlocking {
+        val hang = CompletableDeferred<Unit>()
+        val fetches = AtomicInteger(0)
+        val bouquetCalls = AtomicInteger(0)
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val bouquet = "bouquet-a"
+        db.epgDao().upsertEvents(
+            listOf(
+                programme(id = "e-room", title = "HubFill", start = t0)
+            ).toEpgEventEntities(1, bouquet)
+        )
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, _, _ ->
+                fetches.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 1_000L
+        )
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            persistBouquet = { false },
+            isSessionOffline = { true },
+            loadBouquetServices = {
+                bouquetCalls.incrementAndGet()
+                hang.await()
+                throw EnigmaFailureException(
+                    EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
+                )
+            }
+        )
+        session.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
+        session.awaitIdle()
+        assertEquals("HubFill", titleOnFocusedChunk(session, t0))
+        val day2 = MultiEpgWindows.chunkContaining(t0).startSec +
+            2L * MultiEpgWindows.CHUNK_SECONDS
+        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        session.awaitIdle()
+        assertEquals(0, fetches.get())
+        assertEquals(0, bouquetCalls.get())
+        assertEquals(null, session.errorMessage)
+        session.cancel()
+        hang.cancel()
+    }
+
+    @Test
     fun prefetchFailureKeepsGridAndSurfacesError() = runBlocking {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec
