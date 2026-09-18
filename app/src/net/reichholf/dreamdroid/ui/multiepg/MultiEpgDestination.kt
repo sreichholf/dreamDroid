@@ -32,10 +32,12 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * MultiEPG destination with stale-while-revalidate sync:
@@ -89,12 +91,6 @@ fun MultiEpgDestination(
     val persistGate = remember(context) {
         MultiEpgPersistGate(UserBouquetCache.excludedHubTabRefs(context))
     }
-    LaunchedEffect(Unit) {
-        val profileId = DreamDroid.getCurrentProfile().id
-        if (profileId != null) {
-            persistGate.knownTabRefs = AppDatabase.roster(context).getTabStripRefs(profileId)
-        }
-    }
     val session = remember(sync, scope, context) {
         MultiEpgSession(
             sync = sync,
@@ -106,7 +102,20 @@ fun MultiEpgDestination(
             fetchTimers = MultiEpgSync.httpFetchTimers(),
             loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
             formatError = { error -> error.toEnigmaDisplayMessage(context) },
-            persistBouquet = persistGate::persist
+            persistBouquet = persistGate::persist,
+            shouldSkipReceiverHttp = { hasCache ->
+                SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+            },
+            loadCachedRoster = { profileId, ref ->
+                UserBouquetCache.loadRosterServices(
+                    AppDatabase.roster(context),
+                    profileId,
+                    ref
+                )
+            },
+            loadCachedTimers = { profileId ->
+                TimerSnapshotStore.load(AppDatabase.timer(context), profileId)
+            }
         )
     }
 
@@ -124,6 +133,10 @@ fun MultiEpgDestination(
     }
 
     LaunchedEffect(remountEpoch, bouquetRef) {
+        val profileId = DreamDroid.getCurrentProfile().id
+        if (profileId != null) {
+            persistGate.knownTabRefs = AppDatabase.roster(context).getTabStripRefs(profileId)
+        }
         session.replaceAndLoad(bouquetRef, anchorSec)
     }
 

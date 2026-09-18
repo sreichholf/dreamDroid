@@ -625,6 +625,51 @@ class MultiEpgSessionTest {
     }
 
     @Test
+    fun offlinePeekPaintsWithoutWaitingForHttp() = runBlocking {
+        val hang = CompletableDeferred<Unit>()
+        val fetches = AtomicInteger(0)
+        var now = 1_000_000L
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                val n = fetches.incrementAndGet()
+                if (n > 1) {
+                    hang.await()
+                    error("epgmulti down")
+                }
+                listOf(programme(id = "e-$time", title = "Cached", start = time))
+            },
+            clockMs = { now },
+            ttlMs = 1_000L
+        )
+        sync.ensureChunk(1, "bouquet-a", t0)
+        now += 2_000L
+        val bouquetCalls = AtomicInteger(0)
+        val session = MultiEpgSession(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            noBouquetMessage = "no bouquet",
+            persistBouquet = { false },
+            shouldSkipReceiverHttp = { hasCache -> hasCache },
+            loadBouquetServices = {
+                bouquetCalls.incrementAndGet()
+                hang.await()
+                error("getservices down")
+            }
+        )
+        session.replaceAndLoad("bouquet-a", t0)
+        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
+        assertEquals("Cached", titleOnFocusedChunk(session, t0))
+        assertEquals(1, fetches.get())
+        assertEquals(0, bouquetCalls.get())
+        assertEquals(null, session.errorMessage)
+        session.cancel()
+        hang.cancel()
+    }
+
+    @Test
     fun prefetchFailureKeepsGridAndSurfacesError() = runBlocking {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec

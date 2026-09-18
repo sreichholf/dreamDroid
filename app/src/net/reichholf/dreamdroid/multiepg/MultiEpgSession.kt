@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -22,6 +23,7 @@ import net.reichholf.dreamdroid.enigma.Timer
 /**
  * Stale-while-revalidate MultiEPG grid session: peek Room, refresh and prefetch
  * in the background, keep stale rows on error, replace on bouquet/profile remount.
+ * Offline with a chunk or roster paints Room and skips Enigma HTTP.
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
  * is the earliest start among programmes overlapping [originFloorSec] ("now"),
@@ -40,7 +42,11 @@ class MultiEpgSession(
     private val formatError: (Throwable) -> String = { error ->
         error.message ?: error.javaClass.simpleName
     },
-    private val persistBouquet: (String) -> Boolean = { true }
+    private val persistBouquet: (String) -> Boolean = { true },
+    private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
+    private val loadCachedRoster: suspend (Int, String) -> List<Service>? =
+        { _, _ -> null },
+    private val loadCachedTimers: suspend (Int) -> List<Timer>? = { null }
 ) {
     var bouquetRef: String = ""
         private set
@@ -125,18 +131,53 @@ class MultiEpgSession(
         }
         this.anchorSec = anchorSec
         loadJob = scope.launch {
-            val timersDeferred = async(Dispatchers.IO) {
-                try {
-                    fetchTimers()
-                } catch (t: Throwable) {
-                    if (t is kotlinx.coroutines.CancellationException) {
-                        throw t
-                    }
-                    emptyList()
-                }
-            }
             beginSync()
+            var timersDeferred: Deferred<List<Timer>>? = null
             try {
+                val id = profileId()
+                val persist = persistBouquet(ref)
+                val peek = if (!forceRefresh) {
+                    withContext(Dispatchers.IO) {
+                        sync.peekChunk(id, ref, anchorSec)
+                    }
+                } else {
+                    null
+                }
+                val cachedRoster = withContext(Dispatchers.IO) {
+                    loadCachedRoster(id, ref)
+                }
+                if (cachedRoster != null) {
+                    gridMutex.withLock {
+                        bouquetRoster = playableMultiEpgRoster(cachedRoster)
+                    }
+                }
+                if (peek != null) {
+                    putWindow(peek.windowStart, peek.events)
+                } else if (cachedRoster != null) {
+                    gridMutex.withLock {
+                        publishGridLocked()
+                    }
+                }
+                val hasCache = peek != null || cachedRoster != null
+                if (!forceRefresh && shouldSkipReceiverHttp(hasCache)) {
+                    val cachedTimers = withContext(Dispatchers.IO) {
+                        loadCachedTimers(id)
+                    }
+                    if (cachedTimers != null) {
+                        applyTimers(cachedTimers)
+                    }
+                    return@launch
+                }
+                timersDeferred = async(Dispatchers.IO) {
+                    try {
+                        fetchTimers()
+                    } catch (t: Throwable) {
+                        if (t is kotlinx.coroutines.CancellationException) {
+                            throw t
+                        }
+                        emptyList()
+                    }
+                }
                 val rosterDeferred = async(Dispatchers.IO) {
                     try {
                         MultiEpgRosterFetch(loadBouquetServices(ref))
@@ -147,15 +188,6 @@ class MultiEpgSession(
                         MultiEpgRosterFetch(error = t)
                     }
                 }
-                val id = profileId()
-                val persist = persistBouquet(ref)
-                val peek = if (!forceRefresh && persist) {
-                    withContext(Dispatchers.IO) {
-                        sync.peekChunk(id, ref, anchorSec)
-                    }
-                } else {
-                    null
-                }
                 val fetched = rosterDeferred.await()
                 gridMutex.withLock {
                     val applied = applyBouquetRoster(bouquetRoster, fetched, formatError)
@@ -165,7 +197,6 @@ class MultiEpgSession(
                     }
                 }
                 if (peek != null && peek.events.isNotEmpty()) {
-                    putWindow(peek.windowStart, peek.events)
                     if (peek.fresh) {
                         prefetchFuture(anchorSec)
                         return@launch
@@ -177,7 +208,7 @@ class MultiEpgSession(
                         bouquetRef = ref,
                         unixSec = anchorSec,
                         forceRefresh = forceRefresh,
-                        persist = persistBouquet(ref)
+                        persist = persist
                     )
                 }
                 val chunk = MultiEpgWindows.chunkContaining(anchorSec)
@@ -191,8 +222,9 @@ class MultiEpgSession(
             } finally {
                 pullRefreshing = false
                 endSync()
-                if (isActive) {
-                    applyTimers(timersDeferred.await())
+                val pendingTimers = timersDeferred
+                if (isActive && pendingTimers != null) {
+                    applyTimers(pendingTimers.await())
                 }
             }
         }
@@ -300,18 +332,18 @@ class MultiEpgSession(
         }
         val id = profileId()
         val persist = persistBouquet(ref)
-        val peek = if (persist) {
-            withContext(Dispatchers.IO) {
-                sync.peekChunk(id, ref, unixSec)
-            }
-        } else {
-            null
+        val peek = withContext(Dispatchers.IO) {
+            sync.peekChunk(id, ref, unixSec)
         }
         if (peek != null && peek.events.isNotEmpty()) {
             putWindow(peek.windowStart, peek.events)
             if (peek.fresh) {
                 return
             }
+        }
+        val hasCache = peek != null || eventsByWindow.isNotEmpty()
+        if (shouldSkipReceiverHttp(hasCache)) {
+            return
         }
         val events = withContext(Dispatchers.IO) {
             sync.ensureChunk(id, ref, unixSec, persist = persist)
