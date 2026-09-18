@@ -28,10 +28,17 @@ import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -54,8 +61,10 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.session.OFFLINE_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.session.probeOfflineSessionIfNeeded
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
 
@@ -250,12 +259,47 @@ class MainActivity :
         }
         initViews()
         bindPhoneNavCompose()
+        startOfflineReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         handleSearchIntent(intent)
+    }
+
+    /**
+     * While resumed and Offline, re-run CheckProfile every 30s (and immediately
+     * on resume) so the chip can go Online without reselecting the profile.
+     * Does not show Checking; failed probes stay Offline.
+     */
+    private fun startOfflineReachabilityProbe() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                while (isActive) {
+                    val recovered = probeOfflineSessionIfNeeded(
+                        holder = SessionConnectionHolder.shared,
+                        hasCache = hasUseDrivenCache(
+                            DreamDroid.getCurrentProfile(),
+                            this@MainActivity
+                        ),
+                        isBusy = { checkProfileJob != null },
+                        check = {
+                            val profile = DreamDroid.getCurrentProfile()
+                            profile.cachedDeviceInfo = null
+                            withContext(Dispatchers.IO) {
+                                CheckProfile.checkProfile(profile, this@MainActivity)
+                            }
+                        }
+                    )
+                    if (recovered) {
+                        navigationHelper?.setAvailableFeatures()
+                        bindDrawerConnectionChip()
+                    }
+                    delay(OFFLINE_REACHABILITY_INTERVAL_MS)
+                }
+            }
+        }
     }
 
     override fun onLocalNetworkPermissionGranted() {
