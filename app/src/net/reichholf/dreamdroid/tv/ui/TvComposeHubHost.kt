@@ -144,10 +144,9 @@ object TvComposeHubHost {
     }
 
     /** Survives hub reload so Settings / Timers / MultiEPG are not bounced away. */
-    fun isPersistentHubHeader(headerId: String): Boolean =
-        headerId == HEADER_SETTINGS_ID ||
-            headerId == HEADER_TIMERS_ID ||
-            headerId == HEADER_MULTIEPG_ID
+    fun isPersistentHubHeader(headerId: String): Boolean = headerId == HEADER_SETTINGS_ID ||
+        headerId == HEADER_TIMERS_ID ||
+        headerId == HEADER_MULTIEPG_ID
 
     /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
     fun hubHeaderIconRes(headerId: String): Int = when {
