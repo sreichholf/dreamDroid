@@ -102,9 +102,8 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun multiEpgDrawerHeaderSelectsAndOpenCardInvokesCallback() {
+    fun multiEpgDrawerHeaderFocusSelects() {
         var selected: String? = null
-        var opened = 0
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
@@ -115,8 +114,7 @@ class ComposeTvHubChromeTest {
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
-                onSettingsClick = {},
-                onMultiEpgClick = { opened++ }
+                onSettingsClick = {}
             )
         }
         val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
@@ -124,23 +122,26 @@ class ComposeTvHubChromeTest {
         header.requestFocus()
         composeRule.waitForIdle()
         assertEquals(TvComposeHubHost.HEADER_MULTIEPG_ID, selected)
+    }
 
+    @Test
+    fun multiEpgOpenCardInvokesCallback() {
+        var opened = 0
         composeRule.setContent {
-            ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG")
-                ),
-                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
-                onHeaderSelected = {},
-                settingsItems = emptyList(),
-                onSettingsClick = {},
-                onMultiEpgClick = { opened++ }
-            )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubMultiEpgRow(onClick = { opened++ })
+                }
+            }
         }
         val card = composeRule.onNodeWithTag("hub_multiepg_open")
         card.assertIsDisplayed().assertHasClickAction()
         composeRule.onNodeWithTag("hub_multiepg_icon", useUnmergedTree = true).assertExists()
+        // TV Surfaces are D-pad activated; mouse performClick alone is unreliable.
         card.requestFocus()
         card.performKeyInput { pressKey(Key.DirectionCenter) }
         if (opened == 0) {
