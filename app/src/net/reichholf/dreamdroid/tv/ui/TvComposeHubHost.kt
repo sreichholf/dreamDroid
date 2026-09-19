@@ -452,7 +452,10 @@ fun ComposeTvHubApp(
             }
         )
         val overlayTarget = serviceTimerTarget
-        if (overlayTarget != null) {
+        val editorEvent = editTimerEvent
+        // Drop the INFO overlay while the editor is open so D-pad reaches the form
+        // (same as MultiEPG dismissing detail before TvTimerEditorHost).
+        if (overlayTarget != null && editorEvent == null) {
             DreamDroidTvTheme {
                 TvServiceTimerOverlay(
                     service = overlayTarget.first,
@@ -478,7 +481,6 @@ fun ComposeTvHubApp(
                 )
             }
         }
-        val editorEvent = editTimerEvent
         if (editorEvent != null) {
             DreamDroidTvTheme {
                 TvTimerEditorHost(
