@@ -45,6 +45,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -71,6 +72,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
+import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
@@ -706,16 +708,21 @@ private fun HubMovieCard(movie: Movie, onClick: () -> Unit) {
                 text = movie.title,
                 style = MaterialTheme.typography.titleMedium,
                 maxLines = 2,
-                modifier = Modifier.fillMaxWidth()
-            )
-            Text(
-                text = content,
-                style = MaterialTheme.typography.bodySmall,
-                maxLines = 6,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 4.dp)
+                    .testTag("hub_movie_card_title")
             )
+            if (content.isNotEmpty()) {
+                FittedEllipsisText(
+                    text = content,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(top = 4.dp)
+                )
+            }
         }
     }
 }
