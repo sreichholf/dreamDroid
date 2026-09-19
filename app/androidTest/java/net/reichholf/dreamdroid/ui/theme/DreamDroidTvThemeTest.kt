@@ -98,7 +98,7 @@ class DreamDroidTvThemeTest {
         val theme = tvContext.resources.newTheme()
         theme.applyStyle(R.style.Theme_DreamDroid, true)
         val attrs = intArrayOf(
-            com.google.android.material.R.attr.colorPrimary,
+            androidx.appcompat.R.attr.colorPrimary,
             android.R.attr.colorBackground
         )
         val ta = theme.obtainStyledAttributes(attrs)
