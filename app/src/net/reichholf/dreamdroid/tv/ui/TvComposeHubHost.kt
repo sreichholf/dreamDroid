@@ -23,8 +23,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -77,7 +79,6 @@ import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
-import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
@@ -134,6 +135,14 @@ object TvComposeHubHost {
 
     fun isPersistentHubHeader(headerId: String): Boolean =
         headerId == HEADER_SETTINGS_ID || headerId == HEADER_MULTIEPG_ID
+
+    /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
+    fun hubHeaderIconRes(headerId: String): Int = when {
+        headerId == HEADER_SETTINGS_ID -> R.drawable.ic_badge_settings
+        headerId == HEADER_MULTIEPG_ID -> R.drawable.ic_multiepg_clock
+        headerId.startsWith(HEADER_MOVIE_PREFIX) -> R.drawable.ic_menu_movie
+        else -> R.drawable.ic_menu_tv
+    }
 
     fun multiEpgIntent(context: Context): Intent = Intent(context, MultiEpgActivity::class.java)
 
@@ -472,10 +481,13 @@ fun ComposeTvHubChrome(
                                     }
                                 },
                                 leadingContent = {
-                                    Box(
-                                        modifier = Modifier
-                                            .width(24.dp)
-                                            .height(24.dp)
+                                    Image(
+                                        painter = painterResource(
+                                            TvComposeHubHost.hubHeaderIconRes(header.id)
+                                        ),
+                                        contentDescription = header.title,
+                                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                                        modifier = Modifier.testTag("hub_header_icon_${header.id}")
                                     )
                                 },
                                 colors = dreamDroidTvDrawerItemColors(),
@@ -493,48 +505,41 @@ fun ComposeTvHubChrome(
                     }
                 }
             ) {
-                LazyColumn(
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(24.dp)
                         .testTag("compose_tv_hub_rows"),
-                    verticalArrangement = Arrangement.spacedBy(24.dp),
-                    contentPadding = PaddingValues(bottom = 48.dp)
+                    verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
-                    item {
-                        val title = headers.firstOrNull { header ->
-                            header.id == selectedHeaderId
-                        }?.title.orEmpty()
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = title,
-                                style = MaterialTheme.typography.headlineSmall,
-                                modifier = Modifier.weight(1f)
+                    val title = headers.firstOrNull { header ->
+                        header.id == selectedHeaderId
+                    }?.title.orEmpty()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (sessionChipLabel != null) {
+                            HubSessionStatus(
+                                label = sessionChipLabel,
+                                recheckLabel = sessionRecheckLabel
+                                    ?: stringResource(R.string.recheck),
+                                onRecheck = onSessionRecheck
                             )
-                            if (sessionChipLabel != null) {
-                                HubSessionStatus(
-                                    label = sessionChipLabel,
-                                    recheckLabel = sessionRecheckLabel
-                                        ?: stringResource(R.string.recheck),
-                                    onRecheck = onSessionRecheck
-                                )
-                            }
                         }
                     }
                     if (loading) {
-                        item {
-                            Text(
-                                text = stringResource(R.string.loading),
-                                style = MaterialTheme.typography.bodyLarge,
-                                modifier = Modifier.testTag("hub_loading")
-                            )
-                        }
+                        Text(
+                            text = stringResource(R.string.loading),
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.testTag("hub_loading")
+                        )
                     }
                     if (
                         TvComposeHubHost.shouldShowBrowseError(
@@ -544,58 +549,42 @@ fun ComposeTvHubChrome(
                             hasPaintedContent
                         )
                     ) {
-                        item {
-                            Text(
-                                text = errorText.orEmpty(),
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier.testTag("hub_error")
-                            )
-                        }
+                        Text(
+                            text = errorText.orEmpty(),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.testTag("hub_error")
+                        )
                     }
-                    if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
-                        item {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                        if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
                             HubSettingsRow(
                                 settingsItems = settingsItems,
                                 onSettingsClick = onSettingsClick
                             )
-                        }
-                    } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
-                        item {
+                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
                             HubMultiEpgRow(onClick = onMultiEpgClick)
-                        }
-                    } else {
-                        if (selectedBouquet != null) {
-                            item {
-                                HubServiceRow(
-                                    bouquetRef = selectedBouquet.bouquet.reference,
-                                    services = selectedBouquet.services,
-                                    streamingEnabled = streamingEnabled,
-                                    onServiceClick = gatedServiceClick
-                                )
-                            }
+                        } else if (selectedBouquet != null) {
+                            HubServiceGrid(
+                                bouquetRef = selectedBouquet.bouquet.reference,
+                                services = selectedBouquet.services,
+                                onServiceClick = gatedServiceClick
+                            )
                         } else if (movieDir != null) {
                             if (movieLoading && movieDir !in moviesByLocation) {
-                                item {
-                                    Text(
-                                        text = stringResource(R.string.loading),
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        modifier = Modifier.testTag("hub_movie_loading")
-                                    )
-                                }
+                                Text(
+                                    text = stringResource(R.string.loading),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.testTag("hub_movie_loading")
+                                )
                             } else {
-                                item {
-                                    HubMovieRow(
-                                        dirname = movieDir,
-                                        movies = moviesByLocation[movieDir].orEmpty(),
-                                        streamingEnabled = streamingEnabled,
-                                        onMovieClick = gatedMovieClick
-                                    )
-                                }
+                                HubMovieGrid(
+                                    dirname = movieDir,
+                                    movies = moviesByLocation[movieDir].orEmpty(),
+                                    onMovieClick = gatedMovieClick
+                                )
                             }
                         } else if (!loading) {
-                            item {
-                                HubPlaceholderRow()
-                            }
+                            HubPlaceholderRow()
                         }
                     }
                 }
@@ -652,7 +641,8 @@ fun TvNeedsReceiverOverlay(
                     .focusRequester(okFocus)
                     .testTag("${testTag}_ok"),
                 colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
             ) {
                 Text(
                     text = stringResource(R.string.ok),
@@ -690,7 +680,8 @@ private fun HubSessionStatus(
                 onClick = onRecheck,
                 modifier = Modifier.testTag("hub_session_recheck"),
                 colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
             ) {
                 Text(
                     text = recheckLabel,
@@ -723,7 +714,8 @@ fun HubSettingsRow(
                     .width(200.dp)
                     .testTag("hub_settings_${kind.name.lowercase()}"),
                 colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
             ) {
                 Column {
                     Image(
@@ -765,7 +757,8 @@ fun HubMultiEpgRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
                     .width(200.dp)
                     .testTag("hub_multiepg_open"),
                 colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
             ) {
                 Column {
                     Image(
@@ -800,8 +793,7 @@ fun HubServiceRow(
     currentServiceRef: String? = null,
     firstItemFocusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
-    onScrollInProgress: ((Boolean) -> Unit)? = null,
-    streamingEnabled: Boolean = true
+    onScrollInProgress: ((Boolean) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(currentServiceRef, services) {
@@ -843,8 +835,36 @@ fun HubServiceRow(
                 } else {
                     Modifier
                 },
-                onFocused = onUserInteraction,
-                streamingEnabled = streamingEnabled
+                onFocused = onUserInteraction
+            )
+        }
+    }
+}
+
+/** Selected bouquet as a wrapping grid so the hub pane is not a single strip. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun HubServiceGrid(
+    bouquetRef: String,
+    services: List<ServiceNowNext>,
+    onServiceClick: (ServiceNowNext, String?) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 200.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 48.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("hub_service_grid")
+    ) {
+        gridItemsIndexed(services, key = { _, it -> it.serviceReference }) { _, service ->
+            HubServiceCard(
+                service = service,
+                onClick = { onServiceClick(service, bouquetRef) },
+                fillWidth = true,
+                contentExpanded = true
             )
         }
     }
@@ -857,7 +877,8 @@ private fun HubServiceCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     onFocused: (() -> Unit)? = null,
-    streamingEnabled: Boolean = true
+    fillWidth: Boolean = false,
+    contentExpanded: Boolean = false
 ) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
@@ -883,16 +904,16 @@ private fun HubServiceCard(
     Surface(
         onClick = onClick,
         modifier = modifier
-            .width(200.dp)
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(200.dp))
             .testTag("hub_service_card")
-            .onlineOnlyLook(!streamingEnabled)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     onFocused?.invoke()
                 }
             },
         colors = dreamDroidTvCardColors(),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        shape = ClickableSurfaceDefaults.shape()
     ) {
         Column {
             PiconImage(
@@ -908,7 +929,7 @@ private fun HubServiceCard(
                 contentPrimary = contentPrimary,
                 nextStart = nextStart,
                 nextTitle = nextTitle,
-                contentExpanded = false,
+                contentExpanded = contentExpanded,
                 imageWidthPx = imageWidthPx
             )
         }
@@ -922,8 +943,7 @@ fun HubMovieRow(
     dirname: String,
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
-    modifier: Modifier = Modifier,
-    streamingEnabled: Boolean = true
+    modifier: Modifier = Modifier
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -934,8 +954,7 @@ fun HubMovieRow(
         items(movies, key = { it.reference + "|" + it.fileName }) { movie ->
             HubMovieCard(
                 movie = movie,
-                onClick = { onMovieClick(movie) },
-                streamingEnabled = streamingEnabled
+                onClick = { onMovieClick(movie) }
             )
         }
     }
@@ -943,18 +962,45 @@ fun HubMovieRow(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubMovieCard(movie: Movie, onClick: () -> Unit, streamingEnabled: Boolean = true) {
+fun HubMovieGrid(
+    dirname: String,
+    movies: List<Movie>,
+    onMovieClick: (Movie) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 200.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 48.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("hub_movie_grid")
+    ) {
+        gridItemsIndexed(movies, key = { _, it -> it.reference + "|" + it.fileName }) { _, movie ->
+            HubMovieCard(
+                movie = movie,
+                onClick = { onMovieClick(movie) },
+                fillWidth = true
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubMovieCard(movie: Movie, onClick: () -> Unit, fillWidth: Boolean = false) {
     val descriptionEx = movie.descriptionExtended.replace("\\n", "\n")
     val content = if (descriptionEx.isNotEmpty()) descriptionEx else movie.description
     Surface(
         onClick = onClick,
         modifier = Modifier
-            .width(200.dp)
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(200.dp))
             .height(160.dp)
-            .testTag("hub_movie_card")
-            .onlineOnlyLook(!streamingEnabled),
+            .testTag("hub_movie_card"),
         colors = dreamDroidTvCardColors(),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        shape = ClickableSurfaceDefaults.shape()
     ) {
         Column(
             modifier = Modifier
@@ -1001,7 +1047,8 @@ private fun HubPlaceholderRow() {
                     .height(100.dp)
                     .testTag("hub_placeholder_card_$index"),
                 colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
             ) {
                 Box(
                     modifier = Modifier

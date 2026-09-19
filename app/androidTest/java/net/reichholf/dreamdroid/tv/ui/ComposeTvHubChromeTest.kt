@@ -65,6 +65,7 @@ class ComposeTvHubChromeTest {
         // covered by settingsRowClickInvokesCallback with a sized parent.
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
         composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_header_icon_settings", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()
     }
@@ -350,7 +351,7 @@ class ComposeTvHubChromeTest {
             )
         }
         composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
-        composeRule.onNodeWithTag("hub_service_row", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_service_grid", useUnmergedTree = true).assertExists()
     }
 
     @Test

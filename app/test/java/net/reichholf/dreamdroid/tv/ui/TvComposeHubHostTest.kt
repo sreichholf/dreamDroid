@@ -64,6 +64,30 @@ class TvComposeHubHostTest {
     }
 
     @Test
+    fun hubHeaderIconResMatchesDrawerRole() {
+        assertEquals(
+            R.drawable.ic_badge_settings,
+            TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_SETTINGS_ID)
+        )
+        assertEquals(
+            R.drawable.ic_multiepg_clock,
+            TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_MULTIEPG_ID)
+        )
+        assertEquals(
+            R.drawable.ic_menu_tv,
+            TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_PLACEHOLDER_ID)
+        )
+        assertEquals(
+            R.drawable.ic_menu_tv,
+            TvComposeHubHost.hubHeaderIconRes("1:7:1:0:0:0:0:0:0:0:Favourites")
+        )
+        assertEquals(
+            R.drawable.ic_menu_movie,
+            TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.movieHeaderId("/hdd/movie"))
+        )
+    }
+
+    @Test
     fun settingsBadgesMatchLiveTvCards() {
         assertEquals(
             R.drawable.ic_badge_reload,
