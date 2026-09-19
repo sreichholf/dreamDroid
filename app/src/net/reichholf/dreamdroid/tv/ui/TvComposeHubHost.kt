@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,10 +32,14 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -540,7 +545,10 @@ fun HubServiceRow(
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
     modifier: Modifier = Modifier,
-    currentServiceRef: String? = null
+    currentServiceRef: String? = null,
+    firstItemFocusRequester: FocusRequester? = null,
+    onUserInteraction: (() -> Unit)? = null,
+    onScrollInProgress: ((Boolean) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(currentServiceRef, services) {
@@ -549,17 +557,40 @@ fun HubServiceRow(
             listState.scrollToItem(index)
         }
     }
+    if (onScrollInProgress != null) {
+        LaunchedEffect(listState) {
+            snapshotFlow { listState.isScrollInProgress }.collect { scrolling ->
+                onScrollInProgress(scrolling)
+            }
+        }
+    }
     LazyRow(
         state = listState,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
             .testTag("hub_service_row")
+            .then(
+                if (onUserInteraction != null) {
+                    Modifier.onPreviewKeyEvent {
+                        onUserInteraction()
+                        false
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
-        items(services, key = { it.serviceReference }) { service ->
+        itemsIndexed(services, key = { _, it -> it.serviceReference }) { index, service ->
             HubServiceCard(
                 service = service,
-                onClick = { onServiceClick(service, bouquetRef) }
+                onClick = { onServiceClick(service, bouquetRef) },
+                modifier = if (index == 0 && firstItemFocusRequester != null) {
+                    Modifier.focusRequester(firstItemFocusRequester)
+                } else {
+                    Modifier
+                },
+                onFocused = onUserInteraction
             )
         }
     }
@@ -567,7 +598,12 @@ fun HubServiceRow(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubServiceCard(service: ServiceNowNext, onClick: () -> Unit) {
+private fun HubServiceCard(
+    service: ServiceNowNext,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    onFocused: (() -> Unit)? = null
+) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
     val now = service.now
@@ -591,9 +627,14 @@ private fun HubServiceCard(service: ServiceNowNext, onClick: () -> Unit) {
     }
     Surface(
         onClick = onClick,
-        modifier = Modifier
+        modifier = modifier
             .width(200.dp)
-            .testTag("hub_service_card"),
+            .testTag("hub_service_card")
+            .onFocusChanged { focusState ->
+                if (focusState.isFocused) {
+                    onFocused?.invoke()
+                }
+            },
         colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {

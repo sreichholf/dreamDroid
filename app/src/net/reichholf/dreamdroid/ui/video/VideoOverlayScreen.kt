@@ -115,7 +115,9 @@ fun VideoOverlayScreen(
     onSubtitle: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    firstControlFocusRequester: FocusRequester? = null
+    firstControlFocusRequester: FocusRequester? = null,
+    /** TV overlay info sheets are fullscreen-ish; phone overlay keeps height caps. */
+    uncappedDetailSheets: Boolean = false
 ) {
     val playLabel = stringResource(R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
@@ -316,13 +318,15 @@ fun VideoOverlayScreen(
             onEditTimer = { state.epgDetailContent = null },
             onImdb = { state.epgDetailContent = null },
             onSimilar = { state.epgDetailContent = null },
-            showActions = false
+            showActions = false,
+            bodyHeightCap = if (uncappedDetailSheets) null else 360.dp
         )
     }
     state.movieDetailContent?.let { content ->
         MovieDetailModalSheet(
             content = content,
-            onDismiss = { state.movieDetailContent = null }
+            onDismiss = { state.movieDetailContent = null },
+            heightCap = if (uncappedDetailSheets) null else 480.dp
         )
     }
 }
@@ -416,7 +420,8 @@ fun ComposeView.bindVideoOverlayScreen(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
-    onSeekChange: (Int) -> Unit
+    onSeekChange: (Int) -> Unit,
+    uncappedDetailSheets: Boolean = false
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     // Focusable shell so nextFocusDown from the zap row lands here; then forward into Compose.
@@ -436,6 +441,7 @@ fun ComposeView.bindVideoOverlayScreen(
                 onSubtitle = onSubtitle,
                 onSeekChange = onSeekChange,
                 firstControlFocusRequester = firstControlFocus,
+                uncappedDetailSheets = uncappedDetailSheets,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusGroup()

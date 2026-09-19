@@ -6,6 +6,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
@@ -21,7 +22,9 @@ fun EpgDetailModalSheet(
     onEditTimer: () -> Unit,
     onImdb: () -> Unit,
     onSimilar: () -> Unit,
-    showActions: Boolean = true
+    showActions: Boolean = true,
+    /** Phone bottom sheet caps body height; TV overlay/fullscreen passes null. */
+    bodyHeightCap: Dp? = 360.dp
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -47,6 +50,7 @@ fun EpgDetailModalSheet(
                 onDismiss()
             },
             showActions = showActions,
+            bodyHeightCap = bodyHeightCap,
             modifier = Modifier.padding(bottom = 16.dp)
         )
     }

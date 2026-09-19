@@ -129,6 +129,7 @@ class VideoOverlayFragment :
         overlayRoot = view.findViewById(R.id.overlay_root)
         servicesView = view.findViewById(R.id.servicelist)
         composeOverlay = view.findViewById(R.id.compose_overlay)
+        composeZapList = view.findViewById(R.id.compose_zap_list)
         composeOverlay!!.bindVideoOverlayScreen(
             state = overlayUiState,
             onPlay = { onPlay() },
@@ -138,15 +139,24 @@ class VideoOverlayFragment :
             onList = { onList() },
             onAudio = { onSelectAudioTrack() },
             onSubtitle = { onSelectSubtitleTrack() },
-            onSeekChange = { progress -> seek(progress) }
+            onSeekChange = { progress -> seek(progress) },
+            uncappedDetailSheets = composeZapList != null
         )
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
-        composeZapList = view.findViewById(R.id.compose_zap_list)
-        composeZapList?.bindTvZapList(overlayUiState) { row ->
-            zapToService(row)
-        }
+        composeZapList?.bindTvZapList(
+            state = overlayUiState,
+            onServiceClick = { row -> zapToService(row) },
+            onUserInteraction = { autohide() },
+            onScrollInProgress = { scrolling ->
+                if (scrolling) {
+                    handler.removeCallbacks(autoHideRunnable)
+                } else {
+                    autohide()
+                }
+            }
+        )
         return view
     }
 

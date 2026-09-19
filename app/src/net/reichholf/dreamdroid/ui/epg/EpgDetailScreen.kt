@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -22,6 +23,9 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
+
+const val EPG_DETAIL_CAPPED_TAG = "epg_detail_capped"
+const val EPG_DETAIL_UNCAPPED_TAG = "epg_detail_uncapped"
 
 data class EpgDetailContent(
     val title: String,
@@ -131,12 +135,17 @@ fun EpgDetailScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .then(
-                    if (bodyHeightCap !=
-                        null
-                    ) {
+                    if (bodyHeightCap != null) {
                         Modifier.heightIn(max = bodyHeightCap)
                     } else {
                         Modifier
+                    }
+                )
+                .testTag(
+                    if (bodyHeightCap == null) {
+                        EPG_DETAIL_UNCAPPED_TAG
+                    } else {
+                        EPG_DETAIL_CAPPED_TAG
                     }
                 )
                 .verticalScroll(rememberScrollState())
