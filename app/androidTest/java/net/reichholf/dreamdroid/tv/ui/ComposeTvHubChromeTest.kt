@@ -21,6 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -265,6 +267,39 @@ class ComposeTvHubChromeTest {
             )
         }
         composeRule.onNodeWithTag("hub_error", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun paintedBouquetHidesBrowseError() {
+        val bouquet = Service(
+            "1:7:1:0:0:0:0:0:0:0:Favourites",
+            "Favourites"
+        )
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(bouquet.reference, bouquet.name)
+                ),
+                selectedHeaderId = bouquet.reference,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                bouquetRows = listOf(
+                    HubBouquetRow(
+                        bouquet = bouquet,
+                        services = listOf(
+                            ServiceNowNext(
+                                serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+                                serviceName = "Demo"
+                            )
+                        )
+                    )
+                ),
+                errorText = "box offline"
+            )
+        }
+        composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_service_row", useUnmergedTree = true).assertExists()
     }
 
     @Test

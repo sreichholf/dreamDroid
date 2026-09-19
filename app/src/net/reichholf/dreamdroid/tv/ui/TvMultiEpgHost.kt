@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -59,11 +60,15 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
@@ -75,6 +80,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
     val persistGate = remember(context) {
         MultiEpgPersistGate(UserBouquetCache.excludedHubTabRefs(context))
     }
+    val connection by SessionConnectionHolder.shared.status.collectAsState()
     val session = remember(sync, scope, context) {
         MultiEpgSession(
             sync = sync,
@@ -85,8 +91,23 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
             loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
             formatError = { error -> error.toEnigmaDisplayMessage(context) },
             persistBouquet = persistGate::persist,
-            shouldSkipReceiverHttp = { false },
-            isSessionOffline = { false }
+            shouldSkipReceiverHttp = { hasCache ->
+                SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+            },
+            isSessionOffline = {
+                SessionConnectionHolder.shared.status.value.session ==
+                    ConnectionStatus.Session.Offline
+            },
+            loadCachedRoster = { profileId, ref ->
+                UserBouquetCache.loadRosterServices(
+                    AppDatabase.roster(context),
+                    profileId,
+                    ref
+                )
+            },
+            loadCachedTimers = { profileId ->
+                TimerSnapshotStore.load(AppDatabase.timer(context), profileId)
+            }
         )
     }
     DisposableEffect(session) {
@@ -116,13 +137,36 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
 
     LaunchedEffect(Unit) {
         val excluded = UserBouquetCache.excludedHubTabRefs(context)
-        val result = loadServiceList(
-            context,
-            listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
-        )
-        val tabs = UserBouquetCache.userBouquetTabs(result.services, excluded)
+        val profileId = DreamDroid.getCurrentProfile().id
+        val cachedTabs = if (profileId != null) {
+            UserBouquetCache.loadTabStripServices(
+                AppDatabase.roster(context),
+                profileId,
+                UserBouquetCache.KIND_TV
+            )
+        } else {
+            emptyList()
+        }
+        val hasCache = cachedTabs.isNotEmpty()
+        val live = if (
+            SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+        ) {
+            null
+        } else {
+            loadServiceList(
+                context,
+                listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
+            )
+        }
+        val services = when {
+            live != null && live.success -> live.services
+            cachedTabs.isNotEmpty() -> cachedTabs
+            live != null -> live.services
+            else -> emptyList()
+        }
+        val tabs = UserBouquetCache.userBouquetTabs(services, excluded)
         persistGate.knownTabRefs = tabs.map { it.reference }
-        bouquets = result.services.filter { it.reference.isNotBlank() }
+        bouquets = services.filter { it.reference.isNotBlank() }
         val profile = DreamDroid.getCurrentProfile()
         val defaultRef = profile.defaultBouquetTv.orEmpty().trim()
         val defaultName = profile.defaultBouquetTvName.orEmpty()
@@ -231,7 +275,9 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                     activity = activity,
                     progress = progress,
                     onProgress = { progress = it },
-                    onDismiss = { detailEvent = null }
+                    onDismiss = { detailEvent = null },
+                    streamingEnabled = connection.allowsStreaming(),
+                    mutationsBlocked = connection.blocksMutations
                 )
             }
             if (pickingBouquet) {
@@ -267,13 +313,16 @@ internal fun TvMultiEpgEventDetail(
     activity: AppCompatActivity? = null,
     onStream: (() -> Unit)? = null,
     onSetTimer: (() -> Unit)? = null,
-    onImdb: (() -> Unit)? = null
+    onImdb: (() -> Unit)? = null,
+    streamingEnabled: Boolean = true,
+    mutationsBlocked: Boolean = false
 ) {
     val context = LocalContext.current
     val minutesShort = stringResource(R.string.minutes_short)
     val unavailable = stringResource(R.string.not_available)
     val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
     val firstActionFocus = remember { FocusRequester() }
+    var showNeedsReceiver by remember { mutableStateOf(false) }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(event) {
         try {
@@ -308,30 +357,36 @@ internal fun TvMultiEpgEventDetail(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                TvMultiEpgAction(
-                    label = stringResource(R.string.stream),
-                    tag = "tv_multi_epg_detail_stream",
-                    onClick = {
-                        if (onStream != null) {
-                            onStream()
-                            return@TvMultiEpgAction
-                        }
-                        val host = activity ?: return@TvMultiEpgAction
-                        val intent = IntentFactory.getStreamServiceIntent(
-                            context,
-                            event.serviceReference,
-                            event.title,
-                            bouquetRef,
-                            null
-                        )
-                        TvComposeHubHost.startStreamIntent(host, intent)
-                    },
-                    focusRequester = firstActionFocus
-                )
+                if (streamingEnabled) {
+                    TvMultiEpgAction(
+                        label = stringResource(R.string.stream),
+                        tag = "tv_multi_epg_detail_stream",
+                        onClick = {
+                            if (onStream != null) {
+                                onStream()
+                                return@TvMultiEpgAction
+                            }
+                            val host = activity ?: return@TvMultiEpgAction
+                            val intent = IntentFactory.getStreamServiceIntent(
+                                context,
+                                event.serviceReference,
+                                event.title,
+                                bouquetRef,
+                                null
+                            )
+                            TvComposeHubHost.startStreamIntent(host, intent)
+                        },
+                        focusRequester = firstActionFocus
+                    )
+                }
                 TvMultiEpgAction(
                     label = stringResource(R.string.set_timer),
                     tag = "tv_multi_epg_detail_set_timer",
                     onClick = {
+                        if (mutationsBlocked) {
+                            showNeedsReceiver = true
+                            return@TvMultiEpgAction
+                        }
                         if (onSetTimer != null) {
                             onSetTimer()
                             return@TvMultiEpgAction
@@ -359,6 +414,11 @@ internal fun TvMultiEpgEventDetail(
                             }
                             Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
                         }
+                    },
+                    focusRequester = if (streamingEnabled) {
+                        null
+                    } else {
+                        firstActionFocus
                     }
                 )
                 TvMultiEpgAction(
@@ -375,6 +435,12 @@ internal fun TvMultiEpgEventDetail(
                 )
             }
             IndeterminateProgressHost(progress)
+        }
+        if (showNeedsReceiver) {
+            TvNeedsReceiverOverlay(
+                onDismiss = { showNeedsReceiver = false },
+                testTag = "tv_multi_epg_needs_receiver"
+            )
         }
     }
 }

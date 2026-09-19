@@ -106,5 +106,13 @@ class TvComposeHubHostTest {
                 errorText = null
             )
         )
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                loading = false,
+                errorText = "box offline",
+                hasPaintedContent = true
+            )
+        )
     }
 }

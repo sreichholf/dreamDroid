@@ -23,6 +23,9 @@ import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -30,6 +33,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.VideoActivity
@@ -43,8 +47,10 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
 import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
 import net.reichholf.dreamdroid.ui.video.showEpgDetail
@@ -96,6 +102,7 @@ class VideoOverlayFragment :
     private var servicesViewVisible: Boolean = false
 
     private var loadJob: Job? = null
+    private var tvZapListBound: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         @Suppress("DEPRECATION")
@@ -145,7 +152,42 @@ class VideoOverlayFragment :
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
-        composeZapList?.bindTvZapList(
+        bindTvZapListIfAllowed()
+        return view
+    }
+
+    /** TV overlay only: hide zap / stream-another chrome unless session is Online. */
+    fun setTvStreamingChromeEnabled(enabled: Boolean) {
+        if (composeZapList == null) {
+            return
+        }
+        if (enabled) {
+            bindTvZapListIfAllowed()
+            if (serviceList.isNotEmpty()) {
+                overlayUiState.showListButton = true
+            }
+        } else {
+            unbindTvZapList()
+        }
+    }
+
+    private fun allowsTvStreaming(): Boolean {
+        if (composeZapList == null) {
+            return true
+        }
+        return SessionConnectionHolder.shared.status.value.allowsStreaming()
+    }
+
+    private fun bindTvZapListIfAllowed() {
+        val zapList = composeZapList ?: return
+        if (!allowsTvStreaming()) {
+            unbindTvZapList()
+            return
+        }
+        if (tvZapListBound) {
+            return
+        }
+        zapList.bindTvZapList(
             state = overlayUiState,
             onServiceClick = { row -> zapToService(row) },
             onUserInteraction = { autohide() },
@@ -157,7 +199,18 @@ class VideoOverlayFragment :
                 }
             }
         )
-        return view
+        tvZapListBound = true
+    }
+
+    private fun unbindTvZapList() {
+        val zapList = composeZapList ?: return
+        hideZapOverlays()
+        overlayUiState.showListButton = false
+        overlayUiState.zapServices = emptyList()
+        zapList.setContent { }
+        zapList.visibility = View.GONE
+        zapList.isFocusable = false
+        tvZapListBound = false
     }
 
     @Deprecated("Deprecated in Java")
@@ -332,6 +385,9 @@ class VideoOverlayFragment :
     }
 
     private fun onList() {
+        if (!allowsTvStreaming()) {
+            return
+        }
         if (!servicesViewVisible) {
             servicesViewVisible = true
             showZapOverlays()
@@ -406,6 +462,15 @@ class VideoOverlayFragment :
                 }
             }
         )
+        if (composeZapList != null) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    SessionConnectionHolder.shared.status.collect { status ->
+                        setTvStreamingChromeEnabled(status.allowsStreaming())
+                    }
+                }
+            }
+        }
     }
 
     private fun applyServiceList(services: ArrayList<ServiceNowNext>) {
@@ -427,7 +492,7 @@ class VideoOverlayFragment :
             }
             servicesView?.adapter?.notifyDataSetChanged()
         }
-        if (serviceList.isEmpty()) {
+        if (serviceList.isEmpty() || !allowsTvStreaming()) {
             overlayUiState.showListButton = false
             hideZapOverlays()
         } else {
@@ -439,6 +504,7 @@ class VideoOverlayFragment :
     }
 
     private fun zap() {
+        if (!allowsTvStreaming()) return
         if (Service.isMarker(serviceRef)) return
         val serviceInfo = serviceInfoForIntent()
         val streamingIntent =
@@ -534,6 +600,7 @@ class VideoOverlayFragment :
     }
 
     private fun previous() {
+        if (!allowsTvStreaming()) return
         val serviceInfo = getPreviousServiceInfo() ?: return
         currentService = serviceInfo
         movie = null
@@ -549,6 +616,7 @@ class VideoOverlayFragment :
     }
 
     private fun next() {
+        if (!allowsTvStreaming()) return
         val serviceInfo = getNextServiceInfo() ?: return
         currentService = serviceInfo
         movie = null
@@ -817,7 +885,7 @@ class VideoOverlayFragment :
     }
 
     private fun showZapOverlays() {
-        if (serviceList.isEmpty()) {
+        if (serviceList.isEmpty() || !allowsTvStreaming()) {
             hideZapOverlays()
             return
         }
@@ -905,6 +973,7 @@ class VideoOverlayFragment :
     }
 
     private fun zapToService(row: ServiceNowNext) {
+        if (!allowsTvStreaming()) return
         val serviceRef = row.serviceReference
         if (Service.isMarker(serviceRef)) return
         currentService = row

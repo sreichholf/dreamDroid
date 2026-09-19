@@ -22,14 +22,21 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.commit
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
+import net.reichholf.dreamdroid.tv.ui.allowsStreaming
+import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -64,18 +71,57 @@ class VideoActivity :
 
     private val handler = Handler(Looper.getMainLooper())
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
+    private var playbackAlreadyStarted: Boolean = false
+    private var tvStreamingRejected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
         enableEdgeToEdge()
         setFullScreen()
         super.onCreate(savedInstanceState)
+        val isTelevision = isTelevisionDevice()
+        if (!shouldKeepTvStreamingActivity(
+                isTelevision,
+                SessionConnectionHolder.shared.status.value,
+                playbackAlreadyStarted
+            )
+        ) {
+            tvStreamingRejected = true
+            finish()
+            return
+        }
+        if (isTelevision) {
+            observeTvSession()
+        }
         localNetworkPermissionRequest.ensure(this)
         setContentView(R.layout.video_player)
         surfaceFrameAddLayoutListener(true)
         currentScreenOrientation = resources.configuration.orientation
         title = ""
         initializeOverlay()
+    }
+
+    private fun isTelevisionDevice(): Boolean =
+        resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
+            Configuration.UI_MODE_TYPE_TELEVISION
+
+    private fun observeTvSession() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                SessionConnectionHolder.shared.status.collect { status ->
+                    if (!shouldKeepTvStreamingActivity(
+                            isTelevisionDevice(),
+                            status,
+                            playbackAlreadyStarted
+                        )
+                    ) {
+                        finish()
+                        return@collect
+                    }
+                    overlayFragment?.setTvStreamingChromeEnabled(status.allowsStreaming())
+                }
+            }
+        }
     }
 
     private fun surfaceFrameAddLayoutListener(add: Boolean) {
@@ -115,12 +161,18 @@ class VideoActivity :
 
     override fun onStart() {
         super.onStart()
+        if (tvStreamingRejected) {
+            return
+        }
         initialize()
     }
 
     override fun onResume() {
         super.onResume()
-        overlayFragment!!.showOverlays()
+        if (tvStreamingRejected) {
+            return
+        }
+        overlayFragment?.showOverlays()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -129,14 +181,18 @@ class VideoActivity :
     }
 
     override fun onPause() {
-        overlayFragment!!.hideOverlays()
+        if (!tvStreamingRejected) {
+            overlayFragment?.hideOverlays()
+        }
         super.onPause()
     }
 
     override fun onStop() {
-        cleanup()
-        VLCPlayer.release()
-        surfaceFrameAddLayoutListener(false)
+        if (!tvStreamingRejected) {
+            cleanup()
+            VLCPlayer.release()
+            surfaceFrameAddLayoutListener(false)
+        }
         super.onStop()
     }
 
@@ -179,10 +235,16 @@ class VideoActivity :
                     )
             )
         player.playUri(data, accel)
+        playbackAlreadyStarted = true
     }
 
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean =
-        overlayFragment!!.onKeyDown(keyCode, event) || super.onKeyDown(keyCode, event)
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (tvStreamingRejected) {
+            return super.onKeyDown(keyCode, event)
+        }
+        return overlayFragment?.onKeyDown(keyCode, event) == true ||
+            super.onKeyDown(keyCode, event)
+    }
 
     private fun initialize() {
         cleanup()
@@ -445,7 +507,11 @@ class VideoActivity :
     }
 
     override fun onEvent(event: MediaPlayer.Event) {
-        overlayFragment!!.onUpdateButtons()
+        if (event.type == MediaPlayer.Event.Playing) {
+            playbackAlreadyStarted = true
+        }
+        val overlay = overlayFragment ?: return
+        overlay.onUpdateButtons()
         when (event.type) {
             MediaPlayer.Event.Playing -> {
                 onMediaPlaying()
@@ -463,7 +529,7 @@ class VideoActivity :
 
             MediaPlayer.Event.EndReached -> finish()
         }
-        overlayFragment!!.onEvent(event)
+        overlay.onEvent(event)
     }
 
     companion object {

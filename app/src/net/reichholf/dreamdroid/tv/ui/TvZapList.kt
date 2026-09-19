@@ -28,8 +28,12 @@ fun TvZapList(
     modifier: Modifier = Modifier,
     firstItemFocusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
-    onScrollInProgress: ((Boolean) -> Unit)? = null
+    onScrollInProgress: ((Boolean) -> Unit)? = null,
+    streamingEnabled: Boolean = true
 ) {
+    if (!streamingEnabled) {
+        return
+    }
     DreamDroidTvTheme(fillBackground = false) {
         Box(
             modifier = modifier
