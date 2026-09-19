@@ -15,6 +15,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
@@ -70,7 +71,7 @@ class TvZapListTest {
         }
         composeRule.onNodeWithTag("overlay_zap_list", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("hub_service_row", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_service_picon", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithText("Demo Channel").assertIsDisplayed()
         val node = composeRule.onNodeWithTag("hub_service_card")
         node.assertIsDisplayed().assertHasClickAction()
         node.requestFocus()

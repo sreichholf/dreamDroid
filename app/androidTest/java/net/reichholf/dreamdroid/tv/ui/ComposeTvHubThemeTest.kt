@@ -56,7 +56,9 @@ class ComposeTvHubThemeTest {
                 }
             }
         }
-        composeRule.onNodeWithTag("hub_settings_icon_reload").assertIsDisplayed()
+        composeRule.onNodeWithTag("hub_settings_reload").assertIsDisplayed()
+        composeRule.onNodeWithTag("hub_settings_icon_reload", useUnmergedTree = true)
+            .assertExists()
         val bitmap = composeRule
             .onNodeWithTag("hub_settings_reload")
             .captureToImage()
