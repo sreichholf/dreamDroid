@@ -89,7 +89,7 @@ class ComposeTvHubMovieRowTest {
             )
         }
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_movie_row", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_movie_grid", useUnmergedTree = true).assertExists()
     }
 
     @Test

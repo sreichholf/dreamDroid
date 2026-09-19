@@ -16,6 +16,7 @@ class ComposeTvHubStubTest {
         }
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
         composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_header_icon_multiepg", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 }
