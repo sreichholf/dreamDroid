@@ -38,12 +38,21 @@ fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
             .padding(bottom = 24.dp)
     ) {
         PreferenceCategoryHeader(stringResource(R.string.video_player))
+        SwitchPreferenceRow(
+            title = stringResource(R.string.integrated_video_player),
+            summary = stringResource(R.string.integrated_video_player_long),
+            checked = state.integratedVideoPlayer,
+            onCheckedChange = {
+                state.setBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, it)
+            }
+        )
         ListPreferenceRow(
             title = stringResource(R.string.use_hw_accel),
             summary = stringResource(
                 R.string.use_hw_accel_long,
                 entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration)
             ),
+            enabled = state.integratedVideoPlayer,
             onClick = {
                 listDialog = ListDialogSpec(
                     title = hwAccelDialogTitle,
