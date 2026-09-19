@@ -25,22 +25,25 @@
         android:fitsSystemWindows="true"
         android:focusable="true"
         android:focusableInTouchMode="true"
-        android:nextFocusUp="@id/servicelist"
+        android:nextFocusUp="@id/compose_zap_list"
         android:paddingLeft="@dimen/titleSafeLeftRight"
         android:paddingTop="@dimen/titleSafeTopBottom"
         android:paddingRight="@dimen/titleSafeLeftRight"
         android:paddingBottom="@dimen/titleSafeTopBottom" />
 
-    <androidx.leanback.widget.HorizontalGridView
-        android:id="@+id/servicelist"
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose_zap_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/compose_overlay"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:layout_weight="1"
         android:clipToPadding="false"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:nextFocusDown="@id/compose_overlay"
+        android:paddingLeft="@dimen/titleSafeLeftRight"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        android:nextFocusDown="@id/compose_overlay" />
+        android:paddingRight="@dimen/titleSafeLeftRight"
+        android:paddingBottom="8dp" />
 </RelativeLayout>

@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
@@ -71,6 +72,10 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+
+    /** TV zap row (Compose Live TV cards). Phone overlay still uses the XML recycler. */
+    var zapServices by mutableStateOf<List<ServiceNowNext>>(emptyList())
+    var zapCurrentRef by mutableStateOf<String?>(null)
 
     /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
     var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
@@ -110,7 +115,9 @@ fun VideoOverlayScreen(
     onSubtitle: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    firstControlFocusRequester: FocusRequester? = null
+    firstControlFocusRequester: FocusRequester? = null,
+    /** TV overlay info sheets are fullscreen-ish; phone overlay keeps height caps. */
+    uncappedDetailSheets: Boolean = false
 ) {
     val playLabel = stringResource(R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
@@ -164,6 +171,8 @@ fun VideoOverlayScreen(
                 .padding(vertical = 8.dp)
                 .clip(RoundedCornerShape(4.dp))
                 // Nested chrome on the overlay surface — not primaryContainer (loud blue in night).
+                // Parent overlay_root is faded to VideoOverlayFragment.overlayAlpha so video
+                // stays visible; keep this a phone/tablet surface token, not Leanback gray.
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
                 .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),
@@ -309,13 +318,15 @@ fun VideoOverlayScreen(
             onEditTimer = { state.epgDetailContent = null },
             onImdb = { state.epgDetailContent = null },
             onSimilar = { state.epgDetailContent = null },
-            showActions = false
+            showActions = false,
+            bodyHeightCap = if (uncappedDetailSheets) null else 360.dp
         )
     }
     state.movieDetailContent?.let { content ->
         MovieDetailModalSheet(
             content = content,
-            onDismiss = { state.movieDetailContent = null }
+            onDismiss = { state.movieDetailContent = null },
+            heightCap = if (uncappedDetailSheets) null else 480.dp
         )
     }
 }
@@ -409,10 +420,11 @@ fun ComposeView.bindVideoOverlayScreen(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
-    onSeekChange: (Int) -> Unit
+    onSeekChange: (Int) -> Unit,
+    uncappedDetailSheets: Boolean = false
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    // Focusable shell so nextFocusDown from servicelist lands here; we then forward into Compose.
+    // Focusable shell so nextFocusDown from the zap row lands here; then forward into Compose.
     isFocusable = true
     isFocusableInTouchMode = true
     val firstControlFocus = FocusRequester()
@@ -429,6 +441,7 @@ fun ComposeView.bindVideoOverlayScreen(
                 onSubtitle = onSubtitle,
                 onSeekChange = onSeekChange,
                 firstControlFocusRequester = firstControlFocus,
+                uncappedDetailSheets = uncappedDetailSheets,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusGroup()

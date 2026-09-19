@@ -12,7 +12,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -44,7 +44,7 @@ class TvSettingsScreenTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val state = SettingsState.create(context)
         composeRule.setContent {
-            DreamDroidTheme {
+            DreamDroidTvTheme {
                 TvSettingsScreen(state = state)
             }
         }
@@ -68,7 +68,7 @@ class TvSettingsScreenTest {
         val state = SettingsState.create(context)
         assertTrue(state.integratedVideoPlayer)
         composeRule.setContent {
-            DreamDroidTheme {
+            DreamDroidTvTheme {
                 TvSettingsScreen(state = state)
             }
         }
@@ -91,7 +91,7 @@ class TvSettingsScreenTest {
             .commit()
         val state = SettingsState.create(context)
         composeRule.setContent {
-            DreamDroidTheme {
+            DreamDroidTvTheme {
                 TvSettingsScreen(state = state)
             }
         }

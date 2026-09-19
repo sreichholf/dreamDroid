@@ -1,12 +1,13 @@
 package net.reichholf.dreamdroid.ui.video
 
+import androidx.activity.ComponentActivity
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -15,8 +16,15 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.Metadata
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
+import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
+import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_UNCAPPED_TAG
+import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
+import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -25,7 +33,7 @@ import org.junit.Test
 
 class VideoOverlayScreenTest {
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     @Before
     fun forceAlwaysNight() {
@@ -83,6 +91,11 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+    }
+
+    @Test
+    fun liveTvOverlayKeepsSeeThroughAlpha() {
+        assertEquals(0.85f, VideoOverlayFragment.overlayAlpha, 0.001f)
     }
 
     @Test
@@ -162,6 +175,163 @@ class VideoOverlayScreenTest {
     @Test
     fun videoOverlayFragmentIsKotlinClass() {
         assertNotNull(VideoOverlayFragment::class.java.getAnnotation(Metadata::class.java))
+    }
+
+    @Test
+    fun epgInfoOpensComposeSheet() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = VideoOverlayUiState().apply {
+            title = "Live TV"
+            showInfoButton = true
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSeekChange = {}
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            state.showEpgDetail(
+                context,
+                Event(
+                    title = "Tagesschau",
+                    serviceName = "Das Erste HD",
+                    description = "News",
+                    startReadable = "20:00",
+                    durationReadable = "15"
+                )
+            )
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
+        composeRule.onNodeWithText("News").assertIsDisplayed()
+        composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertExists()
+    }
+
+    @Test
+    fun tvOverlayEpgSheetHasNoHeightCap() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = VideoOverlayUiState().apply {
+            title = "Live TV"
+            showInfoButton = true
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSeekChange = {},
+                    uncappedDetailSheets = true
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            state.showEpgDetail(
+                context,
+                Event(
+                    title = "Tagesschau",
+                    serviceName = "Das Erste HD",
+                    description = "News",
+                    startReadable = "20:00",
+                    durationReadable = "15"
+                )
+            )
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithTag(EPG_DETAIL_UNCAPPED_TAG).assertExists()
+        composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun movieInfoOpensComposeSheet() {
+        val state = VideoOverlayUiState().apply {
+            title = "Recording"
+            showInfoButton = true
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSeekChange = {}
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            state.showMovieDetail(
+                Movie(
+                    title = "Tatort",
+                    serviceName = "Das Erste HD",
+                    description = "Crime",
+                    fileName = "tatort.ts"
+                )
+            )
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tatort").assertIsDisplayed()
+        composeRule.onNodeWithText("Crime").assertIsDisplayed()
+        composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertExists()
+    }
+
+    @Test
+    fun tvOverlayMovieSheetHasNoHeightCap() {
+        val state = VideoOverlayUiState().apply {
+            title = "Recording"
+            showInfoButton = true
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSeekChange = {},
+                    uncappedDetailSheets = true
+                )
+            }
+        }
+        composeRule.runOnIdle {
+            state.showMovieDetail(
+                Movie(
+                    title = "Tatort",
+                    serviceName = "Das Erste HD",
+                    description = "Crime",
+                    fileName = "tatort.ts"
+                )
+            )
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Tatort").assertIsDisplayed()
+        composeRule.onNodeWithTag(MOVIE_DETAIL_UNCAPPED_TAG).assertExists()
+        composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
 
     private fun rgbDistance(a: Int, b: Int): Int {

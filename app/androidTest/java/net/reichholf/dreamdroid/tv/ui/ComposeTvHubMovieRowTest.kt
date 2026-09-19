@@ -16,6 +16,7 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -36,16 +37,18 @@ class ComposeTvHubMovieRowTest {
             fileName = "demo.ts"
         )
         composeRule.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                HubMovieRow(
-                    dirname = "/hdd/movie",
-                    movies = listOf(movie),
-                    onMovieClick = { clicked = it }
-                )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    HubMovieRow(
+                        dirname = "/hdd/movie",
+                        movies = listOf(movie),
+                        onMovieClick = { clicked = it }
+                    )
+                }
             }
         }
         val node = composeRule.onNodeWithTag("hub_movie_card")

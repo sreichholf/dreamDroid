@@ -113,6 +113,8 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
         composeRule.onNodeWithText("Edit Timer").assertDoesNotExist()
+        composeRule.onNodeWithTag(EPG_DETAIL_UNCAPPED_TAG).assertExists()
+        composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
 
     @Test
