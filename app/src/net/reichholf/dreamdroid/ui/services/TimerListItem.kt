@@ -8,5 +8,6 @@ data class TimerListItem(
     val end: String,
     val action: String,
     val state: String,
-    val stateColor: Int
+    val stateColor: Int,
+    val enabled: Boolean = true
 )

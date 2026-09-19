@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.getValue
@@ -8,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
@@ -427,6 +429,93 @@ class ComposeTvHubChromeTest {
             )
         }
         composeRule.onNodeWithTag("hub_movie_loading", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun timersHeaderIsInDrawerAfterSettings() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                timerContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("hub_timers_host")
+                    )
+                }
+            )
+        }
+        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_header_timers", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_timers_host", useUnmergedTree = true)
+            .assertCountEquals(0)
+    }
+
+    @Test
+    fun timersSelectionHostsTimerContentNotBrowseRows() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_TIMERS_ID,
+                onHeaderSelected = {},
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                timerContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("hub_timers_host")
+                    )
+                }
+            )
+        }
+        composeRule.onNodeWithTag("hub_header_timers", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_timers_host", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_service_row", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_placeholder_row", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_settings_row", useUnmergedTree = true)
+            .assertCountEquals(0)
+    }
+
+    @Test
+    fun timersHeaderHidesBrowseError() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_TIMERS_ID,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                errorText = "box offline",
+                timerContent = {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .testTag("hub_timers_host")
+                    )
+                }
+            )
+        }
+        composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_timers_host", useUnmergedTree = true).assertExists()
     }
 }
 

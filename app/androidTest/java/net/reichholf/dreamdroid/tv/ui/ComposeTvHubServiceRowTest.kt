@@ -79,6 +79,157 @@ class ComposeTvHubServiceRowTest {
     }
 
     @Test
+    fun serviceRowInfoInvokesOnServiceInfoWithoutStreaming() {
+        var clicked: ServiceNowNext? = null
+        var info: ServiceNowNext? = null
+        var infoBouquet: String? = null
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel",
+            now = Event(title = "Now Show"),
+            next = Event(title = "Next Show", startTimeReadable = "20:00")
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubServiceRow(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, _ -> clicked = row },
+                        onServiceInfo = { row, ref ->
+                            info = row
+                            infoBouquet = ref
+                        }
+                    )
+                }
+            }
+        }
+        val node = composeRule.onNodeWithTag("hub_service_card")
+        node.assertIsDisplayed().assertHasClickAction()
+        node.requestFocus()
+        composeRule.waitForIdle()
+        node.performKeyInput { pressKey(Key.Info) }
+        composeRule.waitForIdle()
+        assertEquals(service, info)
+        assertEquals("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", infoBouquet)
+        assertEquals(null, clicked)
+    }
+
+    @Test
+    fun serviceRowMenuInvokesOnServiceInfoWithoutStreaming() {
+        var clicked: ServiceNowNext? = null
+        var info: ServiceNowNext? = null
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel"
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubServiceRow(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, _ -> clicked = row },
+                        onServiceInfo = { row, _ -> info = row }
+                    )
+                }
+            }
+        }
+        val node = composeRule.onNodeWithTag("hub_service_card")
+        node.assertIsDisplayed()
+        node.requestFocus()
+        composeRule.waitForIdle()
+        node.performKeyInput { pressKey(Key.Menu) }
+        composeRule.waitForIdle()
+        assertEquals(service, info)
+        assertEquals(null, clicked)
+    }
+
+    @Test
+    fun serviceRowDirectionCenterStillStreamsWhenInfoHandlerSet() {
+        var clicked: ServiceNowNext? = null
+        var infoCalls = 0
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:3:3:3:3:0:0:0:",
+            serviceName = "Stream Channel"
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubServiceRow(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, _ -> clicked = row },
+                        onServiceInfo = { _, _ -> infoCalls++ }
+                    )
+                }
+            }
+        }
+        val node = composeRule.onNodeWithTag("hub_service_card")
+        node.assertIsDisplayed().assertHasClickAction()
+        node.requestFocus()
+        node.performKeyInput { pressKey(Key.DirectionCenter) }
+        if (clicked == null) {
+            node.performClick()
+        }
+        assertEquals(service, clicked)
+        assertEquals(0, infoCalls)
+    }
+
+    @Test
+    fun serviceGridInfoInvokesOnServiceInfoWithoutStreaming() {
+        var clicked: ServiceNowNext? = null
+        var info: ServiceNowNext? = null
+        var infoBouquet: String? = null
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel",
+            now = Event(title = "Now Show"),
+            next = Event(title = "Next Show", startTimeReadable = "20:00")
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
+                ) {
+                    HubServiceGrid(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, _ -> clicked = row },
+                        onServiceInfo = { row, ref ->
+                            info = row
+                            infoBouquet = ref
+                        }
+                    )
+                }
+            }
+        }
+        val node = composeRule.onNodeWithTag("hub_service_card")
+        node.assertIsDisplayed().assertHasClickAction()
+        node.requestFocus()
+        composeRule.waitForIdle()
+        node.performKeyInput { pressKey(Key.Info) }
+        composeRule.waitForIdle()
+        assertEquals(service, info)
+        assertEquals("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", infoBouquet)
+        assertEquals(null, clicked)
+    }
+
+    @Test
     fun bouquetSelectionShowsServiceRowHost() {
         val bouquet = Service(
             reference = "1:7:1:0:0:0:0:0:0:0:Favourites",

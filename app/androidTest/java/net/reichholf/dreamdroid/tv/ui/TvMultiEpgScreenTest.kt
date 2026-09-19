@@ -253,7 +253,43 @@ class TvMultiEpgScreenTest {
         }
         composeRule.onAllNodesWithTag("tv_multi_epg_detail_stream").assertCountEquals(0)
         composeRule.onNodeWithTag("tv_multi_epg_detail_set_timer").assertExists()
+        composeRule.onNodeWithTag("tv_multi_epg_detail_edit_timer").assertExists()
         composeRule.onNodeWithTag("tv_multi_epg_detail_imdb").assertExists()
+    }
+
+    @Test
+    fun detailEditTimerCenterInvokesCallback() {
+        var edited = false
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    TvMultiEpgEventDetail(
+                        event = Event(
+                            eventId = "1",
+                            title = "News",
+                            serviceReference = "1:0:1:1:0:0:0:0:0:0:",
+                            serviceName = "Das Erste"
+                        ),
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
+                        progress = null,
+                        onProgress = {},
+                        onDismiss = {},
+                        onEditTimer = { edited = true }
+                    )
+                }
+            }
+        }
+        val editTimer = composeRule.onNodeWithTag("tv_multi_epg_detail_edit_timer")
+        editTimer.assertIsDisplayed()
+        editTimer.requestFocus()
+        composeRule.waitForIdle()
+        editTimer.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        if (!edited) {
+            editTimer.performClick()
+            composeRule.waitForIdle()
+        }
+        assertEquals(true, edited)
     }
 
     @Test

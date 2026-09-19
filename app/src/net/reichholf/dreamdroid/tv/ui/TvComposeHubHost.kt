@@ -46,7 +46,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
@@ -67,10 +71,14 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.MainActivity
@@ -93,6 +101,7 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
  */
 object TvComposeHubHost {
     const val HEADER_SETTINGS_ID: String = "settings"
+    const val HEADER_TIMERS_ID: String = "timers"
     const val HEADER_MULTIEPG_ID: String = "multiepg"
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
     const val HEADER_MOVIE_PREFIX: String = "movie:"
@@ -134,13 +143,15 @@ object TvComposeHubHost {
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
-    /** Survives hub reload so Settings / MultiEPG are not bounced to another header. */
-    fun isPersistentHubHeader(headerId: String): Boolean =
-        headerId == HEADER_SETTINGS_ID || headerId == HEADER_MULTIEPG_ID
+    /** Survives hub reload so Settings / Timers / MultiEPG are not bounced away. */
+    fun isPersistentHubHeader(headerId: String): Boolean = headerId == HEADER_SETTINGS_ID ||
+        headerId == HEADER_TIMERS_ID ||
+        headerId == HEADER_MULTIEPG_ID
 
     /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
     fun hubHeaderIconRes(headerId: String): Int = when {
         headerId == HEADER_SETTINGS_ID -> R.drawable.ic_badge_settings
+        headerId == HEADER_TIMERS_ID -> R.drawable.ic_menu_timer
         headerId == HEADER_MULTIEPG_ID -> R.drawable.ic_multiepg_clock
         headerId.startsWith(HEADER_MOVIE_PREFIX) -> R.drawable.ic_menu_movie
         else -> R.drawable.ic_menu_tv
@@ -275,6 +286,7 @@ fun ComposeTvHubApp(
         failedMessage = failedMessage
     )
     val settingsTitle = stringResource(R.string.preferences)
+    val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
     var reloadToken by remember { mutableIntStateOf(0) }
@@ -286,6 +298,10 @@ fun ComposeTvHubApp(
     var movieLoading by remember { mutableStateOf(false) }
     var movieError by remember { mutableStateOf<String?>(null) }
     var selectedHeaderId by remember { mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID) }
+    var serviceTimerTarget by remember {
+        mutableStateOf<Pair<ServiceNowNext, String?>?>(null)
+    }
+    var editTimerEvent by remember { mutableStateOf<Event?>(null) }
     val preferenceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -339,6 +355,7 @@ fun ComposeTvHubApp(
 
     val headers = remember(
         settingsTitle,
+        timersTitle,
         multiEpgTitle,
         placeholderTitle,
         bouquetRows,
@@ -346,6 +363,7 @@ fun ComposeTvHubApp(
     ) {
         buildList {
             add(HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, settingsTitle))
+            add(HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, timersTitle))
             add(
                 HubNavHeader(
                     TvComposeHubHost.HEADER_MULTIEPG_ID,
@@ -386,47 +404,97 @@ fun ComposeTvHubApp(
         return
     }
 
-    ComposeTvHubChrome(
-        headers = headers,
-        selectedHeaderId = selectedHeaderId,
-        onHeaderSelected = { selectedHeaderId = it },
-        settingsItems = settingsItems,
-        onSettingsClick = { kind ->
-            when (kind) {
-                BrowseItem.Kind.Reload -> reloadToken++
+    Box(modifier = Modifier.fillMaxSize()) {
+        ComposeTvHubChrome(
+            headers = headers,
+            selectedHeaderId = selectedHeaderId,
+            onHeaderSelected = { selectedHeaderId = it },
+            settingsItems = settingsItems,
+            onSettingsClick = { kind ->
+                when (kind) {
+                    BrowseItem.Kind.Reload -> reloadToken++
 
-                BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
-                    val intent = TvComposeHubHost.preferenceIntent(activity, kind)
-                    if (intent != null) {
-                        preferenceLauncher.launch(intent)
+                    BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
+                        val intent = TvComposeHubHost.preferenceIntent(activity, kind)
+                        if (intent != null) {
+                            preferenceLauncher.launch(intent)
+                        }
                     }
                 }
+            },
+            bouquetRows = bouquetRows,
+            moviesByLocation = moviesByLocation,
+            loading = loading,
+            movieLoading = movieLoading,
+            errorText = errorText ?: movieError,
+            streamingEnabled = streamingEnabled,
+            onServiceClick = { service, bouquetRef ->
+                openServiceStream(activity, service, bouquetRef)
+            },
+            onMovieClick = { movie ->
+                openMovieStream(activity, movie)
+            },
+            onOpenMultiEpg = { reference, name ->
+                activity.startActivity(
+                    TvComposeHubHost.multiEpgIntent(activity, reference, name)
+                )
+            },
+            sessionChipLabel = stringResource(status.chipLabelRes()),
+            onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
+                onRecheckProfile
+            } else {
+                null
+            },
+            mutationsBlocked = status.blocksMutations,
+            onServiceInfo = { service, bouquetRef ->
+                serviceTimerTarget = service to bouquetRef
             }
-        },
-        bouquetRows = bouquetRows,
-        moviesByLocation = moviesByLocation,
-        loading = loading,
-        movieLoading = movieLoading,
-        errorText = errorText ?: movieError,
-        streamingEnabled = streamingEnabled,
-        onServiceClick = { service, bouquetRef ->
-            openServiceStream(activity, service, bouquetRef)
-        },
-        onMovieClick = { movie ->
-            openMovieStream(activity, movie)
-        },
-        onOpenMultiEpg = { reference, name ->
-            activity.startActivity(
-                TvComposeHubHost.multiEpgIntent(activity, reference, name)
-            )
-        },
-        sessionChipLabel = stringResource(status.chipLabelRes()),
-        onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
-            onRecheckProfile
-        } else {
-            null
+        )
+        val overlayTarget = serviceTimerTarget
+        val editorEvent = editTimerEvent
+        // Drop the INFO overlay while the editor is open so D-pad reaches the form
+        // (same as MultiEPG dismissing detail before TvTimerEditorHost).
+        if (overlayTarget != null && editorEvent == null) {
+            DreamDroidTvTheme {
+                TvServiceTimerOverlay(
+                    service = overlayTarget.first,
+                    onDismiss = { serviceTimerTarget = null },
+                    onStream = {
+                        openServiceStream(
+                            activity,
+                            overlayTarget.first,
+                            overlayTarget.second
+                        )
+                        serviceTimerTarget = null
+                    },
+                    onSetTimer = { event ->
+                        setTimerFromEvent(activity, event) {
+                            serviceTimerTarget = null
+                        }
+                    },
+                    onEditTimer = { event ->
+                        editTimerEvent = event
+                    },
+                    streamingEnabled = streamingEnabled,
+                    mutationsBlocked = status.blocksMutations
+                )
+            }
         }
-    )
+        if (editorEvent != null) {
+            DreamDroidTvTheme {
+                TvTimerEditorHost(
+                    timer = Timer.createByEvent(editorEvent),
+                    isCreate = true,
+                    onDismiss = { editTimerEvent = null },
+                    onSaved = {
+                        editTimerEvent = null
+                        serviceTimerTarget = null
+                    },
+                    mutationsBlocked = status.blocksMutations
+                )
+            }
+        }
+    }
 }
 
 private fun openServiceStream(
@@ -445,6 +513,22 @@ private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
         activity,
         TvComposeHubHost.streamMovieIntent(activity, movie)
     )
+}
+
+private fun setTimerFromEvent(activity: ComponentActivity, event: Event, onDone: () -> Unit) {
+    activity.launchSimpleResultLoad(
+        TimerAddByEventIdRequestHandler(),
+        Timer.getEventIdParams(event)
+    ) { _, result, error ->
+        var toastText = activity.getText(R.string.get_content_error).toString()
+        val stateText = result.stateText
+        when {
+            !stateText.isNullOrEmpty() -> toastText = stateText
+            error != null -> toastText = error.resolve(activity).orEmpty()
+        }
+        Toast.makeText(activity, toastText, Toast.LENGTH_LONG).show()
+        onDone()
+    }
 }
 
 /** Side headers ([NavigationDrawer]) + row list focus chrome (Phase 3.1c-iv-c/d/e). */
@@ -468,7 +552,15 @@ fun ComposeTvHubChrome(
     onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> },
     sessionChipLabel: String? = null,
     onSessionRecheck: (() -> Unit)? = null,
-    sessionRecheckLabel: String? = null
+    sessionRecheckLabel: String? = null,
+    mutationsBlocked: Boolean = false,
+    onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
+    timerContent: @Composable () -> Unit = {
+        TvTimerHost(
+            modifier = Modifier.fillMaxSize(),
+            mutationsBlocked = mutationsBlocked
+        )
+    }
 ) {
     var showStreamUnavailable by remember { mutableStateOf(false) }
     val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
@@ -599,7 +691,7 @@ fun ComposeTvHubChrome(
                             }
                         }
                     }
-                    if (loading) {
+                    if (loading && selectedHeaderId != TvComposeHubHost.HEADER_TIMERS_ID) {
                         Text(
                             text = stringResource(R.string.loading),
                             style = MaterialTheme.typography.bodyLarge,
@@ -621,7 +713,9 @@ fun ComposeTvHubChrome(
                         )
                     }
                     Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
-                        if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
+                        if (selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID) {
+                            timerContent()
+                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
                             HubSettingsRow(
                                 settingsItems = settingsItems,
                                 onSettingsClick = onSettingsClick
@@ -635,7 +729,8 @@ fun ComposeTvHubChrome(
                             HubServiceGrid(
                                 bouquetRef = selectedBouquet.bouquet.reference,
                                 services = selectedBouquet.services,
-                                onServiceClick = gatedServiceClick
+                                onServiceClick = gatedServiceClick,
+                                onServiceInfo = onServiceInfo
                             )
                         } else if (movieDir != null) {
                             if (movieLoading && movieDir !in moviesByLocation) {
@@ -874,7 +969,8 @@ fun HubServiceRow(
     currentServiceRef: String? = null,
     firstItemFocusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
-    onScrollInProgress: ((Boolean) -> Unit)? = null
+    onScrollInProgress: ((Boolean) -> Unit)? = null,
+    onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(currentServiceRef, services) {
@@ -916,7 +1012,10 @@ fun HubServiceRow(
                 } else {
                     Modifier
                 },
-                onFocused = onUserInteraction
+                onFocused = onUserInteraction,
+                onInfo = onServiceInfo?.let { info ->
+                    { info(service, bouquetRef) }
+                }
             )
         }
     }
@@ -929,7 +1028,8 @@ fun HubServiceGrid(
     bouquetRef: String,
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
@@ -945,7 +1045,10 @@ fun HubServiceGrid(
                 service = service,
                 onClick = { onServiceClick(service, bouquetRef) },
                 fillWidth = true,
-                contentExpanded = true
+                contentExpanded = true,
+                onInfo = onServiceInfo?.let { info ->
+                    { info(service, bouquetRef) }
+                }
             )
         }
     }
@@ -959,7 +1062,8 @@ private fun HubServiceCard(
     modifier: Modifier = Modifier,
     onFocused: (() -> Unit)? = null,
     fillWidth: Boolean = false,
-    contentExpanded: Boolean = false
+    contentExpanded: Boolean = false,
+    onInfo: (() -> Unit)? = null
 ) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
@@ -990,6 +1094,21 @@ private fun HubServiceCard(
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     onFocused?.invoke()
+                }
+            }
+            .onPreviewKeyEvent { keyEvent ->
+                if (onInfo == null) {
+                    false
+                } else if (
+                    keyEvent.key == Key.Info ||
+                    keyEvent.key == Key.Menu
+                ) {
+                    if (keyEvent.type == KeyEventType.KeyUp) {
+                        onInfo()
+                    }
+                    true
+                } else {
+                    false
                 }
             },
         colors = dreamDroidTvCardColors(),
