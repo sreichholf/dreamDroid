@@ -27,7 +27,7 @@ import androidx.tv.material3.lightColorScheme
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun DreamDroidTvTheme(content: @Composable () -> Unit) {
+fun DreamDroidTvTheme(fillBackground: Boolean = true, content: @Composable () -> Unit) {
     DreamDroidTheme {
         val phoneScheme = PhoneMaterialTheme.colorScheme
         val phoneShapes = PhoneMaterialTheme.shapes
@@ -42,11 +42,15 @@ fun DreamDroidTvTheme(content: @Composable () -> Unit) {
         )
         TvMaterialTheme(colorScheme = tvScheme, shapes = tvShapes) {
             CompositionLocalProvider(TvLocalContentColor provides tvScheme.onSurface) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(phoneScheme.background)
-                ) {
+                if (fillBackground) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(phoneScheme.background)
+                    ) {
+                        content()
+                    }
+                } else {
                     content()
                 }
             }

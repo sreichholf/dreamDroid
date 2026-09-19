@@ -82,6 +82,44 @@ class DreamDroidTvThemeTest {
     }
 
     @Test
+    fun cardColorsUseElevatedSurfaceAndInverseFocus() {
+        var container = Color.Unspecified
+        var focused = Color.Unspecified
+        var content = Color.Unspecified
+        var focusedContent = Color.Unspecified
+        var surfaceLow = Color.Unspecified
+        var inverseSurface = Color.Unspecified
+        var inverseOnSurface = Color.Unspecified
+        var onSurface = Color.Unspecified
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                val phone = PhoneMaterialTheme.colorScheme
+                surfaceLow = phone.surfaceContainerLow
+                inverseSurface = phone.inverseSurface
+                inverseOnSurface = phone.inverseOnSurface
+                onSurface = phone.onSurface
+                val colors = dreamDroidTvCardColors()
+                container = colors.containerColor
+                focused = colors.focusedContainerColor
+                content = colors.contentColor
+                focusedContent = colors.focusedContentColor
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertEquals(surfaceLow, container)
+            assertEquals(onSurface, content)
+            assertEquals(inverseSurface, focused)
+            assertEquals(inverseOnSurface, focusedContent)
+            assertTrue(
+                "night card container should be dark, luminance=${container.luminance()}",
+                container.luminance() < 0.4f
+            )
+            assertNotEquals(Color.White, container)
+        }
+    }
+
+    @Test
     fun televisionXmlThemeIsMaterial3NotLeanback() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val expectedPrimary = context.getColor(R.color.md_theme_dark_primary)

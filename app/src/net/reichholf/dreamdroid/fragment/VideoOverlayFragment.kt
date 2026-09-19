@@ -23,7 +23,6 @@ import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.GestureDetectorCompat
 import androidx.fragment.app.Fragment
-import androidx.leanback.widget.HorizontalGridView
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -44,8 +43,7 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
-import net.reichholf.dreamdroid.tv.fragment.EpgDetailDialog
-import net.reichholf.dreamdroid.tv.fragment.MovieDetailDialog
+import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
 import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
@@ -87,6 +85,7 @@ class VideoOverlayFragment :
     protected var overlayRoot: View? = null
     protected var servicesView: RecyclerView? = null
     protected var composeOverlay: ComposeView? = null
+    protected var composeZapList: ComposeView? = null
 
     protected val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
@@ -144,6 +143,10 @@ class VideoOverlayFragment :
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
+        composeZapList = view.findViewById(R.id.compose_zap_list)
+        composeZapList?.bindTvZapList(overlayUiState) { row ->
+            zapToService(row)
+        }
         return view
     }
 
@@ -151,16 +154,11 @@ class VideoOverlayFragment :
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val servicesView = this.servicesView
+        if (serviceList.isEmpty()) {
+            overlayUiState.showListButton = false
+        }
         if (servicesView != null) {
-            if (DreamDroid.isTV(requireContext())) {
-                val gridView = servicesView as HorizontalGridView
-                gridView.setNumRows(1)
-            } else {
-                servicesView.layoutManager = GridLayoutManager(requireActivity(), 1)
-            }
-            if (serviceList.isEmpty()) {
-                overlayUiState.showListButton = false
-            }
+            servicesView.layoutManager = GridLayoutManager(requireActivity(), 1)
             servicesView.addItemDecoration(
                 SpacesItemDecoration(
                     requireActivity().resources.getDimensionPixelSize(
@@ -185,6 +183,10 @@ class VideoOverlayFragment :
                 }
             )
             servicesViewVisible = servicesView.visibility == View.VISIBLE
+        }
+        val zapList = composeZapList
+        if (zapList != null) {
+            servicesViewVisible = zapList.visibility == View.VISIBLE
         }
 
         gestureDetector =
@@ -294,12 +296,7 @@ class VideoOverlayFragment :
         if (movie == null && currentService == null) return
 
         if (movie != null) {
-            if (DreamDroid.isTV(requireContext())) {
-                MovieDetailDialog.newInstance(movie!!)
-                    .show(parentFragmentManager, "details_dialog_tv")
-            } else {
-                overlayUiState.showMovieDetail(movie!!)
-            }
+            overlayUiState.showMovieDetail(movie!!)
             return
         }
 
@@ -321,12 +318,7 @@ class VideoOverlayFragment :
                     ""
                 )
         }
-        if (DreamDroid.isTV(requireContext())) {
-            EpgDetailDialog.newInstance(event)
-                .show(parentFragmentManager, "details_dialog_tv")
-        } else {
-            overlayUiState.showEpgDetail(requireContext(), event)
-        }
+        overlayUiState.showEpgDetail(requireContext(), event)
     }
 
     private fun onList() {
@@ -410,6 +402,8 @@ class VideoOverlayFragment :
         serviceList.clear()
         servicesView?.adapter?.notifyDataSetChanged()
         serviceList.addAll(services)
+        overlayUiState.zapServices = serviceList.toList()
+        overlayUiState.zapCurrentRef = serviceRef
         for (service in serviceList) {
             if (service.serviceReference == serviceRef) {
                 val oldService = currentService
@@ -684,6 +678,7 @@ class VideoOverlayFragment :
         }
         updateProgress()
         servicesView?.adapter?.notifyDataSetChanged()
+        overlayUiState.zapCurrentRef = serviceRef
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -817,16 +812,23 @@ class VideoOverlayFragment :
             return
         }
         if (view == null) return
-        val servicesView = this.servicesView
-        if (servicesView != null) {
-            servicesView.layoutManager!!.scrollToPosition(getCurrentServiceIndex())
-            fadeInView(servicesView)
+        overlayUiState.zapCurrentRef = serviceRef
+        val composeZapList = this.composeZapList
+        if (composeZapList != null) {
+            fadeInView(composeZapList)
+        } else {
+            val servicesView = this.servicesView
+            if (servicesView != null) {
+                servicesView.layoutManager?.scrollToPosition(getCurrentServiceIndex())
+                fadeInView(servicesView)
+            }
         }
         autohide()
     }
 
     private fun hideZapOverlays() {
         if (view == null) return
+        fadeOutView(composeZapList)
         fadeOutView(servicesView)
     }
 
@@ -889,7 +891,10 @@ class VideoOverlayFragment :
     }
 
     override fun onItemClick(recyclerView: RecyclerView, v: View, position: Int, id: Long) {
-        val row = serviceList[position]
+        zapToService(serviceList[position])
+    }
+
+    private fun zapToService(row: ServiceNowNext) {
         val serviceRef = row.serviceReference
         if (Service.isMarker(serviceRef)) return
         currentService = row

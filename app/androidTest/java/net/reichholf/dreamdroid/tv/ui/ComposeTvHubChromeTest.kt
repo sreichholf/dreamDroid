@@ -18,6 +18,7 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -58,21 +59,25 @@ class ComposeTvHubChromeTest {
     fun settingsRowClickInvokesCallback() {
         var clicked: BrowseItem.Kind? = null
         composeRule.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-            ) {
-                HubSettingsRow(
-                    settingsItems = listOf(
-                        BrowseItem.Kind.Profile to "Profile"
-                    ),
-                    onSettingsClick = { clicked = it }
-                )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubSettingsRow(
+                        settingsItems = listOf(
+                            BrowseItem.Kind.Profile to "Profile"
+                        ),
+                        onSettingsClick = { clicked = it }
+                    )
+                }
             }
         }
         val node = composeRule.onNodeWithTag("hub_settings_profile")
         node.assertIsDisplayed().assertHasClickAction()
+        composeRule.onNodeWithTag("hub_settings_icon_profile", useUnmergedTree = true)
+            .assertExists()
         // TV Surfaces are D-pad activated; mouse performClick alone is unreliable.
         node.requestFocus()
         node.performKeyInput { pressKey(Key.DirectionCenter) }

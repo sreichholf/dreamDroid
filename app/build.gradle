@@ -33,8 +33,6 @@ dependencies {
 
     implementation 'androidx.preference:preference-ktx:1.2.1'
     implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation 'androidx.leanback:leanback:1.2.0'
-    // Leanback kept for VideoOverlay HorizontalGridView only.
     implementation 'androidx.tv:tv-material:1.1.0'
     implementation 'androidx.annotation:annotation:1.10.0'
     implementation 'androidx.fragment:fragment-ktx:1.9.0'

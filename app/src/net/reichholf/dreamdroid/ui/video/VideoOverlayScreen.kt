@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
@@ -71,6 +72,10 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+
+    /** TV zap row (Compose Live TV cards). Phone overlay still uses the XML recycler. */
+    var zapServices by mutableStateOf<List<ServiceNowNext>>(emptyList())
+    var zapCurrentRef by mutableStateOf<String?>(null)
 
     /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
     var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
@@ -414,7 +419,7 @@ fun ComposeView.bindVideoOverlayScreen(
     onSeekChange: (Int) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    // Focusable shell so nextFocusDown from servicelist lands here; we then forward into Compose.
+    // Focusable shell so nextFocusDown from the zap row lands here; then forward into Compose.
     isFocusable = true
     isFocusableInTouchMode = true
     val firstControlFocus = FocusRequester()
