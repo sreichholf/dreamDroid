@@ -6,12 +6,28 @@
     android:layout_height="match_parent"
     android:fitsSystemWindows="@bool/requireTranslucentStatusbar">
 
-    <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:id="@+id/coordinator_layout"
+    <LinearLayout
+        android:id="@+id/tablet_shell_row"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="?attr/colorSurface"
-        android:layout_weight="1">
+        android:orientation="horizontal">
+
+        <!-- Tablet hub destinations: NavigationRail. Phone keeps bottom NavigationBar
+             on shell_destination_nav. Hidden until ProvideShellDestinationBar publishes. -->
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/shell_destination_rail"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:elevation="8dp"
+            android:visibility="gone" />
+
+        <androidx.coordinatorlayout.widget.CoordinatorLayout
+            android:id="@+id/coordinator_layout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="?attr/colorSurface">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -96,6 +112,8 @@
             android:elevation="8dp" />
 
     </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/navigation_view"

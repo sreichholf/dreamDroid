@@ -151,10 +151,12 @@ class PhoneNavHostState(
         controller.addOnDestinationChangedListener { _, dest, _ ->
             val previous = controller.previousBackStackEntry?.destination?.route
             highlighter.highlightDrawerForRoute(dest.route, previous)
+            val activity = lifecycleOwner as? Activity
             applyShellDestinationBarForRoute(
                 dest.route,
                 shellDestinationBarController,
-                (lifecycleOwner as? Activity)?.findViewById(R.id.shell_destination_nav)
+                activity?.findViewById(R.id.shell_destination_nav),
+                activity?.findViewById(R.id.shell_destination_rail)
             )
         }
         flushPendingNavigations()

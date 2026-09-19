@@ -3,11 +3,13 @@ package net.reichholf.dreamdroid.ui.tools
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.nav.DESTINATION_RAIL_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -52,6 +54,26 @@ class ToolsDestinationBarTest {
                 )
             }
         }
+        composeRule.onNodeWithText("Signal Meter").performClick()
+        assertEquals(listOf(ToolsDestination.SIGNAL), selected)
+    }
+
+    @Test
+    fun railShowsToolDestinationsAndReportsSelection() {
+        val selected = mutableListOf<ToolsDestination>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                ToolsDestinationRail(
+                    selected = ToolsDestination.SCREENSHOT,
+                    onDestinationSelected = { selected += it }
+                )
+            }
+        }
+        composeRule.onNodeWithTag(DESTINATION_RAIL_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("Screenshot").assertIsDisplayed()
+        composeRule.onNodeWithText("Device Information").assertIsDisplayed()
+        composeRule.onNodeWithText("Signal Meter").assertIsDisplayed()
+        composeRule.onNodeWithText("Screenshot").assertIsSelected()
         composeRule.onNodeWithText("Signal Meter").performClick()
         assertEquals(listOf(ToolsDestination.SIGNAL), selected)
     }

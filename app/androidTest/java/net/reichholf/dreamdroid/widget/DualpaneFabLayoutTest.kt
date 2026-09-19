@@ -1,8 +1,11 @@
 package net.reichholf.dreamdroid.widget
 
+import android.content.res.Configuration
 import android.view.ContextThemeWrapper
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import androidx.compose.ui.platform.ComposeView
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -11,6 +14,7 @@ import com.google.android.material.floatingactionbutton.ExtendedFloatingActionBu
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.DodgeShellChromeBehavior
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -60,6 +64,42 @@ class DualpaneFabLayoutTest {
         assertEquals(View.NO_ID, lp.anchorId)
         assertTrue((lp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
         assertEquals(View.GONE, nav.visibility)
+    }
+
+    @Test
+    fun tabletDualpaneHostsGoneRailKeepingBottomNavAndFab() {
+        val root = inflateTabletDualpane()
+        val rail = root.findViewById<ComposeView>(R.id.shell_destination_rail)
+        assertNotNull(rail)
+        val railLp = rail.layoutParams
+
+        assertEquals(View.GONE, rail.visibility)
+        assertEquals(ViewGroup.LayoutParams.WRAP_CONTENT, railLp.width)
+        assertEquals(ViewGroup.LayoutParams.MATCH_PARENT, railLp.height)
+        assertEquals(R.id.tablet_shell_row, (rail.parent as View).id)
+
+        val nav = root.findViewById<ComposeView>(R.id.shell_destination_nav)
+        val navLp = nav.layoutParams as CoordinatorLayout.LayoutParams
+        assertTrue(nav.parent is CoordinatorLayout)
+        assertTrue((navLp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
+
+        val fab = root.findViewById<ExtendedFloatingActionButton>(R.id.fab_main)
+        val fabLp = fab.layoutParams as CoordinatorLayout.LayoutParams
+        assertEquals(View.NO_ID, fabLp.anchorId)
+        assertTrue((fabLp.gravity and Gravity.BOTTOM) == Gravity.BOTTOM)
+        assertTrue((fabLp.gravity and Gravity.END) == Gravity.END)
+        assertTrue(fabLp.behavior is DodgeShellChromeBehavior)
+    }
+
+    private fun inflateTabletDualpane(): View {
+        val base = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(base.resources.configuration)
+        config.smallestScreenWidthDp = 720
+        val ctx = ContextThemeWrapper(
+            base.createConfigurationContext(config),
+            R.style.Theme_DreamDroid_Night
+        )
+        return LayoutInflater.from(ctx).inflate(R.layout.dualpane, null, false)
     }
 
     private fun inflateMainFab(): ExtendedFloatingActionButton {

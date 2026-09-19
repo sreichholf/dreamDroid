@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
+import net.reichholf.dreamdroid.ui.nav.DestinationRail
 import net.reichholf.dreamdroid.ui.theme.isDreamDroidDark
 
 @Composable
@@ -17,19 +18,36 @@ fun ToolsDestinationBar(
     onDestinationSelected: (ToolsDestination) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val items = ToolsDestination.entries.map { dest ->
-        DestinationBarItem(
-            labelRes = destinationLabelRes(dest),
-            iconRes = resolveThemeDrawable(destinationIconAttr(dest))
-        )
-    }
     DestinationBar(
-        items = items,
+        items = toolsDestinationItems(),
         selectedIndex = selected.ordinal,
         onSelect = { onDestinationSelected(ToolsDestination.entries[it]) },
         modifier = modifier
     )
 }
+
+@Composable
+fun ToolsDestinationRail(
+    selected: ToolsDestination,
+    onDestinationSelected: (ToolsDestination) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DestinationRail(
+        items = toolsDestinationItems(),
+        selectedIndex = selected.ordinal,
+        onSelect = { onDestinationSelected(ToolsDestination.entries[it]) },
+        modifier = modifier
+    )
+}
+
+@Composable
+private fun toolsDestinationItems(): List<DestinationBarItem> =
+    ToolsDestination.entries.map { dest ->
+        DestinationBarItem(
+            labelRes = destinationLabelRes(dest),
+            iconRes = resolveThemeDrawable(destinationIconAttr(dest))
+        )
+    }
 
 private fun destinationLabelRes(dest: ToolsDestination): Int = when (dest) {
     ToolsDestination.SCREENSHOT -> R.string.screenshot

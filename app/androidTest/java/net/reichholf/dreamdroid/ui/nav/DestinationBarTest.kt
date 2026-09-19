@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -42,6 +43,29 @@ class DestinationBarTest {
                 )
             }
         }
+        composeRule.onNodeWithText("TV").assertIsDisplayed()
+        composeRule.onNodeWithText("TV").assertIsSelected()
+        composeRule.onNodeWithText("Radio").performClick()
+        assertEquals(listOf(1), selected)
+    }
+
+    @Test
+    fun sharedRailReportsSelectionByIndex() {
+        val items = listOf(
+            DestinationBarItem(R.string.tv, R.drawable.ic_menu_tv),
+            DestinationBarItem(R.string.radio, R.drawable.ic_menu_radio)
+        )
+        val selected = mutableListOf<Int>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                DestinationRail(
+                    items = items,
+                    selectedIndex = 0,
+                    onSelect = { selected += it }
+                )
+            }
+        }
+        composeRule.onNodeWithTag(DESTINATION_RAIL_TAG).assertIsDisplayed()
         composeRule.onNodeWithText("TV").assertIsDisplayed()
         composeRule.onNodeWithText("TV").assertIsSelected()
         composeRule.onNodeWithText("Radio").performClick()

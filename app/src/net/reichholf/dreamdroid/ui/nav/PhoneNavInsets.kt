@@ -56,14 +56,16 @@ fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean, bottomInset: 
     }
 
 /**
- * Hide `shell_destination_nav` as soon as the current route is not a hub.
+ * Hide `shell_destination_nav` (and tablet `shell_destination_rail` when present)
+ * as soon as the current route is not a hub.
  * Hub [RegisterShellDestinationBar] only clears on dispose, which runs after the
  * first frame of timer/profile edit.
  */
 fun applyShellDestinationBarForRoute(
     route: String?,
     controller: ShellDestinationBarController?,
-    shellNav: View?
+    shellNav: View?,
+    shellRail: View? = null
 ) {
     if (PhoneNavRoutes.showsShellDestinationBar(route)) {
         return
@@ -72,6 +74,7 @@ fun applyShellDestinationBarForRoute(
         controller.content = ShellDestinationBarContent.Hidden
     }
     shellNav?.visibility = View.GONE
+    shellRail?.visibility = View.GONE
 }
 
 internal fun phoneNavBottomOverflowPx(
