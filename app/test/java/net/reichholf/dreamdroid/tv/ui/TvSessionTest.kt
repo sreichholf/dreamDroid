@@ -9,6 +9,27 @@ import org.junit.jupiter.api.Test
 
 class TvSessionTest {
     @Test
+    fun hubHttpSkippedWhenCacheExistsAndNotOnline() {
+        val cache = true
+        assertTrue(
+            shouldSkipTvHubHttp(ConnectionStatus(checking = true), cache)
+        )
+        assertTrue(
+            shouldSkipTvHubHttp(
+                ConnectionStatus(session = ConnectionStatus.Session.Offline),
+                cache
+            )
+        )
+        assertFalse(
+            shouldSkipTvHubHttp(
+                ConnectionStatus(session = ConnectionStatus.Session.Online),
+                cache
+            )
+        )
+        assertFalse(shouldSkipTvHubHttp(ConnectionStatus(checking = true), false))
+    }
+
+    @Test
     fun streamingOnlyWhenOnline() {
         assertFalse(ConnectionStatus().allowsStreaming())
         assertFalse(

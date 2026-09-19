@@ -93,7 +93,7 @@ class MainActivity :
         }
     }
 
-    /** Hub Recheck / ProfileCheck Recheck. Clears the device-info cache and re-runs CheckProfile. */
+    /** Hub / ProfileCheck Recheck. Clears device-info and re-runs CheckProfile. */
     fun recheckProfile() {
         val profile = DreamDroid.getCurrentProfile()
         profile.cachedDeviceInfo = null

@@ -15,6 +15,13 @@ import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
 fun ConnectionStatus.allowsStreaming(): Boolean = session == ConnectionStatus.Session.Online
 
 /**
+ * Room can paint: skip Enigma HTTP unless the session is already Online.
+ * Checking + cache must not wait on a dead box before first paint.
+ */
+fun shouldSkipTvHubHttp(status: ConnectionStatus, hasCache: Boolean): Boolean =
+    hasCache && status.session != ConnectionStatus.Session.Online
+
+/**
  * TV [net.reichholf.dreamdroid.activities.VideoActivity] may stay up only
  * while Online, or after playback already started (a later Offline probe must
  * not tear down the current stream). Phone is unchanged.

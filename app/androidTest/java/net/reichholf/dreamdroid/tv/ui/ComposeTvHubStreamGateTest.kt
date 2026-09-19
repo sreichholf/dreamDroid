@@ -4,10 +4,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -25,7 +21,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -36,13 +31,12 @@ class ComposeTvHubStreamGateTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun offlineServiceClickShowsUnavailableAndDoesNotStream() {
+    fun chromeOfflineServiceClickShowsUnavailableAndDoesNotStream() {
         var streams = 0
         composeRule.setContent {
-            streamGateHost(
+            chromeStreamHost(
                 streamingEnabled = false,
-                onServiceClick = { streams++ },
-                service = demoService()
+                onServiceClick = { streams++ }
             )
         }
         activateCard("hub_service_card") { overlayVisible() }
@@ -52,13 +46,12 @@ class ComposeTvHubStreamGateTest {
     }
 
     @Test
-    fun onlineServiceClickStreams() {
+    fun chromeOnlineServiceClickStreams() {
         var streams = 0
         composeRule.setContent {
-            streamGateHost(
+            chromeStreamHost(
                 streamingEnabled = true,
-                onServiceClick = { streams++ },
-                service = demoService()
+                onServiceClick = { streams++ }
             )
         }
         activateCard("hub_service_card") { streams > 0 }
@@ -68,13 +61,12 @@ class ComposeTvHubStreamGateTest {
     }
 
     @Test
-    fun offlineMovieClickShowsUnavailableAndDoesNotStream() {
+    fun chromeOfflineMovieClickShowsUnavailableAndDoesNotStream() {
         var streams = 0
         composeRule.setContent {
-            streamGateHost(
+            chromeMovieHost(
                 streamingEnabled = false,
-                onMovieClick = { streams++ },
-                movie = demoMovie()
+                onMovieClick = { streams++ }
             )
         }
         activateCard("hub_movie_card") { overlayVisible() }
@@ -84,13 +76,12 @@ class ComposeTvHubStreamGateTest {
     }
 
     @Test
-    fun onlineMovieClickStreams() {
+    fun chromeOnlineMovieClickStreams() {
         var streams = 0
         composeRule.setContent {
-            streamGateHost(
+            chromeMovieHost(
                 streamingEnabled = true,
-                onMovieClick = { streams++ },
-                movie = demoMovie()
+                onMovieClick = { streams++ }
             )
         }
         activateCard("hub_movie_card") { streams > 0 }
@@ -99,16 +90,16 @@ class ComposeTvHubStreamGateTest {
         composeRule.onAllNodesWithTag("hub_stream_unavailable").assertCountEquals(0)
     }
 
-    @Test
-    fun chromeOfflineServiceClickDoesNotStream() {
-        var streams = 0
+    @Composable
+    private fun chromeStreamHost(streamingEnabled: Boolean, onServiceClick: () -> Unit) {
         val bouquetRef = "1:7:1:0:0:0:0:0:0:0:Favourites"
-        composeRule.setContent {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(360.dp)
+        ) {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(bouquetRef, "Favourites")
-                ),
+                headers = listOf(HubNavHeader(bouquetRef, "Favourites")),
                 selectedHeaderId = bouquetRef,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
@@ -119,68 +110,30 @@ class ComposeTvHubStreamGateTest {
                         services = listOf(demoService())
                     )
                 ),
-                streamingEnabled = false,
-                onServiceClick = { _, _ -> streams++ }
+                streamingEnabled = streamingEnabled,
+                onServiceClick = { _, _ -> onServiceClick() }
             )
         }
-        val cards = composeRule.onAllNodesWithTag("hub_service_card")
-        if (cards.fetchSemanticsNodes().isNotEmpty()) {
-            activateCard("hub_service_card") { overlayVisible() || streams > 0 }
-            composeRule.waitForIdle()
-            if (overlayVisible()) {
-                composeRule.onNodeWithTag("hub_stream_unavailable").assertExists()
-            }
-        }
-        assertEquals(0, streams)
     }
 
     @Composable
-    private fun streamGateHost(
-        streamingEnabled: Boolean,
-        onServiceClick: () -> Unit = {},
-        onMovieClick: () -> Unit = {},
-        service: ServiceNowNext? = null,
-        movie: Movie? = null
-    ) {
-        DreamDroidTvTheme {
-            var showUnavailable by remember { mutableStateOf(false) }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-            ) {
-                if (service != null) {
-                    HubServiceRow(
-                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
-                        services = listOf(service),
-                        streamingEnabled = streamingEnabled,
-                        onServiceClick = { _, _ ->
-                            if (!streamingEnabled) {
-                                showUnavailable = true
-                            } else {
-                                onServiceClick()
-                            }
-                        }
-                    )
-                }
-                if (movie != null) {
-                    HubMovieRow(
-                        dirname = "/media/hdd/movie",
-                        movies = listOf(movie),
-                        streamingEnabled = streamingEnabled,
-                        onMovieClick = {
-                            if (!streamingEnabled) {
-                                showUnavailable = true
-                            } else {
-                                onMovieClick()
-                            }
-                        }
-                    )
-                }
-                if (showUnavailable) {
-                    TvNeedsReceiverOverlay(onDismiss = { showUnavailable = false })
-                }
-            }
+    private fun chromeMovieHost(streamingEnabled: Boolean, onMovieClick: () -> Unit) {
+        val headerId = TvComposeHubHost.movieHeaderId("/media/hdd/movie")
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(360.dp)
+        ) {
+            ComposeTvHubChrome(
+                headers = listOf(HubNavHeader(headerId, "/media/hdd/movie")),
+                selectedHeaderId = headerId,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                moviesByLocation = mapOf("/media/hdd/movie" to listOf(demoMovie())),
+                streamingEnabled = streamingEnabled,
+                onMovieClick = { onMovieClick() }
+            )
         }
     }
 

@@ -69,7 +69,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
         hasMovieLocationStrip = cachedMovies != null
     )
     val status = SessionConnectionHolder.shared.status.value
-    if (status.shouldSkipReceiverHttp(hasCache)) {
+    if (shouldSkipTvHubHttp(status, hasCache)) {
         return paintTvHubFromCache(
             rosterDao = rosterDao,
             epgDao = epgDao,
@@ -206,7 +206,7 @@ suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResul
     }
     val status = SessionConnectionHolder.shared.status.value
     val hasCache = cached != null
-    if (status.shouldSkipReceiverHttp(hasCache)) {
+    if (shouldSkipTvHubHttp(status, hasCache)) {
         return TvHubMoviesResult(
             movies = cached.orEmpty(),
             errorText = null,

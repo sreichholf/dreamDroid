@@ -162,6 +162,8 @@ class VideoOverlayFragment :
             return
         }
         if (enabled) {
+            overlayUiState.zapServices = serviceList.toList()
+            overlayUiState.zapCurrentRef = serviceRef
             bindTvZapListIfAllowed()
             if (serviceList.isNotEmpty()) {
                 overlayUiState.showListButton = true
