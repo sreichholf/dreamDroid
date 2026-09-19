@@ -154,7 +154,8 @@ class TvProfilesScreenTest {
         dpadActivate("tv_profiles_delete_2") { deleted != null }
         composeRule.onNodeWithText("Do you really want to delete this profile?")
             .assertIsDisplayed()
-        composeRule.onNodeWithText("Bedroom").assertIsDisplayed()
+        composeRule.onNode(hasText("Bedroom") and hasAnyAncestor(isDialog()))
+            .assertIsDisplayed()
         composeRule.onNode(hasText("Delete") and hasAnyAncestor(isDialog())).performClick()
         composeRule.waitForIdle()
         assertEquals(2, confirmed)
