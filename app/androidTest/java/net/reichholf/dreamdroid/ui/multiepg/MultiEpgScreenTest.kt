@@ -431,6 +431,32 @@ class MultiEpgScreenTest {
     }
 
     @Test
+    fun atThisTimeInvokesCallback() {
+        var clicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = emptyList(),
+                    timelineStartSec = 0L,
+                    timelineEndSec = 3600L,
+                    nowSec = 60L,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {},
+                    onAtThisTime = { clicks += 1 }
+                )
+            }
+        }
+        composeRule.onNodeWithTag("multi_epg_at_this_time")
+            .assertIsDisplayed()
+            .performClick()
+        composeRule.waitForIdle()
+        assertEquals(1, clicks)
+    }
+
+    @Test
     fun errorBannerKeepsProgrammeBars() {
         val start = 1_700_000_000L
         val channels = listOf(

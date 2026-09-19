@@ -111,6 +111,7 @@ fun MultiEpgScreen(
     onRefresh: (() -> Unit)? = null,
     onVisibleWindow: ((visibleStartSec: Long, visibleEndSec: Long) -> Unit)? = null,
     onEventClick: (Event) -> Unit,
+    onAtThisTime: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     hScrollState: ScrollState = rememberScrollState(),
@@ -119,7 +120,8 @@ fun MultiEpgScreen(
     timerClocks: Map<String, MultiEpgTimerClock> = emptyMap(),
     visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
-    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT
+    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    focusedServiceRef: String? = null
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
@@ -160,6 +162,19 @@ fun MultiEpgScreen(
             .toInt()
             .coerceAtLeast(0)
         hScroll.scrollTo(targetPx.coerceAtMost(hScroll.maxValue.coerceAtLeast(targetPx)))
+    }
+
+    var scrolledToFocus by remember(focusedServiceRef) { mutableStateOf(false) }
+    LaunchedEffect(focusedServiceRef, channels.isNotEmpty()) {
+        val ref = focusedServiceRef
+        if (scrolledToFocus || ref.isNullOrEmpty() || channels.isEmpty()) {
+            return@LaunchedEffect
+        }
+        val index = channels.indexOfFirst { it.serviceRef == ref }
+        if (index >= 0) {
+            listState.scrollToItem(index)
+            scrolledToFocus = true
+        }
     }
 
     LaunchedEffect(timelineStartSec) {
@@ -333,6 +348,14 @@ fun MultiEpgScreen(
                     )
                 } else {
                     Spacer(modifier = Modifier.weight(1f))
+                }
+                if (onAtThisTime != null) {
+                    TextButton(
+                        onClick = onAtThisTime,
+                        modifier = Modifier.testTag("multi_epg_at_this_time")
+                    ) {
+                        Text(stringResource(R.string.epg_at_this_time))
+                    }
                 }
                 if (loading) {
                     CircularProgressIndicator(

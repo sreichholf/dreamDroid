@@ -40,6 +40,8 @@ class DrawerScreenTest {
         composeRule.onNodeWithText("Sleep Timer").assertIsDisplayed()
         composeRule.onNodeWithText("Send Message").assertIsDisplayed()
         composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
+        composeRule.onNodeWithText("EPG").assertIsDisplayed()
+        composeRule.onNodeWithText("MultiEPG").assertDoesNotExist()
         composeRule.onNodeWithText("Tools").assertIsDisplayed()
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
 

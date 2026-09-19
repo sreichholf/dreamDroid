@@ -90,6 +90,7 @@ class EpgBouquetScreenTest {
         var timeClicks = 0
         var nowClicks = 0
         var primeClicks = 0
+        var timelineClicks = 0
         composeRule.setContent {
             DreamDroidTheme {
                 EpgBouquetScreen(
@@ -102,7 +103,8 @@ class EpgBouquetScreenTest {
                         onPickDate = { dateClicks++ },
                         onPickTime = { timeClicks++ },
                         onNow = { nowClicks++ },
-                        onPrime = { primeClicks++ }
+                        onPrime = { primeClicks++ },
+                        onTimeline = { timelineClicks++ }
                     )
                 )
             }
@@ -113,10 +115,12 @@ class EpgBouquetScreenTest {
         composeRule.onNodeWithText("Prime").assertIsDisplayed().performClick()
         composeRule.onNodeWithTag(EPG_TIME_JUMP_DATE_CHIP_TAG).performClick()
         composeRule.onNodeWithTag(EPG_TIME_JUMP_TIME_CHIP_TAG).performClick()
+        composeRule.onNodeWithTag(EPG_TIMELINE_TAG).assertIsDisplayed().performClick()
         assertEquals(1, nowClicks)
         assertEquals(1, primeClicks)
         assertEquals(1, dateClicks)
         assertEquals(1, timeClicks)
+        assertEquals(1, timelineClicks)
         composeRule.onNodeWithText("No items to display…").assertIsDisplayed()
     }
 

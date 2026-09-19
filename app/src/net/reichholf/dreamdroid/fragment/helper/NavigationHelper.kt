@@ -170,9 +170,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
             R.id.menu_navigation_epg ->
                 navigateToEpg()
 
-            R.id.menu_navigation_multiepg ->
-                navigateToMultiEpg()
-
             R.id.menu_navigation_backup -> {
                 getMainActivity().phoneNav.navigateToBackup()
             }
@@ -188,13 +185,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
         val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
         getMainActivity().phoneNav.navigateToEpg(ref, name)
-    }
-
-    /** MultiEPG drawer root — same default bouquet extras as list EPG. */
-    protected fun navigateToMultiEpg() {
-        val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
-        val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
-        getMainActivity().phoneNav.navigateToMultiEpg(ref, name)
     }
 
     /**

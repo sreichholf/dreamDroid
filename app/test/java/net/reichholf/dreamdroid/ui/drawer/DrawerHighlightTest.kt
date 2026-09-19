@@ -72,4 +72,30 @@ class DrawerHighlightTest {
             )
         )
     }
+
+    @Test
+    fun nestedMultiEpgHighlightsPreviousLeaf() {
+        assertEquals(
+            R.id.menu_navigation_services,
+            DrawerHighlight.itemIdForRoute(
+                PhoneNavRoutes.MULTI_EPG,
+                previousRoute = PhoneNavRoutes.HUB
+            )
+        )
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute(
+                PhoneNavRoutes.MULTI_EPG,
+                previousRoute = PhoneNavRoutes.EPG
+            )
+        )
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.MULTI_EPG)
+        )
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute("service_epg/1:0:1")
+        )
+    }
 }
