@@ -18,7 +18,7 @@ class ProfilesListState(initial: List<ProfileListItem> = emptyList()) {
 fun ComposeView.bindProfilesScreen(
     state: ProfilesListState,
     onProfileClick: (ProfileListItem) -> Unit,
-    onProfileLongClick: (ProfileListItem) -> Unit
+    onProfileEdit: (ProfileListItem) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -26,7 +26,7 @@ fun ComposeView.bindProfilesScreen(
             ProfilesScreen(
                 profiles = state.items,
                 onProfileClick = onProfileClick,
-                onProfileLongClick = onProfileLongClick
+                onProfileEdit = onProfileEdit
             )
         }
     }

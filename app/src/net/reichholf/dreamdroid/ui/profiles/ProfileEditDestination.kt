@@ -17,12 +17,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
@@ -48,6 +51,8 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
     }
     val editState = remember(initialProfile) { ProfileEditState.fromProfile(initialProfile) }
     var currentProfile by remember(initialProfile) { mutableStateOf(initialProfile) }
+    val canDelete = (initialProfile.id ?: 0) > 0
+    var showDeleteConfirm by remember(initialProfile) { mutableStateOf(false) }
 
     fun toast(message: CharSequence) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -64,15 +69,25 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
         }
     }
 
-    val menuProvider = remember {
+    fun delete() {
+        toast(deleteConfirmedProfile(context, currentProfile))
+        handle.deliverPickResult(Activity.RESULT_OK, null)
+    }
+
+    val menuProvider = remember(canDelete) {
         object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflate(R.menu.save, menu)
+                menuInflater.inflateSaveAndDelete(menu, canDelete = canDelete)
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
                 Statics.ITEM_SAVE -> {
                     save()
+                    true
+                }
+
+                Statics.ITEM_DELETE -> {
+                    showDeleteConfirm = true
                     true
                 }
 
@@ -106,6 +121,17 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
         showSaveFab = false,
         modifier = modifier
     )
+
+    if (showDeleteConfirm) {
+        ConfirmAlertDialog(
+            title = currentProfile.name.orEmpty(),
+            message = stringResource(R.string.confirm_delete_profile),
+            onDismiss = { showDeleteConfirm = false },
+            onConfirm = { delete() },
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
+        )
+    }
 }
 
 internal data class ProfilePersistOutcome(val saved: Boolean, val message: String)

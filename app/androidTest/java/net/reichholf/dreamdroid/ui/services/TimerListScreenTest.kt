@@ -5,6 +5,7 @@ import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -45,14 +46,40 @@ class TimerListScreenTest {
                             stateColor = 0
                         )
                     ),
-                    onItemClick = {},
-                    onItemLongClick = {}
+                    onItemClick = {}
                 )
             }
         }
         composeRule.onNodeWithText("Evening news").assertIsDisplayed()
         composeRule.onNodeWithText("ARD").assertIsDisplayed()
         composeRule.onNodeWithText("20:00 – 20:15").assertIsDisplayed()
+    }
+
+    @Test
+    fun tapInvokesItemClick() {
+        var clicked = -1
+        composeRule.setContent {
+            DreamDroidTheme {
+                TimerListScreen(
+                    items = listOf(
+                        TimerListItem(
+                            index = 0,
+                            name = "Evening news",
+                            serviceName = "ARD",
+                            begin = "20:00",
+                            end = "20:15",
+                            action = "Record",
+                            state = "Waiting",
+                            stateColor = 0
+                        )
+                    ),
+                    onItemClick = { clicked = it.index }
+                )
+            }
+        }
+        composeRule.onNodeWithText("Evening news").performClick()
+        composeRule.waitForIdle()
+        assertEquals(0, clicked)
     }
 
     @Test
@@ -72,8 +99,7 @@ class TimerListScreenTest {
                             stateColor = 0
                         )
                     ),
-                    onItemClick = {},
-                    onItemLongClick = {}
+                    onItemClick = {}
                 )
             }
         }

@@ -6,7 +6,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +41,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
@@ -69,7 +67,6 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         activity.title = context.getString(R.string.profiles)
         onDispose {
             activity.removeMenuProvider(session)
-            session.finishActionMode()
             session.cancelDetect()
         }
     }
@@ -87,10 +84,8 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     }
 
     var showDetectProgress by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
     var discoveredDevices by remember { mutableStateOf<List<Profile>?>(null) }
     var discoveryFailed by remember { mutableStateOf(false) }
-    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.onDetectProgressChanged = { showDetectProgress = it }
     LaunchedEffect(showDetectProgress) {
         activity.invalidateOptionsMenu()
@@ -108,7 +103,7 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     ProfilesScreen(
         profiles = listState.items,
         onProfileClick = { item -> session.onProfileRowClick(item) },
-        onProfileLongClick = { item -> session.onProfileRowLongClick(item) },
+        onProfileEdit = { item -> session.onProfileRowEdit(item) },
         modifier = modifier
     )
 
@@ -118,19 +113,6 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                 title = stringResource(R.string.searching),
                 message = stringResource(R.string.searching_known_devices)
             )
-        )
-    }
-    showDeleteConfirm?.let { title ->
-        ConfirmAlertDialog(
-            title = title,
-            message = stringResource(R.string.confirm_delete_profile),
-            onDismiss = { showDeleteConfirm = null },
-            onConfirm = {
-                session.deleteProfileConfirmed()
-                showDeleteConfirm = null
-            },
-            confirmLabel = stringResource(R.string.delete),
-            destructive = true
         )
     }
     discoveredDevices?.let { found ->
@@ -220,7 +202,6 @@ private fun AutodiscoveryDevicesDialog(
 
 private class ProfilesSession : MenuProvider {
     var handle: PhoneNavHandle? = null
-    var onRequestDeleteConfirm: ((String) -> Unit)? = null
     var onDiscoveryResult: ((ArrayList<Profile>) -> Unit)? = null
     var context: android.content.Context? = null
     var activity: AppCompatActivity? = null
@@ -231,39 +212,10 @@ private class ProfilesSession : MenuProvider {
     private var selected: Profile = Profile.getDefault()
     private var detectedProfiles: ArrayList<Profile>? = null
     private var detectJob: kotlinx.coroutines.Job? = null
-    private var actionMode: ActionMode? = null
-    private var actionModeActive = false
-    private var actionModeRequired = false
-
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            mode.menuInflater.inflate(R.menu.profilelist_context, menu)
-            actionModeActive = true
-            actionModeRequired = false
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean = true
-
-        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            mode.finish()
-            return onItemClicked(item.itemId)
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode) {
-            actionModeActive = false
-            actionMode = null
-        }
-    }
 
     fun toast(message: CharSequence) {
         val ctx = context ?: return
         Toast.makeText(ctx, message, Toast.LENGTH_LONG).show()
-    }
-
-    fun finishActionMode() {
-        actionMode?.finish()
-        actionMode = null
     }
 
     fun cancelDetect() {
@@ -289,16 +241,12 @@ private class ProfilesSession : MenuProvider {
 
     fun onProfileRowClick(item: ProfileListItem) {
         selectProfile(item)
-        if (actionModeActive) {
-            return
-        }
         activateProfile()
     }
 
-    fun onProfileRowLongClick(item: ProfileListItem) {
+    fun onProfileRowEdit(item: ProfileListItem) {
         selectProfile(item)
-        val act = activity ?: return
-        actionMode = act.startSupportActionMode(actionModeCallback)
+        editProfile()
     }
 
     private fun selectProfile(item: ProfileListItem) {
@@ -398,24 +346,7 @@ private class ProfilesSession : MenuProvider {
             true
         }
 
-        Statics.ITEM_EDIT -> {
-            editProfile()
-            true
-        }
-
-        Statics.ITEM_DELETE -> {
-            onRequestDeleteConfirm?.invoke(selected.name.orEmpty())
-            true
-        }
-
         else -> false
-    }
-
-    fun deleteProfileConfirmed() {
-        val ctx = context ?: return
-        toast(deleteConfirmedProfile(ctx, selected))
-        reloadProfiles()
-        selected = Profile.getDefault()
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {

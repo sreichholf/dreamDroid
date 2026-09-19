@@ -1,8 +1,7 @@
 package net.reichholf.dreamdroid.ui.services
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -29,22 +28,18 @@ const val TIMER_LIST_STATE_TAG = "timer_list_state"
 fun TimerListScreen(
     items: List<TimerListItem>,
     onItemClick: (TimerListItem) -> Unit,
-    onItemLongClick: (TimerListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { it.index }) { item ->
-            TimerRow(item, onClick = { onItemClick(item) }, onLongClick = { onItemLongClick(item) })
+            TimerRow(item, onClick = { onItemClick(item) })
         }
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TimerRow(item: TimerListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
-    ListRowSurface(
-        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
-    ) {
+private fun TimerRow(item: TimerListItem, onClick: () -> Unit) {
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         Box(modifier = Modifier.fillMaxWidth()) {
             ListItem(
                 headlineContent = {

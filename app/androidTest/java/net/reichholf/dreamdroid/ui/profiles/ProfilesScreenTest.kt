@@ -6,7 +6,9 @@ import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -63,7 +65,7 @@ class ProfilesScreenTest {
                         )
                     ),
                     onProfileClick = {},
-                    onProfileLongClick = {}
+                    onProfileEdit = {}
                 )
             }
         }
@@ -74,6 +76,37 @@ class ProfilesScreenTest {
         val tiles = composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)
         tiles.assertCountEquals(1)
         tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
+    }
+
+    @Test
+    fun tapActivatesAndEditIconOpensEditor() {
+        var clickedId = -1
+        var editedId = -1
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfilesScreen(
+                    profiles = listOf(
+                        ProfileListItem(
+                            id = 1,
+                            name = "Demo",
+                            host = "dreamdroid.org",
+                            active = true
+                        )
+                    ),
+                    onProfileClick = { clickedId = it.id },
+                    onProfileEdit = { editedId = it.id }
+                )
+            }
+        }
+        composeRule.onNodeWithText("Demo", useUnmergedTree = true).performClick()
+        composeRule.waitForIdle()
+        assertEquals(1, clickedId)
+        assertEquals(-1, editedId)
+        clickedId = -1
+        composeRule.onNodeWithTag(PROFILE_ROW_EDIT_TAG_PREFIX + "1").performClick()
+        composeRule.waitForIdle()
+        assertEquals(-1, clickedId)
+        assertEquals(1, editedId)
     }
 
     @Test
@@ -96,7 +129,7 @@ class ProfilesScreenTest {
                         )
                     ),
                     onProfileClick = {},
-                    onProfileLongClick = {}
+                    onProfileEdit = {}
                 )
             }
         }
