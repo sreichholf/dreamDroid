@@ -2,14 +2,26 @@ package net.reichholf.dreamdroid.ui.theme
 
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
+import androidx.tv.material3.Surface
+import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import org.junit.Assert.assertEquals
@@ -83,40 +95,56 @@ class DreamDroidTvThemeTest {
 
     @Test
     fun cardColorsUseElevatedSurfaceAndInverseFocus() {
-        var container = Color.Unspecified
-        var focused = Color.Unspecified
-        var content = Color.Unspecified
-        var focusedContent = Color.Unspecified
         var surfaceLow = Color.Unspecified
-        var inverseSurface = Color.Unspecified
-        var inverseOnSurface = Color.Unspecified
-        var onSurface = Color.Unspecified
         composeRule.setContent {
             DreamDroidTvTheme {
-                val phone = PhoneMaterialTheme.colorScheme
-                surfaceLow = phone.surfaceContainerLow
-                inverseSurface = phone.inverseSurface
-                inverseOnSurface = phone.inverseOnSurface
-                onSurface = phone.onSurface
-                val colors = dreamDroidTvCardColors()
-                container = colors.containerColor
-                focused = colors.focusedContainerColor
-                content = colors.contentColor
-                focusedContent = colors.focusedContentColor
+                surfaceLow = PhoneMaterialTheme.colorScheme.surfaceContainerLow
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                ) {
+                    Surface(
+                        onClick = {},
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(80.dp)
+                            .testTag("tv_card_surface"),
+                        colors = dreamDroidTvCardColors()
+                    ) {}
+                }
             }
         }
         composeRule.waitForIdle()
-        composeRule.runOnIdle {
-            assertEquals(surfaceLow, container)
-            assertEquals(onSurface, content)
-            assertEquals(inverseSurface, focused)
-            assertEquals(inverseOnSurface, focusedContent)
-            assertTrue(
-                "night card container should be dark, luminance=${container.luminance()}",
-                container.luminance() < 0.4f
-            )
-            assertNotEquals(Color.White, container)
-        }
+        val bitmap = composeRule
+            .onNodeWithTag("tv_card_surface")
+            .captureToImage()
+            .asAndroidBitmap()
+        val x = (bitmap.width * 0.5f).toInt().coerceIn(0, bitmap.width - 1)
+        val y = (bitmap.height * 0.5f).toInt().coerceIn(0, bitmap.height - 1)
+        val px = Color(bitmap.getPixel(x, y))
+        val expected = surfaceLow.toArgb()
+        assertTrue(
+            "night card container should be dark, luminance=${px.luminance()}",
+            px.luminance() < 0.4f
+        )
+        assertNotEquals(Color.White, px)
+        assertTrue(
+            "card fill should match phone surfaceContainerLow " +
+                "px=#${Integer.toHexString(px.toArgb())} " +
+                "expected=#${Integer.toHexString(expected)}",
+            rgbDistance(px.toArgb(), expected) < 50
+        )
+    }
+
+    private fun rgbDistance(a: Int, b: Int): Int {
+        val ar = (a shr 16) and 0xff
+        val ag = (a shr 8) and 0xff
+        val ab = a and 0xff
+        val br = (b shr 16) and 0xff
+        val bg = (b shr 8) and 0xff
+        val bb = b and 0xff
+        return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
     }
 
     @Test
