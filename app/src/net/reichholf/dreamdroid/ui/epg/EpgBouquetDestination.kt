@@ -47,6 +47,7 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
  * Time jump is date/time chips + Now/Prime; each chip opens a stock Material picker.
  * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
+ * Drawer extras seed a blank session; a picker result is kept until remount.
  */
 @Composable
 fun EpgBouquetDestination(
@@ -137,15 +138,17 @@ fun EpgBouquetDestination(
         SessionConnectionHolder.shared.status.collectAsState().value.session
     LaunchedEffect(remountEpoch, bouquetRef, connectionSession) {
         val args = handle.epgLeafArguments()
-        val ref = args.getString(
+        val leafRef = args.getString(
             net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
         ).orEmpty()
-        val name = args.getString(
+        val leafName = args.getString(
             net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME
         ).orEmpty()
-        if (ref.isNotEmpty() && ref != bouquetRef) {
-            bouquetRef = ref
-            bouquetName = name
+        val resolvedRef = EpgBouquetRestore.resolveRef(leafRef, bouquetRef)
+        val resolvedName = EpgBouquetRestore.resolveName(leafName, bouquetName, bouquetRef)
+        if (resolvedRef != bouquetRef) {
+            bouquetRef = resolvedRef
+            bouquetName = resolvedName
             listState.scrollToTop()
         }
         session.reload()
@@ -162,6 +165,10 @@ fun EpgBouquetDestination(
             listState = listState.listState,
             scrollEpoch = listState.scrollEpoch,
             emptyMessage = emptyMessage,
+            bouquetPick = EpgBouquetPickUi(
+                bouquetName = bouquetName,
+                onPickBouquet = { session.pickBouquet() }
+            ),
             timeJump = timeJump,
             onItemClick = { dialogSession.showDetail(it) }
         )
@@ -241,16 +248,21 @@ internal class EpgBouquetSession :
         reload()
     }
 
-    fun reload(forceRefresh: Boolean = false) {
+    fun pickBouquet() {
         val host = handle ?: return
+        waitingForPicker = true
+        onWaitingForPicker?.invoke(true)
+        host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
+    }
+
+    fun reload(forceRefresh: Boolean = false) {
+        handle ?: return
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
         val coroutineScope = scope ?: return
         if (bouquetRef.isEmpty() && !waitingForPicker) {
-            waitingForPicker = true
-            onWaitingForPicker?.invoke(true)
-            host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
+            pickBouquet()
             return
         }
         if (bouquetRef.isEmpty()) {
@@ -354,10 +366,7 @@ internal class EpgBouquetSession :
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            val host = handle ?: return true
-            waitingForPicker = true
-            onWaitingForPicker?.invoke(true)
-            host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
+            pickBouquet()
             return true
         }
         return false

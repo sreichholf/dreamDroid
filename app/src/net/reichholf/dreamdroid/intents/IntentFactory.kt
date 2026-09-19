@@ -37,13 +37,19 @@ object IntentFactory {
     fun getStreamServiceIntent(context: Context, ref: String, title: String): Intent =
         getStreamServiceIntent(context, ref, title, null, null)
 
-    private fun getVideoIntent(context: Context, uriString: String): Intent {
-        val intent = if (PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true)
-        ) {
+    fun usesIntegratedPlayer(context: Context): Boolean =
+        PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true)
+
+    /**
+     * Playback intent for a stream URI. Honors [DreamDroid.PREFS_KEY_INTEGRATED_PLAYER]:
+     * integrated player targets [VideoActivity]; otherwise a generic `ACTION_VIEW`.
+     */
+    fun videoPlaybackIntent(context: Context, uriString: String): Intent {
+        val intent = if (usesIntegratedPlayer(context)) {
             Intent(context, VideoActivity::class.java)
         } else {
-            Intent()
+            Intent(Intent.ACTION_VIEW)
         }
         intent.action = Intent.ACTION_VIEW
         intent.setDataAndType(Uri.parse(uriString), "video/*")
@@ -79,7 +85,7 @@ object IntentFactory {
             fileName
         )
         Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '$uriString'")
-        val intent = getVideoIntent(context, uriString)
+        val intent = videoPlaybackIntent(context, uriString)
         intent.putExtra("title", title)
         putServiceInfo(context, intent, fileInfo)
         return intent
@@ -95,7 +101,7 @@ object IntentFactory {
         serviceInfo: Serializable?
     ): Intent {
         Log.i(DreamDroid.LOG_TAG, "$logPrefix '$uriString'")
-        val intent = getVideoIntent(context, uriString)
+        val intent = videoPlaybackIntent(context, uriString)
         intent.putExtra("title", title)
         intent.putExtra("serviceRef", ref)
         if (bouquetRef != null) {
@@ -106,10 +112,7 @@ object IntentFactory {
     }
 
     private fun putServiceInfo(context: Context, intent: Intent, serviceInfo: Serializable?) {
-        if (serviceInfo != null &&
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true)
-        ) {
+        if (serviceInfo != null && usesIntegratedPlayer(context)) {
             intent.putExtra("serviceInfo", serviceInfo)
         }
     }

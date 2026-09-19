@@ -1,9 +1,11 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
@@ -73,7 +75,8 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
  * Phase 3.1c-iv Compose TV hub host.
  * - **iv-b..e:** Compose hub beachhead through movie rows.
  * - **iv-f:** Compose hub is the TV default; Leanback browse path removed.
- *   Stream Intent edge unchanged. Overlay zap list is Compose TV cards.
+ *   Stream intents honor the integrated/external player pref. Overlay zap list
+ *   is Compose TV cards (`androidx.leanback` removed).
  */
 object TvComposeHubHost {
     const val HEADER_SETTINGS_ID: String = "settings"
@@ -111,6 +114,38 @@ object TvComposeHubHost {
             PreferenceActivity.KEY_PREFS_TYPE,
             type
         )
+    }
+
+    fun streamServiceIntent(
+        context: Context,
+        service: ServiceNowNext,
+        bouquetRef: String?
+    ): Intent {
+        val title = service.now?.title?.takeIf { it.isNotEmpty() } ?: service.serviceName
+        return IntentFactory.getStreamServiceIntent(
+            context,
+            service.serviceReference,
+            title,
+            bouquetRef,
+            service
+        )
+    }
+
+    fun streamMovieIntent(context: Context, movie: Movie): Intent =
+        IntentFactory.getStreamFileIntent(
+            context,
+            movie.reference,
+            movie.fileName,
+            movie.title,
+            movie
+        )
+
+    fun startStreamIntent(activity: Activity, intent: Intent) {
+        try {
+            activity.startActivity(intent)
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(activity, R.string.missing_stream_player, Toast.LENGTH_LONG).show()
+        }
     }
 
     fun applyPreferenceActivityResult(resultCode: Int, onReload: () -> Unit) {
@@ -296,27 +331,16 @@ private fun openServiceStream(
     service: ServiceNowNext,
     bouquetRef: String?
 ) {
-    val title = service.now?.title?.takeIf { it.isNotEmpty() } ?: service.serviceName
-    activity.startActivity(
-        IntentFactory.getStreamServiceIntent(
-            activity,
-            service.serviceReference,
-            title,
-            bouquetRef,
-            service
-        )
+    TvComposeHubHost.startStreamIntent(
+        activity,
+        TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
     )
 }
 
 private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
-    activity.startActivity(
-        IntentFactory.getStreamFileIntent(
-            activity,
-            movie.reference,
-            movie.fileName,
-            movie.title,
-            movie
-        )
+    TvComposeHubHost.startStreamIntent(
+        activity,
+        TvComposeHubHost.streamMovieIntent(activity, movie)
     )
 }
 
