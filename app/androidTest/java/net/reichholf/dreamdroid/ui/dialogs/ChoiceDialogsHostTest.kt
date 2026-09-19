@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
@@ -171,8 +172,10 @@ class ChoiceDialogsHostTest {
 
     @Test
     fun indeterminateProgressDoesNotConsumeBack() {
+        var backReachedHost = false
         composeRule.setContent {
             DreamDroidTheme {
+                BackHandler { backReachedHost = true }
                 IndeterminateProgressHost(
                     IndeterminateProgressState(
                         title = "Searching",
@@ -184,6 +187,12 @@ class ChoiceDialogsHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
         composeRule.onNode(isDialog()).assertDoesNotExist()
+        composeRule.runOnIdle {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertIsDisplayed()
+        assertTrue(backReachedHost)
     }
 
     @Test

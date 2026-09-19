@@ -138,6 +138,31 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
         composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    fun savingProgressRemainsAfterSheetDismissWithoutDialog() {
+        val session = EpgEventDialogSession()
+        session.showDetail(
+            Event(
+                title = "Tagesschau",
+                serviceName = "Das Erste HD",
+                description = "News",
+                startReadable = "20:00",
+                durationReadable = "15"
+            )
+        )
+        session.progress = IndeterminateProgressState(message = "Saving")
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheetHost(session)
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.runOnIdle { session.dismissDetail() }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
         composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
