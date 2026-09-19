@@ -132,6 +132,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
     var selectedStartSec by remember { mutableLongStateOf(0L) }
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
     var detailEvent by remember { mutableStateOf<Event?>(null) }
+    var editTimerEvent by remember { mutableStateOf<Event?>(null) }
     var pickingBouquet by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf<IndeterminateProgressState?>(null) }
 
@@ -265,7 +266,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                 onVisibleMinutesChange = { visibleMinutes = it },
                 textSize = textSize,
                 timerClocks = session.timerClocks,
-                keysEnabled = detailEvent == null && !pickingBouquet
+                keysEnabled = detailEvent == null && editTimerEvent == null && !pickingBouquet
             )
             val event = detailEvent
             if (event != null) {
@@ -276,6 +277,10 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                     progress = progress,
                     onProgress = { progress = it },
                     onDismiss = { detailEvent = null },
+                    onEditTimer = {
+                        detailEvent = null
+                        editTimerEvent = event
+                    },
                     streamingEnabled = connection.allowsStreaming(),
                     mutationsBlocked = connection.blocksMutations
                 )
@@ -298,6 +303,19 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                     onDismiss = { pickingBouquet = false }
                 )
             }
+            val editingEvent = editTimerEvent
+            if (editingEvent != null) {
+                TvTimerEditorHost(
+                    timer = Timer.createByEvent(editingEvent),
+                    isCreate = true,
+                    onDismiss = { editTimerEvent = null },
+                    onSaved = {
+                        editTimerEvent = null
+                        session.load(session.anchorSec, forceRefresh = true, isPull = false)
+                    },
+                    mutationsBlocked = connection.blocksMutations
+                )
+            }
         }
     }
 }
@@ -313,6 +331,7 @@ internal fun TvMultiEpgEventDetail(
     activity: AppCompatActivity? = null,
     onStream: (() -> Unit)? = null,
     onSetTimer: (() -> Unit)? = null,
+    onEditTimer: (() -> Unit)? = null,
     onImdb: (() -> Unit)? = null,
     streamingEnabled: Boolean = true,
     mutationsBlocked: Boolean = false
@@ -419,6 +438,19 @@ internal fun TvMultiEpgEventDetail(
                         null
                     } else {
                         firstActionFocus
+                    }
+                )
+                TvMultiEpgAction(
+                    label = stringResource(R.string.edit_timer),
+                    tag = "tv_multi_epg_detail_edit_timer",
+                    onClick = {
+                        if (mutationsBlocked) {
+                            showNeedsReceiver = true
+                            return@TvMultiEpgAction
+                        }
+                        if (onEditTimer != null) {
+                            onEditTimer()
+                        }
                     }
                 )
                 TvMultiEpgAction(

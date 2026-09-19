@@ -34,7 +34,8 @@ fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListIte
             action = action,
             state = state,
             // Semantic Enigma2 state id; TimerListScreen maps 0-4 from ColorScheme.
-            stateColor = stateId
+            stateColor = stateId,
+            enabled = timer.disabled != "1"
         )
     }
 }
