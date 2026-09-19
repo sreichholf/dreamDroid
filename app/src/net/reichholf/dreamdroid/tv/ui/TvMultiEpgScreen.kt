@@ -109,6 +109,7 @@ fun TvMultiEpgScreen(
     onEventClick: (Event) -> Unit,
     onBouquetClick: () -> Unit,
     modifier: Modifier = Modifier,
+    keysEnabled: Boolean = true,
     onRefresh: (() -> Unit)? = null,
     listState: LazyListState = rememberLazyListState(),
     hScrollState: ScrollState = rememberScrollState(),
@@ -356,7 +357,8 @@ fun TvMultiEpgScreen(
                 } catch (_: IllegalStateException) {
                     // Grid not in composition (empty bouquet).
                 }
-            }
+            },
+            keysEnabled = keysEnabled
         )
         if (errorMessage != null) {
             PhoneText(
@@ -414,7 +416,7 @@ fun TvMultiEpgScreen(
                 .focusRequester(gridFocus)
                 .focusable()
                 .onPreviewKeyEvent { event ->
-                    if (!isTvMultiEpgGridKey(event.key)) {
+                    if (!keysEnabled || !isTvMultiEpgGridKey(event.key)) {
                         return@onPreviewKeyEvent false
                     }
                     if (event.type != KeyEventType.KeyDown &&
@@ -521,7 +523,8 @@ private fun TvMultiEpgChrome(
     onNextDay: () -> Unit,
     onRefresh: (() -> Unit)?,
     onVisibleMinutesChange: (Int) -> Unit,
-    onDownToGrid: () -> Unit
+    onDownToGrid: () -> Unit,
+    keysEnabled: Boolean
 ) {
     val hours = MultiEpgZoom.hours(visibleMinutes)
     Row(
@@ -530,7 +533,7 @@ private fun TvMultiEpgChrome(
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .testTag("tv_multi_epg_chrome")
             .onPreviewKeyEvent { event ->
-                if (event.key != Key.DirectionDown) {
+                if (!keysEnabled || event.key != Key.DirectionDown) {
                     return@onPreviewKeyEvent false
                 }
                 if (event.type == KeyEventType.KeyDown) {

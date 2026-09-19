@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -16,11 +17,13 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
@@ -188,6 +191,72 @@ class TvMultiEpgScreenTest {
         grid.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("tv_multi_epg_screen").assertExists()
+    }
+
+    @Test
+    fun detailStreamCenterInvokesCallback() {
+        var streamed = false
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    TvMultiEpgEventDetail(
+                        event = Event(
+                            eventId = "1",
+                            title = "News",
+                            serviceReference = "1:0:1:1:0:0:0:0:0:0:",
+                            serviceName = "Das Erste"
+                        ),
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
+                        progress = null,
+                        onProgress = {},
+                        onDismiss = {},
+                        onStream = { streamed = true }
+                    )
+                }
+            }
+        }
+        val stream = composeRule.onNodeWithTag("tv_multi_epg_detail_stream")
+        stream.assertIsDisplayed()
+        stream.requestFocus()
+        composeRule.waitForIdle()
+        stream.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        if (!streamed) {
+            stream.performClick()
+            composeRule.waitForIdle()
+        }
+        assertEquals(true, streamed)
+    }
+
+    @Test
+    fun bouquetPickerCenterPicksFirstRow() {
+        var picked: String? = null
+        val first = Service("1:7:1:fav:0:0:0:0:0:0:", "Favourites")
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    TvMultiEpgBouquetPicker(
+                        bouquets = listOf(
+                            first,
+                            Service("1:7:1:other:0:0:0:0:0:0:", "Other")
+                        ),
+                        onPick = { picked = it.name },
+                        onDismiss = {}
+                    )
+                }
+            }
+        }
+        val row = composeRule.onNodeWithTag("tv_multi_epg_bouquet_${first.reference}")
+        row.assertIsDisplayed()
+        row.requestFocus()
+        composeRule.waitForIdle()
+        row.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        if (picked == null) {
+            row.performClick()
+            composeRule.waitForIdle()
+        }
+        assertEquals("Favourites", picked)
     }
 
     @Composable

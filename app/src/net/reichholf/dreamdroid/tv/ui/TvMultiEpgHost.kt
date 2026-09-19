@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +26,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -217,7 +220,8 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                 visibleMinutes = visibleMinutes,
                 onVisibleMinutesChange = { visibleMinutes = it },
                 textSize = textSize,
-                timerClocks = session.timerClocks
+                timerClocks = session.timerClocks,
+                keysEnabled = detailEvent == null && !pickingBouquet
             )
             val event = detailEvent
             if (event != null) {
@@ -257,20 +261,32 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
 internal fun TvMultiEpgEventDetail(
     event: Event,
     bouquetRef: String,
-    activity: AppCompatActivity,
     progress: IndeterminateProgressState?,
     onProgress: (IndeterminateProgressState?) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    activity: AppCompatActivity? = null,
+    onStream: (() -> Unit)? = null,
+    onSetTimer: (() -> Unit)? = null,
+    onImdb: (() -> Unit)? = null
 ) {
     val context = LocalContext.current
     val minutesShort = stringResource(R.string.minutes_short)
     val unavailable = stringResource(R.string.not_available)
     val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
+    val firstActionFocus = remember { FocusRequester() }
     BackHandler(onBack = onDismiss)
+    LaunchedEffect(event) {
+        try {
+            firstActionFocus.requestFocus()
+        } catch (_: IllegalStateException) {
+            // Overlay not attached yet.
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(PhoneMaterialTheme.colorScheme.background)
+            .focusGroup()
             .testTag("tv_multi_epg_detail")
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -296,6 +312,11 @@ internal fun TvMultiEpgEventDetail(
                     label = stringResource(R.string.stream),
                     tag = "tv_multi_epg_detail_stream",
                     onClick = {
+                        if (onStream != null) {
+                            onStream()
+                            return@TvMultiEpgAction
+                        }
+                        val host = activity ?: return@TvMultiEpgAction
                         val intent = IntentFactory.getStreamServiceIntent(
                             context,
                             event.serviceReference,
@@ -303,13 +324,19 @@ internal fun TvMultiEpgEventDetail(
                             bouquetRef,
                             null
                         )
-                        TvComposeHubHost.startStreamIntent(activity, intent)
-                    }
+                        TvComposeHubHost.startStreamIntent(host, intent)
+                    },
+                    focusRequester = firstActionFocus
                 )
                 TvMultiEpgAction(
                     label = stringResource(R.string.set_timer),
                     tag = "tv_multi_epg_detail_set_timer",
                     onClick = {
+                        if (onSetTimer != null) {
+                            onSetTimer()
+                            return@TvMultiEpgAction
+                        }
+                        val host = activity ?: return@TvMultiEpgAction
                         if (progress != null) {
                             return@TvMultiEpgAction
                         }
@@ -318,7 +345,7 @@ internal fun TvMultiEpgEventDetail(
                                 message = context.getString(R.string.saving)
                             )
                         )
-                        activity.launchSimpleResultLoad(
+                        host.launchSimpleResultLoad(
                             TimerAddByEventIdRequestHandler(),
                             Timer.getEventIdParams(event)
                         ) { _, result, error ->
@@ -337,7 +364,14 @@ internal fun TvMultiEpgEventDetail(
                 TvMultiEpgAction(
                     label = stringResource(R.string.imdb),
                     tag = "tv_multi_epg_detail_imdb",
-                    onClick = { IntentFactory.queryIMDb(activity, event) }
+                    onClick = {
+                        if (onImdb != null) {
+                            onImdb()
+                        } else {
+                            val host = activity ?: return@TvMultiEpgAction
+                            IntentFactory.queryIMDb(host, event)
+                        }
+                    }
                 )
             }
             IndeterminateProgressHost(progress)
@@ -347,11 +381,23 @@ internal fun TvMultiEpgEventDetail(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun TvMultiEpgAction(label: String, tag: String, onClick: () -> Unit) {
+private fun TvMultiEpgAction(
+    label: String,
+    tag: String,
+    onClick: () -> Unit,
+    focusRequester: FocusRequester? = null
+) {
     Surface(
         onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
+            .then(
+                if (focusRequester != null) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                }
+            )
             .testTag(tag),
         colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
@@ -371,11 +417,23 @@ internal fun TvMultiEpgBouquetPicker(
     onPick: (Service) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val firstRowFocus = remember { FocusRequester() }
     BackHandler(onBack = onDismiss)
+    LaunchedEffect(bouquets) {
+        if (bouquets.isEmpty()) {
+            return@LaunchedEffect
+        }
+        try {
+            firstRowFocus.requestFocus()
+        } catch (_: IllegalStateException) {
+            // Overlay not attached yet.
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(PhoneMaterialTheme.colorScheme.background)
+            .focusGroup()
             .testTag("tv_multi_epg_bouquet_picker")
     ) {
         LazyColumn(
@@ -385,9 +443,19 @@ internal fun TvMultiEpgBouquetPicker(
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(bouquets, key = { it.reference }) { service ->
+                val isFirst = service.reference == bouquets.first().reference
                 Surface(
                     onClick = { onPick(service) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .then(
+                            if (isFirst) {
+                                Modifier.focusRequester(firstRowFocus)
+                            } else {
+                                Modifier
+                            }
+                        )
+                        .testTag("tv_multi_epg_bouquet_${service.reference}"),
                     colors = dreamDroidTvCardColors(),
                     scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
                 ) {
