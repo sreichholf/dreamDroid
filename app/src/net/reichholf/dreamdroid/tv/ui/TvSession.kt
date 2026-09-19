@@ -47,8 +47,8 @@ fun shouldShowTvSessionRecheck(status: ConnectionStatus): Boolean = !status.chec
         )
 
 /**
- * Raw browse [errorText] stays off Settings (the session chip covers that
- * header). Content headers show it only when this view has nothing painted.
+ * Raw browse [errorText] stays off Settings and Timers (each hosts its own
+ * empty/error). Content headers show it only when this view has nothing painted.
  */
 fun shouldShowTvBrowseError(
     selectedHeaderId: String,
