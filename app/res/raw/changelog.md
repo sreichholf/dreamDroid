@@ -1,26 +1,22 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.463
-* FIX: Android TV movie cards no longer clip a partial last line of text
-
-## 2.0.462
-* NEW: Android TV can use an external video player (same Settings toggle as phone)
-* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable
-* UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
-* NEW: Settings option to reset the offline cache (current profile or all profiles)
-
-## 2.0.461
 * NEW: MultiEPG — graphical EPG grid
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
 * NEW: Choose which screen opens when the app starts (Settings → Start screen)
 * NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
+* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable
+* NEW: Settings option to reset the offline cache (current profile or all profiles)
+* NEW: Android TV can use an external video player (same Settings toggle as phone)
 * UPD: Modernized architecture and Material 3 UI across phone screens
 * UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
 * UPD: Android TV browse hub refreshed
 * UPD: Bouquet EPG date/time jump chips (incl. Now / Prime)
 * UPD: Virtual Remote home-screen widget
+* UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer / playlist browser
+* FIX: Android TV movie cards no longer clip a partial last line of text
 * FIX: multiple smaller issues
 
 ## 1.15.460
