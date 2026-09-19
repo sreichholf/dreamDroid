@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
