@@ -205,10 +205,12 @@ class ComposeTvHubServiceRowTest {
         val cards = composeRule.onAllNodesWithTag("hub_service_card")
         val first = cards[0].getBoundsInRoot()
         val second = cards[1].getBoundsInRoot()
+        val firstHeight = first.bottom - first.top
+        val secondHeight = second.bottom - second.top
         assertEquals(
-            "grid cards must share one height (short=${first.height} long=${second.height})",
-            first.height,
-            second.height
+            "grid cards must share one height (short=$firstHeight long=$secondHeight)",
+            firstHeight,
+            secondHeight
         )
     }
 
