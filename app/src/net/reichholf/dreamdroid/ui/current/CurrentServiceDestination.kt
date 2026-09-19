@@ -300,6 +300,9 @@ private class CurrentServiceSession : DialogActionListener {
         val host = handle ?: return
         when (action) {
             Statics.ACTION_SET_TIMER -> {
+                if (progress != null) {
+                    return
+                }
                 val event = currentItem ?: return
                 host.runOnlineOnly {
                     progress = IndeterminateProgressState(

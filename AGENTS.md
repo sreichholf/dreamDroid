@@ -53,4 +53,4 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 - `main` is the rewrite. Do not merge rewrite work into `master`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
-- Remaining modernization work (modal mutation progress, overlay shell, and the intentional service-row track keep) lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md) **Still to do**. Do not quietly fold those into unrelated PRs.
+- Remaining modernization work (overlay shell and the intentional service-row track keep) lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md) **Still to do**. Do not quietly fold those into unrelated PRs.

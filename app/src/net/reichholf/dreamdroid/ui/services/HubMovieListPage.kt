@@ -421,6 +421,9 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun deleteMovie() {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         val movie = selectedMovie ?: return

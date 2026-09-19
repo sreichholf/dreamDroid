@@ -31,7 +31,8 @@ fun ComposeView.bindShareProfilesScreen(
         DreamDroidTheme {
             ShareProfilesScreen(
                 profiles = state.profiles,
-                onProfileClick = onProfileClick
+                onProfileClick = onProfileClick,
+                clicksEnabled = state.progress == null
             )
             IndeterminateProgressHost(state.progress)
         }
