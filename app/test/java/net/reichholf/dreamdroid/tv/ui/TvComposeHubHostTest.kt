@@ -40,6 +40,16 @@ class TvComposeHubHostTest {
             TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile)
         )
         assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Reload))
+        assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.MultiEpg))
+    }
+
+    @Test
+    fun defaultSettingsKindsIncludesMultiEpg() {
+        val kinds = TvComposeHubHost.defaultSettingsKinds()
+        assertTrue(kinds.contains(BrowseItem.Kind.MultiEpg))
+        assertTrue(kinds.contains(BrowseItem.Kind.Reload))
+        assertTrue(kinds.contains(BrowseItem.Kind.Preferences))
+        assertTrue(kinds.contains(BrowseItem.Kind.Profile))
     }
 
     @Test
@@ -55,6 +65,10 @@ class TvComposeHubHostTest {
         assertEquals(
             R.drawable.ic_badge_profiles,
             TvComposeHubHost.settingsBadgeRes(BrowseItem.Kind.Profile)
+        )
+        assertEquals(
+            R.drawable.ic_menu_tv,
+            TvComposeHubHost.settingsBadgeRes(BrowseItem.Kind.MultiEpg)
         )
     }
 

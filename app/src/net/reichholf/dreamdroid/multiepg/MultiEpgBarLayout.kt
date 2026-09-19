@@ -53,4 +53,22 @@ object MultiEpgBarLayout {
         }
         return sortedBars.getOrNull(lo)?.startSec
     }
+
+    /**
+     * Start of the last bar in [sortedBars] that begins before [currentStartSec].
+     * [sortedBars] must already be ordered by [MultiEpgBar.startSec].
+     */
+    fun prevStartSec(sortedBars: List<MultiEpgBar>, currentStartSec: Long): Long? {
+        var lo = 0
+        var hi = sortedBars.size
+        while (lo < hi) {
+            val mid = (lo + hi) ushr 1
+            if (sortedBars[mid].startSec < currentStartSec) {
+                lo = mid + 1
+            } else {
+                hi = mid
+            }
+        }
+        return sortedBars.getOrNull(lo - 1)?.startSec
+    }
 }

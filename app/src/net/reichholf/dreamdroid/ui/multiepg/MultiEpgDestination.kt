@@ -23,8 +23,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
-import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
+import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
@@ -205,16 +205,4 @@ fun MultiEpgDestination(
         modifier = modifier
     )
     EpgEventDetailSheetHost(session = dialogSession)
-}
-
-internal class MultiEpgPersistGate(private val excludedTabRefs: Collection<String>) {
-    @Volatile
-    var knownTabRefs: Collection<String> = emptyList()
-
-    fun persist(ref: String): Boolean = EnigmaService.isCacheableUserBouquetContainer(
-        ref,
-        ref,
-        knownTabRefs,
-        excludedTabRefs
-    )
 }

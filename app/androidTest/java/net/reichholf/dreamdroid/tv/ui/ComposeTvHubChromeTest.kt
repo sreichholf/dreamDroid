@@ -41,7 +41,8 @@ class ComposeTvHubChromeTest {
                 settingsItems = listOf(
                     BrowseItem.Kind.Reload to "Reload",
                     BrowseItem.Kind.Preferences to "Settings",
-                    BrowseItem.Kind.Profile to "Profile"
+                    BrowseItem.Kind.Profile to "Profile",
+                    BrowseItem.Kind.MultiEpg to "MultiEPG"
                 ),
                 onSettingsClick = {}
             )
@@ -85,6 +86,32 @@ class ComposeTvHubChromeTest {
             node.performClick()
         }
         assertEquals(BrowseItem.Kind.Profile, clicked)
+    }
+
+    @Test
+    fun settingsRowShowsMultiEpgCard() {
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubSettingsRow(
+                        settingsItems = listOf(
+                            BrowseItem.Kind.MultiEpg to "MultiEPG",
+                            BrowseItem.Kind.Reload to "Reload",
+                            BrowseItem.Kind.Preferences to "Settings",
+                            BrowseItem.Kind.Profile to "Profile"
+                        ),
+                        onSettingsClick = {}
+                    )
+                }
+            }
+        }
+        composeRule.onNodeWithTag("hub_settings_multiepg").assertIsDisplayed()
+        composeRule.onNodeWithTag("hub_settings_icon_multiepg", useUnmergedTree = true)
+            .assertExists()
     }
 
     @Test

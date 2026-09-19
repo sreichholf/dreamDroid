@@ -70,6 +70,7 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -102,8 +103,25 @@ object TvComposeHubHost {
 
     fun preferenceTypeForKind(kind: BrowseItem.Kind): String? = when (kind) {
         BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
+
         BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
-        BrowseItem.Kind.Reload -> null
+
+        BrowseItem.Kind.Reload,
+        BrowseItem.Kind.MultiEpg -> null
+    }
+
+    fun defaultSettingsKinds(): List<BrowseItem.Kind> = listOf(
+        BrowseItem.Kind.Reload,
+        BrowseItem.Kind.Preferences,
+        BrowseItem.Kind.Profile,
+        BrowseItem.Kind.MultiEpg
+    )
+
+    fun settingsTitleRes(kind: BrowseItem.Kind): Int = when (kind) {
+        BrowseItem.Kind.Reload -> R.string.reload
+        BrowseItem.Kind.Preferences -> R.string.settings
+        BrowseItem.Kind.Profile -> R.string.profile
+        BrowseItem.Kind.MultiEpg -> R.string.multiepg
     }
 
     /** Same badges the Leanback Live TV settings cards used. */
@@ -111,6 +129,7 @@ object TvComposeHubHost {
         BrowseItem.Kind.Reload -> R.drawable.ic_badge_reload
         BrowseItem.Kind.Preferences -> R.drawable.ic_badge_settings
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
+        BrowseItem.Kind.MultiEpg -> R.drawable.ic_menu_tv
     }
 
     fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
@@ -249,11 +268,9 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
             }
         }
     }
-    val settingsItems = listOf(
-        BrowseItem.Kind.Reload to stringResource(R.string.reload),
-        BrowseItem.Kind.Preferences to stringResource(R.string.settings),
-        BrowseItem.Kind.Profile to stringResource(R.string.profile)
-    )
+    val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
+        kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
+    }
 
     ComposeTvHubChrome(
         headers = headers,
@@ -269,6 +286,10 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
                     if (intent != null) {
                         preferenceLauncher.launch(intent)
                     }
+                }
+
+                BrowseItem.Kind.MultiEpg -> {
+                    activity.startActivity(Intent(activity, MultiEpgActivity::class.java))
                 }
             }
         },
@@ -755,6 +776,9 @@ private fun HubPlaceholderRow() {
 /** Kept for iv-b smoke tests / previews. */
 @Composable
 fun ComposeTvHubStub() {
+    val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
+        kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
+    }
     ComposeTvHubChrome(
         headers = listOf(
             HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
@@ -762,11 +786,7 @@ fun ComposeTvHubStub() {
         ),
         selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
         onHeaderSelected = {},
-        settingsItems = listOf(
-            BrowseItem.Kind.Reload to "Reload",
-            BrowseItem.Kind.Preferences to "Settings",
-            BrowseItem.Kind.Profile to "Profile"
-        ),
+        settingsItems = settingsItems,
         onSettingsClick = {}
     )
 }
