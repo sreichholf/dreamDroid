@@ -1,8 +1,8 @@
 # Offline cache and unified errors
 
-**Status:** Accepted (operator lock-in 2026-09-17; review pass on the same day).  
-**Trunk:** `main`. **One PR per slice** unless asked otherwise.  
-**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold tablet rail, overlay shell, or Glance-only widget into these PRs.
+**Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
+**Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub / widget still follow.  
+**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold tablet rail, overlay shell, or Glance-only widget into leftover work.
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs).
 
