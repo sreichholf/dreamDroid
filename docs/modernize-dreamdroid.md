@@ -8,7 +8,7 @@ Floor: minSdk 26, JDK 25, debug package `net.reichholf.dreamdroid.debug`. Agent 
 
 ## Done
 
-Phone screens are Kotlin Compose **NavHost destinations** (drawer, hub, EPG, forms, remote). Dialogs and detail sheets are Compose `AlertDialog` / `ModalBottomSheet` / Navigation `dialog`s — no DialogFragment chassis. HTTP is coroutines + typed `EnigmaClient` over OkHttp; AsyncTask/Loaders are gone. Profiles live in Room (`dreambox`); legacy SQLite is migrate/restore only. Widgets are Glance with `AndroidRemoteViews` only for the dense RCU grid. Player stays **libVLC** with Compose overlay chrome (not Media3). TV hub is Compose; Leanback browse is gone (`leanback` remains for overlay `HorizontalGridView`). Material 3 P0–P2 UX is [#430](https://github.com/sreichholf/dreamDroid/pull/430). Phone **offline cache + unified errors** (plan slices 1–7) and **phone operator usertest** are verified (2026-09-19). TV hub / widget offline still follow the phone shell.
+Phone screens are Kotlin Compose **NavHost destinations** (drawer, hub, EPG, forms, remote). Dialogs and detail sheets are Compose `AlertDialog` / `ModalBottomSheet` / Navigation `dialog`s — no DialogFragment chassis. HTTP is coroutines + typed `EnigmaClient` over OkHttp; AsyncTask/Loaders are gone. Profiles live in Room (`dreambox`); legacy SQLite is migrate/restore only. Widgets are Glance with `AndroidRemoteViews` only for the dense RCU grid. Player stays **libVLC** with Compose overlay chrome (not Media3). TV hub is Compose; Leanback browse is gone (`leanback` remains for overlay `HorizontalGridView`). Material 3 P0–P2 UX is [#430](https://github.com/sreichholf/dreamDroid/pull/430). Phone **offline cache + unified errors** (plan slices 1–7) and **phone operator usertest** are verified (2026-09-19). TV hub / widget offline still follow the phone shell. Mutation progress is an in-content `LinearProgressIndicator` (`IndeterminateProgressHost`), not a blocking dialog.
 
 ## Still to do
 
@@ -17,7 +17,6 @@ One PR per item unless asked otherwise. Do not fold these into unrelated chrome 
 | Item | Notes |
 | --- | --- |
 | Tablet `NavigationRail` | `layout-sw720dp/dualpane.xml` is still `DrawerLayout` + toolbar. Needs a new shell slot; must not regress phone `NavigationBar` / FAB dodge. |
-| Modal mutation progress | `IndeterminateProgressHost` is a blocking `BasicAlertDialog` spinner (profile detect, timer/movie save/delete, share import). Prefer in-content progress or a snackbar, one surface at a time. |
 | Video overlay shell | `VideoOverlayFragment` + `VideoActivity` are not a phone NavHost leaf. Zap list still uses Leanback `HorizontalGridView`. Keep libVLC unless asked for Media3. |
 | Glance-only widget | Dense RCU keys still go through `AndroidRemoteViews`. Full Glance only if it can express that grid. |
 | Drop `DatabaseHelper` | Migrate-only leftover for pre-Room backups. Delete when the operator accepts migrate-from-backup-only (or no install still needs the file). |

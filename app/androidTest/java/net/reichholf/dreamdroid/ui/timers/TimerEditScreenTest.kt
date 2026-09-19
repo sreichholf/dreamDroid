@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -27,7 +28,9 @@ import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -300,6 +303,24 @@ class TimerEditScreenTest {
 
         assertNull(session.progress)
         composeRule.onNodeWithText("Conflicting timer exists").assertIsDisplayed()
+    }
+
+    @Test
+    fun savingProgressShowsInContentWithoutDialog() {
+        val session = sessionFrom(sampleTimer())
+        session.reload()
+        session.progress = IndeterminateProgressState(message = "Saving")
+        composeRule.setContent {
+            DreamDroidTheme {
+                timerEditForm(session.editState)
+                IndeterminateProgressHost(session.progress)
+            }
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
     private fun sessionFrom(timer: Timer): TimerEditSession {

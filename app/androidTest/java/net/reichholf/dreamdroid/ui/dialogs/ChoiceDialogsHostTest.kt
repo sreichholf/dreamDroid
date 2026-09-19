@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
@@ -10,14 +11,14 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.Lifecycle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -30,8 +31,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Phase 2.1g-ii-e: Multi/simple choice + indeterminate progress are Compose M3 AlertDialogs
- * (no DialogFragment). Hosted under DreamDroidTheme so night LocalContentColor stays onSurface.
+ * Phase 2.1g-ii-e: Multi/simple choice are Compose M3 AlertDialogs (no DialogFragment).
+ * Mutation progress is in-content, not a dialog. Hosted under DreamDroidTheme so night
+ * LocalContentColor stays onSurface.
  */
 class ChoiceDialogsHostTest {
     @get:Rule
@@ -131,15 +133,19 @@ class ChoiceDialogsHostTest {
             DreamDroidTheme {
                 localContent = LocalContentColor.current
                 onSurface = MaterialTheme.colorScheme.onSurface
-                IndeterminateProgressDialog(
-                    title = "Searching",
-                    message = "Looking for devices"
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(
+                        title = "Searching",
+                        message = "Looking for devices"
+                    )
                 )
             }
         }
         composeRule.waitForIdle()
+        composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
         composeRule.onNodeWithText("Looking for devices").assertIsDisplayed()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
         composeRule.runOnIdle {
             assertEquals(onSurface, localContent)
             assertTrue(
@@ -153,20 +159,23 @@ class ChoiceDialogsHostTest {
     fun blankTitleOmitsHeadingAndShowsMessage() {
         composeRule.setContent {
             DreamDroidTheme {
-                IndeterminateProgressDialog(
-                    title = "",
-                    message = "Saving"
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(title = "", message = "Saving")
                 )
             }
         }
         composeRule.waitForIdle()
+        composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
     @Test
-    fun indeterminateProgressHonorsBack() {
+    fun indeterminateProgressDoesNotConsumeBack() {
+        var backReachedHost = false
         composeRule.setContent {
             DreamDroidTheme {
+                BackHandler { backReachedHost = true }
                 IndeterminateProgressHost(
                     IndeterminateProgressState(
                         title = "Searching",
@@ -177,15 +186,13 @@ class ChoiceDialogsHostTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Searching").assertIsDisplayed()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
         composeRule.runOnIdle {
             composeRule.activity.onBackPressedDispatcher.onBackPressed()
         }
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText("Searching").fetchSemanticsNodes().isEmpty()
-        }
-        assertTrue(
-            composeRule.activity.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)
-        )
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Searching").assertIsDisplayed()
+        assertTrue(backReachedHost)
     }
 
     @Test

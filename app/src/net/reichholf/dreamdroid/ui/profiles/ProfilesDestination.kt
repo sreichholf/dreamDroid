@@ -43,7 +43,8 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchDetectDevicesLoad
@@ -91,6 +92,9 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     var discoveryFailed by remember { mutableStateOf(false) }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.onDetectProgressChanged = { showDetectProgress = it }
+    LaunchedEffect(showDetectProgress) {
+        activity.invalidateOptionsMenu()
+    }
     session.onDiscoveryResult = { found ->
         if (found.isEmpty()) {
             discoveredDevices = null
@@ -109,10 +113,11 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     )
 
     if (showDetectProgress) {
-        IndeterminateProgressDialog(
-            title = stringResource(R.string.searching),
-            message = stringResource(R.string.searching_known_devices),
-            onDismiss = { showDetectProgress = false }
+        IndeterminateProgressHost(
+            IndeterminateProgressState(
+                title = stringResource(R.string.searching),
+                message = stringResource(R.string.searching_known_devices)
+            )
         )
     }
     showDeleteConfirm?.let { title ->
@@ -330,9 +335,11 @@ private class ProfilesSession : MenuProvider {
         if (activity == null) {
             return
         }
+        if (detectJob != null) {
+            return
+        }
         val cached = detectedProfiles
         if (cached == null) {
-            cancelDetect()
             onDetectProgressChanged?.invoke(true)
             detectJob = host.launchDetectDevicesLoad { profiles ->
                 detectJob = null
@@ -413,6 +420,7 @@ private class ProfilesSession : MenuProvider {
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.profiles, menu)
+        menu.findItem(Statics.ITEM_DETECT_DEVICES)?.isEnabled = detectJob == null
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemClicked(menuItem.itemId)

@@ -37,6 +37,7 @@ fun TimerEditScreen(
     onPickService: () -> Unit,
     onPickTags: () -> Unit,
     showSaveFab: Boolean = true,
+    mutating: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
@@ -47,7 +48,9 @@ fun TimerEditScreen(
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
             if (showSaveFab) {
-                FloatingActionButton(onClick = onSave) {
+                FloatingActionButton(
+                    onClick = { if (!mutating) onSave() }
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_save),
                         contentDescription = saveLabel

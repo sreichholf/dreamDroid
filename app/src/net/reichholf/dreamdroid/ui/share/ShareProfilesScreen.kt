@@ -18,21 +18,29 @@ import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 fun ShareProfilesScreen(
     profiles: List<ProfileListItem>,
     onProfileClick: (ProfileListItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    clicksEnabled: Boolean = true
 ) {
     LazyColumn(modifier = modifier.fillMaxSize()) {
         items(profiles, key = { it.id }) { profile ->
             ShareProfileRow(
                 profile = profile,
-                onClick = { onProfileClick(profile) }
+                onClick = { onProfileClick(profile) },
+                clicksEnabled = clicksEnabled
             )
         }
     }
 }
 
 @Composable
-private fun ShareProfileRow(profile: ProfileListItem, onClick: () -> Unit) {
-    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
+private fun ShareProfileRow(
+    profile: ProfileListItem,
+    onClick: () -> Unit,
+    clicksEnabled: Boolean = true
+) {
+    ListRowSurface(
+        modifier = Modifier.clickable(enabled = clicksEnabled, onClick = onClick)
+    ) {
         ListItem(
             headlineContent = {
                 Text(

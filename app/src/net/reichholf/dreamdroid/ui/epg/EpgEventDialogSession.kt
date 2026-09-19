@@ -48,6 +48,9 @@ class EpgEventDialogSession {
     }
 
     fun onSetTimer() {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         val item = currentItem ?: return

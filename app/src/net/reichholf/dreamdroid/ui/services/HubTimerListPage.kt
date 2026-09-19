@@ -118,6 +118,10 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         session.reload()
     }
 
+    LaunchedEffect(session.progress) {
+        activity.invalidateOptionsMenu()
+    }
+
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
@@ -359,6 +363,9 @@ class HubTimerListSession :
     }
 
     fun deleteTimer(timer: TypedTimer) {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         host.runOnlineOnly {
@@ -377,6 +384,9 @@ class HubTimerListSession :
     }
 
     private fun toggleTimerEnabled(timer: TypedTimer) {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         host.runOnlineOnly {
@@ -398,6 +408,9 @@ class HubTimerListSession :
     }
 
     private fun cleanupTimerList() {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         host.runOnlineOnly {
@@ -464,6 +477,7 @@ class HubTimerListSession :
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.timerlist, menu)
+        menu.findItem(Statics.ITEM_CLEANUP)?.isEnabled = progress == null
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemSelected(menuItem.itemId)

@@ -151,6 +151,9 @@ class ShareActivity : AppCompatActivity() {
     }
 
     fun execSimpleResultTask(params: ArrayList<NameValuePair>, profile: Profile) {
+        if (listState.progress != null) {
+            return
+        }
         simpleResultJob?.cancel(null)
         listState.progress = IndeterminateProgressState(
             title = getString(R.string.loading),
