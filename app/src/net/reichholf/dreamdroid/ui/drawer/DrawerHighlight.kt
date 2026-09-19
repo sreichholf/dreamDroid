@@ -33,7 +33,8 @@ object DrawerHighlight {
                 r.startsWith("service_epg") ||
                 r.startsWith("epg_search") -> R.id.menu_navigation_epg
 
-            r == PhoneNavRoutes.MULTI_EPG -> R.id.menu_navigation_multiepg
+            r == PhoneNavRoutes.MULTI_EPG ->
+                itemIdForRoute(previousRoute) ?: R.id.menu_navigation_epg
 
             r == PhoneNavRoutes.SETTINGS || r == PhoneNavRoutes.BACKUP ->
                 R.id.menu_navigation_settings

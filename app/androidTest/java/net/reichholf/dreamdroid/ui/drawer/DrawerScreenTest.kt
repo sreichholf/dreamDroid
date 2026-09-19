@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.drawer
 
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -40,6 +41,8 @@ class DrawerScreenTest {
         composeRule.onNodeWithText("Sleep Timer").assertIsDisplayed()
         composeRule.onNodeWithText("Send Message").assertIsDisplayed()
         composeRule.onNodeWithText("TV & Movies").assertIsDisplayed()
+        composeRule.onNodeWithText("EPG").assertIsDisplayed()
+        composeRule.onNodeWithText("MultiEPG").assertDoesNotExist()
         composeRule.onNodeWithText("Tools").assertIsDisplayed()
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
 

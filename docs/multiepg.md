@@ -12,7 +12,7 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 
 | | |
 | --- | --- |
-| **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG; new drawer **MultiEPG** |
+| **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG as the drawer entry; MultiEPG is nested from the hub toolbar/overflow and list EPG Timeline |
 | **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` — `time` unix seconds, `endTime` **minutes of duration** (default 24 h cache chunk); never unbounded |
 | **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
 | **Sync** | Room cache + ~20–30 min TTL; 2-day retention prune; **one** in-flight request; no idle background sync in v1 |
@@ -39,7 +39,7 @@ Full detail in §§1–9 below.
 | Tap | Existing EPG detail sheet (timer / zap / search); OK semantics later: info vs zap |
 | Timer bars | **Not** in v1 (v1.1 — GraphMultiEPG `show_record_clocks`) |
 | TV / Leanback | Out of scope for v1 |
-| List EPG | **Keep** drawer list EPG; add separate **MultiEPG** entry |
+| List EPG | **Keep** drawer list EPG (“what’s on at time x”); MultiEPG is nested from the hub toolbar/overflow and list EPG Timeline |
 
 Not in v1: STB colour-key remapping, AutoTimer, TMDb/IMDB from skin mods.
 
@@ -177,23 +177,24 @@ One windowed `epgmulti` is still one heavy cache lookup on the box; bounds + TTL
 ## 4. App architecture (when implementing)
 
 ```text
-Drawer MultiEPG
-  → PhoneNavRoutes.MULTI_EPG
+Hub toolbar / overflow or list EPG Timeline
+  → nested PhoneNavRoutes.MULTI_EPG
   → MultiEpgDestination (Compose)
        ├── MultiEpgSync / EnigmaClient.getEvents(…, URIStore.EPG_MULTI)
        ├── Room EpgDao
        └── MultiEpgScreen (grid)
             └── tap → existing EpgDetail sheet / timer session
+            └── At this time → list EPG (pop if nested on EPG)
 ```
 
 ### Existing hooks (no code yet — for implementers)
 
 | Concern | Current beachhead |
 | --- | --- |
-| Route table | `ui/nav/PhoneNavRoutes.kt` (`EPG`, `SERVICE_EPG`, `EPG_SEARCH`) — add `MULTI_EPG` |
-| NavHost | `ui/nav/PhoneNavHost.kt` — register composable |
-| Drawer | `ui/drawer/DrawerScreen.kt` + `res/values/ids.xml` — new item beside list EPG |
-| Drawer → EPG | `fragment/helper/NavigationHelper.kt` (`menu_navigation_epg`) — parallel MultiEPG case |
+| Route table | `ui/nav/PhoneNavRoutes.kt` (`EPG`, `SERVICE_EPG`, `EPG_SEARCH`, `MULTI_EPG`) |
+| NavHost | `ui/nav/PhoneNavHost.kt` — nested `composable(MULTI_EPG)` (back returns to hub or list EPG) |
+| Drawer | `ui/drawer/DrawerScreen.kt` — list EPG only; MultiEPG is not a drawer peer |
+| Drawer → EPG | `fragment/helper/NavigationHelper.kt` (`menu_navigation_epg`) — list EPG. MultiEPG is `navigateToMultiEpg` nested from hub/list EPG |
 | HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
 | Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
@@ -233,7 +234,7 @@ EpgChunkMeta
 **Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 
-**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Drawer **MultiEPG** opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
+**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Nested **MultiEPG** (hub toolbar/overflow or list EPG Timeline) opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
 
 **Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including next-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right appends upcoming chunks and drops chunks that have left the padded viewport at the front; panning back toward now reattaches those chunks from Room at the front and drops far-future chunks at the back. The toolbar shows the local calendar day under the viewport.
 
@@ -243,7 +244,7 @@ EpgChunkMeta
 | --- | --- |
 | **0** | Documented: `endTime` units (unix vs minutes); XML shape vs `epgservice`; live sizes optional until an operator runs the spike script |
 | **1** | `EnigmaClient.getEvents(…, URIStore.EPG_MULTI)` returns typed `Event`s; Room chunk upsert + TTL hit/miss; single-flight covered by androidTest |
-| **2** | Drawer → MultiEPG opens; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `.cursor/cloud/connected-test.sh` |
+| **2** | Nested MultiEPG opens from hub/list EPG; bouquet context works; grid shows now-line; pan loads adjacent chunk from cache/network; tap opens existing detail sheet; `MultiEpgScreenTest` green via `.cursor/cloud/connected-test.sh` |
 | **3** | Zoom 1/2/4/5 h; ±day + now jump; empty/error/pull-refresh UX; no unbounded requests in code paths |
 | **4** | Timer clocks on bars from `timerlist` join |
 
@@ -293,7 +294,7 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 
 | # | Decision | Locked default |
 | --- | --- | --- |
-| 1 | Navigation | Keep list EPG; add drawer **MultiEPG** |
+| 1 | Navigation | Keep list EPG as the drawer entry; MultiEPG is nested from hub toolbar/overflow and list EPG Timeline |
 | 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
 | 3 | Prefetch | +24 h Room chunks |
 | 4 | Cache TTL | ~20–30 min; 2-day retention prune; no idle sync |
@@ -344,7 +345,7 @@ This **planning** goal is complete when all of the following are true:
 
 ## 9. TV GraphMultiEPG (requested surface)
 
-Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. TV is a new requested surface, not a reopen of zoom / TTL / `/web/epgmulti` defaults.
+Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. Phone GraphMultiEPG is nested from the hub toolbar/overflow and list EPG Timeline (not a phone drawer peer). TV is a new requested surface, not a reopen of zoom / TTL / `/web/epgmulti` defaults.
 
 | | |
 | --- | --- |
