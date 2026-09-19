@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.463
+* FIX: Android TV movie cards no longer clip a partial last line of text
+
 ## 2.0.462
 * NEW: Android TV can use an external video player (same Settings toggle as phone)
 * NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable

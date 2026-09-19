@@ -1,5 +1,8 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.463
+* FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
+
 ## 2.0.462
 * NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist
 * UPD: Verbesserte Verbindungserkennung (Online / Offline / Prüfung, erneute Prüfung im Hintergrund)
