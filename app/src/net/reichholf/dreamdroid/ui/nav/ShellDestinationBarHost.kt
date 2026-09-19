@@ -6,6 +6,7 @@ import android.content.ContextWrapper
 import android.view.View
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -150,6 +151,7 @@ fun ShellHubBottomChromeSpacer(
         if (nowPlayingStripEnabled) {
             Spacer(
                 Modifier
+                    .fillMaxWidth()
                     .height(dimensionResource(R.dimen.now_playing_strip_height))
                     .testTag(SHELL_HUB_NOW_PLAYING_SPACER_TAG)
             )
@@ -157,6 +159,7 @@ fun ShellHubBottomChromeSpacer(
         if (showBar) {
             Spacer(
                 Modifier
+                    .fillMaxWidth()
                     .height(dimensionResource(R.dimen.shell_destination_bar_height))
                     .testTag(SHELL_HUB_DESTINATION_BAR_SPACER_TAG)
             )
