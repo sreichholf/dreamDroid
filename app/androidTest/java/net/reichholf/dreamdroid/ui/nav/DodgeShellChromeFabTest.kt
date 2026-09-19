@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.content.res.Configuration
+import android.view.ContextThemeWrapper
+import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.ComposeView
@@ -67,19 +70,51 @@ class DodgeShellChromeFabTest {
         assertEquals(expected, lp.bottomMargin)
     }
 
+    @Test
+    fun restBottomMarginOnTabletWhenStripOff() {
+        val fab = hostTimerFabOverChrome(
+            stripEnabled = false,
+            showChrome = false,
+            tablet = true
+        ).first
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            fab.visibility == View.VISIBLE
+        }
+        val expected = fab.resources.getDimensionPixelSize(R.dimen.fab_margin_bottom)
+        val lp = fab.layoutParams as CoordinatorLayout.LayoutParams
+        assertEquals(expected, lp.bottomMargin)
+    }
+
     private fun hostTimerFabOverChrome(
         stripEnabled: Boolean,
-        showChrome: Boolean = true
+        showChrome: Boolean = true,
+        tablet: Boolean = false
     ): Pair<ExtendedFloatingActionButton, ComposeView> {
         val activity = composeRule.activity
         lateinit var fab: ExtendedFloatingActionButton
         lateinit var shell: ComposeView
         composeRule.runOnUiThread {
             activity.setTheme(R.style.Theme_DreamDroid_Night)
-            activity.setContentView(R.layout.dualpane)
+            if (tablet) {
+                val config = Configuration(activity.resources.configuration)
+                config.smallestScreenWidthDp = 720
+                val ctx = ContextThemeWrapper(
+                    activity.createConfigurationContext(config),
+                    R.style.Theme_DreamDroid_Night
+                )
+                activity.setContentView(
+                    LayoutInflater.from(ctx).inflate(R.layout.dualpane, null, false)
+                )
+            } else {
+                activity.setContentView(R.layout.dualpane)
+            }
             fab = activity.findViewById(R.id.fab_main)
             shell = activity.findViewById(R.id.shell_destination_nav)
             shell.visibility = if (showChrome) View.VISIBLE else View.GONE
+            if (tablet) {
+                activity.findViewById<View?>(R.id.shell_destination_rail)?.visibility =
+                    View.VISIBLE
+            }
             shell.setViewTreeLifecycleOwner(activity)
             shell.setViewTreeViewModelStoreOwner(activity)
             shell.setViewTreeSavedStateRegistryOwner(activity)

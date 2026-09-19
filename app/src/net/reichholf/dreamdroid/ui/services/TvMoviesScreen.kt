@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.current.NowPlayingStrip
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
+import net.reichholf.dreamdroid.ui.nav.DestinationRail
 
 @Composable
 fun TvMoviesScreen(
@@ -79,12 +80,21 @@ fun TvMoviesDestinationBar(
     modifier: Modifier = Modifier
 ) {
     DestinationBar(
-        items = TvMoviesDestination.entries.map { dest ->
-            DestinationBarItem(
-                labelRes = destinationLabelRes(dest),
-                iconRes = destinationIcon(dest)
-            )
-        },
+        items = tvMoviesDestinationItems(),
+        selectedIndex = selected.ordinal,
+        onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun TvMoviesDestinationRail(
+    selected: TvMoviesDestination,
+    onDestinationSelected: (TvMoviesDestination) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DestinationRail(
+        items = tvMoviesDestinationItems(),
         selectedIndex = selected.ordinal,
         onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
         modifier = modifier
@@ -95,9 +105,16 @@ fun TvMoviesDestinationBar(
  * Coordinator overlay chrome: now-playing strip stacked on the destination bar.
  * Hub list in detail_view overflows under this slot (ScrollingViewBehavior),
  * so the strip must live here — not in the hub Column.
+ *
+ * Tablet hosts destinations on [net.reichholf.dreamdroid.ui.nav.DestinationRail]
+ * and sets [showDestinationBar] to false so this slot is strip-only.
  */
 @Composable
-fun TvMoviesShellChrome(state: TvMoviesHubState, modifier: Modifier = Modifier) {
+fun TvMoviesShellChrome(
+    state: TvMoviesHubState,
+    showDestinationBar: Boolean = true,
+    modifier: Modifier = Modifier
+) {
     Column(modifier.fillMaxWidth()) {
         if (state.nowPlayingStripEnabled) {
             NowPlayingStrip(
@@ -111,12 +128,22 @@ fun TvMoviesShellChrome(state: TvMoviesHubState, modifier: Modifier = Modifier) 
                 onClick = { state.onNowPlayingClick() }
             )
         }
-        TvMoviesDestinationBar(
-            selected = state.selected,
-            onDestinationSelected = { state.onDestinationSelected(it) }
-        )
+        if (showDestinationBar) {
+            TvMoviesDestinationBar(
+                selected = state.selected,
+                onDestinationSelected = { state.onDestinationSelected(it) }
+            )
+        }
     }
 }
+
+private fun tvMoviesDestinationItems(): List<DestinationBarItem> =
+    TvMoviesDestination.entries.map { dest ->
+        DestinationBarItem(
+            labelRes = destinationLabelRes(dest),
+            iconRes = destinationIcon(dest)
+        )
+    }
 
 private fun destinationIcon(dest: TvMoviesDestination): Int = when (dest) {
     TvMoviesDestination.TV -> R.drawable.ic_menu_tv

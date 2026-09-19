@@ -17,10 +17,12 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.services.TvMoviesDestinationRail
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.services.TvMoviesShellChrome
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.tools.ToolsDestinationBar
+import net.reichholf.dreamdroid.ui.tools.ToolsDestinationRail
 import net.reichholf.dreamdroid.ui.tools.ToolsHubState
 
 /**
@@ -37,7 +39,8 @@ sealed interface ShellDestinationBarContent {
 }
 
 /**
- * Activity-chrome controller for [R.id.shell_destination_nav].
+ * Activity-chrome controller for [R.id.shell_destination_nav] (and tablet
+ * [R.id.shell_destination_rail] when that slot exists).
  * Owned by [ProvideShellDestinationBar] for the lifetime of [PhoneNavHost], not by hub leaves.
  */
 class ShellDestinationBarController {
@@ -52,9 +55,14 @@ val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinati
 }
 
 /**
- * Installs a long-lived composition on the activity [R.id.shell_destination_nav] ComposeView
- * for the lifetime of this host (the phone NavHost), then provides
+ * Installs long-lived compositions on the activity shell chrome slots for the
+ * lifetime of this host (the phone/tablet NavHost), then provides
  * [LocalShellDestinationBarController].
+ *
+ * Phone ([R.id.shell_destination_rail] absent): [ToolsDestinationBar] /
+ * [TvMoviesShellChrome] on [R.id.shell_destination_nav].
+ * Tablet: destinations on [R.id.shell_destination_rail]; the bottom slot is
+ * now-playing only (Tools hides it).
  *
  * Hub destinations only publish [ShellDestinationBarContent] via [RegisterShellDestinationBar].
  * That keeps shell chrome out of hub content recomposition / load cycles — the failure mode when
@@ -70,40 +78,110 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
             ?: return@DisposableEffect onDispose { }
         val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav)
             ?: return@DisposableEffect onDispose { }
-        shellNav.setViewCompositionStrategy(
-            ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-        )
-        shellNav.setContent {
-            DreamDroidTheme {
-                val shown = controller.content
-                SideEffect {
-                    shellNav.visibility =
-                        if (shown is ShellDestinationBarContent.Hidden) View.GONE else View.VISIBLE
-                    if (shown !is ShellDestinationBarContent.Hidden) {
-                        shellNav.bringToFront()
-                    }
+        val shellRail = activity.findViewById<ComposeView?>(R.id.shell_destination_rail)
+        val strategy = ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+        shellNav.setViewCompositionStrategy(strategy)
+        if (shellRail == null) {
+            shellNav.setContent {
+                DreamDroidTheme {
+                    PhoneShellNavContent(controller, shellNav)
                 }
-                when (shown) {
-                    ShellDestinationBarContent.Hidden -> Unit
-
-                    is ShellDestinationBarContent.Tools -> ToolsDestinationBar(
-                        selected = shown.state.selected,
-                        onDestinationSelected = { shown.state.onDestinationSelected(it) }
-                    )
-
-                    is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
-                        state = shown.state
-                    )
+            }
+        } else {
+            shellRail.setViewCompositionStrategy(strategy)
+            shellRail.setContent {
+                DreamDroidTheme {
+                    TabletShellRailContent(controller, shellRail)
+                }
+            }
+            shellNav.setContent {
+                DreamDroidTheme {
+                    TabletShellNavContent(controller, shellNav)
                 }
             }
         }
         onDispose {
             shellNav.visibility = View.GONE
             shellNav.disposeComposition()
+            shellRail?.visibility = View.GONE
+            shellRail?.disposeComposition()
         }
     }
     CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
         content()
+    }
+}
+
+@Composable
+private fun PhoneShellNavContent(controller: ShellDestinationBarController, shellNav: ComposeView) {
+    val shown = controller.content
+    SideEffect {
+        shellNav.visibility =
+            if (shown is ShellDestinationBarContent.Hidden) View.GONE else View.VISIBLE
+        if (shown !is ShellDestinationBarContent.Hidden) {
+            shellNav.bringToFront()
+        }
+    }
+    when (shown) {
+        ShellDestinationBarContent.Hidden -> Unit
+
+        is ShellDestinationBarContent.Tools -> ToolsDestinationBar(
+            selected = shown.state.selected,
+            onDestinationSelected = { shown.state.onDestinationSelected(it) }
+        )
+
+        is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
+            state = shown.state
+        )
+    }
+}
+
+@Composable
+private fun TabletShellRailContent(
+    controller: ShellDestinationBarController,
+    shellRail: ComposeView
+) {
+    val shown = controller.content
+    SideEffect {
+        shellRail.visibility =
+            if (shown is ShellDestinationBarContent.Hidden) View.GONE else View.VISIBLE
+    }
+    when (shown) {
+        ShellDestinationBarContent.Hidden -> Unit
+
+        is ShellDestinationBarContent.Tools -> ToolsDestinationRail(
+            selected = shown.state.selected,
+            onDestinationSelected = { shown.state.onDestinationSelected(it) }
+        )
+
+        is ShellDestinationBarContent.TvMovies -> TvMoviesDestinationRail(
+            selected = shown.state.selected,
+            onDestinationSelected = { shown.state.onDestinationSelected(it) }
+        )
+    }
+}
+
+@Composable
+private fun TabletShellNavContent(
+    controller: ShellDestinationBarController,
+    shellNav: ComposeView
+) {
+    val shown = controller.content
+    val showStrip = shown is ShellDestinationBarContent.TvMovies &&
+        shown.state.nowPlayingStripEnabled
+    SideEffect {
+        shellNav.visibility = if (showStrip) View.VISIBLE else View.GONE
+        if (showStrip) {
+            shellNav.bringToFront()
+        }
+    }
+    when (shown) {
+        is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
+            state = shown.state,
+            showDestinationBar = false
+        )
+
+        else -> Unit
     }
 }
 
