@@ -36,6 +36,7 @@ import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -61,6 +62,7 @@ fun MultiEpgDestination(
     val bouquetName = MultiEpgRestore.bouquetName(
         leafArgs.getString(EventKeys.KEY_SERVICE_NAME)
     )
+    val focusedServiceRef = leafArgs.getString(NavExtras.FOCUSED_SERVICE_REF)
     var anchorSec by remember(remountEpoch, bouquetRef) {
         mutableLongStateOf(System.currentTimeMillis() / 1000L)
     }
@@ -202,6 +204,7 @@ fun MultiEpgDestination(
         visibleMinutes = visibleMinutes,
         onVisibleMinutesChange = { visibleMinutes = it },
         textSize = textSize,
+        focusedServiceRef = focusedServiceRef,
         modifier = modifier
     )
     EpgEventDetailSheetHost(session = dialogSession)

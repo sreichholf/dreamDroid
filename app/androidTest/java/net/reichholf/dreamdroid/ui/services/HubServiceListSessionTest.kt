@@ -1,9 +1,11 @@
 package net.reichholf.dreamdroid.ui.services
 
 import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class HubServiceListSessionTest {
@@ -50,5 +52,30 @@ class HubServiceListSessionTest {
             errorText = "timeout"
         )
         assertEquals(listOf("Fresh bouquet"), state.items.map { it.name })
+    }
+
+    @Test
+    fun serviceListMenusIncludeMultiEpgAfterBrowseEpg() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        val inflater = android.view.MenuInflater(ctx)
+        val toolbarAnchor = android.widget.TextView(ctx)
+        val toolbarMenu = androidx.appcompat.widget.PopupMenu(ctx, toolbarAnchor).menu
+        inflater.inflate(R.menu.servicelistpage, toolbarMenu)
+        assertNotNull(toolbarMenu.findItem(R.id.menu_multiepg))
+
+        val popupAnchor = android.widget.TextView(ctx)
+        val popupMenu = androidx.appcompat.widget.PopupMenu(ctx, popupAnchor).menu
+        inflater.inflate(R.menu.popup_servicelist, popupMenu)
+        var browseIndex = -1
+        var multiIndex = -1
+        var i = 0
+        while (i < popupMenu.size()) {
+            when (popupMenu.getItem(i).itemId) {
+                R.id.menu_browse_epg -> browseIndex = i
+                R.id.menu_multiepg -> multiIndex = i
+            }
+            i++
+        }
+        assertEquals(browseIndex + 1, multiIndex)
     }
 }

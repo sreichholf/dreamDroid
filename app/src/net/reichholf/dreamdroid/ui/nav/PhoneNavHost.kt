@@ -78,7 +78,8 @@ fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavAr
 
 /**
  * Phone shell [NavHost]. Drawer leaves through hub + settings; Backup is nested from Settings.
- * Nested service EPG, EPG search, and bouquet pick are the 2.1f beachheads.
+ * Nested service EPG, EPG search, bouquet pick, and MultiEPG are nested
+ * destinations (back returns to the leaf that opened them).
  */
 @Composable
 fun PhoneNavHost(
@@ -368,6 +369,13 @@ fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: Stri
     val route = "service_epg/${Uri.encode(serviceRef)}" +
         "?serviceName=${Uri.encode(serviceName.orEmpty())}"
     navigate(route)
+}
+
+/** Nested MultiEPG: push onto the back stack (back returns to hub or list EPG). */
+fun NavHostController.navigateToMultiEpg() {
+    navigate(PhoneNavRoutes.MULTI_EPG) {
+        launchSingleTop = true
+    }
 }
 
 /** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */

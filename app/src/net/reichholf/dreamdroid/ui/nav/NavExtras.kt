@@ -11,4 +11,13 @@ object NavExtras {
 
     /** Intent action string for create vs edit (`"action"`). */
     const val ACTION = "action"
+
+    /**
+     * Optional MultiEPG focused channel. Bouquet identity stays on
+     * [net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE].
+     */
+    const val FOCUSED_SERVICE_REF = "focusedServiceRef"
+
+    /** Optional list-EPG / MultiEPG focus instant (unix seconds). */
+    const val EPG_TIME_SEC = "epgTimeSec"
 }

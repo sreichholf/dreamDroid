@@ -87,8 +87,17 @@ interface PhoneNavHandle {
     fun queueProfileCheck(ui: ProfileCheckUi)
     fun navigateAboveProfileCheck(route: String): Boolean
     fun navigateReplacingProfileCheck(route: String): Boolean
-    fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean
-    fun navigateToMultiEpg(serviceReference: String?, serviceName: String?): Boolean
+    fun navigateToEpg(
+        serviceReference: String?,
+        serviceName: String?,
+        timeSec: Long? = null
+    ): Boolean
+    fun navigateToMultiEpg(
+        serviceReference: String?,
+        serviceName: String?,
+        focusedServiceRef: String? = null,
+        timeSec: Long? = null
+    ): Boolean
     fun navigateToServiceEpg(serviceReference: String?, serviceName: String?): Boolean
     fun navigateToEpgSearch(query: String?): Boolean
     fun navigateToPickBouquet(requestCode: Int): Boolean

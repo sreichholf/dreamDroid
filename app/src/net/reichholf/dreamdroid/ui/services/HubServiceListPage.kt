@@ -452,6 +452,7 @@ class HubServiceListSession : MenuProvider {
             menu.menuInflater.inflate(R.menu.popup_servicelist, menu.menu)
             menu.menu.findItem(R.id.menu_next_event).isVisible =
                 DreamDroid.featureNowNext() && row.next != null
+            menu.menu.findItem(R.id.menu_multiepg)?.isVisible = currentRef.isNotEmpty()
             menu.setOnMenuItemClickListener { menuItem ->
                 val ref = row.serviceReference
                 val name = row.serviceName
@@ -468,6 +469,17 @@ class HubServiceListSession : MenuProvider {
 
                     R.id.menu_browse_epg -> {
                         host.navigateToServiceEpg(ref, name)
+                        true
+                    }
+
+                    R.id.menu_multiepg -> {
+                        if (currentRef.isNotEmpty()) {
+                            host.navigateToMultiEpg(
+                                currentRef,
+                                currentName,
+                                focusedServiceRef = row.serviceReference
+                            )
+                        }
                         true
                     }
 
@@ -545,6 +557,7 @@ class HubServiceListSession : MenuProvider {
         if (mph?.isDrawerOpen == true) {
             return
         }
+        menu.findItem(R.id.menu_multiepg)?.isVisible = currentRef.isNotEmpty()
         val setDefault = menu.findItem(R.id.menu_default) ?: return
         setDefault.isVisible = true
         val defaultReference = DreamDroid.getCurrentProfile().defaultBouquetTv
@@ -558,6 +571,12 @@ class HubServiceListSession : MenuProvider {
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.menu_multiepg) {
+            if (currentRef.isNotEmpty()) {
+                handle?.navigateToMultiEpg(currentRef, currentName)
+            }
+            return true
+        }
         if (menuItem.itemId != Statics.ITEM_SET_DEFAULT) {
             return false
         }

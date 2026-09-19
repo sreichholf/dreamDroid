@@ -3,6 +3,12 @@
       xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_multiepg"
+        android:icon="@drawable/ic_multiepg_clock"
+        android:title="@string/multiepg"
+        dreamDroid:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/menu_default"
         android:icon="@drawable/ic_action_nofav"
         android:title="@string/set_default"

@@ -42,6 +42,8 @@ class PhoneNavHostState(
         private const val STATE_TIMER_EDIT_TAG = "phone_nav_timer_edit_tag"
         private const val STATE_EPG_REF = "phone_nav_epg_ref"
         private const val STATE_EPG_NAME = "phone_nav_epg_name"
+        private const val STATE_EPG_FOCUSED_REF = "phone_nav_epg_focused_ref"
+        private const val STATE_EPG_TIME_SEC = "phone_nav_epg_time_sec"
     }
 
     @Volatile
@@ -56,6 +58,8 @@ class PhoneNavHostState(
     private var startRouteValue: String = PhoneNavRoutes.DEVICE_INFO
     private var epgServiceReference: String? = null
     private var epgServiceName: String? = null
+    private var epgFocusedServiceRef: String? = null
+    private var epgTimeSec: Long? = null
     private var profileEditArgs: Bundle? = null
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
     private var timerEditArgs: Bundle? = null
@@ -71,6 +75,7 @@ class PhoneNavHostState(
     private var pendingChangelog: Boolean = false
     private var pendingProfileCheck: Boolean = false
     private var pendingDrawerRoot: String? = null
+    private var pendingNestedMultiEpg: Boolean = false
     private var pendingAbout: Boolean = false
     private var pendingPower: Boolean = false
     private var pendingSendMessage: Boolean = false
@@ -118,6 +123,12 @@ class PhoneNavHostState(
         )
         epgServiceReference = savedInstanceState.getString(STATE_EPG_REF)
         epgServiceName = savedInstanceState.getString(STATE_EPG_NAME)
+        epgFocusedServiceRef = savedInstanceState.getString(STATE_EPG_FOCUSED_REF)
+        epgTimeSec = if (savedInstanceState.containsKey(STATE_EPG_TIME_SEC)) {
+            savedInstanceState.getLong(STATE_EPG_TIME_SEC)
+        } else {
+            null
+        }
         profileEditArgs = savedInstanceState.getBundle(STATE_PROFILE_EDIT_ARGS)
         profileEditTag =
             savedInstanceState.getString(STATE_PROFILE_EDIT_TAG, PhoneNavRoutes.PROFILE_EDIT)
@@ -132,6 +143,8 @@ class PhoneNavHostState(
         outState.putString(STATE_START_ROUTE, startRouteValue)
         outState.putString(STATE_EPG_REF, epgServiceReference)
         outState.putString(STATE_EPG_NAME, epgServiceName)
+        outState.putString(STATE_EPG_FOCUSED_REF, epgFocusedServiceRef)
+        epgTimeSec?.let { outState.putLong(STATE_EPG_TIME_SEC, it) }
         profileEditArgs?.let { outState.putBundle(STATE_PROFILE_EDIT_ARGS, it) }
         outState.putString(STATE_PROFILE_EDIT_TAG, profileEditTag)
         timerEditArgs?.let { outState.putBundle(STATE_TIMER_EDIT_ARGS, it) }
@@ -144,6 +157,8 @@ class PhoneNavHostState(
     override fun epgLeafArguments(): Bundle = Bundle().apply {
         putString(Event.KEY_SERVICE_REFERENCE, epgServiceReference)
         putString(Event.KEY_SERVICE_NAME, epgServiceName)
+        putString(NavExtras.FOCUSED_SERVICE_REF, epgFocusedServiceRef)
+        epgTimeSec?.let { putLong(NavExtras.EPG_TIME_SEC, it) }
     }
 
     override fun attachNavController(controller: NavHostController) {
@@ -325,41 +340,61 @@ class PhoneNavHostState(
         return true
     }
 
-    override fun navigateToEpg(serviceReference: String?, serviceName: String?): Boolean {
+    override fun navigateToEpg(
+        serviceReference: String?,
+        serviceName: String?,
+        timeSec: Long?
+    ): Boolean {
         val controller = navController
         epgServiceReference = serviceReference
         epgServiceName = serviceName
+        epgFocusedServiceRef = null
+        epgTimeSec = timeSec
         if (controller == null) {
             pendingDrawerRoot = PhoneNavRoutes.EPG
             return true
         }
-        if (controller.currentDestination?.route != PhoneNavRoutes.EPG) {
+        val currentRoute = controller.currentDestination?.route
+        if (currentRoute == PhoneNavRoutes.MULTI_EPG) {
+            val previous = controller.previousBackStackEntry?.destination?.route
+            if (previous == PhoneNavRoutes.EPG) {
+                resultRequestCodes.clear()
+                controller.popBackStack()
+                epgRemountState.value = epgRemountState.value + 1
+                return true
+            }
+        }
+        if (currentRoute != PhoneNavRoutes.EPG) {
             resultRequestCodes.clear()
+            controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
         }
-        if (controller.currentDestination?.route == PhoneNavRoutes.EPG) {
-            epgRemountState.value = epgRemountState.value + 1
-            return true
-        }
-        controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+        epgRemountState.value = epgRemountState.value + 1
         return true
     }
 
-    override fun navigateToMultiEpg(serviceReference: String?, serviceName: String?): Boolean {
+    override fun navigateToMultiEpg(
+        serviceReference: String?,
+        serviceName: String?,
+        focusedServiceRef: String?,
+        timeSec: Long?
+    ): Boolean {
         val controller = navController
         epgServiceReference = serviceReference
         epgServiceName = serviceName
+        epgFocusedServiceRef = focusedServiceRef
+        epgTimeSec = timeSec
         if (controller == null) {
-            pendingDrawerRoot = PhoneNavRoutes.MULTI_EPG
+            pendingNestedMultiEpg = true
             return true
         }
         if (controller.currentDestination?.route != PhoneNavRoutes.MULTI_EPG) {
             resultRequestCodes.clear()
         }
-        epgRemountState.value = epgRemountState.value + 1
         if (controller.currentDestination?.route == PhoneNavRoutes.MULTI_EPG) {
+            epgRemountState.value = epgRemountState.value + 1
             return true
         }
-        controller.navigateDrawerRoot(PhoneNavRoutes.MULTI_EPG)
+        controller.navigateToMultiEpg()
         return true
     }
 
@@ -464,6 +499,15 @@ class PhoneNavHostState(
         if (pendingProfileCheck) {
             pendingProfileCheck = false
             navController?.navigateToProfileCheck()
+        }
+        if (pendingNestedMultiEpg) {
+            pendingNestedMultiEpg = false
+            navigateToMultiEpg(
+                epgServiceReference,
+                epgServiceName,
+                epgFocusedServiceRef,
+                epgTimeSec
+            )
         }
     }
 
