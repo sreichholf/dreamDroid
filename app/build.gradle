@@ -9,7 +9,7 @@ buildscript {
     }
     ext.kotlin_version = rootProject.ext.kotlin_version
     dependencies {
-        classpath 'com.android.tools.build:gradle:9.4.0'
+        classpath 'com.android.tools.build:gradle:9.4.1'
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
         classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.3.12"
     }
