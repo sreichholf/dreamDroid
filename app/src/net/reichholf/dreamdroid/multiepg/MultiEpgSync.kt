@@ -48,8 +48,7 @@ class MultiEpgSync(
     /**
      * Room peek for the bouquet at [unixSec], ignoring TTL.
      * A stored chunk meta hits the UTC window; otherwise events overlapping
-     * now for 24 h (same query as [net.reichholf.dreamdroid.ui.epg.ListEpgCache])
-     * still paint even when hub fill never wrote `epg_chunk`.
+     * now for 24 h still paint even when hub fill never wrote `epg_chunk`.
      */
     suspend fun peekChunk(profileId: Int, bouquetRef: String, unixSec: Long): CachedChunk? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)

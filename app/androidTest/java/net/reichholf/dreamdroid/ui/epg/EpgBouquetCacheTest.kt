@@ -69,6 +69,35 @@ class EpgBouquetCacheTest {
     }
 
     @Test
+    fun offlineLoadKeepsOneProgrammePerChannelAtSelectedTime() = runBlocking {
+        val dao = db.epgDao()
+        val chunk = MultiEpgWindows.chunkContaining(NOW)
+        dao.replaceChunk(
+            EpgChunkMetaEntity(PROFILE, BOUQUET, chunk.startSec, chunk.endSec, 1L),
+            listOf(
+                sampleEvent(title = "News", start = NOW, duration = 3600),
+                sampleEvent(title = "Talk", start = NOW + 3600, duration = 3600)
+            )
+        )
+        val session = EpgBouquetSession()
+        session.context = InstrumentationRegistry.getInstrumentation().targetContext
+        session.listState = EpgBouquetListState()
+        session.refresh = ComposeRefreshState()
+        session.bouquetRef = BOUQUET
+        session.timeSec = NOW.toInt()
+        session.profileId = PROFILE
+        session.epgDao = dao
+        session.shouldSkipReceiverHttp = { hasCache ->
+            ConnectionStatus(
+                session = ConnectionStatus.Session.Offline
+            ).shouldSkipReceiverHttp(hasCache)
+        }
+        session.loadEvents = { _, _ -> error("http") }
+        session.loadAndApply(forceRefresh = false)
+        assertEquals(listOf("News"), session.listState!!.items.map { it.title })
+    }
+
+    @Test
     fun checkingWithCachePaintsThenHitsHttp() = runBlocking {
         val dao = db.epgDao()
         val chunk = MultiEpgWindows.chunkContaining(NOW)
@@ -128,14 +157,18 @@ class EpgBouquetCacheTest {
         assertNull(emptyMessage)
     }
 
-    private fun sampleEvent(): EpgEventEntity = EpgEventEntity(
+    private fun sampleEvent(
+        title: String = "News",
+        start: Long = NOW,
+        duration: Long = 3600
+    ): EpgEventEntity = EpgEventEntity(
         profileId = PROFILE,
         bouquetRef = BOUQUET,
         serviceRef = CHANNEL,
-        eventId = "1",
-        start = NOW,
-        duration = 3600,
-        title = "News",
+        eventId = title,
+        start = start,
+        duration = duration,
+        title = title,
         description = "",
         descriptionExtended = "",
         serviceName = "Das Erste HD"
