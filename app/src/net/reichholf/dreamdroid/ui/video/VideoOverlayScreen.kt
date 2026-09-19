@@ -164,6 +164,8 @@ fun VideoOverlayScreen(
                 .padding(vertical = 8.dp)
                 .clip(RoundedCornerShape(4.dp))
                 // Nested chrome on the overlay surface — not primaryContainer (loud blue in night).
+                // Parent overlay_root is faded to VideoOverlayFragment.overlayAlpha so video
+                // stays visible; keep this a phone/tablet surface token, not Leanback gray.
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(horizontal = 8.dp, vertical = 4.dp)
                 .testTag(VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG),

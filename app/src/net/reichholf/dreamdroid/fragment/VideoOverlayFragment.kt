@@ -982,6 +982,7 @@ class VideoOverlayFragment :
 
         private val LOG_TAG: String = VideoOverlayFragment::class.java.simpleName
 
+        /** Live TV chrome stays slightly see-through so the video is always visible. */
         var overlayAlpha: Float = 0.85f
 
         var seekStepSize: Float = 0.02f

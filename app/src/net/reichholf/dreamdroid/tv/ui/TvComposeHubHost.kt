@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,12 +31,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.NavigationDrawerItem
@@ -59,12 +65,15 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
  * - **iv-b..e:** Compose hub beachhead through movie rows.
  * - **iv-f:** Compose hub is the TV default; Leanback browse path removed.
- *   Stream Intent edge unchanged. `leanback` kept for VideoOverlay only.
+ *   Stream Intent edge unchanged. Overlay zap list is Compose TV cards.
  */
 object TvComposeHubHost {
     const val HEADER_SETTINGS_ID: String = "settings"
@@ -87,6 +96,13 @@ object TvComposeHubHost {
         BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
         BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
         BrowseItem.Kind.Reload -> null
+    }
+
+    /** Same badges the Leanback Live TV settings cards used. */
+    fun settingsBadgeRes(kind: BrowseItem.Kind): Int = when (kind) {
+        BrowseItem.Kind.Reload -> R.drawable.ic_badge_reload
+        BrowseItem.Kind.Preferences -> R.drawable.ic_badge_settings
+        BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
     fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
@@ -322,7 +338,7 @@ fun ComposeTvHubChrome(
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {}
 ) {
-    MaterialTheme {
+    DreamDroidTvTheme {
         NavigationDrawer(
             modifier = modifier
                 .fillMaxSize()
@@ -343,6 +359,7 @@ fun ComposeTvHubChrome(
                                         .height(24.dp)
                                 )
                             },
+                            colors = dreamDroidTvDrawerItemColors(),
                             modifier = Modifier
                                 .testTag("hub_header_${header.id}")
                                 .onFocusChanged { focusState ->
@@ -464,18 +481,27 @@ fun HubSettingsRow(
             Surface(
                 onClick = { onSettingsClick(kind) },
                 modifier = Modifier
-                    .width(180.dp)
-                    .height(100.dp)
+                    .width(200.dp)
                     .testTag("hub_settings_${kind.name.lowercase()}"),
+                colors = dreamDroidTvCardColors(),
                 scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(text = title, style = MaterialTheme.typography.titleMedium)
+                Column {
+                    Image(
+                        painter = painterResource(TvComposeHubHost.settingsBadgeRes(kind)),
+                        contentDescription = title,
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .testTag("hub_settings_icon_${kind.name.lowercase()}")
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
                 }
             }
         }
@@ -489,9 +515,18 @@ fun HubServiceRow(
     bouquetRef: String,
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currentServiceRef: String? = null
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(currentServiceRef, services) {
+        val index = services.indexOfFirst { it.serviceReference == currentServiceRef }
+        if (index >= 0) {
+            listState.scrollToItem(index)
+        }
+    }
     LazyRow(
+        state = listState,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
             .fillMaxWidth()
@@ -535,6 +570,7 @@ private fun HubServiceCard(service: ServiceNowNext, onClick: () -> Unit) {
         modifier = Modifier
             .width(200.dp)
             .testTag("hub_service_card"),
+        colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {
         Column {
@@ -593,6 +629,7 @@ private fun HubMovieCard(movie: Movie, onClick: () -> Unit) {
             .width(200.dp)
             .height(160.dp)
             .testTag("hub_movie_card"),
+        colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {
         Column(
@@ -634,6 +671,7 @@ private fun HubPlaceholderRow() {
                     .width(180.dp)
                     .height(100.dp)
                     .testTag("hub_placeholder_card_$index"),
+                colors = dreamDroidTvCardColors(),
                 scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
             ) {
                 Box(

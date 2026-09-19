@@ -17,6 +17,7 @@ import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -83,6 +84,11 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+    }
+
+    @Test
+    fun liveTvOverlayKeepsSeeThroughAlpha() {
+        assertEquals(0.85f, VideoOverlayFragment.overlayAlpha, 0.001f)
     }
 
     @Test

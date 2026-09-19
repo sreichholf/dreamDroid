@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.SpanStyle
@@ -18,6 +17,7 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
@@ -40,8 +40,8 @@ fun ImageCardContent(
     } else {
         dimensionResource(R.dimen.card_width)
     }
-    val titleColor = Color.White
-    val bodyColor = Color.White.copy(alpha = 0.85f)
+    val titleColor = LocalContentColor.current
+    val bodyColor = titleColor.copy(alpha = 0.8f)
     val hasNext = nextStart.isNotEmpty() || nextTitle.isNotEmpty()
     val hasContent = contentPrimary.isNotEmpty() || hasNext
     Column(

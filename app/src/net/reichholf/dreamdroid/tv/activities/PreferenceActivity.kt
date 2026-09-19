@@ -2,9 +2,9 @@ package net.reichholf.dreamdroid.tv.activities
 
 import android.app.Activity
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.remember
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -20,13 +20,14 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  * TV settings / profile host (Phase 3.1d). Compose Material 3; PreferenceManager keys
  * match the old Leanback XML screens.
  */
-class PreferenceActivity : ComponentActivity() {
+class PreferenceActivity : AppCompatActivity() {
 
     private var profileState: ProfileEditState? = null
     private var editingProfile: Profile? = null
     private var isProfileMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val type = intent.getStringExtra(KEY_PREFS_TYPE)
