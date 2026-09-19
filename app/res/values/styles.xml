@@ -118,7 +118,7 @@
         <item name="cornerSize">16dp</item>
     </style>
 
-    <style name="ToolbarStyle" parent="@style/Widget.Material3.Toolbar">
+    <style name="ToolbarStyle" parent="@style/Widget.Material3.Toolbar.OnSurface">
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
