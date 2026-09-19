@@ -4,17 +4,20 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +30,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +45,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -57,24 +62,22 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadEpgNowNext
-import net.reichholf.dreamdroid.enigma.loadMovieList
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.tv.activities.MainActivity
 import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
@@ -183,12 +186,22 @@ object TvComposeHubHost {
     fun shouldShowBrowseError(
         selectedHeaderId: String,
         loading: Boolean,
-        errorText: String?
-    ): Boolean = !loading && errorText != null && selectedHeaderId != HEADER_SETTINGS_ID
+        errorText: String?,
+        hasPaintedContent: Boolean = false
+    ): Boolean = shouldShowTvBrowseError(
+        selectedHeaderId,
+        loading,
+        errorText,
+        hasPaintedContent
+    )
 
     fun install(activity: ComponentActivity) {
+        val host = activity as? MainActivity
         activity.setContent {
-            ComposeTvHubApp(activity = activity)
+            ComposeTvHubApp(
+                activity = activity,
+                onRecheckProfile = { host?.recheckProfile() }
+            )
         }
     }
 }
@@ -198,7 +211,33 @@ data class HubNavHeader(val id: String, val title: String)
 data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext>)
 
 @Composable
-fun ComposeTvHubApp(activity: ComponentActivity) {
+fun ComposeTvHubApp(
+    activity: ComponentActivity,
+    onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() }
+) {
+    val context = LocalContext.current
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val profile = DreamDroid.getCurrentProfile()
+    // One blocking Room read seeds the gate so Checking never flashes ProfileCheck.
+    // Later refreshes run on IO when the profile or session changes.
+    var hasCache by remember(profile.id) {
+        mutableStateOf(hasUseDrivenCache(profile, context))
+    }
+    LaunchedEffect(profile.id, status.session) {
+        hasCache = withContext(Dispatchers.IO) {
+            hasUseDrivenCache(profile, context)
+        }
+    }
+    val streamingEnabled = status.allowsStreaming()
+    val failedMessage = status.lastFailure?.userMessage(context)?.takeIf { it.isNotBlank() }
+        ?: stringResource(R.string.connection_error)
+    val gate = tvSessionGate(
+        status = status,
+        hasCache = hasCache,
+        checkingMessage = stringResource(R.string.checking_connection),
+        failedTitle = String.format("%s@%s:%s", profile.user, profile.host, profile.port),
+        failedMessage = failedMessage
+    )
     val settingsTitle = stringResource(R.string.preferences)
     val placeholderTitle = stringResource(R.string.services)
     var reloadToken by remember { mutableIntStateOf(0) }
@@ -218,14 +257,18 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         }
     }
 
-    LaunchedEffect(reloadToken) {
+    LaunchedEffect(reloadToken, status.session) {
         loading = true
         errorText = null
         movieError = null
         moviesByLocation = emptyMap()
-        val result = loadComposeHubBouquets(activity)
+        val result = loadTvHubBrowse(activity)
         loading = false
-        errorText = result.errorText
+        errorText = unavailableTvHubMessage(
+            result.usedCache,
+            result.rows.isNotEmpty(),
+            result.errorText
+        )
         bouquetRows = result.rows
         movieLocations = result.locations
         val stillValid = selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID ||
@@ -237,7 +280,7 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     }
 
     // Leanback parity: load movies for a location only when its header is selected.
-    LaunchedEffect(selectedHeaderId, reloadToken) {
+    LaunchedEffect(selectedHeaderId, reloadToken, status.session) {
         val dirname =
             TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return@LaunchedEffect
         if (dirname in moviesByLocation) {
@@ -245,12 +288,15 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         }
         movieLoading = true
         movieError = null
-        val result = loadMovieList(activity, listOf(NameValuePair("dirname", dirname)))
+        val result = loadTvHubMovies(activity, dirname)
         movieLoading = false
-        if (result.success) {
+        movieError = unavailableTvHubMessage(
+            result.usedCache,
+            !result.movies.isNullOrEmpty(),
+            result.errorText
+        )
+        if (result.movies != null) {
             moviesByLocation = moviesByLocation + (dirname to result.movies)
-        } else {
-            movieError = result.errorText
         }
     }
 
@@ -272,6 +318,23 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     }
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
+    }
+    val openProfiles = {
+        val intent = TvComposeHubHost.preferenceIntent(activity, BrowseItem.Kind.Profile)
+        if (intent != null) {
+            preferenceLauncher.launch(intent)
+        }
+    }
+
+    if (gate is TvSessionGate.Checking || gate is TvSessionGate.Failed) {
+        DreamDroidTvTheme {
+            TvProfileCheckScreen(
+                gate = gate,
+                onRecheck = onRecheckProfile,
+                onProfiles = openProfiles
+            )
+        }
+        return
     }
 
     ComposeTvHubChrome(
@@ -300,58 +363,20 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         loading = loading,
         movieLoading = movieLoading,
         errorText = errorText ?: movieError,
+        streamingEnabled = streamingEnabled,
         onServiceClick = { service, bouquetRef ->
             openServiceStream(activity, service, bouquetRef)
         },
         onMovieClick = { movie ->
             openMovieStream(activity, movie)
+        },
+        sessionChipLabel = stringResource(status.chipLabelRes()),
+        onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
+            onRecheckProfile
+        } else {
+            null
         }
     )
-}
-
-private data class HubLoadResult(
-    val rows: List<HubBouquetRow>,
-    val locations: List<String>,
-    val errorText: String?
-)
-
-/**
- * Prefetch locations/tags (Leanback parity), then bouquets + now/next per bouquet.
- * A failed bouquet is skipped so other rows can still appear.
- */
-private suspend fun loadComposeHubBouquets(context: Context): HubLoadResult {
-    withContext(Dispatchers.IO) {
-        val http = EnigmaHttp()
-        if (DreamDroid.getLocations().size <= 1) {
-            if (!DreamDroid.loadLocations(http)) {
-                Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")
-            }
-        }
-        if (DreamDroid.getTags().size <= 1) {
-            if (!DreamDroid.loadTags(http)) {
-                Log.e(DreamDroid.LOG_TAG, "ERROR loading tags")
-            }
-        }
-    }
-    val locations = DreamDroid.getLocations().toList()
-    val bouquetParams = listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
-    val bouquetResult = loadServiceList(context, bouquetParams)
-    if (!bouquetResult.success) {
-        return HubLoadResult(emptyList(), locations, bouquetResult.errorText)
-    }
-    val rows = ArrayList<HubBouquetRow>()
-    var lastError: String? = null
-    for (bouquet in bouquetResult.services) {
-        val ref = bouquet.reference
-        if (ref.isBlank()) continue
-        val epg = loadEpgNowNext(context, listOf(NameValuePair("bRef", ref)))
-        if (!epg.success) {
-            lastError = epg.errorText
-            continue
-        }
-        rows.add(HubBouquetRow(bouquet = bouquet, services = epg.rows))
-    }
-    return HubLoadResult(rows, locations, lastError)
 }
 
 private fun openServiceStream(
@@ -387,129 +412,269 @@ fun ComposeTvHubChrome(
     loading: Boolean = false,
     movieLoading: Boolean = false,
     errorText: String? = null,
+    streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
-    onMovieClick: (Movie) -> Unit = {}
+    onMovieClick: (Movie) -> Unit = {},
+    sessionChipLabel: String? = null,
+    onSessionRecheck: (() -> Unit)? = null,
+    sessionRecheckLabel: String? = null
 ) {
+    var showStreamUnavailable by remember { mutableStateOf(false) }
+    val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
+    val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
+    val hasPaintedContent = selectedBouquet?.services?.isNotEmpty() == true ||
+        (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty())
+    val gatedServiceClick: (ServiceNowNext, String?) -> Unit = { service, bouquetRef ->
+        if (!streamingEnabled) {
+            showStreamUnavailable = true
+        } else {
+            onServiceClick(service, bouquetRef)
+        }
+    }
+    val gatedMovieClick: (Movie) -> Unit = { movie ->
+        if (!streamingEnabled) {
+            showStreamUnavailable = true
+        } else {
+            onMovieClick(movie)
+        }
+    }
     DreamDroidTvTheme {
-        NavigationDrawer(
-            modifier = modifier
-                .fillMaxSize()
-                .testTag("compose_tv_hub_chrome"),
-            drawerContent = {
-                Column(
-                    modifier = Modifier.padding(vertical = 24.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    headers.forEach { header ->
-                        NavigationDrawerItem(
-                            selected = header.id == selectedHeaderId,
-                            onClick = { onHeaderSelected(header.id) },
-                            leadingContent = {
-                                Box(
-                                    modifier = Modifier
-                                        .width(24.dp)
-                                        .height(24.dp)
-                                )
-                            },
-                            colors = dreamDroidTvDrawerItemColors(),
-                            modifier = Modifier
-                                .testTag("hub_header_${header.id}")
-                                .onFocusChanged { focusState ->
-                                    if (focusState.isFocused) {
-                                        onHeaderSelected(header.id)
+        Box(modifier = Modifier.fillMaxSize()) {
+            NavigationDrawer(
+                modifier = modifier
+                    .fillMaxSize()
+                    .testTag("compose_tv_hub_chrome"),
+                drawerContent = {
+                    Column(
+                        modifier = Modifier.padding(vertical = 24.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        headers.forEach { header ->
+                            NavigationDrawerItem(
+                                selected = header.id == selectedHeaderId,
+                                onClick = { onHeaderSelected(header.id) },
+                                leadingContent = {
+                                    Box(
+                                        modifier = Modifier
+                                            .width(24.dp)
+                                            .height(24.dp)
+                                    )
+                                },
+                                colors = dreamDroidTvDrawerItemColors(),
+                                modifier = Modifier
+                                    .testTag("hub_header_${header.id}")
+                                    .onFocusChanged { focusState ->
+                                        if (focusState.isFocused) {
+                                            onHeaderSelected(header.id)
+                                        }
                                     }
-                                }
+                            ) {
+                                Text(text = header.title)
+                            }
+                        }
+                    }
+                }
+            ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(24.dp)
+                        .testTag("compose_tv_hub_rows"),
+                    verticalArrangement = Arrangement.spacedBy(24.dp),
+                    contentPadding = PaddingValues(bottom = 48.dp)
+                ) {
+                    item {
+                        val title = headers.firstOrNull { header ->
+                            header.id == selectedHeaderId
+                        }?.title.orEmpty()
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = header.title)
+                            Text(
+                                text = title,
+                                style = MaterialTheme.typography.headlineSmall,
+                                modifier = Modifier.weight(1f)
+                            )
+                            if (sessionChipLabel != null) {
+                                HubSessionStatus(
+                                    label = sessionChipLabel,
+                                    recheckLabel = sessionRecheckLabel
+                                        ?: stringResource(R.string.recheck),
+                                    onRecheck = onSessionRecheck
+                                )
+                            }
+                        }
+                    }
+                    if (loading) {
+                        item {
+                            Text(
+                                text = stringResource(R.string.loading),
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.testTag("hub_loading")
+                            )
+                        }
+                    }
+                    if (
+                        TvComposeHubHost.shouldShowBrowseError(
+                            selectedHeaderId,
+                            loading,
+                            errorText,
+                            hasPaintedContent
+                        )
+                    ) {
+                        item {
+                            Text(
+                                text = errorText.orEmpty(),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.testTag("hub_error")
+                            )
+                        }
+                    }
+                    if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
+                        item {
+                            HubSettingsRow(
+                                settingsItems = settingsItems,
+                                onSettingsClick = onSettingsClick
+                            )
+                        }
+                    } else {
+                        if (selectedBouquet != null) {
+                            item {
+                                HubServiceRow(
+                                    bouquetRef = selectedBouquet.bouquet.reference,
+                                    services = selectedBouquet.services,
+                                    streamingEnabled = streamingEnabled,
+                                    onServiceClick = gatedServiceClick
+                                )
+                            }
+                        } else if (movieDir != null) {
+                            if (movieLoading && movieDir !in moviesByLocation) {
+                                item {
+                                    Text(
+                                        text = stringResource(R.string.loading),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.testTag("hub_movie_loading")
+                                    )
+                                }
+                            } else {
+                                item {
+                                    HubMovieRow(
+                                        dirname = movieDir,
+                                        movies = moviesByLocation[movieDir].orEmpty(),
+                                        streamingEnabled = streamingEnabled,
+                                        onMovieClick = gatedMovieClick
+                                    )
+                                }
+                            }
+                        } else if (!loading) {
+                            item {
+                                HubPlaceholderRow()
+                            }
                         }
                     }
                 }
             }
+            if (showStreamUnavailable) {
+                TvNeedsReceiverOverlay(onDismiss = { showStreamUnavailable = false })
+            }
+        }
+    }
+}
+
+/** TV-focusable Offline stream explain. OK dismisses; not a Toast. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun TvNeedsReceiverOverlay(
+    onDismiss: () -> Unit,
+    modifier: Modifier = Modifier,
+    testTag: String = "hub_stream_unavailable"
+) {
+    val okFocus = remember { FocusRequester() }
+    BackHandler(onBack = onDismiss)
+    LaunchedEffect(Unit) {
+        try {
+            okFocus.requestFocus()
+        } catch (_: IllegalStateException) {
+            // Overlay not attached yet.
+        }
+    }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .focusGroup()
+            .testTag(testTag),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier
+                .width(480.dp)
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            LazyColumn(
+            Text(
+                text = stringResource(R.string.session_needs_receiver),
+                style = MaterialTheme.typography.headlineSmall
+            )
+            Text(
+                text = stringResource(R.string.session_needs_receiver_long),
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Surface(
+                onClick = onDismiss,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-                    .testTag("compose_tv_hub_rows"),
-                verticalArrangement = Arrangement.spacedBy(24.dp),
-                contentPadding = PaddingValues(bottom = 48.dp)
+                    .focusRequester(okFocus)
+                    .testTag("${testTag}_ok"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
             ) {
-                item {
-                    val title = headers.firstOrNull { it.id == selectedHeaderId }?.title.orEmpty()
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
-                }
-                if (loading) {
-                    item {
-                        Text(
-                            text = stringResource(R.string.loading),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.testTag("hub_loading")
-                        )
-                    }
-                }
-                if (
-                    TvComposeHubHost.shouldShowBrowseError(
-                        selectedHeaderId,
-                        loading,
-                        errorText
-                    )
-                ) {
-                    item {
-                        Text(
-                            text = errorText.orEmpty(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.testTag("hub_error")
-                        )
-                    }
-                }
-                if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
-                    item {
-                        HubSettingsRow(
-                            settingsItems = settingsItems,
-                            onSettingsClick = onSettingsClick
-                        )
-                    }
-                } else {
-                    val selectedBouquet = bouquetRows.firstOrNull {
-                        it.bouquet.reference == selectedHeaderId
-                    }
-                    val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
-                    if (selectedBouquet != null) {
-                        item {
-                            HubServiceRow(
-                                bouquetRef = selectedBouquet.bouquet.reference,
-                                services = selectedBouquet.services,
-                                onServiceClick = onServiceClick
-                            )
-                        }
-                    } else if (movieDir != null) {
-                        if (movieLoading && movieDir !in moviesByLocation) {
-                            item {
-                                Text(
-                                    text = stringResource(R.string.loading),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.testTag("hub_movie_loading")
-                                )
-                            }
-                        } else {
-                            item {
-                                HubMovieRow(
-                                    dirname = movieDir,
-                                    movies = moviesByLocation[movieDir].orEmpty(),
-                                    onMovieClick = onMovieClick
-                                )
-                            }
-                        }
-                    } else if (!loading) {
-                        item {
-                            HubPlaceholderRow()
-                        }
-                    }
-                }
+                Text(
+                    text = stringResource(R.string.ok),
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
+        }
+    }
+}
+
+/** Persistent Online / Offline / Checking chip. Recheck is focusable when Offline / failed. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubSessionStatus(
+    label: String,
+    recheckLabel: String,
+    onRecheck: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier
+                .testTag("hub_session_chip")
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+        if (onRecheck != null) {
+            Surface(
+                onClick = onRecheck,
+                modifier = Modifier.testTag("hub_session_recheck"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+            ) {
+                Text(
+                    text = recheckLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
         }
     }
@@ -571,7 +736,8 @@ fun HubServiceRow(
     currentServiceRef: String? = null,
     firstItemFocusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
-    onScrollInProgress: ((Boolean) -> Unit)? = null
+    onScrollInProgress: ((Boolean) -> Unit)? = null,
+    streamingEnabled: Boolean = true
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(currentServiceRef, services) {
@@ -613,7 +779,8 @@ fun HubServiceRow(
                 } else {
                     Modifier
                 },
-                onFocused = onUserInteraction
+                onFocused = onUserInteraction,
+                streamingEnabled = streamingEnabled
             )
         }
     }
@@ -625,7 +792,8 @@ private fun HubServiceCard(
     service: ServiceNowNext,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    onFocused: (() -> Unit)? = null
+    onFocused: (() -> Unit)? = null,
+    streamingEnabled: Boolean = true
 ) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
@@ -653,6 +821,7 @@ private fun HubServiceCard(
         modifier = modifier
             .width(200.dp)
             .testTag("hub_service_card")
+            .onlineOnlyLook(!streamingEnabled)
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
                     onFocused?.invoke()
@@ -689,7 +858,8 @@ fun HubMovieRow(
     dirname: String,
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    streamingEnabled: Boolean = true
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -700,7 +870,8 @@ fun HubMovieRow(
         items(movies, key = { it.reference + "|" + it.fileName }) { movie ->
             HubMovieCard(
                 movie = movie,
-                onClick = { onMovieClick(movie) }
+                onClick = { onMovieClick(movie) },
+                streamingEnabled = streamingEnabled
             )
         }
     }
@@ -708,7 +879,7 @@ fun HubMovieRow(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubMovieCard(movie: Movie, onClick: () -> Unit) {
+private fun HubMovieCard(movie: Movie, onClick: () -> Unit, streamingEnabled: Boolean = true) {
     val descriptionEx = movie.descriptionExtended.replace("\\n", "\n")
     val content = if (descriptionEx.isNotEmpty()) descriptionEx else movie.description
     Surface(
@@ -716,7 +887,8 @@ private fun HubMovieCard(movie: Movie, onClick: () -> Unit) {
         modifier = Modifier
             .width(200.dp)
             .height(160.dp)
-            .testTag("hub_movie_card"),
+            .testTag("hub_movie_card")
+            .onlineOnlyLook(!streamingEnabled),
         colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
     ) {

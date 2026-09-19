@@ -1,7 +1,7 @@
 # Offline cache and unified errors
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
-**Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub / widget still follow.  
+**Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub session, Room cache paint, and Online-only streaming have landed. Widget still follows.  
 **Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold tablet rail, overlay shell, or Glance-only widget into leftover work.
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs).
@@ -24,7 +24,7 @@ This plan unifies **session connectivity** with a **use-driven Room cache** so a
 | Online-only actions | Stay visible, **look disabled**, still tappable. Tap **explains** (“Needs the receiver”). Do not use M3 `enabled = false` (it swallows clicks). |
 | Snackbar | Material 3, **low priority only**: Online mutation results (box `statetext` / `BoxRejected`). Never the session “cannot connect” surface. |
 | Writes in v1 | Read-only cache. No optimistic zap, no queued remote keys, no offline timer edits. |
-| Phone first | TV hub / widget follow after the phone shell works. Widget keeps Toast (no Scaffold). |
+| Phone first | Phone shell shipped. TV hub session / cache / Online-only streaming shipped. Widget still follows (Toast, no Scaffold). |
 
 ## 2. Why this exists
 
@@ -216,7 +216,7 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 - Idle / full EPG sync, AutoTimer, OpenWebif-only APIs
 - Caching Provider / All Services
 - Optimistic offline writes or a command queue
-- TV hub offline (follow-up; do not regress Compose TV)
+- TV hub session / Room cache / Online-only streaming shipped; widget still follows
 - OS `ConnectivityManager` as a third copy — box unreachable is enough for v1
 - Folding tablet `NavigationRail`, video overlay shell, Glance-only widget, or `IndeterminateProgressHost` replacement into these PRs
 - Changing MultiEPG zoom/TTL/retention defaults

@@ -14,8 +14,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
@@ -226,6 +228,32 @@ class TvMultiEpgScreenTest {
             composeRule.waitForIdle()
         }
         assertEquals(true, streamed)
+    }
+
+    @Test
+    fun detailHidesStreamWhenStreamingDisabled() {
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    TvMultiEpgEventDetail(
+                        event = Event(
+                            eventId = "1",
+                            title = "News",
+                            serviceReference = "1:0:1:1:0:0:0:0:0:0:",
+                            serviceName = "Das Erste"
+                        ),
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
+                        progress = null,
+                        onProgress = {},
+                        onDismiss = {},
+                        streamingEnabled = false
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("tv_multi_epg_detail_stream").assertCountEquals(0)
+        composeRule.onNodeWithTag("tv_multi_epg_detail_set_timer").assertExists()
+        composeRule.onNodeWithTag("tv_multi_epg_detail_imdb").assertExists()
     }
 
     @Test
