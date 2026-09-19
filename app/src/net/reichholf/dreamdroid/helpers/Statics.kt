@@ -48,7 +48,6 @@ object Statics {
     const val ITEM_TAGS: Int = R.id.menu_tags
     const val ITEM_NEW_TIMER: Int = 0x6032
     const val ITEM_CLEANUP: Int = R.id.menu_cleanup
-    const val ITEM_TOGGLE_ENABLED: Int = R.id.menu_toggle_enabled
     const val ITEM_HOME: Int = 0x6039
     const val ITEM_DETECT_DEVICES: Int = R.id.menu_detect_devices
     const val ITEM_SIGNAL: Int = 0x6040
@@ -57,7 +56,6 @@ object Statics {
     const val ITEM_BOUQUETEPG: Int = 0x6042
     const val ITEM_PICK_BEGIN_TIME: Int = 0x6043
     const val ITEM_PICK_END_TIME: Int = 0x6044
-    const val ITEM_EDIT: Int = R.id.menu_edit
 
     const val REQUEST_EDIT_TIMER: Int = 0x5000
     const val REQUEST_PICK_SERVICE: Int = 0x5001

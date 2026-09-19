@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.ui.timers
 
 import android.app.Activity
 import android.content.Intent
+import android.view.MenuInflater
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -22,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
@@ -35,6 +38,8 @@ import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -323,18 +328,72 @@ class TimerEditScreenTest {
         composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
-    private fun sessionFrom(timer: Timer): TimerEditSession {
+    @Test
+    fun createMenuOmitsDeleteAndEditMenuIncludesIt() {
+        val createMenu = menuFrom(sessionFrom(sampleTimer(), isCreate = true))
+        assertNotNull(createMenu.findItem(R.id.menu_save))
+        assertNull(createMenu.findItem(R.id.menu_delete))
+
+        val editMenu = menuFrom(sessionFrom(sampleTimer(), isCreate = false))
+        assertNotNull(editMenu.findItem(R.id.menu_save))
+        assertNotNull(editMenu.findItem(R.id.menu_delete))
+        assertTrue(editMenu.findItem(R.id.menu_delete).isEnabled)
+    }
+
+    @Test
+    fun requestDeleteAsksForConfirmOnlyWhenEditing() {
+        val creating = sessionFrom(sampleTimer(), isCreate = true)
+        var createRequested = false
+        creating.onRequestDeleteConfirm = { createRequested = true }
+        creating.requestDelete()
+        assertFalse(createRequested)
+
+        val editing = sessionFrom(sampleTimer(), isCreate = false)
+        var editRequested = false
+        editing.onRequestDeleteConfirm = { editRequested = true }
+        editing.requestDelete()
+        assertTrue(editRequested)
+    }
+
+    @Test
+    fun failedDeleteShowsBoxErrorAfterSpinnerClears() {
+        val session = sessionFrom(sampleTimer(), isCreate = false)
+        session.reload()
+        session.progress = IndeterminateProgressState(message = "Deleting")
+        composeRule.setContent {
+            DreamDroidTheme {
+                timerEditForm(session.editState)
+            }
+        }
+
+        session.onSaveResult(
+            SimpleResult(state = Python.FALSE, stateText = "Timer is currently recording")
+        )
+        composeRule.waitForIdle()
+
+        assertNull(session.progress)
+        composeRule.onNodeWithText("Timer is currently recording").assertIsDisplayed()
+    }
+
+    private fun sessionFrom(timer: Timer, isCreate: Boolean = true): TimerEditSession {
         val session = TimerEditSession(
             routeTag = "timer_edit:new:1893456000",
             remountEpoch = 0,
             timer = timer,
-            timerOld = null,
-            isCreate = true,
+            timerOld = if (isCreate) null else timer.copy(),
+            isCreate = isCreate,
             selectedTags = ArrayList(),
             checkedDays = BooleanArray(7)
         )
         session.context = InstrumentationRegistry.getInstrumentation().targetContext
         return session
+    }
+
+    private fun menuFrom(session: TimerEditSession): MenuBuilder {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val menu = MenuBuilder(context)
+        session.onCreateMenu(menu, MenuInflater(context))
+        return menu
     }
 
     @Composable

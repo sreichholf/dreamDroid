@@ -21,8 +21,7 @@ fun ComposeView.bindTimerListScreen(
     state: TimerListState,
     refresh: ComposeRefreshState,
     onRefresh: () -> Unit,
-    onItemClick: (TimerListItem) -> Unit,
-    onItemLongClick: (TimerListItem) -> Unit
+    onItemClick: (TimerListItem) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
@@ -34,8 +33,7 @@ fun ComposeView.bindTimerListScreen(
             ) {
                 TimerListScreen(
                     items = state.items,
-                    onItemClick = onItemClick,
-                    onItemLongClick = onItemLongClick
+                    onItemClick = onItemClick
                 )
             }
         }

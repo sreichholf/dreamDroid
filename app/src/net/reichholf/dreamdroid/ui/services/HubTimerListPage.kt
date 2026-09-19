@@ -8,7 +8,6 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.view.ActionMode
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -34,16 +33,13 @@ import net.reichholf.dreamdroid.enigma.loadTimerList
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.TimerDao
 import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
@@ -72,8 +68,6 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
     var mutateJob by remember { mutableStateOf<Job?>(null) }
 
     val session = remember { HubTimerListSession() }
-    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
-    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.handle = handle
     session.context = context
     session.activity = activity
@@ -94,7 +88,6 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         session.setToolbarTitle(context.getString(R.string.timer))
         onDispose {
             activity.removeMenuProvider(session)
-            session.finishActionMode()
             session.dismissProgress()
             loadJob?.cancel()
             loadJob = null
@@ -137,24 +130,9 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         } else {
             TimerListScreen(
                 items = listState.items,
-                onItemClick = { session.onItemClick(it) },
-                onItemLongClick = { session.onItemLongClick(it) }
+                onItemClick = { session.onItemClick(it) }
             )
         }
-    }
-
-    showDeleteConfirm?.let { title ->
-        ConfirmAlertDialog(
-            title = title,
-            message = stringResource(R.string.delete_confirm),
-            onDismiss = { showDeleteConfirm = null },
-            onConfirm = {
-                session.confirmDeleteSelected()
-                showDeleteConfirm = null
-            },
-            confirmLabel = stringResource(R.string.delete),
-            destructive = true
-        )
     }
 
     IndeterminateProgressHost(session.progress)
@@ -183,52 +161,15 @@ class HubTimerListSession :
     var loadTimers: suspend (android.content.Context) -> TimerListLoadResult =
         { context -> loadTimerList(context) }
 
-    var onRequestDeleteConfirm: ((String) -> Unit)? = null
-
     private val timers = ArrayList<TypedTimer>()
     private var selected: TypedTimer = TypedTimer()
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var mutateJob: Job? = null
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
-    private var actionMode: ActionMode? = null
-    private var actionModeActive = false
-
-    private val actionModeCallback = object : ActionMode.Callback {
-        override fun onCreateActionMode(mode: ActionMode, menu: Menu): Boolean {
-            mode.menuInflater.inflate(R.menu.timerlist_context, menu)
-            actionModeActive = true
-            return true
-        }
-
-        override fun onPrepareActionMode(mode: ActionMode, menu: Menu): Boolean {
-            val toggle = menu.findItem(R.id.menu_toggle_enabled)
-            if (selected.disabled == "0") {
-                toggle?.setTitle(R.string.disable)
-            } else {
-                toggle?.setTitle(R.string.enable)
-            }
-            return true
-        }
-
-        override fun onActionItemClicked(mode: ActionMode, item: MenuItem): Boolean {
-            mode.finish()
-            return onItemSelected(item.itemId)
-        }
-
-        override fun onDestroyActionMode(mode: ActionMode) {
-            actionModeActive = false
-            actionMode = null
-        }
-    }
 
     fun setToolbarTitle(title: String) {
         activity?.title = title
-    }
-
-    fun finishActionMode() {
-        actionMode?.finish()
-        actionMode = null
     }
 
     fun dismissProgress() {
@@ -335,76 +276,12 @@ class HubTimerListSession :
     fun onItemClick(item: TimerListItem) {
         if (item.index !in timers.indices) return
         selected = timers[item.index]
-        if (actionModeActive) {
-            return
-        }
         editTimer(selected, create = false)
-    }
-
-    fun onItemLongClick(item: TimerListItem) {
-        if (item.index !in timers.indices) return
-        selected = timers[item.index]
-        val act = activity ?: return
-        actionMode = act.startSupportActionMode(actionModeCallback)
     }
 
     private fun editTimer(timer: TypedTimer, create: Boolean) {
         val host = handle ?: return
         host.navigateToTimerEdit(timer, create)
-    }
-
-    private fun deleteTimerConfirm() {
-        val name = selected.name
-        onRequestDeleteConfirm?.invoke(name.orEmpty())
-    }
-
-    fun confirmDeleteSelected() {
-        deleteTimer(selected)
-    }
-
-    fun deleteTimer(timer: TypedTimer) {
-        if (progress != null) {
-            return
-        }
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
-            val params = Timer.getDeleteParams(timer)
-            mutateJob?.cancel()
-            mutateJob =
-                host.launchSimpleResultLoad(
-                    TimerDeleteRequestHandler(),
-                    params
-                ) { _, result, error ->
-                    onSimpleResult(result, error)
-                }
-            onMutateJob?.invoke(mutateJob)
-        }
-    }
-
-    private fun toggleTimerEnabled(timer: TypedTimer) {
-        if (progress != null) {
-            return
-        }
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            val timerNew = timer.copy(
-                disabled = if (timer.disabled == "1") "0" else "1"
-            )
-            progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-            val params = Timer.getSaveParams(timerNew, timer)
-            mutateJob?.cancel()
-            mutateJob =
-                host.launchSimpleResultLoad(
-                    TimerChangeRequestHandler(),
-                    params
-                ) { _, result, error ->
-                    onSimpleResult(result, error)
-                }
-            onMutateJob?.invoke(mutateJob)
-        }
     }
 
     private fun cleanupTimerList() {
@@ -449,16 +326,6 @@ class HubTimerListSession :
 
         Statics.ITEM_CLEANUP -> {
             cleanupTimerList()
-            true
-        }
-
-        Statics.ITEM_TOGGLE_ENABLED -> {
-            toggleTimerEnabled(selected)
-            true
-        }
-
-        Statics.ITEM_DELETE -> {
-            deleteTimerConfirm()
             true
         }
 

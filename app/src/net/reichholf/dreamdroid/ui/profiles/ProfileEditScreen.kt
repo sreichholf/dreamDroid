@@ -40,7 +40,8 @@ fun ProfileEditScreen(
     // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
     // and lift the FAB (#263). Bottom inset is PhoneNavHost when the shell
     // destination bar is hidden. Phone ProfileEditDestination passes
-    // showSaveFab=false; Save is toolbar R.menu.save. TV PreferenceActivity
+    // showSaveFab=false; Save (and Delete when editing) are toolbar
+    // [R.menu.save] / [R.menu.edit_delete]. TV PreferenceActivity
     // keeps the default in-content FAB.
     Scaffold(
         modifier = modifier.fillMaxSize(),

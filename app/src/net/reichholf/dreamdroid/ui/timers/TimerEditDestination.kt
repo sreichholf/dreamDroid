@@ -35,6 +35,9 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
+import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
+import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
@@ -62,8 +65,11 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
     }
     var showRepeatingsPicker by remember { mutableStateOf(false) }
     var showTagsPicker by remember { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
     var pickerKind by remember { mutableStateOf<TimerEditPicker?>(null) }
     val is24Hour = DateFormat.is24HourFormat(context)
+
+    session.onRequestDeleteConfirm = { showDeleteConfirm = true }
 
     DisposableEffect(handle, session, tag, remount) {
         handle.composeActivityResultListener = session
@@ -104,6 +110,17 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         mutating = session.progress != null,
         modifier = modifier
     )
+
+    if (showDeleteConfirm) {
+        ConfirmAlertDialog(
+            title = session.timer.name,
+            message = stringResource(R.string.delete_confirm),
+            onDismiss = { showDeleteConfirm = false },
+            onConfirm = { session.deleteTimer() },
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
+        )
+    }
 
     if (showRepeatingsPicker) {
         val days = context.resources.getTextArray(R.array.weekdays).map { it.toString() }
@@ -208,6 +225,7 @@ class TimerEditSession(
     var end: Int = 0
     private var tagsChanged = false
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
+    var onRequestDeleteConfirm: (() -> Unit)? = null
     private var locationsJob: kotlinx.coroutines.Job? = null
     private var saveJob: kotlinx.coroutines.Job? = null
     private var formHydrated = false
@@ -221,13 +239,27 @@ class TimerEditSession(
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.save, menu)
-        menu.findItem(Statics.ITEM_SAVE)?.isEnabled = (progress == null)
+        menuInflater.inflateSaveAndDelete(
+            menu,
+            canDelete = !isCreate,
+            actionsEnabled = progress == null
+        )
+    }
+
+    override fun onPrepareMenu(menu: Menu) {
+        val enabled = progress == null
+        menu.findItem(Statics.ITEM_SAVE)?.isEnabled = enabled
+        menu.findItem(Statics.ITEM_DELETE)?.isEnabled = enabled
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
         Statics.ITEM_SAVE -> {
             saveTimer()
+            true
+        }
+
+        Statics.ITEM_DELETE -> {
+            requestDelete()
             true
         }
 
@@ -355,6 +387,35 @@ class TimerEditSession(
             saveJob?.cancel()
             saveJob = host.launchSimpleResultLoad(
                 TimerChangeRequestHandler(),
+                params
+            ) { _, result, _ ->
+                onSaveResult(result)
+            }
+        }
+    }
+
+    fun requestDelete() {
+        if (isCreate || progress != null) {
+            return
+        }
+        onRequestDeleteConfirm?.invoke()
+    }
+
+    fun deleteTimer() {
+        if (isCreate || progress != null) {
+            return
+        }
+        val host = handle ?: return
+        val ctx = context ?: return
+        val toDelete = timerOld ?: timer
+        host.runOnlineOnly {
+            Log.i(LOG_TAG, "deleteTimer()")
+            editState.saveError = ""
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
+            val params = Timer.getDeleteParams(toDelete)
+            saveJob?.cancel()
+            saveJob = host.launchSimpleResultLoad(
+                TimerDeleteRequestHandler(),
                 params
             ) { _, result, _ ->
                 onSaveResult(result)
