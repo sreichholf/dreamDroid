@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,6 +43,7 @@ const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
 const val EPG_TIME_JUMP_NOW_TAG = "epg_time_jump_now"
 const val EPG_TIME_JUMP_PRIME_TAG = "epg_time_jump_prime"
+const val EPG_PICK_BOUQUET_CHIP_TAG = "epg_pick_bouquet_chip"
 
 data class EpgTimeJumpUi(
     val dateLabel: String,
@@ -51,6 +54,8 @@ data class EpgTimeJumpUi(
     val onPrime: () -> Unit
 )
 
+data class EpgBouquetPickUi(val bouquetName: String, val onPickBouquet: () -> Unit)
+
 @Composable
 fun EpgBouquetScreen(
     items: List<Event>,
@@ -59,6 +64,7 @@ fun EpgBouquetScreen(
     listState: LazyListState = rememberLazyListState(),
     scrollEpoch: Int = 0,
     emptyMessage: String? = null,
+    bouquetPick: EpgBouquetPickUi? = null,
     timeJump: EpgTimeJumpUi? = null
 ) {
     LaunchedEffect(scrollEpoch) {
@@ -69,6 +75,9 @@ fun EpgBouquetScreen(
 
     val loadingLabel = stringResource(R.string.loading)
     Column(modifier = modifier.fillMaxSize()) {
+        if (bouquetPick != null) {
+            EpgBouquetPickBar(bouquetPick)
+        }
         if (timeJump != null) {
             EpgTimeJumpBar(timeJump)
         }
@@ -98,6 +107,39 @@ fun EpgBouquetScreen(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EpgBouquetPickBar(pick: EpgBouquetPickUi) {
+    val label = pick.bouquetName.ifEmpty { stringResource(R.string.bouquet_overview) }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AssistChip(
+            onClick = pick.onPickBouquet,
+            label = {
+                Text(
+                    text = label,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_action_list),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(EPG_PICK_BOUQUET_CHIP_TAG)
+        )
     }
 }
 
