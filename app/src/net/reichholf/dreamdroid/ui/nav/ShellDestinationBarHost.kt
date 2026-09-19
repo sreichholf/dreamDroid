@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.view.View
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -13,9 +16,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.dimensionResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.services.TvMoviesDestinationRail
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
@@ -55,6 +61,15 @@ val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinati
 }
 
 /**
+ * True when the activity hosts [R.id.shell_destination_rail] (sw720dp). Hubs skip the
+ * bottom destination-bar spacer in that case — destinations live on the start rail.
+ */
+val LocalShellUsesDestinationRail = staticCompositionLocalOf { false }
+
+const val SHELL_HUB_DESTINATION_BAR_SPACER_TAG = "shell_hub_destination_bar_spacer"
+const val SHELL_HUB_NOW_PLAYING_SPACER_TAG = "shell_hub_now_playing_spacer"
+
+/**
  * Installs long-lived compositions on the activity shell chrome slots for the
  * lifetime of this host (the phone/tablet NavHost), then provides
  * [LocalShellDestinationBarController].
@@ -73,6 +88,9 @@ val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinati
 fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
     val controller = remember { ShellDestinationBarController() }
     val view = LocalView.current
+    val usesRail = remember(view) {
+        view.context.findActivity()?.findViewById<View?>(R.id.shell_destination_rail) != null
+    }
     DisposableEffect(view) {
         val activity = view.context.findActivity()
             ?: return@DisposableEffect onDispose { }
@@ -107,8 +125,42 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
             shellRail?.disposeComposition()
         }
     }
-    CompositionLocalProvider(LocalShellDestinationBarController provides controller) {
+    CompositionLocalProvider(
+        LocalShellDestinationBarController provides controller,
+        LocalShellUsesDestinationRail provides usesRail
+    ) {
         content()
+    }
+}
+
+/**
+ * Bottom space matching visible Coordinator chrome: now-playing strip when on, and the
+ * destination bar only on phone (tablet destinations are on the start rail).
+ */
+@Composable
+fun ShellHubBottomChromeSpacer(
+    nowPlayingStripEnabled: Boolean = false,
+    modifier: Modifier = Modifier
+) {
+    val showBar = !LocalShellUsesDestinationRail.current
+    if (!nowPlayingStripEnabled && !showBar) {
+        return
+    }
+    Column(modifier) {
+        if (nowPlayingStripEnabled) {
+            Spacer(
+                Modifier
+                    .height(dimensionResource(R.dimen.now_playing_strip_height))
+                    .testTag(SHELL_HUB_NOW_PLAYING_SPACER_TAG)
+            )
+        }
+        if (showBar) {
+            Spacer(
+                Modifier
+                    .height(dimensionResource(R.dimen.shell_destination_bar_height))
+                    .testTag(SHELL_HUB_DESTINATION_BAR_SPACER_TAG)
+            )
+        }
     }
 }
 

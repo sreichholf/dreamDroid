@@ -4,10 +4,8 @@ import android.app.Activity
 import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -26,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.zIndex
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -45,6 +42,7 @@ import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
+import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
@@ -57,9 +55,8 @@ private const val MODE_TIMER = "Timer"
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * Owns mode + bouquet/location tabs (parity with former ServiceListPager),
- * publishes [TvMoviesDestinationBar] through [RegisterShellDestinationBar] onto the
- * NavHost-owned [R.id.shell_destination_nav] Coordinator slot (Scaffold bottomBar inside
- * detail_view sits under the system nav — dualpane ScrollingViewBehavior),
+ * publishes [TvMoviesHubState] through [RegisterShellDestinationBar] (phone
+ * [R.id.shell_destination_nav] bar or tablet [R.id.shell_destination_rail]),
  * and routes MultiChoice / timer-edit results for the active child page.
  */
 @Composable
@@ -461,14 +458,8 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                     }
                 }
             }
-            // Reserve space for the Coordinator overlay (now-playing strip + destination bar).
-            if (destinationBarState.nowPlayingStripEnabled) {
-                Spacer(
-                    Modifier.height(dimensionResource(R.dimen.now_playing_strip_height))
-                )
-            }
-            Spacer(
-                Modifier.height(dimensionResource(R.dimen.shell_destination_bar_height))
+            ShellHubBottomChromeSpacer(
+                nowPlayingStripEnabled = destinationBarState.nowPlayingStripEnabled
             )
         }
     }
