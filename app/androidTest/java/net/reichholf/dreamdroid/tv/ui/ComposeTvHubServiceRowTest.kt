@@ -189,6 +189,47 @@ class ComposeTvHubServiceRowTest {
     }
 
     @Test
+    fun serviceGridInfoInvokesOnServiceInfoWithoutStreaming() {
+        var clicked: ServiceNowNext? = null
+        var info: ServiceNowNext? = null
+        var infoBouquet: String? = null
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel",
+            now = Event(title = "Now Show"),
+            next = Event(title = "Next Show", startTimeReadable = "20:00")
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
+                ) {
+                    HubServiceGrid(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, _ -> clicked = row },
+                        onServiceInfo = { row, ref ->
+                            info = row
+                            infoBouquet = ref
+                        }
+                    )
+                }
+            }
+        }
+        val node = composeRule.onNodeWithTag("hub_service_card")
+        node.assertIsDisplayed().assertHasClickAction()
+        node.requestFocus()
+        composeRule.waitForIdle()
+        node.performKeyInput { pressKey(Key.Info) }
+        composeRule.waitForIdle()
+        assertEquals(service, info)
+        assertEquals("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", infoBouquet)
+        assertEquals(null, clicked)
+    }
+
+    @Test
     fun bouquetSelectionShowsServiceRowHost() {
         val bouquet = Service(
             reference = "1:7:1:0:0:0:0:0:0:0:Favourites",
