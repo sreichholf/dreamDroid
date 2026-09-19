@@ -348,7 +348,7 @@ Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. TV is a ne
 
 | | |
 | --- | --- |
-| **Entry** | Compose TV hub **drawer** item (`HEADER_MULTIEPG_ID`, label `R.string.multiepg`) alongside bouquets and movie locations — not a Preferences card. Focus selects it; OK (drawer or content card) opens `MultiEpgActivity`. |
+| **Entry** | Compose TV hub **drawer** shortcut (`HEADER_MULTIEPG_ID`, label `R.string.multiepg`) alongside bouquets and movie locations. OK on the drawer item opens `MultiEpgActivity`. Focus does not replace hub content with a stub card. |
 | **Grid** | GraphMultiEPG channel rows × time bars; one D-pad cursor (`selectedServiceRef` + `selectedStartSec`); chrome (Now / ±day / zoom / bouquet) is a separate TV Surface row |
 | **Session** | Same `MultiEpgSession` + `MultiEpgSyncHolder.shared` Room `/web/epgmulti` cache as phone. No second sync. TV reads `SessionConnectionHolder` for `shouldSkipReceiverHttp` / Offline (same as phone `MultiEpgDestination`); peek Room first (stale-while-revalidate). Do not invent a second MultiEPG store. |
 | **Persist** | `MultiEpgPersistGate` (shared with phone). TV `knownTabRefs` comes from `UserBouquetCache.userBouquetTabs(loadServiceList(BOUQUETS_TV), excluded)` — never `{ true }`, never the phone tab strip. Fail-closed for empty known tabs, excluded refs, and FROM PROVIDERS. |

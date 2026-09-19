@@ -103,8 +103,9 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun multiEpgDrawerHeaderFocusSelects() {
+    fun multiEpgDrawerFocusKeepsCurrentPane() {
         var selected: String? = null
+        var opened = 0
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
@@ -115,40 +116,51 @@ class ComposeTvHubChromeTest {
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
-                onSettingsClick = {}
+                onSettingsClick = {},
+                onMultiEpgClick = { opened++ }
             )
         }
         val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
         header.assertExists()
         header.requestFocus()
         composeRule.waitForIdle()
-        assertEquals(TvComposeHubHost.HEADER_MULTIEPG_ID, selected)
+        assertEquals(null, selected)
+        assertEquals(0, opened)
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_multiepg_row", useUnmergedTree = true)
+            .assertCountEquals(0)
     }
 
     @Test
-    fun multiEpgOpenCardInvokesCallback() {
+    fun multiEpgDrawerClickLaunchesWithoutStubCard() {
+        var selected: String? = null
         var opened = 0
         composeRule.setContent {
-            DreamDroidTvTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(220.dp)
-                ) {
-                    HubMultiEpgRow(onClick = { opened++ })
-                }
-            }
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = { selected = it },
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                onMultiEpgClick = { opened++ }
+            )
         }
-        val card = composeRule.onNodeWithTag("hub_multiepg_open")
-        card.assertIsDisplayed().assertHasClickAction()
-        composeRule.onNodeWithTag("hub_multiepg_icon", useUnmergedTree = true).assertExists()
-        // TV Surfaces are D-pad activated; mouse performClick alone is unreliable.
-        card.requestFocus()
-        card.performKeyInput { pressKey(Key.DirectionCenter) }
+        val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
+        header.assertExists()
+        header.requestFocus()
+        header.performKeyInput { pressKey(Key.DirectionCenter) }
         if (opened == 0) {
-            card.performClick()
+            header.performClick()
         }
         assertEquals(1, opened)
+        assertEquals(null, selected)
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_multiepg_open", useUnmergedTree = true)
+            .assertCountEquals(0)
     }
 
     @Test
@@ -254,33 +266,6 @@ class ComposeTvHubChromeTest {
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
         composeRule.onAllNodesWithTag("hub_settings_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
-    }
-
-    @Test
-    fun multiEpgHeaderHidesBrowseErrorAndShowsOpenCard() {
-        composeRule.setContent {
-            ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
-                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
-                onHeaderSelected = {},
-                settingsItems = listOf(
-                    BrowseItem.Kind.Reload to "Reload",
-                    BrowseItem.Kind.Preferences to "Settings",
-                    BrowseItem.Kind.Profile to "Profile"
-                ),
-                onSettingsClick = {},
-                errorText = "box offline"
-            )
-        }
-        composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
-        composeRule.onAllNodesWithTag("hub_settings_row", useUnmergedTree = true)
-            .assertCountEquals(0)
-        composeRule.onNodeWithTag("hub_multiepg_row", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true).assertExists()
     }
 
     @Test

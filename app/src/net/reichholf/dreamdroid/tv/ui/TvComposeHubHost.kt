@@ -133,8 +133,10 @@ object TvComposeHubHost {
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
-    fun isPersistentHubHeader(headerId: String): Boolean =
-        headerId == HEADER_SETTINGS_ID || headerId == HEADER_MULTIEPG_ID
+    fun isPersistentHubHeader(headerId: String): Boolean = headerId == HEADER_SETTINGS_ID
+
+    /** Drawer shortcut: OK launches a destination; focus must not steal hub content. */
+    fun isLaunchHeader(headerId: String): Boolean = headerId == HEADER_MULTIEPG_ID
 
     /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
     fun hubHeaderIconRes(headerId: String): Int = when {
@@ -475,9 +477,10 @@ fun ComposeTvHubChrome(
                             NavigationDrawerItem(
                                 selected = header.id == selectedHeaderId,
                                 onClick = {
-                                    onHeaderSelected(header.id)
-                                    if (header.id == TvComposeHubHost.HEADER_MULTIEPG_ID) {
+                                    if (TvComposeHubHost.isLaunchHeader(header.id)) {
                                         onMultiEpgClick()
+                                    } else {
+                                        onHeaderSelected(header.id)
                                     }
                                 },
                                 leadingContent = {
@@ -494,7 +497,10 @@ fun ComposeTvHubChrome(
                                 modifier = Modifier
                                     .testTag("hub_header_${header.id}")
                                     .onFocusChanged { focusState ->
-                                        if (focusState.isFocused) {
+                                        if (
+                                            focusState.isFocused &&
+                                            !TvComposeHubHost.isLaunchHeader(header.id)
+                                        ) {
                                             onHeaderSelected(header.id)
                                         }
                                     }
@@ -561,8 +567,6 @@ fun ComposeTvHubChrome(
                                 settingsItems = settingsItems,
                                 onSettingsClick = onSettingsClick
                             )
-                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
-                            HubMultiEpgRow(onClick = onMultiEpgClick)
                         } else if (selectedBouquet != null) {
                             HubServiceGrid(
                                 bouquetRef = selectedBouquet.bouquet.reference,
@@ -727,49 +731,6 @@ fun HubSettingsRow(
                             .fillMaxWidth()
                             .height(120.dp)
                             .testTag("hub_settings_icon_${kind.name.lowercase()}")
-                    )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/** Drawer MultiEPG destination card — public for instrumented tests. */
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun HubMultiEpgRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val title = stringResource(R.string.multiepg)
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("hub_multiepg_row")
-    ) {
-        item {
-            Surface(
-                onClick = onClick,
-                modifier = Modifier
-                    .width(200.dp)
-                    .testTag("hub_multiepg_open"),
-                colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
-                shape = ClickableSurfaceDefaults.shape()
-            ) {
-                Column {
-                    Image(
-                        painter = painterResource(R.drawable.ic_menu_tv),
-                        contentDescription = title,
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(LocalContentColor.current),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                            .testTag("hub_multiepg_icon")
                     )
                     Text(
                         text = title,

@@ -55,9 +55,11 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun multiEpgIsAPersistentDrawerHeader() {
-        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
+    fun multiEpgIsALaunchHeaderNotABrowsePane() {
+        assertTrue(TvComposeHubHost.isLaunchHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
+        assertFalse(TvComposeHubHost.isLaunchHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
         assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
+        assertFalse(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
         assertFalse(
             TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID)
         )
@@ -108,13 +110,6 @@ class TvComposeHubHostTest {
         assertFalse(
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_SETTINGS_ID,
-                loading = false,
-                errorText = "box offline"
-            )
-        )
-        assertFalse(
-            TvComposeHubHost.shouldShowBrowseError(
-                TvComposeHubHost.HEADER_MULTIEPG_ID,
                 loading = false,
                 errorText = "box offline"
             )
