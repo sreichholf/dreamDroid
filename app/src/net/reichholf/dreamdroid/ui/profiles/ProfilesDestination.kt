@@ -43,7 +43,8 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressDialog
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchDetectDevicesLoad
@@ -109,10 +110,11 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     )
 
     if (showDetectProgress) {
-        IndeterminateProgressDialog(
-            title = stringResource(R.string.searching),
-            message = stringResource(R.string.searching_known_devices),
-            onDismiss = { showDetectProgress = false }
+        IndeterminateProgressHost(
+            IndeterminateProgressState(
+                title = stringResource(R.string.searching),
+                message = stringResource(R.string.searching_known_devices)
+            )
         )
     }
     showDeleteConfirm?.let { title ->

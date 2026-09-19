@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -17,8 +16,8 @@ import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
@@ -27,22 +26,21 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 
 /**
- * Phase 2.1g-ii-e: Material 3 choice / progress dialogs in composition
- * (replaces MultiChoiceDialog / SimpleChoiceDialog / IndeterminateProgress DialogFragments).
+ * Phase 2.1g-ii-e: Material 3 choice dialogs in composition
+ * (replaces MultiChoiceDialog / SimpleChoiceDialog DialogFragments).
+ * Mutation progress is in-content ([IndeterminateProgressHost]), not a dialog.
  */
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -196,43 +194,47 @@ fun SimpleChoiceAlertDialog(
     }
 }
 
-/** In-composition stand-in for a blocking [android.app.ProgressDialog]. */
+const val MUTATION_PROGRESS_TAG = "mutation_progress"
+
+/** In-content mutation progress. Not a dialog — Back is not consumed. */
 data class IndeterminateProgressState(val message: String, val title: String = "")
 
 @Composable
-fun IndeterminateProgressDialog(title: String, message: String, onDismiss: () -> Unit = {}) {
-    BasicAlertDialogSurface(onDismissRequest = onDismiss) {
-        if (title.isNotBlank()) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = AlertDialogDefaults.titleContentColor,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-        }
-        BackHandler(onBack = onDismiss)
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator(modifier = Modifier.padding(end = 16.dp))
-            Text(message)
-        }
-    }
-}
-
-@Composable
 fun IndeterminateProgressHost(progress: IndeterminateProgressState?) {
-    var dismissed by remember(progress) { mutableStateOf(false) }
-    val current = progress.takeUnless { dismissed }
-    // AlertDialog is a separate window that pauses the activity. Handle activity-level
-    // Back here so it dismisses the spinner instead of finishing the host.
-    BackHandler(enabled = current != null) {
-        dismissed = true
+    if (progress == null) {
+        return
     }
-    if (current != null) {
-        IndeterminateProgressDialog(
-            title = current.title,
-            message = current.message,
-            onDismiss = { dismissed = true }
-        )
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(MUTATION_PROGRESS_TAG),
+        color = MaterialTheme.colorScheme.surface
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            if (progress.title.isNotBlank()) {
+                Text(
+                    text = progress.title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
+                )
+            }
+            if (progress.message.isNotBlank()) {
+                val top = if (progress.title.isNotBlank()) 4.dp else 8.dp
+                Text(
+                    text = progress.message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(
+                        start = 16.dp,
+                        end = 16.dp,
+                        top = top,
+                        bottom = 8.dp
+                    )
+                )
+            }
+        }
     }
 }
 
