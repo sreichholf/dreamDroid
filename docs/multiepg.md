@@ -20,7 +20,9 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays from `/web/timerlist` (shipped) |
 | **Next** | Phase 0 spike on a real Dreambox → then Phase 1+ implementation |
 
-Full detail in §§1–8 below.
+**Follow-on (not a §6 reopen):** Android TV GraphMultiEPG is a later requested surface. Phone v1 stays phone-only in this brief / §1 / §6. See §9.
+
+Full detail in §§1–9 below.
 
 ---
 
@@ -337,3 +339,18 @@ This **planning** goal is complete when all of the following are true:
 - Depending on OpenWebif-only APIs.
 - Reintroducing the 2014 N× unbounded `epgservice` full-bouquet sync as the happy path.
 - Replacing list EPG in v1 (unless operator chooses otherwise).
+
+---
+
+## 9. TV GraphMultiEPG (requested surface)
+
+Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. TV is a new requested surface, not a reopen of zoom / TTL / `/web/epgmulti` defaults.
+
+| | |
+| --- | --- |
+| **Entry** | Compose TV hub Settings card (`BrowseItem.Kind.MultiEpg`, label `R.string.multiepg`, badge `ic_menu_tv`) → `MultiEpgActivity` |
+| **Grid** | GraphMultiEPG channel rows × time bars; one D-pad cursor (`selectedServiceRef` + `selectedStartSec`); chrome (Now / ±day / zoom / bouquet) is a separate TV Surface row |
+| **Session** | Same `MultiEpgSession` + `MultiEpgSyncHolder.shared` Room `/web/epgmulti` cache as phone. No second sync. TV always fetches (`shouldSkipReceiverHttp = { false }`, `isSessionOffline = { false }`); peek Room first (stale-while-revalidate). Do not wire TV into `SessionConnectionHolder`. |
+| **Persist** | `MultiEpgPersistGate` (shared with phone). TV `knownTabRefs` comes from `UserBouquetCache.userBouquetTabs(loadServiceList(BOUQUETS_TV), excluded)` — never `{ true }`, never the phone tab strip. Fail-closed for empty known tabs, excluded refs, and FROM PROVIDERS. |
+| **Detail** | Full-screen `Box` + `EpgDetailBody` / `EpgDetailScreen(showActions=false)`. Stream (5-arg `getStreamServiceIntent` + `startStreamIntent`), Set timer (`launchSimpleResultLoad` + toast), IMDb. No Edit timer / Similar; no `EpgEventDialogSession`. Overlay takes D-pad focus; grid/chrome keys are disabled while it is open. |
+| **Proof** | `TvMultiEpgScreenTest` + hub JVM/chrome tests; Cloud Agent uses `.cursor/cloud/connected-test.sh` |

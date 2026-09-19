@@ -72,6 +72,10 @@
             android:name=".tv.activities.PreferenceActivity"
             android:theme="@style/Theme.DreamDroid"
             android:exported="false" />
+        <activity
+            android:name=".tv.activities.MultiEpgActivity"
+            android:theme="@style/Theme.DreamDroid"
+            android:exported="false" />
 
         <activity
             android:name=".activities.ShareActivity"

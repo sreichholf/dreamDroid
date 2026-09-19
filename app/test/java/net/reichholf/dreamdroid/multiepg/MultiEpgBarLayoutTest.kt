@@ -70,6 +70,19 @@ class MultiEpgBarLayoutTest {
     }
 
     @Test
+    fun prevStartSecSkipsCurrentAndLater() {
+        val bars = listOf(
+            bar("a", 1000L, 1060L),
+            bar("b", 1060L, 2000L),
+            bar("c", 2500L, 2600L)
+        )
+        assertNull(MultiEpgBarLayout.prevStartSec(bars, 1000L))
+        assertEquals(1000L, MultiEpgBarLayout.prevStartSec(bars, 1060L))
+        assertEquals(1060L, MultiEpgBarLayout.prevStartSec(bars, 2500L))
+        assertNull(MultiEpgBarLayout.prevStartSec(emptyList(), 1000L))
+    }
+
+    @Test
     fun sameStartAsNeighbourYieldsZeroWidth() {
         val timeline = 1_000L
         val width = MultiEpgBarLayout.widthDp(
