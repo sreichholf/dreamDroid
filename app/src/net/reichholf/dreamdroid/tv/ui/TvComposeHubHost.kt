@@ -183,8 +183,14 @@ object TvComposeHubHost {
     fun shouldShowBrowseError(
         selectedHeaderId: String,
         loading: Boolean,
-        errorText: String?
-    ): Boolean = !loading && errorText != null && selectedHeaderId != HEADER_SETTINGS_ID
+        errorText: String?,
+        hasPaintedContent: Boolean = false
+    ): Boolean = shouldShowTvBrowseError(
+        selectedHeaderId,
+        loading,
+        errorText,
+        hasPaintedContent
+    )
 
     fun install(activity: ComponentActivity) {
         activity.setContent {
