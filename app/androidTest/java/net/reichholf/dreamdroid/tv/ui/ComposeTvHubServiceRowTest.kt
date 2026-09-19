@@ -18,6 +18,7 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -353,8 +354,8 @@ class ComposeTvHubServiceRowTest {
             }
         }
         val cards = composeRule.onAllNodesWithTag("hub_service_card")
-        val first = cards[0].captureToImage().asAndroidBitmap()
-        val second = cards[1].captureToImage().asAndroidBitmap()
+        val first = cards[0].getBoundsInRoot()
+        val second = cards[1].getBoundsInRoot()
         assertEquals(
             "grid cards must share one height (short=${first.height} long=${second.height})",
             first.height,
