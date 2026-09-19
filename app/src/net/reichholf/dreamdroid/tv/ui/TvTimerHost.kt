@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.services.TimerListItem
 import net.reichholf.dreamdroid.ui.services.timerListItemsFrom
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 internal sealed interface TvTimerPage {
     data object List : TvTimerPage
@@ -126,6 +127,18 @@ fun TvTimerHost(modifier: Modifier = Modifier, mutationsBlocked: Boolean = false
         val generation = ++loadGeneration[0]
         loadJob?.cancel()
         loadJob = scope.launch {
+            val snapshot = tvTimerLoadSnapshot(context)
+            val skipHttp = shouldSkipTvHubHttp(
+                SessionConnectionHolder.shared.status.value,
+                snapshot != null
+            )
+            if (skipHttp && snapshot != null) {
+                if (generation != loadGeneration[0]) {
+                    return@launch
+                }
+                applyPaint(tvTimerPaintFromLoad(true, snapshot, null, null))
+                return@launch
+            }
             val result = loadTimerList(context.applicationContext)
             if (generation != loadGeneration[0]) {
                 return@launch
@@ -133,16 +146,11 @@ fun TvTimerHost(modifier: Modifier = Modifier, mutationsBlocked: Boolean = false
             if (result.success) {
                 tvTimerPersistSnapshot(context, result.timers)
             }
-            val snapshot = if (!result.success) {
-                tvTimerLoadSnapshot(context)
-            } else {
-                null
-            }
             applyPaint(
                 tvTimerPaintFromLoad(
                     result.success,
                     result.timers,
-                    snapshot,
+                    if (result.success) null else snapshot,
                     result.errorText
                 )
             )
@@ -236,7 +244,13 @@ fun TvTimerHost(modifier: Modifier = Modifier, mutationsBlocked: Boolean = false
                 Box(Modifier.fillMaxSize()) {
                     TvTimerListScreen(
                         items = items,
-                        onAdd = { page = TvTimerPage.Add },
+                        onAdd = {
+                            if (mutationsBlocked) {
+                                showNeedsReceiver = true
+                            } else {
+                                page = TvTimerPage.Add
+                            }
+                        },
                         onToggleEnabled = { toggleEnabled(it) },
                         onEdit = { index -> page = TvTimerPage.Edit(index) },
                         onDelete = {},
