@@ -68,19 +68,52 @@ class ListEpgCacheTest {
         assertNull(ListEpgCache.loadServiceEvents(dao, PROFILE, "1:0:1:missing", NOW))
     }
 
-    private fun sampleEvent(title: String, service: String = CHANNEL): EpgEventEntity =
-        EpgEventEntity(
-            profileId = PROFILE,
-            bouquetRef = BOUQUET,
-            serviceRef = service,
-            eventId = title,
-            start = NOW,
-            duration = 3600,
-            title = title,
-            description = "",
-            descriptionExtended = "",
-            serviceName = "Das Erste HD"
+    @Test
+    fun bouquetEventsAreOneProgrammePerChannelAtFromSec() = runBlocking {
+        val dao = db.epgDao()
+        val chunk = MultiEpgWindows.chunkContaining(NOW)
+        dao.replaceChunk(
+            EpgChunkMetaEntity(PROFILE, BOUQUET, chunk.startSec, chunk.endSec, 1L),
+            listOf(
+                sampleEvent(title = "News", start = NOW, duration = 3600),
+                sampleEvent(title = "Talk", start = NOW + 3600, duration = 3600),
+                sampleEvent(
+                    title = "Match",
+                    service = OTHER,
+                    start = NOW - 600,
+                    duration = 7200
+                ),
+                sampleEvent(
+                    title = "Studio",
+                    service = OTHER,
+                    start = NOW + 6600,
+                    duration = 1800
+                )
+            )
         )
+        val loaded = ListEpgCache.loadBouquetEvents(dao, PROFILE, BOUQUET, NOW)
+        assertEquals(listOf("News", "Match"), loaded?.map { it.title })
+        val later = ListEpgCache.loadBouquetEvents(dao, PROFILE, BOUQUET, NOW + 4000)
+        assertEquals(listOf("Talk", "Match"), later?.map { it.title })
+    }
+
+    private fun sampleEvent(
+        title: String,
+        service: String = CHANNEL,
+        start: Long = NOW,
+        duration: Long = 3600
+    ): EpgEventEntity = EpgEventEntity(
+        profileId = PROFILE,
+        bouquetRef = BOUQUET,
+        serviceRef = service,
+        eventId = title,
+        start = start,
+        duration = duration,
+        title = title,
+        description = "",
+        descriptionExtended = "",
+        serviceName = "Das Erste HD"
+    )
 
     companion object {
         private const val PROFILE = 7

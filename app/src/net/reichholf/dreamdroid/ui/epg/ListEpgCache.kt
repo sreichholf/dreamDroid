@@ -2,8 +2,10 @@ package net.reichholf.dreamdroid.ui.epg
 
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
+import net.reichholf.dreamdroid.multiepg.nowNextForService
 import net.reichholf.dreamdroid.multiepg.toEvent
 import net.reichholf.dreamdroid.room.EpgDao
+import net.reichholf.dreamdroid.room.EpgEventEntity
 
 /**
  * List EPG (bouquet `/web/epgbouquet` and per-service `/web/epgservice`) reads
@@ -11,8 +13,8 @@ import net.reichholf.dreamdroid.room.EpgDao
  */
 object ListEpgCache {
     /**
-     * Events for [bouquetRef] from [fromSec] for one 24 h window, or null if
-     * that container was never written.
+     * One programme per channel at [fromSec], matching `/web/epgbouquet?time=`.
+     * Null if that container was never written.
      */
     suspend fun loadBouquetEvents(
         dao: EpgDao,
@@ -23,7 +25,7 @@ object ListEpgCache {
         val windowEnd = fromSec + MultiEpgWindows.CHUNK_SECONDS
         val events = dao.eventsOverlapping(profileId, bouquetRef, fromSec, windowEnd)
         if (events.isNotEmpty()) {
-            return events.map { it.toEvent() }
+            return bouquetEventsAtInstant(events, fromSec)
         }
         val chunk = MultiEpgWindows.chunkContaining(fromSec)
         if (dao.getChunk(profileId, bouquetRef, chunk.startSec) != null) {
@@ -47,4 +49,23 @@ object ListEpgCache {
         }
         return dao.eventsForServiceFrom(profileId, serviceRef, fromSec).map { it.toEvent() }
     }
+}
+
+/**
+ * `/web/epgbouquet` is one row per channel: the event whose
+ * `[start, start+duration)` contains [atSec]. Bouquet order is kept.
+ */
+fun bouquetEventsAtInstant(events: List<EpgEventEntity>, atSec: Long): List<Event> {
+    val order = LinkedHashSet<String>()
+    val byService = HashMap<String, ArrayList<EpgEventEntity>>()
+    for (event in events) {
+        order.add(event.serviceRef)
+        byService.getOrPut(event.serviceRef) { ArrayList() }.add(event)
+    }
+    val out = ArrayList<Event>(order.size)
+    for (ref in order) {
+        val nowEvent = nowNextForService(byService.getValue(ref), atSec).first ?: continue
+        out.add(nowEvent.toEvent())
+    }
+    return out
 }
