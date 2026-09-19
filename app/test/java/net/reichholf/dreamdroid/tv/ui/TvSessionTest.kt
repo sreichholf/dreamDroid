@@ -137,6 +137,22 @@ class TvSessionTest {
                 hasPaintedContent = false
             )
         )
+        assertTrue(
+            shouldShowTvBrowseError(
+                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
+                loading = false,
+                errorText = "box offline",
+                hasPaintedContent = false
+            )
+        )
+        assertFalse(
+            shouldShowTvBrowseError(
+                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
+                loading = false,
+                errorText = "box offline",
+                hasPaintedContent = true
+            )
+        )
     }
 
     @Test

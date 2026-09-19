@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.ui
 import android.app.Activity
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -55,13 +56,29 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun multiEpgIsALaunchHeaderNotABrowsePane() {
-        assertTrue(TvComposeHubHost.isLaunchHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
-        assertFalse(TvComposeHubHost.isLaunchHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
+    fun multiEpgIsAPersistentBrowsePaneNotALaunchHeader() {
         assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
-        assertFalse(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
+        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
         assertFalse(
             TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID)
+        )
+    }
+
+    @Test
+    fun multiEpgIntentPutsBouquetExtrasWhenSupplied() {
+        val ref = "1:7:1:0:0:0:0:0:0:0:Favourites"
+        assertEquals(
+            mapOf(
+                MultiEpgActivity.EXTRA_BOUQUET_REF to ref,
+                MultiEpgActivity.EXTRA_BOUQUET_NAME to "Favourites"
+            ),
+            TvComposeHubHost.multiEpgIntentExtras(ref, "Favourites")
+        )
+        assertTrue(TvComposeHubHost.multiEpgIntentExtras().isEmpty())
+        assertTrue(TvComposeHubHost.multiEpgIntentExtras("  ", "").isEmpty())
+        assertEquals(
+            mapOf(MultiEpgActivity.EXTRA_BOUQUET_REF to ref),
+            TvComposeHubHost.multiEpgIntentExtras(ref, "  ")
         )
     }
 
@@ -142,6 +159,29 @@ class TvComposeHubHostTest {
         assertFalse(
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                loading = false,
+                errorText = "box offline",
+                hasPaintedContent = true
+            )
+        )
+    }
+
+    @Test
+    fun browseErrorShownOnEmptyMultiEpgPane() {
+        assertTrue(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_MULTIEPG_ID,
+                loading = false,
+                errorText = "box offline"
+            )
+        )
+    }
+
+    @Test
+    fun browseErrorHiddenOnMultiEpgWhenBouquetCardsExist() {
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_MULTIEPG_ID,
                 loading = false,
                 errorText = "box offline",
                 hasPaintedContent = true

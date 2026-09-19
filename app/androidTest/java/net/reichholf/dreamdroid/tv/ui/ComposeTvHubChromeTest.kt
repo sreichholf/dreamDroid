@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.tv.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
@@ -103,63 +106,130 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun multiEpgDrawerFocusKeepsCurrentPane() {
-        var selected: String? = null
-        var opened = 0
+    fun multiEpgDrawerFocusSelectsBouquetGrid() {
+        var selected by mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID)
+        val rows = demoMultiEpgBouquetRows()
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
                     HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name)
                 ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                selectedHeaderId = selected,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
                 onSettingsClick = {},
-                onMultiEpgClick = { opened++ }
+                bouquetRows = rows
             )
         }
         val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
         header.assertExists()
         header.requestFocus()
         composeRule.waitForIdle()
-        assertEquals(null, selected)
-        assertEquals(0, opened)
-        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
+        assertEquals(TvComposeHubHost.HEADER_MULTIEPG_ID, selected)
+        composeRule.onNodeWithTag("hub_multiepg_bouquet_grid", useUnmergedTree = true)
+            .assertExists()
+        composeRule.onAllNodesWithTag("hub_settings_row", useUnmergedTree = true)
+            .assertCountEquals(0)
         composeRule.onAllNodesWithTag("hub_multiepg_row", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_multiepg_open", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
     }
 
     @Test
-    fun multiEpgDrawerClickLaunchesWithoutStubCard() {
-        var selected: String? = null
-        var opened = 0
+    fun multiEpgBouquetCardClickOpensGraph() {
+        var openedRef: String? = null
+        var openedName: String? = null
+        val rows = demoMultiEpgBouquetRows()
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(280.dp)
+                ) {
+                    HubMultiEpgBouquetGrid(
+                        bouquetRows = rows,
+                        onOpenMultiEpg = { reference, name ->
+                            openedRef = reference
+                            openedName = name
+                        }
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("hub_multiepg_row", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_multiepg_open", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_multiepg_bouquet_1", useUnmergedTree = true)
+            .assertExists()
+        val card = composeRule.onNodeWithTag("hub_multiepg_bouquet_0")
+        card.assertIsDisplayed().assertHasClickAction()
+        card.requestFocus()
+        card.performKeyInput { pressKey(Key.DirectionCenter) }
+        if (openedRef == null) {
+            card.performClick()
+        }
+        assertEquals(rows[0].bouquet.reference, openedRef)
+        assertEquals(rows[0].bouquet.name, openedName)
+    }
+
+    @Test
+    fun bouquetServiceGridShowsMultiEpgAction() {
+        var openedRef: String? = null
+        var openedName: String? = null
+        val rows = demoMultiEpgBouquetRows()
+        val bouquet = rows[0].bouquet
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
                     HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                    HubNavHeader(bouquet.reference, bouquet.name)
                 ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
-                onHeaderSelected = { selected = it },
-                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                selectedHeaderId = bouquet.reference,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
                 onSettingsClick = {},
-                onMultiEpgClick = { opened++ }
+                bouquetRows = rows,
+                onOpenMultiEpg = { reference, name ->
+                    openedRef = reference
+                    openedName = name
+                }
             )
         }
-        val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
-        header.assertExists()
-        header.requestFocus()
-        header.performKeyInput { pressKey(Key.DirectionCenter) }
-        if (opened == 0) {
-            header.performClick()
+        val action = composeRule.onNodeWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
+        action.assertExists().assertHasClickAction()
+        action.requestFocus()
+        action.performKeyInput { pressKey(Key.DirectionCenter) }
+        if (openedRef == null) {
+            action.performClick()
         }
-        assertEquals(1, opened)
-        assertEquals(null, selected)
+        assertEquals(bouquet.reference, openedRef)
+        assertEquals(bouquet.name, openedName)
+    }
+
+    @Test
+    fun settingsChromeHidesBouquetMultiEpgAction() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                bouquetRows = demoMultiEpgBouquetRows()
+            )
+        }
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
-        composeRule.onAllNodesWithTag("hub_multiepg_open", useUnmergedTree = true)
+        composeRule.onAllNodesWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
     }
 
@@ -359,3 +429,19 @@ class ComposeTvHubChromeTest {
         composeRule.onNodeWithTag("hub_movie_loading", useUnmergedTree = true).assertExists()
     }
 }
+
+private fun demoMultiEpgBouquetRows(): List<HubBouquetRow> = listOf(
+    HubBouquetRow(
+        bouquet = Service("1:7:1:0:0:0:0:0:0:0:Favourites", "Favourites"),
+        services = listOf(
+            ServiceNowNext(
+                serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+                serviceName = "Demo"
+            )
+        )
+    ),
+    HubBouquetRow(
+        bouquet = Service("1:7:1:0:0:0:0:0:0:0:Sports", "Sports"),
+        services = emptyList()
+    )
+)
