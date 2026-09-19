@@ -508,6 +508,8 @@ class DreamDroid : Application() {
             profileChangedListener = listener
         }
 
+        fun getCurrentProfileChangedListener(): ProfileChangedListener? = profileChangedListener
+
         /**
          * @return
          */

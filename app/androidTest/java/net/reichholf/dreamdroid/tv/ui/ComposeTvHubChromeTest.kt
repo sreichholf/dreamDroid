@@ -12,14 +12,19 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
+import androidx.preference.PreferenceManager
+import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
@@ -27,6 +32,13 @@ import org.junit.Test
 class ComposeTvHubChromeTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    @Before
+    fun forceAlwaysNight() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
 
     @Test
     fun chromeHostsNavigationDrawer() {
@@ -215,6 +227,27 @@ class ComposeTvHubChromeTest {
         }
         composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun settingsHeaderShowsOfflineSessionChip() {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
+                onSettingsClick = {},
+                errorText = "box offline",
+                sessionChipLabel = "Offline"
+            )
+        }
+        composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_session_chip", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithText("Offline", useUnmergedTree = true).assertExists()
     }
 
     @Test

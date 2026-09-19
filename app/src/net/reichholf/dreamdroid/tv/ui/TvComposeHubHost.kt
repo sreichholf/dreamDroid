@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,6 +28,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +43,7 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -71,10 +74,13 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
+import net.reichholf.dreamdroid.tv.activities.MainActivity
 import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
@@ -193,8 +199,12 @@ object TvComposeHubHost {
     )
 
     fun install(activity: ComponentActivity) {
+        val host = activity as? MainActivity
         activity.setContent {
-            ComposeTvHubApp(activity = activity)
+            ComposeTvHubApp(
+                activity = activity,
+                onRecheckProfile = { host?.recheckProfile() }
+            )
         }
     }
 }
@@ -204,7 +214,25 @@ data class HubNavHeader(val id: String, val title: String)
 data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext>)
 
 @Composable
-fun ComposeTvHubApp(activity: ComponentActivity) {
+fun ComposeTvHubApp(
+    activity: ComponentActivity,
+    onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() }
+) {
+    val context = LocalContext.current
+    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val profile = DreamDroid.getCurrentProfile()
+    val hasCache = remember(status, profile.id) {
+        hasUseDrivenCache(profile, context)
+    }
+    val failedMessage = status.lastFailure?.userMessage(context)?.takeIf { it.isNotBlank() }
+        ?: stringResource(R.string.connection_error)
+    val gate = tvSessionGate(
+        status = status,
+        hasCache = hasCache,
+        checkingMessage = stringResource(R.string.checking_connection),
+        failedTitle = String.format("%s@%s:%s", profile.user, profile.host, profile.port),
+        failedMessage = failedMessage
+    )
     val settingsTitle = stringResource(R.string.preferences)
     val placeholderTitle = stringResource(R.string.services)
     var reloadToken by remember { mutableIntStateOf(0) }
@@ -279,6 +307,23 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
     }
+    val openProfiles = {
+        val intent = TvComposeHubHost.preferenceIntent(activity, BrowseItem.Kind.Profile)
+        if (intent != null) {
+            preferenceLauncher.launch(intent)
+        }
+    }
+
+    if (gate is TvSessionGate.Checking || gate is TvSessionGate.Failed) {
+        DreamDroidTvTheme {
+            TvProfileCheckScreen(
+                gate = gate,
+                onRecheck = onRecheckProfile,
+                onProfiles = openProfiles
+            )
+        }
+        return
+    }
 
     ComposeTvHubChrome(
         headers = headers,
@@ -311,6 +356,12 @@ fun ComposeTvHubApp(activity: ComponentActivity) {
         },
         onMovieClick = { movie ->
             openMovieStream(activity, movie)
+        },
+        sessionChipLabel = stringResource(status.chipLabelRes()),
+        onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
+            onRecheckProfile
+        } else {
+            null
         }
     )
 }
@@ -394,7 +445,10 @@ fun ComposeTvHubChrome(
     movieLoading: Boolean = false,
     errorText: String? = null,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
-    onMovieClick: (Movie) -> Unit = {}
+    onMovieClick: (Movie) -> Unit = {},
+    sessionChipLabel: String? = null,
+    onSessionRecheck: (() -> Unit)? = null,
+    sessionRecheckLabel: String? = null
 ) {
     DreamDroidTvTheme {
         NavigationDrawer(
@@ -442,11 +496,27 @@ fun ComposeTvHubChrome(
             ) {
                 item {
                     val title = headers.firstOrNull { it.id == selectedHeaderId }?.title.orEmpty()
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = Modifier.padding(bottom = 12.dp)
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = title,
+                            style = MaterialTheme.typography.headlineSmall,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (sessionChipLabel != null) {
+                            HubSessionStatus(
+                                label = sessionChipLabel,
+                                recheckLabel = sessionRecheckLabel
+                                    ?: stringResource(R.string.recheck),
+                                onRecheck = onSessionRecheck
+                            )
+                        }
+                    }
                 }
                 if (loading) {
                     item {
@@ -516,6 +586,44 @@ fun ComposeTvHubChrome(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/** Persistent Online / Offline / Checking chip. Recheck is focusable when Offline / failed. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubSessionStatus(
+    label: String,
+    recheckLabel: String,
+    onRecheck: (() -> Unit)?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            modifier = Modifier
+                .testTag("hub_session_chip")
+                .padding(horizontal = 8.dp, vertical = 4.dp)
+        )
+        if (onRecheck != null) {
+            Surface(
+                onClick = onRecheck,
+                modifier = Modifier.testTag("hub_session_recheck"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+            ) {
+                Text(
+                    text = recheckLabel,
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                )
             }
         }
     }

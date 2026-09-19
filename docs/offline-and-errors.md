@@ -1,7 +1,7 @@
 # Offline cache and unified errors
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
-**Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub / widget still follow.  
+**Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV session chrome / ProfileCheck gate is in progress on this PR (not shipped until hub Room cache and Online-only streaming land). Widget still follows.  
 **Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold tablet rail, overlay shell, or Glance-only widget into leftover work.
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs).
