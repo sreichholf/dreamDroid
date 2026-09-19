@@ -55,7 +55,7 @@ fun shouldShowTvBrowseError(
     loading: Boolean,
     errorText: String?,
     hasPaintedContent: Boolean
-): Boolean = selectedHeaderId != TvComposeHubHost.HEADER_SETTINGS_ID &&
+): Boolean = !TvComposeHubHost.isPersistentHubHeader(selectedHeaderId) &&
     !loading &&
     errorText != null &&
     !hasPaintedContent
