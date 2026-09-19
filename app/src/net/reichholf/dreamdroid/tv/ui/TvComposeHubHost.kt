@@ -91,6 +91,7 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
  */
 object TvComposeHubHost {
     const val HEADER_SETTINGS_ID: String = "settings"
+    const val HEADER_MULTIEPG_ID: String = "multiepg"
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
     const val HEADER_MOVIE_PREFIX: String = "movie:"
 
@@ -108,25 +109,20 @@ object TvComposeHubHost {
 
     fun preferenceTypeForKind(kind: BrowseItem.Kind): String? = when (kind) {
         BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
-
         BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
-
-        BrowseItem.Kind.Reload,
-        BrowseItem.Kind.MultiEpg -> null
+        BrowseItem.Kind.Reload -> null
     }
 
     fun defaultSettingsKinds(): List<BrowseItem.Kind> = listOf(
         BrowseItem.Kind.Reload,
         BrowseItem.Kind.Preferences,
-        BrowseItem.Kind.Profile,
-        BrowseItem.Kind.MultiEpg
+        BrowseItem.Kind.Profile
     )
 
     fun settingsTitleRes(kind: BrowseItem.Kind): Int = when (kind) {
         BrowseItem.Kind.Reload -> R.string.reload
         BrowseItem.Kind.Preferences -> R.string.settings
         BrowseItem.Kind.Profile -> R.string.profile
-        BrowseItem.Kind.MultiEpg -> R.string.multiepg
     }
 
     /** Same badges the Leanback Live TV settings cards used. */
@@ -134,8 +130,12 @@ object TvComposeHubHost {
         BrowseItem.Kind.Reload -> R.drawable.ic_badge_reload
         BrowseItem.Kind.Preferences -> R.drawable.ic_badge_settings
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
-        BrowseItem.Kind.MultiEpg -> R.drawable.ic_menu_tv
     }
+
+    fun isPersistentHubHeader(headerId: String): Boolean =
+        headerId == HEADER_SETTINGS_ID || headerId == HEADER_MULTIEPG_ID
+
+    fun multiEpgIntent(context: Context): Intent = Intent(context, MultiEpgActivity::class.java)
 
     fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
         val type = preferenceTypeForKind(kind) ?: return null
@@ -239,6 +239,7 @@ fun ComposeTvHubApp(
         failedMessage = failedMessage
     )
     val settingsTitle = stringResource(R.string.preferences)
+    val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
     var reloadToken by remember { mutableIntStateOf(0) }
     var loading by remember { mutableStateOf(true) }
@@ -271,7 +272,7 @@ fun ComposeTvHubApp(
         )
         bouquetRows = result.rows
         movieLocations = result.locations
-        val stillValid = selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID ||
+        val stillValid = TvComposeHubHost.isPersistentHubHeader(selectedHeaderId) ||
             bouquetRows.any { it.bouquet.reference == selectedHeaderId } ||
             TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) in movieLocations
         if (!stillValid) {
@@ -300,9 +301,21 @@ fun ComposeTvHubApp(
         }
     }
 
-    val headers = remember(settingsTitle, placeholderTitle, bouquetRows, movieLocations) {
+    val headers = remember(
+        settingsTitle,
+        multiEpgTitle,
+        placeholderTitle,
+        bouquetRows,
+        movieLocations
+    ) {
         buildList {
             add(HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, settingsTitle))
+            add(
+                HubNavHeader(
+                    TvComposeHubHost.HEADER_MULTIEPG_ID,
+                    multiEpgTitle
+                )
+            )
             if (bouquetRows.isEmpty()) {
                 add(HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, placeholderTitle))
             } else {
@@ -352,10 +365,6 @@ fun ComposeTvHubApp(
                         preferenceLauncher.launch(intent)
                     }
                 }
-
-                BrowseItem.Kind.MultiEpg -> {
-                    activity.startActivity(Intent(activity, MultiEpgActivity::class.java))
-                }
             }
         },
         bouquetRows = bouquetRows,
@@ -369,6 +378,9 @@ fun ComposeTvHubApp(
         },
         onMovieClick = { movie ->
             openMovieStream(activity, movie)
+        },
+        onMultiEpgClick = {
+            activity.startActivity(TvComposeHubHost.multiEpgIntent(activity))
         },
         sessionChipLabel = stringResource(status.chipLabelRes()),
         onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
@@ -415,6 +427,7 @@ fun ComposeTvHubChrome(
     streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {},
+    onMultiEpgClick: () -> Unit = {},
     sessionChipLabel: String? = null,
     onSessionRecheck: (() -> Unit)? = null,
     sessionRecheckLabel: String? = null
@@ -452,7 +465,12 @@ fun ComposeTvHubChrome(
                         headers.forEach { header ->
                             NavigationDrawerItem(
                                 selected = header.id == selectedHeaderId,
-                                onClick = { onHeaderSelected(header.id) },
+                                onClick = {
+                                    onHeaderSelected(header.id)
+                                    if (header.id == TvComposeHubHost.HEADER_MULTIEPG_ID) {
+                                        onMultiEpgClick()
+                                    }
+                                },
                                 leadingContent = {
                                     Box(
                                         modifier = Modifier
@@ -540,6 +558,10 @@ fun ComposeTvHubChrome(
                                 settingsItems = settingsItems,
                                 onSettingsClick = onSettingsClick
                             )
+                        }
+                    } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
+                        item {
+                            HubMultiEpgRow(onClick = onMultiEpgClick)
                         }
                     } else {
                         if (selectedBouquet != null) {
@@ -713,6 +735,48 @@ fun HubSettingsRow(
                             .fillMaxWidth()
                             .height(120.dp)
                             .testTag("hub_settings_icon_${kind.name.lowercase()}")
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Drawer MultiEPG destination card — public for instrumented tests. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun HubMultiEpgRow(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val title = stringResource(R.string.multiepg)
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        modifier = modifier
+            .fillMaxWidth()
+            .testTag("hub_multiepg_row")
+    ) {
+        item {
+            Surface(
+                onClick = onClick,
+                modifier = Modifier
+                    .width(200.dp)
+                    .testTag("hub_multiepg_open"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+            ) {
+                Column {
+                    Image(
+                        painter = painterResource(R.drawable.ic_menu_tv),
+                        contentDescription = title,
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                            .testTag("hub_multiepg_icon")
                     )
                     Text(
                         text = title,
@@ -961,6 +1025,7 @@ fun ComposeTvHubStub() {
     ComposeTvHubChrome(
         headers = listOf(
             HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+            HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
             HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
         ),
         selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
