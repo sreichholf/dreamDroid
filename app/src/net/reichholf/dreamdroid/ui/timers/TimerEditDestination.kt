@@ -85,6 +85,10 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         session.ensureLocationsAndTagsThenReload()
     }
 
+    LaunchedEffect(session.progress) {
+        (context as? AppCompatActivity)?.invalidateOptionsMenu()
+    }
+
     TimerEditScreen(
         state = session.editState,
         saveLabel = context.getString(R.string.save),
@@ -97,6 +101,7 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         onPickService = { session.pickService() },
         onPickTags = { showTagsPicker = true },
         showSaveFab = false,
+        mutating = session.progress != null,
         modifier = modifier
     )
 
@@ -217,6 +222,7 @@ class TimerEditSession(
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.save, menu)
+        menu.findItem(Statics.ITEM_SAVE)?.isEnabled = (progress == null)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
@@ -335,6 +341,9 @@ class TimerEditSession(
     }
 
     fun saveTimer() {
+        if (progress != null) {
+            return
+        }
         val host = handle ?: return
         val ctx = context ?: return
         host.runOnlineOnly {

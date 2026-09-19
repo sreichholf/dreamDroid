@@ -7,7 +7,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -18,6 +20,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
 import net.reichholf.dreamdroid.ui.multiepg.MultiEpgScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -134,6 +137,8 @@ class EpgDetailDialogHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
     @Test
