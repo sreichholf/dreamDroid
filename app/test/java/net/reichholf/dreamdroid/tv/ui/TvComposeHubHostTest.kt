@@ -13,6 +13,11 @@ import org.junit.jupiter.api.Test
 
 class TvComposeHubHostTest {
     @Test
+    fun timersHeaderIdIsTimers() {
+        assertEquals("timers", TvComposeHubHost.HEADER_TIMERS_ID)
+    }
+
+    @Test
     fun resultOkReloadsHubBrowseData() {
         var reloads = 0
         TvComposeHubHost.applyPreferenceActivityResult(Activity.RESULT_OK) {
@@ -56,8 +61,9 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun multiEpgIsAPersistentBrowsePaneNotALaunchHeader() {
+    fun settingsTimersAndMultiEpgArePersistentBrowsePanes() {
         assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
+        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_TIMERS_ID))
         assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
         assertFalse(
             TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID)
@@ -87,6 +93,10 @@ class TvComposeHubHostTest {
         assertEquals(
             R.drawable.ic_badge_settings,
             TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_SETTINGS_ID)
+        )
+        assertEquals(
+            R.drawable.ic_menu_timer,
+            TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_TIMERS_ID)
         )
         assertEquals(
             R.drawable.ic_multiepg_clock,
@@ -127,6 +137,17 @@ class TvComposeHubHostTest {
         assertFalse(
             TvComposeHubHost.shouldShowBrowseError(
                 TvComposeHubHost.HEADER_SETTINGS_ID,
+                loading = false,
+                errorText = "box offline"
+            )
+        )
+    }
+
+    @Test
+    fun browseErrorHiddenOnTimersHeader() {
+        assertFalse(
+            TvComposeHubHost.shouldShowBrowseError(
+                TvComposeHubHost.HEADER_TIMERS_ID,
                 loading = false,
                 errorText = "box offline"
             )
