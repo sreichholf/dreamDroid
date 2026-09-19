@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.ui.profiles.ProfileEditScreen
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditState
 import net.reichholf.dreamdroid.ui.settings.SettingsState
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /**
  * TV settings / profile host (Phase 3.1d). Compose Material 3; PreferenceManager keys
@@ -42,7 +42,7 @@ class PreferenceActivity : AppCompatActivity() {
             val state = ProfileEditState.fromProfile(profile)
             profileState = state
             setContent {
-                DreamDroidTheme {
+                DreamDroidTvTheme {
                     ProfileEditScreen(
                         state = state,
                         saveLabel = getString(R.string.save),
@@ -56,7 +56,7 @@ class PreferenceActivity : AppCompatActivity() {
         } else {
             val settingsState = SettingsState.create(this)
             setContent {
-                DreamDroidTheme {
+                DreamDroidTvTheme {
                     val remembered = remember { settingsState }
                     TvSettingsScreen(state = remembered)
                 }
