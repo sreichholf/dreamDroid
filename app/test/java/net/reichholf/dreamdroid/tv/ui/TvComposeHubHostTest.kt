@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.app.Activity
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -39,6 +40,22 @@ class TvComposeHubHostTest {
             TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile)
         )
         assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Reload))
+    }
+
+    @Test
+    fun settingsBadgesMatchLiveTvCards() {
+        assertEquals(
+            R.drawable.ic_badge_reload,
+            TvComposeHubHost.settingsBadgeRes(BrowseItem.Kind.Reload)
+        )
+        assertEquals(
+            R.drawable.ic_badge_settings,
+            TvComposeHubHost.settingsBadgeRes(BrowseItem.Kind.Preferences)
+        )
+        assertEquals(
+            R.drawable.ic_badge_profiles,
+            TvComposeHubHost.settingsBadgeRes(BrowseItem.Kind.Profile)
+        )
     }
 
     @Test

@@ -2,8 +2,9 @@ package net.reichholf.dreamdroid.tv.activities
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
-import androidx.fragment.app.FragmentActivity
+import androidx.appcompat.app.AppCompatActivity
 import javax.net.ssl.HttpsURLConnection
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
@@ -13,12 +14,13 @@ import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
  *
  * Kotlin port of the TV browse host activity (Compose hub via [TvComposeHubHost]).
  */
-class MainActivity : FragmentActivity() {
+class MainActivity : AppCompatActivity() {
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         recreate()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         localNetworkPermissionRequest.ensure(this)

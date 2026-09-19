@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.DreamDroid" parent="Theme.Leanback" />
-    <style name="Theme.DreamDroid.Dialog" parent="Theme.Dreamdroid.FullscreenDialog" />
-    <style name="Theme.DreamDroid.Dialog.Alert" parent="Theme.Dreamdroid.FullscreenDialog" />
-    <style name="VideoPlayerButton" parent="Widget.Leanback.DetailsActionButtonStyle">
-        <item name="android:textAlignment">center</item>
-    </style>
+    <!-- Do not redefine Theme.DreamDroid here. `television` beats `night`, so a
+         Leanback (or even a fixed Light) parent would freeze TV and ignore the
+         phone light/night/dynamic themes. -->
 
-    <style name="Theme.Dreamdroid.FullscreenDialog" parent="Theme.AppCompat.Dialog">
+    <style name="Theme.DreamDroid.Dialog" parent="Theme.DreamDroid">
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowFullscreen">false</item>
         <item name="android:windowIsFloating">false</item>
-        <item name="android:windowBackground">@color/primary_dreamDroid_transparent</item>
+        <item name="android:windowBackground">?android:colorBackground</item>
     </style>
+    <style name="Theme.DreamDroid.Dialog.Alert" parent="Theme.DreamDroid.Dialog" />
+    <style name="Theme.Dreamdroid.FullscreenDialog" parent="Theme.DreamDroid.Dialog" />
 </resources>

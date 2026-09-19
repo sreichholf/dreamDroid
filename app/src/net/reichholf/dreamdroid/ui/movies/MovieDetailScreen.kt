@@ -15,9 +15,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Movie
+
+const val MOVIE_DETAIL_CAPPED_TAG = "movie_detail_capped"
+const val MOVIE_DETAIL_UNCAPPED_TAG = "movie_detail_uncapped"
 
 data class MovieDetailContent(
     val title: String,
@@ -60,6 +64,13 @@ fun MovieDetailScreen(
         modifier = modifier
             .fillMaxWidth()
             .then(if (heightCap != null) Modifier.heightIn(max = heightCap) else Modifier)
+            .testTag(
+                if (heightCap == null) {
+                    MOVIE_DETAIL_UNCAPPED_TAG
+                } else {
+                    MOVIE_DETAIL_CAPPED_TAG
+                }
+            )
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp, bottom = 24.dp)

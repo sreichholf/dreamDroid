@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Rule
@@ -39,19 +40,21 @@ class ComposeTvHubServiceRowTest {
             next = Event(title = "Next Show", startTimeReadable = "20:00")
         )
         composeRule.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(220.dp)
-            ) {
-                HubServiceRow(
-                    bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
-                    services = listOf(service),
-                    onServiceClick = { row, ref ->
-                        clicked = row
-                        bouquetRef = ref
-                    }
-                )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubServiceRow(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service),
+                        onServiceClick = { row, ref ->
+                            clicked = row
+                            bouquetRef = ref
+                        }
+                    )
+                }
             }
         }
         val node = composeRule.onNodeWithTag("hub_service_card")

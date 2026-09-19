@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.tv.view.FITTED_ELLIPSIS_TEXT_TAG
 import net.reichholf.dreamdroid.tv.view.FittedMaxLines
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -42,16 +43,18 @@ class ComposeTvHubMovieRowTest {
             fileName = "demo.ts"
         )
         composeRule.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                HubMovieRow(
-                    dirname = "/hdd/movie",
-                    movies = listOf(movie),
-                    onMovieClick = { clicked = it }
-                )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    HubMovieRow(
+                        dirname = "/hdd/movie",
+                        movies = listOf(movie),
+                        onMovieClick = { clicked = it }
+                    )
+                }
             }
         }
         val node = composeRule.onNodeWithTag("hub_movie_card")
@@ -94,31 +97,33 @@ class ComposeTvHubMovieRowTest {
         val longBody = List(40) { "Zwischen Menopause und mutigen Neustarts" }
             .joinToString(" ")
         composeRule.setContent {
-            Column(modifier = Modifier.fillMaxWidth()) {
-                HubMovieRow(
-                    dirname = "/hdd/one",
-                    movies = listOf(
-                        Movie(
-                            reference = "1:0:0:0:0:0:0:0:0:3:",
-                            title = "Short",
-                            descriptionExtended = longBody,
-                            fileName = "one.ts"
-                        )
-                    ),
-                    onMovieClick = {}
-                )
-                HubMovieRow(
-                    dirname = "/hdd/two",
-                    movies = listOf(
-                        Movie(
-                            reference = "1:0:0:0:0:0:0:0:0:4:",
-                            title = "First title line\nSecond title line",
-                            descriptionExtended = longBody,
-                            fileName = "two.ts"
-                        )
-                    ),
-                    onMovieClick = {}
-                )
+            DreamDroidTvTheme {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    HubMovieRow(
+                        dirname = "/hdd/one",
+                        movies = listOf(
+                            Movie(
+                                reference = "1:0:0:0:0:0:0:0:0:3:",
+                                title = "Short",
+                                descriptionExtended = longBody,
+                                fileName = "one.ts"
+                            )
+                        ),
+                        onMovieClick = {}
+                    )
+                    HubMovieRow(
+                        dirname = "/hdd/two",
+                        movies = listOf(
+                            Movie(
+                                reference = "1:0:0:0:0:0:0:0:0:4:",
+                                title = "First title line\nSecond title line",
+                                descriptionExtended = longBody,
+                                fileName = "two.ts"
+                            )
+                        ),
+                        onMovieClick = {}
+                    )
+                }
             }
         }
         composeRule.waitForIdle()
@@ -159,16 +164,18 @@ class ComposeTvHubMovieRowTest {
 
     private fun setMovieRow(movie: Movie) {
         composeRule.setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                HubMovieRow(
-                    dirname = "/hdd/movie",
-                    movies = listOf(movie),
-                    onMovieClick = {}
-                )
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                ) {
+                    HubMovieRow(
+                        dirname = "/hdd/movie",
+                        movies = listOf(movie),
+                        onMovieClick = {}
+                    )
+                }
             }
         }
         composeRule.waitForIdle()
