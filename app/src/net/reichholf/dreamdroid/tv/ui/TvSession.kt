@@ -48,14 +48,15 @@ fun shouldShowTvSessionRecheck(status: ConnectionStatus): Boolean = !status.chec
 
 /**
  * Raw browse [errorText] stays off Settings (the session chip covers that
- * header). Content headers show it only when this view has nothing painted.
+ * header). Content headers, including MultiEPG, show it only when this view
+ * has nothing painted.
  */
 fun shouldShowTvBrowseError(
     selectedHeaderId: String,
     loading: Boolean,
     errorText: String?,
     hasPaintedContent: Boolean
-): Boolean = !TvComposeHubHost.isPersistentHubHeader(selectedHeaderId) &&
+): Boolean = selectedHeaderId != TvComposeHubHost.HEADER_SETTINGS_ID &&
     !loading &&
     errorText != null &&
     !hasPaintedContent

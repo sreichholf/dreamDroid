@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -133,10 +134,9 @@ object TvComposeHubHost {
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
-    fun isPersistentHubHeader(headerId: String): Boolean = headerId == HEADER_SETTINGS_ID
-
-    /** Drawer shortcut: OK launches a destination; focus must not steal hub content. */
-    fun isLaunchHeader(headerId: String): Boolean = headerId == HEADER_MULTIEPG_ID
+    /** Survives hub reload so Settings / MultiEPG are not bounced to another header. */
+    fun isPersistentHubHeader(headerId: String): Boolean =
+        headerId == HEADER_SETTINGS_ID || headerId == HEADER_MULTIEPG_ID
 
     /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
     fun hubHeaderIconRes(headerId: String): Int = when {
@@ -146,7 +146,32 @@ object TvComposeHubHost {
         else -> R.drawable.ic_menu_tv
     }
 
-    fun multiEpgIntent(context: Context): Intent = Intent(context, MultiEpgActivity::class.java)
+    fun multiEpgIntentExtras(
+        bouquetRef: String? = null,
+        bouquetName: String? = null
+    ): Map<String, String> = buildMap {
+        bouquetRef?.takeIf { it.isNotBlank() }?.let { ref ->
+            put(MultiEpgActivity.EXTRA_BOUQUET_REF, ref)
+        }
+        bouquetName?.takeIf { it.isNotBlank() }?.let { name ->
+            put(MultiEpgActivity.EXTRA_BOUQUET_NAME, name)
+        }
+    }
+
+    fun multiEpgIntent(
+        context: Context,
+        bouquetRef: String? = null,
+        bouquetName: String? = null
+    ): Intent {
+        val intent = Intent(context, MultiEpgActivity::class.java)
+        multiEpgIntentExtras(bouquetRef, bouquetName).forEach { (key, value) ->
+            intent.putExtra(key, value)
+        }
+        return intent
+    }
+
+    fun multiEpgIntent(context: Context, bouquet: Service): Intent =
+        multiEpgIntent(context, bouquet.reference, bouquet.name)
 
     fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
         val type = preferenceTypeForKind(kind) ?: return null
@@ -390,8 +415,10 @@ fun ComposeTvHubApp(
         onMovieClick = { movie ->
             openMovieStream(activity, movie)
         },
-        onMultiEpgClick = {
-            activity.startActivity(TvComposeHubHost.multiEpgIntent(activity))
+        onOpenMultiEpg = { reference, name ->
+            activity.startActivity(
+                TvComposeHubHost.multiEpgIntent(activity, reference, name)
+            )
         },
         sessionChipLabel = stringResource(status.chipLabelRes()),
         onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
@@ -438,7 +465,7 @@ fun ComposeTvHubChrome(
     streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {},
-    onMultiEpgClick: () -> Unit = {},
+    onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> },
     sessionChipLabel: String? = null,
     onSessionRecheck: (() -> Unit)? = null,
     sessionRecheckLabel: String? = null
@@ -447,7 +474,11 @@ fun ComposeTvHubChrome(
     val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
     val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
     val hasPaintedContent = selectedBouquet?.services?.isNotEmpty() == true ||
-        (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty())
+        (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty()) ||
+        (
+            selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID &&
+                bouquetRows.isNotEmpty()
+            )
     val gatedServiceClick: (ServiceNowNext, String?) -> Unit = { service, bouquetRef ->
         if (!streamingEnabled) {
             showStreamUnavailable = true
@@ -476,13 +507,7 @@ fun ComposeTvHubChrome(
                         headers.forEach { header ->
                             NavigationDrawerItem(
                                 selected = header.id == selectedHeaderId,
-                                onClick = {
-                                    if (TvComposeHubHost.isLaunchHeader(header.id)) {
-                                        onMultiEpgClick()
-                                    } else {
-                                        onHeaderSelected(header.id)
-                                    }
-                                },
+                                onClick = { onHeaderSelected(header.id) },
                                 leadingContent = {
                                     Image(
                                         painter = painterResource(
@@ -497,10 +522,7 @@ fun ComposeTvHubChrome(
                                 modifier = Modifier
                                     .testTag("hub_header_${header.id}")
                                     .onFocusChanged { focusState ->
-                                        if (
-                                            focusState.isFocused &&
-                                            !TvComposeHubHost.isLaunchHeader(header.id)
-                                        ) {
+                                        if (focusState.isFocused) {
                                             onHeaderSelected(header.id)
                                         }
                                     }
@@ -531,13 +553,50 @@ fun ComposeTvHubChrome(
                             style = MaterialTheme.typography.headlineSmall,
                             modifier = Modifier.weight(1f)
                         )
-                        if (sessionChipLabel != null) {
-                            HubSessionStatus(
-                                label = sessionChipLabel,
-                                recheckLabel = sessionRecheckLabel
-                                    ?: stringResource(R.string.recheck),
-                                onRecheck = onSessionRecheck
-                            )
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            if (selectedBouquet != null) {
+                                Surface(
+                                    onClick = {
+                                        val bouquet = selectedBouquet.bouquet
+                                        onOpenMultiEpg(
+                                            bouquet.reference,
+                                            bouquet.name.ifBlank { bouquet.reference }
+                                        )
+                                    },
+                                    modifier = Modifier.testTag("hub_bouquet_multiepg"),
+                                    colors = dreamDroidTvCardColors(),
+                                    scale = ClickableSurfaceDefaults.scale(
+                                        focusedScale = 1.05f
+                                    ),
+                                    shape = ClickableSurfaceDefaults.shape()
+                                ) {
+                                    Image(
+                                        painter = painterResource(
+                                            R.drawable.ic_multiepg_clock
+                                        ),
+                                        contentDescription = stringResource(
+                                            R.string.multiepg
+                                        ),
+                                        colorFilter = ColorFilter.tint(
+                                            LocalContentColor.current
+                                        ),
+                                        modifier = Modifier
+                                            .padding(8.dp)
+                                            .size(32.dp)
+                                    )
+                                }
+                            }
+                            if (sessionChipLabel != null) {
+                                HubSessionStatus(
+                                    label = sessionChipLabel,
+                                    recheckLabel = sessionRecheckLabel
+                                        ?: stringResource(R.string.recheck),
+                                    onRecheck = onSessionRecheck
+                                )
+                            }
                         }
                     }
                     if (loading) {
@@ -566,6 +625,11 @@ fun ComposeTvHubChrome(
                             HubSettingsRow(
                                 settingsItems = settingsItems,
                                 onSettingsClick = onSettingsClick
+                            )
+                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
+                            HubMultiEpgBouquetGrid(
+                                bouquetRows = bouquetRows,
+                                onOpenMultiEpg = onOpenMultiEpg
                             )
                         } else if (selectedBouquet != null) {
                             HubServiceGrid(
@@ -731,6 +795,62 @@ fun HubSettingsRow(
                             .fillMaxWidth()
                             .height(120.dp)
                             .testTag("hub_settings_icon_${kind.name.lowercase()}")
+                    )
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Bouquet cards that open GraphMultiEPG. Public for focused instrumented tests. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun HubMultiEpgBouquetGrid(
+    bouquetRows: List<HubBouquetRow>,
+    onOpenMultiEpg: (reference: String, name: String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 200.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        contentPadding = PaddingValues(bottom = 48.dp),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("hub_multiepg_bouquet_grid")
+    ) {
+        gridItemsIndexed(
+            bouquetRows,
+            key = { index, row ->
+                row.bouquet.reference.ifBlank { "bouquet-$index" }
+            }
+        ) { index, row ->
+            val title = row.bouquet.name.ifBlank { row.bouquet.reference }
+            Surface(
+                onClick = {
+                    onOpenMultiEpg(row.bouquet.reference, title)
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("hub_multiepg_bouquet_$index"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
+            ) {
+                Column {
+                    Image(
+                        painter = painterResource(R.drawable.ic_multiepg_clock),
+                        contentDescription = title,
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
                     )
                     Text(
                         text = title,

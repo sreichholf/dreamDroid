@@ -63,6 +63,7 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
+import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
@@ -168,16 +169,15 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
         persistGate.knownTabRefs = tabs.map { it.reference }
         bouquets = services.filter { it.reference.isNotBlank() }
         val profile = DreamDroid.getCurrentProfile()
-        val defaultRef = profile.defaultBouquetTv.orEmpty().trim()
-        val defaultName = profile.defaultBouquetTvName.orEmpty()
-        if (defaultRef.isNotEmpty()) {
-            bouquetRef = defaultRef
-            bouquetName = defaultName.ifBlank { defaultRef }
-        } else {
-            val first = bouquets.firstOrNull()
-            bouquetRef = first?.reference.orEmpty()
-            bouquetName = first?.name.orEmpty()
-        }
+        val launch = resolveTvMultiEpgLaunchBouquet(
+            extraRef = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_REF),
+            extraName = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_NAME),
+            defaultRef = profile.defaultBouquetTv.orEmpty(),
+            defaultName = profile.defaultBouquetTvName.orEmpty(),
+            firstBouquet = bouquets.firstOrNull()
+        )
+        bouquetRef = launch.first
+        bouquetName = launch.second
         val now = MultiEpgNowClock.sec()
         nowSec = now
         session.replaceAndLoad(bouquetRef, now)
@@ -534,4 +534,27 @@ internal fun TvMultiEpgBouquetPicker(
             }
         }
     }
+}
+
+/**
+ * Hub launch extras win when the bouquet ref is non-blank, then the profile
+ * default TV bouquet, then the first loaded bouquet.
+ */
+fun resolveTvMultiEpgLaunchBouquet(
+    extraRef: String?,
+    extraName: String?,
+    defaultRef: String,
+    defaultName: String,
+    firstBouquet: Service?
+): Pair<String, String> {
+    val launchRef = extraRef?.trim().orEmpty()
+    if (launchRef.isNotEmpty()) {
+        val launchName = extraName?.trim().orEmpty()
+        return launchRef to launchName.ifBlank { launchRef }
+    }
+    val trimmedDefault = defaultRef.trim()
+    if (trimmedDefault.isNotEmpty()) {
+        return trimmedDefault to defaultName.ifBlank { trimmedDefault }
+    }
+    return firstBouquet?.reference.orEmpty() to firstBouquet?.name.orEmpty()
 }
