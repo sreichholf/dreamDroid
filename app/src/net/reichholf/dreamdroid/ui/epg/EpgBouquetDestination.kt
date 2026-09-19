@@ -39,6 +39,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -74,7 +75,14 @@ fun EpgBouquetDestination(
         )
     }
     val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
-    var timeSec by rememberSaveable(remountEpoch) { mutableIntStateOf(nowSec) }
+    var timeSec by rememberSaveable(remountEpoch) {
+        val leafTime = if (leafArgs.containsKey(NavExtras.EPG_TIME_SEC)) {
+            leafArgs.getLong(NavExtras.EPG_TIME_SEC).toInt()
+        } else {
+            nowSec
+        }
+        mutableIntStateOf(leafTime)
+    }
     val listState = remember { EpgBouquetListState() }
     val refresh = remember { ComposeRefreshState() }
     var emptyMessage by remember { mutableStateOf<String?>(null) }
@@ -131,7 +139,14 @@ fun EpgBouquetDestination(
         onNow = {
             session.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
         },
-        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) }
+        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) },
+        onTimeline = {
+            handle.navigateToMultiEpg(
+                bouquetRef,
+                bouquetName,
+                timeSec = timeSec.toLong()
+            )
+        }
     )
 
     val connectionSession =

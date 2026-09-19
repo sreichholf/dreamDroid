@@ -43,6 +43,7 @@ const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
 const val EPG_TIME_JUMP_NOW_TAG = "epg_time_jump_now"
 const val EPG_TIME_JUMP_PRIME_TAG = "epg_time_jump_prime"
+const val EPG_TIMELINE_TAG = "epg_timeline"
 const val EPG_PICK_BOUQUET_CHIP_TAG = "epg_pick_bouquet_chip"
 
 data class EpgTimeJumpUi(
@@ -51,7 +52,8 @@ data class EpgTimeJumpUi(
     val onPickDate: () -> Unit,
     val onPickTime: () -> Unit,
     val onNow: () -> Unit,
-    val onPrime: () -> Unit
+    val onPrime: () -> Unit,
+    val onTimeline: (() -> Unit)? = null
 )
 
 data class EpgBouquetPickUi(val bouquetName: String, val onPickBouquet: () -> Unit)
@@ -187,6 +189,15 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
             modifier = Modifier.testTag(EPG_TIME_JUMP_PRIME_TAG)
         ) {
             Text(stringResource(R.string.epg_prime))
+        }
+        val onTimeline = timeJump.onTimeline
+        if (onTimeline != null) {
+            TextButton(
+                onClick = onTimeline,
+                modifier = Modifier.testTag(EPG_TIMELINE_TAG)
+            ) {
+                Text(stringResource(R.string.epg_timeline))
+            }
         }
     }
 }

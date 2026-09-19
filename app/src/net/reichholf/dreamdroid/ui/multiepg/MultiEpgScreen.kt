@@ -111,6 +111,7 @@ fun MultiEpgScreen(
     onRefresh: (() -> Unit)? = null,
     onVisibleWindow: ((visibleStartSec: Long, visibleEndSec: Long) -> Unit)? = null,
     onEventClick: (Event) -> Unit,
+    onAtThisTime: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
     hScrollState: ScrollState = rememberScrollState(),
@@ -347,6 +348,14 @@ fun MultiEpgScreen(
                     )
                 } else {
                     Spacer(modifier = Modifier.weight(1f))
+                }
+                if (onAtThisTime != null) {
+                    TextButton(
+                        onClick = onAtThisTime,
+                        modifier = Modifier.testTag("multi_epg_at_this_time")
+                    ) {
+                        Text(stringResource(R.string.epg_at_this_time))
+                    }
                 }
                 if (loading) {
                     CircularProgressIndicator(

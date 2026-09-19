@@ -64,7 +64,15 @@ fun MultiEpgDestination(
     )
     val focusedServiceRef = leafArgs.getString(NavExtras.FOCUSED_SERVICE_REF)
     var anchorSec by remember(remountEpoch, bouquetRef) {
-        mutableLongStateOf(System.currentTimeMillis() / 1000L)
+        val launchSec = if (leafArgs.containsKey(NavExtras.EPG_TIME_SEC)) {
+            leafArgs.getLong(NavExtras.EPG_TIME_SEC)
+        } else {
+            System.currentTimeMillis() / 1000L
+        }
+        mutableLongStateOf(launchSec)
+    }
+    var visibleStartSec by remember(remountEpoch, bouquetRef) {
+        mutableLongStateOf(anchorSec)
     }
     var focusEpoch by remember { mutableIntStateOf(0) }
     var visibleMinutes by rememberSaveable {
@@ -156,7 +164,10 @@ fun MultiEpgDestination(
     }
 
     val onVisibleWindow = remember(session) {
-        { start: Long, end: Long -> session.onVisibleWindow(start, end) }
+        { start: Long, end: Long ->
+            visibleStartSec = start
+            session.onVisibleWindow(start, end)
+        }
     }
     val onEventClick = remember(dialogSession) {
         { event: Event -> dialogSession.showDetail(event) }
@@ -200,6 +211,9 @@ fun MultiEpgDestination(
         },
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
+        onAtThisTime = {
+            handle.navigateToEpg(bouquetRef, bouquetName, timeSec = visibleStartSec)
+        },
         timerClocks = session.timerClocks,
         visibleMinutes = visibleMinutes,
         onVisibleMinutesChange = { visibleMinutes = it },
