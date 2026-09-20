@@ -52,6 +52,7 @@ class ToolbarMenuIconsTest {
             R.menu.locactions_and_tags,
             R.menu.profiles,
             R.menu.epgbouquet,
+            R.menu.multiepg,
             R.menu.edit_delete
         )
         var menuIndex = 0
