@@ -10,6 +10,8 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.View
+import android.view.Window
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -109,10 +111,14 @@ open class BaseActivity :
         super.onResume()
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val result = super.onPrepareOptionsMenu(menu)
-        tintToolbarMenuIcons(findViewById<Toolbar>(R.id.toolbar), menu)
-        return result
+    override fun onPreparePanel(featureId: Int, view: View?, menu: Menu): Boolean {
+        // MenuHostHelper.onPrepareMenu runs after onPrepareOptionsMenu and can
+        // replace icons (default bouquet fav/nofav). Tint after that.
+        val shown = super.onPreparePanel(featureId, view, menu)
+        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
+            tintToolbarMenuIcons(findViewById<Toolbar>(R.id.toolbar), menu)
+        }
+        return shown
     }
 
     override fun onDestroy() {

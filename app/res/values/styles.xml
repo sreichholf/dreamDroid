@@ -118,14 +118,31 @@
         <item name="cornerSize">16dp</item>
     </style>
 
+    <style name="Widget.DreamDroid.ActionButton" parent="Widget.AppCompat.ActionButton">
+        <item name="android:drawableTint">?attr/colorOnSurface</item>
+        <item name="drawableTint">?attr/colorOnSurface</item>
+        <item name="android:textColor">?attr/colorOnSurface</item>
+    </style>
+
+    <style name="Widget.DreamDroid.ActionButton.Overflow" parent="Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">?attr/colorOnSurface</item>
+        <item name="tint">?attr/colorOnSurface</item>
+    </style>
+
+    <!-- MenuProvider inflates via the Activity; setIcon() also reloads white
+         vectors. This overlay tints ActionMenuItemView compound drawables. -->
+    <style name="ThemeOverlay.DreamDroid.Toolbar" parent="ThemeOverlay.Material3.Toolbar.Surface">
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+        <item name="actionMenuTextColor">?attr/colorOnSurface</item>
+        <item name="actionButtonStyle">@style/Widget.DreamDroid.ActionButton</item>
+        <item name="actionOverflowButtonStyle">@style/Widget.DreamDroid.ActionButton.Overflow</item>
+    </style>
+
     <style name="ToolbarStyle" parent="@style/Widget.Material3.Toolbar.OnSurface">
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
-        <!-- MenuProvider inflates via the Activity, not Toolbar.inflateMenu(), so
-             materialThemeOverlay alone does not tint action items. android:theme
-             wraps the ActionMenuView; iconTint covers MaterialToolbar's own path. -->
-        <item name="android:theme">@style/ThemeOverlay.Material3.Toolbar.Surface</item>
+        <item name="android:theme">@style/ThemeOverlay.DreamDroid.Toolbar</item>
         <item name="iconTint">?attr/colorOnSurface</item>
         <item name="actionMenuTextColor">?attr/colorOnSurface</item>
     </style>

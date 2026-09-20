@@ -1,11 +1,13 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Drawable
 import android.view.ContextThemeWrapper
 import android.view.MenuInflater
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
 import androidx.test.platform.app.InstrumentationRegistry
@@ -27,25 +29,21 @@ class ToolbarMenuIconsTest {
         assertActionMenusPaintOnSurface(night = true)
     }
 
+    @Test
+    fun defaultBouquetSetIconHonorsThemeWithoutHelper() {
+        assertDefaultBouquetSetIcon(night = false, runHelper = false)
+        assertDefaultBouquetSetIcon(night = true, runHelper = false)
+    }
+
+    @Test
+    fun defaultBouquetSetIconStillPaintsAfterPrepareTint() {
+        assertDefaultBouquetSetIcon(night = false, runHelper = true)
+        assertDefaultBouquetSetIcon(night = true, runHelper = true)
+    }
+
     private fun assertActionMenusPaintOnSurface(night: Boolean) {
-        val app = InstrumentationRegistry.getInstrumentation().targetContext
-        val config = Configuration(app.resources.configuration)
-        val nightBits = if (night) {
-            Configuration.UI_MODE_NIGHT_YES
-        } else {
-            Configuration.UI_MODE_NIGHT_NO
-        }
-        config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or nightBits
-        val configContext = app.createConfigurationContext(config)
-        val themeRes = if (night) {
-            R.style.Theme_DreamDroid_Night
-        } else {
-            R.style.Theme_DreamDroid
-        }
-        val themed = ContextThemeWrapper(configContext, themeRes)
+        val themed = themedContext(night)
         val toolbar = Toolbar(themed)
-        val onSurface = MaterialColors.getColor(toolbar, MaterialR.attr.colorOnSurface)
-        val surface = MaterialColors.getColor(toolbar, MaterialR.attr.colorSurface)
         val inflater = MenuInflater(themed)
         val menus = intArrayOf(
             R.menu.search,
@@ -66,20 +64,70 @@ class ToolbarMenuIconsTest {
                 val item = popup.menu.getItem(itemIndex)
                 val icon = item.icon
                 if (icon != null) {
-                    val hits = onSurfaceHits(icon, surface, onSurface)
-                    assertTrue(
-                        "toolbar icon must paint onSurface " +
-                            "(night=$night menu=${menus[menuIndex]} " +
-                            "item=${item.title} hits=$hits " +
-                            "onSurface=#${Integer.toHexString(onSurface)} " +
-                            "surface=#${Integer.toHexString(surface)})",
-                        hits > 10
+                    assertPaintsOnSurface(
+                        icon,
+                        themed,
+                        "night=$night menu=${menus[menuIndex]} item=${item.title}"
                     )
                 }
                 itemIndex++
             }
             menuIndex++
         }
+    }
+
+    private fun assertDefaultBouquetSetIcon(night: Boolean, runHelper: Boolean) {
+        val themed = themedContext(night)
+        val toolbar = Toolbar(themed)
+        val popup = PopupMenu(themed, toolbar)
+        MenuInflater(themed).inflate(R.menu.servicelistpage, popup.menu)
+        val item = popup.menu.findItem(R.id.menu_default)
+        val swaps = intArrayOf(R.drawable.ic_action_nofav, R.drawable.ic_action_fav)
+        var i = 0
+        while (i < swaps.size) {
+            item.setIcon(swaps[i])
+            if (runHelper) {
+                tintToolbarMenuIcons(toolbar, popup.menu)
+            }
+            assertPaintsOnSurface(
+                item.icon!!,
+                themed,
+                "night=$night helper=$runHelper icon=${swaps[i]}"
+            )
+            i++
+        }
+        val loaded = AppCompatResources.getDrawable(themed, R.drawable.ic_action_nofav)
+        assertPaintsOnSurface(loaded!!, themed, "night=$night loaded nofav")
+    }
+
+    private fun themedContext(night: Boolean): Context {
+        val app = InstrumentationRegistry.getInstrumentation().targetContext
+        val config = Configuration(app.resources.configuration)
+        val nightBits = if (night) {
+            Configuration.UI_MODE_NIGHT_YES
+        } else {
+            Configuration.UI_MODE_NIGHT_NO
+        }
+        config.uiMode = (config.uiMode and Configuration.UI_MODE_NIGHT_MASK.inv()) or nightBits
+        val configContext = app.createConfigurationContext(config)
+        val themeRes = if (night) {
+            R.style.Theme_DreamDroid_Night
+        } else {
+            R.style.Theme_DreamDroid
+        }
+        return ContextThemeWrapper(configContext, themeRes)
+    }
+
+    private fun assertPaintsOnSurface(icon: Drawable, themed: Context, label: String) {
+        val onSurface = MaterialColors.getColor(themed, MaterialR.attr.colorOnSurface)
+        val surface = MaterialColors.getColor(themed, MaterialR.attr.colorSurface)
+        val hits = onSurfaceHits(icon, surface, onSurface)
+        assertTrue(
+            "toolbar icon must paint onSurface ($label hits=$hits " +
+                "onSurface=#${Integer.toHexString(onSurface)} " +
+                "surface=#${Integer.toHexString(surface)})",
+            hits > 10
+        )
     }
 
     private fun onSurfaceHits(icon: Drawable, surface: Int, onSurface: Int): Int {

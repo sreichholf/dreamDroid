@@ -11,7 +11,9 @@ import com.google.android.material.color.MaterialColors
  * Action-bar vectors are white (`#FFFFFF`). MenuProvider inflation uses the
  * Activity context, so `Widget.Material3.Toolbar.OnSurface`'s overlay does not
  * tint them and they vanish on a light app bar (same class of bug as the EPG
- * bouquet picker). Re-tint from the toolbar's `colorOnSurface`.
+ * bouquet picker). `MenuItem.setIcon()` reloads an untinted copy after
+ * `onPrepareOptionsMenu`, so callers must run this after MenuProviders
+ * (`onPreparePanel`). Tint from the toolbar's `colorOnSurface`.
  */
 fun tintToolbarMenuIcons(toolbar: Toolbar?, menu: Menu) {
     if (toolbar == null) {
