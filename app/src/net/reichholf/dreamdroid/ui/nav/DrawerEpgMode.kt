@@ -6,9 +6,8 @@ import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 
 /**
- * Last EPG view chosen under the drawer EPG item: bouquet list or MultiEPG.
- * Hub toolbar MultiEPG does not write this; list ↔ MultiEPG jumps on those
- * screens do.
+ * Last EPG view chosen from drawer EPG or the bouquet service list:
+ * bouquet list or MultiEPG. List ↔ MultiEPG jumps on those screens write this.
  */
 object DrawerEpgMode {
     const val LIST = "list"

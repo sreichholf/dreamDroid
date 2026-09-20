@@ -9,6 +9,12 @@
         dreamDroid:showAsAction="always"/>
 
     <item
+        android:id="@+id/menu_epg_list"
+        android:icon="@drawable/ic_action_list"
+        android:title="@string/epg_list"
+        dreamDroid:showAsAction="ifRoom"/>
+
+    <item
         android:id="@+id/menu_default"
         android:icon="@drawable/ic_action_nofav"
         android:title="@string/set_default"
