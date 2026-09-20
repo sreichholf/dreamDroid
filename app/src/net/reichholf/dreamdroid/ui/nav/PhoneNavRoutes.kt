@@ -5,8 +5,7 @@ import java.net.URLEncoder
 
 /**
  * Compose Navigation route ids for the phone shell NavHost.
- * Expand as more drawer destinations migrate off
- * [net.reichholf.dreamdroid.fragment.helper.NavigationHelper].
+ * Drawer menu ids map here via [NavigationHelper].
  */
 object PhoneNavRoutes {
     const val DEVICE_INFO = "device_info"

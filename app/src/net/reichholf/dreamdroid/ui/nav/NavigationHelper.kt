@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.fragment.helper
+package net.reichholf.dreamdroid.ui.nav
 
 import android.content.Context
 import android.util.SparseArray
@@ -24,11 +24,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHan
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.bindDrawerScreen
-import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
-import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 /**
- * Created by Stephan on 25.12.2015.
+ * Drawer click → phone [PhoneNavHandle] bridge (roots, dialogs, power / sleep timer).
  */
 open class NavigationHelper(activity: MainActivity, protected val drawerState: DrawerListState) {
     var activity: MainActivity = activity

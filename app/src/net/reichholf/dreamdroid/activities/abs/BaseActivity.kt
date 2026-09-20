@@ -66,7 +66,7 @@ open class BaseActivity :
     }
 
     /**
-     * Phone NavHost (Compose) consumes activity results before fragment dispatch.
+     * Phone NavHost (Compose) may consume activity results.
      * [MainActivity] returns true after forwarding to [PhoneNavHandle].
      */
     open fun dispatchActivityResultToNavHandle(
@@ -83,14 +83,7 @@ open class BaseActivity :
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.i(TAG, "onActivityResult($requestCode,$resultCode,$data")
         super.onActivityResult(requestCode, resultCode, data)
-        if (dispatchActivityResultToNavHandle(requestCode, resultCode, data)) {
-            return
-        }
-        val fragments = supportFragmentManager.fragments
-        for (fragment in fragments) {
-            if (fragment == null) continue
-            fragment.onActivityResult(requestCode, resultCode, data)
-        }
+        dispatchActivityResultToNavHandle(requestCode, resultCode, data)
     }
 
     override fun onPause() {
@@ -128,16 +121,6 @@ open class BaseActivity :
     }
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        val details = supportFragmentManager.findFragmentById(R.id.detail_view)
-        details?.onRequestPermissionsResult(requestCode, permissions, grantResults)
     }
 
     fun startPiconSync() {

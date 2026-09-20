@@ -194,7 +194,7 @@ Hub toolbar / overflow or list EPG Timeline
 | Route table | `ui/nav/PhoneNavRoutes.kt` (`EPG`, `SERVICE_EPG`, `EPG_SEARCH`, `MULTI_EPG`) |
 | NavHost | `ui/nav/PhoneNavHost.kt` — nested `composable(MULTI_EPG)` (back returns to hub or list EPG) |
 | Drawer | `ui/drawer/DrawerScreen.kt` — list EPG only; MultiEPG is not a drawer peer |
-| Drawer → EPG | `fragment/helper/NavigationHelper.kt` (`menu_navigation_epg`) — list EPG. MultiEPG is `navigateToMultiEpg` nested from hub/list EPG |
+| Drawer → EPG | `ui/nav/NavigationHelper.kt` (`menu_navigation_epg`) — list EPG. MultiEPG is `navigateToMultiEpg` nested from hub/list EPG |
 | HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
 | Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |

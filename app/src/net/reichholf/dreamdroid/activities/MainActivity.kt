@@ -44,13 +44,13 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
-import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
+import net.reichholf.dreamdroid.ui.nav.NavigationHelper
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
@@ -98,9 +98,8 @@ class MainActivity :
     private lateinit var currentProfile: Profile
 
     /**
-     * Lowest-priority back handler: drawer close, then NavHost pop (service EPG, etc.), then
-     * optional leave-confirm. Registered early in [onCreate] so Compose [BackHandler] and
-     * fragment callbacks (provider drill-down, NavHost) stay higher priority.
+     * Lowest-priority back handler: drawer close, then NavHost pop, then optional leave-confirm.
+     * Registered early in [onCreate] so Compose [BackHandler]s stay higher priority.
      */
     private val leaveAppCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -113,7 +112,7 @@ class MainActivity :
             }
             val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
                 .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
-            if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
+            if (shouldConfirm) {
                 phoneNav.requestLeaveConfirm()
             } else {
                 finish()
@@ -244,7 +243,7 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
-        // Register before fragments/Compose so those BackHandlers outrank leave-confirm.
+        // Register before Compose so destination BackHandlers outrank leave-confirm.
         onBackPressedDispatcher.addCallback(this, leaveAppCallback)
 
         isDrawerOpenNotified = false

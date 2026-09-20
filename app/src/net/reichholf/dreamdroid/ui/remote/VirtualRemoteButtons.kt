@@ -6,7 +6,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.Remote
 
 /**
  * Widget RemoteViews button → Enigma2 RCU key map.
- * Moved off [net.reichholf.dreamdroid.fragment.VirtualRemoteFragment] in Phase 2.7d.
  */
 object VirtualRemoteButtons {
     fun getRemoteButtons(isPlayButtonPlayPause: Boolean): Array<Array<Int>> {
