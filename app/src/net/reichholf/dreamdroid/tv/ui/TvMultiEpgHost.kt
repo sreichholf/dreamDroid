@@ -24,6 +24,7 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -39,6 +40,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
@@ -342,6 +344,15 @@ internal fun TvMultiEpgEventDetail(
     val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
     val firstActionFocus = remember { FocusRequester() }
     var showNeedsReceiver by remember { mutableStateOf(false) }
+    var setTimerJob by remember { mutableStateOf<Job?>(null) }
+    val latestOnProgress by rememberUpdatedState(onProgress)
+    DisposableEffect(event) {
+        onDispose {
+            setTimerJob?.cancel()
+            setTimerJob = null
+            latestOnProgress(null)
+        }
+    }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(event) {
         try {
@@ -419,11 +430,13 @@ internal fun TvMultiEpgEventDetail(
                                 message = context.getString(R.string.saving)
                             )
                         )
-                        host.launchSimpleResultLoad(
+                        setTimerJob?.cancel()
+                        setTimerJob = host.launchSimpleResultLoad(
                             TimerAddByEventIdRequestHandler(),
                             Timer.getEventIdParams(event)
                         ) { _, result, error ->
                             onProgress(null)
+                            setTimerJob = null
                             var toastText = context.getText(R.string.get_content_error)
                                 .toString()
                             val stateText = result.stateText
