@@ -119,8 +119,9 @@ class ToolbarMenuIconsTest {
     }
 
     private fun assertPaintsOnSurface(icon: Drawable, themed: Context, label: String) {
-        val onSurface = MaterialColors.getColor(themed, MaterialR.attr.colorOnSurface)
-        val surface = MaterialColors.getColor(themed, MaterialR.attr.colorSurface)
+        val toolbar = Toolbar(themed)
+        val onSurface = MaterialColors.getColor(toolbar, MaterialR.attr.colorOnSurface)
+        val surface = MaterialColors.getColor(toolbar, MaterialR.attr.colorSurface)
         val hits = onSurfaceHits(icon, surface, onSurface)
         assertTrue(
             "toolbar icon must paint onSurface ($label hits=$hits " +
