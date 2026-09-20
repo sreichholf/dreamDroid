@@ -1,6 +1,10 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
+import android.content.Context
 import android.content.SharedPreferences
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -15,6 +19,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -36,6 +41,7 @@ import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -137,10 +143,21 @@ fun MultiEpgDestination(
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
+    val menuSession = remember { MultiEpgMenuSession() }
+    menuSession.handle = handle
+    menuSession.context = context
+    menuSession.bouquetRef = bouquetRef
+    menuSession.bouquetName = bouquetName
+    menuSession.visibleStartSec = visibleStartSec
 
     DisposableEffect(bouquetName) {
         activity.title = bouquetName.ifBlank { context.getString(R.string.multiepg) }
         onDispose { }
+    }
+
+    DisposableEffect(handle, menuSession, remountEpoch) {
+        activity.addMenuProvider(menuSession)
+        onDispose { activity.removeMenuProvider(menuSession) }
     }
 
     DisposableEffect(session) {
@@ -211,9 +228,7 @@ fun MultiEpgDestination(
         },
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
-        onAtThisTime = {
-            handle.navigateToEpg(bouquetRef, bouquetName, timeSec = visibleStartSec)
-        },
+        onAtThisTime = { menuSession.openListEpg() },
         timerClocks = session.timerClocks,
         visibleMinutes = visibleMinutes,
         onVisibleMinutesChange = { visibleMinutes = it },
@@ -222,4 +237,34 @@ fun MultiEpgDestination(
         modifier = modifier
     )
     EpgEventDetailSheetHost(session = dialogSession)
+}
+
+internal class MultiEpgMenuSession : MenuProvider {
+    var handle: PhoneNavHandle? = null
+    var context: Context? = null
+    var bouquetRef: String = ""
+    var bouquetName: String = ""
+    var visibleStartSec: Long = 0
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.multiepg, menu)
+    }
+
+    override fun onPrepareMenu(menu: Menu) {
+        menu.findItem(R.id.menu_epg_list)?.isVisible = bouquetRef.isNotEmpty()
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId != R.id.menu_epg_list) {
+            return false
+        }
+        openListEpg()
+        return true
+    }
+
+    fun openListEpg() {
+        val ctx = context ?: return
+        DrawerEpgMode.saveList(ctx)
+        handle?.navigateToEpg(bouquetRef, bouquetName, timeSec = visibleStartSec)
+    }
 }

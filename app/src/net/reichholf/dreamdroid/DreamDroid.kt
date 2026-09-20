@@ -239,6 +239,7 @@ class DreamDroid : Application() {
         const val PREFS_KEY_INITIALBITS: String = "initial_bits"
         const val PREFS_KEY_GRID_MAX_COLS: String = "grid_max_cols"
         const val PREFS_KEY_MULTIEPG_TEXT_SIZE: String = "multiepg_text_size"
+        const val PREFS_KEY_DRAWER_EPG_MODE: String = "drawer_epg_mode"
         const val PREFS_KEY_SIMPLE_VRM: String = "simple_vrm"
         const val PREFS_KEY_ENABLE_DEVELOPER_SETTINGS: String = "enable_developer"
         const val PREFS_KEY_FAKE_PICON: String = "fake_picon"

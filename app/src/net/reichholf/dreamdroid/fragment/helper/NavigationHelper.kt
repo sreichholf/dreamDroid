@@ -5,7 +5,6 @@ import android.util.SparseArray
 import android.widget.Toast
 import androidx.compose.ui.platform.ComposeView
 import kotlinx.coroutines.Job
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.enigma.PowerState
@@ -179,12 +178,10 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     }
 
     /**
-     * EPG drawer root needs default bouquet ref/name extras (not a plain route map entry).
+     * Drawer EPG opens the last list/MultiEPG mode and seeds default bouquet extras.
      */
     protected fun navigateToEpg() {
-        val ref = DreamDroid.getCurrentProfile().defaultBouquetTv
-        val name = DreamDroid.getCurrentProfile().defaultBouquetTvName
-        getMainActivity().phoneNav.navigateToEpg(ref, name)
+        getMainActivity().phoneNav.navigateToDrawerEpg()
     }
 
     /**

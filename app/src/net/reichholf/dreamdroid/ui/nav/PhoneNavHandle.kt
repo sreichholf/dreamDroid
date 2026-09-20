@@ -92,6 +92,7 @@ interface PhoneNavHandle {
         serviceName: String?,
         timeSec: Long? = null
     ): Boolean
+    fun navigateToDrawerEpg(): Boolean
     fun navigateToMultiEpg(
         serviceReference: String?,
         serviceName: String?,

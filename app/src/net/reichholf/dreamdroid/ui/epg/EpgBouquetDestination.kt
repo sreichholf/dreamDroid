@@ -39,6 +39,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
@@ -141,11 +142,7 @@ fun EpgBouquetDestination(
         },
         onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) },
         onTimeline = {
-            handle.navigateToMultiEpg(
-                bouquetRef,
-                bouquetName,
-                timeSec = timeSec.toLong()
-            )
+            session.openMultiEpg()
         }
     )
 
@@ -379,11 +376,32 @@ internal class EpgBouquetSession :
         menuInflater.inflate(R.menu.epgbouquet, menu)
     }
 
+    override fun onPrepareMenu(menu: Menu) {
+        menu.findItem(R.id.menu_multiepg)?.isVisible = bouquetRef.isNotEmpty()
+    }
+
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        if (menuItem.itemId == R.id.menu_multiepg) {
+            openMultiEpg()
+            return true
+        }
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
             pickBouquet()
             return true
         }
         return false
+    }
+
+    fun openMultiEpg() {
+        val ctx = context ?: return
+        if (bouquetRef.isEmpty()) {
+            return
+        }
+        DrawerEpgMode.saveMulti(ctx)
+        handle?.navigateToMultiEpg(
+            bouquetRef,
+            bouquetName,
+            timeSec = timeSec.toLong()
+        )
     }
 }

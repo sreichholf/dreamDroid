@@ -1,12 +1,14 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
+import androidx.preference.PreferenceManager
 import java.util.ArrayDeque
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -370,6 +372,38 @@ class PhoneNavHostState(
         }
         epgRemountState.value = epgRemountState.value + 1
         return true
+    }
+
+    override fun navigateToDrawerEpg(): Boolean {
+        val ctx = lifecycleOwner as Context
+        val profile = DreamDroid.getCurrentProfile()
+        val ref = profile.defaultBouquetTv
+        val name = profile.defaultBouquetTvName
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        if (!DrawerEpgMode.isMulti(prefs)) {
+            return navigateToEpg(ref, name)
+        }
+        val controller = navController
+        epgServiceReference = ref
+        epgServiceName = name
+        epgFocusedServiceRef = null
+        epgTimeSec = null
+        if (controller == null) {
+            pendingDrawerRoot = PhoneNavRoutes.EPG
+            pendingNestedMultiEpg = true
+            return true
+        }
+        val currentRoute = controller.currentDestination?.route
+        val previous = controller.previousBackStackEntry?.destination?.route
+        if (DrawerEpgMode.isNestedOnListEpg(currentRoute, previous)) {
+            epgRemountState.value = epgRemountState.value + 1
+            return true
+        }
+        if (currentRoute != PhoneNavRoutes.EPG) {
+            resultRequestCodes.clear()
+            controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+        }
+        return navigateToMultiEpg(ref, name)
     }
 
     override fun navigateToMultiEpg(
