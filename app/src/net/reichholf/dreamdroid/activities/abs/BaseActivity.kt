@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.activities.abs
 
 import android.Manifest
-import android.app.ActivityManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -22,7 +21,7 @@ import javax.net.ssl.HttpsURLConnection
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
-import net.reichholf.dreamdroid.helpers.PiconSyncService
+import net.reichholf.dreamdroid.helpers.PiconSync
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.nav.tintToolbarMenuIcons
@@ -134,28 +133,11 @@ open class BaseActivity :
                 REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON
             )
         }
-        callPiconSyncIntent()
-    }
-
-    protected fun callPiconSyncIntent() {
-        if (isSyncServiceRunning()) {
+        if (!PiconSync.enqueue(this)) {
             Toast.makeText(this, R.string.picon_sync_running, Toast.LENGTH_LONG).show()
             return
         }
-        val piconSyncIntent = Intent(this, PiconSyncService::class.java)
-        startService(piconSyncIntent)
         Toast.makeText(this, R.string.picon_sync_started, Toast.LENGTH_LONG).show()
-    }
-
-    private fun isSyncServiceRunning(): Boolean {
-        val manager = getSystemService(ACTIVITY_SERVICE) as ActivityManager
-        @Suppress("DEPRECATION")
-        for (service in manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (PiconSyncService::class.java.name == service.service.className) {
-                return true
-            }
-        }
-        return false
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
