@@ -1,10 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
@@ -51,16 +47,4 @@ suspend fun loadBouquetList(context: Context): BouquetListLoadResult {
         tvLoaded = true,
         radioLoaded = radioList != null
     )
-}
-
-fun Fragment.launchBouquetListLoad(
-    onResult: (success: Boolean, bouquets: Bouquets, errorText: String?) -> Unit
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val result = loadBouquetList(requireContext())
-        if (!isAdded) {
-            return@launch
-        }
-        onResult(result.success, result.bouquets, result.errorText)
-    }
 }

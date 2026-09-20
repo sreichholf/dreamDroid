@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -60,8 +59,3 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
     onLocationsResult?.invoke(locationsOk)
     onReady()
 }
-
-fun Fragment.launchLocationsAndTagsLoad(
-    onProgress: (title: String, progress: String) -> Unit,
-    onReady: () -> Unit
-): Job = launchLocationsAndTagsLoad(requireContext(), onProgress, onReady)
