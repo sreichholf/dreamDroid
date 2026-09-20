@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -12,11 +13,14 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
@@ -313,6 +317,109 @@ class ComposeTvHubServiceRowTest {
                 "corner=#${Integer.toHexString(focusedCorner.toArgb())}",
             rgbDistance(focusedCorner.toArgb(), parent.toArgb()) < 80
         )
+    }
+
+    @Test
+    fun gridCardsShareEqualHeightDespiteLongNowNext() {
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .width(720.dp)
+                        .height(480.dp)
+                ) {
+                    HubServiceGrid(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(
+                            ServiceNowNext(
+                                serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+                                serviceName = "ZDF HD",
+                                now = Event(title = "Now"),
+                                next = Event(title = "Short", startTimeReadable = "18:15")
+                            ),
+                            ServiceNowNext(
+                                serviceReference = "1:0:1:2:2:2:2:0:0:0:",
+                                serviceName = "SAT.1 HD",
+                                now = Event(title = "SAT.1 HD"),
+                                next = Event(
+                                    title = "Jurassic World: Das gefallene Königreich " +
+                                        "and more wrapping text for the next show",
+                                    startTimeReadable = "18:14"
+                                )
+                            )
+                        ),
+                        onServiceClick = { _, _ -> }
+                    )
+                }
+            }
+        }
+        val cards = composeRule.onAllNodesWithTag("hub_service_card")
+        val first = cards[0].getBoundsInRoot()
+        val second = cards[1].getBoundsInRoot()
+        val firstHeight = first.bottom - first.top
+        val secondHeight = second.bottom - second.top
+        assertTrue(
+            "grid cards must share one height (short=$firstHeight long=$secondHeight)",
+            abs(firstHeight.value - secondHeight.value) < 1f
+        )
+    }
+
+    @Test
+    fun focusedTopGridCardDoesNotClipIntoTitleBar() {
+        val titleBar = Color(0xFFFF00FF)
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Column(
+                    modifier = Modifier
+                        .width(720.dp)
+                        .height(480.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .background(titleBar)
+                            .testTag("hub_title_bar")
+                    )
+                    HubServiceGrid(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(
+                            ServiceNowNext(
+                                serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+                                serviceName = "Das Erste HD",
+                                now = Event(title = "Das Erste HD"),
+                                next = Event(
+                                    title = "Babylon Berlin (2/8)",
+                                    startTimeReadable = "18:55"
+                                )
+                            )
+                        ),
+                        onServiceClick = { _, _ -> },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+        }
+        val card = composeRule.onNodeWithTag("hub_service_card")
+        card.assertIsDisplayed()
+        card.requestFocus()
+        composeRule.waitForIdle()
+        val bar = composeRule
+            .onNodeWithTag("hub_title_bar")
+            .captureToImage()
+            .asAndroidBitmap()
+        val samples = listOf(0.15f, 0.5f, 0.85f).map { xFrac ->
+            val x = (bar.width * xFrac).toInt().coerceIn(0, bar.width - 1)
+            val y = (bar.height * 0.5f).toInt().coerceIn(0, bar.height - 1)
+            Color(bar.getPixel(x, y))
+        }
+        samples.forEach { px ->
+            assertTrue(
+                "focused top-row scale must stay in the grid, not clip the title " +
+                    "px=#${Integer.toHexString(px.toArgb())}",
+                rgbDistance(px.toArgb(), titleBar.toArgb()) < 40
+            )
+        }
     }
 
     private fun rgbDistance(a: Int, b: Int): Int {

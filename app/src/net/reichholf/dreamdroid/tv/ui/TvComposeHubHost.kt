@@ -257,6 +257,11 @@ data class HubNavHeader(val id: String, val title: String)
 
 data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext>)
 
+/** 5% focus scale needs inset so the first grid row is not clipped by the title. */
+private val HubGridItemSpacing = 24.dp
+private val HubGridFocusInset = 16.dp
+internal val HubServiceGridCardHeight = 220.dp
+
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
@@ -912,9 +917,14 @@ fun HubMultiEpgBouquetGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 48.dp),
+        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        contentPadding = PaddingValues(
+            start = HubGridFocusInset,
+            top = HubGridFocusInset,
+            end = HubGridFocusInset,
+            bottom = 48.dp
+        ),
         modifier = modifier
             .fillMaxSize()
             .testTag("hub_multiepg_bouquet_grid")
@@ -1033,9 +1043,14 @@ fun HubServiceGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 48.dp),
+        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        contentPadding = PaddingValues(
+            start = HubGridFocusInset,
+            top = HubGridFocusInset,
+            end = HubGridFocusInset,
+            bottom = 48.dp
+        ),
         modifier = modifier
             .fillMaxSize()
             .testTag("hub_service_grid")
@@ -1090,6 +1105,7 @@ private fun HubServiceCard(
         onClick = onClick,
         modifier = modifier
             .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(200.dp))
+            .then(if (fillWidth) Modifier.height(HubServiceGridCardHeight) else Modifier)
             .testTag("hub_service_card")
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
@@ -1115,7 +1131,7 @@ private fun HubServiceCard(
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape()
     ) {
-        Column {
+        Column(modifier = if (fillWidth) Modifier.fillMaxSize() else Modifier) {
             PiconImage(
                 reference = service.serviceReference,
                 name = service.serviceName,
@@ -1130,7 +1146,9 @@ private fun HubServiceCard(
                 nextStart = nextStart,
                 nextTitle = nextTitle,
                 contentExpanded = contentExpanded,
-                imageWidthPx = imageWidthPx
+                fillWidth = fillWidth,
+                imageWidthPx = imageWidthPx,
+                modifier = if (fillWidth) Modifier.weight(1f) else Modifier
             )
         }
     }
@@ -1170,9 +1188,14 @@ fun HubMovieGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-        contentPadding = PaddingValues(bottom = 48.dp),
+        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        contentPadding = PaddingValues(
+            start = HubGridFocusInset,
+            top = HubGridFocusInset,
+            end = HubGridFocusInset,
+            bottom = 48.dp
+        ),
         modifier = modifier
             .fillMaxSize()
             .testTag("hub_movie_grid")
