@@ -99,7 +99,7 @@ class TvComposeHubHostTest {
             TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_TIMERS_ID)
         )
         assertEquals(
-            R.drawable.ic_multiepg_clock,
+            R.drawable.ic_multiepg,
             TvComposeHubHost.hubHeaderIconRes(TvComposeHubHost.HEADER_MULTIEPG_ID)
         )
         assertEquals(

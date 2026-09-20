@@ -4,7 +4,7 @@
 
     <item
         android:id="@+id/menu_multiepg"
-        android:icon="@drawable/ic_multiepg_clock"
+        android:icon="@drawable/ic_multiepg"
         android:title="@string/multiepg"
         dreamDroid:showAsAction="always"/>
 

@@ -152,7 +152,7 @@ object TvComposeHubHost {
     fun hubHeaderIconRes(headerId: String): Int = when {
         headerId == HEADER_SETTINGS_ID -> R.drawable.ic_badge_settings
         headerId == HEADER_TIMERS_ID -> R.drawable.ic_menu_timer
-        headerId == HEADER_MULTIEPG_ID -> R.drawable.ic_multiepg_clock
+        headerId == HEADER_MULTIEPG_ID -> R.drawable.ic_multiepg
         headerId.startsWith(HEADER_MOVIE_PREFIX) -> R.drawable.ic_menu_movie
         else -> R.drawable.ic_menu_tv
     }
@@ -672,7 +672,7 @@ fun ComposeTvHubChrome(
                                 ) {
                                     Image(
                                         painter = painterResource(
-                                            R.drawable.ic_multiepg_clock
+                                            R.drawable.ic_multiepg
                                         ),
                                         contentDescription = stringResource(
                                             R.string.multiepg
@@ -949,7 +949,7 @@ fun HubMultiEpgBouquetGrid(
             ) {
                 Column {
                     Image(
-                        painter = painterResource(R.drawable.ic_multiepg_clock),
+                        painter = painterResource(R.drawable.ic_multiepg),
                         contentDescription = title,
                         contentScale = ContentScale.Fit,
                         colorFilter = ColorFilter.tint(LocalContentColor.current),
