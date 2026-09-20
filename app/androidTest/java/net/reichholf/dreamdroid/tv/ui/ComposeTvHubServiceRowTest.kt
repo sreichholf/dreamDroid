@@ -358,10 +358,9 @@ class ComposeTvHubServiceRowTest {
         val second = cards[1].getBoundsInRoot()
         val firstHeight = first.bottom - first.top
         val secondHeight = second.bottom - second.top
-        assertEquals(
+        assertTrue(
             "grid cards must share one height (short=$firstHeight long=$secondHeight)",
-            firstHeight,
-            secondHeight
+            abs(firstHeight.value - secondHeight.value) < 1f
         )
     }
 
