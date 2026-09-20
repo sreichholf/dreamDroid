@@ -122,6 +122,12 @@
         <item name="titleTextColor">?attr/colorOnSurface</item>
         <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
         <item name="navigationIconTint">?attr/colorOnSurface</item>
+        <!-- MenuProvider inflates via the Activity, not Toolbar.inflateMenu(), so
+             materialThemeOverlay alone does not tint action items. android:theme
+             wraps the ActionMenuView; iconTint covers MaterialToolbar's own path. -->
+        <item name="android:theme">@style/ThemeOverlay.Material3.Toolbar.Surface</item>
+        <item name="iconTint">?attr/colorOnSurface</item>
+        <item name="actionMenuTextColor">?attr/colorOnSurface</item>
     </style>
 
     <style name="ActionModeStyle" parent="@style/Widget.Material3.ActionMode">

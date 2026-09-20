@@ -452,7 +452,6 @@ class HubServiceListSession : MenuProvider {
             menu.menuInflater.inflate(R.menu.popup_servicelist, menu.menu)
             menu.menu.findItem(R.id.menu_next_event).isVisible =
                 DreamDroid.featureNowNext() && row.next != null
-            menu.menu.findItem(R.id.menu_multiepg)?.isVisible = currentRef.isNotEmpty()
             menu.setOnMenuItemClickListener { menuItem ->
                 val ref = row.serviceReference
                 val name = row.serviceName
@@ -469,17 +468,6 @@ class HubServiceListSession : MenuProvider {
 
                     R.id.menu_browse_epg -> {
                         host.navigateToServiceEpg(ref, name)
-                        true
-                    }
-
-                    R.id.menu_multiepg -> {
-                        if (currentRef.isNotEmpty()) {
-                            host.navigateToMultiEpg(
-                                currentRef,
-                                currentName,
-                                focusedServiceRef = row.serviceReference
-                            )
-                        }
                         true
                     }
 

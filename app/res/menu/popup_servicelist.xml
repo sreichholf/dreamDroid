@@ -15,10 +15,6 @@
         dreamDroid:showAsAction="never"
         android:title="@string/browse_epg"/>
     <item
-        android:id="@+id/menu_multiepg"
-        dreamDroid:showAsAction="never"
-        android:title="@string/multiepg"/>
-    <item
         android:id="@+id/menu_zap"
         dreamDroid:showAsAction="never"
         android:title="@string/zap"/>

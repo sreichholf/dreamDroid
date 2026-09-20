@@ -6,7 +6,7 @@
         android:id="@+id/menu_multiepg"
         android:icon="@drawable/ic_multiepg_clock"
         android:title="@string/multiepg"
-        dreamDroid:showAsAction="ifRoom"/>
+        dreamDroid:showAsAction="always"/>
 
     <item
         android:id="@+id/menu_default"

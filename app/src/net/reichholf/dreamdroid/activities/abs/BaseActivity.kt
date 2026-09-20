@@ -9,9 +9,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import javax.net.ssl.HttpsURLConnection
@@ -21,6 +23,7 @@ import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.PiconSyncService
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.nav.tintToolbarMenuIcons
 
 /**
  * Created by Stephan on 06.11.13.
@@ -104,6 +107,12 @@ open class BaseActivity :
 
     override fun onResume() {
         super.onResume()
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        val result = super.onPrepareOptionsMenu(menu)
+        tintToolbarMenuIcons(findViewById<Toolbar>(R.id.toolbar), menu)
+        return result
     }
 
     override fun onDestroy() {
