@@ -51,7 +51,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 const val VIDEO_OVERLAY_PROGRESS_CONTAINER_TAG = "video_overlay_progress_container"
 
 /**
- * Mutable overlay chrome state driven by [net.reichholf.dreamdroid.fragment.VideoOverlayFragment].
+ * Mutable overlay chrome state driven by [VideoOverlayController].
  */
 class VideoOverlayUiState {
     var title by mutableStateOf("")
@@ -171,7 +171,7 @@ fun VideoOverlayScreen(
                 .padding(vertical = 8.dp)
                 .clip(RoundedCornerShape(4.dp))
                 // Nested chrome on the overlay surface — not primaryContainer (loud blue in night).
-                // Parent overlay_root is faded to VideoOverlayFragment.overlayAlpha so video
+                // Parent overlay_root is faded to VideoOverlayController.overlayAlpha so video
                 // stays visible; keep this a phone/tablet surface token, not Leanback gray.
                 .background(MaterialTheme.colorScheme.surfaceVariant)
                 .padding(horizontal = 8.dp, vertical = 4.dp)

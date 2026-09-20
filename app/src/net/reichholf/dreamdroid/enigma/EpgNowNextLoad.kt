@@ -1,10 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -26,17 +22,4 @@ suspend fun loadEpgNowNext(context: Context, params: List<NameValuePair>): EpgNo
     val rows = response.value ?: emptyList()
     val errorText = if (success) null else response.error.contentError(context)
     return EpgNowNextLoadResult(success, rows, errorText)
-}
-
-fun Fragment.launchEpgNowNextLoad(
-    params: List<NameValuePair>,
-    onResult: (success: Boolean, rows: List<ServiceNowNext>, errorText: String?) -> Unit
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val result = loadEpgNowNext(requireContext(), params)
-        if (!isAdded) {
-            return@launch
-        }
-        onResult(result.success, result.rows, result.errorText)
-    }
 }
