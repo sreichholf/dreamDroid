@@ -98,4 +98,15 @@ class DrawerHighlightTest {
             DrawerHighlight.itemIdForRoute("service_epg/1:0:1")
         )
     }
+
+    @Test
+    fun drawerOpenedMultiEpgKeepsEpgHighlight() {
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute(
+                PhoneNavRoutes.MULTI_EPG,
+                previousRoute = PhoneNavRoutes.EPG
+            )
+        )
+    }
 }

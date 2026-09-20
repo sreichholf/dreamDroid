@@ -3,6 +3,12 @@
       xmlns:dreamDroid="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/menu_multiepg"
+        android:icon="@drawable/ic_multiepg"
+        android:title="@string/multiepg"
+        dreamDroid:showAsAction="always"/>
+
+    <item
         android:id="@+id/menu_pick_bouquet"
         android:icon="@drawable/ic_action_list"
         android:title="@string/bouquet_overview"

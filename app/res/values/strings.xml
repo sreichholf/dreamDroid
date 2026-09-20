@@ -54,6 +54,7 @@
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
     <string name="epg">EPG</string>
+    <string name="epg_list">EPG list</string>
     <string name="epg_prime">Prime</string>
     <string name="epg_timeline">Timeline</string>
     <string name="epg_at_this_time">At this time</string>

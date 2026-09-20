@@ -1,12 +1,16 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class HubServiceListSessionTest {
@@ -63,11 +67,45 @@ class HubServiceListSessionTest {
         val toolbarMenu = androidx.appcompat.widget.PopupMenu(ctx, toolbarAnchor).menu
         inflater.inflate(R.menu.servicelistpage, toolbarMenu)
         assertNotNull(toolbarMenu.findItem(R.id.menu_multiepg))
+        assertNotNull(toolbarMenu.findItem(R.id.menu_epg_list))
 
         val popupAnchor = android.widget.TextView(ctx)
         val popupMenu = androidx.appcompat.widget.PopupMenu(ctx, popupAnchor).menu
         inflater.inflate(R.menu.popup_servicelist, popupMenu)
         assertNotNull(popupMenu.findItem(R.id.menu_browse_epg))
         assertNull(popupMenu.findItem(R.id.menu_multiepg))
+    }
+
+    @Test
+    fun serviceListEpgJumpsPersistDrawerMode() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
+        val session = HubServiceListSession()
+        session.context = ctx
+        session.currentRef = "1:7:1:B"
+        session.currentName = "Favourites"
+        DrawerEpgMode.saveList(ctx)
+        session.openMultiEpg()
+        assertTrue(DrawerEpgMode.isMulti(prefs))
+        session.openListEpg()
+        assertFalse(DrawerEpgMode.isMulti(prefs))
+    }
+
+    @Test
+    fun serviceListHidesEpgActionsUntilBouquetIsSet() {
+        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
+        val session = HubServiceListSession()
+        session.context = ctx
+        val inflater = android.view.MenuInflater(ctx)
+        val menu = androidx.appcompat.widget.PopupMenu(ctx, android.widget.TextView(ctx)).menu
+        session.onCreateMenu(menu, inflater)
+        session.currentRef = ""
+        session.onPrepareMenu(menu)
+        assertFalse(menu.findItem(R.id.menu_multiepg).isVisible)
+        assertFalse(menu.findItem(R.id.menu_epg_list).isVisible)
+        session.currentRef = "1:7:1:B"
+        session.onPrepareMenu(menu)
+        assertTrue(menu.findItem(R.id.menu_multiepg).isVisible)
+        assertTrue(menu.findItem(R.id.menu_epg_list).isVisible)
     }
 }

@@ -39,6 +39,7 @@
     <string name="edit">Bearbeiten</string>
     <string name="delete">Löschen</string>
     <string name="epg">EPG</string>
+    <string name="epg_list">EPG-Liste</string>
     <string name="ssl_enabled">https</string>
     <string name="host">Hostname/IP</string>
     <string name="port">Port</string>

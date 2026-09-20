@@ -54,6 +54,7 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
@@ -545,7 +546,9 @@ class HubServiceListSession : MenuProvider {
         if (mph?.isDrawerOpen == true) {
             return
         }
-        menu.findItem(R.id.menu_multiepg)?.isVisible = currentRef.isNotEmpty()
+        val hasBouquet = currentRef.isNotEmpty()
+        menu.findItem(R.id.menu_multiepg)?.isVisible = hasBouquet
+        menu.findItem(R.id.menu_epg_list)?.isVisible = hasBouquet
         val setDefault = menu.findItem(R.id.menu_default) ?: return
         setDefault.isVisible = true
         val defaultReference = DreamDroid.getCurrentProfile().defaultBouquetTv
@@ -560,9 +563,11 @@ class HubServiceListSession : MenuProvider {
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_multiepg) {
-            if (currentRef.isNotEmpty()) {
-                handle?.navigateToMultiEpg(currentRef, currentName)
-            }
+            openMultiEpg()
+            return true
+        }
+        if (menuItem.itemId == R.id.menu_epg_list) {
+            openListEpg()
             return true
         }
         if (menuItem.itemId != Statics.ITEM_SET_DEFAULT) {
@@ -589,5 +594,27 @@ class HubServiceListSession : MenuProvider {
         }
         (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
         return true
+    }
+
+    fun openMultiEpg(focusedServiceRef: String? = null) {
+        val ctx = context ?: return
+        if (currentRef.isEmpty()) {
+            return
+        }
+        DrawerEpgMode.saveMulti(ctx)
+        handle?.navigateToMultiEpg(
+            currentRef,
+            currentName,
+            focusedServiceRef = focusedServiceRef
+        )
+    }
+
+    fun openListEpg() {
+        val ctx = context ?: return
+        if (currentRef.isEmpty()) {
+            return
+        }
+        DrawerEpgMode.saveList(ctx)
+        handle?.navigateToEpg(currentRef, currentName)
     }
 }
