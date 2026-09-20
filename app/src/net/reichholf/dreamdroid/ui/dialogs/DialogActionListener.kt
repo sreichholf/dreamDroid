@@ -1,8 +1,7 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
 /**
- * Callback for in-composition dialog actions that previously routed through
- * [net.reichholf.dreamdroid.fragment.dialogs.ActionDialog].
+ * Callback for Compose dialog / sheet actions (power, sleep timer, EPG event, etc.).
  */
 fun interface DialogActionListener {
     fun onDialogAction(action: Int, details: Any?, dialogTag: String?)

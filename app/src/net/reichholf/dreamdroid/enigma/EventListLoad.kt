@@ -1,10 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
@@ -28,18 +24,4 @@ suspend fun loadEventList(
     val events = response.value ?: emptyList()
     val errorText = if (success) null else response.error.contentError(context)
     return EventListLoadResult(success, events, errorText)
-}
-
-fun Fragment.launchEventListLoad(
-    params: List<NameValuePair>,
-    uri: String = URIStore.EPG_SERVICE,
-    onResult: (success: Boolean, events: List<Event>, errorText: String?) -> Unit
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val result = loadEventList(requireContext(), params, uri)
-        if (!isAdded) {
-            return@launch
-        }
-        onResult(result.success, result.events, result.errorText)
-    }
 }

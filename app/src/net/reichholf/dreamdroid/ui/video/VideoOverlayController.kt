@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.fragment
+package net.reichholf.dreamdroid.ui.video
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
@@ -21,7 +21,6 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.GestureDetectorCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -40,7 +39,7 @@ import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.launchEpgNowNextLoad
+import net.reichholf.dreamdroid.enigma.loadEpgNowNext
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -50,10 +49,6 @@ import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
-import net.reichholf.dreamdroid.ui.video.bindVideoOverlayScreen
-import net.reichholf.dreamdroid.ui.video.showEpgDetail
-import net.reichholf.dreamdroid.ui.video.showMovieDetail
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport
@@ -61,38 +56,42 @@ import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration
 import org.videolan.libvlc.MediaPlayer
 
 /**
- * Kotlin port of the VLC overlay fragment. Public API matches the former Java class
- * so [VideoActivity] and existing instrumented tests keep working.
+ * VLC overlay chrome hosted by [VideoActivity]. Not a Fragment — inflate into
+ * [R.id.overlay], wire Compose / gestures, and drive playback chrome.
  */
-class VideoOverlayFragment :
-    Fragment(),
+class VideoOverlayController(private val activity: VideoActivity) :
     MediaPlayer.EventListener,
     ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
-    protected var surfaceHeight: Int = 0
-    protected var surfaceWidth: Int = 0
+    private var attached: Boolean = false
+    private var resumed: Boolean = false
+    private var rootView: View? = null
+    private val playbackArgs: Bundle = Bundle()
 
-    protected var title: String? = null
-    protected var serviceRef: String? = null
-    protected var bouquetRef: String? = null
+    private var surfaceHeight: Int = 0
+    private var surfaceWidth: Int = 0
 
-    protected lateinit var serviceList: ArrayList<ServiceNowNext>
-    protected var currentService: ServiceNowNext? = null
-    protected var movie: EnigmaMovie? = null
+    private var title: String? = null
+    private var serviceRef: String? = null
+    private var bouquetRef: String? = null
 
-    protected lateinit var handler: Handler
-    protected lateinit var autoHideRunnable: Runnable
-    protected lateinit var issueReloadRunnable: Runnable
+    private lateinit var serviceList: ArrayList<ServiceNowNext>
+    private var currentService: ServiceNowNext? = null
+    private var movie: EnigmaMovie? = null
 
-    protected var itemClickSupport: ItemClickSupport? = null
+    private lateinit var handler: Handler
+    private lateinit var autoHideRunnable: Runnable
+    private lateinit var issueReloadRunnable: Runnable
 
-    protected var overlayRoot: View? = null
-    protected var servicesView: RecyclerView? = null
-    protected var composeOverlay: ComposeView? = null
-    protected var composeZapList: ComposeView? = null
+    private var itemClickSupport: ItemClickSupport? = null
 
-    protected val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
+    private var overlayRoot: View? = null
+    private var servicesView: RecyclerView? = null
+    private var composeOverlay: ComposeView? = null
+    private var composeZapList: ComposeView? = null
+
+    private val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
     private var gestureDetector: GestureDetectorCompat? = null
     private lateinit var audioManager: AudioManager
@@ -101,38 +100,38 @@ class VideoOverlayFragment :
     private var servicesViewVisible: Boolean = false
 
     private var loadJob: Job? = null
+    private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
+    private var backCallback: OnBackPressedCallback? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        @Suppress("DEPRECATION")
-        retainInstance = true
-        setHasOptionsMenu(true)
-        super.onCreate(savedInstanceState)
+    fun attach(extras: Bundle?) {
+        if (attached) {
+            applyPlaybackExtras(extras)
+            return
+        }
         serviceList = ArrayList()
         handler = Handler(Looper.getMainLooper())
         servicesViewVisible = false
         autoHideRunnable = Runnable { hideOverlays() }
         issueReloadRunnable = Runnable { reload() }
-        applyPlaybackExtras(requireArguments())
+
+        playbackArgs.clear()
+        if (extras != null) {
+            playbackArgs.putAll(extras)
+        }
+        applyPlaybackExtras(extras)
 
         audioManager =
-            requireActivity().applicationContext.getSystemService(
-                Context.AUDIO_SERVICE
-            ) as AudioManager
+            activity.applicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         audioMaxVol = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-
         volume = -1f
 
-        autohide()
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        val view = inflater.inflate(R.layout.video_player_overlay, container, false)
+        val container = activity.findViewById<ViewGroup>(R.id.overlay)
+        val view =
+            LayoutInflater.from(activity).inflate(R.layout.video_player_overlay, container, false)
+        container.addView(view)
+        rootView = view
         overlayRoot = view.findViewById(R.id.overlay_root)
         servicesView = view.findViewById(R.id.servicelist)
         composeOverlay = view.findViewById(R.id.compose_overlay)
@@ -153,7 +152,80 @@ class VideoOverlayFragment :
             onDialogAction(actionId, null, dialogTag)
         }
         bindTvZapListIfAllowed()
-        return view
+        wireServiceListAndGestures()
+        onServiceInfoChanged(true)
+        backCallback =
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isOverlaysVisible()) {
+                        hideOverlays()
+                    } else {
+                        isEnabled = false
+                        activity.onBackPressedDispatcher.onBackPressed()
+                    }
+                }
+            }
+        activity.onBackPressedDispatcher.addCallback(activity, backCallback!!)
+        if (composeZapList != null) {
+            tvSessionJob =
+                activity.lifecycleScope.launch {
+                    activity.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                        SessionConnectionHolder.shared.status.collect { status ->
+                            setTvStreamingChromeEnabled(status.allowsStreaming())
+                        }
+                    }
+                }
+        }
+        attached = true
+        autohide()
+    }
+
+    fun onResume() {
+        if (!attached) {
+            return
+        }
+        resumed = true
+        showOverlays()
+        reload()
+    }
+
+    fun onPause() {
+        if (!attached) {
+            return
+        }
+        resumed = false
+        handler.removeCallbacks(autoHideRunnable)
+        handler.removeCallbacks(issueReloadRunnable)
+        cancelLoad()
+        restoreBrightness()
+    }
+
+    fun detach() {
+        if (!attached) {
+            return
+        }
+        if (resumed) {
+            onPause()
+        }
+        backCallback?.remove()
+        backCallback = null
+        tvSessionJob?.cancel()
+        tvSessionJob = null
+        cancelLoad()
+        tvZapListBound = false
+        itemClickSupport = null
+        activity.findViewById<View>(R.id.overlay)?.setOnTouchListener(null)
+        val container = activity.findViewById<ViewGroup>(R.id.overlay)
+        rootView?.let { child ->
+            container.removeView(child)
+        }
+        rootView = null
+        overlayRoot = null
+        servicesView = null
+        composeOverlay = null
+        composeZapList = null
+        gestureDetector = null
+        attached = false
     }
 
     /** TV overlay only: hide zap / stream-another chrome unless session is Online. */
@@ -215,26 +287,22 @@ class VideoOverlayFragment :
         tvZapListBound = false
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    private fun wireServiceListAndGestures() {
         val servicesView = this.servicesView
         if (serviceList.isEmpty()) {
             overlayUiState.showListButton = false
         }
         if (servicesView != null) {
-            servicesView.layoutManager = GridLayoutManager(requireActivity(), 1)
+            servicesView.layoutManager = GridLayoutManager(activity, 1)
             servicesView.addItemDecoration(
                 SpacesItemDecoration(
-                    requireActivity().resources.getDimensionPixelSize(
-                        R.dimen.recylcerview_content_margin
-                    )
+                    activity.resources.getDimensionPixelSize(R.dimen.recylcerview_content_margin)
                 )
             )
             itemClickSupport = ItemClickSupport.addTo(servicesView)
             itemClickSupport!!.setOnItemClickListener(this)
 
-            servicesView.adapter = ServiceAdapter(requireActivity(), serviceList)
+            servicesView.adapter = ServiceAdapter(activity, serviceList)
             servicesView.addOnScrollListener(
                 object : RecyclerView.OnScrollListener() {
                     override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
@@ -256,7 +324,7 @@ class VideoOverlayFragment :
 
         gestureDetector =
             GestureDetectorCompat(
-                requireActivity(),
+                activity,
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onScroll(
                         e1: MotionEvent?,
@@ -266,7 +334,7 @@ class VideoOverlayFragment :
                     ): Boolean {
                         if (e1 == null) return true
                         val isGesturesEnabled =
-                            PreferenceManager.getDefaultSharedPreferences(requireContext())
+                            PreferenceManager.getDefaultSharedPreferences(activity)
                                 .getBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, true)
                         if (!isGesturesEnabled) return true
 
@@ -279,7 +347,8 @@ class VideoOverlayFragment :
                             )
                         )
                         val metrics = DisplayMetrics()
-                        requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
+                        @Suppress("DEPRECATION")
+                        activity.windowManager.defaultDisplay.getMetrics(metrics)
                         val isRight = e1.rawX > (4 * metrics.widthPixels / 7)
                         val isLeft = e1.rawX < (3 * metrics.widthPixels / 7)
 
@@ -302,9 +371,10 @@ class VideoOverlayFragment :
                 }
             )
 
-        requireActivity().findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
+        activity.findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
             val metrics = DisplayMetrics()
-            requireActivity().windowManager.defaultDisplay.getMetrics(metrics)
+            @Suppress("DEPRECATION")
+            activity.windowManager.defaultDisplay.getMetrics(metrics)
             if (surfaceHeight == 0) {
                 surfaceHeight = min(metrics.widthPixels, metrics.heightPixels)
             }
@@ -316,19 +386,19 @@ class VideoOverlayFragment :
         }
     }
 
-    protected fun onRewind() {
+    private fun onRewind() {
         val p = VLCPlayer.get()!!
         p.setPosition(max(0.0f, p.getPosition() - seekStepSize))
         autohide()
     }
 
-    protected fun onForward() {
+    private fun onForward() {
         val p = VLCPlayer.get()!!
         p.setPosition(max(0.0f, p.getPosition() + seekStepSize))
         autohide()
     }
 
-    protected fun onPlay() {
+    private fun onPlay() {
         VLCPlayer.get()!!.play()
         autohide()
     }
@@ -342,7 +412,7 @@ class VideoOverlayFragment :
     private fun onSelectAudioTrack() {
         val player = VLCPlayer.getMediaPlayer()!!
         showTrackSelection(
-            getString(R.string.audio_tracks),
+            activity.getString(R.string.audio_tracks),
             player.audioTracks,
             DIALOG_TAG_AUDIO_TRACK
         )
@@ -351,7 +421,7 @@ class VideoOverlayFragment :
     private fun onSelectSubtitleTrack() {
         val player = VLCPlayer.getMediaPlayer()!!
         showTrackSelection(
-            getString(R.string.subtitles),
+            activity.getString(R.string.subtitles),
             player.spuTracks,
             DIALOG_TAG_SUBTITLE_TRACK
         )
@@ -383,7 +453,7 @@ class VideoOverlayFragment :
                     ""
                 )
         }
-        overlayUiState.showEpgDetail(requireContext(), event)
+        overlayUiState.showEpgDetail(activity, event)
     }
 
     private fun onList() {
@@ -404,9 +474,8 @@ class VideoOverlayFragment :
         descriptions: Array<MediaPlayer.TrackDescription>?,
         dialogTag: String
     ) {
-        // this should actually never be true, but just to be sure we do it anyways
         if (descriptions == null || descriptions.isEmpty()) {
-            Toast.makeText(context, R.string.no_tracks, Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, R.string.no_tracks, Toast.LENGTH_SHORT).show()
             return
         }
         val labels = descriptions.map { it.name }
@@ -428,7 +497,7 @@ class VideoOverlayFragment :
         setVolume((currentVolume / 100 * audioMaxVol).toInt())
     }
 
-    protected fun setVolume(volume: Int) {
+    private fun setVolume(volume: Int) {
         val currentVol = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC)
         if (volume != currentVol) {
             audioManager.setStreamVolume(
@@ -441,7 +510,7 @@ class VideoOverlayFragment :
 
     private fun onBrightnessTouch(distanceY: Float) {
         val delta = distanceY / surfaceHeight
-        val window = requireActivity().window
+        val window = activity.window
         val layoutParams = window.attributes
         if (savedScreenBrightness == null) {
             savedScreenBrightness = layoutParams.screenBrightness
@@ -453,38 +522,10 @@ class VideoOverlayFragment :
     private fun restoreBrightness() {
         val brightness = savedScreenBrightness ?: return
         savedScreenBrightness = null
-        val window = activity?.window ?: return
+        val window = activity.window
         val layoutParams = window.attributes
         layoutParams.screenBrightness = brightness
         window.attributes = layoutParams
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        onServiceInfoChanged(true)
-        // API 36+ no longer dispatches KEYCODE_BACK; hide overlays via predictive back.
-        requireActivity().onBackPressedDispatcher.addCallback(
-            viewLifecycleOwner,
-            object : OnBackPressedCallback(true) {
-                override fun handleOnBackPressed() {
-                    if (isOverlaysVisible()) {
-                        hideOverlays()
-                    } else {
-                        isEnabled = false
-                        requireActivity().onBackPressedDispatcher.onBackPressed()
-                    }
-                }
-            }
-        )
-        if (composeZapList != null) {
-            viewLifecycleOwner.lifecycleScope.launch {
-                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                    SessionConnectionHolder.shared.status.collect { status ->
-                        setTvStreamingChromeEnabled(status.allowsStreaming())
-                    }
-                }
-            }
-        }
     }
 
     private fun applyServiceList(services: ArrayList<ServiceNowNext>) {
@@ -523,7 +564,7 @@ class VideoOverlayFragment :
         val serviceInfo = serviceInfoForIntent()
         val streamingIntent =
             IntentFactory.getStreamServiceIntent(
-                requireActivity(),
+                activity,
                 serviceRef!!,
                 title ?: "",
                 bouquetRef,
@@ -531,11 +572,11 @@ class VideoOverlayFragment :
             )
         val zapExtras =
             VideoPlayback.overlayExtrasForZap(title, serviceRef, bouquetRef)
-        requireArguments().putString(TITLE, zapExtras.title)
-        requireArguments().putString(SERVICE_REFERENCE, zapExtras.serviceRef)
-        requireArguments().putString(BOUQUET_REFERENCE, zapExtras.bouquetRef)
-        requireArguments().putSerializable(SERVICE_INFO, serviceInfo)
-        (requireActivity() as VideoActivity).handleIntent(streamingIntent)
+        playbackArgs.putString(TITLE, zapExtras.title)
+        playbackArgs.putString(SERVICE_REFERENCE, zapExtras.serviceRef)
+        playbackArgs.putString(BOUQUET_REFERENCE, zapExtras.bouquetRef)
+        playbackArgs.putSerializable(SERVICE_INFO, serviceInfo)
+        activity.handleIntent(streamingIntent)
 
         onServiceInfoChanged(true)
     }
@@ -548,17 +589,16 @@ class VideoOverlayFragment :
                 extras.getString(SERVICE_REFERENCE),
                 extras.getString(BOUQUET_REFERENCE)
             )
-        val args = arguments
-        if (args != null && args !== extras) {
-            args.putString(TITLE, incoming.title)
-            args.putString(SERVICE_REFERENCE, incoming.serviceRef)
-            args.putString(BOUQUET_REFERENCE, incoming.bouquetRef)
+        if (playbackArgs !== extras) {
+            playbackArgs.putString(TITLE, incoming.title)
+            playbackArgs.putString(SERVICE_REFERENCE, incoming.serviceRef)
+            playbackArgs.putString(BOUQUET_REFERENCE, incoming.bouquetRef)
             if (extras.containsKey(SERVICE_INFO)) {
                 @Suppress("DEPRECATION")
                 val serviceInfo = extras.get(SERVICE_INFO) as java.io.Serializable?
-                args.putSerializable(SERVICE_INFO, serviceInfo)
+                playbackArgs.putSerializable(SERVICE_INFO, serviceInfo)
             } else {
-                args.remove(SERVICE_INFO)
+                playbackArgs.remove(SERVICE_INFO)
             }
         }
 
@@ -589,9 +629,9 @@ class VideoOverlayFragment :
             }
         }
 
-        if ((titleChanged || refsChanged) && view != null && this::handler.isInitialized) {
+        if ((titleChanged || refsChanged) && rootView != null && this::handler.isInitialized) {
             onServiceInfoChanged(true)
-            if (isResumed) {
+            if (resumed) {
                 reload()
             }
         }
@@ -685,13 +725,17 @@ class VideoOverlayFragment :
     }
 
     fun reload() {
-        if (bouquetRef.isNullOrEmpty() || activity == null) return
-        if (!isAdded || view == null) return
+        if (bouquetRef.isNullOrEmpty()) return
+        if (!attached || rootView == null) return
         cancelLoad()
         val params = arrayListOf(NameValuePair("bRef", bouquetRef))
         loadJob =
-            launchEpgNowNextLoad(params) { success, rows, errorText ->
-                onEpgNowNextReady(success, rows, errorText)
+            activity.lifecycleScope.launch {
+                val result = loadEpgNowNext(activity, params)
+                if (!attached) {
+                    return@launch
+                }
+                onEpgNowNextReady(result.success, result.rows, result.errorText)
             }
     }
 
@@ -705,11 +749,11 @@ class VideoOverlayFragment :
         rows: List<ServiceNowNext>,
         errorText: String?
     ) {
-        if (!isAdded) return
+        if (!attached) return
         if (!success) {
-            val message = errorText ?: getString(R.string.get_content_error)
+            val message = errorText ?: activity.getString(R.string.get_content_error)
             Log.e(LOG_TAG, message)
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+            Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
             return
         }
         applyServiceList(ArrayList(rows))
@@ -729,7 +773,7 @@ class VideoOverlayFragment :
     }
 
     private fun updateViews() {
-        if (view == null) return
+        if (rootView == null) return
 
         overlayUiState.title = title ?: ""
         val player = VLCPlayer.get()
@@ -774,8 +818,8 @@ class VideoOverlayFragment :
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    protected fun updateProgress() {
-        if (view == null) return
+    private fun updateProgress() {
+        if (rootView == null) return
         val player = VLCPlayer.get()
         val isSeekable = player != null && player.isSeekable()
         overlayUiState.seekable = isSeekable
@@ -851,43 +895,21 @@ class VideoOverlayFragment :
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        showOverlays()
-        reload()
-    }
-
-    override fun onPause() {
-        handler.removeCallbacks(autoHideRunnable)
-        handler.removeCallbacks(issueReloadRunnable)
-        cancelLoad()
-        restoreBrightness()
-        super.onPause()
-    }
-
-    override fun onDestroyView() {
-        tvZapListBound = false
-        super.onDestroyView()
-    }
-
     fun autohide() {
         handler.removeCallbacks(autoHideRunnable)
         handler.postDelayed(autoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT.toLong())
     }
 
-    override fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
-        super.onPictureInPictureModeChanged(isInPictureInPictureMode)
+    fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
         hideOverlays()
     }
 
     fun showOverlays() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N &&
-            requireActivity().isInPictureInPictureMode
-        ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && activity.isInPictureInPictureMode) {
             hideOverlays()
             return
         }
-        if (view == null) return
+        if (rootView == null) return
         handler.removeCallbacks(autoHideRunnable)
         updateViews()
         if (servicesViewVisible) {
@@ -898,7 +920,7 @@ class VideoOverlayFragment :
     }
 
     fun hideOverlays() {
-        if (view == null) return
+        if (rootView == null) return
         handler.removeCallbacks(autoHideRunnable)
         hideZapOverlays()
         fadeOutView(overlayRoot)
@@ -909,7 +931,7 @@ class VideoOverlayFragment :
             hideZapOverlays()
             return
         }
-        if (view == null) return
+        if (rootView == null) return
         overlayUiState.zapCurrentRef = serviceRef
         val composeZapList = this.composeZapList
         if (composeZapList != null) {
@@ -925,7 +947,7 @@ class VideoOverlayFragment :
     }
 
     private fun hideZapOverlays() {
-        if (view == null) return
+        if (rootView == null) return
         fadeOutView(composeZapList)
         fadeOutView(servicesView)
     }
@@ -962,20 +984,22 @@ class VideoOverlayFragment :
         }
     }
 
-    protected fun isOverlaysVisible(): Boolean {
-        val sdroot = requireView().findViewById<View>(R.id.overlay_root)
+    private fun isOverlaysVisible(): Boolean {
+        val root = rootView ?: return false
+        val sdroot = root.findViewById<View>(R.id.overlay_root)
         return sdroot.visibility == View.VISIBLE
     }
 
     override fun onEvent(event: MediaPlayer.Event) {
+        val view = rootView ?: return
         when (event.type) {
             MediaPlayer.Event.Opening -> {
-                val progressView = requireView().findViewById<View>(R.id.video_load_progress)
+                val progressView = view.findViewById<View>(R.id.video_load_progress)
                 fadeInView(progressView)
             }
 
             MediaPlayer.Event.Playing -> {
-                val progressView = requireView().findViewById<View>(R.id.video_load_progress)
+                val progressView = view.findViewById<View>(R.id.video_load_progress)
                 fadeOutView(progressView)
                 updateProgress()
                 hideOverlays()
@@ -1084,7 +1108,7 @@ class VideoOverlayFragment :
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
         private const val FAKE_LENGTH: Int = 10000
 
-        private val LOG_TAG: String = VideoOverlayFragment::class.java.simpleName
+        private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 
         /** Live TV chrome stays slightly see-through so the video is always visible. */
         var overlayAlpha: Float = 0.85f

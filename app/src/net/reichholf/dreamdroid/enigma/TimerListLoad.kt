@@ -1,10 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 
 data class TimerListLoadResult(
@@ -27,16 +23,4 @@ suspend fun loadTimerList(context: Context): TimerListLoadResult {
         else -> context.getString(R.string.error_parsing)
     }
     return TimerListLoadResult(success, timers, errorText)
-}
-
-fun Fragment.launchTimerListLoad(
-    onResult: (success: Boolean, timers: List<Timer>, errorText: String?) -> Unit
-): Job {
-    return viewLifecycleOwner.lifecycleScope.launch {
-        val result = loadTimerList(requireContext())
-        if (!isAdded) {
-            return@launch
-        }
-        onResult(result.success, result.timers, result.errorText)
-    }
 }

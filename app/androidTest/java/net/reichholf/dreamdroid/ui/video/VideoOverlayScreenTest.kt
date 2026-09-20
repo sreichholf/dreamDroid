@@ -18,12 +18,12 @@ import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
@@ -95,7 +95,7 @@ class VideoOverlayScreenTest {
 
     @Test
     fun liveTvOverlayKeepsSeeThroughAlpha() {
-        assertEquals(0.85f, VideoOverlayFragment.overlayAlpha, 0.001f)
+        assertEquals(0.85f, VideoOverlayController.overlayAlpha, 0.001f)
     }
 
     @Test
@@ -173,8 +173,8 @@ class VideoOverlayScreenTest {
     }
 
     @Test
-    fun videoOverlayFragmentIsKotlinClass() {
-        assertNotNull(VideoOverlayFragment::class.java.getAnnotation(Metadata::class.java))
+    fun videoOverlayControllerIsKotlinClass() {
+        assertNotNull(VideoOverlayController::class.java.getAnnotation(Metadata::class.java))
     }
 
     @Test

@@ -24,14 +24,10 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.ui.platform.ComposeView
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.DialogFragment
-import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
-import com.google.android.material.appbar.AppBarLayout
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,14 +44,13 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
-import net.reichholf.dreamdroid.fragment.ActivityCallbackHandler
-import net.reichholf.dreamdroid.fragment.helper.NavigationHelper
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
+import net.reichholf.dreamdroid.ui.nav.NavigationHelper
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
@@ -89,7 +84,6 @@ class MainActivity :
 
     private var navigationHelper: NavigationHelper? = null
     private var drawerListState: DrawerListState? = null
-    private var detailFragment: Fragment? = null
     lateinit var phoneNav: PhoneNavHostState
         private set
 
@@ -104,9 +98,8 @@ class MainActivity :
     private lateinit var currentProfile: Profile
 
     /**
-     * Lowest-priority back handler: drawer close, then NavHost pop (service EPG, etc.), then
-     * optional leave-confirm. Registered early in [onCreate] so Compose [BackHandler] and
-     * fragment callbacks (provider drill-down, NavHost) stay higher priority.
+     * Lowest-priority back handler: drawer close, then NavHost pop, then optional leave-confirm.
+     * Registered early in [onCreate] so Compose [BackHandler]s stay higher priority.
      */
     private val leaveAppCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
@@ -119,7 +112,7 @@ class MainActivity :
             }
             val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
                 .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
-            if (shouldConfirm && supportFragmentManager.backStackEntryCount == 0) {
+            if (shouldConfirm) {
                 phoneNav.requestLeaveConfirm()
             } else {
                 finish()
@@ -250,7 +243,7 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
-        // Register before fragments/Compose so those BackHandlers outrank leave-confirm.
+        // Register before Compose so destination BackHandlers outrank leave-confirm.
         onBackPressedDispatcher.addCallback(this, leaveAppCallback)
 
         isDrawerOpenNotified = false
@@ -454,19 +447,6 @@ class MainActivity :
         return true
     }
 
-    private fun getCurrentDetailFragment(): Fragment? {
-        if (detailFragment == null) {
-            detailFragment = supportFragmentManager.findFragmentById(R.id.detail_view)
-        }
-        return detailFragment
-    }
-
-    /**
-     * Detail pane content for leftover fragment callbacks. Phone destinations live in
-     * the activity-owned Compose [PhoneNavHostState], not a Fragment.
-     */
-    private fun getDetailContentFragment(): Fragment? = getCurrentDetailFragment()
-
     private fun bindPhoneNavCompose() {
         val container = findViewById<ViewGroup>(R.id.detail_view)
         if (container.findViewById<View>(R.id.phone_nav_compose) != null) {
@@ -505,8 +485,6 @@ class MainActivity :
                 override fun onDrawerClosed(view: View) {
                     isDrawerOpenNotified = false
                     supportInvalidateOptionsMenu()
-                    val callbackHandler = getCurrentDetailFragment() as ActivityCallbackHandler?
-                    callbackHandler?.onDrawerClosed()
                 }
 
                 override fun onDrawerOpened(drawerView: View) {
@@ -519,8 +497,6 @@ class MainActivity :
                         return
                     }
                     isDrawerOpenNotified = true
-                    val callbackHandler = getCurrentDetailFragment() as ActivityCallbackHandler?
-                    callbackHandler?.onDrawerOpened()
                 }
             }
             drawerLayout.addDrawerListener(drawerToggle)
@@ -552,19 +528,6 @@ class MainActivity :
             super.setTitle("")
         } else {
             super.setTitle(title)
-        }
-    }
-
-    private fun showFragment(ft: FragmentTransaction, viewId: Int, fragment: Fragment) {
-        if (fragment.isAdded) {
-            Log.i(TAG, "Fragment ${(fragment as Any).javaClass.simpleName} already added, showing")
-            if (detailFragment != null && !fragment.isVisible) {
-                ft.hide(detailFragment!!)
-            }
-            ft.show(fragment)
-        } else {
-            Log.i(TAG, "Fragment ${(fragment as Any).javaClass.simpleName} not added, adding")
-            ft.replace(viewId, fragment, (fragment as Any).javaClass.simpleName)
         }
     }
 
@@ -680,53 +643,6 @@ class MainActivity :
         connectionState.setText(phoneNav.connectionStatusFlow().value.chipLabelRes())
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-     * .support.v4.app.Fragment)
-     */
-    override fun showDetails(fragment: Fragment) {
-        showDetails(fragment, false)
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see
-     * net.reichholf.dreamdroid.abstivities.MultiPaneHandler#showDetails(android
-     * .support.v4.app.Fragment, boolean)
-     */
-    override fun showDetails(fragment: Fragment, addToBackStack: Boolean) {
-        if (fragment.isVisible) {
-            return
-        }
-        val ft = supportFragmentManager.beginTransaction()
-        if (detailFragment != null &&
-            detailFragment!!.isVisible &&
-            PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-                DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true
-            )
-        ) {
-            ft.setCustomAnimations(
-                R.animator.activity_open_translate,
-                R.animator.activity_close_scale,
-                R.animator.activity_open_scale,
-                R.animator.activity_close_translate
-            )
-        }
-
-        val appBarLayout = findViewById<AppBarLayout?>(R.id.appbar)
-        appBarLayout?.setExpanded(true, true)
-        showFragment(ft, R.id.detail_view, fragment)
-        if (addToBackStack) {
-            ft.addToBackStack(null)
-        }
-        ft.commit()
-    }
-
     fun unregisterFab(id: Int) {
         val fab = findViewById<View?>(id) ?: return
         fab.setOnClickListener(null)
@@ -734,13 +650,6 @@ class MainActivity :
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        val callbackHandler = getDetailContentFragment() as ActivityCallbackHandler?
-        if (callbackHandler != null) {
-            if (callbackHandler.onKeyDown(keyCode, event)) {
-                return true
-            }
-        }
-
         if (PreferenceManager.getDefaultSharedPreferences(
                 this
             ).getBoolean("volume_control", false)
@@ -760,18 +669,10 @@ class MainActivity :
         return super.onKeyDown(keyCode, event)
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        val callbackHandler = getDetailContentFragment() as ActivityCallbackHandler?
-        if (callbackHandler != null) {
-            if (callbackHandler.onKeyUp(keyCode, event)) {
-                return true
-            }
-        }
-
-        return keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
+        keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
             keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
             super.onKeyUp(keyCode, event)
-    }
 
     override val isMultiPane: Boolean
         get() = true
@@ -783,66 +684,18 @@ class MainActivity :
 
     fun finish(finishFragment: Boolean) {
         if (finishFragment) {
-            // TODO finish() for Fragment
-            // getSupportFragmentManager().popBackStackImmediate();
+            // Phone destinations live in Compose NavHost; nothing to pop here.
         } else {
             super.finish()
         }
     }
 
-    override fun onFragmentResume(fragment: Fragment) {
-        if (fragment != detailFragment) {
-            detailFragment = fragment
-            showDetails(fragment)
-        }
-    }
-
-    override fun onFragmentPause(fragment: Fragment) {
-        if (fragment == detailFragment) {
-            detailFragment = null
-        }
-    }
-
-    override fun showDialogFragment(
-        fragmentClass: Class<out DialogFragment>,
-        args: Bundle?,
-        tag: String
-    ) {
-        try {
-            @Suppress("DEPRECATION")
-            val f = fragmentClass.newInstance()
-            f.arguments = args
-            showDialogFragment(f, tag)
-        } catch (e: InstantiationException) {
-            Log.e(TAG, e.message ?: "")
-        } catch (e: IllegalAccessException) {
-            Log.e(TAG, e.message ?: "")
-        }
-    }
-
-    override fun showDialogFragment(fragment: DialogFragment, tag: String) {
-        val fm = supportFragmentManager
-        fragment.show(fm, tag)
-    }
-
     /*
-     * Dialog action routing for remaining DialogFragments (choice / progress / connection).
+     * Dialog action routing for Compose choice / progress / connection dialogs.
      * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        val listener = phoneNav.composeDialogActionListener
-        if (listener != null) {
-            listener.onDialogAction(action, details, dialogTag)
-            super.onDialogAction(action, details, dialogTag)
-            return
-        }
-        getCurrentDetailFragment()
-        if (detailFragment != null) {
-            val content = getDetailContentFragment()
-            if (content is DialogActionListener) {
-                content.onDialogAction(action, details, dialogTag)
-            }
-        }
+        phoneNav.composeDialogActionListener?.onDialogAction(action, details, dialogTag)
         super.onDialogAction(action, details, dialogTag)
     }
 
@@ -866,9 +719,5 @@ class MainActivity :
                 recreate()
             }
         }
-    }
-
-    companion object {
-        private val TAG: String = MainActivity::class.java.simpleName
     }
 }

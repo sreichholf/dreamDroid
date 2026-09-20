@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
  * (picon, now/next, 1.05 focus scale, DreamDroid palette).
  *
  * [DreamDroidTvTheme.fillBackground] stays false so the parent
- * [net.reichholf.dreamdroid.fragment.VideoOverlayFragment.overlayAlpha] fade is
+ * [net.reichholf.dreamdroid.ui.video.VideoOverlayController.overlayAlpha] fade is
  * what keeps video visible — cards use phone surface tokens, not Leanback gray.
  */
 @Composable

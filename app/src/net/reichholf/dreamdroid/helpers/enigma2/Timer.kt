@@ -7,7 +7,6 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.app.Activity
-import androidx.fragment.app.Fragment
 import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.R
@@ -153,14 +152,12 @@ class Timer {
             return params
         }
 
-        fun editUsingEvent(mph: MultiPaneHandler?, event: Event, target: Fragment) {
-            edit(mph, createByEvent(event), target, true)
+        fun editUsingEvent(mph: MultiPaneHandler?, event: Event) {
+            edit(mph, createByEvent(event), true)
         }
 
-        fun edit(mph: MultiPaneHandler?, timer: TypedTimer, target: Fragment, create: Boolean) {
-            val handle = (target.activity as? MainActivity)?.phoneNav
-                ?: (mph as? MainActivity)?.phoneNav
-            handle?.navigateToTimerEdit(timer, create)
+        fun edit(mph: MultiPaneHandler?, timer: TypedTimer, create: Boolean) {
+            (mph as? MainActivity)?.phoneNav?.navigateToTimerEdit(timer, create)
         }
     }
 }

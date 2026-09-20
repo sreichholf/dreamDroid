@@ -21,7 +21,6 @@ import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
-import androidx.fragment.app.commit
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -31,12 +30,12 @@ import kotlin.math.floor
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.fragment.VideoOverlayFragment
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -56,7 +55,7 @@ class VideoActivity :
     var surfaceView: SurfaceView? = null
     lateinit var subtitlesSurfaceView: SurfaceView
     var player: VLCPlayer? = null
-    var overlayFragment: VideoOverlayFragment? = null
+    var overlay: VideoOverlayController? = null
 
     var onLayoutChangeListener: View.OnLayoutChangeListener? = null
 
@@ -118,7 +117,7 @@ class VideoActivity :
                         finish()
                         return@collect
                     }
-                    overlayFragment?.setTvStreamingChromeEnabled(status.allowsStreaming())
+                    overlay?.setTvStreamingChromeEnabled(status.allowsStreaming())
                 }
             }
         }
@@ -172,7 +171,7 @@ class VideoActivity :
         if (tvStreamingRejected) {
             return
         }
-        overlayFragment?.showOverlays()
+        overlay?.onResume()
     }
 
     override fun onWindowFocusChanged(hasFocus: Boolean) {
@@ -182,7 +181,8 @@ class VideoActivity :
 
     override fun onPause() {
         if (!tvStreamingRejected) {
-            overlayFragment?.hideOverlays()
+            overlay?.hideOverlays()
+            overlay?.onPause()
         }
         super.onPause()
     }
@@ -197,6 +197,8 @@ class VideoActivity :
     }
 
     override fun onDestroy() {
+        overlay?.detach()
+        overlay = null
         super.onDestroy()
     }
 
@@ -222,7 +224,7 @@ class VideoActivity :
     fun handleIntent(intent: Intent) {
         setIntent(intent)
         if (Intent.ACTION_VIEW != intent.action) return
-        overlayFragment?.applyPlaybackExtras(intent.extras)
+        overlay?.applyPlaybackExtras(intent.extras)
         val player = this.player ?: return
         val data = intent.data ?: return
         val accel =
@@ -242,7 +244,7 @@ class VideoActivity :
         if (tvStreamingRejected) {
             return super.onKeyDown(keyCode, event)
         }
-        return overlayFragment?.onKeyDown(keyCode, event) == true ||
+        return overlay?.onKeyDown(keyCode, event) == true ||
             super.onKeyDown(keyCode, event)
     }
 
@@ -266,23 +268,8 @@ class VideoActivity :
     }
 
     private fun initializeOverlay() {
-        if (overlayFragment == null) {
-            overlayFragment =
-                supportFragmentManager.findFragmentByTag("video_overlay_fragment")
-                    as VideoOverlayFragment?
-        }
-        val existing = overlayFragment
-        if (existing != null) {
-            existing.applyPlaybackExtras(intent.extras)
-            return
-        }
-
-        val overlay = VideoOverlayFragment()
-        overlay.arguments = intent.extras
-        overlayFragment = overlay
-        supportFragmentManager.commit {
-            replace(R.id.overlay, overlay, "video_overlay_fragment")
-        }
+        val controller = overlay ?: VideoOverlayController(this).also { overlay = it }
+        controller.attach(intent.extras)
     }
 
     private fun cleanup() {
@@ -492,13 +479,13 @@ class VideoActivity :
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         changeSurfaceLayout()
+        overlay?.onPictureInPictureModeChanged(isInPictureInPictureMode)
     }
 
     override fun onSurfacesDestroyed(vlcVout: IVLCVout) {}
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        if (overlayFragment == null) return
-        overlayFragment!!.onDialogAction(action, details, dialogTag)
+        overlay?.onDialogAction(action, details, dialogTag)
     }
 
     override fun finish() {
@@ -510,8 +497,8 @@ class VideoActivity :
         if (event.type == MediaPlayer.Event.Playing) {
             playbackAlreadyStarted = true
         }
-        val overlay = overlayFragment ?: return
-        overlay.onUpdateButtons()
+        val chrome = overlay ?: return
+        chrome.onUpdateButtons()
         when (event.type) {
             MediaPlayer.Event.Playing -> {
                 onMediaPlaying()
@@ -529,7 +516,7 @@ class VideoActivity :
 
             MediaPlayer.Event.EndReached -> finish()
         }
-        overlay.onEvent(event)
+        chrome.onEvent(event)
     }
 
     companion object {

@@ -7,7 +7,7 @@ import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 
-/** Phase 2.1g-ii-d helpers so [VideoOverlayFragment] can open Compose modal sheets. */
+/** Phase 2.1g-ii-d helpers so [VideoOverlayController] can open Compose modal sheets. */
 fun VideoOverlayUiState.showMovieDetail(movie: Movie) {
     movieDetailContent = movie.toMovieDetailContent()
     epgDetailContent = null
