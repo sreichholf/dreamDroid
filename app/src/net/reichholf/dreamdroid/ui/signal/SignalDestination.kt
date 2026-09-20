@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -31,6 +30,29 @@ import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.loadSignal
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+
+internal class SignalPollGate {
+    var generation: Int = 0
+        private set
+    var active: Boolean = false
+        private set
+
+    fun start() {
+        active = true
+    }
+
+    fun stop() {
+        active = false
+        generation++
+    }
+
+    fun nextLoadGeneration(): Int {
+        generation++
+        return generation
+    }
+
+    fun isCurrent(generation: Int): Boolean = active && generation == this.generation
+}
 
 private const val TAG = "SignalDestination"
 private const val MAX_SNR_DB = 20
@@ -50,7 +72,7 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
     val blocked = status.blocksMutations
     val handler = remember { Handler(Looper.getMainLooper()) }
     var isUpdating by remember { mutableStateOf(false) }
-    var signalGeneration by remember { mutableIntStateOf(0) }
+    val pollGate = remember { SignalPollGate() }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var startTime by remember { mutableStateOf(0L) }
 
@@ -70,9 +92,12 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
         loadJob = null
     }
 
-    val playSoundTask = remember(uiState) {
+    val playSoundTask = remember(uiState, pollGate) {
         object : Runnable {
             override fun run() {
+                if (!pollGate.active) {
+                    return
+                }
                 val db = uiState.snrDb
                 val freq = (1650 * db * db) / 1000 + 200
                 scope.launch(Dispatchers.IO) { playAcousticTone(freq) }
@@ -80,7 +105,9 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
                 if (delay > MAX_DELAY) {
                     delay = MAX_DELAY.toDouble()
                 }
-                handler.postDelayed(this, delay.toLong())
+                if (pollGate.active) {
+                    handler.postDelayed(this, delay.toLong())
+                }
             }
         }
     }
@@ -91,7 +118,7 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
 
     fun stopPolling() {
         stopAcoustic()
-        signalGeneration++
+        pollGate.stop()
         cancelLoad()
         isUpdating = false
         uiState.clearMeter()
@@ -105,6 +132,9 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
     }
 
     fun reload() {
+        if (!pollGate.active) {
+            return
+        }
         if (SessionConnectionHolder.shared.status.value.blocksMutations) {
             return
         }
@@ -114,11 +144,11 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
             return
         }
         isUpdating = true
-        val generation = ++signalGeneration
+        val generation = pollGate.nextLoadGeneration()
         cancelLoad()
         loadJob = scope.launch {
             val result = loadSignal(context.applicationContext)
-            if (generation != signalGeneration) {
+            if (!pollGate.isCurrent(generation)) {
                 return@launch
             }
             isUpdating = false
@@ -136,11 +166,14 @@ fun SignalDestination(handle: PhoneNavHandle? = null, modifier: Modifier = Modif
                 return@launch
             }
             applySignal(result.signal)
-            reload()
+            if (pollGate.isCurrent(generation)) {
+                reload()
+            }
         }
     }
 
     fun startPolling() {
+        pollGate.start()
         isUpdating = false
         if (uiState.enabled) {
             reload()

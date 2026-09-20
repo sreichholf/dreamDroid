@@ -17,7 +17,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
@@ -103,6 +102,7 @@ class VideoOverlayFragment :
 
     private var loadJob: Job? = null
     private var tvZapListBound: Boolean = false
+    private var savedScreenBrightness: Float? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         @Suppress("DEPRECATION")
@@ -443,7 +443,19 @@ class VideoOverlayFragment :
         val delta = distanceY / surfaceHeight
         val window = requireActivity().window
         val layoutParams = window.attributes
+        if (savedScreenBrightness == null) {
+            savedScreenBrightness = layoutParams.screenBrightness
+        }
         layoutParams.screenBrightness = min(max(layoutParams.screenBrightness + delta, 0.01f), 1f)
+        window.attributes = layoutParams
+    }
+
+    private fun restoreBrightness() {
+        val brightness = savedScreenBrightness ?: return
+        savedScreenBrightness = null
+        val window = activity?.window ?: return
+        val layoutParams = window.attributes
+        layoutParams.screenBrightness = brightness
         window.attributes = layoutParams
     }
 
@@ -849,7 +861,13 @@ class VideoOverlayFragment :
         handler.removeCallbacks(autoHideRunnable)
         handler.removeCallbacks(issueReloadRunnable)
         cancelLoad()
+        restoreBrightness()
         super.onPause()
+    }
+
+    override fun onDestroyView() {
+        tvZapListBound = false
+        super.onDestroyView()
     }
 
     fun autohide() {

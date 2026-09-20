@@ -160,8 +160,11 @@ fun MultiEpgDestination(
         onDispose { activity.removeMenuProvider(menuSession) }
     }
 
-    DisposableEffect(session) {
-        onDispose { session.cancel() }
+    DisposableEffect(session, dialogSession) {
+        onDispose {
+            session.cancel()
+            dialogSession.dismissProgress()
+        }
     }
 
     LaunchedEffect(remountEpoch, bouquetRef) {

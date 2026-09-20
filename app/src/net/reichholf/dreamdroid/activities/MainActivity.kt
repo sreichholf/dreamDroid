@@ -207,14 +207,17 @@ class MainActivity :
     }
 
     fun onProfileChecked(result: ProfileCheckResult) {
-        if (isPaused() || checkNavigationHelper()) {
-            return
-        }
-        val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
         val hasCache = hasUseDrivenCache(DreamDroid.getCurrentProfile(), this)
+        // Apply before any UI/helper gate so a finished check cannot leave Checking
+        // stuck (paused window, or helper recreated between onPause and RESUMED).
         SessionConnectionHolder.shared.applyProfileCheckResult(result, hasCache)
         bindDrawerConnectionChip()
+        if (isPaused()) {
+            return
+        }
+        ensureNavigationHelper()
+        val sp = PreferenceManager.getDefaultSharedPreferences(this)
+        val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
 
         if (result.hasError && !result.isSoftError) {
             if (shouldShowProfileCheckFailedUi(hasCache, result.failure)) {
@@ -379,25 +382,35 @@ class MainActivity :
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).unregisterOnSharedPreferenceChangeListener(this)
+        if (DreamDroid.getCurrentProfileChangedListener() === this) {
+            DreamDroid.setCurrentProfileChangedListener(null)
+        }
         super.onDestroy()
+    }
+
+    private fun ensureNavigationHelper() {
+        if (navigationHelper != null) {
+            return
+        }
+        // TODO preserve/restore navigationHelper properly
+        // Keep DrawerListState across pause/resume so the Compose drawer
+        // highlight survives helper recreation (NavigationView used to keep
+        // checked state on the view itself).
+        if (drawerListState == null) {
+            drawerListState = DrawerListState()
+        }
+        navigationHelper = NavigationHelper(this, drawerListState!!)
     }
 
     private fun checkNavigationHelper(): Boolean = checkNavigationHelper(false)
 
     private fun checkNavigationHelper(isResume: Boolean): Boolean {
-        if (navigationHelper == null) {
-            // TODO preserve/restore navigationHelper properly
-            // Keep DrawerListState across pause/resume so the Compose drawer
-            // highlight survives helper recreation (NavigationView used to keep
-            // checked state on the view itself).
-            if (drawerListState == null) {
-                drawerListState = DrawerListState()
-            }
-            navigationHelper = NavigationHelper(this, drawerListState!!)
-            onProfileChanged(DreamDroid.getCurrentProfile(), isResume)
-            return true
+        if (navigationHelper != null) {
+            return false
         }
-        return false
+        ensureNavigationHelper()
+        onProfileChanged(DreamDroid.getCurrentProfile(), isResume)
+        return true
     }
 
     override fun highlightDrawerForRoute(route: String?, previousRoute: String?) {

@@ -7,10 +7,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
@@ -32,6 +31,7 @@ class EpgEventDialogSession {
     var detailEvent by mutableStateOf<Event?>(null)
         private set
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
+    private var setTimerJob: Job? = null
 
     fun showDetail(event: Event) {
         val display = event.withReadableTimes()
@@ -45,6 +45,8 @@ class EpgEventDialogSession {
 
     fun dismissProgress() {
         progress = null
+        setTimerJob?.cancel()
+        setTimerJob = null
     }
 
     fun onSetTimer() {
@@ -56,7 +58,8 @@ class EpgEventDialogSession {
         val item = currentItem ?: return
         host.runOnlineOnly {
             progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-            host.launchSimpleResultLoad(
+            setTimerJob?.cancel()
+            setTimerJob = host.launchSimpleResultLoad(
                 TimerAddByEventIdRequestHandler(),
                 Timer.getEventIdParams(item)
             ) { _, result, error ->
@@ -70,6 +73,11 @@ class EpgEventDialogSession {
                 Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    internal fun trackSetTimerJob(job: Job) {
+        setTimerJob?.cancel()
+        setTimerJob = job
     }
 
     fun onEditTimer() {
