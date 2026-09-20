@@ -207,7 +207,15 @@ class MainActivity :
     }
 
     fun onProfileChecked(result: ProfileCheckResult) {
-        if (isPaused() || checkNavigationHelper()) {
+        if (isPaused()) {
+            // Apply session even when the activity is not RESUMED so Checking
+            // cannot stick between onPause and onStop after the HTTP work finished.
+            val pausedCache = hasUseDrivenCache(DreamDroid.getCurrentProfile(), this)
+            SessionConnectionHolder.shared.applyProfileCheckResult(result, pausedCache)
+            bindDrawerConnectionChip()
+            return
+        }
+        if (checkNavigationHelper()) {
             return
         }
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
@@ -379,6 +387,9 @@ class MainActivity :
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).unregisterOnSharedPreferenceChangeListener(this)
+        if (DreamDroid.getCurrentProfileChangedListener() === this) {
+            DreamDroid.setCurrentProfileChangedListener(null)
+        }
         super.onDestroy()
     }
 

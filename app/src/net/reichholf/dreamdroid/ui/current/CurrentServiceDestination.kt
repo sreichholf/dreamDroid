@@ -25,8 +25,6 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
@@ -291,8 +289,12 @@ private class CurrentServiceSession : DialogActionListener {
     var context: android.content.Context? = null
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
+    private var setTimerJob: Job? = null
+
     fun dismissProgress() {
         progress = null
+        setTimerJob?.cancel()
+        setTimerJob = null
     }
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
@@ -308,7 +310,8 @@ private class CurrentServiceSession : DialogActionListener {
                     progress = IndeterminateProgressState(
                         message = ctx.getString(R.string.saving)
                     )
-                    host.launchSimpleResultLoad(
+                    setTimerJob?.cancel()
+                    setTimerJob = host.launchSimpleResultLoad(
                         TimerAddByEventIdRequestHandler(),
                         Timer.getEventIdParams(event)
                     ) { _, result, error ->
