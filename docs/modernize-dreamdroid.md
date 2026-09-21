@@ -16,11 +16,10 @@ One PR per item unless asked otherwise. Do not fold these into unrelated chrome 
 
 | Item | Notes |
 | --- | --- |
-| Glance-only widget | Dense RCU keys still go through `AndroidRemoteViews`. Full Glance only if it can express that grid. |
 | Drop `DatabaseHelper` | Migrate-only leftover for pre-Room backups. Delete when the operator accepts migrate-from-backup-only (or no install still needs the file). |
 | Operator usertests | **Phone verified** (2026-09-19). **Tablet verified** (2026-09-21). **TV / box verified** (2026-09-21) except newly added timer surfaces. Phone drawer EPG and the bouquet service list remember list vs MultiEPG. Remaining box pass: hub **Timers** list add/edit/delete (`TvTimerHost`); bouquet service INFO/MENU overlay (stream / set / edit); MultiEPG detail set/edit (`TvTimerEditorHost`). File bugs; no drive-by refactors. Then a bugfix pass, one PR per fix. In-tree timer gate: `TvTimerHostTest` / `TvTimerListScreenTest` / `TvServiceTimerOverlayTest`. |
 
-**Keep:** service-row / now-playing progress is a transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)). Do not “restore” a Material track.
+**Keep:** service-row / now-playing progress is a transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)). Do not “restore” a Material track. Widget stays Glance + `AndroidRemoteViews` for the dense RCU grid — a Glance-only rewrite does not pay for that layout.
 
 ## Out of scope until asked
 

@@ -2,7 +2,7 @@
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
 **Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub session, Room cache paint, and Online-only streaming have landed. Widget still follows.  
-**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold tablet rail, overlay shell, or Glance-only widget into leftover work.
+**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold them into leftover work. The widget stays Glance + `AndroidRemoteViews` for the dense RCU grid.
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs).
 
@@ -218,7 +218,7 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 - Optimistic offline writes or a command queue
 - TV hub session / Room cache / Online-only streaming shipped; widget still follows
 - OS `ConnectivityManager` as a third copy — box unreachable is enough for v1
-- Folding tablet `NavigationRail`, video overlay shell, Glance-only widget, or `IndeterminateProgressHost` replacement into these PRs
+- Folding tablet `NavigationRail`, video overlay shell, or `IndeterminateProgressHost` replacement into these PRs. The widget hybrid (Glance + `AndroidRemoteViews` dense RCU) is a keep, not a leftover.
 - Changing MultiEPG zoom/TTL/retention defaults
 - Switching Online hub off `epgnownext` unless the operator re-locks that
 
