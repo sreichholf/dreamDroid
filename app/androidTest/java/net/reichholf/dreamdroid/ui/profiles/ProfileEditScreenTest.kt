@@ -365,7 +365,7 @@ class ProfileEditScreenTest {
             "Tune the receiver to this service before playback. A single-tuner box can " +
                 "only stream a service on the current transponder, and this also changes " +
                 "the channel on the TV."
-        ).assertIsDisplayed()
+        ).performScrollTo().assertIsDisplayed()
         toggle.performClick()
         composeRule.onNodeWithText("Zap and stream").assertIsOn()
         assertTrue(state.zapAndStream)
