@@ -7,6 +7,7 @@ import android.provider.MediaStore
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParseException
 import java.io.FileNotFoundException
 import java.io.IOException
 import net.reichholf.dreamdroid.Profile
@@ -72,10 +73,15 @@ class BackupService(private val context: Context) {
         }
     }
 
-    fun doImport(content: String?) {
+    /** @return false when [content] cannot be imported. Nothing is changed. */
+    fun doImport(content: String?): Boolean {
         Log.i(TAG, "Import started")
-        val gson = GsonBuilder().create()
-        val backupData = gson.fromJson(content, BackupData::class.java)
+        // Reject the whole document before deleting profiles or writing preferences.
+        val backupData = parseBackupImport(content)
+        if (backupData == null) {
+            Log.e(TAG, "Import rejected an unreadable backup document")
+            return false
+        }
 
         val profiles = backupData.profiles
         for (profile in profiles) {
@@ -86,12 +92,13 @@ class BackupService(private val context: Context) {
             profile.id = null
             profile.id = profileDao.addProfile(profile).toInt()
         }
-        val settings = backupData.settings ?: return
+        val settings = backupData.settings ?: return true
         val editor = preferences.edit()
         for (setting in settings) {
             applyImportedSetting(editor, setting)
         }
         editor.apply()
+        return true
     }
 
     private fun applyImportedSetting(editor: SharedPreferences.Editor, setting: GenericSetting) {
@@ -117,5 +124,46 @@ class BackupService(private val context: Context) {
 
     companion object {
         private val TAG = BackupService::class.java.simpleName
+    }
+}
+
+/**
+ * Returns a backup that can be applied in full, or null when [content] is missing, malformed,
+ * JSON null, or has a setting value that does not match its type.
+ *
+ * Gson parse failures ([JsonParseException], including syntax and IO errors) stay inside this
+ * function so [BackupService.doImport] can refuse the document before it deletes profiles.
+ */
+internal fun parseBackupImport(content: String?): BackupData? {
+    val backupData = try {
+        GsonBuilder().create().fromJson(content, BackupData::class.java)
+    } catch (e: JsonParseException) {
+        null
+    } ?: return null
+    if (!settingsAreImportable(backupData.settings)) {
+        return null
+    }
+    return backupData
+}
+
+private fun settingsAreImportable(settings: MutableList<GenericSetting>?): Boolean {
+    if (settings == null) {
+        return true
+    }
+    return try {
+        for (setting in settings) {
+            when (setting.type) {
+                "Boolean" -> setting.value.toBoolean()
+                "Integer" -> setting.value.toInt()
+                "Long" -> setting.value.toLong()
+                "Float" -> setting.value.toFloat()
+                else -> setting.value
+            }
+        }
+        true
+    } catch (e: NumberFormatException) {
+        false
+    } catch (e: NullPointerException) {
+        false
     }
 }

@@ -30,6 +30,7 @@ import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 private const val POLL_MS = 30_000L
 private const val PROFILE_WAIT_MS = 20_000L
@@ -124,7 +125,9 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
             val ref = service?.reference.orEmpty()
             val name = service?.name.orEmpty()
             val activity = context as AppCompatActivity
-            activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+            activity.startLiveServiceStream(activity, ref) {
+                activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+            }
         }
     }
 

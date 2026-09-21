@@ -8,7 +8,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadEpgNowNext
+import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
@@ -134,21 +134,17 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
         if (ref.isBlank()) {
             continue
         }
-        val epg = loadEpgNowNext(app, listOf(NameValuePair("bRef", ref)))
-        if (epg.success) {
-            rows.add(
-                HubBouquetRow(
-                    bouquet = bouquet,
-                    services = withoutBouquetSpacers(epg.rows)
-                )
-            )
+        val loaded = loadBouquetServiceNowNext(app, listOf(NameValuePair("bRef", ref)))
+        if (loaded.success) {
+            val services = withoutBouquetSpacers(loaded.rows)
+            rows.add(HubBouquetRow(bouquet = bouquet, services = services))
             if (profileId != null) {
                 UserBouquetCache.persistRosterIfCacheable(
                     dao = rosterDao,
                     profileId = profileId,
                     ref = ref,
                     tabRootRef = ref,
-                    rows = epg.rows,
+                    rows = services,
                     excludedTabRefs = excluded
                 )
                 try {
@@ -170,7 +166,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
             }
             continue
         }
-        lastError = epg.errorText
+        lastError = loaded.errorText
         val cached = paintBouquetFromCache(
             rosterDao = rosterDao,
             epgDao = epgDao,

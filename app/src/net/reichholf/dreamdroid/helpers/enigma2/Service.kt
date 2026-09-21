@@ -43,13 +43,11 @@ object Service {
         (getFlags(ref) and FLAGS.IS_MARKER.value()) == FLAGS.IS_MARKER.value()
 
     /**
-     * Bouquet spacer (`1:832:...`). True when the second colon-separated field is exactly `832`.
-     * [isMarker] is also true for these refs and for ordinary `1:64:` description markers.
+     * Bouquet spacer (`1:832:`). True when the second colon field is exactly `832`.
+     * [isMarker] is also true for these refs because 832 includes flag bit 64.
      */
     fun isSpacer(ref: String?): Boolean {
-        if (ref.isNullOrEmpty()) {
-            return false
-        }
+        if (ref.isNullOrEmpty()) return false
         val flags = ref.split(":").getOrNull(1) ?: return false
         return flags == "832"
     }

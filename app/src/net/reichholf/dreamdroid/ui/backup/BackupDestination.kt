@@ -65,7 +65,10 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
         try {
-            backupService.doImport(readTextFromUri(context, uri))
+            if (!backupService.doImport(readTextFromUri(context, uri))) {
+                toast(context.getString(R.string.backup_import_error))
+                return@rememberLauncherForActivityResult
+            }
             reloadBackupData()
             toast(context.getString(R.string.backup_import_successful))
         } catch (e: IOException) {
@@ -116,15 +119,17 @@ fun BackupDestination(modifier: Modifier = Modifier) {
 }
 
 @Throws(IOException::class)
-private fun readTextFromUri(context: android.content.Context, uri: Uri): String {
-    context.contentResolver.openInputStream(uri).use { inputStream ->
-        BufferedReader(InputStreamReader(inputStream)).use { reader ->
+private fun readTextFromUri(context: Context, uri: Uri): String {
+    val inputStream = context.contentResolver.openInputStream(uri)
+        ?: throw IOException("Unable to open backup $uri")
+    return inputStream.use { stream ->
+        BufferedReader(InputStreamReader(stream)).use { reader ->
             val builder = StringBuilder()
             var line: String?
             while (reader.readLine().also { line = it } != null) {
                 builder.append(line)
             }
-            return builder.toString()
+            builder.toString()
         }
     }
 }

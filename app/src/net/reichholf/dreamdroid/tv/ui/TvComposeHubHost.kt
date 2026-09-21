@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
 import androidx.compose.foundation.lazy.items
@@ -43,6 +44,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.ColorFilter
@@ -91,6 +93,7 @@ import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
@@ -507,10 +510,12 @@ private fun openServiceStream(
     service: ServiceNowNext,
     bouquetRef: String?
 ) {
-    TvComposeHubHost.startStreamIntent(
-        activity,
-        TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
-    )
+    activity.startLiveServiceStream(activity, service.serviceReference) {
+        TvComposeHubHost.startStreamIntent(
+            activity,
+            TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
+        )
+    }
 }
 
 private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
@@ -577,10 +582,17 @@ fun ComposeTvHubChrome(
                 bouquetRows.isNotEmpty()
             )
     val gatedServiceClick: (ServiceNowNext, String?) -> Unit = { service, bouquetRef ->
-        if (!streamingEnabled) {
-            showStreamUnavailable = true
-        } else {
-            onServiceClick(service, bouquetRef)
+        when (tvHubServiceRowKind(service.serviceReference)) {
+            TvHubServiceRowKind.MARKER_HEADER -> Unit
+
+            TvHubServiceRowKind.CHANNEL,
+            TvHubServiceRowKind.SPACER -> {
+                if (!streamingEnabled) {
+                    showStreamUnavailable = true
+                } else {
+                    onServiceClick(service, bouquetRef)
+                }
+            }
         }
     }
     val gatedMovieClick: (Movie) -> Unit = { movie ->
@@ -996,6 +1008,9 @@ fun HubServiceRow(
             }
         }
     }
+    val firstCardIndex = services.indexOfFirst { service ->
+        !tvHubDrawsMarkerHeader(service.serviceReference)
+    }
     LazyRow(
         state = listState,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -1014,18 +1029,18 @@ fun HubServiceRow(
             )
     ) {
         itemsIndexed(services, key = { _, it -> it.serviceReference }) { index, service ->
-            HubServiceCard(
+            val cardModifier = if (index == firstCardIndex && firstItemFocusRequester != null) {
+                Modifier.focusRequester(firstItemFocusRequester)
+            } else {
+                Modifier
+            }
+            HubBouquetServiceItem(
                 service = service,
-                onClick = { onServiceClick(service, bouquetRef) },
-                modifier = if (index == 0 && firstItemFocusRequester != null) {
-                    Modifier.focusRequester(firstItemFocusRequester)
-                } else {
-                    Modifier
-                },
+                bouquetRef = bouquetRef,
+                onServiceClick = onServiceClick,
+                modifier = cardModifier,
                 onFocused = onUserInteraction,
-                onInfo = onServiceInfo?.let { info ->
-                    { info(service, bouquetRef) }
-                }
+                onInfo = onServiceInfo
             )
         }
     }
@@ -1055,18 +1070,82 @@ fun HubServiceGrid(
             .fillMaxSize()
             .testTag("hub_service_grid")
     ) {
-        gridItemsIndexed(services, key = { _, it -> it.serviceReference }) { _, service ->
-            HubServiceCard(
+        gridItemsIndexed(
+            services,
+            key = { _, it -> it.serviceReference },
+            span = { _, service ->
+                if (tvHubDrawsMarkerHeader(service.serviceReference)) {
+                    GridItemSpan(maxLineSpan)
+                } else {
+                    GridItemSpan(1)
+                }
+            }
+        ) { _, service ->
+            HubBouquetServiceItem(
                 service = service,
-                onClick = { onServiceClick(service, bouquetRef) },
+                bouquetRef = bouquetRef,
+                onServiceClick = onServiceClick,
                 fillWidth = true,
                 contentExpanded = true,
-                onInfo = onServiceInfo?.let { info ->
-                    { info(service, bouquetRef) }
-                }
+                onInfo = onServiceInfo
             )
         }
     }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubBouquetServiceItem(
+    service: ServiceNowNext,
+    bouquetRef: String,
+    onServiceClick: (ServiceNowNext, String?) -> Unit,
+    modifier: Modifier = Modifier,
+    onFocused: (() -> Unit)? = null,
+    fillWidth: Boolean = false,
+    contentExpanded: Boolean = false,
+    onInfo: ((ServiceNowNext, String?) -> Unit)? = null
+) {
+    if (tvHubDrawsMarkerHeader(service.serviceReference)) {
+        HubBouquetMarkerHeader(
+            name = service.serviceName,
+            fillWidth = fillWidth,
+            modifier = modifier
+        )
+    } else {
+        HubServiceCard(
+            service = service,
+            onClick = { onServiceClick(service, bouquetRef) },
+            modifier = modifier,
+            onFocused = onFocused,
+            fillWidth = fillWidth,
+            contentExpanded = contentExpanded,
+            onInfo = onInfo?.let { info ->
+                { info(service, bouquetRef) }
+            }
+        )
+    }
+}
+
+/** Name-only bouquet description. Not focusable, so OK does not zap or stream it. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubBouquetMarkerHeader(
+    name: String,
+    fillWidth: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = name,
+        style = MaterialTheme.typography.titleSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
+        modifier = modifier
+            .focusProperties { canFocus = false }
+            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier)
+            .padding(horizontal = 8.dp, vertical = 12.dp)
+            .testTag("hub_service_marker")
+    )
 }
 
 @OptIn(ExperimentalTvMaterial3Api::class)

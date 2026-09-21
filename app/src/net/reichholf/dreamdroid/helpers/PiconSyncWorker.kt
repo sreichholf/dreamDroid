@@ -66,13 +66,21 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
                 tmpFile.createNewFile()
             }
 
+            if (remotePath.isNullOrBlank()) {
+                failFtp(PiconFtpSync.directoryGate(remotePath, false, 0, null))
+                return
+            }
+
             publish(R.string.connecting)
             client.connect(profile.host)
             if (isStopped) {
                 return
             }
             publish(R.string.connected)
-            client.login(profile.user, profile.pass)
+            val loggedIn = client.login(profile.user, profile.pass)
+            if (failFtp(PiconFtpSync.loginGate(loggedIn, client.replyCode, client.replyString))) {
+                return
+            }
             if (isStopped) {
                 return
             }
@@ -80,7 +88,19 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 
             client.setFileType(FTPClient.BINARY_FILE_TYPE)
             Log.i(TAG, "Changing to $remotePath")
-            client.changeWorkingDirectory(remotePath)
+            val cwdOk = client.changeWorkingDirectory(remotePath)
+            if (
+                failFtp(
+                    PiconFtpSync.directoryGate(
+                        remotePath,
+                        cwdOk,
+                        client.replyCode,
+                        client.replyString
+                    )
+                )
+            ) {
+                return
+            }
             publish(R.string.getting_list_of_files)
 
             val filter = FTPFileFilter { file -> file.isFile && file.name.endsWith(".png") }
@@ -97,17 +117,9 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
                 val fileName = remoteFile.name
                 progress.currentFile = fileName
                 publish(fileName)
-
-                val localFile = File("$localPath$fileName")
-                localFile.createNewFile()
-                BufferedOutputStream(FileOutputStream(localFile)).use { outputStream ->
-                    try {
-                        client.retrieveFile(fileName, outputStream)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Failed to download picon with filename $fileName", e)
-                    }
+                if (saveRetrievedPicon(client, fileName, localPath)) {
+                    progress.downloadedFiles++
                 }
-                progress.downloadedFiles++
             }
         } catch (e: Exception) {
             Log.e(TAG, "Picon sync failed", e)
@@ -121,6 +133,67 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             } catch (_: Exception) {
             }
         }
+    }
+
+    /** @return true when [step] failed and the sync must stop before listing or downloading. */
+    private fun failFtp(step: PiconFtpSync.FtpStep): Boolean {
+        if (step is PiconFtpSync.FtpStep.Failed) {
+            Log.e(TAG, step.message)
+            progress.error = true
+            progress.errorText = step.message
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Downloads one picon via a partial file. A failed retrieve deletes that partial
+     * and leaves any existing png in place.
+     */
+    private fun saveRetrievedPicon(
+        client: FTPClient,
+        fileName: String,
+        localPath: String
+    ): Boolean {
+        val destination = File(localPath, fileName)
+        val partial = File(localPath, "$fileName.part")
+        partial.delete()
+        var retrieved = false
+        var retrieveThrew = false
+        try {
+            BufferedOutputStream(FileOutputStream(partial)).use { outputStream ->
+                retrieved = client.retrieveFile(fileName, outputStream)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to download picon with filename $fileName", e)
+            retrieved = false
+            retrieveThrew = true
+        }
+        return when (PiconFtpSync.localFileAfterRetrieve(retrieved, client.replyCode)) {
+            PiconFtpSync.LocalFile.DISCARD -> {
+                partial.delete()
+                if (!retrieveThrew) {
+                    Log.e(TAG, "Picon retrieve failed for $fileName: ${client.replyString}")
+                }
+                false
+            }
+
+            PiconFtpSync.LocalFile.KEEP -> commitPartial(partial, destination)
+        }
+    }
+
+    private fun commitPartial(partial: File, destination: File): Boolean {
+        if (destination.exists() && !destination.delete()) {
+            Log.e(TAG, "Failed to replace picon ${destination.name}")
+            partial.delete()
+            return false
+        }
+        if (!partial.renameTo(destination)) {
+            Log.e(TAG, "Failed to store picon ${destination.name}")
+            partial.delete()
+            return false
+        }
+        return true
     }
 
     private suspend fun publish(messageRes: Int) {

@@ -346,6 +346,38 @@ class ProfileEditScreenTest {
     }
 
     @Test
+    fun zapAndStreamStartsOffAndRoundTripsThroughTheProfile() {
+        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileEditScreen(
+                    state = state,
+                    saveLabel = "Save",
+                    onSave = {},
+                    showSaveFab = false
+                )
+            }
+        }
+
+        val toggle = composeRule.onNodeWithText("Zap and stream")
+        toggle.performScrollTo().assertIsDisplayed().assertIsOff()
+        composeRule.onNodeWithText(
+            "Tune the receiver to this service before playback. A single-tuner box can " +
+                "only stream a service on the current transponder, and this also changes " +
+                "the channel on the TV."
+        ).performScrollTo().assertIsDisplayed()
+        toggle.performClick()
+        composeRule.onNodeWithText("Zap and stream").assertIsOn()
+        assertTrue(state.zapAndStream)
+
+        val profile = Profile.getDefault()
+        state.applyTo(profile)
+        assertTrue(profile.zapAndStream)
+        val reloaded = ProfileEditState.fromProfile(profile)
+        assertTrue(reloaded.zapAndStream)
+    }
+
+    @Test
     fun disablingAllCertificatesDoesNotShowWarning() {
         val profile = Profile.getDefault()
         profile.allCertsTrusted = true

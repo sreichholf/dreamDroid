@@ -74,6 +74,7 @@ import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 @Composable
 fun TvMultiEpgHost(activity: AppCompatActivity) {
@@ -397,14 +398,16 @@ internal fun TvMultiEpgEventDetail(
                                 return@TvMultiEpgAction
                             }
                             val host = activity ?: return@TvMultiEpgAction
-                            val intent = IntentFactory.getStreamServiceIntent(
-                                context,
-                                event.serviceReference,
-                                event.title,
-                                bouquetRef,
-                                null
-                            )
-                            TvComposeHubHost.startStreamIntent(host, intent)
+                            host.startLiveServiceStream(context, event.serviceReference) {
+                                val intent = IntentFactory.getStreamServiceIntent(
+                                    context,
+                                    event.serviceReference,
+                                    event.title,
+                                    bouquetRef,
+                                    null
+                                )
+                                TvComposeHubHost.startStreamIntent(host, intent)
+                            }
                         },
                         focusRequester = firstActionFocus
                     )
