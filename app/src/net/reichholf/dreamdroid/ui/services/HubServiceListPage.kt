@@ -59,6 +59,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
@@ -479,19 +480,21 @@ class HubServiceListSession : MenuProvider {
 
                     R.id.menu_stream -> {
                         host.runOnlineOnly {
-                            try {
-                                val activity = ctx as AppCompatActivity
-                                activity.startActivity(
-                                    IntentFactory.getStreamServiceIntent(
-                                        activity,
-                                        ref,
-                                        name,
-                                        currentRef,
-                                        row
+                            host.lifecycleOwner.startLiveServiceStream(ctx, ref) {
+                                try {
+                                    val activity = ctx as AppCompatActivity
+                                    activity.startActivity(
+                                        IntentFactory.getStreamServiceIntent(
+                                            activity,
+                                            ref,
+                                            name,
+                                            currentRef,
+                                            row
+                                        )
                                     )
-                                )
-                            } catch (_: ActivityNotFoundException) {
-                                toast(ctx.getText(R.string.missing_stream_player))
+                                } catch (_: ActivityNotFoundException) {
+                                    toast(ctx.getText(R.string.missing_stream_player))
+                                }
                             }
                         }
                         true

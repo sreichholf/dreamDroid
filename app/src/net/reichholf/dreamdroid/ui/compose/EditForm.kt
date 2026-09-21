@@ -139,7 +139,29 @@ fun EditSwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     label: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    summary: String? = null
+) {
+    if (summary == null) {
+        SwitchToggleRow(checked, onCheckedChange, label, modifier)
+    } else {
+        Column(modifier = modifier.fillMaxWidth()) {
+            SwitchToggleRow(checked, onCheckedChange, label, Modifier)
+            Text(
+                text = summary,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+    }
+}
+
+@Composable
+private fun SwitchToggleRow(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    label: String,
+    modifier: Modifier
 ) {
     Row(
         modifier = modifier

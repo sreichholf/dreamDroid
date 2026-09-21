@@ -359,6 +359,8 @@
     <string name="host_unreach">Could not connect to host</string>
     <string name="next_event">Next Event</string>
     <string name="use_encoder">Use encoder for streaming</string>
+    <string name="zap_and_stream">Zap and stream</string>
+    <string name="zap_and_stream_summary">Tune the receiver to this service before playback. A single-tuner box can only stream a service on the current transponder, and this also changes the channel on the TV.</string>
     <string name="encoder_path">Stream path</string>
     <string name="audio_bitrate">Audio Bitrate</string>
     <string name="video_bitrate">Video Bitrate</string>

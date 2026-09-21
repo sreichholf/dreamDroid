@@ -91,6 +91,7 @@ import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
@@ -507,10 +508,12 @@ private fun openServiceStream(
     service: ServiceNowNext,
     bouquetRef: String?
 ) {
-    TvComposeHubHost.startStreamIntent(
-        activity,
-        TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
-    )
+    activity.startLiveServiceStream(activity, service.serviceReference) {
+        TvComposeHubHost.startStreamIntent(
+            activity,
+            TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
+        )
+    }
 }
 
 private fun openMovieStream(activity: ComponentActivity, movie: Movie) {

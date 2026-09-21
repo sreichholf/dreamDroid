@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 private const val KEY_SAVED_CURRENT = "current_service"
 private const val KEY_SAVED_ITEM = "current_item"
@@ -163,7 +164,9 @@ fun CurrentServiceDestination(
             val ref = service?.reference.orEmpty()
             val name = service?.name.orEmpty()
             val activity = context as AppCompatActivity
-            activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+            activity.startLiveServiceStream(activity, ref) {
+                activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+            }
         }
     }
 

@@ -104,6 +104,13 @@ class Profile : Serializable {
     @ColumnInfo(name = "file_ssl")
     var fileSsl: Boolean = false
 
+    /**
+     * Zap to the service before opening a live stream. Single-tuner boxes can
+     * only stream a service that is on the current transponder.
+     */
+    @ColumnInfo(name = "zap_and_stream", defaultValue = "0")
+    var zapAndStream: Boolean = false
+
     @ColumnInfo(name = "simpleremote")
     var simpleRemote: Boolean = false
 
@@ -364,6 +371,7 @@ class Profile : Serializable {
         streamLogin == p.streamLogin &&
         fileSsl == p.fileSsl &&
         fileLogin == p.fileLogin &&
+        zapAndStream == p.zapAndStream &&
         encoderStream == p.encoderStream &&
         encoderPort == p.encoderPort &&
         encoderPath == p.encoderPath &&

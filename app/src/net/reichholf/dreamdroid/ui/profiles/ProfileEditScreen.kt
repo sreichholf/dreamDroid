@@ -160,6 +160,12 @@ fun ProfileEditScreen(
                     label = stringResource(R.string.stream_host_long)
                 )
                 EditSwitchRow(
+                    checked = state.zapAndStream,
+                    onCheckedChange = { state.zapAndStream = it },
+                    label = stringResource(R.string.zap_and_stream),
+                    summary = stringResource(R.string.zap_and_stream_summary)
+                )
+                EditSwitchRow(
                     checked = state.encoderStream,
                     onCheckedChange = { state.encoderStream = it },
                     label = stringResource(R.string.use_encoder)

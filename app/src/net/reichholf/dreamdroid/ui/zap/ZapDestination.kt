@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Phase 2.7d: Zap channel grid as a direct Compose NavHost destination.
@@ -242,17 +243,19 @@ private class ZapSession :
         val host = handle ?: return
         val ctx = context ?: return
         host.runOnlineOnly {
-            try {
-                val activity = ctx as AppCompatActivity
-                activity.startActivity(
-                    IntentFactory.getStreamServiceIntent(
-                        activity,
-                        service.reference,
-                        service.name
+            host.lifecycleOwner.startLiveServiceStream(ctx, service.reference) {
+                try {
+                    val activity = ctx as AppCompatActivity
+                    activity.startActivity(
+                        IntentFactory.getStreamServiceIntent(
+                            activity,
+                            service.reference,
+                            service.name
+                        )
                     )
-                )
-            } catch (_: ActivityNotFoundException) {
-                toast(ctx.getText(R.string.missing_stream_player))
+                } catch (_: ActivityNotFoundException) {
+                    toast(ctx.getText(R.string.missing_stream_player))
+                }
             }
         }
     }

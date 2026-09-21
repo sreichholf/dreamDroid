@@ -51,6 +51,7 @@ import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
+import net.reichholf.dreamdroid.video.startLiveServiceStream
 import net.reichholf.dreamdroid.widget.helper.ItemClickSupport
 import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration
 import org.videolan.libvlc.MediaPlayer
@@ -100,6 +101,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
     private var servicesViewVisible: Boolean = false
 
     private var loadJob: Job? = null
+    private var zapBeforeStreamJob: Job? = null
     private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
@@ -211,6 +213,8 @@ class VideoOverlayController(private val activity: VideoActivity) :
         backCallback = null
         tvSessionJob?.cancel()
         tvSessionJob = null
+        zapBeforeStreamJob?.cancel()
+        zapBeforeStreamJob = null
         cancelLoad()
         tvZapListBound = false
         itemClickSupport = null
@@ -556,12 +560,23 @@ class VideoOverlayController(private val activity: VideoActivity) :
 
     private fun zap() {
         if (!allowsTvStreaming()) return
-        if (Service.isMarker(serviceRef)) return
+        val ref = serviceRef ?: return
+        if (Service.isMarker(ref)) return
+        zapBeforeStreamJob?.cancel()
+        zapBeforeStreamJob = activity.startLiveServiceStream(activity, ref) {
+            playZappedService()
+        }
+    }
+
+    private fun playZappedService() {
+        if (!allowsTvStreaming()) return
+        val ref = serviceRef ?: return
+        if (Service.isMarker(ref)) return
         val serviceInfo = serviceInfoForIntent()
         val streamingIntent =
             IntentFactory.getStreamServiceIntent(
                 activity,
-                serviceRef!!,
+                ref,
                 title ?: "",
                 bouquetRef,
                 serviceInfo as? ServiceNowNext
