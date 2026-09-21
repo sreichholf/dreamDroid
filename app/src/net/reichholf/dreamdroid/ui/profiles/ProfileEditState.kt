@@ -28,6 +28,7 @@ class ProfileEditState {
     var ssid by mutableStateOf("")
     var defaultOnNoWifi by mutableStateOf(false)
     var encoderStream by mutableStateOf(false)
+    var zapAndStream by mutableStateOf(false)
     var encoderLogin by mutableStateOf(false)
     var encoderPath by mutableStateOf("stream")
     var encoderUser by mutableStateOf("")
@@ -56,6 +57,7 @@ class ProfileEditState {
         ssid = profile.ssid.orEmpty()
         defaultOnNoWifi = profile.isDefaultProfileOnNoWifi
         encoderStream = profile.encoderStream
+        zapAndStream = profile.zapAndStream
         encoderPath = profile.encoderPath.orEmpty()
         encoderPort = profile.encoderPort.toString()
         encoderLogin = profile.encoderLogin
@@ -82,6 +84,7 @@ class ProfileEditState {
         profile.ssid = ssid.trim()
         profile.isDefaultProfileOnNoWifi = defaultOnNoWifi
         profile.encoderStream = encoderStream
+        profile.zapAndStream = zapAndStream
         profile.encoderPath = encoderPath
         profile.setEncoderPort(encoderPort)
         profile.encoderLogin = encoderLogin

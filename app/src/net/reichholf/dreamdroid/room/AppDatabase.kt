@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListMetaEntity::class,
         MovieListEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -279,6 +279,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8: Migration = object : Migration(7, 8) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    ALTER TABLE `profile`
+                    ADD COLUMN `zap_and_stream` INTEGER NOT NULL DEFAULT 0
+                    """.trimIndent()
+                )
+            }
+        }
+
         @Volatile
         var db: AppDatabase? = null
 
@@ -297,7 +308,8 @@ abstract class AppDatabase : RoomDatabase() {
                         MIGRATION_3_4,
                         MIGRATION_4_5,
                         MIGRATION_5_6,
-                        MIGRATION_6_7
+                        MIGRATION_6_7,
+                        MIGRATION_7_8
                     )
                     .configureRoomDriver()
                     .build()
