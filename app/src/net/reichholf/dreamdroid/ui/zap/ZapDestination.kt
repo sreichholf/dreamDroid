@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UserBouquetCache
@@ -275,8 +276,7 @@ private class ZapSession :
             }
             return
         }
-        @Suppress("DEPRECATION")
-        val bouquet = data?.getSerializableExtra(KEY_BOUQUET) as? Service
+        val bouquet = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET)
             ?: Service("", "")
         if (bouquet.reference != bouquetRef) {
             bouquetRef = bouquet.reference

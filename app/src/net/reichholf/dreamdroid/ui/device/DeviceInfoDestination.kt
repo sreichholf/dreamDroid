@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.loadDeviceInfo
+import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 
@@ -34,8 +35,7 @@ private val DeviceInfoNullableSaver = Saver<DeviceInfo?, Bundle>(
         }
     },
     restore = { bundle ->
-        @Suppress("DEPRECATION")
-        bundle.getSerializable(KEY_SAVED_INFO) as? DeviceInfo
+        bundle.getSerializableCompat<DeviceInfo>(KEY_SAVED_INFO)
     }
 )
 

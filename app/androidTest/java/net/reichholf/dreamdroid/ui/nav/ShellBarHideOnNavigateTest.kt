@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid

@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -20,20 +19,20 @@ class EpgNowNextParserTest {
         val first = rows[0]
         assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", first.serviceReference)
         assertEquals("Das Erste HD", first.serviceName)
-        assertNotNull(first.now)
-        assertNotNull(first.next)
-        assertEquals("News Now", first.now!!.title)
-        assertEquals("News Next", first.next!!.title)
-        assertTrue(first.now!!.descriptionExtended.contains("\n"))
+        val now = requireNotNull(first.now)
+        val next = requireNotNull(first.next)
+        assertEquals("News Now", now.title)
+        assertEquals("News Next", next.title)
+        assertTrue(now.descriptionExtended.contains("\n"))
 
         val second = rows[1]
         assertEquals("ZDF HD", second.serviceName)
-        assertEquals("Sport Now", second.now!!.title)
-        assertEquals("Sport Next", second.next!!.title)
+        assertEquals("Sport Now", requireNotNull(second.now).title)
+        assertEquals("Sport Next", requireNotNull(second.next).title)
 
         val trailing = rows[2]
         assertEquals("Arte HD", trailing.serviceName)
-        assertEquals("Trailing Only", trailing.now!!.title)
+        assertEquals("Trailing Only", requireNotNull(trailing.now).title)
         assertNull(trailing.next)
     }
 
@@ -64,7 +63,7 @@ class EpgNowNextParserTest {
         )
         val rows = EpgNowNextParser.pairEvents(events)
         assertEquals(1, rows.size)
-        assertEquals("Solo", rows[0].now!!.title)
+        assertEquals("Solo", requireNotNull(rows[0].now).title)
         assertNull(rows[0].next)
     }
 
@@ -78,9 +77,9 @@ class EpgNowNextParserTest {
             ServiceNowNext(event.serviceReference, event.serviceName, event, null)
         }
         assertEquals(2, rows.size)
-        assertEquals("Tagesschau", rows[0].now!!.title)
+        assertEquals("Tagesschau", requireNotNull(rows[0].now).title)
         assertNull(rows[0].next)
-        assertEquals("N/A", rows[1].now!!.title)
+        assertEquals("N/A", requireNotNull(rows[1].now).title)
         assertNull(rows[1].next)
     }
 }

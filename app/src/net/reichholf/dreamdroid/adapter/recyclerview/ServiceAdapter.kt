@@ -40,9 +40,6 @@ open class ServiceAdapter(
 
     override fun onBindViewHolder(holder: ServiceViewHolder, position: Int) {
         val service = data[position]
-        val nextEvent = service.next
-        val next = nextEvent?.title
-        val hasNext = !next.isNullOrEmpty()
 
         val ref = service.serviceReference
         if (Service.isMarker(ref)) {
@@ -96,8 +93,7 @@ open class ServiceAdapter(
             val duration = now.duration
             val start = now.start
 
-            if (duration != null && start != null &&
-                Python.NONE != duration && Python.NONE != start &&
+            if (Python.NONE != duration && Python.NONE != start &&
                 duration.isNotEmpty() && start.isNotEmpty()
             ) {
                 try {
@@ -115,9 +111,10 @@ open class ServiceAdapter(
             holder.progress.progress = cur.toInt()
         }
 
-        if (hasNext) {
+        val nextEvent = service.next
+        if (nextEvent != null && nextEvent.title.isNotEmpty()) {
             holder.parentNext.visibility = View.VISIBLE
-            holder.eventNextTitle.text = nextEvent!!.title
+            holder.eventNextTitle.text = nextEvent.title
             holder.eventNextStart.text = nextEvent.startTimeReadable
             holder.eventNextDuration.text = nextEvent.durationReadable
         } else {

@@ -9,7 +9,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.DisplayMetrics
 import android.util.Log
 import android.view.GestureDetector
 import android.view.KeyEvent
@@ -20,13 +19,13 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
-import androidx.core.view.GestureDetectorCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -44,6 +43,7 @@ import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
+import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
@@ -93,7 +93,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
 
     private val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
-    private var gestureDetector: GestureDetectorCompat? = null
+    private var gestureDetector: GestureDetector? = null
     private lateinit var audioManager: AudioManager
     private var audioMaxVol: Int = 0
     private var volume: Float = 0f
@@ -323,7 +323,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         }
 
         gestureDetector =
-            GestureDetectorCompat(
+            GestureDetector(
                 activity,
                 object : GestureDetector.SimpleOnGestureListener() {
                     override fun onScroll(
@@ -346,9 +346,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
                                 e1.y - e2.y
                             )
                         )
-                        val metrics = DisplayMetrics()
-                        @Suppress("DEPRECATION")
-                        activity.windowManager.defaultDisplay.getMetrics(metrics)
+                        val metrics = activity.resources.displayMetrics
                         val isRight = e1.rawX > (4 * metrics.widthPixels / 7)
                         val isLeft = e1.rawX < (3 * metrics.widthPixels / 7)
 
@@ -372,9 +370,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
             )
 
         activity.findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
-            val metrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            activity.windowManager.defaultDisplay.getMetrics(metrics)
+            val metrics = activity.resources.displayMetrics
             if (surfaceHeight == 0) {
                 surfaceHeight = min(metrics.widthPixels, metrics.heightPixels)
             }
@@ -594,8 +590,8 @@ class VideoOverlayController(private val activity: VideoActivity) :
             playbackArgs.putString(SERVICE_REFERENCE, incoming.serviceRef)
             playbackArgs.putString(BOUQUET_REFERENCE, incoming.bouquetRef)
             if (extras.containsKey(SERVICE_INFO)) {
-                @Suppress("DEPRECATION")
-                val serviceInfo = extras.get(SERVICE_INFO) as java.io.Serializable?
+                val serviceInfo =
+                    extras.getSerializableCompat<Serializable>(SERVICE_INFO)
                 playbackArgs.putSerializable(SERVICE_INFO, serviceInfo)
             } else {
                 playbackArgs.remove(SERVICE_INFO)
@@ -611,8 +607,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         serviceRef = incoming.serviceRef
         bouquetRef = incoming.bouquetRef
 
-        @Suppress("DEPRECATION")
-        when (val serviceInfo = extras.get(SERVICE_INFO)) {
+        when (val serviceInfo = extras.getSerializableCompat<Serializable>(SERVICE_INFO)) {
             is EnigmaMovie -> {
                 movie = serviceInfo
                 currentService = null
@@ -797,12 +792,10 @@ class VideoOverlayController(private val activity: VideoActivity) :
             }
 
             val nextEvent = currentService?.next
-            val next = nextEvent?.title
-            val hasNext = !next.isNullOrEmpty()
-            if (hasNext) {
-                overlayUiState.nextStart = nextEvent?.startTimeReadable ?: ""
-                overlayUiState.nextTitle = nextEvent?.title ?: ""
-                overlayUiState.nextDuration = nextEvent?.durationReadable ?: ""
+            if (nextEvent != null && nextEvent.title.isNotEmpty()) {
+                overlayUiState.nextStart = nextEvent.startTimeReadable
+                overlayUiState.nextTitle = nextEvent.title
+                overlayUiState.nextDuration = nextEvent.durationReadable
                 overlayUiState.hasNext = true
             } else {
                 overlayUiState.hasNext = false
@@ -839,9 +832,9 @@ class VideoOverlayController(private val activity: VideoActivity) :
                     try {
                         duration = (l[0].toLong() * 60) + l[1].toLong()
                     } catch (nex: NumberFormatException) {
-                        Log.w(LOG_TAG, nex.localizedMessage)
+                        Log.w(LOG_TAG, "parse failed", nex)
                     } catch (iobex: IndexOutOfBoundsException) {
-                        Log.w(LOG_TAG, iobex.localizedMessage)
+                        Log.w(LOG_TAG, "parse failed", iobex)
                     }
                 }
                 if (duration > 0 && player != null) {

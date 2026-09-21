@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.enigma.loadEventList
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
@@ -357,8 +358,7 @@ internal class EpgBouquetSession :
         if (resultCode != Activity.RESULT_OK || requestCode != Statics.REQUEST_PICK_BOUQUET) {
             return
         }
-        @Suppress("DEPRECATION")
-        val service = data?.getSerializableExtra(KEY_BOUQUET) as? Service ?: return
+        val service = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET) ?: return
         val reference = service.reference
         if (reference != bouquetRef) {
             bouquetRef = reference

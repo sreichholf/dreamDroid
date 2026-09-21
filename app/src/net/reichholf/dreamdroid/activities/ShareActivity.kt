@@ -17,6 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.compose.ui.platform.ComposeView
 import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 import java.util.Date
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
@@ -74,7 +75,6 @@ class ShareActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    @Suppress("DEPRECATION")
     private fun playOnDream(p: Profile) {
         var url: String? = null
         val i = intent
@@ -106,8 +106,8 @@ class ShareActivity : AppCompatActivity() {
             shareTitle = title
 
             val uri = Uri.parse(url)
-            url = URLEncoder.encode(url).replace("+", "%20")
-            title = URLEncoder.encode(title).replace("+", "%20")
+            url = URLEncoder.encode(url, StandardCharsets.UTF_8).replace("+", "%20")
+            title = URLEncoder.encode(title, StandardCharsets.UTF_8).replace("+", "%20")
 
             var ref = "4097:0:1:0:0:0:0:0:0:0:$url:$title"
 
@@ -115,7 +115,7 @@ class ShareActivity : AppCompatActivity() {
                 val vid = uri.path!!.substring(1)
                 ref = String.format(
                     "8193:0:1:0:0:0:0:0:0:0:%s:%s",
-                    URLEncoder.encode(String.format("yt://%s", vid)),
+                    URLEncoder.encode(String.format("yt://%s", vid), StandardCharsets.UTF_8),
                     title
                 )
             }

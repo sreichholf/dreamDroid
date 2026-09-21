@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.ui.pick
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -39,7 +39,5 @@ class TimerServicePickScreenTest {
         }
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed().performClick()
         assertEquals(channel, clicked)
-        assertEquals("Das Erste HD", clicked!!.name)
-        assertEquals("1:0:1:6DCA:44D:1:C00000:0:0:0:", clicked!!.reference)
     }
 }

@@ -161,7 +161,7 @@ fun HubMovieListPage(
     }
 
     if (showTagPicker) {
-        val tags = DreamDroid.getTags().map { it.toString() }
+        val tags = DreamDroid.getTags()
         val checked = BooleanArray(tags.size) { i ->
             selectedTags.contains(DreamDroid.getTags()[i])
         }

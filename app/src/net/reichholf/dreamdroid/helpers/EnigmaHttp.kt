@@ -147,7 +147,7 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
                 EnigmaHttpError(EnigmaFailure.fromHttpStatus(code, response.message))
             )
         }
-        val body = response.body?.bytes() ?: ByteArray(0)
+        val body = response.body.bytes()
         if (epoch != fetchEpoch.get()) {
             return cancelledResult()
         }

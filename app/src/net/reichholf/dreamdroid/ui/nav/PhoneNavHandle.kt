@@ -121,7 +121,7 @@ data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action:
         fun from(timer: SleepTimer): SleepTimerNavArgs {
             var minutes = 90
             try {
-                minutes = Integer.parseInt(timer.minutes)
+                minutes = Integer.parseInt(timer.minutes ?: "90")
             } catch (_: NumberFormatException) {
             }
             val enabled = Python.TRUE == timer.enabled

@@ -36,6 +36,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
+import net.reichholf.dreamdroid.helpers.getSerializableCompat
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
@@ -136,7 +138,7 @@ fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) 
         )
     }
     if (showTagsPicker) {
-        val tags = DreamDroid.getTags().map { it.toString() }
+        val tags = DreamDroid.getTags()
         val checked =
             BooleanArray(tags.size) { i -> session.selectedTags.contains(DreamDroid.getTags()[i]) }
         MultiChoiceAlertDialog(
@@ -275,8 +277,7 @@ class TimerEditSession(
         if (requestCode != Statics.REQUEST_PICK_SERVICE || resultCode != Activity.RESULT_OK) {
             return
         }
-        @Suppress("DEPRECATION")
-        val picked = data?.getSerializableExtra(NavExtras.DATA) as? Service ?: return
+        val picked = data?.getSerializableExtraCompat<Service>(NavExtras.DATA) ?: return
         timer = timer.copy(serviceName = picked.name, reference = picked.reference)
         editState.serviceName = timer.serviceName
     }
@@ -538,8 +539,7 @@ class TimerEditSession(
             routeTag: String,
             remountEpoch: Int
         ): TimerEditSession {
-            @Suppress("DEPRECATION")
-            val timer = args.getSerializable(NavExtras.DATA) as? TypedTimer ?: TypedTimer()
+            val timer = args.getSerializableCompat<TypedTimer>(NavExtras.DATA) ?: TypedTimer()
             val isCreate = !Intent.ACTION_EDIT.equals(args.getString(NavExtras.ACTION))
             val timerOld = if (isCreate) null else timer.copy()
             return TimerEditSession(
@@ -555,12 +555,8 @@ class TimerEditSession(
 
         fun fromSavedState(state: android.os.Bundle): TimerEditSession? {
             val routeTag = state.getString(STATE_TAG) ?: return null
-
-            @Suppress("DEPRECATION")
-            val timer = state.getSerializable(STATE_TIMER) as? TypedTimer ?: return null
-
-            @Suppress("DEPRECATION")
-            val timerOld = state.getSerializable(STATE_TIMER_OLD) as? TypedTimer
+            val timer = state.getSerializableCompat<TypedTimer>(STATE_TIMER) ?: return null
+            val timerOld = state.getSerializableCompat<TypedTimer>(STATE_TIMER_OLD)
             val tags = state.getStringArrayList(STATE_TAGS) ?: ArrayList()
             val checked = state.getBooleanArray(STATE_CHECKED) ?: BooleanArray(7)
             return TimerEditSession(

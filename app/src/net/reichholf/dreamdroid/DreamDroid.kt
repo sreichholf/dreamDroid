@@ -14,7 +14,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.net.NetworkInfo
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -32,6 +33,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
@@ -163,20 +165,24 @@ class DreamDroid : Application() {
     }
 
     private fun getWifiName(context: Context): String? {
-        val manager =
-            context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        if (manager.isWifiEnabled) {
-            val wifiInfo = manager.connectionInfo
-            if (wifiInfo != null) {
-                val state = WifiInfo.getDetailedStateOf(wifiInfo.supplicantState)
-                if (state == NetworkInfo.DetailedState.CONNECTED ||
-                    state == NetworkInfo.DetailedState.OBTAINING_IPADDR
-                ) {
-                    return wifiInfo.ssid.substring(1, wifiInfo.ssid.length - 1)
-                }
-            }
+        val appContext = context.applicationContext
+        val connectivity =
+            appContext.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivity.activeNetwork ?: return null
+        val caps = connectivity.getNetworkCapabilities(network) ?: return null
+        if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+            return null
         }
-        return null
+        val wifiInfo: WifiInfo? =
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+                val manager =
+                    appContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+                @Suppress("DEPRECATION")
+                manager.connectionInfo
+            } else {
+                caps.transportInfo as? WifiInfo
+            }
+        return WifiSsid.unquoteWifiSsid(wifiInfo?.ssid)
     }
 
     private fun initChannels() {
@@ -319,10 +325,7 @@ class DreamDroid : Application() {
             if (BuildConfig.BUILD_TIME > 0) {
                 buildDate = DateTime.getYearDateTimeString(BuildConfig.BUILD_TIME / 1000)
             }
-            var abi = Build.CPU_ABI
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                abi = Build.SUPPORTED_ABIS[0]
-            }
+            val abi = Build.SUPPORTED_ABIS.firstOrNull().orEmpty()
             return String.format(
                 "dreamDroid %s\n%s-%s %s\n%s\n\n© Stephan Reichholf\nstephan@reichholf.net",
                 BuildConfig.VERSION_NAME,
@@ -376,7 +379,7 @@ class DreamDroid : Application() {
                 val host = sp.getString("host", "dreamdroid.org")
                 val streamHost = sp.getString("host", "")
 
-                val port = Integer.valueOf(sp.getString("port", "443"))
+                val port = Integer.valueOf(sp.getString("port", "443") ?: "443")
                 val user = sp.getString("user", "root")
                 val pass = sp.getString("pass", "dreambox")
 
@@ -587,7 +590,7 @@ class DreamDroid : Application() {
 
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
-            val type = Integer.parseInt(sp.getString("theme_type", "1"))
+            val type = Integer.parseInt(sp.getString("theme_type", "1") ?: "1")
             return if (type > 2) 2 else type
         }
 

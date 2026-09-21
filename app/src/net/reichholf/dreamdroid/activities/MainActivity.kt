@@ -711,7 +711,7 @@ class MainActivity :
         navigationHelper?.onSendMessage(text, type, timeout)
     }
 
-    override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
+    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
         Log.w(DreamDroid.LOG_TAG, key ?: "")
         if (DreamDroid.PREFS_KEY_THEME_TYPE == key) {
             DreamDroid.setTheme(this)
