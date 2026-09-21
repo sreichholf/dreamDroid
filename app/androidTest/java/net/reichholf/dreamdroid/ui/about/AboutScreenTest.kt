@@ -4,6 +4,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -32,14 +33,14 @@ class AboutScreenTest {
     }
 
     @Test
-    fun showsVersionSubstringAndLicensesButton() {
+    fun showsVersionSubstring() {
         composeRule.setContent {
             DreamDroidTheme {
-                AboutScreen(content = sampleAboutContent(), onLicensesClick = {})
+                AboutScreen(content = sampleAboutContent())
             }
         }
         composeRule.onNodeWithText("2.0.463", substring = true).assertIsDisplayed()
-        composeRule.onNodeWithText("Licenses").assertIsDisplayed()
+        composeRule.onNodeWithText("Licenses").assertDoesNotExist()
     }
 
     @Test
@@ -50,7 +51,7 @@ class AboutScreenTest {
             DreamDroidTheme {
                 localContent = LocalContentColor.current
                 onSurface = MaterialTheme.colorScheme.onSurface
-                AboutScreen(content = sampleAboutContent(), onLicensesClick = {})
+                AboutScreen(content = sampleAboutContent())
             }
         }
         composeRule.runOnIdle {
