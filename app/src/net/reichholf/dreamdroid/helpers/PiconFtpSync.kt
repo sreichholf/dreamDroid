@@ -43,14 +43,13 @@ object PiconFtpSync {
         replyText: String?
     ): FtpStep {
         val path = remotePath?.trim().orEmpty()
-        if (path.isNotEmpty() && cwdSucceeded && FTPReply.isPositiveCompletion(replyCode)) {
+        if (path.isEmpty()) {
+            return FtpStep.Failed("Remote picon path is empty")
+        }
+        if (cwdSucceeded && FTPReply.isPositiveCompletion(replyCode)) {
             return FtpStep.Ok
         }
-        val summary = if (path.isEmpty()) {
-            "Remote picon path is empty"
-        } else {
-            "Could not change to remote picon directory: $path"
-        }
+        val summary = "Could not change to remote picon directory: $path"
         return FtpStep.Failed(failure(summary, replyCode, replyText))
     }
 
