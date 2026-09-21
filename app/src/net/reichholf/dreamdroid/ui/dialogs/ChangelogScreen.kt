@@ -1,71 +1,90 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun ChangelogScreen(markdown: String, modifier: Modifier = Modifier) {
-    val typography = MaterialTheme.typography
-    val annotated = changelogMarkdownToAnnotatedString(
-        markdown = markdown,
-        heading2 = typography.titleMedium.toSpanStyle().copy(fontWeight = FontWeight.Bold),
-        heading3 = typography.titleSmall.toSpanStyle().copy(fontWeight = FontWeight.Bold),
-        body = typography.bodyMedium.toSpanStyle()
-    )
-    Text(
-        text = annotated,
-        color = MaterialTheme.colorScheme.onSurface,
+    val blocks = remember(markdown) { parseChangelogMarkdown(markdown) }
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(max = 480.dp)
             .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp, vertical = 16.dp)
-    )
-}
-
-internal fun changelogMarkdownToAnnotatedString(
-    markdown: String,
-    heading2: SpanStyle,
-    heading3: SpanStyle,
-    body: SpanStyle
-): AnnotatedString {
-    val blocks = parseChangelogMarkdown(markdown)
-    return buildAnnotatedString {
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         blocks.forEachIndexed { index, block ->
-            if (index > 0) {
-                append('\n')
-                if (block is ChangelogBlock.Heading2 || block is ChangelogBlock.Heading3) {
-                    append('\n')
-                }
-            }
-            withStyle(changelogSpanStyle(block, heading2, heading3, body)) {
-                append(block.displayText())
-            }
+            ChangelogBlockItem(block = block, isFirst = index == 0)
         }
     }
 }
 
-private fun changelogSpanStyle(
-    block: ChangelogBlock,
-    heading2: SpanStyle,
-    heading3: SpanStyle,
-    body: SpanStyle
-): SpanStyle = when (block) {
-    is ChangelogBlock.Heading2 -> heading2
-    is ChangelogBlock.Heading3 -> heading3
-    is ChangelogBlock.ListItem -> body
-    is ChangelogBlock.Paragraph -> body
+@Composable
+private fun ChangelogBlockItem(block: ChangelogBlock, isFirst: Boolean) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val onSurfaceVariant = MaterialTheme.colorScheme.onSurfaceVariant
+    when (block) {
+        is ChangelogBlock.Heading2 -> {
+            Text(
+                text = block.text,
+                style = MaterialTheme.typography.titleLarge,
+                color = onSurface,
+                modifier = Modifier.padding(top = if (isFirst) 0.dp else 8.dp)
+            )
+        }
+
+        is ChangelogBlock.Heading3 -> {
+            Surface(
+                color = MaterialTheme.colorScheme.secondaryContainer,
+                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                shape = MaterialTheme.shapes.medium,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = block.text,
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
+        }
+
+        is ChangelogBlock.ListItem -> {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = "\u2022",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = onSurfaceVariant
+                )
+                Text(
+                    text = block.text,
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+
+        is ChangelogBlock.Paragraph -> {
+            Text(
+                text = block.text,
+                style = MaterialTheme.typography.bodyLarge,
+                color = onSurface
+            )
+        }
+    }
 }

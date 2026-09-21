@@ -15,6 +15,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -285,7 +286,14 @@ private fun PhoneNavHostGraph(
                 }
             )
         }
-        dialog(PhoneNavRoutes.CHANGELOG) {
+        dialog(
+            PhoneNavRoutes.CHANGELOG,
+            dialogProperties = DialogProperties(
+                usePlatformDefaultWidth = false,
+                decorFitsSystemWindows = false,
+                dismissOnClickOutside = false
+            )
+        ) {
             ChangelogDialog(onDismiss = { navController.popBackStack() })
         }
     }
@@ -315,7 +323,7 @@ fun NavHostController.navigateToSleepTimer() {
     navigate(PhoneNavRoutes.SLEEP_TIMER)
 }
 
-/** Push Changelog as a Navigation `dialog`. */
+/** Push Changelog as a Navigation `dialog` that hosts [ChangelogDialog]'s sheet. */
 fun NavHostController.navigateToChangelog() {
     if (currentDestination?.route == PhoneNavRoutes.CHANGELOG) return
     navigate(PhoneNavRoutes.CHANGELOG)
