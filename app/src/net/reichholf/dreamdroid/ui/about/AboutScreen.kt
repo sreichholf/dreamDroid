@@ -45,7 +45,7 @@ fun rememberAboutContent(): AboutContent = AboutContent(
 )
 
 @Composable
-fun AboutScreen(content: AboutContent, onLicensesClick: () -> Unit, modifier: Modifier = Modifier) {
+fun AboutScreen(content: AboutContent, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -64,9 +64,6 @@ fun AboutScreen(content: AboutContent, onLicensesClick: () -> Unit, modifier: Mo
             color = MaterialTheme.colorScheme.onSurface
         )
         SourceLinkText(sourceLink = content.sourceLink)
-        TextButton(onClick = onLicensesClick) {
-            Text(content.licensesLabel)
-        }
     }
 }
 
@@ -82,11 +79,11 @@ fun AboutDialog(onDismiss: () -> Unit, content: AboutContent = rememberAboutCont
         AlertDialog(
             onDismissRequest = onDismiss,
             title = { Text(content.title) },
-            text = {
-                AboutScreen(
-                    content = content,
-                    onLicensesClick = { showLicenses = true }
-                )
+            text = { AboutScreen(content = content) },
+            dismissButton = {
+                TextButton(onClick = { showLicenses = true }) {
+                    Text(content.licensesLabel)
+                }
             },
             confirmButton = {
                 TextButton(onClick = onDismiss) {

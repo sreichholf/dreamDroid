@@ -32,14 +32,14 @@ class AboutScreenTest {
     }
 
     @Test
-    fun showsVersionSubstringAndLicensesButton() {
+    fun showsVersionSubstring() {
         composeRule.setContent {
             DreamDroidTheme {
-                AboutScreen(content = sampleAboutContent(), onLicensesClick = {})
+                AboutScreen(content = sampleAboutContent())
             }
         }
         composeRule.onNodeWithText("2.0.463", substring = true).assertIsDisplayed()
-        composeRule.onNodeWithText("Licenses").assertIsDisplayed()
+        composeRule.onNodeWithText("Licenses").assertDoesNotExist()
     }
 
     @Test
@@ -50,7 +50,7 @@ class AboutScreenTest {
             DreamDroidTheme {
                 localContent = LocalContentColor.current
                 onSurface = MaterialTheme.colorScheme.onSurface
-                AboutScreen(content = sampleAboutContent(), onLicensesClick = {})
+                AboutScreen(content = sampleAboutContent())
             }
         }
         composeRule.runOnIdle {

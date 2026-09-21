@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AlertDialogDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -145,15 +144,10 @@ fun SleepTimerDialog(
 
 @Composable
 fun ChangelogDialog(onDismiss: () -> Unit, markdown: String = rememberChangelogMarkdown()) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.changelog)) },
-        text = { ChangelogScreen(markdown = markdown) },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.close))
-            }
-        }
+    ChangelogModalSheet(
+        onDismiss = onDismiss,
+        markdown = markdown,
+        clearNavigationDialogChrome = true
     )
 }
 

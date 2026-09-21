@@ -7,9 +7,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
@@ -67,6 +69,7 @@ class AboutDialogHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Licenses").assertIsDisplayed()
         composeRule.onNodeWithText("Close").assertIsDisplayed()
+        assertLicensesLeftOfCloseOnSameRow()
         composeRule.runOnIdle {
             assertEquals(onSurface, localContent)
             assertTrue(
@@ -103,5 +106,21 @@ class AboutDialogHostTest {
         composeRule.onNodeWithText("About").assertDoesNotExist()
         composeRule.onNodeWithText("AndroidX").assertIsDisplayed()
         composeRule.onNodeWithText("Licenses").assertIsDisplayed()
+    }
+
+    private fun assertLicensesLeftOfCloseOnSameRow() {
+        val licenses = composeRule.onNodeWithText("Licenses").getBoundsInRoot()
+        val close = composeRule.onNodeWithText("Close").getBoundsInRoot()
+        assertTrue(
+            "Licenses should sit left of Close, licenses=$licenses close=$close",
+            licenses.right <= close.left
+        )
+        val licensesCenterY = (licenses.top + licenses.bottom) / 2
+        val closeCenterY = (close.top + close.bottom) / 2
+        val verticalDelta = licensesCenterY - closeCenterY
+        assertTrue(
+            "Licenses and Close should share a row, delta=$verticalDelta",
+            verticalDelta <= 8.dp && verticalDelta >= (-8).dp
+        )
     }
 }
