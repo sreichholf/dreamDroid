@@ -66,7 +66,7 @@ Sticky channel column + time header; vertical channel scroll; horizontal time pa
 | Topic | v1 behaviour |
 | --- | --- |
 | Picons | When Settings → Use Picons is on and a picon loads for the service, the channel column shows the picon (scaled to the current row height) instead of the service name; otherwise the name is shown |
-| Offline / stale | If Room chunk exists past TTL, still paint it with a subtle stale/refresh affordance; if no chunk and box unreachable, show existing connection-error pattern (do not spin forever). Hub TV/Radio rows while Offline/stale use Room overlap vs phone `now()`; **Online hub now/next stays `/web/epgnownext`**. Opening a cacheable user-bouquet tab or nested folder is an additional `/web/epgmulti` writer into the same chunks. |
+| Offline / stale | If Room chunk exists past TTL, still paint it with a subtle stale/refresh affordance; if no chunk and box unreachable, show existing connection-error pattern (do not spin forever). Hub TV/Radio rows while Offline/stale use Room overlap vs phone `now()`; **Online hub now/next stays `/web/epgnownext`**, overlaid on the `/web/getservices` roster so services without events stay visible. Opening a cacheable user-bouquet tab or nested folder is an additional `/web/epgmulti` writer into the same chunks. |
 | Orientation | Phone portrait primary; landscape uses same grid with more horizontal hours visible |
 | Profile switch | Invalidate MultiEPG UI state; Room rows are `profileId`-keyed so another profile’s cache is not mixed |
 
@@ -105,7 +105,7 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 | `/web/epgmulti` | `bRef`, `time`, `endTime` | **MultiEPG primary.** All services in bouquet; each queried with `(service, 0, time, endTime)` via `eEPGCache.lookupEvent` |
 | `/web/epgbouquet` | `bRef`, `time` | List EPG / “at this instant” (no `endTime`) — keep for existing bouquet list UI |
 | `/web/epgservice` | `sRef`, `time`, `endTime` | Single-channel schedule; **fallback** if `epgmulti` fails on very old webif |
-| `/web/epgnow`, `epgnext`, `epgnownext` | bouquet / service | **Online** hub now/next — unchanged. Offline/stale hub now/next reads shared `epgmulti` Room chunks. |
+| `/web/epgnow`, `epgnext`, `epgnownext` | bouquet / service | **Online** hub now/next overlay on the `getservices` roster. Offline/stale hub now/next reads shared `epgmulti` Room chunks. |
 | `/web/epgsearch` | search | Existing search — unchanged |
 
 `EPG.getBouquetEPGMulti` is `getEPGofBouquet(param, multi=True)`. With `multi=True`, Dreambox passes **both** `time` and `endTime` into the cache lookup; `epgbouquet` does not. Response XML shape matches existing dreamDroid `Event` / `EventParser` fields (`e2eventid`, `e2eventstart`, `e2eventduration`, …).
