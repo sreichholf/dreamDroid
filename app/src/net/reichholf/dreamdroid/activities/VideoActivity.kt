@@ -21,6 +21,9 @@ import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -234,7 +237,7 @@ class VideoActivity :
                     .getString(
                         DreamDroid.PREFS_KEY_HWACCEL,
                         Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)
-                    )
+                    ) ?: Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)
             )
         player.playUri(data, accel)
         playbackAlreadyStarted = true
@@ -421,7 +424,7 @@ class VideoActivity :
         try {
             enterPictureInPictureMode(params)
         } catch (e: IllegalArgumentException) {
-            enterPictureInPictureMode()
+            enterPictureInPictureMode(PictureInPictureParams.Builder().build())
         }
         return true
     }
@@ -434,15 +437,14 @@ class VideoActivity :
         if (!isInPictureInPictureMode) doEnterPip()
     }
 
-    @Suppress("DEPRECATION")
     fun setFullScreen() {
-        var visibility = View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or View.SYSTEM_UI_FLAG_FULLSCREEN
-        var navigation = View.SYSTEM_UI_FLAG_LOW_PROFILE or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            navigation = navigation or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        }
-        visibility = visibility or navigation
-        window.decorView.systemUiVisibility = visibility
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        controller.hide(
+            WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars()
+        )
+        controller.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
     override fun onNewVideoLayout(

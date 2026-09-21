@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.activities.abs
 
 import android.Manifest
+import android.app.Activity.OVERRIDE_TRANSITION_CLOSE
+import android.app.Activity.OVERRIDE_TRANSITION_OPEN
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -48,16 +50,7 @@ open class BaseActivity :
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         localNetworkPermissionRequest.ensure(this)
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-                DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true
-            )
-        ) {
-            overridePendingTransition(
-                R.animator.activity_open_translate,
-                R.animator.activity_close_scale
-            )
-        }
+        applyConfiguredActivityTransitions()
     }
 
     /** Recheck the box after the user grants LAN access (API 37+). */
@@ -87,14 +80,39 @@ open class BaseActivity :
 
     override fun onPause() {
         super.onPause()
-        if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
-                DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
-                true
-            )
-        ) {
+        if (Build.VERSION.SDK_INT < 34 && activityAnimationsEnabled()) {
+            @Suppress("DEPRECATION")
             overridePendingTransition(
                 R.animator.activity_open_scale,
                 R.animator.activity_close_translate
+            )
+        }
+    }
+
+    private fun activityAnimationsEnabled(): Boolean =
+        PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, true)
+
+    private fun applyConfiguredActivityTransitions() {
+        if (!activityAnimationsEnabled()) {
+            return
+        }
+        if (Build.VERSION.SDK_INT >= 34) {
+            overrideActivityTransition(
+                OVERRIDE_TRANSITION_OPEN,
+                R.animator.activity_open_translate,
+                R.animator.activity_close_scale
+            )
+            overrideActivityTransition(
+                OVERRIDE_TRANSITION_CLOSE,
+                R.animator.activity_open_scale,
+                R.animator.activity_close_translate
+            )
+        } else {
+            @Suppress("DEPRECATION")
+            overridePendingTransition(
+                R.animator.activity_open_translate,
+                R.animator.activity_close_scale
             )
         }
     }

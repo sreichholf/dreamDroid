@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
@@ -40,8 +41,7 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
     val tag = handle.profileEditRouteTag()
     val args = handle.profileEditLeafArguments()
 
-    @Suppress("DEPRECATION")
-    val extras = args.getSerializable(NavExtras.DATA) as? Profile
+    val extras = args.getSerializableCompat<Profile>(NavExtras.DATA)
     val action = args.getString(NavExtras.ACTION)
     val initialProfile = remember(tag, remount) {
         when {

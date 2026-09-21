@@ -111,7 +111,7 @@ fun BackupScreen(
                 ListRowSurface {
                     EditSwitchRow(
                         checked = profile.checked,
-                        onCheckedChange = { state.setProfileChecked(profile.id ?: 0, it) },
+                        onCheckedChange = { state.setProfileChecked(profile.id, it) },
                         label = profile.label,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )

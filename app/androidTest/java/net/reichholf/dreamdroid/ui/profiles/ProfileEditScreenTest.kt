@@ -10,7 +10,7 @@ import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onFirst
 import androidx.compose.ui.test.onLast
@@ -275,8 +275,9 @@ class ProfileEditScreenTest {
                     onSave = {
                         val profile = Profile.getDefault()
                         state.applyTo(profile)
-                        outcome = persistEditedProfile(context, profile)
-                        if (outcome?.saved != true) {
+                        val persisted = persistEditedProfile(context, profile)
+                        outcome = persisted
+                        if (!persisted.saved) {
                             state.hostError = context.getString(
                                 net.reichholf.dreamdroid.R.string.host_empty
                             )
@@ -288,8 +289,9 @@ class ProfileEditScreenTest {
 
         composeRule.onNodeWithContentDescription("Save").performClick()
         composeRule.waitForIdle()
-        assertEquals("The host name cannot be empty!", outcome!!.message)
-        assertFalse(outcome!!.saved)
+        val result = requireNotNull(outcome)
+        assertEquals("The host name cannot be empty!", result.message)
+        assertFalse(result.saved)
         composeRule.onNodeWithText("The host name cannot be empty!").assertIsDisplayed()
         val saved = AppDatabase.profilesBlocking(context).getProfiles()
             .any { it.name == "f05-empty-host" }

@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.SecondaryScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
@@ -100,7 +100,7 @@ class DreamDroidPullRefreshTest {
     }
 
     /**
-     * Hub layout: bouquet [ScrollableTabRow] (zIndex above the list, as in HubDestination)
+     * Hub layout: bouquet [SecondaryScrollableTabRow] (zIndex above the list, as in HubDestination)
      * over stock [androidx.compose.material3.pulltorefresh.PullToRefreshContainer].
      * Programmatic reload must keep tab labels readable — Column draws the list after the
      * tabs, so without zIndex the elevated indicator can paint over Provider.
@@ -112,7 +112,7 @@ class DreamDroidPullRefreshTest {
                 Column(Modifier.fillMaxSize()) {
                     var selected by remember { mutableIntStateOf(0) }
                     val tabs = listOf("Favourites (TV)", "Provider", "All Services")
-                    ScrollableTabRow(
+                    SecondaryScrollableTabRow(
                         selectedTabIndex = selected,
                         modifier = Modifier
                             .zIndex(1f)

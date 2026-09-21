@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
+import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -53,8 +54,7 @@ private val CurrentServiceNullableSaver = Saver<CurrentService?, Bundle>(
         }
     },
     restore = { bundle ->
-        @Suppress("DEPRECATION")
-        bundle.getSerializable(KEY_SAVED_CURRENT) as? CurrentService
+        bundle.getSerializableCompat<CurrentService>(KEY_SAVED_CURRENT)
     }
 )
 
@@ -67,8 +67,7 @@ private val EventNullableSaver = Saver<Event?, Bundle>(
         }
     },
     restore = { bundle ->
-        @Suppress("DEPRECATION")
-        bundle.getSerializable(KEY_SAVED_ITEM) as? Event
+        bundle.getSerializableCompat<Event>(KEY_SAVED_ITEM)
     }
 )
 

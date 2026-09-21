@@ -1,23 +1,17 @@
 package net.reichholf.dreamdroid.widget.helper
 
-import android.os.Build
+import android.view.GestureDetector
 import android.view.GestureDetector.SimpleOnGestureListener
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.view.GestureDetectorCompat
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.OnItemTouchListener
 
 abstract class ClickItemTouchListener(hostView: RecyclerView) : OnItemTouchListener {
-    private val gestureDetector: GestureDetectorCompat =
-        GestureDetectorCompat(hostView.context, ItemClickGestureListener(hostView))
+    private val gestureDetector: GestureDetector =
+        GestureDetector(hostView.context, ItemClickGestureListener(hostView))
 
-    private fun isAttachedToWindow(hostView: RecyclerView): Boolean =
-        if (Build.VERSION.SDK_INT >= 19) {
-            hostView.isAttachedToWindow
-        } else {
-            hostView.handler != null
-        }
+    private fun isAttachedToWindow(hostView: RecyclerView): Boolean = hostView.isAttachedToWindow
 
     private fun hasAdapter(hostView: RecyclerView): Boolean = hostView.adapter != null
 

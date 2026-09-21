@@ -108,7 +108,7 @@ object CheckProfile {
                                 entry(
                                     R.string.connection,
                                     true,
-                                    host.toString(),
+                                    host,
                                     R.string.get_content_error
                                 )
                             )
@@ -122,7 +122,7 @@ object CheckProfile {
                             entry(
                                 R.string.connection,
                                 true,
-                                host.toString(),
+                                host,
                                 R.string.connection_error,
                                 ext
                             )
@@ -131,12 +131,12 @@ object CheckProfile {
                         errorTextId = R.string.connection_error
                         errorTextExt = ext ?: ""
                         failure = fetchError.failure
-                    } else if (xml == null) {
+                    } else {
                         resultList.add(
                             entry(
                                 R.string.connection,
                                 true,
-                                host.toString(),
+                                host,
                                 R.string.get_content_error
                             )
                         )
@@ -162,13 +162,13 @@ object CheckProfile {
                 }
             } else {
                 resultList.add(
-                    entry(R.string.host, true, host.toString(), R.string.illegal_host)
+                    entry(R.string.host, true, host, R.string.illegal_host)
                 )
                 hasError = true
                 errorTextId = R.string.illegal_host
                 failure = EnigmaFailure.Unreachable(
                     EnigmaFailure.UnreachableReason.IllegalHost,
-                    host.toString()
+                    host
                 )
             }
         }
