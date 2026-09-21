@@ -153,7 +153,9 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
 
     private fun createForegroundInfo(message: String): ForegroundInfo {
         val notification = buildNotification(message, ongoing = true)
-        return if (Build.VERSION.SDK_INT >= 34) {
+        // Match the merged SystemForegroundService dataSync type (required for
+        // targetSdk 34+; harmless earlier when the constant exists).
+        return if (Build.VERSION.SDK_INT >= 29) {
             ForegroundInfo(
                 PiconSync.NOTIFICATION_ID,
                 notification,
