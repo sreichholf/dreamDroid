@@ -214,7 +214,7 @@ EpgChunkMeta
   → TTL freshness for that chunk
 ```
 
-`DatabaseHelper` (`DatabaseHelper.kt`) still creates a legacy SQLite `events` table, but MultiEPG sync writers were removed with the old `epgsync` package. **Do not** revive those writers. New cache goes through **Room** (`AppDatabase`) with a schema version bump; optional later cleanup can drop the unused `events` table from `DatabaseHelper`.
+`DatabaseHelper` (`DatabaseHelper.kt`) still creates a legacy SQLite `events` table, but MultiEPG sync writers were removed with the old `epgsync` package. **Do not** revive those writers. New cache goes through **Room** (`AppDatabase`) with a schema version bump. The helper itself stays for profile migrate/restore (Room has not shipped on Play); unused `events` / `services` tables are not a drop-the-helper ticket.
 
 - Kotlin + Compose + coroutines only (see `AGENTS.md`).
 - Grid: custom Compose layout (synced H-scroll time header + V-scroll channels); do not revive deleted `EpgTimelineFragment` / `multiepg*.xml`.
