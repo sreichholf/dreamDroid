@@ -35,7 +35,7 @@ import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.enigma.loadEpgNowNext
+import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Service
@@ -216,7 +216,7 @@ class HubServiceListSession : MenuProvider {
     }
     var loadNowNext: suspend (Context, List<NameValuePair>) -> EpgNowNextLoadResult =
         { context, params ->
-            loadEpgNowNext(context, params)
+            loadBouquetServiceNowNext(context, params)
         }
     private var loadGeneration = 0
     private var loadJob: Job? = null

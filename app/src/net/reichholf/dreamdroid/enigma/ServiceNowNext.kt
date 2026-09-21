@@ -3,7 +3,9 @@ package net.reichholf.dreamdroid.enigma
 import java.io.Serializable
 
 /**
- * One hub TV/Radio row from `/web/epgnownext` (or epgnow fallback): service plus now/next [Event]s.
+ * One hub TV/Radio row: service identity plus optional now/next [Event]s.
+ * Hub rosters come from `/web/getservices`; now/next is overlaid from
+ * `/web/epgnownext` when that service has events.
  */
 data class ServiceNowNext(
     val serviceReference: String = "",

@@ -121,11 +121,11 @@ Also guard **writers**, not only the hub: Zap default bouquet, list EPG, MultiEP
 | Profiles / settings / about | Already local | — | Always available. |
 | Synced picons on disk | Existing picon sync | Files | Show if present; no FTP while Offline. |
 
-Not cached as blobs: device info live page, signal, screenshot, `/web/getcurrent`. Now-playing **strip** while Offline: hide or empty, do not freeze last headline. Channel rows in a cached user bouquet use Room now/next **while Offline/stale**; Online hub stays on `epgnownext`.
+Not cached as blobs: device info live page, signal, screenshot, `/web/getcurrent`. Now-playing **strip** while Offline: hide or empty, do not freeze last headline. Channel rows in a cached user bouquet use Room now/next **while Offline/stale**. Online hub now/next stays on `epgnownext`; the Online roster is `getservices`, so services with no event stay listed.
 
 **List EPG** (drawer `/web/epgbouquet`): v1 Offline reads shared `epgmulti` Room chunks for that user bouquet, or Unavailable if never filled. Do not persist `epgbouquet` separately.
 
-**Phone hub Online path:** keep `loadEpgNowNext` / `epgnownext` (`HubServiceListPage`). Roster + `epgmulti` are **additional writers**, not a replacement for Online now/next. Zap/pickers/MultiEPG already use `getservices`; slice 3 must not assume the hub already has that roster.
+**Phone hub Online path:** roster from `loadServiceList` / `getservices`, now/next overlaid from `loadEpgNowNext` / `epgnownext` (`HubServiceListPage` via `loadBouquetServiceNowNext`). A failed service list stays an error. Room roster + `epgmulti` remain Offline writers, not a replacement for Online now/next.
 
 ### 4.5 Hard excludes
 
