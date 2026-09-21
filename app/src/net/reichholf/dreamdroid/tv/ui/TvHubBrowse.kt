@@ -7,11 +7,13 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
 import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
@@ -134,14 +136,15 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
         }
         val loaded = loadBouquetServiceNowNext(app, listOf(NameValuePair("bRef", ref)))
         if (loaded.success) {
-            rows.add(HubBouquetRow(bouquet = bouquet, services = loaded.rows))
+            val services = withoutBouquetSpacers(loaded.rows)
+            rows.add(HubBouquetRow(bouquet = bouquet, services = services))
             if (profileId != null) {
                 UserBouquetCache.persistRosterIfCacheable(
                     dao = rosterDao,
                     profileId = profileId,
                     ref = ref,
                     tabRootRef = ref,
-                    rows = loaded.rows,
+                    rows = services,
                     excludedTabRefs = excluded
                 )
                 try {
@@ -294,9 +297,13 @@ private suspend fun paintBouquetFromCache(
     val events = epgDao.eventsOverlapping(pid, ref, chunk.startSec, chunk.endSec)
     return HubBouquetRow(
         bouquet = bouquet,
-        services = overlayNowNext(cached, events, nowSec)
+        services = withoutBouquetSpacers(overlayNowNext(cached, events, nowSec))
     )
 }
+
+/** Drop Enigma2 bouquet spacers (`1:832:`) from a TV hub row. `1:64:` markers stay. */
+internal fun withoutBouquetSpacers(services: List<ServiceNowNext>): List<ServiceNowNext> =
+    services.filterNot { service -> EnigmaService.isSpacer(service.serviceReference) }
 
 internal fun unavailableTvHubMessage(
     usedCache: Boolean,
