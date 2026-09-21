@@ -1,18 +1,9 @@
-# Looking for a Maintainer
-I am currently looking for someone to take over maintenance and potentially even the actual play store app entry of dreamdroid.
-I will personally not continue development of dreamDroid.
-Should there be any requirement to update it in order not to be thrown out of the play store I will remove it from the play store.
-
-As apps can be transferred to different accounts I could think of transferring dreamDroid's play store appearance to another developer.
-
-If you have serious interest about overtaking please contact me.
-
-If you have serious interest about making money with my and other people's work go and f* yourself.
-
-DreamDroid [![Build Status](https://travis-ci.org/sreichholf/dreamDroid.svg?branch=master)](https://travis-ci.org/sreichholf/dreamDroid)
+DreamDroid [![Android CI](https://github.com/sreichholf/dreamDroid/actions/workflows/android-ci.yml/badge.svg?branch=main)](https://github.com/sreichholf/dreamDroid/actions/workflows/android-ci.yml)
 ==========
 
 Remotely control your enigma2 based Dreambox with any Android Device!
+
+Development has been picked back up on the `main` rewrite, with help from AI.
 
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
       alt="Get it on Google Play"
