@@ -13,9 +13,9 @@ import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * Cloud backup for SharedPreferences + profile DBs.
- * Backs up Room [AppDatabase.DATABASE_NAME] and legacy [DatabaseHelper.DATABASE_NAME]
- * so pre-cutover cloud snapshots (legacy file only) still restore; [DreamDroid] migrates
- * legacy → Room on first launch after restore.
+ * Backs up Room [AppDatabase.DATABASE_NAME] and leftover [DatabaseHelper.DATABASE_NAME]
+ * so pre-cutover cloud snapshots (legacy file only) still restore;
+ * [DatabaseHelper.migrateIntoRoomIfNeeded] copies profiles on first launch after restore.
  */
 class DreamDroidBackupAgent : BackupAgentHelper() {
     override fun onCreate() {
