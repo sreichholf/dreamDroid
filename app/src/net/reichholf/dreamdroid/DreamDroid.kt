@@ -75,18 +75,7 @@ class DreamDroid : Application() {
         }
 
         val appContext = getAppContext()!!
-        val dao = AppDatabase.profilesBlocking(appContext)
-        if (dao.getProfiles().size == 0) {
-            val dbh = DatabaseHelper.getInstance(appContext)
-            if (dbh.getProfiles().size > 0) {
-                for (p in dbh.getProfiles()) {
-                    dbh.deleteProfile(p)
-                    p.id = dao.addProfile(p).toInt()
-                }
-                // Legacy SQLite is migrate-only; drop the file once Room has the profiles.
-                appContext.deleteDatabase(DatabaseHelper.DATABASE_NAME)
-            }
-        }
+        DatabaseHelper.migrateIntoRoomIfNeeded(appContext)
 
         initChannels()
         locationList = ArrayList()

@@ -6,349 +6,152 @@
  */
 package net.reichholf.dreamdroid
 
-import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteException
-import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.nio.channels.FileChannel
-import net.reichholf.dreamdroid.enigma.Event
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
- * @author sre
+ * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades and
+ * cloud-restore snapshots that still have this file. Never creates the database.
  */
-class DatabaseHelper(private val context: Context) :
-    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+object DatabaseHelper {
+    const val DATABASE_NAME: String = "dreamdroid"
 
-    override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_CREATE)
-        db.execSQL(EVENT_TABLE_CREATE)
-        db.execSQL(SERVICES_TABLE_CREATE)
-    }
+    val LOG_TAG: String = DatabaseHelper::class.java.simpleName
 
-    private fun upgrade6to7(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_UPGRADE_6_7_1)
-        db.execSQL(PROFILES_TABLE_UPGRADE_6_7_2)
-        db.execSQL(PROFILES_TABLE_UPGRADE_6_7_3)
-        db.execSQL(PROFILES_TABLE_UPGRADE_6_7_4)
-    }
+    private const val PROFILES_TABLE = "profiles"
 
-    private fun upgrade7to8(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_UPGRADE_7_8_1)
-        db.execSQL(PROFILES_TABLE_UPGRADE_7_8_2)
-    }
+    private const val KEY_ID = "_id"
+    private const val KEY_PROFILE = "profile"
+    private const val KEY_HOST = "host"
+    private const val KEY_STREAM_HOST = "streamhost"
+    private const val KEY_STREAM_PORT = "streamport"
+    private const val KEY_FILE_PORT = "fileport"
+    private const val KEY_PORT = "port"
+    private const val KEY_LOGIN = "login"
+    private const val KEY_USER = "user"
+    private const val KEY_PASS = "pass"
+    private const val KEY_SSL = "ssl"
+    private const val KEY_FILE_SSL = "file_ssl"
+    private const val KEY_FILE_LOGIN = "file_login"
+    private const val KEY_STREAM_LOGIN = "streamlogin"
+    private const val KEY_SIMPLE_REMOTE = "simpleremote"
+    private const val KEY_DEFAULT_REF = "default_ref"
+    private const val KEY_DEFAULT_REF_NAME = "default_ref_name"
+    private const val KEY_DEFAULT_REF_2 = "default_ref_2"
+    private const val KEY_DEFAULT_REF_2_NAME = "default_ref_2_name"
+    private const val KEY_SSID = "ssid"
+    private const val KEY_DEFAULT_ON_NO_WIFI = "defaultProfileOnNoWifi"
+    private const val KEY_ENCODER_STREAM = "encoder_stream"
+    private const val KEY_ENCODER_PATH = "encoder_path"
+    private const val KEY_ENCODER_PORT = "encoder_port"
+    private const val KEY_ENCODER_LOGIN = "encoder_login"
+    private const val KEY_ENCODER_USER = "encoder_user"
+    private const val KEY_ENCODER_PASS = "encoder_pass"
+    private const val KEY_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate"
+    private const val KEY_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate"
+    private const val KEY_TRUST_ALL_CERTS = "trust_all_certs"
 
-    private fun upgrade11to12(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_1)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_2)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_3)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_4)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_5)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_6)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_7)
-        db.execSQL(PROFILES_TABLE_UPGRADE_11_12_8)
-    }
+    fun databaseFile(context: Context): File = context.getDatabasePath(DATABASE_NAME)
 
-    private fun upgrade12to13(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_UPGRADE_12_13_1)
-        db.execSQL(PROFILES_TABLE_UPGRADE_12_13_2)
-    }
-
-    private fun upgrade13to14(db: SQLiteDatabase) {
-        db.execSQL(PROFILES_TABLE_UPGRADE_13_14)
-    }
-
-    override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        var old = oldVersion
-        val scheduleBackup = old < newVersion
-        try {
-            if (old == 2) {
-                db.execSQL(PROFILES_TABLE_UPGRADE_2_3)
-                old++
-            }
-            if (old == 3) {
-                db.execSQL(PROFILES_TABLE_UPGRADE_3_4)
-                old++
-            }
-            if (old == 4) {
-                db.execSQL(PROFILES_TABLE_UPGRADE_4_5)
-                old++
-            }
-            if (old == 5) {
-                db.execSQL(PROFILES_TABLE_UPGRADE_5_6)
-                old++
-            }
-            if (old == 6) {
-                upgrade6to7(db)
-                old++
-            }
-            if (old == 7) {
-                upgrade7to8(db)
-                old++
-            }
-            if (old == 8) {
-                db.execSQL(PROFILES_TABLE_UPGRADE_8_9)
-                old++
-            }
-            if (old == 9) {
-                db.execSQL(EVENT_TABLE_CREATE)
-                db.execSQL(SERVICES_TABLE_CREATE)
-                old += 2
-            }
-            if (old == 10) { // DEVELOPMENT VERSIONS ONLY
-                db.execSQL("DROP TABLE EPG;")
-                db.execSQL(EVENT_TABLE_CREATE)
-                old++
-            }
-            if (old == 11) {
-                upgrade11to12(db)
-                old++
-            }
-            if (old == 12) {
-                upgrade12to13(db)
-                old++
-            }
-            if (old == 13) {
-                upgrade13to14(db)
-                old++
+    /**
+     * Profiles from an existing leftover file. Empty if the file is missing or
+     * unreadable. Does not create `dreamdroid`.
+     */
+    fun readProfiles(context: Context): List<Profile> {
+        val file = databaseFile(context)
+        if (!file.exists()) {
+            return emptyList()
+        }
+        return try {
+            SQLiteDatabase.openDatabase(
+                file.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY
+            ).use { db ->
+                readProfiles(db)
             }
         } catch (e: SQLiteException) {
-            Log.e(LOG_TAG, "onUpgrade: SQLiteException, recreating db. ", e)
-            Log.e(LOG_TAG, "(oldVersion was $old)")
-            emergencyRecovery(db)
-            return // this was lossy
+            Log.e(LOG_TAG, "readProfiles: cannot open leftover $DATABASE_NAME", e)
+            emptyList()
         }
-        if (scheduleBackup) {
-            DreamDroid.scheduleBackup(context)
-        }
-    }
-
-    private fun emergencyRecovery(db: SQLiteDatabase) {
-        db.execSQL("DROP TABLE IF EXISTS $PROFILES_TABLE_NAME;")
-        db.execSQL(PROFILES_TABLE_CREATE)
-    }
-
-    private fun p2cv(p: Profile): ContentValues {
-        val values = ContentValues()
-        values.put(KEY_PROFILE_PROFILE, p.name)
-        values.put(KEY_PROFILE_HOST, p.host)
-        values.put(KEY_PROFILE_STREAM_HOST, p.streamHost)
-        values.put(KEY_PROFILE_PORT, p.port)
-        values.put(KEY_PROFILE_STREAM_PORT, p.streamPort)
-        values.put(KEY_PROFILE_FILE_PORT, p.filePort)
-        values.put(KEY_PROFILE_LOGIN, p.login)
-        values.put(KEY_PROFILE_USER, p.user)
-        values.put(KEY_PROFILE_PASS, p.pass)
-        values.put(KEY_PROFILE_SSL, p.ssl)
-        values.put(KEY_PROFILE_TRUST_ALL_CERTS, p.allCertsTrusted)
-        values.put(KEY_PROFILE_STREAM_LOGIN, p.streamLogin)
-        values.put(KEY_PROFILE_FILE_LOGIN, p.fileLogin)
-        values.put(KEY_PROFILE_FILE_SSL, p.fileSsl)
-        values.put(KEY_PROFILE_SIMPLE_REMOTE, p.simpleRemote)
-        values.put(KEY_PROFILE_DEFAULT_REF, p.defaultBouquetTv)
-        values.put(KEY_PROFILE_DEFAULT_REF_NAME, p.defaultBouquetTvName)
-        values.put(KEY_PROFILE_DEFAULT_REF_2, p.defaultParentBouquetTv)
-        values.put(KEY_PROFILE_DEFAULT_REF_2_NAME, p.defaultParentBouquetTvName)
-        values.put(KEY_PROFILE_ENCODER_STREAM, p.encoderStream)
-        values.put(KEY_PROFILE_ENCODER_PATH, p.encoderPath)
-        values.put(KEY_PROFILE_ENCODER_PORT, p.encoderPort)
-        values.put(KEY_PROFILE_ENCODER_LOGIN, p.encoderLogin)
-        values.put(KEY_PROFILE_ENCODER_USER, p.encoderUser)
-        values.put(KEY_PROFILE_ENCODER_PASS, p.encoderPass)
-        values.put(KEY_PROFILE_ENCODER_VIDEO_BITRATE, p.encoderVideoBitrate)
-        values.put(KEY_PROFILE_ENCODER_AUDIO_BITRATE, p.encoderAudioBitrate)
-        values.put(KEY_SSID, p.ssid)
-        values.put(KEY_DEFAULT_PROFILE_ON_NO_WIFI, p.isDefaultProfileOnNoWifi)
-        return values
     }
 
     /**
-     * @param p
+     * When Room has no profiles, copy leftover rows in and delete the file.
+     * No-op if Room already has rows or the leftover file is missing.
+     * Deletes an existing leftover after a successful open, including 0 rows
+     * (empty file created by the old [SQLiteOpenHelper] path).
      */
-    fun addProfile(p: Profile): Boolean {
-        val db = writableDatabase
-        val id = db.insert(PROFILES_TABLE_NAME, null, p2cv(p))
-        if (id > -1) {
-            db.close()
-            p.id = id.toInt()
-            DreamDroid.scheduleBackup(context)
-            return true
+    fun migrateIntoRoomIfNeeded(
+        context: Context,
+        dao: Profile.ProfileDao = AppDatabase.profiles(context)
+    ): Int = runBlocking(Dispatchers.IO) {
+        if (dao.getProfiles().isNotEmpty()) {
+            return@runBlocking 0
         }
-        db.close()
-        return false
+        val file = databaseFile(context)
+        if (!file.exists()) {
+            return@runBlocking 0
+        }
+        val profiles = try {
+            SQLiteDatabase.openDatabase(
+                file.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY
+            ).use { db ->
+                readProfiles(db)
+            }
+        } catch (e: SQLiteException) {
+            Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
+            return@runBlocking 0
+        }
+        for (profile in profiles) {
+            profile.id = dao.addProfile(profile).toInt()
+        }
+        context.deleteDatabase(DATABASE_NAME)
+        profiles.size
     }
 
-    /**
-     * @param p
-     */
-    fun updateProfile(p: Profile): Boolean {
-        val db = writableDatabase
-        val numRows = db.update(
-            PROFILES_TABLE_NAME,
-            p2cv(p),
-            KEY_PROFILE_ID + "=" + (p.id ?: -1),
-            null
-        )
-        db.close()
-        if (numRows == 1) {
-            DreamDroid.scheduleBackup(context)
-            DreamDroid.profileChanged(context, p)
-            return true
-        }
-        return false
-    }
-
-    /**
-     * @param p
-     */
-    fun deleteProfile(p: Profile): Boolean {
-        val db = writableDatabase
-        val numRows = db.delete(PROFILES_TABLE_NAME, KEY_PROFILE_ID + "=" + (p.id ?: -1), null)
-        db.close()
-        if (numRows == 1) {
-            DreamDroid.scheduleBackup(context)
-            return true
-        }
-        return false
-    }
-
-    /**
-     * @return Profile for all Settings
-     */
-    fun getProfiles(): ArrayList<Profile> {
-        val columns = arrayOf(
-            KEY_PROFILE_ID, KEY_PROFILE_PROFILE,
-            KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST,
-            KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT,
-            KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN,
-            KEY_PROFILE_USER, KEY_PROFILE_PASS,
-            KEY_PROFILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS,
-            KEY_PROFILE_SIMPLE_REMOTE, KEY_PROFILE_STREAM_LOGIN,
-            KEY_PROFILE_FILE_LOGIN, KEY_PROFILE_FILE_SSL,
-            KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
-            KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH,
-            KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
-            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS,
-            KEY_PROFILE_ENCODER_VIDEO_BITRATE,
-            KEY_PROFILE_ENCODER_AUDIO_BITRATE,
-            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI
-        )
-        val db = readableDatabase
-
+    private fun readProfiles(db: SQLiteDatabase): List<Profile> {
         val list = ArrayList<Profile>()
-
-        val c = db.query(PROFILES_TABLE_NAME, columns, null, null, null, null, KEY_PROFILE_PROFILE)
-        if (c.count == 0) {
-            db.close()
-            c.close()
-            return list
+        db.query(
+            PROFILES_TABLE,
+            null,
+            null,
+            null,
+            null,
+            null,
+            KEY_PROFILE
+        ).use { cursor ->
+            while (cursor.moveToNext()) {
+                list.add(profileFrom(cursor))
+            }
         }
-
-        while (!c.isLast) {
-            c.moveToNext()
-            list.add(getProfileFrom(c))
-        }
-        c.close()
-        db.close()
         return list
     }
 
-    /**
-     * @param id
-     * @return the profile for the given id, or null if no such profile was found
-     */
-    fun getProfile(id: Int): Profile? {
-        val columns = arrayOf(
-            KEY_PROFILE_ID, KEY_PROFILE_PROFILE,
-            KEY_PROFILE_HOST, KEY_PROFILE_STREAM_HOST,
-            KEY_PROFILE_PORT, KEY_PROFILE_STREAM_PORT,
-            KEY_PROFILE_FILE_PORT, KEY_PROFILE_LOGIN,
-            KEY_PROFILE_USER, KEY_PROFILE_PASS,
-            KEY_PROFILE_SSL, KEY_PROFILE_SIMPLE_REMOTE,
-            KEY_PROFILE_STREAM_LOGIN, KEY_PROFILE_FILE_LOGIN,
-            KEY_PROFILE_FILE_SSL, KEY_PROFILE_TRUST_ALL_CERTS,
-            KEY_PROFILE_DEFAULT_REF, KEY_PROFILE_DEFAULT_REF_NAME,
-            KEY_PROFILE_DEFAULT_REF_2, KEY_PROFILE_DEFAULT_REF_2_NAME,
-            KEY_PROFILE_ENCODER_STREAM, KEY_PROFILE_ENCODER_PATH,
-            KEY_PROFILE_ENCODER_PORT, KEY_PROFILE_ENCODER_LOGIN,
-            KEY_PROFILE_ENCODER_USER, KEY_PROFILE_ENCODER_PASS,
-            KEY_PROFILE_ENCODER_VIDEO_BITRATE,
-            KEY_PROFILE_ENCODER_AUDIO_BITRATE,
-            KEY_SSID, KEY_DEFAULT_PROFILE_ON_NO_WIFI
-        )
-        val db = readableDatabase
-        val c = db.query(
-            PROFILES_TABLE_NAME,
-            columns,
-            KEY_PROFILE_ID + "=" + id,
-            null,
-            null,
-            null,
-            KEY_PROFILE_PROFILE
-        )
-
-        var p: Profile? = null
-        if (c.count == 1 && c.moveToFirst()) {
-            p = getProfileFrom(c)
-        }
-        c.close()
-        db.close()
-        return p
-    }
-
-    private fun getProfileFrom(c: Cursor): Profile {
-        val id = c.getInt(c.getColumnIndex(KEY_PROFILE_ID))
-        val name = c.getString(c.getColumnIndex(KEY_PROFILE_PROFILE))
-        val host = c.getString(c.getColumnIndex(KEY_PROFILE_HOST))
-        val streamHost = c.getString(c.getColumnIndex(KEY_PROFILE_STREAM_HOST))
-        val port = c.getInt(c.getColumnIndex(KEY_PROFILE_PORT))
-
-        var streamPort = c.getInt(c.getColumnIndex(KEY_PROFILE_STREAM_PORT))
+    private fun profileFrom(c: Cursor): Profile {
+        var streamPort = c.intOr(KEY_STREAM_PORT, 0)
         if (streamPort <= 0) {
             streamPort = 8001
         }
-
-        var filePort = c.getInt(c.getColumnIndex(KEY_PROFILE_FILE_PORT))
+        var filePort = c.intOr(KEY_FILE_PORT, 0)
         if (filePort <= 0) {
             filePort = 80
         }
-
-        val isLogin = c.getInt(c.getColumnIndex(KEY_PROFILE_LOGIN)) == 1
-        val isSsl = c.getInt(c.getColumnIndex(KEY_PROFILE_SSL)) == 1
-        val isAllCertsTrusted = c.getInt(c.getColumnIndex(KEY_PROFILE_TRUST_ALL_CERTS)) == 1
-        val isStreamLogin = c.getInt(c.getColumnIndex(KEY_PROFILE_STREAM_LOGIN)) == 1
-        val isFileLogin = c.getInt(c.getColumnIndex(KEY_PROFILE_FILE_LOGIN)) == 1
-        val isFileSsl = c.getInt(c.getColumnIndex(KEY_PROFILE_FILE_SSL)) == 1
-        val isSimpleRemote = c.getInt(c.getColumnIndex(KEY_PROFILE_SIMPLE_REMOTE)) == 1
-
-        val user = c.getString(c.getColumnIndex(KEY_PROFILE_USER))
-        val pass = c.getString(c.getColumnIndex(KEY_PROFILE_PASS))
-
-        val defaultRef = c.getString(c.getColumnIndex(KEY_PROFILE_DEFAULT_REF))
-        val defaultRefName = c.getString(c.getColumnIndex(KEY_PROFILE_DEFAULT_REF_NAME))
-
-        val defaultRef2 = c.getString(c.getColumnIndex(KEY_PROFILE_DEFAULT_REF_2))
-        val defaultRef2Name = c.getString(c.getColumnIndex(KEY_PROFILE_DEFAULT_REF_2_NAME))
-
-        val isEncoderStream = c.getInt(c.getColumnIndex(KEY_PROFILE_ENCODER_STREAM)) == 1
-        var encoderPath = c.getString(c.getColumnIndex(KEY_PROFILE_ENCODER_PATH))
-        var encoderPort = c.getInt(c.getColumnIndex(KEY_PROFILE_ENCODER_PORT))
-        val isEncoderLogin = c.getInt(c.getColumnIndex(KEY_PROFILE_ENCODER_LOGIN)) == 1
-        var encoderUser = c.getString(c.getColumnIndex(KEY_PROFILE_ENCODER_USER))
-        var encoderPass = c.getString(c.getColumnIndex(KEY_PROFILE_ENCODER_PASS))
-        var encoderAudioBitrate = c.getInt(c.getColumnIndex(KEY_PROFILE_ENCODER_AUDIO_BITRATE))
-        var encoderVideoBitrate = c.getInt(c.getColumnIndex(KEY_PROFILE_ENCODER_VIDEO_BITRATE))
-
-        val ssid = c.getString(c.getColumnIndex(KEY_SSID))
-        val defaultProfileOnNoWifi = c.getInt(c.getColumnIndex(KEY_DEFAULT_PROFILE_ON_NO_WIFI)) == 1
-
+        var encoderPath = c.stringOr(KEY_ENCODER_PATH)
+        var encoderPort = c.intOr(KEY_ENCODER_PORT, 0)
+        var encoderUser = c.stringOr(KEY_ENCODER_USER)
+        var encoderPass = c.stringOr(KEY_ENCODER_PASS)
+        var encoderAudioBitrate = c.intOr(KEY_ENCODER_AUDIO_BITRATE, 0)
+        var encoderVideoBitrate = c.intOr(KEY_ENCODER_VIDEO_BITRATE, 0)
         encoderPath = encoderPath ?: "stream"
         encoderPort = if (encoderPort <= 0) 554 else encoderPort
         encoderUser = encoderUser ?: ""
@@ -356,276 +159,56 @@ class DatabaseHelper(private val context: Context) :
         encoderAudioBitrate = if (encoderAudioBitrate <= 0) 128 else encoderAudioBitrate
         encoderVideoBitrate = if (encoderVideoBitrate <= 0) 2500 else encoderVideoBitrate
 
-        val p = Profile(
-            id, name, host, streamHost, port, streamPort, filePort, isLogin, user, pass, isSsl,
-            isAllCertsTrusted, isStreamLogin, isFileLogin, isFileSsl, isSimpleRemote, defaultRef,
-            defaultRefName, defaultRef2, defaultRef2Name, isEncoderStream, encoderPath, encoderPort,
-            isEncoderLogin, encoderUser, encoderPass, encoderVideoBitrate, encoderAudioBitrate
+        val profile = Profile(
+            c.intOr(KEY_ID, 0).takeIf { it > 0 },
+            c.stringOr(KEY_PROFILE),
+            c.stringOr(KEY_HOST),
+            c.stringOr(KEY_STREAM_HOST),
+            c.intOr(KEY_PORT, 0),
+            streamPort,
+            filePort,
+            c.boolOr(KEY_LOGIN),
+            c.stringOr(KEY_USER),
+            c.stringOr(KEY_PASS),
+            c.boolOr(KEY_SSL),
+            c.boolOr(KEY_TRUST_ALL_CERTS),
+            c.boolOr(KEY_STREAM_LOGIN),
+            c.boolOr(KEY_FILE_LOGIN),
+            c.boolOr(KEY_FILE_SSL),
+            c.boolOr(KEY_SIMPLE_REMOTE),
+            c.stringOr(KEY_DEFAULT_REF),
+            c.stringOr(KEY_DEFAULT_REF_NAME),
+            c.stringOr(KEY_DEFAULT_REF_2),
+            c.stringOr(KEY_DEFAULT_REF_2_NAME),
+            c.boolOr(KEY_ENCODER_STREAM),
+            encoderPath,
+            encoderPort,
+            c.boolOr(KEY_ENCODER_LOGIN),
+            encoderUser,
+            encoderPass,
+            encoderVideoBitrate,
+            encoderAudioBitrate
         )
-        p.ssid = ssid
-        p.isDefaultProfileOnNoWifi = defaultProfileOnNoWifi
-        return p
+        profile.ssid = c.stringOr(KEY_SSID)
+        profile.isDefaultProfileOnNoWifi = c.boolOr(KEY_DEFAULT_ON_NO_WIFI)
+        return profile
     }
 
-    fun setEvents(events: ArrayList<Event>): Int {
-        val db = writableDatabase
-        db.beginTransaction()
-        var success = 0
-        for (event in events) {
-            if (setEvent(event, db)) {
-                success++
-            }
+    private fun Cursor.intOr(name: String, default: Int): Int {
+        val index = getColumnIndex(name)
+        if (index < 0 || isNull(index)) {
+            return default
         }
-        db.endTransaction()
-        db.close()
-        return success
+        return getInt(index)
     }
 
-    fun setEvent(event: Event, db: SQLiteDatabase): Boolean {
-        val values = eventToCv(event) ?: return false
-
-        val id = values.getAsString(KEY_EVENT_ID)
-        db.delete(EVENT_TABLE_NAME, "$KEY_EVENT_ID=?;", arrayOf(id))
-        return db.insert(EVENT_TABLE_NAME, null, values) > -1
-    }
-
-    fun eventToCv(event: Event): ContentValues? {
-        val values = ContentValues()
-        val id: Int
-        val start: Int
-        val duration: Int
-        try {
-            id = Integer.parseInt(event.eventId)
-            start = Integer.parseInt(event.start)
-            duration = Integer.parseInt(event.duration)
-        } catch (nex: NumberFormatException) {
+    private fun Cursor.stringOr(name: String): String? {
+        val index = getColumnIndex(name)
+        if (index < 0 || isNull(index)) {
             return null
         }
-
-        values.put(KEY_EVENT_ID, id)
-        values.put(KEY_EVENT_START, start)
-        values.put(KEY_EVENT_DURATION, duration)
-        values.put(KEY_EVENT_TITLE, event.title)
-        values.put(KEY_EVENT_DESCRIPTION, event.description)
-        values.put(KEY_EVENT_DESCRIPTION_EXTENDED, event.descriptionExtended)
-        values.put(KEY_EVENT_SERVICE_REFERENCE, event.serviceReference)
-        return values
+        return getString(index)
     }
 
-    fun exportDB(): Boolean {
-        var source: FileChannel? = null
-        var destination: FileChannel? = null
-        val currentDB = context.getDatabasePath(DATABASE_NAME)
-        val backupDir = context.getExternalFilesDir(null) ?: context.filesDir
-        val backupDB = File(backupDir, "$DATABASE_NAME.sqlite")
-        try {
-            source = FileInputStream(currentDB).channel
-            destination = FileOutputStream(backupDB).channel
-            destination.transferFrom(source, 0, source.size())
-            source.close()
-            destination.close()
-            return true
-        } catch (e: IOException) {
-            e.printStackTrace()
-        }
-        return false
-    }
-
-    companion object {
-        private const val DATABASE_VERSION = 14
-
-        val LOG_TAG: String = DatabaseHelper::class.java.simpleName
-
-        const val KEY_PROFILE_ID = "_id"
-
-        const val KEY_PROFILE_PROFILE = "profile"
-
-        const val KEY_PROFILE_HOST = "host"
-
-        const val KEY_PROFILE_STREAM_HOST = "streamhost"
-
-        const val KEY_PROFILE_STREAM_PORT = "streamport"
-
-        const val KEY_PROFILE_STREAM_LOGIN = "streamlogin"
-
-        const val KEY_PROFILE_FILE_PORT = "fileport"
-
-        const val KEY_PROFILE_PORT = "port"
-
-        const val KEY_PROFILE_LOGIN = "login"
-
-        const val KEY_PROFILE_USER = "user"
-
-        const val KEY_PROFILE_PASS = "pass"
-
-        const val KEY_PROFILE_SSL = "ssl"
-
-        const val KEY_PROFILE_FILE_SSL = "file_ssl"
-
-        const val KEY_PROFILE_FILE_LOGIN = "file_login"
-
-        const val KEY_PROFILE_SIMPLE_REMOTE = "simpleremote"
-
-        const val KEY_PROFILE_DEFAULT_REF = "default_ref"
-
-        const val KEY_PROFILE_DEFAULT_REF_NAME = "default_ref_name"
-
-        const val KEY_PROFILE_DEFAULT_REF_2 = "default_ref_2"
-
-        const val KEY_PROFILE_DEFAULT_REF_2_NAME = "default_ref_2_name"
-
-        const val KEY_SSID = "ssid"
-
-        const val KEY_DEFAULT_PROFILE_ON_NO_WIFI = "defaultProfileOnNoWifi"
-
-        // ENCODER
-        const val KEY_PROFILE_ENCODER_STREAM = "encoder_stream"
-
-        const val KEY_PROFILE_ENCODER_PATH = "encoder_path"
-
-        const val KEY_PROFILE_ENCODER_PORT = "encoder_port"
-
-        const val KEY_PROFILE_ENCODER_LOGIN = "encoder_login"
-
-        const val KEY_PROFILE_ENCODER_USER = "encoder_user"
-
-        const val KEY_PROFILE_ENCODER_PASS = "encoder_pass"
-
-        const val KEY_PROFILE_ENCODER_VIDEO_BITRATE = "encoder_video_bitrate"
-
-        const val KEY_PROFILE_ENCODER_AUDIO_BITRATE = "encoder_audio_bitrate"
-
-        const val KEY_PROFILE_TRUST_ALL_CERTS = "trust_all_certs"
-
-        const val KEY_EVENT_ID = "id"
-
-        const val KEY_EVENT_START = "start"
-
-        const val KEY_EVENT_DURATION = "duration"
-
-        const val KEY_EVENT_TITLE = "title"
-
-        const val KEY_EVENT_DESCRIPTION = "description"
-
-        const val KEY_EVENT_DESCRIPTION_EXTENDED = "description_ext"
-
-        const val KEY_EVENT_SERVICE_REFERENCE = "sid"
-
-        const val KEY_SERVICES_REFERENCE = "ref"
-
-        const val KEY_SERVICES_NAME = "name"
-
-        const val DATABASE_NAME = "dreamdroid"
-
-        private const val PROFILES_TABLE_NAME = "profiles"
-        private const val EVENT_TABLE_NAME = "events"
-        private const val SERVICES_TABLE_NAME = "services"
-
-        private val PROFILES_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " +
-                PROFILES_TABLE_NAME + " (" +
-                KEY_PROFILE_ID + " INTEGER PRIMARY KEY, " +
-                KEY_PROFILE_PROFILE + " TEXT, " +
-                KEY_PROFILE_HOST + " TEXT, " +
-                KEY_PROFILE_STREAM_HOST + " TEXT, " +
-                KEY_PROFILE_PORT + " INTEGER, " +
-                KEY_PROFILE_STREAM_PORT + " INTEGER, " +
-                KEY_PROFILE_FILE_PORT + " INTEGER, " +
-                KEY_PROFILE_LOGIN + " BOOLEAN, " +
-                KEY_PROFILE_USER + " TEXT, " +
-                KEY_PROFILE_PASS + " TEXT, " +
-                KEY_PROFILE_SSL + " BOOLEAN, " +
-                KEY_PROFILE_SIMPLE_REMOTE + " BOOLEAN, " +
-                KEY_PROFILE_DEFAULT_REF + " TEXT, " +
-                KEY_PROFILE_DEFAULT_REF_NAME + " TEXT, " +
-                KEY_PROFILE_DEFAULT_REF_2 + " TEXT, " +
-                KEY_PROFILE_DEFAULT_REF_2_NAME + " TEXT, " +
-                KEY_PROFILE_FILE_LOGIN + " BOOLEAN, " +
-                KEY_PROFILE_FILE_SSL + " BOOLEAN, " +
-                KEY_PROFILE_STREAM_LOGIN + " BOOLEAN, " +
-                KEY_PROFILE_ENCODER_STREAM + " BOOLEAN, " +
-                KEY_PROFILE_ENCODER_PATH + " TEXT, " +
-                KEY_PROFILE_ENCODER_PORT + " INTEGER, " +
-                KEY_PROFILE_ENCODER_LOGIN + " BOOLEAN, " +
-                KEY_PROFILE_ENCODER_USER + " TEXT, " +
-                KEY_PROFILE_ENCODER_PASS + " TEXT, " +
-                KEY_PROFILE_ENCODER_VIDEO_BITRATE + " TEXT, " +
-                KEY_SSID + " TEXT, " +
-                KEY_DEFAULT_PROFILE_ON_NO_WIFI + " BOOLEAN, " +
-                KEY_PROFILE_ENCODER_AUDIO_BITRATE + " TEXT, " +
-                KEY_PROFILE_TRUST_ALL_CERTS + " BOOLEAN);"
-
-        private val PROFILES_TABLE_UPGRADE_2_3 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_STREAM_HOST TEXT;"
-
-        private val PROFILES_TABLE_UPGRADE_3_4 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_SIMPLE_REMOTE BOOLEAN;"
-
-        private val PROFILES_TABLE_UPGRADE_4_5 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_STREAM_PORT INTEGER;"
-
-        private val PROFILES_TABLE_UPGRADE_5_6 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_FILE_PORT INTEGER;"
-
-        private val PROFILES_TABLE_UPGRADE_6_7_1 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_DEFAULT_REF TEXT;"
-        private val PROFILES_TABLE_UPGRADE_6_7_2 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_DEFAULT_REF_NAME TEXT;"
-        private val PROFILES_TABLE_UPGRADE_6_7_3 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_DEFAULT_REF_2 TEXT;"
-        private val PROFILES_TABLE_UPGRADE_6_7_4 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_DEFAULT_REF_2_NAME TEXT;"
-
-        private val PROFILES_TABLE_UPGRADE_7_8_1 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_FILE_LOGIN BOOLEAN;"
-        private val PROFILES_TABLE_UPGRADE_7_8_2 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_FILE_SSL BOOLEAN;"
-
-        private val PROFILES_TABLE_UPGRADE_8_9 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_STREAM_LOGIN BOOLEAN;"
-
-        private val PROFILES_TABLE_UPGRADE_11_12_1 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_STREAM BOOLEAN;"
-        private val PROFILES_TABLE_UPGRADE_11_12_2 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_PATH TEXT;"
-        private val PROFILES_TABLE_UPGRADE_11_12_3 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_PORT INTEGER;"
-        private val PROFILES_TABLE_UPGRADE_11_12_4 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_LOGIN BOOLEAN;"
-        private val PROFILES_TABLE_UPGRADE_11_12_5 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_USER TEXT;"
-        private val PROFILES_TABLE_UPGRADE_11_12_6 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_PASS TEXT;"
-        private val PROFILES_TABLE_UPGRADE_11_12_7 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_VIDEO_BITRATE INTEGER;"
-        private val PROFILES_TABLE_UPGRADE_11_12_8 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_ENCODER_AUDIO_BITRATE INTEGER;"
-
-        private val PROFILES_TABLE_UPGRADE_12_13_1 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_SSID TEXT; "
-        private val PROFILES_TABLE_UPGRADE_12_13_2 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_DEFAULT_PROFILE_ON_NO_WIFI BOOLEAN;"
-
-        private val PROFILES_TABLE_UPGRADE_13_14 =
-            "ALTER TABLE $PROFILES_TABLE_NAME ADD $KEY_PROFILE_TRUST_ALL_CERTS BOOLEAN;"
-
-        private val EVENT_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " +
-                EVENT_TABLE_NAME + " (" +
-                KEY_EVENT_ID + " INTEGER PRIMARY KEY, " +
-                KEY_EVENT_START + " INTEGER, " +
-                KEY_EVENT_DURATION + " INTEGER, " +
-                KEY_EVENT_TITLE + " TEXT, " +
-                KEY_EVENT_DESCRIPTION + " TEXT, " +
-                KEY_EVENT_DESCRIPTION_EXTENDED + " TEXT, " +
-                KEY_EVENT_SERVICE_REFERENCE + " TEXT);"
-
-        private val SERVICES_TABLE_CREATE =
-            "CREATE TABLE IF NOT EXISTS " +
-                SERVICES_TABLE_NAME + " (" +
-                KEY_SERVICES_REFERENCE + " TEXT PRIMARY KEY, " +
-                KEY_SERVICES_NAME + " TEXT);"
-
-        fun getInstance(ctx: Context): DatabaseHelper = DatabaseHelper(ctx)
-    }
+    private fun Cursor.boolOr(name: String): Boolean = intOr(name, 0) == 1
 }
