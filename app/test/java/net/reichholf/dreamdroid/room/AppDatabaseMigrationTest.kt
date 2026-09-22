@@ -27,17 +27,36 @@ class AppDatabaseMigrationTest {
                 connection.execSQL(V1_PROFILE)
                 connection.execSQL(V1_PROFILE_ROW)
                 connection.execSQL("PRAGMA user_version = 1")
+                assertFalse(connection.hasColumn("profile", "zap_and_stream"))
+
+                runBlocking { AppDatabase.MIGRATION_1_2.migrate(connection) }
+                connection.assertTables("epg_event", "epg_chunk")
+
                 runBlocking {
-                    AppDatabase.MIGRATION_1_2.migrate(connection)
                     AppDatabase.MIGRATION_2_3.migrate(connection)
                     AppDatabase.MIGRATION_3_4.migrate(connection)
                     AppDatabase.MIGRATION_4_5.migrate(connection)
-                    AppDatabase.MIGRATION_5_6.migrate(connection)
-                    AppDatabase.MIGRATION_6_7.migrate(connection)
-                    AppDatabase.MIGRATION_7_8.migrate(connection)
                 }
+                connection.assertTables(
+                    "bouquet_tab",
+                    "service_roster",
+                    "roster_container"
+                )
+
+                runBlocking { AppDatabase.MIGRATION_5_6.migrate(connection) }
+                connection.assertTables("timer_snapshot", "timer_list")
+
+                runBlocking { AppDatabase.MIGRATION_6_7.migrate(connection) }
+                connection.assertTables(
+                    "movie_location_meta",
+                    "movie_location_strip",
+                    "movie_list_meta",
+                    "movie_list"
+                )
+
+                runBlocking { AppDatabase.MIGRATION_7_8.migrate(connection) }
+                assertTrue(connection.hasColumn("profile", "zap_and_stream"))
                 assertProfileSurvived(connection)
-                assertMigratedTablesExist(connection)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -58,31 +77,27 @@ class AppDatabaseMigrationTest {
         }
     }
 
-    private fun assertMigratedTablesExist(connection: SQLiteConnection) {
+    private fun SQLiteConnection.assertTables(vararg tables: String) {
         val names = mutableSetOf<String>()
-        connection.prepare(
-            "SELECT name FROM sqlite_master WHERE type = 'table'"
-        ).use { statement ->
+        prepare("SELECT name FROM sqlite_master WHERE type = 'table'").use { statement ->
             while (statement.step()) {
                 names.add(statement.getText(0))
             }
         }
-        listOf(
-            "epg_event",
-            "epg_chunk",
-            "bouquet_tab",
-            "service_roster",
-            "roster_container",
-            "timer_snapshot",
-            "timer_list",
-            "movie_location_meta",
-            "movie_location_strip",
-            "movie_list_meta",
-            "movie_list"
-        ).forEach { table ->
+        tables.forEach { table ->
             assertTrue(table in names, "missing $table")
         }
     }
+
+    private fun SQLiteConnection.hasColumn(table: String, column: String): Boolean =
+        prepare("PRAGMA table_info(`$table`)").use { statement ->
+            while (statement.step()) {
+                if (statement.getText(1) == column) {
+                    return true
+                }
+            }
+            false
+        }
 
     private companion object {
         /**
