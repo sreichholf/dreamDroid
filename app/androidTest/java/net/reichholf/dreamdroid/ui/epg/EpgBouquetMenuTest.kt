@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import android.app.Application
+import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.R
@@ -24,16 +26,22 @@ class EpgBouquetMenuTest {
     @Test
     fun listEpgHidesMultiEpgUntilBouquetIsSet() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val session = EpgBouquetSession()
-        session.context = ctx
+        val app = ctx.applicationContext as Application
+        val viewModel = EpgBouquetViewModel(app, SavedStateHandle())
+        val provider = EpgBouquetMenuProvider(viewModel) {}
         val inflater = android.view.MenuInflater(ctx)
         val menu = androidx.appcompat.widget.PopupMenu(ctx, android.widget.TextView(ctx)).menu
-        session.onCreateMenu(menu, inflater)
-        session.bouquetRef = ""
-        session.onPrepareMenu(menu)
+        provider.onCreateMenu(menu, inflater)
+        provider.onPrepareMenu(menu)
         assertFalse(menu.findItem(R.id.menu_multiepg).isVisible)
-        session.bouquetRef = "1:7:1:B"
-        session.onPrepareMenu(menu)
+        viewModel.ensureEpoch(
+            epoch = 1,
+            leafRef = "1:7:1:B",
+            leafName = "Favourites",
+            leafTimeSec = null,
+            nowSec = 1_700_000_000
+        )
+        provider.onPrepareMenu(menu)
         assertTrue(menu.findItem(R.id.menu_multiepg).isVisible)
     }
 
@@ -42,11 +50,13 @@ class EpgBouquetMenuTest {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
         val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
         DrawerEpgMode.saveList(ctx)
-        val session = EpgBouquetSession()
-        session.context = ctx
-        session.bouquetRef = "1:7:1:B"
-        session.bouquetName = "Favourites"
-        session.openMultiEpg()
+        openBouquetMultiEpg(
+            context = ctx,
+            handle = null,
+            bouquetRef = "1:7:1:B",
+            bouquetName = "Favourites",
+            timeSec = 0L
+        )
         assertTrue(DrawerEpgMode.isMulti(prefs))
         DrawerEpgMode.saveList(ctx)
         assertFalse(DrawerEpgMode.isMulti(prefs))
