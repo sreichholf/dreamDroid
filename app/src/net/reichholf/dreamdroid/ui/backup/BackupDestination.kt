@@ -20,13 +20,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.backup.BackupData
-import net.reichholf.dreamdroid.helpers.backup.BackupService
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 
 private const val TAG = "BackupDestination"
@@ -35,29 +33,12 @@ private const val BACKUP_EXPORT_FILENAME = "dreamdroid_backup.json"
 
 /**
  * Phase 2.7c: Backup as a direct Compose NavHost destination (no nested Fragment).
+ * Profile toggles and the pending export live on [BackupViewModel].
  */
 @Composable
-fun BackupDestination(modifier: Modifier = Modifier) {
+fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel = viewModel()) {
     val context = LocalContext.current
-    val backupService = remember { BackupService(context.applicationContext) }
-    val uiState = remember { BackupUiState() }
-    var backupData by remember { mutableStateOf(backupService.getBackupData()) }
     var showPasswordWarning by remember { mutableStateOf(false) }
-    var pendingExportJson by remember { mutableStateOf<String?>(null) }
-
-    fun refreshProfileToggles(data: BackupData) {
-        uiState.setProfilesFromBackup(
-            data.profiles,
-            DreamDroid.getCurrentProfile().id ?: -1,
-            context.getString(R.string.backup_current_profile)
-        )
-    }
-
-    fun reloadBackupData() {
-        val data = backupService.getBackupData()
-        backupData = data
-        refreshProfileToggles(data)
-    }
 
     fun toast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -71,11 +52,10 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
         try {
-            if (!backupService.doImport(readTextFromUri(context, uri))) {
+            if (!viewModel.importBackup(readTextFromUri(context, uri))) {
                 toast(context.getString(R.string.backup_import_error))
                 return@rememberLauncherForActivityResult
             }
-            reloadBackupData()
             toast(context.getString(R.string.backup_import_successful))
         } catch (e: IOException) {
             Log.e(TAG, "unable to readTextFromUri:$uri", e)
@@ -86,8 +66,8 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     val createBackupFile = rememberLauncherForActivityResult(
         ActivityResultContracts.CreateDocument("application/json")
     ) { uri ->
-        val json = pendingExportJson
-        pendingExportJson = null
+        val json = viewModel.pendingExportJson
+        viewModel.pendingExportJson = null
         if (uri == null || json == null) {
             return@rememberLauncherForActivityResult
         }
@@ -104,13 +84,11 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     }
 
     fun openExportPicker() {
-        applyExportSelection(backupData, uiState)
-        pendingExportJson = backupService.exportJson(backupData, uiState.includePasswords)
-        reloadBackupData()
+        viewModel.prepareExport()
         try {
             createBackupFile.launch(BACKUP_EXPORT_FILENAME)
         } catch (e: ActivityNotFoundException) {
-            pendingExportJson = null
+            viewModel.pendingExportJson = null
             toast(
                 e.localizedMessage
                     ?: context.getString(R.string.backup_export_missing_permission)
@@ -119,7 +97,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     }
 
     fun onExportClicked() {
-        if (uiState.includePasswords) {
+        if (viewModel.uiState.includePasswords) {
             showPasswordWarning = true
         } else {
             openExportPicker()
@@ -133,11 +111,11 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     }
 
     LaunchedEffect(Unit) {
-        reloadBackupData()
+        viewModel.reload()
     }
 
     BackupScreen(
-        state = uiState,
+        state = viewModel.uiState,
         onImport = { doImport() },
         onExport = { onExportClicked() },
         modifier = modifier
@@ -151,16 +129,6 @@ fun BackupDestination(modifier: Modifier = Modifier) {
             onConfirm = { openExportPicker() },
             confirmLabel = stringResource(R.string.backup_export)
         )
-    }
-}
-
-private fun applyExportSelection(data: BackupData, state: BackupUiState) {
-    if (!state.exportSettings) {
-        data.settings = null
-    }
-    val excluded = state.profiles.filterNot { it.checked }.map { it.id }.toHashSet()
-    if (excluded.isNotEmpty()) {
-        data.profiles.removeIf { excluded.contains(it.id) }
     }
 }
 

@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.zap
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.view.Menu
@@ -11,300 +10,121 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
-import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Phase 2.7d: Zap channel grid as a direct Compose NavHost destination.
+ * List, saved bouquet, and load/zap jobs live on [ZapViewModel].
  * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
  */
 @Composable
-fun ZapDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun ZapDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: ZapViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val listState = remember { ZapListState() }
-    val refresh = remember { ComposeRefreshState() }
-    var bouquetRef by rememberSaveable {
-        mutableStateOf(DreamDroid.getCurrentProfile().defaultBouquetTv.orEmpty())
-    }
-    var bouquetName by rememberSaveable {
-        mutableStateOf(DreamDroid.getCurrentProfile().defaultBouquetTvName.orEmpty())
-    }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
-    var zapJob by remember { mutableStateOf<Job?>(null) }
-    var waitingForPicker by rememberSaveable { mutableStateOf(false) }
+    val title = viewModel.toolbarTitle
+    val error = viewModel.errorText
 
-    val session = remember { ZapSession() }
-    session.handle = handle
-    session.context = context
-    session.bouquetRef = bouquetRef
-    session.bouquetName = bouquetName
-    session.waitingForPicker = waitingForPicker
-    session.listState = listState
-    session.refresh = refresh
-    session.onBouquetRef = { bouquetRef = it }
-    session.onBouquetName = { bouquetName = it }
-    session.onWaitingForPicker = { waitingForPicker = it }
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-    session.onZapJob = { zapJob = it }
-    session.scope = scope
-
-    DisposableEffect(handle, session) {
-        handle.composeActivityResultListener = session
+    DisposableEffect(handle, viewModel) {
+        val listener = ZapPickerResultForwarder(viewModel)
+        val menuProvider = ZapMenuProvider(viewModel)
+        handle.composeActivityResultListener = listener
         val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session)
-        session.setToolbarTitle(session.finishedTitle())
+        activity?.addMenuProvider(menuProvider)
         onDispose {
-            if (handle.composeActivityResultListener === session) {
+            if (handle.composeActivityResultListener === listener) {
                 handle.composeActivityResultListener = null
             }
-            activity?.removeMenuProvider(session)
-            loadJob?.cancel()
-            loadJob = null
-            zapJob?.cancel()
-            zapJob = null
+            activity?.removeMenuProvider(menuProvider)
         }
     }
 
-    LaunchedEffect(Unit) {
-        session.reload()
+    LaunchedEffect(title) {
+        (context as? AppCompatActivity)?.title = title
+    }
+    LaunchedEffect(error) {
+        if (!error.isNullOrEmpty()) {
+            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            viewModel.consumeError()
+        }
+    }
+    LaunchedEffect(handle, viewModel) {
+        viewModel.pickBouquetRequests.collect { requestCode ->
+            handle.navigateToPickBouquet(requestCode)
+        }
+    }
+    LaunchedEffect(handle, viewModel, context) {
+        viewModel.streamRequests.collect { service ->
+            handle.runOnlineOnly {
+                handle.lifecycleOwner.startLiveServiceStream(context, service.reference) {
+                    try {
+                        val activity = context as AppCompatActivity
+                        activity.startActivity(
+                            IntentFactory.getStreamServiceIntent(
+                                activity,
+                                service.reference,
+                                service.name
+                            )
+                        )
+                    } catch (_: ActivityNotFoundException) {
+                        viewModel.reportMissingStreamPlayer()
+                    }
+                }
+            }
+        }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.start()
     }
 
     DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload() },
-        enabled = refresh.enabled,
+        refreshing = viewModel.refresh.isRefreshing,
+        onRefresh = { viewModel.reload() },
+        enabled = viewModel.refresh.enabled,
         modifier = modifier
     ) {
         ZapScreen(
-            items = listState.items,
-            gridState = listState.gridState,
-            scrollEpoch = listState.scrollEpoch,
-            emptyMessage = emptyMessage,
-            onItemClick = { service: Service -> session.zapTo(service.reference) },
-            onItemLongClick = { service: Service -> session.stream(service) }
+            items = viewModel.listState.items,
+            gridState = viewModel.listState.gridState,
+            scrollEpoch = viewModel.listState.scrollEpoch,
+            emptyMessage = viewModel.emptyMessage,
+            onItemClick = { service: Service ->
+                handle.runOnlineOnly { viewModel.zapTo(service.reference) }
+            },
+            onItemLongClick = { service: Service -> viewModel.requestStream(service) }
         )
     }
 }
 
-private class ZapSession :
-    PhoneNavHandle.ActivityResultListener,
-    MenuProvider {
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var bouquetRef: String = ""
-    var bouquetName: String = ""
-    var waitingForPicker: Boolean = false
-    var listState: ZapListState? = null
-    var refresh: ComposeRefreshState? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var onBouquetRef: ((String) -> Unit)? = null
-    var onBouquetName: ((String) -> Unit)? = null
-    var onWaitingForPicker: ((Boolean) -> Unit)? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    var onZapJob: ((Job?) -> Unit)? = null
-    private var loadJob: Job? = null
-    private var zapJob: Job? = null
-
-    fun setToolbarTitle(title: String) {
-        (context as? AppCompatActivity)?.title = title
-    }
-
-    fun finishedTitle(): String {
-        val ctx = context ?: return ""
-        return bouquetName.takeIf { it.isNotEmpty() } ?: ctx.getString(R.string.app_name)
-    }
-
-    fun toast(message: CharSequence) {
-        val ctx = context ?: return
-        Toast.makeText(ctx, message, Toast.LENGTH_LONG).show()
-    }
-
-    fun reload() {
-        val host = handle ?: return
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (ZapPickerGate.shouldNavigateToPickBouquet(bouquetRef, waitingForPicker)) {
-            waitingForPicker = true
-            onWaitingForPicker?.invoke(true)
-            host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
-            return
-        }
-        if (bouquetRef.isEmpty()) {
-            return
-        }
-        if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        loadJob?.cancel()
-        loadJob = coroutineScope.launch {
-            val params = listOf(NameValuePair("sRef", bouquetRef))
-            val result = loadServiceList(ctx.applicationContext, params)
-            refreshState.setRefreshing(false)
-            setToolbarTitle(finishedTitle())
-            if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
-                val cached = if (profileId != null) {
-                    UserBouquetCache.loadRosterServices(
-                        AppDatabase.roster(ctx),
-                        profileId,
-                        bouquetRef
-                    )
-                } else {
-                    null
-                }
-                if (cached != null) {
-                    val rows = ZapListMapper.rowsFrom(cached)
-                    if (rows.isEmpty()) {
-                        state.replaceAll(emptyList())
-                        onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-                    } else {
-                        onEmptyMessage?.invoke(null)
-                        state.replaceAll(rows)
-                    }
-                    return@launch
-                }
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
-            }
-            val rows = ZapListMapper.rowsFrom(result.services)
-            if (rows.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                state.replaceAll(rows)
-            }
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    fun zapTo(ref: String) {
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            zapJob?.cancel()
-            zapJob = host.launchSimpleResultLoad(
-                ZapRequestHandler(),
-                listOf(NameValuePair("sRef", ref))
-            ) { _, result, error ->
-                var toastText = ctx.getText(R.string.get_content_error).toString()
-                val stateText = result.stateText
-                when {
-                    !stateText.isNullOrEmpty() -> toastText = stateText
-                    error != null -> toastText = error.resolve(ctx).orEmpty()
-                }
-                toast(toastText)
-            }
-            onZapJob?.invoke(zapJob)
-        }
-    }
-
-    fun stream(service: Service) {
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            host.lifecycleOwner.startLiveServiceStream(ctx, service.reference) {
-                try {
-                    val activity = ctx as AppCompatActivity
-                    activity.startActivity(
-                        IntentFactory.getStreamServiceIntent(
-                            activity,
-                            service.reference,
-                            service.name
-                        )
-                    )
-                } catch (_: ActivityNotFoundException) {
-                    toast(ctx.getText(R.string.missing_stream_player))
-                }
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (!ZapPickerGate.isBouquetPickerRequest(requestCode)) {
-            return
-        }
-        if (resultCode != Activity.RESULT_OK) {
-            val effect = ZapPickerGate.afterNonOkPickerResult(
-                gridEmpty = listState?.items.isNullOrEmpty()
-            )
-            waitingForPicker = effect.waitingForPicker
-            onWaitingForPicker?.invoke(effect.waitingForPicker)
-            val messageRes = effect.emptyMessageResId
-            if (messageRes != null) {
-                val ctx = context
-                if (ctx != null) {
-                    onEmptyMessage?.invoke(ctx.getString(messageRes))
-                }
-            }
-            return
-        }
-        val bouquet = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET)
-            ?: Service("", "")
-        if (bouquet.reference != bouquetRef) {
-            bouquetRef = bouquet.reference
-            bouquetName = bouquet.name
-            onBouquetRef?.invoke(bouquetRef)
-            onBouquetName?.invoke(bouquetName)
-            listState?.scrollToTop()
-        }
-        waitingForPicker = false
-        onWaitingForPicker?.invoke(false)
-        reload()
-    }
-
+private class ZapMenuProvider(private val viewModel: ZapViewModel) : MenuProvider {
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.epgbouquet, menu)
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            val host = handle ?: return true
-            waitingForPicker = true
-            onWaitingForPicker?.invoke(true)
-            host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
+            viewModel.pickBouquet()
             return true
         }
         return false
+    }
+}
+
+private class ZapPickerResultForwarder(private val viewModel: ZapViewModel) :
+    PhoneNavHandle.ActivityResultListener {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        viewModel.onPickerResult(requestCode, resultCode, data)
     }
 }
