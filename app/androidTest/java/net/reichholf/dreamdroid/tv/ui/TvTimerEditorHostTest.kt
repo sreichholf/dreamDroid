@@ -202,5 +202,4 @@ class TvTimerEditorHostTest {
         repeated = "0",
         tags = ""
     )
-
 }
