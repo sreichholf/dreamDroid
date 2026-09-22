@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
@@ -13,174 +12,142 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
 import java.util.Locale
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.EventListLoadResult
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
  * Time jump is date/time chips + Now/Prime; each chip opens a stock Material picker.
+ * Bouquet identity, the list, and the load job live on [EpgBouquetViewModel].
  * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
- * Drawer extras seed a blank session; a picker result is kept until remount.
  */
 @Composable
 fun EpgBouquetDestination(
     handle: PhoneNavHandle,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: EpgBouquetViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
-    val scope = rememberCoroutineScope()
-    val leafArgs = handle.epgLeafArguments()
-    var bouquetRef by rememberSaveable(remountEpoch) {
-        mutableStateOf(
-            leafArgs.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
-            ).orEmpty()
-        )
-    }
-    var bouquetName by rememberSaveable(remountEpoch) {
-        mutableStateOf(
-            leafArgs.getString(
-                net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME
-            ).orEmpty()
-        )
-    }
-    val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
-    var timeSec by rememberSaveable(remountEpoch) {
-        val leafTime = if (leafArgs.containsKey(NavExtras.EPG_TIME_SEC)) {
-            leafArgs.getLong(NavExtras.EPG_TIME_SEC).toInt()
-        } else {
-            nowSec
-        }
-        mutableIntStateOf(leafTime)
-    }
-    val listState = remember { EpgBouquetListState() }
-    val refresh = remember { ComposeRefreshState() }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
-    var waitingForPicker by rememberSaveable { mutableStateOf(false) }
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
+    val menuProvider = remember(viewModel, context, handle) {
+        EpgBouquetMenuProvider(viewModel) {
+            val atSec = viewModel.timeSec?.toLong()
+                ?: Calendar.getInstance().timeInMillis / 1000L
+            openBouquetMultiEpg(
+                context,
+                handle,
+                viewModel.bouquetRef,
+                viewModel.bouquetName,
+                atSec
+            )
+        }
+    }
+    val pickerListener = remember(viewModel) { EpgBouquetPickerForwarder(viewModel) }
 
-    val session = remember { EpgBouquetSession() }
-    session.handle = handle
-    session.context = context
-    session.bouquetRef = bouquetRef
-    session.bouquetName = bouquetName
-    session.timeSec = timeSec
-    session.waitingForPicker = waitingForPicker
-    session.listState = listState
-    session.refresh = refresh
-    session.scope = scope
-    session.onBouquetRef = { bouquetRef = it }
-    session.onBouquetName = { bouquetName = it }
-    session.onTimeSec = { timeSec = it }
-    session.onWaitingForPicker = { waitingForPicker = it }
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-    session.profileId = DreamDroid.getCurrentProfile().id
-    session.epgDao = AppDatabase.epg(context)
-
-    DisposableEffect(handle, session, dialogSession, remountEpoch) {
-        handle.composeActivityResultListener = session
-        activity.addMenuProvider(session)
-        session.setToolbarTitle(session.finishedTitle())
-
+    DisposableEffect(handle, menuProvider, pickerListener, dialogSession) {
+        handle.composeActivityResultListener = pickerListener
+        activity.addMenuProvider(menuProvider)
         onDispose {
-            if (handle.composeActivityResultListener === session) {
+            if (handle.composeActivityResultListener === pickerListener) {
                 handle.composeActivityResultListener = null
             }
-            activity.removeMenuProvider(session)
-            loadJob?.cancel()
-            loadJob = null
+            activity.removeMenuProvider(menuProvider)
             dialogSession.dismissProgress()
+        }
+    }
+
+    LaunchedEffect(viewModel, handle) {
+        viewModel.pickBouquetRequests.collect { requestCode ->
+            handle.navigateToPickBouquet(requestCode)
         }
     }
 
     val labelLocale = if (DreamDroid.DATE_LOCALE_WO) Locale.US else Locale.getDefault()
     val is24Hour = DateFormat.is24HourFormat(context)
+    val timeSec = viewModel.timeSec
+        ?: (Calendar.getInstance().timeInMillis / 1000L).toInt()
     val timeJump = EpgTimeJumpUi(
         dateLabel = EpgInstant.formatDateLabel(timeSec, labelLocale),
         timeLabel = EpgInstant.formatTimeLabel(timeSec, is24Hour, labelLocale),
         onPickDate = { showDatePicker = true },
         onPickTime = { showTimePicker = true },
         onNow = {
-            session.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
+            viewModel.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
         },
-        onPrime = { session.onInstantSet(EpgInstant.primeTimeSec()) },
+        onPrime = { viewModel.onInstantSet(EpgInstant.primeTimeSec()) },
         onTimeline = {
-            session.openMultiEpg()
+            openBouquetMultiEpg(
+                context,
+                handle,
+                viewModel.bouquetRef,
+                viewModel.bouquetName,
+                viewModel.timeSec?.toLong() ?: timeSec.toLong()
+            )
         }
     )
 
     val connectionSession =
         SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(remountEpoch, bouquetRef, connectionSession) {
+    LaunchedEffect(remountEpoch, connectionSession, viewModel, handle) {
         val args = handle.epgLeafArguments()
-        val leafRef = args.getString(
-            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_REFERENCE
-        ).orEmpty()
-        val leafName = args.getString(
-            net.reichholf.dreamdroid.helpers.enigma2.Event.KEY_SERVICE_NAME
-        ).orEmpty()
-        val resolvedRef = EpgBouquetRestore.resolveRef(leafRef, bouquetRef)
-        val resolvedName = EpgBouquetRestore.resolveName(leafName, bouquetName, bouquetRef)
-        if (resolvedRef != bouquetRef) {
-            bouquetRef = resolvedRef
-            bouquetName = resolvedName
-            listState.scrollToTop()
+        val leafRef = args.getString(Event.KEY_SERVICE_REFERENCE).orEmpty()
+        val leafName = args.getString(Event.KEY_SERVICE_NAME).orEmpty()
+        val leafTime = if (args.containsKey(NavExtras.EPG_TIME_SEC)) {
+            args.getLong(NavExtras.EPG_TIME_SEC)
+        } else {
+            null
         }
-        session.reload()
+        val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
+        viewModel.ensureEpoch(remountEpoch, leafRef, leafName, leafTime, nowSec)
+        viewModel.applyLeaf(leafRef, leafName)
+        viewModel.reload()
+    }
+
+    val toolbarTitle = if (viewModel.refresh.isRefreshing) {
+        context.getString(R.string.loading)
+    } else {
+        viewModel.bouquetName.takeIf { it.isNotEmpty() } ?: context.getString(R.string.epg)
+    }
+    LaunchedEffect(toolbarTitle) {
+        activity.title = toolbarTitle
     }
 
     DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload(forceRefresh = true) },
-        enabled = refresh.enabled,
+        refreshing = viewModel.refresh.isRefreshing,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
+        enabled = viewModel.refresh.enabled,
         modifier = modifier
     ) {
         EpgBouquetScreen(
-            items = listState.items,
-            listState = listState.listState,
-            scrollEpoch = listState.scrollEpoch,
-            emptyMessage = emptyMessage,
+            items = viewModel.listState.items,
+            listState = viewModel.listState.listState,
+            scrollEpoch = viewModel.listState.scrollEpoch,
+            emptyMessage = viewModel.emptyMessage,
             bouquetPick = EpgBouquetPickUi(
-                bouquetName = bouquetName,
-                onPickBouquet = { session.pickBouquet() }
+                bouquetName = viewModel.bouquetName,
+                onPickBouquet = { viewModel.pickBouquet() }
             ),
             timeJump = timeJump,
             onItemClick = { dialogSession.showDetail(it) }
@@ -193,7 +160,9 @@ fun EpgBouquetDestination(
             onDismiss = { showDatePicker = false },
             onConfirm = { utcDateMillis ->
                 showDatePicker = false
-                session.onInstantSet(EpgInstant.applyDate(timeSec, utcDateMillis))
+                viewModel.onInstantSet(
+                    EpgInstant.applyDate(viewModel.timeSec ?: timeSec, utcDateMillis)
+                )
             }
         )
     }
@@ -204,7 +173,9 @@ fun EpgBouquetDestination(
             onDismiss = { showTimePicker = false },
             onConfirm = { hour, minute ->
                 showTimePicker = false
-                session.onInstantSet(EpgInstant.applyTime(timeSec, hour, minute))
+                viewModel.onInstantSet(
+                    EpgInstant.applyTime(viewModel.timeSec ?: timeSec, hour, minute)
+                )
             }
         )
     }
@@ -212,196 +183,48 @@ fun EpgBouquetDestination(
     EpgEventDetailSheetHost(dialogSession)
 }
 
-internal class EpgBouquetSession :
-    PhoneNavHandle.ActivityResultListener,
-    MenuProvider {
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var bouquetRef: String = ""
-    var bouquetName: String = ""
-    var timeSec: Int = 0
-    var waitingForPicker: Boolean = false
-    var listState: EpgBouquetListState? = null
-    var refresh: ComposeRefreshState? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var onBouquetRef: ((String) -> Unit)? = null
-    var onBouquetName: ((String) -> Unit)? = null
-    var onTimeSec: ((Int) -> Unit)? = null
-    var onWaitingForPicker: ((Boolean) -> Unit)? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    var profileId: Int? = null
-    var epgDao: EpgDao? = null
-    var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
-        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+internal fun openBouquetMultiEpg(
+    context: Context,
+    handle: PhoneNavHandle?,
+    bouquetRef: String,
+    bouquetName: String,
+    timeSec: Long
+) {
+    if (bouquetRef.isEmpty()) {
+        return
     }
-    var loadEvents: suspend (
-        Context,
-        List<NameValuePair>
-    ) -> EventListLoadResult = { context, params ->
-        loadEventList(context, params, URIStore.EPG_BOUQUET)
-    }
-    private var loadJob: Job? = null
+    DrawerEpgMode.saveMulti(context)
+    handle?.navigateToMultiEpg(bouquetRef, bouquetName, timeSec = timeSec)
+}
 
-    fun setToolbarTitle(title: String) {
-        (context as? AppCompatActivity)?.title = title
-    }
-
-    fun finishedTitle(): String {
-        val ctx = context ?: return ""
-        return bouquetName.takeIf { it.isNotEmpty() } ?: ctx.getString(R.string.epg)
-    }
-
-    fun onInstantSet(newTimeSec: Int) {
-        if (newTimeSec == timeSec) {
-            return
-        }
-        timeSec = newTimeSec
-        onTimeSec?.invoke(timeSec)
-        reload()
-    }
-
-    fun pickBouquet() {
-        val host = handle ?: return
-        waitingForPicker = true
-        onWaitingForPicker?.invoke(true)
-        host.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
-    }
-
-    fun reload(forceRefresh: Boolean = false) {
-        handle ?: return
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (bouquetRef.isEmpty() && !waitingForPicker) {
-            pickBouquet()
-            return
-        }
-        if (bouquetRef.isEmpty()) {
-            return
-        }
-        if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        loadJob?.cancel()
-        loadJob = coroutineScope.launch {
-            loadAndApply(forceRefresh)
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    suspend fun loadAndApply(forceRefresh: Boolean = false) {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val hadCache = if (!forceRefresh) {
-            applyCachedEvents()
-        } else {
-            false
-        }
-        if (!forceRefresh && shouldSkipReceiverHttp(hadCache)) {
-            return
-        }
-        val result = loadEvents(
-            ctx.applicationContext,
-            listOf(
-                NameValuePair("bRef", bouquetRef),
-                NameValuePair("time", timeSec.toString())
-            )
-        )
-        if (result.success) {
-            applyEvents(result.events)
-            return
-        }
-        if (applyCachedEvents()) {
-            return
-        }
-        refreshState.setRefreshing(false)
-        setToolbarTitle(finishedTitle())
-        state.replaceAll(emptyList())
-        onEmptyMessage?.invoke(result.errorText)
-    }
-
-    private suspend fun applyCachedEvents(): Boolean {
-        val dao = epgDao
-        val pid = profileId
-        val cached = if (dao != null && pid != null) {
-            ListEpgCache.loadBouquetEvents(dao, pid, bouquetRef, timeSec.toLong())
-        } else {
-            null
-        } ?: return false
-        applyEvents(cached)
-        return true
-    }
-
-    private fun applyEvents(events: List<Event>) {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        refreshState.setRefreshing(false)
-        setToolbarTitle(finishedTitle())
-        if (events.isEmpty()) {
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-        } else {
-            onEmptyMessage?.invoke(null)
-            state.replaceAll(events)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode != Activity.RESULT_OK || requestCode != Statics.REQUEST_PICK_BOUQUET) {
-            return
-        }
-        val service = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET) ?: return
-        val reference = service.reference
-        if (reference != bouquetRef) {
-            bouquetRef = reference
-            bouquetName = service.name
-            onBouquetRef?.invoke(bouquetRef)
-            onBouquetName?.invoke(bouquetName)
-            listState?.scrollToTop()
-        }
-        waitingForPicker = false
-        onWaitingForPicker?.invoke(false)
-        reload()
-    }
-
+internal class EpgBouquetMenuProvider(
+    private val viewModel: EpgBouquetViewModel,
+    private val onOpenMultiEpg: () -> Unit
+) : MenuProvider {
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menuInflater.inflate(R.menu.epgbouquet, menu)
     }
 
     override fun onPrepareMenu(menu: Menu) {
-        menu.findItem(R.id.menu_multiepg)?.isVisible = bouquetRef.isNotEmpty()
+        menu.findItem(R.id.menu_multiepg)?.isVisible = viewModel.bouquetRef.isNotEmpty()
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         if (menuItem.itemId == R.id.menu_multiepg) {
-            openMultiEpg()
+            onOpenMultiEpg()
             return true
         }
         if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            pickBouquet()
+            viewModel.pickBouquet()
             return true
         }
         return false
     }
+}
 
-    fun openMultiEpg() {
-        val ctx = context ?: return
-        if (bouquetRef.isEmpty()) {
-            return
-        }
-        DrawerEpgMode.saveMulti(ctx)
-        handle?.navigateToMultiEpg(
-            bouquetRef,
-            bouquetName,
-            timeSec = timeSec.toLong()
-        )
+private class EpgBouquetPickerForwarder(private val viewModel: EpgBouquetViewModel) :
+    PhoneNavHandle.ActivityResultListener {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        viewModel.onPickerResult(requestCode, resultCode, data)
     }
 }

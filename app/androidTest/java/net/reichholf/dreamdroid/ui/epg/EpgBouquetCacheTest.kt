@@ -1,16 +1,18 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import android.app.Application
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.EventListLoadResult
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgEventEntity
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -43,29 +45,25 @@ class EpgBouquetCacheTest {
             listOf(sampleEvent())
         )
         val httpCalls = AtomicInteger(0)
-        var emptyMessage: String? = null
-        val session = EpgBouquetSession()
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        session.listState = EpgBouquetListState()
-        session.refresh = ComposeRefreshState()
-        session.bouquetRef = BOUQUET
-        session.timeSec = NOW.toInt()
-        session.profileId = PROFILE
-        session.epgDao = dao
-        session.onEmptyMessage = { emptyMessage = it }
-        session.shouldSkipReceiverHttp = { hasCache ->
-            ConnectionStatus(
-                session = ConnectionStatus.Session.Offline
-            ).shouldSkipReceiverHttp(hasCache)
-        }
-        session.loadEvents = { _, _ ->
-            httpCalls.incrementAndGet()
-            EventListLoadResult(false, emptyList(), "host_not_found")
-        }
-        session.loadAndApply(forceRefresh = false)
+        val viewModel = seededViewModel()
+        viewModel.loadHooks = EpgBouquetLoadHooks(
+            profileId = { PROFILE },
+            epgDao = { dao },
+            shouldSkipReceiverHttp = { hasCache ->
+                ConnectionStatus(
+                    session = ConnectionStatus.Session.Offline
+                ).shouldSkipReceiverHttp(hasCache)
+            },
+            loadEvents = { _, _ ->
+                httpCalls.incrementAndGet()
+                EventListLoadResult(false, emptyList(), "host_not_found")
+            }
+        )
+        viewModel.reload()
+        viewModel.awaitLoad()
         assertEquals(0, httpCalls.get())
-        assertEquals(listOf("News"), session.listState!!.items.map { it.title })
-        assertNull(emptyMessage)
+        assertEquals(listOf("News"), viewModel.listState.items.map { it.title })
+        assertNull(viewModel.emptyMessage)
     }
 
     @Test
@@ -79,22 +77,20 @@ class EpgBouquetCacheTest {
                 sampleEvent(title = "Talk", start = NOW + 3600, duration = 3600)
             )
         )
-        val session = EpgBouquetSession()
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        session.listState = EpgBouquetListState()
-        session.refresh = ComposeRefreshState()
-        session.bouquetRef = BOUQUET
-        session.timeSec = NOW.toInt()
-        session.profileId = PROFILE
-        session.epgDao = dao
-        session.shouldSkipReceiverHttp = { hasCache ->
-            ConnectionStatus(
-                session = ConnectionStatus.Session.Offline
-            ).shouldSkipReceiverHttp(hasCache)
-        }
-        session.loadEvents = { _, _ -> error("http") }
-        session.loadAndApply(forceRefresh = false)
-        assertEquals(listOf("News"), session.listState!!.items.map { it.title })
+        val viewModel = seededViewModel()
+        viewModel.loadHooks = EpgBouquetLoadHooks(
+            profileId = { PROFILE },
+            epgDao = { dao },
+            shouldSkipReceiverHttp = { hasCache ->
+                ConnectionStatus(
+                    session = ConnectionStatus.Session.Offline
+                ).shouldSkipReceiverHttp(hasCache)
+            },
+            loadEvents = { _, _ -> error("http") }
+        )
+        viewModel.reload()
+        viewModel.awaitLoad()
+        assertEquals(listOf("News"), viewModel.listState.items.map { it.title })
     }
 
     @Test
@@ -106,28 +102,26 @@ class EpgBouquetCacheTest {
             listOf(sampleEvent())
         )
         val httpCalls = AtomicInteger(0)
-        var emptyMessage: String? = null
-        val session = EpgBouquetSession()
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        session.listState = EpgBouquetListState()
-        session.refresh = ComposeRefreshState()
-        session.bouquetRef = BOUQUET
-        session.timeSec = NOW.toInt()
-        session.profileId = PROFILE
-        session.epgDao = dao
-        session.onEmptyMessage = { emptyMessage = it }
-        session.shouldSkipReceiverHttp = { hasCache ->
-            ConnectionStatus(checking = true).shouldSkipReceiverHttp(hasCache)
-        }
-        session.loadEvents = { _, _ ->
-            assertEquals(listOf("News"), session.listState!!.items.map { it.title })
-            httpCalls.incrementAndGet()
-            EventListLoadResult(true, listOf(Event(title = "Live News")), null)
-        }
-        session.loadAndApply(forceRefresh = false)
+        var paintedBeforeHttp: List<String> = emptyList()
+        val viewModel = seededViewModel()
+        viewModel.loadHooks = EpgBouquetLoadHooks(
+            profileId = { PROFILE },
+            epgDao = { dao },
+            shouldSkipReceiverHttp = { hasCache ->
+                ConnectionStatus(checking = true).shouldSkipReceiverHttp(hasCache)
+            },
+            loadEvents = { _, _ ->
+                paintedBeforeHttp = viewModel.listState.items.map { it.title }
+                httpCalls.incrementAndGet()
+                EventListLoadResult(true, listOf(Event(title = "Live News")), null)
+            }
+        )
+        viewModel.reload()
+        viewModel.awaitLoad()
         assertEquals(1, httpCalls.get())
-        assertEquals(listOf("Live News"), session.listState!!.items.map { it.title })
-        assertNull(emptyMessage)
+        assertEquals(listOf("News"), paintedBeforeHttp)
+        assertEquals(listOf("Live News"), viewModel.listState.items.map { it.title })
+        assertNull(viewModel.emptyMessage)
     }
 
     @Test
@@ -138,23 +132,41 @@ class EpgBouquetCacheTest {
             EpgChunkMetaEntity(PROFILE, BOUQUET, chunk.startSec, chunk.endSec, 1L),
             listOf(sampleEvent())
         )
-        var emptyMessage: String? = "stale"
-        val session = EpgBouquetSession()
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        session.listState = EpgBouquetListState()
-        session.refresh = ComposeRefreshState()
-        session.bouquetRef = BOUQUET
-        session.timeSec = NOW.toInt()
-        session.profileId = PROFILE
-        session.epgDao = dao
-        session.onEmptyMessage = { emptyMessage = it }
-        session.shouldSkipReceiverHttp = { false }
-        session.loadEvents = { _, _ ->
-            EventListLoadResult(false, emptyList(), "host_not_found")
-        }
-        session.loadAndApply(forceRefresh = true)
-        assertEquals(listOf("News"), session.listState!!.items.map { it.title })
-        assertNull(emptyMessage)
+        val viewModel = seededViewModel()
+        viewModel.loadHooks = EpgBouquetLoadHooks(
+            profileId = { PROFILE },
+            epgDao = { dao },
+            shouldSkipReceiverHttp = { false },
+            loadEvents = { _, _ ->
+                EventListLoadResult(false, emptyList(), "host_not_found")
+            }
+        )
+        viewModel.reload(forceRefresh = true)
+        viewModel.awaitLoad()
+        assertEquals(listOf("News"), viewModel.listState.items.map { it.title })
+        assertNull(viewModel.emptyMessage)
+    }
+
+    private fun seededViewModel(): EpgBouquetViewModel {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val app = context.applicationContext as Application
+        val viewModel = EpgBouquetViewModel(app, SavedStateHandle())
+        viewModel.ensureEpoch(
+            epoch = 1,
+            leafRef = BOUQUET,
+            leafName = "Favourites",
+            leafTimeSec = NOW,
+            nowSec = NOW.toInt()
+        )
+        return viewModel
+    }
+
+    private suspend fun EpgBouquetViewModel.awaitLoad() {
+        val job = checkNotNull(loadJob)
+        var failure: Throwable? = null
+        job.invokeOnCompletion { cause -> failure = cause }
+        withTimeout(10_000) { job.join() }
+        failure?.let { throw it }
     }
 
     private fun sampleEvent(

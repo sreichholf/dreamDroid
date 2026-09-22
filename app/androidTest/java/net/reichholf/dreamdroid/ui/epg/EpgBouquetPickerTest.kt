@@ -1,16 +1,18 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import android.app.Activity
+import android.app.Application
 import android.content.Intent
+import androidx.lifecycle.SavedStateHandle
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.EventListLoadResult
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -35,29 +37,38 @@ class EpgBouquetPickerTest {
 
     @Test
     fun pickerResultLoadsPickedBouquetNotDrawerDefault() = runBlocking {
-        val session = EpgBouquetSession()
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        session.listState = EpgBouquetListState()
-        session.refresh = ComposeRefreshState()
-        session.bouquetRef = DEFAULT
-        session.bouquetName = "Favourites (TV)"
-        session.timeSec = NOW
-        session.profileId = PROFILE
-        session.epgDao = db.epgDao()
-        session.shouldSkipReceiverHttp = { false }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val app = context.applicationContext as Application
+        val viewModel = EpgBouquetViewModel(app, SavedStateHandle())
+        viewModel.ensureEpoch(
+            epoch = 1,
+            leafRef = DEFAULT,
+            leafName = "Favourites (TV)",
+            leafTimeSec = NOW.toLong(),
+            nowSec = NOW
+        )
         var loadedBref: String? = null
-        session.loadEvents = { _, params ->
-            loadedBref = params.first { it.key == "bRef" }.value()
-            EventListLoadResult(true, listOf(Event(title = "Picked News")), null)
-        }
+        viewModel.loadHooks = EpgBouquetLoadHooks(
+            profileId = { PROFILE },
+            epgDao = { db.epgDao() },
+            shouldSkipReceiverHttp = { false },
+            loadEvents = { _, params ->
+                loadedBref = params.first { it.key == "bRef" }.value()
+                EventListLoadResult(true, listOf(Event(title = "Picked News")), null)
+            }
+        )
         val data = Intent().putExtra(KEY_BOUQUET, Service(PICKED, "Picked TV"))
-        session.onActivityResult(Statics.REQUEST_PICK_BOUQUET, Activity.RESULT_OK, data)
-        assertEquals(PICKED, session.bouquetRef)
-        assertEquals("Picked TV", session.bouquetName)
-        assertEquals(PICKED, EpgBouquetRestore.resolveRef(DEFAULT, session.bouquetRef))
-        session.loadAndApply(forceRefresh = true)
+        viewModel.onPickerResult(Statics.REQUEST_PICK_BOUQUET, Activity.RESULT_OK, data)
+        assertEquals(PICKED, viewModel.bouquetRef)
+        assertEquals("Picked TV", viewModel.bouquetName)
+        assertEquals(PICKED, EpgBouquetRestore.resolveRef(DEFAULT, viewModel.bouquetRef))
+        val job = checkNotNull(viewModel.loadJob)
+        var failure: Throwable? = null
+        job.invokeOnCompletion { cause -> failure = cause }
+        withTimeout(10_000) { job.join() }
+        failure?.let { throw it }
         assertEquals(PICKED, loadedBref)
-        assertEquals(listOf("Picked News"), session.listState!!.items.map { it.title })
+        assertEquals(listOf("Picked News"), viewModel.listState.items.map { it.title })
     }
 
     companion object {

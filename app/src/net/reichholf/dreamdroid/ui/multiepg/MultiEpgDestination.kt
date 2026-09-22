@@ -14,53 +14,46 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
-import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
-import net.reichholf.dreamdroid.multiepg.MultiEpgSession
-import net.reichholf.dreamdroid.multiepg.MultiEpgSync
-import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.TimerSnapshotStore
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * MultiEPG destination with stale-while-revalidate sync:
  * paint Room immediately when present, refresh/prefetch in the background,
  * keep stale data on refresh failure, replace on bouquet/profile remount.
+ *
+ * Loaded grid state lives on [MultiEpgViewModel]. [MultiEpgMenuSession] is still
+ * the [MenuProvider] registered here. The toolbar title is set here.
  */
 @Composable
 fun MultiEpgDestination(
     handle: PhoneNavHandle,
     remountEpoch: Int = 0,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: MultiEpgViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
-    val scope = rememberCoroutineScope()
+    val session = viewModel.session
     val leafArgs = handle.epgLeafArguments()
     val bouquetRef = MultiEpgRestore.bouquetRef(
         leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE)
@@ -81,9 +74,6 @@ fun MultiEpgDestination(
         mutableLongStateOf(anchorSec)
     }
     var focusEpoch by remember { mutableIntStateOf(0) }
-    var visibleMinutes by rememberSaveable {
-        mutableIntStateOf(MULTI_EPG_VISIBLE_MINUTES)
-    }
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -102,42 +92,6 @@ fun MultiEpgDestination(
         }
         prefs.registerOnSharedPreferenceChangeListener(listener)
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
-    val sync = remember(context) { MultiEpgSyncHolder.shared(context) }
-    val persistGate = remember(context) {
-        MultiEpgPersistGate(UserBouquetCache.excludedHubTabRefs(context))
-    }
-    val session = remember(sync, scope, context) {
-        MultiEpgSession(
-            sync = sync,
-            scope = scope,
-            profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
-            noBouquetMessage = context.getString(
-                R.string.multiepg_sync_test_no_bouquet
-            ),
-            fetchTimers = MultiEpgSync.httpFetchTimers(),
-            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
-            formatError = { error -> error.toEnigmaDisplayMessage(context) },
-            persistBouquet = persistGate::persist,
-            shouldSkipReceiverHttp = { hasCache ->
-                SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-            },
-            isSessionOffline = {
-                SessionConnectionHolder.shared.status.value.session ==
-                    ConnectionStatus.Session.Offline
-            },
-            loadCachedRoster = { profileId, ref ->
-                UserBouquetCache.loadRosterServices(
-                    AppDatabase.roster(context),
-                    profileId,
-                    ref
-                )
-            },
-            loadCachedTimers = { profileId ->
-                TimerSnapshotStore.load(AppDatabase.timer(context), profileId)
-            }
-        )
     }
 
     val dialogSession = remember { EpgEventDialogSession() }
@@ -160,19 +114,14 @@ fun MultiEpgDestination(
         onDispose { activity.removeMenuProvider(menuSession) }
     }
 
-    DisposableEffect(session, dialogSession) {
+    DisposableEffect(dialogSession) {
         onDispose {
-            session.cancel()
             dialogSession.dismissProgress()
         }
     }
 
     LaunchedEffect(remountEpoch, bouquetRef) {
-        val profileId = DreamDroid.getCurrentProfile().id
-        if (profileId != null) {
-            persistGate.knownTabRefs = AppDatabase.roster(context).getTabStripRefs(profileId)
-        }
-        session.replaceAndLoad(bouquetRef, anchorSec)
+        viewModel.ensureLoaded(remountEpoch, bouquetRef, anchorSec)
     }
 
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
@@ -233,8 +182,8 @@ fun MultiEpgDestination(
         onEventClick = onEventClick,
         onAtThisTime = { menuSession.openListEpg() },
         timerClocks = session.timerClocks,
-        visibleMinutes = visibleMinutes,
-        onVisibleMinutesChange = { visibleMinutes = it },
+        visibleMinutes = viewModel.visibleMinutes,
+        onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
         textSize = textSize,
         focusedServiceRef = focusedServiceRef,
         modifier = modifier

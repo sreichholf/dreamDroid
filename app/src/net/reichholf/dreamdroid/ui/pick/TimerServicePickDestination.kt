@@ -5,302 +5,58 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
  * Phase 2.7g: timer service picker (bouquet → channel) as a Compose destination.
- * Result Intent carries typed [Service] as [NavExtras.DATA] for timer edit.
+ * Result Intent carries typed [net.reichholf.dreamdroid.enigma.Service] as [NavExtras.DATA]
+ * for timer edit. The list, saved bouquet, and load jobs live on [TimerServicePickViewModel].
  */
 @Composable
-fun TimerServicePickDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun TimerServicePickDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: TimerServicePickViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val listState = remember { PickServiceListState() }
-    val refresh = remember { ComposeRefreshState() }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var bouquetRef by rememberSaveable { mutableStateOf("") }
-    var bouquetName by rememberSaveable { mutableStateOf("") }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
+    val session = viewModel.session
+    val title = session.toolbarTitle
 
-    val session = remember { TimerServicePickSession() }
-    session.handle = handle
-    session.context = context
-    session.listState = listState
-    session.refresh = refresh
-    session.scope = scope
-    session.bouquetRef = bouquetRef
-    session.bouquetName = bouquetName
-    session.onBouquetRef = { bouquetRef = it }
-    session.onBouquetName = { bouquetName = it }
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-
-    BackHandler(enabled = bouquetRef.isNotEmpty()) {
+    BackHandler(enabled = session.bouquetRef.isNotEmpty()) {
         session.showBouquetList()
     }
 
-    DisposableEffect(Unit) {
-        session.setToolbarTitle(session.finishedTitle())
-        onDispose {
-            loadJob?.cancel()
-            loadJob = null
-        }
+    LaunchedEffect(title) {
+        (context as? AppCompatActivity)?.title = title
     }
-
-    LaunchedEffect(Unit) {
-        session.reload()
+    LaunchedEffect(viewModel) {
+        viewModel.start()
     }
 
     DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
+        refreshing = session.refresh.isRefreshing,
         onRefresh = { session.reload() },
-        enabled = refresh.enabled,
+        enabled = session.refresh.enabled,
         modifier = modifier
     ) {
         PickServiceScreen(
-            items = listState.items,
-            emptyMessage = emptyMessage,
-            onItemClick = { session.onRowClick(it) }
-        )
-    }
-}
-
-private class TimerServicePickSession {
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var listState: PickServiceListState? = null
-    var refresh: ComposeRefreshState? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var bouquetRef: String = ""
-    var bouquetName: String = ""
-    var onBouquetRef: ((String) -> Unit)? = null
-    var onBouquetName: ((String) -> Unit)? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    private var bouquets: List<Service> = emptyList()
-    private var loadJob: Job? = null
-    private var loadGeneration = 0
-
-    fun setToolbarTitle(title: String) {
-        (context as? AppCompatActivity)?.title = title
-    }
-
-    fun finishedTitle(): String {
-        val ctx = context ?: return ""
-        return if (bouquetRef.isEmpty()) {
-            ctx.getString(R.string.service)
-        } else {
-            bouquetName.ifEmpty { ctx.getString(R.string.service) }
-        }
-    }
-
-    fun reload() {
-        if (bouquetRef.isEmpty()) {
-            loadBouquets()
-        } else {
-            loadServices()
-        }
-    }
-
-    fun showBouquetList() {
-        val ctx = context ?: return
-        val state = listState ?: return
-        bouquetRef = ""
-        bouquetName = ""
-        onBouquetRef?.invoke("")
-        onBouquetName?.invoke("")
-        loadGeneration++
-        loadJob?.cancel()
-        if (bouquets.isNotEmpty()) {
-            onEmptyMessage?.invoke(null)
-            state.replaceAll(bouquets)
-            setToolbarTitle(ctx.getString(R.string.service))
-        } else {
-            state.replaceAll(emptyList())
-            loadBouquets()
-        }
-    }
-
-    fun onRowClick(service: Service) {
-        val host = handle ?: return
-        val ctx = context ?: return
-        val state = listState ?: return
-        if (bouquetRef.isEmpty()) {
-            if (ServiceKeys.isMarker(service.reference)) {
-                return
-            }
-            bouquetRef = service.reference
-            bouquetName = service.name
-            onBouquetRef?.invoke(bouquetRef)
-            onBouquetName?.invoke(bouquetName)
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-            loadServices()
-            return
-        }
-        if (ServiceKeys.isMarker(service.reference)) {
-            return
-        }
-        val data = Intent().apply {
-            putExtra(NavExtras.DATA, service)
-        }
-        host.deliverPickResult(Activity.RESULT_OK, data)
-    }
-
-    private fun loadBouquets() {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        loadJob?.cancel()
-        loadGeneration++
-        val generation = loadGeneration
-        loadJob = coroutineScope.launch {
-            val result = loadBouquetList(ctx.applicationContext)
-            if (generation != loadGeneration || bouquetRef.isNotEmpty()) {
-                return@launch
-            }
-            refreshState.setRefreshing(false)
-            setToolbarTitle(ctx.getString(R.string.service))
-            if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
-                val cached = if (profileId != null) {
-                    val dao = AppDatabase.roster(ctx)
-                    val cachedRows = ArrayList(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_TV
-                        )
-                    )
-                    cachedRows.addAll(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_RADIO
-                        )
-                    )
-                    cachedRows
-                } else {
-                    emptyList()
-                }
-                if (cached.isNotEmpty()) {
-                    bouquets = cached
-                    onEmptyMessage?.invoke(null)
-                    state.replaceAll(cached)
-                    return@launch
-                }
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
-            }
-            val rows = ArrayList(result.bouquets.tv)
-            rows.addAll(result.bouquets.radio)
-            bouquets = rows
-            if (rows.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                state.replaceAll(rows)
-            }
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    private fun loadServices() {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        loadJob?.cancel()
-        loadGeneration++
-        val generation = loadGeneration
-        val title = bouquetName.ifEmpty { ctx.getString(R.string.service) }
-        loadJob = coroutineScope.launch {
-            val result = loadServiceList(
-                ctx.applicationContext,
-                listOf(NameValuePair("sRef", bouquetRef))
-            )
-            if (generation != loadGeneration || bouquetRef.isEmpty()) {
-                return@launch
-            }
-            refreshState.setRefreshing(false)
-            setToolbarTitle(title)
-            if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
-                val cached = if (profileId != null) {
-                    UserBouquetCache.loadRosterServices(
-                        AppDatabase.roster(ctx),
-                        profileId,
-                        bouquetRef
-                    )
-                } else {
-                    null
-                }
-                if (cached != null) {
-                    val rows = ZapListMapper.rowsFrom(cached)
-                    if (rows.isEmpty()) {
-                        state.replaceAll(emptyList())
-                        onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-                    } else {
-                        onEmptyMessage?.invoke(null)
-                        state.replaceAll(rows)
+            items = session.listState.items,
+            emptyMessage = session.emptyMessage,
+            onItemClick = { service ->
+                val picked = session.onRowClick(service)
+                if (picked != null) {
+                    val data = Intent().apply {
+                        putExtra(NavExtras.DATA, picked)
                     }
-                    return@launch
+                    handle.deliverPickResult(Activity.RESULT_OK, data)
                 }
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(result.errorText)
-                return@launch
             }
-            val rows = ZapListMapper.rowsFrom(result.services)
-            if (rows.isEmpty()) {
-                state.replaceAll(emptyList())
-                onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            } else {
-                onEmptyMessage?.invoke(null)
-                state.replaceAll(rows)
-            }
-        }
-        onLoadJob?.invoke(loadJob)
+        )
     }
 }

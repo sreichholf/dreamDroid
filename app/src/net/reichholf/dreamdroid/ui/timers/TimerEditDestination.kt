@@ -19,17 +19,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
 import java.util.Collections
 import java.util.TimeZone
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
 import net.reichholf.dreamdroid.helpers.DateTime
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
@@ -47,50 +55,69 @@ import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 private const val LOG_TAG = "TimerEditDestination"
 
 /**
- * Phase 2.7g: timer create/edit as a direct Compose NavHost destination.
- * Working copy lives on [PhoneNavHandle] so service-pick navigation does not wipe edits.
+ * Timer create/edit as a Compose NavHost destination.
+ * The working copy lives on [TimerEditViewModel] so service-pick navigation keeps the form.
  */
 @Composable
-fun TimerEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun TimerEditDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: TimerEditViewModel = viewModel()
+) {
     val context = LocalContext.current
     val remount = handle.timerEditRemountEpoch
     val tag = handle.timerEditRouteTag()
-    val session = remember(tag, remount) {
-        handle.obtainTimerEditSession(tag, remount)
+    LaunchedEffect(tag, remount) {
+        viewModel.start(handle)
+        val current = viewModel.session ?: return@LaunchedEffect
+        current.handle = handle
+        current.context = context
+        if (current.deliverSuccessIfAttached()) {
+            return@LaunchedEffect
+        }
+        current.ensureLocationsAndTagsThenReload()
     }
+    val session = viewModel.session ?: return
     var showRepeatingsPicker by remember { mutableStateOf(false) }
     var showTagsPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var pickerKind by remember { mutableStateOf<TimerEditPicker?>(null) }
     val is24Hour = DateFormat.is24HourFormat(context)
 
-    session.onRequestDeleteConfirm = { showDeleteConfirm = true }
-
-    DisposableEffect(handle, session, tag, remount) {
+    DisposableEffect(handle, session, tag, remount, viewModel) {
+        session.handle = handle
+        session.context = context
+        session.onRequestDeleteConfirm = { showDeleteConfirm = true }
         handle.composeActivityResultListener = session
         val activity = context as? AppCompatActivity
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                viewModel.persist()
+            }
+        }
         activity?.title = context.getString(R.string.timer)
+        activity?.lifecycle?.addObserver(observer)
         activity?.addMenuProvider(session)
         onDispose {
             if (handle.composeActivityResultListener === session) {
                 handle.composeActivityResultListener = null
             }
+            if (session.handle === handle) {
+                session.handle = null
+            }
+            if (session.context === context) {
+                session.context = null
+            }
+            session.onRequestDeleteConfirm = null
+            activity?.lifecycle?.removeObserver(observer)
             activity?.removeMenuProvider(session)
-            session.dismissProgress()
+            viewModel.persistIfBound(tag, remount)
         }
-    }
-
-    LaunchedEffect(tag, remount) {
-        session.handle = handle
-        session.context = context
-        session.ensureLocationsAndTagsThenReload()
     }
 
     LaunchedEffect(session.progress) {
@@ -206,8 +233,8 @@ private enum class TimerEditPicker {
 }
 
 /**
- * Mutable timer-edit working copy. Held on the NavHost so leaving composition for
- * [PhoneNavRoutes.TIMER_SERVICE_PICK] keeps form state.
+ * Mutable timer-edit working copy. [TimerEditViewModel] holds the instance so
+ * leaving composition for timer service pick keeps the form.
  */
 class TimerEditSession(
     val routeTag: String,
@@ -228,16 +255,27 @@ class TimerEditSession(
     private var tagsChanged = false
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
     var onRequestDeleteConfirm: (() -> Unit)? = null
-    private var locationsJob: kotlinx.coroutines.Job? = null
-    private var saveJob: kotlinx.coroutines.Job? = null
-    private var formHydrated = false
 
-    fun dismissProgress() {
+    /** Set by [TimerEditViewModel] so prefetch and save survive leaving composition. */
+    internal var workScope: CoroutineScope? = null
+    internal var onWorkingCopyChanged: (() -> Unit)? = null
+    private var locationsJob: Job? = null
+    private var saveJob: Job? = null
+    private var formHydrated = false
+    private var pendingSuccess = false
+
+    internal fun cancelWork() {
         progress = null
         locationsJob?.cancel()
         locationsJob = null
         saveJob?.cancel()
         saveJob = null
+    }
+
+    internal fun flushFormIntoTimer() {
+        if (formHydrated) {
+            timer = editState.applyTo(timer)
+        }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -280,6 +318,7 @@ class TimerEditSession(
         val picked = data?.getSerializableExtraCompat<Service>(NavExtras.DATA) ?: return
         timer = timer.copy(serviceName = picked.name, reference = picked.reference)
         editState.serviceName = timer.serviceName
+        notifyWorkingCopy()
     }
 
     fun pickService() {
@@ -294,6 +333,7 @@ class TimerEditSession(
             }
         }
         editState.repeatedLabel = setRepeated(checkedDays)
+        notifyWorkingCopy()
     }
 
     fun applyTagsSelection(indices: List<Int>) {
@@ -312,6 +352,7 @@ class TimerEditSession(
             timer = timer.copy(tags = joined)
             editState.tagsLabel = joined
         }
+        notifyWorkingCopy()
     }
 
     fun applyPickedDate(isBegin: Boolean, utcDateMillis: Long) {
@@ -330,21 +371,44 @@ class TimerEditSession(
     }
 
     fun ensureLocationsAndTagsThenReload() {
-        val host = handle ?: return
+        if (handle == null) {
+            return
+        }
+        val scope = workScope ?: return
         if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
             if (locationsJob != null) {
                 return
             }
-            locationsJob = host.launchLocationsAndTagsLoad(
-                onProgress = { title, progressText ->
-                    progress = IndeterminateProgressState(title = title, message = progressText)
-                },
-                onReady = {
+            val ctx = context ?: return
+            locationsJob = scope.launch {
+                val http = EnigmaHttp()
+                try {
+                    if (DreamDroid.getLocations().size == 0) {
+                        progress = IndeterminateProgressState(
+                            title = ctx.getString(R.string.loading),
+                            message = ctx.getString(R.string.locations) + " - " +
+                                ctx.getString(R.string.fetching_data)
+                        )
+                        withContext(Dispatchers.IO) {
+                            DreamDroid.loadLocations(http)
+                        }
+                    }
+                    if (DreamDroid.getTags().size == 0) {
+                        progress = IndeterminateProgressState(
+                            title = ctx.getString(R.string.loading),
+                            message = ctx.getString(R.string.tags) + " - " +
+                                ctx.getString(R.string.fetching_data)
+                        )
+                        withContext(Dispatchers.IO) {
+                            DreamDroid.loadTags(http)
+                        }
+                    }
+                } finally {
                     locationsJob = null
                     progress = null
-                    reload()
                 }
-            )
+                reload()
+            }
         } else {
             reload()
         }
@@ -371,6 +435,7 @@ class TimerEditSession(
         val afterEvents = ctx.resources.getTextArray(R.array.afterevents).map { it.toString() }
         editState.loadFrom(timer, afterEvents, DreamDroid.getLocations(), repeatedText)
         formHydrated = true
+        notifyWorkingCopy()
     }
 
     fun saveTimer() {
@@ -379,18 +444,23 @@ class TimerEditSession(
         }
         val host = handle ?: return
         val ctx = context ?: return
+        val scope = workScope ?: return
         host.runOnlineOnly {
             Log.i(LOG_TAG, "saveTimer()")
             editState.saveError = ""
             progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
             timer = editState.applyTo(timer)
+            notifyWorkingCopy()
             val params = Timer.getSaveParams(timer, timerOld)
+            val handler = TimerChangeRequestHandler()
             saveJob?.cancel()
-            saveJob = host.launchSimpleResultLoad(
-                TimerChangeRequestHandler(),
-                params
-            ) { _, result, _ ->
-                onSaveResult(result)
+            saveJob = scope.launch {
+                val fetched = withContext(Dispatchers.IO) {
+                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
+                        handler.parseSimpleResult(xml)
+                    }
+                }
+                onSaveResult(fetched.second)
             }
         }
     }
@@ -408,18 +478,22 @@ class TimerEditSession(
         }
         val host = handle ?: return
         val ctx = context ?: return
+        val scope = workScope ?: return
         val toDelete = timerOld ?: timer
         host.runOnlineOnly {
             Log.i(LOG_TAG, "deleteTimer()")
             editState.saveError = ""
             progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
             val params = Timer.getDeleteParams(toDelete)
+            val handler = TimerDeleteRequestHandler()
             saveJob?.cancel()
-            saveJob = host.launchSimpleResultLoad(
-                TimerDeleteRequestHandler(),
-                params
-            ) { _, result, _ ->
-                onSaveResult(result)
+            saveJob = scope.launch {
+                val fetched = withContext(Dispatchers.IO) {
+                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
+                        handler.parseSimpleResult(xml)
+                    }
+                }
+                onSaveResult(fetched.second)
             }
         }
     }
@@ -428,8 +502,8 @@ class TimerEditSession(
         progress = null
         if (Python.TRUE.equals(result.state)) {
             editState.saveError = ""
-            handle?.clearTimerEditSession()
-            handle?.deliverPickResult(Activity.RESULT_OK, null)
+            pendingSuccess = true
+            deliverSuccessIfAttached()
             return
         }
         val stateText = result.stateText
@@ -437,6 +511,27 @@ class TimerEditSession(
             !stateText.isNullOrEmpty() -> stateText
             else -> context?.getString(R.string.get_content_error).orEmpty()
         }
+    }
+
+    /**
+     * Pops the edit only while this session is the composed result listener.
+     * A save that finishes during service pick waits until the form is showing again.
+     */
+    fun deliverSuccessIfAttached(): Boolean {
+        if (!pendingSuccess) {
+            return false
+        }
+        val host = handle
+        if (host == null || host.composeActivityResultListener !== this) {
+            return false
+        }
+        pendingSuccess = false
+        host.deliverPickResult(Activity.RESULT_OK, null)
+        return true
+    }
+
+    private fun notifyWorkingCopy() {
+        onWorkingCopyChanged?.invoke()
     }
 
     private fun getRepeated(value: Int): String {
@@ -521,6 +616,7 @@ class TimerEditSession(
             )
         }
         editState.setBeginEndLabels(begin, end)
+        notifyWorkingCopy()
     }
 
     companion object {
@@ -569,6 +665,21 @@ class TimerEditSession(
                 checkedDays = checked
             )
         }
+    }
+
+    internal fun withRouteEpoch(remountEpoch: Int): TimerEditSession {
+        if (this.remountEpoch == remountEpoch) {
+            return this
+        }
+        return TimerEditSession(
+            routeTag = routeTag,
+            remountEpoch = remountEpoch,
+            timer = timer,
+            timerOld = timerOld,
+            isCreate = isCreate,
+            selectedTags = ArrayList(selectedTags),
+            checkedDays = checkedDays.copyOf()
+        )
     }
 
     fun writeTo(outState: android.os.Bundle) {
