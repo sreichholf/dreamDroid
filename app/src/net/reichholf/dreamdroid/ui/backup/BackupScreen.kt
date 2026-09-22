@@ -31,6 +31,9 @@ class BackupUiState {
     /** Matches legacy XML SwitchCompat default (unchecked). */
     var exportSettings by mutableStateOf(false)
 
+    /** Receiver passwords stay in the file unless the user turns this off. */
+    var includePasswords by mutableStateOf(true)
+
     fun replaceProfiles(items: List<BackupProfileToggle>) {
         profiles = items
     }
@@ -135,6 +138,15 @@ fun BackupScreen(
                     checked = state.exportSettings,
                     onCheckedChange = { state.exportSettings = it },
                     label = stringResource(R.string.backup_export_settings),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
+            ListRowSurface {
+                EditSwitchRow(
+                    checked = state.includePasswords,
+                    onCheckedChange = { state.includePasswords = it },
+                    label = stringResource(R.string.backup_include_passwords),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }

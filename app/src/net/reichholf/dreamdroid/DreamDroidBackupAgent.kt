@@ -16,6 +16,9 @@ import net.reichholf.dreamdroid.room.AppDatabase
  * Backs up Room [AppDatabase.DATABASE_NAME] and leftover [DatabaseHelper.DATABASE_NAME]
  * so pre-cutover cloud snapshots (legacy file only) still restore;
  * [DatabaseHelper.migrateIntoRoomIfNeeded] copies profiles on first launch after restore.
+ *
+ * Cache tables ride along because Room is one file (`dreambox`) and table-level exclude
+ * is out of scope. Profile passwords stay in that file for Auto Backup and device transfer.
  */
 class DreamDroidBackupAgent : BackupAgentHelper() {
     override fun onCreate() {

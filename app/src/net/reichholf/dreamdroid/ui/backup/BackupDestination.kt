@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -26,8 +27,11 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.BackupService
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 
 private const val TAG = "BackupDestination"
+
+private const val BACKUP_EXPORT_FILENAME = "dreamdroid_backup.json"
 
 /**
  * Phase 2.7c: Backup as a direct Compose NavHost destination (no nested Fragment).
@@ -38,6 +42,8 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     val backupService = remember { BackupService(context.applicationContext) }
     val uiState = remember { BackupUiState() }
     var backupData by remember { mutableStateOf(backupService.getBackupData()) }
+    var showPasswordWarning by remember { mutableStateOf(false) }
+    var pendingExportJson by remember { mutableStateOf<String?>(null) }
 
     fun refreshProfileToggles(data: BackupData) {
         uiState.setProfilesFromBackup(
@@ -77,6 +83,17 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
     }
 
+    val createBackupFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val json = pendingExportJson
+        pendingExportJson = null
+        if (uri == null || json == null) {
+            return@rememberLauncherForActivityResult
+        }
+        toast(backupExportUserMessage(context, writeBackupJson(context, uri, json)))
+    }
+
     fun doImport() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
         try {
@@ -86,18 +103,27 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
     }
 
-    fun doExport() {
-        val data = backupData
-        if (!uiState.exportSettings) {
-            data.settings = null
-        }
-        val excluded = uiState.profiles.filterNot { it.checked }.map { it.id }.toHashSet()
-        if (excluded.isNotEmpty()) {
-            data.profiles.removeIf { excluded.contains(it.id) }
-        }
-        val exported = backupService.doExport(data)
+    fun openExportPicker() {
+        applyExportSelection(backupData, uiState)
+        pendingExportJson = backupService.exportJson(backupData, uiState.includePasswords)
         reloadBackupData()
-        toast(backupExportUserMessage(context, exported))
+        try {
+            createBackupFile.launch(BACKUP_EXPORT_FILENAME)
+        } catch (e: ActivityNotFoundException) {
+            pendingExportJson = null
+            toast(
+                e.localizedMessage
+                    ?: context.getString(R.string.backup_export_missing_permission)
+            )
+        }
+    }
+
+    fun onExportClicked() {
+        if (uiState.includePasswords) {
+            showPasswordWarning = true
+        } else {
+            openExportPicker()
+        }
     }
 
     DisposableEffect(Unit) {
@@ -113,9 +139,29 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     BackupScreen(
         state = uiState,
         onImport = { doImport() },
-        onExport = { doExport() },
+        onExport = { onExportClicked() },
         modifier = modifier
     )
+
+    if (showPasswordWarning) {
+        ConfirmAlertDialog(
+            title = stringResource(R.string.backup_passwords_confirm_title),
+            message = stringResource(R.string.backup_passwords_confirm),
+            onDismiss = { showPasswordWarning = false },
+            onConfirm = { openExportPicker() },
+            confirmLabel = stringResource(R.string.backup_export)
+        )
+    }
+}
+
+private fun applyExportSelection(data: BackupData, state: BackupUiState) {
+    if (!state.exportSettings) {
+        data.settings = null
+    }
+    val excluded = state.profiles.filterNot { it.checked }.map { it.id }.toHashSet()
+    if (excluded.isNotEmpty()) {
+        data.profiles.removeIf { excluded.contains(it.id) }
+    }
 }
 
 @Throws(IOException::class)
@@ -131,6 +177,22 @@ private fun readTextFromUri(context: Context, uri: Uri): String {
             }
             builder.toString()
         }
+    }
+}
+
+private fun writeBackupJson(context: Context, uri: Uri, json: String): Boolean {
+    return try {
+        val output = context.contentResolver.openOutputStream(uri) ?: return false
+        output.use { stream ->
+            stream.write(json.toByteArray(Charsets.UTF_8))
+        }
+        true
+    } catch (e: IOException) {
+        Log.e(TAG, "Export write failed.", e)
+        false
+    } catch (e: SecurityException) {
+        Log.e(TAG, "Export write failed.", e)
+        false
     }
 }
 

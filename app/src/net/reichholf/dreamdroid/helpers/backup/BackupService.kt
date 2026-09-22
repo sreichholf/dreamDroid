@@ -1,15 +1,11 @@
 package net.reichholf.dreamdroid.helpers.backup
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.MediaStore
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
-import java.io.FileNotFoundException
-import java.io.IOException
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.ProfileDaoBlocking
@@ -34,44 +30,12 @@ class BackupService(private val context: Context) {
         return export
     }
 
-    fun doExport(data: BackupData?): Boolean {
-        val gson = GsonBuilder().create()
-        val jsonContent = gson.toJson(data)
-        try {
-            val filename = "dreamdroid_backup.json"
-            val contentValues = ContentValues()
-            contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, filename)
-            contentValues.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/json")
-            contentValues.put(
-                MediaStore.Files.FileColumns.DATE_ADDED,
-                System.currentTimeMillis() / 1000
-            )
-            contentValues.put(
-                MediaStore.Files.FileColumns.DATE_MODIFIED,
-                System.currentTimeMillis() / 1000
-            )
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true)
-            val fileUri = context.contentResolver.insert(
-                MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-                contentValues
-            ) ?: return false
-
-            val os = context.contentResolver.openOutputStream(fileUri, "w") ?: return false
-            os.write(jsonContent.toByteArray())
-            os.close()
-
-            contentValues.clear()
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 0)
-            context.contentResolver.update(fileUri, contentValues, null, null)
-            return true
-        } catch (e: FileNotFoundException) {
-            Log.e(TAG, "Export unable to create export file to write the backup to.", e)
-            return false
-        } catch (e: IOException) {
-            Log.e(TAG, "Export write failed.", e)
-            return false
-        }
-    }
+    /**
+     * JSON for a user-chosen file. Passwords are stripped on a copy when
+     * [includePasswords] is false; [data] and its profiles are left unchanged.
+     */
+    fun exportJson(data: BackupData, includePasswords: Boolean): String =
+        GsonBuilder().create().toJson(backupCopyForExport(data, includePasswords))
 
     /** @return false when [content] cannot be imported. Nothing is changed. */
     fun doImport(content: String?): Boolean {
@@ -86,11 +50,16 @@ class BackupService(private val context: Context) {
         val profiles = backupData.profiles
         for (profile in profiles) {
             val existingProfile = getProfileFromDB(profile.name ?: "")
+            val toInsert = profileToInsert(
+                profile,
+                existingProfile,
+                backupData.passwordsIncluded
+            )
             if (existingProfile != null) {
                 profileDao.deleteProfile(existingProfile)
             }
-            profile.id = null
-            profile.id = profileDao.addProfile(profile).toInt()
+            toInsert.id = null
+            toInsert.id = profileDao.addProfile(toInsert).toInt()
         }
         val settings = backupData.settings ?: return true
         val editor = preferences.edit()
@@ -125,6 +94,54 @@ class BackupService(private val context: Context) {
     companion object {
         private val TAG = BackupService::class.java.simpleName
     }
+}
+
+/**
+ * Profile row to insert.
+ *
+ * A null [passwordsIncluded] is a legacy file and counts as included, so [incoming] passwords
+ * replace any saved ones. False keeps [existing] receiver passwords, or stores empty passwords
+ * when the name is new. True also uses the incoming passwords.
+ */
+internal fun profileToInsert(
+    incoming: Profile,
+    existing: Profile?,
+    passwordsIncluded: Boolean?
+): Profile {
+    if (passwordsIncluded != false) {
+        return incoming
+    }
+    if (existing != null) {
+        incoming.pass = existing.pass
+        incoming.encoderPass = existing.encoderPass
+    } else {
+        incoming.pass = ""
+        incoming.encoderPass = ""
+    }
+    return incoming
+}
+
+/**
+ * Copy of [source] for the export file. Profile objects are cloned before passwords are cleared
+ * so the in-memory backup is not mutated.
+ */
+internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean): BackupData {
+    val gson = GsonBuilder().create()
+    val copy = BackupData()
+    copy.settings = source.settings
+        ?.map { GenericSetting(it.key, it.value, it.type) }
+        ?.toMutableList()
+    copy.uri = source.uri
+    copy.passwordsIncluded = includePasswords
+    for (profile in source.profiles) {
+        val cloned = gson.fromJson(gson.toJson(profile), Profile::class.java)
+        if (!includePasswords) {
+            cloned.pass = ""
+            cloned.encoderPass = ""
+        }
+        copy.addProfile(cloned)
+    }
+    return copy
 }
 
 /**
