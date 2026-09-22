@@ -17,6 +17,7 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,9 +102,9 @@ class MainActivity :
     private val drawerListState = DrawerListState()
     private val destinationController = ShellDestinationBarController()
     private val fabController = ShellFabController()
-    lateinit var phoneNav: PhoneNavHostState
-        private set
+    val phoneNav: PhoneNavHostState by viewModels()
 
+    private var phoneShellReady: Boolean = false
     private var snackbar: Snackbar? = null
 
     /** When true, a successful profile check opens the start route (after Recheck). */
@@ -263,12 +264,12 @@ class MainActivity :
             showSetupAssistant()
             return
         }
-        startPhoneShell(savedInstanceState)
+        startPhoneShell()
     }
 
     override fun onStart() {
         super.onStart()
-        if (showingSetup || !::phoneNav.isInitialized) {
+        if (showingSetup || !phoneShellReady) {
             return
         }
         if (!DreamDroid.ensureCurrentProfile(this)) {
@@ -306,7 +307,7 @@ class MainActivity :
                         PreferenceManager.getDefaultSharedPreferences(this).edit()
                             .putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false)
                             .apply()
-                        startPhoneShell(null)
+                        startPhoneShell()
                     },
                     onLeave = { finish() }
                 )
@@ -314,7 +315,7 @@ class MainActivity :
         }
     }
 
-    private fun startPhoneShell(savedInstanceState: Bundle?) {
+    private fun startPhoneShell() {
         showingSetup = false
         // Register before Compose so destination BackHandlers outrank leave-confirm.
         if (!shellCallbackRegistered) {
@@ -324,12 +325,11 @@ class MainActivity :
         ensureLocalNetworkPermission()
 
         currentProfile = Profile.getDefault()
-        phoneNav = PhoneNavHostState(this, this)
-        if (savedInstanceState != null) {
-            phoneNav.restoreState(savedInstanceState)
-        } else {
+        phoneNav.attach(this, this) // activity is LifecycleOwner and DrawerRouteHighlighter
+        if (!phoneNav.hasSavedStartRoute()) {
             phoneNav.setStartRoute(StartScreen.navRoute(this))
         }
+        phoneShellReady = true
         initViews()
         startSessionReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
@@ -411,7 +411,7 @@ class MainActivity :
         if (intent == null || Intent.ACTION_SEARCH != intent.action) {
             return
         }
-        if (!::phoneNav.isInitialized) {
+        if (!phoneShellReady) {
             return
         }
         val query = intent.getStringExtra(SearchManager.QUERY).orEmpty()
@@ -437,19 +437,12 @@ class MainActivity :
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle) {
-        if (::phoneNav.isInitialized) {
-            phoneNav.saveState(outState)
-        }
-        super.onSaveInstanceState(outState)
-    }
-
     override fun dispatchActivityResultToNavHandle(
         requestCode: Int,
         resultCode: Int,
         data: Intent?
     ): Boolean {
-        if (!::phoneNav.isInitialized) {
+        if (!phoneShellReady) {
             return false
         }
         phoneNav.onHostActivityResult(requestCode, resultCode, data)
@@ -458,7 +451,7 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
-        if (showingSetup || !::phoneNav.isInitialized) {
+        if (showingSetup || !phoneShellReady) {
             return
         }
         if (navigationHelper == null) {
@@ -479,6 +472,9 @@ class MainActivity :
         ).unregisterOnSharedPreferenceChangeListener(this)
         if (DreamDroid.getCurrentProfileChangedListener() === this) {
             DreamDroid.setCurrentProfileChangedListener(null)
+        }
+        if (phoneShellReady) {
+            phoneNav.detach()
         }
         super.onDestroy()
     }
@@ -580,7 +576,7 @@ class MainActivity :
             }
 
             R.id.action_search -> {
-                if (::phoneNav.isInitialized) {
+                if (phoneShellReady) {
                     phoneNav.navigateToEpgSearch("")
                     return true
                 }
@@ -658,7 +654,7 @@ class MainActivity :
     }
 
     private fun bindDrawerConnectionChip() {
-        if (!::phoneNav.isInitialized) {
+        if (!phoneShellReady) {
             return
         }
         profileName = DreamDroid.getCurrentProfile().name.orEmpty()
@@ -688,7 +684,7 @@ class MainActivity :
             return
         }
         val command = volumeCommandForKey(keyCode) ?: return
-        if (!::phoneNav.isInitialized) {
+        if (!phoneShellReady) {
             return
         }
         phoneNav.runOnlineOnly {
@@ -703,7 +699,7 @@ class MainActivity :
      * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        if (::phoneNav.isInitialized) {
+        if (phoneShellReady) {
             phoneNav.composeDialogActionListener?.onDialogAction(action, details, dialogTag)
         }
         super.onDialogAction(action, details, dialogTag)
