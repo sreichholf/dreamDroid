@@ -61,7 +61,7 @@ fun ServiceListScreen(
 }
 
 @Composable
-private fun ServiceRow(
+internal fun ServiceRow(
     item: ServiceListItem,
     onClick: (windowX: Int, windowY: Int) -> Unit,
     onLongClick: (windowX: Int, windowY: Int) -> Unit

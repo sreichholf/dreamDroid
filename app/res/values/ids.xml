@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <item name="recyclerview_item_click_support" type="id"/>
     <item name="toolbar" type="id"/>
     <item name="shell_destination_nav" type="id"/>
     <item name="shell_destination_rail" type="id"/>
