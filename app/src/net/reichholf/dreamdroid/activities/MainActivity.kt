@@ -48,10 +48,13 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
+import net.reichholf.dreamdroid.enigma.launchVolumeSetLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.consumesHardwareVolume
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
+import net.reichholf.dreamdroid.helpers.enigmaVolumeSetParams
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
@@ -62,6 +65,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
+import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
@@ -70,6 +74,7 @@ import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
+import net.reichholf.dreamdroid.ui.settings.SettingsState
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.setup.toSetupReceiver
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -92,6 +97,7 @@ class MainActivity :
 
     private var checkProfileJob: Job? = null
     private var reachabilityJob: Job? = null
+    private var volumeSetJob: Job? = null
     private var showingSetup: Boolean = false
     private var shellCallbackRegistered: Boolean = false
     private var lanGranted by mutableStateOf(false)
@@ -758,29 +764,29 @@ class MainActivity :
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (PreferenceManager.getDefaultSharedPreferences(
-                this
-            ).getBoolean("volume_control", false)
-        ) {
-            when (keyCode) {
-                KeyEvent.KEYCODE_VOLUME_UP -> {
-                    // TODO onVolumeButtonClicked(Volume.CMD_UP);
-                    return true
-                }
-
-                KeyEvent.KEYCODE_VOLUME_DOWN -> {
-                    // TODO onVolumeButtonClicked(Volume.CMD_DOWN);
-                    return true
+        if (consumesHardwareVolume(isHardwareVolumeControlEnabled(), keyCode)) {
+            val params = enigmaVolumeSetParams(keyCode)
+            if (params != null && this::phoneNav.isInitialized) {
+                phoneNav.runOnlineOnly {
+                    volumeSetJob?.cancel()
+                    volumeSetJob = launchVolumeSetLoad(params) { _, _ -> }
                 }
             }
+            return true
         }
         return super.onKeyDown(keyCode, event)
     }
 
-    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean =
-        keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
-            keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-            super.onKeyUp(keyCode, event)
+    override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
+        if (consumesHardwareVolume(isHardwareVolumeControlEnabled(), keyCode)) {
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
+    }
+
+    private fun isHardwareVolumeControlEnabled(): Boolean =
+        PreferenceManager.getDefaultSharedPreferences(this)
+            .getBoolean(SettingsState.KEY_VOLUME_CONTROL, false)
 
     override val isMultiPane: Boolean
         get() = true
