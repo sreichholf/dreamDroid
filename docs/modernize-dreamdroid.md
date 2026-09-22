@@ -16,11 +16,72 @@ One PR per item unless asked otherwise. Do not fold these into unrelated chrome 
 
 | Item | Notes |
 | --- | --- |
+| ViewModels | Screen state moves off `remember` onto a `ViewModel`. Order, rules, and the per-screen PR list: [ViewModels](#viewmodels) below. Do not start a later row before Device info has landed. Do not fold a row into unrelated work. |
 | Operator usertests | **Phone verified** (2026-09-19). **Tablet verified** (2026-09-21). **TV / box verified** (2026-09-21) except newly added timer surfaces. Phone drawer EPG and the bouquet service list remember list vs MultiEPG. Remaining box pass: hub **Timers** list add/edit/delete (`TvTimerHost`); bouquet service INFO/MENU overlay (stream / set / edit); MultiEPG detail set/edit (`TvTimerEditorHost`). File bugs; no drive-by refactors. Then a bugfix pass, one PR per fix. In-tree timer gate: `TvTimerHostTest` / `TvTimerListScreenTest` / `TvServiceTimerOverlayTest`. |
 | 2.0 bugs | GitHub label `2.0-bug`. One PR per fix. Do not treat `feature` issues as ship blockers. Do not close more tickets unless asked. |
 | Pre-release | Not GitHub-issue work. 1.15→2.0 Room/profile migration tests; minified `googleRelease` smoke; targetSdk 37 `ACCESS_LOCAL_NETWORK`; dual HTTP stacks (OkHttp `EnigmaClient` and the request-handler helpers). |
 
 **Keep:** service-row / now-playing progress is a transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)). Do not “restore” a Material track. Widget stays Glance + `AndroidRemoteViews` for the dense RCU grid — a Glance-only rewrite does not pay for that layout. `DatabaseHelper` stays a read-only leftover-file importer for pre-Room installs and cloud snapshots — Room has not shipped on Play yet; do not drop the path. It never creates `dreamdroid`.
+
+## ViewModels
+
+Screen state is already extracted (`*State`, `*UiState`, `*Session`). It is created with `remember` inside the destination, so it dies when that composable leaves the tree. Rotation and process death are handled by hand (`rememberSaveable`, and `PhoneNavHostState.saveState` from `MainActivity.onSaveInstanceState`). Load work is a `Job` held beside the state.
+
+The target is a `ViewModel` per screen, scoped to that screen's `NavBackStackEntry`. The composable renders state it is given. HTTP, Room, and the Compose layout stay.
+
+### Rules for every row
+
+- The existing state class stays the model. The `ViewModel` owns it. `*Screen` keeps taking that state, so current instrumented tests keep calling the screen directly.
+- `viewModel()` is called from the NavHost route (or from `*Destination` with an optional state/ViewModel parameter). Tests pass the state in. They do not construct a `ViewModelStore` unless the test is specifically about retention.
+- Jobs move to `viewModelScope`. Remove `remember { mutableStateOf<Job?> }`.
+- Fields that are `rememberSaveable` today, or keys in `PhoneNavHostState.saveState`, move to `SavedStateHandle`. Do not add new saved fields in the same PR.
+- A `ViewModel` takes `Application`, `SavedStateHandle`, or a small interface. It does not hold `MainActivity`, a `View`, or a `Menu`.
+- `MenuProvider` stays registered by the composable. The `ViewModel` does not implement it.
+- Dialog open/closed flags and other pure UI toggles stay in composition.
+- `SessionConnectionHolder` stays the process-wide connection status. ViewModels collect it.
+- `NavigationHelper` stays on the activity. It needs the activity for toasts and loads. The nav `ViewModel` does not absorb it.
+- Phone and TV activities stay separate. A TV host that copies a phone screen gets its own PR after that phone screen.
+- Hub children (`HubServiceListPage`, `HubTimerListPage`, `HubMovieListPage`) are not their own routes. Their ViewModels are scoped to the hub back-stack entry so a tab change keeps the loaded list.
+- Retention is the behavior change: opening a detail and popping back must show the same loaded list, not a fresh load. Update the destination test that assumed a new session on every composition.
+- Proof for each row: existing `*Screen` test still passes; one navigation test (or a `SavedStateHandle` unit test) shows the retained or restored field. `bash .cursor/cloud/connected-test.sh` for the touched instrumented class. `./gradlew spotlessCheck` and `:app:testGoogleDebugUnitTest` when a JVM test was added.
+- First PR adds an explicit `androidx.lifecycle:lifecycle-viewmodel-compose` dependency, aligned with `activity-compose` 1.13. Do not rely on it arriving only transitively through `navigation-compose`.
+
+### Order
+
+One PR per row. Device info is the pattern the later rows copy.
+
+| # | PR | What moves |
+| --- | --- | --- |
+| 1 | Device info | `DeviceInfoDestination` / `DeviceInfoUiState`. One load job and one `rememberSaveable` model. This is the template. |
+| 2 | Phone nav host | `PhoneNavHostState` becomes an activity-scoped `ViewModel`. `SavedStateHandle` replaces `saveState` / `restoreState`. `MainActivity` keeps `NavigationHelper`, the drawer, and profile-check UI. Profile-check loads move into `viewModelScope` only when they can take an application `Context`; otherwise they stay on the activity and the PR says so. |
+| 3 | Screenshot | `ScreenshotDestination` / `ScreenshotUiState`. |
+| 4 | Signal | `SignalDestination` / `SignalUiState` / `SignalPollGate`. Poll loop and `AudioTrack` stay behind the ViewModel; the `Handler` does not outlive `viewModelScope`. |
+| 5 | Zap | `ZapDestination` / `ZapSession` / `ZapListState`. |
+| 6 | Backup | `BackupDestination` / `BackupUiState`. `BackupService` is constructed from the application context. |
+| 7 | Current service | `CurrentServiceDestination` / `CurrentServiceSession` / `CurrentServiceUiState`. |
+| 8 | Settings | `SettingsDestination` / `SettingsState`. Preference reads leave `remember`. |
+| 9 | Profiles | `ProfilesDestination` / `ProfilesSession` / `ProfilesListState`, including discovery. |
+| 10 | Profile edit | `ProfileEditState` and the profile-edit route args that today sit on `PhoneNavHostState`. |
+| 11 | Timer edit | `TimerEditDestination` / `TimerEditSession` / `TimerEditState`. |
+| 12 | Service pick | `PickServiceDestination` and `TimerServicePickDestination` / `TimerServicePickSession`. |
+| 13 | EPG bouquet | `EpgBouquetDestination` / `EpgBouquetSession` / `EpgBouquetListState`. |
+| 14 | EPG search | `EpgSearchDestination`. |
+| 15 | MultiEPG | `MultiEpgDestination` / `MultiEpgSession` / `MultiEpgMenuSession`. Window position that is `rememberSaveable` goes to `SavedStateHandle`. |
+| 16 | Hub shell | `HubDestination` mode, selected row, bouquet refs (`rememberSaveable` today). |
+| 17 | Hub service list | `HubServiceListSession` / `ServiceListState`, scoped to the hub entry. |
+| 18 | Hub timers | `HubTimerListSession` / `TimerListState`, scoped to the hub entry. |
+| 19 | Hub movies | `HubMovieListSession` / `MovieListState`, scoped to the hub entry. |
+| 20 | TV hosts | After the matching phone row: `TvComposeHubHost`, `TvTimerHost`, `TvTimerEditor`, `TvTimerServicePick`, `TvMultiEpgHost`. One PR per host. Do not merge the TV activity into the phone one. |
+| 21 | Share and setup | `ShareActivity` / `ShareProfilesListState` and `SetupAssistantScreen`. Activity-scoped ViewModels. These activities have no phone `NavHost`. |
+| 22 | Dialog routes | `SleepTimer`, `SendMessage`, and `Power` only when they own a load or a session. `About` stays composition. Visibility flags stay in the dialog composable. |
+| 23 | Player | `VideoOverlayController` stays the `View` and libVLC binder. A last PR may move zap-list and playback session state into a ViewModel the controller observes. Do not start it before row 20. |
+
+### Leave as they are
+
+- `PhoneShell` FAB and destination-bar controllers (`ShellFabController`, `ShellDestinationBarController`). They are composition locals for the life of the shell.
+- The virtual remote's key-repeat flags, when they are only UI timing and not a session.
+- Glance widget state.
+- A new DI framework, repository layer, or rewrite of `EnigmaClient`. These PRs move ownership, not the HTTP stack.
 
 ## Out of scope until asked
 
