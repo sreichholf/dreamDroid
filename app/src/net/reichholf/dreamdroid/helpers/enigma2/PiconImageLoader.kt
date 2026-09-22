@@ -3,29 +3,39 @@ package net.reichholf.dreamdroid.helpers.enigma2
 import android.content.Context
 import coil3.ImageLoader
 import coil3.SingletonImageLoader
+import coil3.annotation.DelicateCoilApi
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
-import okhttp3.Credentials
 import okhttp3.OkHttpClient
 
 /**
  * Process-wide Coil [ImageLoader] for Enigma2 picons.
  *
- * TLS matches [EnigmaOkHttp] for the current profile, including trust-all.
- * Basic auth is added on the first request from the current profile, not from URL userinfo.
+ * Shares the [EnigmaOkHttp] connection pool and dispatcher. Auth is an
+ * `Authorization` interceptor (plus a URL-userinfo authenticator fallback).
+ * Trust-all uses the same [net.reichholf.dreamdroid.ssl.DreamDroidTrustManager]
+ * instance as `/web/*`. Re-[install] with `replace = true` when the current
+ * profile's login/ssl/trust-all changes; [setSafe][SingletonImageLoader.setSafe]
+ * will not replace an already-created loader.
  */
 object PiconImageLoader {
-    fun install(context: Context) {
+    @OptIn(DelicateCoilApi::class)
+    fun install(context: Context, replace: Boolean = false) {
         val appContext = context.applicationContext
-        SingletonImageLoader.setSafe {
+        val factory = SingletonImageLoader.Factory {
             try {
                 newImageLoader(appContext)
             } catch (e: Exception) {
                 e.printStackTrace()
                 ImageLoader.Builder(appContext).build()
             }
+        }
+        if (replace) {
+            SingletonImageLoader.setUnsafe(factory)
+        } else {
+            SingletonImageLoader.setSafe(factory)
         }
     }
 
@@ -48,18 +58,9 @@ object PiconImageLoader {
     @Suppress("UNUSED_PARAMETER")
     fun newOkHttpClient(context: Context): OkHttpClient {
         val trustAll = DreamDroid.currentProfileOrNull()?.allCertsTrusted == true
-        return EnigmaOkHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
-            .newBuilder()
-            .addInterceptor { chain ->
-                val profile = DreamDroid.currentProfileOrNull()
-                val request = if (profile?.login == true) {
-                    val cred = Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
-                    chain.request().newBuilder().header("Authorization", cred).build()
-                } else {
-                    chain.request()
-                }
-                chain.proceed(request)
-            }
-            .build()
+        return EnigmaOkHttp.piconClient(
+            EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
+            trustAll
+        )
     }
 }

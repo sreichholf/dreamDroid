@@ -1,9 +1,13 @@
 package net.reichholf.dreamdroid.helpers
 
+import net.reichholf.dreamdroid.Profile
+import okhttp3.Credentials
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotSame
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class EnigmaOkHttpTest {
@@ -48,5 +52,52 @@ class EnigmaOkHttpTest {
         val trustAll = EnigmaOkHttp.client(15_000, trustAll = true)
         assertNotSame(strict.connectionPool, trustAll.connectionPool)
         assertNotSame(strict.dispatcher, trustAll.dispatcher)
+    }
+
+    @Test
+    fun piconClient_sharesPoolAndDispatcherWithMatchingApiClient() {
+        val api = EnigmaOkHttp.client(15_000, trustAll = false)
+        val picon = EnigmaOkHttp.piconClient(15_000, trustAll = false)
+        assertSame(api.connectionPool, picon.connectionPool)
+        assertSame(api.dispatcher, picon.dispatcher)
+        assertNotSame(api, picon)
+    }
+
+    @Test
+    fun piconClient_doesNotPolluteCachedApiClient() {
+        EnigmaOkHttp.piconClient(15_000, trustAll = false)
+        val api = EnigmaOkHttp.client(15_000, trustAll = false)
+        assertTrue(api.interceptors.isEmpty())
+    }
+
+    @Test
+    fun piconClient_addsAuthInterceptor() {
+        val api = EnigmaOkHttp.client(15_000, trustAll = false)
+        val picon = EnigmaOkHttp.piconClient(15_000, trustAll = false)
+        assertTrue(picon.interceptors.size > api.interceptors.size)
+    }
+
+    @Test
+    fun piconAuthHeader_matchesBasicCredentialsWhenLoginEnabled() {
+        val profile = Profile().apply {
+            login = true
+            user = "root"
+            pass = "secret"
+        }
+        assertEquals(
+            Credentials.basic("root", "secret"),
+            EnigmaOkHttp.piconAuthHeader(profile)
+        )
+    }
+
+    @Test
+    fun piconAuthHeader_nullWhenLoginDisabledOrMissingProfile() {
+        val profile = Profile().apply {
+            login = false
+            user = "root"
+            pass = "secret"
+        }
+        assertNull(EnigmaOkHttp.piconAuthHeader(profile))
+        assertNull(EnigmaOkHttp.piconAuthHeader(null))
     }
 }

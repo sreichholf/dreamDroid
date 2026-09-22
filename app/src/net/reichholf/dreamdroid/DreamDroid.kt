@@ -494,6 +494,7 @@ class DreamDroid : Application() {
 
         fun setCurrentProfile(profile: Profile) {
             this.profile = profile
+            reinstallPiconImageLoader()
         }
 
         fun profileChanged(context: Context, p: Profile) {
@@ -503,9 +504,14 @@ class DreamDroid : Application() {
         }
 
         private fun activeProfileChanged() {
+            reinstallPiconImageLoader()
             if (profileChangedListener != null) {
                 profileChangedListener!!.onProfileChanged(profile!!)
             }
+        }
+
+        private fun reinstallPiconImageLoader() {
+            getAppContext()?.let { PiconImageLoader.install(it, replace = true) }
         }
 
         fun setCurrentProfileChangedListener(listener: ProfileChangedListener?) {
