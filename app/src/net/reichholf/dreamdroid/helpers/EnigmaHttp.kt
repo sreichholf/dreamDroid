@@ -58,7 +58,24 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
 
     fun connectionTimeoutMillis(): Int = timeoutMillis
 
-    fun fetch(uri: String, parameters: List<NameValuePair> = emptyList()): EnigmaHttpResult {
+    fun fetch(uri: String, parameters: List<NameValuePair> = emptyList()): EnigmaHttpResult =
+        execute(uri, parameters, destination = null)
+
+    /**
+     * Same request as [fetch], but the body is copied to [destination].
+     * Recordings are too large to buffer with [fetch].
+     */
+    fun downloadToFile(
+        uri: String,
+        parameters: List<NameValuePair>,
+        destination: File
+    ): EnigmaHttpResult = execute(uri, parameters, destination)
+
+    private fun execute(
+        uri: String,
+        parameters: List<NameValuePair>,
+        destination: File?
+    ): EnigmaHttpResult {
         inFlight?.cancel()
         val epoch = fetchEpoch.incrementAndGet()
         var path = uri
@@ -89,7 +106,7 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
                 throw InterruptedIOException()
             }
             executeInterruptibly(call).use { response ->
-                return handleResponse(path, parameters, urlString, response, epoch)
+                return handleResponse(path, parameters, urlString, response, epoch, destination)
             }
         } catch (e: Exception) {
             if (e is java.util.concurrent.CancellationException) {
@@ -120,7 +137,8 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
         parameters: List<NameValuePair>,
         urlString: String,
         response: Response,
-        epoch: Int
+        epoch: Int,
+        destination: File?
     ): EnigmaHttpResult {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {
@@ -129,14 +147,14 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
             ) {
                 DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest())
                 rememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD
-                return fetch(uri, parameters)
+                return execute(uri, parameters, destination)
             }
             if (code == HttpURLConnection.HTTP_PRECON_FAILED &&
                 rememberedReturnCode != HttpURLConnection.HTTP_PRECON_FAILED
             ) {
                 createSession()
                 rememberedReturnCode = HttpURLConnection.HTTP_PRECON_FAILED
-                return fetch(uri, parameters)
+                return execute(uri, parameters, destination)
             }
             if (epoch != fetchEpoch.get()) {
                 return cancelledResult()
@@ -146,6 +164,18 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
             return EnigmaHttpResult.Failure(
                 EnigmaHttpError(EnigmaFailure.fromHttpStatus(code, response.message))
             )
+        }
+        if (destination != null) {
+            response.body.byteStream().use { input ->
+                destination.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            if (epoch != fetchEpoch.get()) {
+                destination.delete()
+                return cancelledResult()
+            }
+            return EnigmaHttpResult.Success(ByteArray(0))
         }
         val body = response.body.bytes()
         if (epoch != fetchEpoch.get()) {

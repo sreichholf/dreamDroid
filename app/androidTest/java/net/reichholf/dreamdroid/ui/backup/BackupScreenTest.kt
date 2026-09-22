@@ -83,9 +83,11 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsDisplayed()
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
         composeRule.onNodeWithText("Export settings").assertIsDisplayed()
+        composeRule.onNodeWithText("Include receiver passwords").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
+        composeRule.onNodeWithText("Include receiver passwords").assertIsOn()
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(3)
         composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
         val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
