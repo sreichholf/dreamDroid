@@ -1,5 +1,8 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.464
+* NEU: Einrichtungsassistent, solange kein Profil gespeichert ist. Das Offline-Demoprofil entfällt. Der Assistent hilft beim Finden der Box, bei Adresse, HTTP oder HTTPS und Anmeldung und prüft danach die Verbindung. Das Profil lässt sich auch speichern, wenn die Prüfung fehlschlägt.
+
 ## 2.0.463
 * NEU: MultiEPG — grafische EPG-Übersicht
 * NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
