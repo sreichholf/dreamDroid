@@ -10,6 +10,7 @@ import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 
 @Database(
@@ -332,7 +333,7 @@ abstract class AppDatabase : RoomDatabase() {
          * Suspend DAOs go through [profiles] from an existing coroutine.
          */
         fun profilesBlocking(context: Context): ProfileDaoBlocking =
-            ProfileDaoBlocking(database(context).profileDao())
+            ProfileDaoBlocking(context.applicationContext, database(context).profileDao())
 
         fun epg(context: Context): EpgDao = database(context).epgDao()
 
@@ -350,17 +351,24 @@ abstract class AppDatabase : RoomDatabase() {
 }
 
 /** Single `runBlocking(IO)` facade over [Profile.ProfileDao]. */
-class ProfileDaoBlocking internal constructor(private val dao: Profile.ProfileDao) {
-    fun addProfile(profile: Profile): Long = runBlocking(Dispatchers.IO) {
-        dao.addProfile(profile)
+class ProfileDaoBlocking internal constructor(
+    private val context: Context,
+    private val dao: Profile.ProfileDao
+) {
+    fun addProfile(profile: Profile): Long {
+        val id = runBlocking(Dispatchers.IO) { dao.addProfile(profile) }
+        DreamDroid.scheduleBackup(context)
+        return id
     }
 
-    fun updateProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
-        dao.updateProfile(profile)
+    fun updateProfile(profile: Profile) {
+        runBlocking(Dispatchers.IO) { dao.updateProfile(profile) }
+        DreamDroid.scheduleBackup(context)
     }
 
-    fun deleteProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
-        dao.deleteProfile(profile)
+    fun deleteProfile(profile: Profile) {
+        runBlocking(Dispatchers.IO) { dao.deleteProfile(profile) }
+        DreamDroid.scheduleBackup(context)
     }
 
     fun getProfiles(): MutableList<Profile> = runBlocking(Dispatchers.IO) {

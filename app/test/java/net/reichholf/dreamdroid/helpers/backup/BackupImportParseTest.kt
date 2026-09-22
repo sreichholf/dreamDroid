@@ -68,6 +68,23 @@ class BackupImportParseTest {
         assertEquals("box", settings["name"])
     }
 
+    @Test
+    fun parsesLegacyDocumentThatIncludesPasswords() {
+        val data = BackupData()
+        val profile = Profile.getDefault()
+        profile.name = "Living room"
+        profile.host = "10.0.0.2"
+        profile.pass = "http-secret"
+        profile.encoderPass = "enc-secret"
+        data.addProfile(profile)
+        val json = GsonBuilder().create().toJson(data)
+        val imported = checkNotNull(parseBackupImport(json))
+        assertEquals("http-secret", imported.profiles.single().pass)
+        assertEquals("enc-secret", imported.profiles.single().encoderPass)
+        assertEquals("Living room", imported.profiles.single().name)
+        assertEquals("10.0.0.2", imported.profiles.single().host)
+    }
+
     private fun settingJson(type: String, value: String): String {
         val data = BackupData()
         data.addGenericSetting(GenericSetting("probe", value, type))

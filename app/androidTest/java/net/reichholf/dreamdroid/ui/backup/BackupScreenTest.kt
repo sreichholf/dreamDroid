@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.backup
 
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertDoesNotExist
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -11,6 +12,7 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -81,11 +83,13 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Export").assertIsDisplayed()
         composeRule.onNodeWithText("Profiles").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsDisplayed()
+        composeRule.onNodeWithText("Include passwords").assertIsDisplayed()
+        composeRule.onNodeWithText("Include passwords").assertIsOn()
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
         composeRule.onNodeWithText("Export settings").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(3)
         composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
         val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
@@ -98,11 +102,53 @@ class BackupScreenTest {
     }
 
     @Test
+    fun exportWithPasswordsShowsConfirmBeforeCallback() {
+        val state = BackupUiState()
+        var exportCalls = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                BackupScreen(
+                    state = state,
+                    onImport = {},
+                    onExport = { exportCalls++ }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Include passwords").assertIsOn()
+        composeRule.onNodeWithText("Export").performClick()
+        composeRule.onNodeWithText("Export passwords?").assertIsDisplayed()
+        composeRule.runOnIdle { assertEquals(0, exportCalls) }
+        composeRule.onNodeWithText("OK").performClick()
+        composeRule.runOnIdle { assertEquals(1, exportCalls) }
+    }
+
+    @Test
+    fun exportWithoutPasswordsSkipsConfirm() {
+        val state = BackupUiState().apply { includePasswords = false }
+        var exportCalls = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                BackupScreen(
+                    state = state,
+                    onImport = {},
+                    onExport = { exportCalls++ }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Include passwords").assertIsOff()
+        composeRule.onNodeWithText("Export").performClick()
+        composeRule.onNodeWithText("Export passwords?").assertDoesNotExist()
+        composeRule.runOnIdle { assertEquals(1, exportCalls) }
+    }
+
+    @Test
     fun failedExportDoesNotToastSuccess() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val message = backupExportUserMessage(context, exported = false)
         assertEquals(
-            context.getString(net.reichholf.dreamdroid.R.string.backup_export_missing_permission),
+            context.getString(net.reichholf.dreamdroid.R.string.backup_export_write_failed),
             message
         )
         assertTrue(

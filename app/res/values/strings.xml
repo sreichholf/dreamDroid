@@ -420,6 +420,10 @@
     <string name="backup_export_successful">Export successful</string>
     <string name="backup_import_successful">Import successful</string>
     <string name="backup_export_missing_permission">Please grant "Storage" permission to use this feature!</string>
+    <string name="backup_include_passwords">Include passwords</string>
+    <string name="backup_export_passwords_title">Export passwords?</string>
+    <string name="backup_export_passwords_message">This file will contain receiver HTTP and encoder passwords. Treat it like a password export and store it somewhere private.</string>
+    <string name="backup_export_write_failed">Could not write the backup file.</string>
     <string name="licenses">Licenses</string>
     <string name="license">Lizenz</string>
     <string name="encoder">Encoder</string>

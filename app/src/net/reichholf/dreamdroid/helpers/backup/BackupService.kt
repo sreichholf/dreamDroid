@@ -1,15 +1,15 @@
 package net.reichholf.dreamdroid.helpers.backup
 
-import android.content.ContentValues
 import android.content.Context
 import android.content.SharedPreferences
-import android.provider.MediaStore
+import android.net.Uri
 import android.util.Log
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import java.io.FileNotFoundException
 import java.io.IOException
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.ProfileDaoBlocking
@@ -34,35 +34,16 @@ class BackupService(private val context: Context) {
         return export
     }
 
-    fun doExport(data: BackupData?): Boolean {
-        val gson = GsonBuilder().create()
-        val jsonContent = gson.toJson(data)
+    fun doExport(data: BackupData?, uri: Uri, includePasswords: Boolean = true): Boolean {
+        if (data == null) {
+            return false
+        }
+        val jsonContent = serializeBackupJson(data, includePasswords)
         try {
-            val filename = "dreamdroid_backup.json"
-            val contentValues = ContentValues()
-            contentValues.put(MediaStore.Files.FileColumns.DISPLAY_NAME, filename)
-            contentValues.put(MediaStore.Files.FileColumns.MIME_TYPE, "application/json")
-            contentValues.put(
-                MediaStore.Files.FileColumns.DATE_ADDED,
-                System.currentTimeMillis() / 1000
-            )
-            contentValues.put(
-                MediaStore.Files.FileColumns.DATE_MODIFIED,
-                System.currentTimeMillis() / 1000
-            )
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, true)
-            val fileUri = context.contentResolver.insert(
-                MediaStore.Files.getContentUri(MediaStore.VOLUME_EXTERNAL),
-                contentValues
-            ) ?: return false
-
-            val os = context.contentResolver.openOutputStream(fileUri, "w") ?: return false
-            os.write(jsonContent.toByteArray())
-            os.close()
-
-            contentValues.clear()
-            contentValues.put(MediaStore.Files.FileColumns.IS_PENDING, 0)
-            context.contentResolver.update(fileUri, contentValues, null, null)
+            val os = context.contentResolver.openOutputStream(uri) ?: return false
+            os.use { stream ->
+                stream.write(jsonContent.toByteArray(Charsets.UTF_8))
+            }
             return true
         } catch (e: FileNotFoundException) {
             Log.e(TAG, "Export unable to create export file to write the backup to.", e)
@@ -92,6 +73,8 @@ class BackupService(private val context: Context) {
             profile.id = null
             profile.id = profileDao.addProfile(profile).toInt()
         }
+        CloudProfilesSidecar.write(context)
+        DreamDroid.scheduleBackup(context)
         val settings = backupData.settings ?: return true
         val editor = preferences.edit()
         for (setting in settings) {
@@ -125,6 +108,34 @@ class BackupService(private val context: Context) {
     companion object {
         private val TAG = BackupService::class.java.simpleName
     }
+}
+
+/**
+ * Gson document for an in-app export. Copies [BackupData.profiles] so Room rows are not
+ * mutated when passwords are stripped.
+ */
+internal fun serializeBackupJson(data: BackupData, includePasswords: Boolean): String {
+    val export = BackupData()
+    export.settings = data.settings
+    export.profiles = copyProfilesForExport(data.profiles, includePasswords)
+    return GsonBuilder().create().toJson(export)
+}
+
+internal fun copyProfilesForExport(
+    profiles: List<Profile>,
+    includePasswords: Boolean
+): MutableList<Profile> {
+    val gson = GsonBuilder().create()
+    val copies = ArrayList<Profile>(profiles.size)
+    for (profile in profiles) {
+        val copy = gson.fromJson(gson.toJson(profile), Profile::class.java)
+        if (!includePasswords) {
+            copy.pass = ""
+            copy.encoderPass = ""
+        }
+        copies.add(copy)
+    }
+    return copies
 }
 
 /**

@@ -12,6 +12,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,6 +22,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 
 data class BackupProfileToggle(val id: Int, val label: String, val checked: Boolean = true)
 
@@ -30,6 +32,9 @@ class BackupUiState {
 
     /** Matches legacy XML SwitchCompat default (unchecked). */
     var exportSettings by mutableStateOf(false)
+
+    /** Default ON: in-app export includes HTTP/encoder passwords. */
+    var includePasswords by mutableStateOf(true)
 
     fun replaceProfiles(items: List<BackupProfileToggle>) {
         profiles = items
@@ -66,6 +71,16 @@ fun BackupScreen(
     onExport: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showPasswordExportConfirm by remember { mutableStateOf(false) }
+
+    fun onExportClicked() {
+        if (state.includePasswords) {
+            showPasswordExportConfirm = true
+        } else {
+            onExport()
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -80,7 +95,7 @@ fun BackupScreen(
             Text(stringResource(R.string.backup_import))
         }
         Button(
-            onClick = onExport,
+            onClick = { onExportClicked() },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = ListRowHorizontalInset)
@@ -118,6 +133,15 @@ fun BackupScreen(
                 }
             }
 
+            ListRowSurface {
+                EditSwitchRow(
+                    checked = state.includePasswords,
+                    onCheckedChange = { state.includePasswords = it },
+                    label = stringResource(R.string.backup_include_passwords),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+            }
+
             Text(
                 text = stringResource(R.string.backup_settings),
                 style = MaterialTheme.typography.titleSmall,
@@ -139,5 +163,14 @@ fun BackupScreen(
                 )
             }
         }
+    }
+
+    if (showPasswordExportConfirm) {
+        ConfirmAlertDialog(
+            title = stringResource(R.string.backup_export_passwords_title),
+            message = stringResource(R.string.backup_export_passwords_message),
+            onDismiss = { showPasswordExportConfirm = false },
+            onConfirm = onExport
+        )
     }
 }

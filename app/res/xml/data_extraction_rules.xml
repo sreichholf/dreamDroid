@@ -2,7 +2,7 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="sharedpref" path="." />
-        <include domain="database" path="." />
+        <include domain="file" path="cloud_profiles.json" />
     </cloud-backup>
     <device-transfer>
         <include domain="sharedpref" path="." />

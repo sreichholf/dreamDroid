@@ -13,10 +13,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import java.io.BufferedReader
@@ -29,6 +27,8 @@ import net.reichholf.dreamdroid.helpers.backup.BackupService
 
 private const val TAG = "BackupDestination"
 
+private const val EXPORT_FILE_NAME = "dreamdroid_backup.json"
+
 /**
  * Phase 2.7c: Backup as a direct Compose NavHost destination (no nested Fragment).
  */
@@ -37,20 +37,15 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val backupService = remember { BackupService(context.applicationContext) }
     val uiState = remember { BackupUiState() }
-    var backupData by remember { mutableStateOf(backupService.getBackupData()) }
+    val pendingExport = remember { mutableStateOf<BackupData?>(null) }
+    val pendingIncludePasswords = remember { mutableStateOf(true) }
 
-    fun refreshProfileToggles(data: BackupData) {
+    fun reloadBackupData() {
         uiState.setProfilesFromBackup(
-            data.profiles,
+            backupService.getBackupData().profiles,
             DreamDroid.getCurrentProfile().id ?: -1,
             context.getString(R.string.backup_current_profile)
         )
-    }
-
-    fun reloadBackupData() {
-        val data = backupService.getBackupData()
-        backupData = data
-        refreshProfileToggles(data)
     }
 
     fun toast(message: String) {
@@ -77,6 +72,19 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
     }
 
+    val createExportFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        val data = pendingExport.value
+        val includePasswords = pendingIncludePasswords.value
+        pendingExport.value = null
+        if (uri == null || data == null) {
+            return@rememberLauncherForActivityResult
+        }
+        val exported = backupService.doExport(data, uri, includePasswords)
+        toast(backupExportUserMessage(context, exported))
+    }
+
     fun doImport() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
         try {
@@ -86,8 +94,8 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         }
     }
 
-    fun doExport() {
-        val data = backupData
+    fun launchExportPicker() {
+        val data = backupService.getBackupData()
         if (!uiState.exportSettings) {
             data.settings = null
         }
@@ -95,9 +103,14 @@ fun BackupDestination(modifier: Modifier = Modifier) {
         if (excluded.isNotEmpty()) {
             data.profiles.removeIf { excluded.contains(it.id) }
         }
-        val exported = backupService.doExport(data)
-        reloadBackupData()
-        toast(backupExportUserMessage(context, exported))
+        pendingExport.value = data
+        pendingIncludePasswords.value = uiState.includePasswords
+        try {
+            createExportFile.launch(EXPORT_FILE_NAME)
+        } catch (e: ActivityNotFoundException) {
+            pendingExport.value = null
+            toast(e.localizedMessage ?: context.getString(R.string.backup_export_write_failed))
+        }
     }
 
     DisposableEffect(Unit) {
@@ -113,7 +126,7 @@ fun BackupDestination(modifier: Modifier = Modifier) {
     BackupScreen(
         state = uiState,
         onImport = { doImport() },
-        onExport = { doExport() },
+        onExport = { launchExportPicker() },
         modifier = modifier
     )
 }
@@ -137,5 +150,5 @@ private fun readTextFromUri(context: Context, uri: Uri): String {
 internal fun backupExportUserMessage(context: Context, exported: Boolean): String = if (exported) {
     context.getString(R.string.backup_export_successful)
 } else {
-    context.getString(R.string.backup_export_missing_permission)
+    context.getString(R.string.backup_export_write_failed)
 }

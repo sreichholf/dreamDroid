@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.WifiSsid
+import net.reichholf.dreamdroid.helpers.backup.CloudProfilesSidecar
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
@@ -80,6 +81,7 @@ class DreamDroid : Application() {
 
         val appContext = getAppContext()!!
         DatabaseHelper.migrateIntoRoomIfNeeded(appContext)
+        CloudProfilesSidecar.mergeFromFile(appContext)
 
         initChannels()
         locationList = ArrayList()
@@ -90,6 +92,7 @@ class DreamDroid : Application() {
         handleProfileSwitch(this)
         PiconImageLoader.install(this)
         pruneExpiredMultiEpgCache()
+        CloudProfilesSidecar.write(appContext)
     }
 
     private fun pruneExpiredMultiEpgCache() {
@@ -584,6 +587,7 @@ class DreamDroid : Application() {
         @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
         fun scheduleBackup(context: Context) {
             Log.d(LOG_TAG, "Scheduling backup")
+            CloudProfilesSidecar.write(context)
             try {
                 val managerClass = Class.forName("android.app.backup.BackupManager")
                 val managerConstructor = managerClass.getConstructor(Context::class.java)

@@ -9,29 +9,26 @@ package net.reichholf.dreamdroid
 import android.app.backup.BackupAgentHelper
 import android.app.backup.FileBackupHelper
 import android.app.backup.SharedPreferencesBackupHelper
-import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.helpers.backup.CloudProfilesSidecar
 
 /**
- * Cloud backup for SharedPreferences + profile DBs.
- * Backs up Room [AppDatabase.DATABASE_NAME] and leftover [DatabaseHelper.DATABASE_NAME]
- * so pre-cutover cloud snapshots (legacy file only) still restore;
- * [DatabaseHelper.migrateIntoRoomIfNeeded] copies profiles on first launch after restore.
+ * Key/Value cloud backup for SharedPreferences and the profiles sidecar.
+ *
+ * The full Room DB is not included: EPG/movie/timer cache stays off Google Auto Backup.
+ * Leftover `dreamdroid` SQLite is still imported by [DatabaseHelper.migrateIntoRoomIfNeeded]
+ * when present (device-to-device transfer and old snapshots).
  */
 class DreamDroidBackupAgent : BackupAgentHelper() {
     override fun onCreate() {
         val spbh = SharedPreferencesBackupHelper(this, PREFS)
         addHelper(PREFS_BACKUP_KEY, spbh)
-        val dbfbh = FileBackupHelper(
-            this,
-            "../databases/" + AppDatabase.DATABASE_NAME,
-            "../databases/" + DatabaseHelper.DATABASE_NAME
-        )
-        addHelper(DATABASE_BACKUP_KEY, dbfbh)
+        val profilesHelper = FileBackupHelper(this, CloudProfilesSidecar.FILE_NAME)
+        addHelper(PROFILES_BACKUP_KEY, profilesHelper)
     }
 
     companion object {
         const val PREFS = "net.reichholf.dreamdroid_preferences"
-        const val DATABASE_BACKUP_KEY = "database"
+        const val PROFILES_BACKUP_KEY = "cloud_profiles"
         const val PREFS_BACKUP_KEY = "preferences"
     }
 }
