@@ -15,6 +15,16 @@ Hard rules (also in `.editorconfig`):
 
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 
+## Change the tests when the design changes
+
+A proper implementation is the goal. Do not keep a production type, or leave state on `remember` / `rememberSaveable`, so an existing test still compiles.
+
+This is not allowed:
+
+> Instrumented tests still construct `EpgBouquetSession` directly, so I'll keep that API and move only the saved list state onto the ViewModel.
+
+If the list, the saved fields, and the load job belong on the `ViewModel`, put them there and update the tests. A `*Screen` composable that still takes state, so a UI test does not need a `ViewModelStore`, is fine. Keeping the old session as the owner of that state is not.
+
 ## Verify UI with instrumented tests
 
 Do not prove phone UI by tapping the emulator through `adb` / `verify-dreamdroid.py` in a loop. That path is slow and brittle (`About` matches `Settings & About`, Changelog contains `Profiles`, dumps miss color).
