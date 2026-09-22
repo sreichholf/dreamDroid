@@ -28,7 +28,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListEntity::class
     ],
     version = 8,
-    exportSchema = false
+    exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
     /** Room profile DB file name under `databases/`. */
