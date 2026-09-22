@@ -37,7 +37,9 @@ import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
+import net.reichholf.dreamdroid.enigma.Service as BouquetService
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -45,9 +47,12 @@ import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.services.bouquetsAfterHttpOrCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
@@ -91,6 +96,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
     private var servicesView: RecyclerView? = null
     private var composeOverlay: ComposeView? = null
     private var composeZapList: ComposeView? = null
+    private var composeBouquetBar: ComposeView? = null
 
     private val overlayUiState: VideoOverlayUiState = VideoOverlayUiState()
 
@@ -102,6 +108,8 @@ class VideoOverlayController(private val activity: VideoActivity) :
 
     private var loadJob: Job? = null
     private var zapBeforeStreamJob: Job? = null
+    private var bouquetJob: Job? = null
+    private var bouquetBarRequested: Boolean = false
     private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
@@ -138,6 +146,19 @@ class VideoOverlayController(private val activity: VideoActivity) :
         servicesView = view.findViewById(R.id.servicelist)
         composeOverlay = view.findViewById(R.id.compose_overlay)
         composeZapList = view.findViewById(R.id.compose_zap_list)
+        composeBouquetBar = view.findViewById(R.id.compose_bouquet_bar)
+        composeBouquetBar?.bindOverlayBouquetBar(
+            state = overlayUiState,
+            onBouquetClick = { bouquet -> selectBouquet(bouquet) },
+            onUserInteraction = { autohide() },
+            onScrollInProgress = { scrolling ->
+                if (scrolling) {
+                    handler.removeCallbacks(autoHideRunnable)
+                } else {
+                    autohide()
+                }
+            }
+        )
         composeOverlay!!.bindVideoOverlayScreen(
             state = overlayUiState,
             onPlay = { onPlay() },
@@ -179,6 +200,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
                 }
         }
         attached = true
+        loadBouquetBar()
         autohide()
     }
 
@@ -215,6 +237,9 @@ class VideoOverlayController(private val activity: VideoActivity) :
         tvSessionJob = null
         zapBeforeStreamJob?.cancel()
         zapBeforeStreamJob = null
+        bouquetJob?.cancel()
+        bouquetJob = null
+        bouquetBarRequested = false
         cancelLoad()
         tvZapListBound = false
         itemClickSupport = null
@@ -228,6 +253,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         servicesView = null
         composeOverlay = null
         composeZapList = null
+        composeBouquetBar = null
         gestureDetector = null
         attached = false
     }
@@ -241,9 +267,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
             overlayUiState.zapServices = serviceList.toList()
             overlayUiState.zapCurrentRef = serviceRef
             bindTvZapListIfAllowed()
-            if (serviceList.isNotEmpty()) {
-                overlayUiState.showListButton = true
-            }
+            refreshZapChrome()
         } else {
             unbindTvZapList()
         }
@@ -547,15 +571,126 @@ class VideoOverlayController(private val activity: VideoActivity) :
             }
             servicesView?.adapter?.notifyDataSetChanged()
         }
-        if (serviceList.isEmpty() || !allowsTvStreaming()) {
+        refreshZapChrome()
+    }
+
+    private fun liveBouquetBarAvailable(): Boolean =
+        movie == null && overlayUiState.bouquets.isNotEmpty()
+
+    private fun refreshZapChrome() {
+        if (!allowsTvStreaming()) {
             overlayUiState.showListButton = false
             hideZapOverlays()
-        } else {
-            overlayUiState.showListButton = true
-            if (isOverlaysVisible() && servicesViewVisible) {
-                showZapOverlays()
-            }
+            return
         }
+        val showButton = serviceList.isNotEmpty() || liveBouquetBarAvailable()
+        overlayUiState.showListButton = showButton
+        if (!showButton) {
+            hideZapOverlays()
+            return
+        }
+        if (isOverlaysVisible() && servicesViewVisible) {
+            showZapOverlays()
+        }
+    }
+
+    private fun selectBouquet(bouquet: BouquetService) {
+        if (!allowsTvStreaming() || movie != null) {
+            return
+        }
+        val ref = bouquet.reference
+        if (ref.isEmpty() || ref == bouquetRef) {
+            autohide()
+            return
+        }
+        bouquetRef = ref
+        overlayUiState.selectedBouquetRef = ref
+        playbackArgs.putString(BOUQUET_REFERENCE, ref)
+        servicesViewVisible = true
+        reload()
+        autohide()
+    }
+
+    private fun loadBouquetBar() {
+        if (movie != null) {
+            bouquetBarRequested = false
+            overlayUiState.bouquets = emptyList()
+            refreshZapChrome()
+            return
+        }
+        bouquetBarRequested = true
+        bouquetJob?.cancel()
+        bouquetJob = activity.lifecycleScope.launch {
+            val ctx = activity.applicationContext
+            val profileId = DreamDroid.getCurrentProfile().id
+            val dao = if (profileId != null) AppDatabase.roster(ctx) else null
+            val excluded = UserBouquetCache.excludedHubTabRefs(ctx)
+            val cachedTv = if (dao != null && profileId != null) {
+                UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_TV)
+            } else {
+                emptyList()
+            }
+            val cachedRadio = if (dao != null && profileId != null) {
+                UserBouquetCache.loadTabStripServices(
+                    dao,
+                    profileId,
+                    UserBouquetCache.KIND_RADIO
+                )
+            } else {
+                emptyList()
+            }
+            if (cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()) {
+                publishBouquetBar(overlayBouquets(cachedTv, cachedRadio, excluded))
+            }
+            val hasStrip = cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()
+            val status = SessionConnectionHolder.shared.status.value
+            if (status.shouldSkipReceiverHttp(hasStrip)) {
+                return@launch
+            }
+            val result = loadBouquetList(ctx)
+            if (!attached || movie != null) {
+                return@launch
+            }
+            if (dao != null && profileId != null) {
+                if (result.tvLoaded) {
+                    UserBouquetCache.replaceTabStrip(
+                        dao,
+                        profileId,
+                        UserBouquetCache.KIND_TV,
+                        result.bouquets.tv,
+                        excluded
+                    )
+                }
+                if (result.radioLoaded) {
+                    UserBouquetCache.replaceTabStrip(
+                        dao,
+                        profileId,
+                        UserBouquetCache.KIND_RADIO,
+                        result.bouquets.radio,
+                        excluded
+                    )
+                }
+            }
+            val painted = bouquetsAfterHttpOrCache(
+                result.success,
+                result.bouquets,
+                cachedTv,
+                cachedRadio
+            ).first
+            if (!attached || movie != null) {
+                return@launch
+            }
+            publishBouquetBar(overlayBouquets(painted.tv, painted.radio, excluded))
+        }
+    }
+
+    private fun publishBouquetBar(items: List<BouquetService>) {
+        if (!attached || movie != null) {
+            return
+        }
+        overlayUiState.bouquets = items
+        overlayUiState.selectedBouquetRef = bouquetRef
+        refreshZapChrome()
     }
 
     private fun zap() {
@@ -621,6 +756,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         title = incoming.title
         serviceRef = incoming.serviceRef
         bouquetRef = incoming.bouquetRef
+        overlayUiState.selectedBouquetRef = bouquetRef
 
         when (val serviceInfo = extras.getSerializableCompat<Serializable>(SERVICE_INFO)) {
             is EnigmaMovie -> {
@@ -637,6 +773,18 @@ class VideoOverlayController(private val activity: VideoActivity) :
                 movie = null
                 currentService = null
             }
+        }
+
+        if (movie != null) {
+            bouquetJob?.cancel()
+            bouquetJob = null
+            bouquetBarRequested = false
+            overlayUiState.bouquets = emptyList()
+            if (rootView != null) {
+                refreshZapChrome()
+            }
+        } else if (!bouquetBarRequested && rootView != null) {
+            loadBouquetBar()
         }
 
         if ((titleChanged || refsChanged) && rootView != null && this::handler.isInitialized) {
@@ -935,21 +1083,35 @@ class VideoOverlayController(private val activity: VideoActivity) :
     }
 
     private fun showZapOverlays() {
-        if (serviceList.isEmpty() || !allowsTvStreaming()) {
+        if (!allowsTvStreaming()) {
             hideZapOverlays()
             return
         }
         if (rootView == null) return
+        val showChannels = serviceList.isNotEmpty()
+        val showBouquets = liveBouquetBarAvailable()
+        if (!showChannels && !showBouquets) {
+            hideZapOverlays()
+            return
+        }
         overlayUiState.zapCurrentRef = serviceRef
-        val composeZapList = this.composeZapList
-        if (composeZapList != null) {
-            fadeInView(composeZapList)
-        } else {
-            val servicesView = this.servicesView
-            if (servicesView != null) {
-                servicesView.layoutManager?.scrollToPosition(getCurrentServiceIndex())
+        overlayUiState.selectedBouquetRef = bouquetRef
+        if (showChannels) {
+            val composeZapList = this.composeZapList
+            if (composeZapList != null) {
+                fadeInView(composeZapList)
+            } else {
+                servicesView?.layoutManager?.scrollToPosition(getCurrentServiceIndex())
                 fadeInView(servicesView)
             }
+        } else {
+            fadeOutView(composeZapList)
+            fadeOutView(servicesView)
+        }
+        if (showBouquets) {
+            fadeInView(composeBouquetBar)
+        } else {
+            fadeOutView(composeBouquetBar)
         }
         autohide()
     }
@@ -958,6 +1120,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         if (rootView == null) return
         fadeOutView(composeZapList)
         fadeOutView(servicesView)
+        fadeOutView(composeBouquetBar)
     }
 
     private fun fadeInView(v: View?) {

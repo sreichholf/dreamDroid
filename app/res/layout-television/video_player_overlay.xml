@@ -31,19 +31,35 @@
         android:paddingRight="@dimen/titleSafeLeftRight"
         android:paddingBottom="@dimen/titleSafeTopBottom" />
 
-    <androidx.compose.ui.platform.ComposeView
-        android:id="@+id/compose_zap_list"
+    <LinearLayout
+        android:id="@+id/zap_stack"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/compose_overlay"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:clipToPadding="false"
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:nextFocusDown="@id/compose_overlay"
+        android:orientation="vertical"
         android:paddingLeft="@dimen/titleSafeLeftRight"
         android:paddingTop="8dp"
         android:paddingRight="@dimen/titleSafeLeftRight"
-        android:paddingBottom="8dp" />
+        android:paddingBottom="8dp">
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_bouquet_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusDown="@id/compose_zap_list"
+            android:visibility="gone" />
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_zap_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clipToPadding="false"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:nextFocusDown="@id/compose_overlay"
+            android:nextFocusUp="@id/compose_bouquet_bar" />
+    </LinearLayout>
 </RelativeLayout>

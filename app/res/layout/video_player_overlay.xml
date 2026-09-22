@@ -24,16 +24,30 @@
         android:layout_alignParentBottom="true"
         android:fitsSystemWindows="true" />
 
-    <net.reichholf.dreamdroid.widget.AutofitRecyclerView
-        android:id="@+id/servicelist"
+    <LinearLayout
+        android:id="@+id/zap_stack"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@id/compose_overlay"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_weight="1"
-        android:clipToPadding="false"
-        android:columnWidth="290dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp" />
+        android:layout_alignParentTop="true"
+        android:orientation="vertical">
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_bouquet_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <net.reichholf.dreamdroid.widget.AutofitRecyclerView
+            android:id="@+id/servicelist"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:columnWidth="290dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp" />
+    </LinearLayout>
 </RelativeLayout>

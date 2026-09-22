@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
@@ -76,6 +77,10 @@ class VideoOverlayUiState {
     /** TV zap row (Compose Live TV cards). Phone overlay still uses the XML recycler. */
     var zapServices by mutableStateOf<List<ServiceNowNext>>(emptyList())
     var zapCurrentRef by mutableStateOf<String?>(null)
+
+    /** Bouquet names shown above the channel list while a live stream is open. */
+    var bouquets by mutableStateOf<List<Service>>(emptyList())
+    var selectedBouquetRef by mutableStateOf<String?>(null)
 
     /** Phase 2.1g-ii-d: in-composition detail sheet (EPG or movie). */
     var epgDetailContent by mutableStateOf<EpgDetailContent?>(null)
