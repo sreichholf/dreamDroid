@@ -51,7 +51,7 @@ suspend fun loadBouquetServiceNowNext(
     context: Context,
     params: List<NameValuePair>
 ): EpgNowNextLoadResult {
-    val roster = loadServiceList(context, params)
+    val roster = loadServiceList(context, serviceListParams(params))
     if (!roster.success) {
         return EpgNowNextLoadResult(false, emptyList(), roster.errorText)
     }
@@ -62,4 +62,22 @@ suspend fun loadBouquetServiceNowNext(
         mergeBouquetNowNext(roster.services, epgRows),
         null
     )
+}
+
+/**
+ * `/web/getservices` reads `sRef`. A missing `sRef` is the TV bouquet index,
+ * not the bouquet the user opened, so Favourites never shows its channels.
+ *
+ * Hub callers pass `bRef` for a `1:7:` bouquet because `/web/epgnownext` wants
+ * that name, and `sRef` when opening a directory. The service list always
+ * uses `sRef` with the same reference. EPG keeps [epgParams].
+ */
+internal fun serviceListParams(epgParams: List<NameValuePair>): List<NameValuePair> {
+    val sRef = epgParams.firstOrNull { it.key() == "sRef" }?.value().orEmpty()
+    val bRef = epgParams.firstOrNull { it.key() == "bRef" }?.value().orEmpty()
+    val ref = sRef.ifEmpty { bRef }
+    if (ref.isEmpty()) {
+        return epgParams
+    }
+    return listOf(NameValuePair("sRef", ref))
 }
