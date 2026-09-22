@@ -163,7 +163,10 @@ class EpgBouquetCacheTest {
 
     private suspend fun EpgBouquetViewModel.awaitLoad() {
         val job = checkNotNull(loadJob)
+        var failure: Throwable? = null
+        job.invokeOnCompletion { cause -> failure = cause }
         withTimeout(10_000) { job.join() }
+        failure?.let { throw it }
     }
 
     private fun sampleEvent(

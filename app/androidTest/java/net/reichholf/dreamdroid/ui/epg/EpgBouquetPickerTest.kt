@@ -62,7 +62,11 @@ class EpgBouquetPickerTest {
         assertEquals(PICKED, viewModel.bouquetRef)
         assertEquals("Picked TV", viewModel.bouquetName)
         assertEquals(PICKED, EpgBouquetRestore.resolveRef(DEFAULT, viewModel.bouquetRef))
-        withTimeout(10_000) { checkNotNull(viewModel.loadJob).join() }
+        val job = checkNotNull(viewModel.loadJob)
+        var failure: Throwable? = null
+        job.invokeOnCompletion { cause -> failure = cause }
+        withTimeout(10_000) { job.join() }
+        failure?.let { throw it }
         assertEquals(PICKED, loadedBref)
         assertEquals(listOf("Picked News"), viewModel.listState.items.map { it.title })
     }
