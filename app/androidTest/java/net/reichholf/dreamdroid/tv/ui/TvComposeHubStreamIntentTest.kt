@@ -5,6 +5,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
@@ -14,17 +15,38 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TvComposeHubStreamIntentTest {
+    private var previousProfile: Profile? = null
+
+    @Before
+    fun installProfile() {
+        previousProfile = DreamDroid.currentProfileOrNull()
+        DreamDroid.setCurrentProfile(
+            Profile().apply {
+                host = "127.0.0.1"
+                port = 80
+                streamPort = 8001
+            }
+        )
+    }
+
     @After
     fun restoreIntegratedPlayer() {
         PreferenceManager.getDefaultSharedPreferences(context())
             .edit()
             .remove(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER)
             .commit()
+        val previous = previousProfile
+        if (previous != null) {
+            DreamDroid.setCurrentProfile(previous)
+        } else {
+            DreamDroid.loadCurrentProfile(context())
+        }
     }
 
     @Test

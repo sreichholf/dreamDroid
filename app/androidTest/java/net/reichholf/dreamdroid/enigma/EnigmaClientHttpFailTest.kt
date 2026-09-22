@@ -28,13 +28,18 @@ class EnigmaClientHttpFailTest {
     fun startServer() {
         server = MockWebServer()
         server.start()
-        previousProfile = DreamDroid.getCurrentProfile()
+        previousProfile = DreamDroid.currentProfileOrNull()
         DreamDroid.setCurrentProfile(profileForServer())
     }
 
     @After
     fun stopServer() {
-        previousProfile?.let { DreamDroid.setCurrentProfile(it) }
+        val previous = previousProfile
+        if (previous != null) {
+            DreamDroid.setCurrentProfile(previous)
+        } else {
+            DreamDroid.loadCurrentProfile(appContext())
+        }
         server.shutdown()
     }
 
