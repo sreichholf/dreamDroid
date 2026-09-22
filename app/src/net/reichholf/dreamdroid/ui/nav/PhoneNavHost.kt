@@ -99,7 +99,7 @@ fun PhoneNavHost(
             val state = handle as? PhoneNavHostState
             state?.shellDestinationBarController = controller
             onDispose {
-                if (state?.shellDestinationBarController === controller) {
+                if (state != null && state.shellDestinationBarController === controller) {
                     state.shellDestinationBarController = null
                 }
             }

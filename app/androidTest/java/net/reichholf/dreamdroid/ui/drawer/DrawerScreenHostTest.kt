@@ -28,8 +28,8 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Hosts [DrawerScreen] in a [ComposeView] under the app View theme the way
- * [R.layout.dualpane] does — catches LocalContentColor leaks from the host.
+ * Hosts [DrawerScreen] in a [ComposeView] under the app View theme — catches
+ * LocalContentColor leaks from the host.
  */
 class DrawerScreenHostTest {
     @get:Rule

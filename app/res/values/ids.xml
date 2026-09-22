@@ -2,6 +2,9 @@
 <resources>
 
     <item name="recyclerview_item_click_support" type="id"/>
+    <item name="toolbar" type="id"/>
+    <item name="shell_destination_nav" type="id"/>
+    <item name="shell_destination_rail" type="id"/>
     <item name="menu_none" type="id"/>
     <item name="menu_navigation_services" type="id"/>
     <item name="menu_navigation_epg" type="id"/>

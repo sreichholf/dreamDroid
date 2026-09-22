@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.view.View
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -54,12 +55,10 @@ class ShellDestinationBarController {
     var content by mutableStateOf<ShellDestinationBarContent>(ShellDestinationBarContent.Hidden)
 }
 
-val LocalShellDestinationBarController = staticCompositionLocalOf<ShellDestinationBarController> {
-    error(
-        "ShellDestinationBarController not provided — wrap PhoneNavHost in " +
-            "ProvideShellDestinationBar"
-    )
-}
+val LocalShellDestinationBarController =
+    staticCompositionLocalOf<ShellDestinationBarController?> { null }
+
+const val SHELL_CHROME_TAG = "shell_destination_chrome"
 
 /**
  * True when the activity hosts [R.id.shell_destination_rail] (sw720dp). Hubs skip the
@@ -87,43 +86,18 @@ const val SHELL_HUB_NOW_PLAYING_SPACER_TAG = "shell_hub_now_playing_spacer"
  */
 @Composable
 fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
-    val controller = remember { ShellDestinationBarController() }
+    val parent = LocalShellDestinationBarController.current
+    val controller = parent ?: remember { ShellDestinationBarController() }
     val view = LocalView.current
-    val usesRail = remember(view) {
+    val usesRail = LocalShellUsesDestinationRail.current || remember(view) {
         view.context.findActivity()?.findViewById<View?>(R.id.shell_destination_rail) != null
     }
-    DisposableEffect(view) {
-        val activity = view.context.findActivity()
-            ?: return@DisposableEffect onDispose { }
-        val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav)
-            ?: return@DisposableEffect onDispose { }
-        val shellRail = activity.findViewById<ComposeView?>(R.id.shell_destination_rail)
-        val strategy = ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
-        shellNav.setViewCompositionStrategy(strategy)
-        if (shellRail == null) {
-            shellNav.setContent {
-                DreamDroidTheme {
-                    PhoneShellNavContent(controller, shellNav)
-                }
+    if (parent == null) {
+        DisposableEffect(view, controller) {
+            installLegacyShellDestinationViews(view, controller)
+            onDispose {
+                clearLegacyShellDestinationViews(view)
             }
-        } else {
-            shellRail.setViewCompositionStrategy(strategy)
-            shellRail.setContent {
-                DreamDroidTheme {
-                    TabletShellRailContent(controller, shellRail)
-                }
-            }
-            shellNav.setContent {
-                DreamDroidTheme {
-                    TabletShellNavContent(controller, shellNav)
-                }
-            }
-        }
-        onDispose {
-            shellNav.visibility = View.GONE
-            shellNav.disposeComposition()
-            shellRail?.visibility = View.GONE
-            shellRail?.disposeComposition()
         }
     }
     CompositionLocalProvider(
@@ -131,6 +105,120 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
         LocalShellUsesDestinationRail provides usesRail
     ) {
         content()
+    }
+}
+
+private fun installLegacyShellDestinationViews(
+    view: View,
+    controller: ShellDestinationBarController
+) {
+    val activity = view.context.findActivity() ?: return
+    val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav) ?: return
+    val shellRail = activity.findViewById<ComposeView?>(R.id.shell_destination_rail)
+    val strategy = ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed
+    shellNav.setViewCompositionStrategy(strategy)
+    if (shellRail == null) {
+        shellNav.setContent {
+            DreamDroidTheme {
+                PhoneShellNavContent(controller, shellNav)
+            }
+        }
+    } else {
+        shellRail.setViewCompositionStrategy(strategy)
+        shellRail.setContent {
+            DreamDroidTheme {
+                TabletShellRailContent(controller, shellRail)
+            }
+        }
+        shellNav.setContent {
+            DreamDroidTheme {
+                TabletShellNavContent(controller, shellNav)
+            }
+        }
+    }
+}
+
+private fun clearLegacyShellDestinationViews(view: View) {
+    val activity = view.context.findActivity() ?: return
+    val shellNav = activity.findViewById<ComposeView?>(R.id.shell_destination_nav) ?: return
+    val shellRail = activity.findViewById<ComposeView?>(R.id.shell_destination_rail)
+    shellNav.visibility = View.GONE
+    shellNav.disposeComposition()
+    shellRail?.visibility = View.GONE
+    shellRail?.disposeComposition()
+}
+
+/**
+ * Phone bottom chrome (destination bar, and the TV & Movies now-playing strip when on).
+ * Empty while the controller is [ShellDestinationBarContent.Hidden].
+ */
+@Composable
+fun PhoneShellDestinationChrome(
+    controller: ShellDestinationBarController,
+    modifier: Modifier = Modifier
+) {
+    val shown = controller.content
+    if (shown is ShellDestinationBarContent.Hidden) {
+        return
+    }
+    Box(modifier.testTag(SHELL_CHROME_TAG)) {
+        when (shown) {
+            ShellDestinationBarContent.Hidden -> Unit
+
+            is ShellDestinationBarContent.Tools -> ToolsDestinationBar(
+                selected = shown.state.selected,
+                onDestinationSelected = { shown.state.onDestinationSelected(it) }
+            )
+
+            is ShellDestinationBarContent.TvMovies -> TvMoviesShellChrome(
+                state = shown.state
+            )
+        }
+    }
+}
+
+/** Tablet start rail. Empty while no hub owns the shell. */
+@Composable
+fun TabletShellDestinationRail(
+    controller: ShellDestinationBarController,
+    modifier: Modifier = Modifier
+) {
+    val shown = controller.content
+    if (shown is ShellDestinationBarContent.Hidden) {
+        return
+    }
+    when (shown) {
+        ShellDestinationBarContent.Hidden -> Unit
+
+        is ShellDestinationBarContent.Tools -> ToolsDestinationRail(
+            selected = shown.state.selected,
+            onDestinationSelected = { shown.state.onDestinationSelected(it) },
+            modifier = modifier
+        )
+
+        is ShellDestinationBarContent.TvMovies -> TvMoviesDestinationRail(
+            selected = shown.state.selected,
+            onDestinationSelected = { shown.state.onDestinationSelected(it) },
+            modifier = modifier
+        )
+    }
+}
+
+/** Tablet bottom slot: now-playing only. Destinations live on the rail. */
+@Composable
+fun TabletShellNowPlaying(
+    controller: ShellDestinationBarController,
+    modifier: Modifier = Modifier
+) {
+    val shown = controller.content
+    if (shown !is ShellDestinationBarContent.TvMovies || !shown.state.nowPlayingStripEnabled) {
+        return
+    }
+    Box(modifier.testTag(SHELL_CHROME_TAG)) {
+        TvMoviesShellChrome(
+            state = shown.state,
+            showDestinationBar = false
+        )
     }
 }
 
@@ -247,6 +335,10 @@ private fun TabletShellNavContent(
 @Composable
 fun RegisterShellDestinationBar(content: ShellDestinationBarContent) {
     val controller = LocalShellDestinationBarController.current
+        ?: error(
+            "ShellDestinationBarController not provided — wrap PhoneNavHost in " +
+                "ProvideShellDestinationBar"
+        )
     DisposableEffect(controller, content) {
         controller.content = content
         onDispose {

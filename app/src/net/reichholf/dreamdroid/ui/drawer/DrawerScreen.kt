@@ -22,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,6 +90,9 @@ class DrawerListState {
     var selectedItemId by mutableIntStateOf(R.id.menu_none)
         private set
 
+    /** False when the connected box is older than the sleep-timer interface. */
+    var sleepTimerAvailable by mutableStateOf(true)
+
     fun select(itemId: Int) {
         selectedItemId = itemId
     }
@@ -97,6 +101,12 @@ class DrawerListState {
         selectedItemId = R.id.menu_none
     }
 }
+
+/** Box actions the drawer should show. Sleep timer follows the profile feature flag. */
+internal fun drawerBoxActions(sleepTimerAvailable: Boolean): List<DrawerMenuItem> =
+    DrawerDestinations.boxActions.filter { item ->
+        item.id != R.id.menu_navigation_sleeptimer || sleepTimerAvailable
+    }
 
 @Composable
 private fun resolveThemeDrawable(@AttrRes attr: Int): Int {
@@ -108,6 +118,7 @@ private fun resolveThemeDrawable(@AttrRes attr: Int): Int {
 
 @Composable
 private fun DrawerBoxActions(
+    actions: List<DrawerMenuItem>,
     onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     blocked: Boolean = false
@@ -116,7 +127,7 @@ private fun DrawerBoxActions(
         modifier = modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceEvenly
     ) {
-        DrawerDestinations.boxActions.forEach { item ->
+        actions.forEach { item ->
             val iconRes = resolveThemeDrawable(item.iconAttr)
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -184,7 +195,11 @@ fun DrawerScreen(
     boxActionsBlocked: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        DrawerBoxActions(onItemClick = onItemClick, blocked = boxActionsBlocked)
+        DrawerBoxActions(
+            actions = drawerBoxActions(state.sleepTimerAvailable),
+            onItemClick = onItemClick,
+            blocked = boxActionsBlocked
+        )
         HorizontalDivider()
         Column(
             modifier = Modifier

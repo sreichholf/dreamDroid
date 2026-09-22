@@ -1,36 +1,28 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.view.View
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.preference.PreferenceManager
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.services.TvMoviesDestination
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
-import net.reichholf.dreamdroid.ui.services.TvMoviesShellChrome
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * Timer create FAB must sit above TV & Movies chrome (Now strip + destination bar).
- * The strip is in [R.id.shell_destination_nav], which paints over [R.id.fab_main].
+ * Timer create FAB must sit above TV & Movies chrome (now-playing strip + destination bar).
  */
 class DodgeShellChromeFabTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    val composeRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
     @Before
     fun forceAlwaysNight() {
@@ -44,88 +36,74 @@ class DodgeShellChromeFabTest {
 
     @Test
     fun newTimerFabSitsAboveNowPlayingStrip() {
-        val (fab, shell) = hostTimerFabOverChrome(stripEnabled = true)
-        waitUntilDodged(fab, shell)
-        assertFabAboveChrome(fab, shell)
+        showFabOverChrome(stripEnabled = true)
+        assertFabAboveChrome()
     }
 
     @Test
     fun newTimerFabSitsAboveDestinationBarWhenStripOff() {
-        val (fab, shell) = hostTimerFabOverChrome(stripEnabled = false)
-        waitUntilDodged(fab, shell)
-        assertFabAboveChrome(fab, shell)
+        showFabOverChrome(stripEnabled = false)
+        assertFabAboveChrome()
     }
 
-    @Test
-    fun restBottomMarginWhenChromeHidden() {
-        val fab = hostTimerFabOverChrome(stripEnabled = true, showChrome = false).first
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            fab.visibility == View.VISIBLE
-        }
-        val expected = fab.resources.getDimensionPixelSize(R.dimen.fab_margin_bottom)
-        val lp = fab.layoutParams as CoordinatorLayout.LayoutParams
-        assertEquals(expected, lp.bottomMargin)
-    }
-
-    private fun hostTimerFabOverChrome(
-        stripEnabled: Boolean,
-        showChrome: Boolean = true
-    ): Pair<ExtendedFloatingActionButton, ComposeView> {
-        val activity = composeRule.activity
-        lateinit var fab: ExtendedFloatingActionButton
-        lateinit var shell: ComposeView
-        composeRule.runOnUiThread {
-            activity.setTheme(R.style.Theme_DreamDroid_Night)
-            activity.setContentView(R.layout.dualpane)
-            fab = activity.findViewById(R.id.fab_main)
-            shell = activity.findViewById(R.id.shell_destination_nav)
-            shell.visibility = if (showChrome) View.VISIBLE else View.GONE
-            shell.setViewTreeLifecycleOwner(activity)
-            shell.setViewTreeViewModelStoreOwner(activity)
-            shell.setViewTreeSavedStateRegistryOwner(activity)
-            shell.setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnDetachedFromWindow
-            )
-            shell.setContent {
-                DreamDroidTheme {
-                    if (showChrome) {
-                        val state = TvMoviesHubState().apply {
-                            selected = TvMoviesDestination.TIMER
-                            nowPlayingStripEnabled = stripEnabled
-                            nowPlayingHeadline = "Das Erste HD · Tagesschau"
-                        }
-                        TvMoviesShellChrome(state = state)
-                    }
-                    BindShellFab(
-                        contentDescription = "New timer",
-                        iconRes = R.drawable.ic_action_fab_add,
-                        onClick = {},
-                        text = "New timer"
-                    )
-                }
-            }
+    private fun showFabOverChrome(stripEnabled: Boolean) {
+        composeRule.setContent {
+            ChromeHost(stripEnabled = stripEnabled)
         }
         composeRule.waitForIdle()
-        return fab to shell
     }
 
-    private fun waitUntilDodged(fab: ExtendedFloatingActionButton, shell: ComposeView) {
+    private fun assertFabAboveChrome() {
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            fab.visibility == View.VISIBLE &&
-                shell.visibility == View.VISIBLE &&
-                shell.height > 0 &&
-                (fab.layoutParams as CoordinatorLayout.LayoutParams).bottomMargin >
-                fab.resources.getDimensionPixelSize(R.dimen.fab_margin_bottom)
+            val chrome = composeRule.onNodeWithTag(SHELL_CHROME_TAG).fetchSemanticsNode()
+            val fab = composeRule.onNodeWithTag(SHELL_FAB_TAG).fetchSemanticsNode()
+            chrome.boundsInRoot.height > 0f &&
+                fab.boundsInRoot.bottom <= chrome.boundsInRoot.top
+        }
+        val chrome = composeRule.onNodeWithTag(SHELL_CHROME_TAG).fetchSemanticsNode().boundsInRoot
+        val fab = composeRule.onNodeWithTag(SHELL_FAB_TAG).fetchSemanticsNode().boundsInRoot
+        assertTrue(
+            "fab.bottom=${fab.bottom} chrome.top=${chrome.top}",
+            fab.bottom <= chrome.top
+        )
+    }
+}
+
+@Composable
+private fun ChromeHost(stripEnabled: Boolean) {
+    val destination = remember {
+        ShellDestinationBarController().apply {
+            content = ShellDestinationBarContent.TvMovies(
+                TvMoviesHubState().apply {
+                    selected = TvMoviesDestination.TIMER
+                    nowPlayingStripEnabled = stripEnabled
+                    nowPlayingHeadline = "Das Erste HD · Tagesschau"
+                }
+            )
         }
     }
-
-    private fun assertFabAboveChrome(fab: ExtendedFloatingActionButton, shell: ComposeView) {
-        val gap = fab.resources.getDimensionPixelSize(R.dimen.fab_margin_above_chrome)
-        val lp = fab.layoutParams as CoordinatorLayout.LayoutParams
-        assertEquals(gap + shell.height, lp.bottomMargin)
-        assertTrue(
-            "fab.bottom=${fab.bottom} shell.top=${shell.top} gap=$gap",
-            fab.bottom <= shell.top
-        )
+    val fab = remember { ShellFabController() }
+    DreamDroidTheme {
+        PhoneShell(
+            drawerListState = remember { DrawerListState() },
+            drawerOpen = false,
+            onDrawerOpenChange = {},
+            profileName = "Living Room",
+            connectionLabel = "Online",
+            onProfileClick = {},
+            onDrawerItemClick = {},
+            onNavigationClick = {},
+            destinationController = destination,
+            fabController = fab,
+            onToolbarReady = {},
+            usesRail = false
+        ) {
+            BindShellFab(
+                contentDescription = "New timer",
+                iconRes = R.drawable.ic_action_fab_add,
+                onClick = {},
+                text = "New timer"
+            )
+        }
     }
 }

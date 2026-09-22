@@ -10,24 +10,18 @@ import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
-import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
-import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.widget.Toolbar
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.drawerlayout.widget.DrawerLayout
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -62,10 +56,13 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.nav.NavigationHelper
+import net.reichholf.dreamdroid.ui.nav.PhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.PhoneShell
+import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
+import net.reichholf.dreamdroid.ui.nav.ShellFabController
 import net.reichholf.dreamdroid.ui.nav.StartScreen
-import net.reichholf.dreamdroid.ui.nav.bindPhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -91,10 +88,10 @@ class MainActivity :
     SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
 
-    private var slider: Boolean = false
-    private var isDrawerOpenNotified: Boolean = false
-    private lateinit var activeProfile: TextView
-    private lateinit var connectionState: TextView
+    private val slider: Boolean = true
+    private var drawerOpen by mutableStateOf(false)
+    private var profileName by mutableStateOf("")
+    private var shellWasPaused: Boolean = false
 
     private var checkProfileJob: Job? = null
     private var reachabilityJob: Job? = null
@@ -104,12 +101,11 @@ class MainActivity :
     private var lanGranted by mutableStateOf(false)
 
     private var navigationHelper: NavigationHelper? = null
-    private var drawerListState: DrawerListState? = null
+    private val drawerListState = DrawerListState()
+    private val destinationController = ShellDestinationBarController()
+    private val fabController = ShellFabController()
     lateinit var phoneNav: PhoneNavHostState
         private set
-
-    private lateinit var drawerToggle: ActionBarDrawerToggle
-    private lateinit var drawerLayout: DrawerLayout
 
     private var snackbar: Snackbar? = null
 
@@ -230,6 +226,7 @@ class MainActivity :
             return
         }
         ensureNavigationHelper()
+        navigationHelper!!.setAvailableFeatures()
         val sp = PreferenceManager.getDefaultSharedPreferences(this)
         val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
 
@@ -241,7 +238,6 @@ class MainActivity :
             }
         } else {
             dismissSnackbar()
-            navigationHelper!!.setAvailableFeatures()
             val openStart = openStartOnProfileSuccess
             openStartOnProfileSuccess = false
             val onGate = phoneNav.isOnProfileCheckRoute()
@@ -330,7 +326,6 @@ class MainActivity :
         }
         ensureLocalNetworkPermission()
 
-        isDrawerOpenNotified = false
         currentProfile = Profile.getDefault()
         phoneNav = PhoneNavHostState(this, this)
         if (savedInstanceState != null) {
@@ -339,7 +334,6 @@ class MainActivity :
             phoneNav.setStartRoute(StartScreen.navRoute(this))
         }
         initViews()
-        bindPhoneNavCompose()
         startSessionReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
@@ -347,9 +341,6 @@ class MainActivity :
         preferences.registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         handleSearchIntent(intent)
-        if (slider) {
-            drawerToggle.syncState()
-        }
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             checkNavigationHelper(
                 lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
@@ -468,23 +459,24 @@ class MainActivity :
         return true
     }
 
-    override fun onPostCreate(savedInstanceState: Bundle?) {
-        super.onPostCreate(savedInstanceState)
-        // Sync the toggle state after onRestoreInstanceState has occurred.
-        if (slider) {
-            drawerToggle.syncState()
-        }
-    }
-
     override fun onResume() {
         super.onResume()
         if (showingSetup || !::phoneNav.isInitialized) {
             return
         }
-        checkNavigationHelper(true)
+        if (navigationHelper == null) {
+            checkNavigationHelper(true)
+            return
+        }
+        if (shellWasPaused) {
+            shellWasPaused = false
+            onProfileChanged(DreamDroid.getCurrentProfile(), true)
+        }
     }
 
     override fun onDestroy() {
+        navigationHelper?.onDestroy()
+        navigationHelper = null
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).unregisterOnSharedPreferenceChangeListener(this)
@@ -498,14 +490,7 @@ class MainActivity :
         if (navigationHelper != null) {
             return
         }
-        // TODO preserve/restore navigationHelper properly
-        // Keep DrawerListState across pause/resume so the Compose drawer
-        // highlight survives helper recreation (NavigationView used to keep
-        // checked state on the view itself).
-        if (drawerListState == null) {
-            drawerListState = DrawerListState()
-        }
-        navigationHelper = NavigationHelper(this, drawerListState!!)
+        navigationHelper = NavigationHelper(this, drawerListState)
     }
 
     private fun checkNavigationHelper(): Boolean = checkNavigationHelper(false)
@@ -520,21 +505,19 @@ class MainActivity :
     }
 
     override fun highlightDrawerForRoute(route: String?, previousRoute: String?) {
-        val state = drawerListState ?: return
         val itemId = DrawerHighlight.itemIdForRoute(
             route,
             previousRoute
         ) ?: return
         if (itemId == R.id.menu_none) {
-            state.clearSelection()
+            drawerListState.clearSelection()
         } else {
-            state.select(itemId)
+            drawerListState.select(itemId)
         }
     }
 
     override fun onPause() {
-        navigationHelper?.onDestroy()
-        navigationHelper = null
+        shellWasPaused = true
         super.onPause()
     }
 
@@ -546,114 +529,57 @@ class MainActivity :
         super.onStop()
     }
 
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        // Pass any configuration change to the drawer toggle
-        if (slider) {
-            drawerToggle.onConfigurationChanged(newConfig)
-        }
-    }
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         super.onCreateOptionsMenu(menu)
         menuInflater.inflate(R.menu.search, menu)
         return true
     }
 
-    private fun bindPhoneNavCompose() {
-        val container = findViewById<ViewGroup>(R.id.detail_view)
-        if (container.findViewById<View>(R.id.phone_nav_compose) != null) {
-            return
-        }
-        val composeView = ComposeView(this).apply {
-            id = R.id.phone_nav_compose
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
-            bindPhoneNavHost(phoneNav)
-        }
-        container.addView(composeView)
-    }
-
     private fun initViews() {
-        setContentView(R.layout.dualpane)
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
-
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-
-        slider = findViewById<View?>(R.id.drawer_layout) != null
-        if (slider) {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-            supportActionBar!!.setHomeButtonEnabled(true)
-
-            drawerLayout = findViewById(R.id.drawer_layout)
-            drawerToggle = object : ActionBarDrawerToggle(
-                this, /* host Activity */
-                drawerLayout, /* DrawerLayout object */
-                R.string.drawer_open, /* "open drawer" description for accessibility */
-                R.string.drawer_close /* "close drawer" description for accessibility */
-            ) {
-                override fun onDrawerClosed(view: View) {
-                    isDrawerOpenNotified = false
-                    supportInvalidateOptionsMenu()
-                }
-
-                override fun onDrawerOpened(drawerView: View) {
-                    supportInvalidateOptionsMenu()
-                    dismissSnackbar()
-                }
-
-                override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
-                    if (isDrawerOpen || isDrawerOpenNotified) {
-                        return
+        setContent {
+            DreamDroidTheme {
+                val status by phoneNav.connectionStatusFlow().collectAsState()
+                PhoneShell(
+                    drawerListState = drawerListState,
+                    drawerOpen = drawerOpen,
+                    onDrawerOpenChange = { open ->
+                        if (open && !drawerOpen) {
+                            dismissSnackbar()
+                        }
+                        drawerOpen = open
+                    },
+                    profileName = profileName,
+                    connectionLabel = stringResource(status.chipLabelRes()),
+                    onProfileClick = {
+                        checkNavigationHelper()
+                        navigationHelper?.navigateTo(R.id.menu_navigation_profiles)
+                    },
+                    onDrawerItemClick = { itemId ->
+                        checkNavigationHelper()
+                        navigationHelper?.navigateTo(itemId)
+                    },
+                    onNavigationClick = { toggle() },
+                    destinationController = destinationController,
+                    fabController = fabController,
+                    onToolbarReady = { toolbar ->
+                        if (supportActionBar == null) {
+                            setSupportActionBar(toolbar)
+                            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                            supportActionBar?.setHomeButtonEnabled(true)
+                        }
                     }
-                    isDrawerOpenNotified = true
+                ) {
+                    PhoneNavHost(handle = phoneNav)
                 }
             }
-            drawerLayout.addDrawerListener(drawerToggle)
-
-            val profileChooser = findViewById<View>(R.id.drawer_profile)
-            profileChooser.setOnClickListener {
-                checkNavigationHelper()
-                navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
-            }
-            activeProfile = findViewById(R.id.drawer_profile_name)
-            connectionState = findViewById(R.id.drawer_profile_status)
-            bindDrawerConnectionChip()
-        } else {
-            supportActionBar!!.setDisplayHomeAsUpEnabled(false)
-        }
-
-        if (!this::activeProfile.isInitialized) {
-            activeProfile = TextView(this)
-        }
-        if (!this::connectionState.isInitialized) {
-            connectionState = TextView(this)
-        }
-    }
-
-    override fun setTitle(title: CharSequence?) {
-        val titleView = findViewById<TextView?>(R.id.toolbar_title)
-        if (titleView != null) {
-            titleView.text = title
-            super.setTitle("")
-        } else {
-            super.setTitle(title)
         }
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (slider && drawerToggle.onOptionsItemSelected(item)) {
-            return true
-        }
-
         when (item.itemId) {
             android.R.id.home -> {
-                if (isNavigationDrawerVisible()) {
-                    toggle()
-                }
+                toggle()
+                return true
             }
 
             R.id.action_search -> {
@@ -666,31 +592,14 @@ class MainActivity :
         return super.onOptionsItemSelected(item)
     }
 
-    fun isNavigationDrawerVisible(): Boolean {
-        if (slider) {
-            val navigationView = findViewById<View?>(R.id.navigation_view)
-            return navigationView != null && drawerLayout.isDrawerOpen(navigationView)
-        }
-        return false
-    }
+    fun isNavigationDrawerVisible(): Boolean = drawerOpen
 
     fun toggle() {
-        if (slider) {
-            val navigationView = findViewById<View?>(R.id.navigation_view)
-            if (navigationView != null) {
-                if (isNavigationDrawerVisible()) {
-                    drawerLayout.closeDrawer(navigationView)
-                } else {
-                    drawerLayout.openDrawer(navigationView)
-                }
-            }
-        }
+        drawerOpen = !drawerOpen
     }
 
     fun showContent() {
-        if (slider) {
-            drawerLayout.closeDrawers()
-        }
+        drawerOpen = false
     }
 
     /*
@@ -748,20 +657,14 @@ class MainActivity :
      *
      */
     fun setProfileName() {
-        activeProfile.text = DreamDroid.getCurrentProfile().name
+        profileName = DreamDroid.getCurrentProfile().name.orEmpty()
     }
 
     private fun bindDrawerConnectionChip() {
-        if (!this::connectionState.isInitialized || !this::phoneNav.isInitialized) {
+        if (!::phoneNav.isInitialized) {
             return
         }
-        connectionState.setText(phoneNav.connectionStatusFlow().value.chipLabelRes())
-    }
-
-    fun unregisterFab(id: Int) {
-        val fab = findViewById<View?>(id) ?: return
-        fab.setOnClickListener(null)
-        fab.setOnLongClickListener(null)
+        profileName = DreamDroid.getCurrentProfile().name.orEmpty()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
