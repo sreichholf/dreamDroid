@@ -416,6 +416,9 @@
     <string name="backup_settings">Settings</string>
     <string name="backup_profiles">Profiles</string>
     <string name="backup_export_settings">Export settings</string>
+    <string name="backup_include_passwords">Include receiver passwords</string>
+    <string name="backup_passwords_confirm_title">Backup contains passwords</string>
+    <string name="backup_passwords_confirm">This file contains receiver passwords. Anyone who can open it can sign in to your receiver.</string>
     <string name="backup_export_profiles">Export profiles</string>
     <string name="backup_export_successful">Export successful</string>
     <string name="backup_import_successful">Import successful</string>

@@ -11,6 +11,13 @@ class BackupData {
     @SerializedName("mProfiles")
     var profiles: MutableList<Profile> = ArrayList()
 
+    /**
+     * Null means a legacy file: receiver passwords are included.
+     * Export writes true when passwords are kept and false when they are cleared.
+     */
+    @SerializedName("passwordsIncluded")
+    var passwordsIncluded: Boolean? = null
+
     @SerializedName("mUri")
     var uri: Uri? = null
 
