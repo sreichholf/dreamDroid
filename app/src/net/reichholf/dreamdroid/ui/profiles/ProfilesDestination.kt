@@ -32,6 +32,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -45,29 +46,31 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchDetectDevicesLoad
 
 /**
  * Phase 2.7e: Profiles list as a direct Compose NavHost destination.
+ * The list, activation, and receiver discovery live on [ProfilesViewModel].
  * Reloads whenever this route enters composition (covers return from profile edit).
  */
 @Composable
-fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun ProfilesDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: ProfilesViewModel = viewModel()
+) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
-    val listState = remember { ProfilesListState() }
-    val session = remember { ProfilesSession() }
-    session.handle = handle
-    session.context = context
-    session.activity = activity
-    session.listState = listState
+    val detectInProgress = viewModel.detectInProgress
 
-    DisposableEffect(handle, session) {
-        activity.addMenuProvider(session)
+    DisposableEffect(handle, viewModel) {
+        val menuProvider = ProfilesMenuProvider(
+            viewModel = viewModel,
+            onAddProfile = { handle.navigateToProfileEdit(null) }
+        )
+        activity.addMenuProvider(menuProvider)
         activity.title = context.getString(R.string.profiles)
         onDispose {
-            activity.removeMenuProvider(session)
-            session.cancelDetect()
+            activity.removeMenuProvider(menuProvider)
         }
     }
 
@@ -75,35 +78,44 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     BindShellFab(
         contentDescription = addLabel,
         iconRes = R.drawable.ic_action_fab_add,
-        onClick = { session.createProfile() },
+        onClick = { handle.navigateToProfileEdit(null) },
         text = addLabel
     )
 
-    LaunchedEffect(Unit) {
-        session.reloadProfiles()
+    LaunchedEffect(viewModel) {
+        viewModel.reloadProfiles()
     }
 
-    var showDetectProgress by remember { mutableStateOf(false) }
+    var showDetectProgress by remember { mutableStateOf(detectInProgress) }
     var discoveredDevices by remember { mutableStateOf<List<Profile>?>(null) }
     var discoveryFailed by remember { mutableStateOf(false) }
-    session.onDetectProgressChanged = { showDetectProgress = it }
-    LaunchedEffect(showDetectProgress) {
+    LaunchedEffect(detectInProgress) {
+        showDetectProgress = detectInProgress
         activity.invalidateOptionsMenu()
     }
-    session.onDiscoveryResult = { found ->
-        if (found.isEmpty()) {
-            discoveredDevices = null
-            discoveryFailed = true
-        } else {
-            discoveryFailed = false
-            discoveredDevices = found
+    LaunchedEffect(viewModel, context) {
+        viewModel.toastMessages.collect { message ->
+            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        }
+    }
+    LaunchedEffect(viewModel) {
+        viewModel.discoveryResults.collect { found ->
+            if (found.isEmpty()) {
+                discoveredDevices = null
+                discoveryFailed = true
+            } else {
+                discoveryFailed = false
+                discoveredDevices = found
+            }
         }
     }
 
     ProfilesScreen(
-        profiles = listState.items,
-        onProfileClick = { item -> session.onProfileRowClick(item) },
-        onProfileEdit = { item -> session.onProfileRowEdit(item) },
+        profiles = viewModel.listState.items,
+        onProfileClick = { item -> viewModel.activateProfile(item) },
+        onProfileEdit = { item ->
+            handle.navigateToProfileEdit(viewModel.profileToEdit(item))
+        },
         modifier = modifier
     )
 
@@ -120,15 +132,17 @@ fun ProfilesDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             devices = found,
             onDismiss = { discoveredDevices = null },
             onPick = { index ->
-                session.editDetectedProfile(index)
+                viewModel.detectedProfileToEdit(index)?.let { profile ->
+                    handle.navigateToProfileEdit(profile)
+                }
                 discoveredDevices = null
             },
             onReload = {
                 discoveredDevices = null
-                session.reloadDetectedDevices()
+                viewModel.reloadDetectedDevices()
             },
             onAddAll = {
-                session.addAllDetected()
+                viewModel.addAllDetected()
                 discoveredDevices = null
             }
         )
@@ -200,161 +214,36 @@ private fun AutodiscoveryDevicesDialog(
     )
 }
 
-private class ProfilesSession : MenuProvider {
-    var handle: PhoneNavHandle? = null
-    var onDiscoveryResult: ((ArrayList<Profile>) -> Unit)? = null
-    var context: android.content.Context? = null
-    var activity: AppCompatActivity? = null
-    var listState: ProfilesListState? = null
-    var onDetectProgressChanged: ((Boolean) -> Unit)? = null
-
-    private val profiles = ArrayList<Profile>()
-    private var selected: Profile = Profile.getDefault()
-    private var detectedProfiles: ArrayList<Profile>? = null
-    private var detectJob: kotlinx.coroutines.Job? = null
-
-    fun toast(message: CharSequence) {
-        val ctx = context ?: return
-        Toast.makeText(ctx, message, Toast.LENGTH_LONG).show()
+private class ProfilesMenuProvider(
+    private val viewModel: ProfilesViewModel,
+    private val onAddProfile: () -> Unit
+) : MenuProvider {
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.profiles, menu)
+        applyDetectEnabled(menu)
     }
 
-    fun cancelDetect() {
-        detectJob?.cancel()
-        detectJob = null
-        onDetectProgressChanged?.invoke(false)
+    override fun onPrepareMenu(menu: Menu) {
+        applyDetectEnabled(menu)
     }
 
-    fun reloadProfiles() {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val dao = AppDatabase.profilesBlocking(ctx)
-        profiles.clear()
-        profiles.addAll(dao.getProfiles())
-        val sp = PreferenceManager.getDefaultSharedPreferences(ctx)
-        val activeProfileId = sp.getInt(DreamDroid.CURRENT_PROFILE, -1)
-        val rows = profiles.map { m ->
-            val isActive = activeProfileId > -1 && m.id != null && activeProfileId == m.id
-            ProfileListItem(m.id ?: 0, m.name.orEmpty(), m.host.orEmpty(), isActive)
-        }
-        state.replaceAll(rows)
-    }
-
-    fun onProfileRowClick(item: ProfileListItem) {
-        selectProfile(item)
-        activateProfile()
-    }
-
-    fun onProfileRowEdit(item: ProfileListItem) {
-        selectProfile(item)
-        editProfile()
-    }
-
-    private fun selectProfile(item: ProfileListItem) {
-        for (p in profiles) {
-            if (p.id != null && p.id == item.id) {
-                selected = p
-                return
-            }
-        }
-    }
-
-    private fun activateProfile() {
-        val act = activity ?: return
-        if (DreamDroid.setCurrentProfile(act, selected.id ?: -1, true)) {
-            toast(act.getText(R.string.profile_activated).toString() + " '" + selected.name + "'")
-        } else {
-            toast(
-                act.getText(R.string.profile_not_activated).toString() + " '" + selected.name + "'"
-            )
-        }
-        reloadProfiles()
-    }
-
-    fun createProfile() {
-        ProfilesNavigation.openProfileEdit(activity ?: return, null)
-    }
-
-    private fun editProfile() {
-        ProfilesNavigation.openProfileEdit(activity ?: return, selected)
-    }
-
-    private fun detectDevices() {
-        val host = handle ?: return
-        if (activity == null) {
-            return
-        }
-        if (detectJob != null) {
-            return
-        }
-        val cached = detectedProfiles
-        if (cached == null) {
-            onDetectProgressChanged?.invoke(true)
-            detectJob = host.launchDetectDevicesLoad { profiles ->
-                detectJob = null
-                onDevicesDetected(profiles)
-            }
-        } else if (cached.isEmpty()) {
-            detectedProfiles = null
-            detectDevices()
-        } else {
-            onDevicesDetected(cached)
-        }
-    }
-
-    private fun addAllDetectedDevices() {
-        val ctx = context ?: return
-        val detected = detectedProfiles ?: return
-        val dao = AppDatabase.profilesBlocking(ctx)
-        for (p in detected) {
-            p.id = dao.addProfile(p).toInt()
-            toast(ctx.getText(R.string.profile_added).toString() + " '" + p.name + "'")
-        }
-        reloadProfiles()
-    }
-
-    fun reloadDetectedDevices() {
-        detectedProfiles = null
-        detectDevices()
-    }
-
-    fun addAllDetected() {
-        addAllDetectedDevices()
-    }
-
-    fun editDetectedProfile(index: Int) {
-        val found = detectedProfiles ?: return
-        if (index in found.indices) {
-            selected = found[index]
-            editProfile()
-        }
-    }
-
-    private fun onDevicesDetected(found: ArrayList<Profile>) {
-        onDetectProgressChanged?.invoke(false)
-        detectedProfiles = found
-        onDiscoveryResult?.invoke(found)
-    }
-
-    private fun onItemClicked(id: Int): Boolean = when (id) {
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
         Statics.ITEM_ADD_PROFILE -> {
-            createProfile()
+            onAddProfile()
             true
         }
 
         Statics.ITEM_DETECT_DEVICES -> {
-            detectDevices()
+            viewModel.detectDevices()
             true
         }
 
         else -> false
     }
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.profiles, menu)
-        menu.findItem(Statics.ITEM_DETECT_DEVICES)?.isEnabled = detectJob == null
+    private fun applyDetectEnabled(menu: Menu) {
+        menu.findItem(Statics.ITEM_DETECT_DEVICES)?.isEnabled = !viewModel.detectInProgress
     }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemClicked(menuItem.itemId)
 }
 
 internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {
