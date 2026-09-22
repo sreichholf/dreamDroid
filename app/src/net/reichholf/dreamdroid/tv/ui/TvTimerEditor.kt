@@ -206,7 +206,10 @@ fun TvTimerEditorHost(
         }
 
         if (showNeedsReceiver) {
-            TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
+            TvNeedsReceiverOverlay(
+                onDismiss = { showNeedsReceiver = false },
+                testTag = "tv_timer_editor_needs_receiver"
+            )
         }
         IndeterminateProgressHost(session.progress)
     }
