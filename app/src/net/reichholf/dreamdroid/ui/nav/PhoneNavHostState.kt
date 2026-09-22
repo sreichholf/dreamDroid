@@ -8,14 +8,11 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NavHostController
 import androidx.preference.PreferenceManager
 import java.util.ArrayDeque
-import java.util.ArrayList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,13 +23,11 @@ import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Event
-import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
  * Activity-scoped ViewModel for phone NavHost state (result stacks, queued extras,
@@ -49,44 +44,19 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     private val plainAccess = SavedStatePlainAccess(savedStateHandle)
     private var attachedLifecycleOwner: LifecycleOwner? = null
     private var highlighter: DrawerRouteHighlighter? = null
-    private var pauseObserver: LifecycleEventObserver? = null
     private var startRouteSaved: Boolean = false
 
     override val lifecycleOwner: LifecycleOwner
         get() = attachedLifecycleOwner ?: error("Phone nav host is not attached to an activity")
 
     fun attach(owner: LifecycleOwner, drawerHighlighter: DrawerRouteHighlighter) {
-        if (attachedLifecycleOwner !== owner) {
-            clearPauseObserver()
-            val observer = LifecycleEventObserver { _, event ->
-                if (event == Lifecycle.Event.ON_PAUSE) {
-                    // Form fields mutate the live session after obtain(). Flush before
-                    // SavedStateHandle is written so process death keeps the edit.
-                    persistTimerEditSession()
-                }
-            }
-            owner.lifecycle.addObserver(observer)
-            pauseObserver = observer
-            attachedLifecycleOwner = owner
-        }
+        attachedLifecycleOwner = owner
         highlighter = drawerHighlighter
     }
 
     fun detach() {
-        clearPauseObserver()
-        timerEditSession?.handle = null
-        timerEditSession?.context = null
         attachedLifecycleOwner = null
         highlighter = null
-    }
-
-    private fun clearPauseObserver() {
-        val owner = attachedLifecycleOwner
-        val observer = pauseObserver
-        if (owner != null && observer != null) {
-            owner.lifecycle.removeObserver(observer)
-        }
-        pauseObserver = null
     }
 
     override fun onCleared() {
@@ -107,7 +77,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
     private var timerEditArgs: Bundle? = null
     private var timerEditTag: String = PhoneNavRoutes.TIMER_EDIT
-    private var timerEditSession: TimerEditSession? = null
     private var pendingProfileEditRequested: Boolean = false
     private var pendingProfileEdit: Profile? = null
     private var pendingTimerEdit: Timer? = null
@@ -164,7 +133,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         epgTimeSec = bag.epgTimeSec
         profileEditArgs = savedStateHandle.get<Bundle>(PhoneNavSavedKeys.PROFILE_EDIT_ARGS)
         timerEditArgs = savedStateHandle.get<Bundle>(PhoneNavSavedKeys.TIMER_EDIT_ARGS)
-        timerEditSession = readTimerEditSession()
     }
 
     fun hasSavedStartRoute(): Boolean = startRouteSaved
@@ -202,90 +170,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     private fun persistTimerEditArgs() {
         putOrRemove(PhoneNavSavedKeys.TIMER_EDIT_ARGS, timerEditArgs)
-    }
-
-    private fun persistTimerEditSession() {
-        val session = timerEditSession
-        if (session == null) {
-            removeTimerEditSessionKeys()
-            return
-        }
-        val bundle = Bundle()
-        session.writeTo(bundle)
-        putOrRemove(TimerEditSession.STATE_TAG, bundle.getString(TimerEditSession.STATE_TAG))
-        putOrRemove(
-            TimerEditSession.STATE_REMOUNT,
-            bundle.getInt(TimerEditSession.STATE_REMOUNT)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TIMER,
-            bundle.getSerializableCompat<Timer>(TimerEditSession.STATE_TIMER)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TIMER_OLD,
-            bundle.getSerializableCompat<Timer>(TimerEditSession.STATE_TIMER_OLD)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TAGS,
-            bundle.getStringArrayList(TimerEditSession.STATE_TAGS)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_CREATE,
-            bundle.getBoolean(TimerEditSession.STATE_CREATE)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_CHECKED,
-            bundle.getBooleanArray(TimerEditSession.STATE_CHECKED)
-        )
-    }
-
-    private fun removeTimerEditSessionKeys() {
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_TAG)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_REMOUNT)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_TIMER)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_TIMER_OLD)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_TAGS)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_CREATE)
-        savedStateHandle.remove<Any>(TimerEditSession.STATE_CHECKED)
-    }
-
-    private fun readTimerEditSession(): TimerEditSession? {
-        val bundle = Bundle()
-        savedStateHandle.get<String>(TimerEditSession.STATE_TAG)?.let { tag ->
-            bundle.putString(TimerEditSession.STATE_TAG, tag)
-        }
-        if (savedStateHandle.contains(TimerEditSession.STATE_REMOUNT)) {
-            bundle.putInt(
-                TimerEditSession.STATE_REMOUNT,
-                savedStateHandle.get<Int>(TimerEditSession.STATE_REMOUNT) ?: 0
-            )
-        }
-        savedStateHandle.get<Timer>(TimerEditSession.STATE_TIMER)?.let { timer ->
-            bundle.putSerializable(TimerEditSession.STATE_TIMER, timer)
-        }
-        savedStateHandle.get<Timer>(TimerEditSession.STATE_TIMER_OLD)?.let { timer ->
-            bundle.putSerializable(TimerEditSession.STATE_TIMER_OLD, timer)
-        }
-        val tags = savedStateHandle.get<ArrayList<*>>(TimerEditSession.STATE_TAGS)
-        if (tags != null) {
-            val copy = ArrayList<String>(tags.size)
-            for (item in tags) {
-                if (item is String) {
-                    copy.add(item)
-                }
-            }
-            bundle.putStringArrayList(TimerEditSession.STATE_TAGS, copy)
-        }
-        if (savedStateHandle.contains(TimerEditSession.STATE_CREATE)) {
-            bundle.putBoolean(
-                TimerEditSession.STATE_CREATE,
-                savedStateHandle.get<Boolean>(TimerEditSession.STATE_CREATE) == true
-            )
-        }
-        savedStateHandle.get<BooleanArray>(TimerEditSession.STATE_CHECKED)?.let { checked ->
-            bundle.putBooleanArray(TimerEditSession.STATE_CHECKED, checked)
-        }
-        return TimerEditSession.fromSavedState(bundle)
     }
 
     private fun updateEpgLeaf(
@@ -334,7 +218,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override fun navigateToRoute(route: String): Boolean {
         clearResultRequestCodes()
-        clearTimerEditSession()
         val controller = navController
         if (controller == null) {
             pendingDrawerRoot = route
@@ -729,26 +612,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override fun timerEditLeafArguments(): Bundle = timerEditArgs ?: Bundle()
 
-    override fun obtainTimerEditSession(routeTag: String, remountEpoch: Int): TimerEditSession {
-        val existing = timerEditSession
-        if (existing != null &&
-            existing.routeTag == routeTag &&
-            existing.remountEpoch == remountEpoch
-        ) {
-            persistTimerEditSession()
-            return existing
-        }
-        val session = TimerEditSession.fromArgs(timerEditLeafArguments(), routeTag, remountEpoch)
-        timerEditSession = session
-        persistTimerEditSession()
-        return session
-    }
-
-    override fun clearTimerEditSession() {
-        timerEditSession = null
-        persistTimerEditSession()
-    }
-
     override fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean {
         val controller = navController
         if (controller == null) {
@@ -772,7 +635,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         }
         persistTimerEditArgs()
         persistPlain()
-        clearTimerEditSession()
         if (controller.currentDestination?.route == PhoneNavRoutes.TIMER_EDIT) {
             timerEditRemountState.value = timerEditRemountState.value + 1
             return true
@@ -812,15 +674,11 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         val route = navController?.currentDestination?.route
         if (isResultDestination(route) && resultRequestCodes.isNotEmpty()) {
             popResultRequestCode()
-            if (route == PhoneNavRoutes.TIMER_EDIT) {
-                clearTimerEditSession()
-            }
         }
     }
 
     override fun navigateToTimerServicePick(): Boolean {
         val controller = navController ?: return false
-        persistTimerEditSession()
         pushResultRequestCode(Statics.REQUEST_PICK_SERVICE)
         controller.navigate(PhoneNavRoutes.TIMER_SERVICE_PICK)
         return true
@@ -829,9 +687,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     override fun deliverPickResult(resultCode: Int, data: Intent?) {
         val controller = navController ?: return
         val code = if (resultRequestCodes.isEmpty()) -1 else popResultRequestCode()
-        if (code == Statics.REQUEST_EDIT_TIMER) {
-            clearTimerEditSession()
-        }
         if (!controller.popBackStack()) return
         mainHandler.post {
             val composeListener = composeActivityResultListener

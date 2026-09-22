@@ -29,7 +29,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
-import net.reichholf.dreamdroid.ui.timers.TimerEditSession
 
 /**
  * Phone detail-pane navigation owner. [net.reichholf.dreamdroid.activities.MainActivity]
@@ -107,8 +106,6 @@ interface PhoneNavHandle {
     fun queueEpgSearch(query: String)
     fun navigateToProfileEdit(profile: Profile?): Boolean
     fun popNavBackStack(): Boolean
-    fun obtainTimerEditSession(routeTag: String, remountEpoch: Int): TimerEditSession
-    fun clearTimerEditSession()
     fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean
     fun navigateToTimerServicePick(): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)

@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.profiles
 
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -19,58 +18,55 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
- * Phase 2.7e: Profile create/edit as a direct Compose NavHost destination.
+ * Profile create/edit as a Compose NavHost destination.
+ * The working profile and [ProfileEditState] live on [ProfileEditViewModel].
  * Remounts when [PhoneNavHandle.profileEditRouteTag] / remount epoch changes.
  */
 @Composable
-fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun ProfileEditDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: ProfileEditViewModel = viewModel()
+) {
     val context = LocalContext.current
     val remount = handle.profileEditRemountEpoch
     val tag = handle.profileEditRouteTag()
-    val args = handle.profileEditLeafArguments()
-
-    val extras = args.getSerializableCompat<Profile>(NavExtras.DATA)
-    val action = args.getString(NavExtras.ACTION)
-    val initialProfile = remember(tag, remount) {
-        when {
-            Intent.ACTION_EDIT == action && extras != null -> extras
-            else -> Profile.getDefault()
-        }
+    LaunchedEffect(tag, remount) {
+        viewModel.start(handle)
     }
-    val editState = remember(initialProfile) { ProfileEditState.fromProfile(initialProfile) }
-    var currentProfile by remember(initialProfile) { mutableStateOf(initialProfile) }
-    val canDelete = (initialProfile.id ?: 0) > 0
-    var showDeleteConfirm by remember(initialProfile) { mutableStateOf(false) }
+    var showDeleteConfirm by remember { mutableStateOf(false) }
+    if (!viewModel.ready) {
+        return
+    }
+    val canDelete = viewModel.canDelete
 
     fun toast(message: CharSequence) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
     }
 
     fun save() {
-        editState.applyTo(currentProfile)
-        val outcome = persistEditedProfile(context, currentProfile)
+        val outcome = viewModel.save()
         if (outcome.saved) {
             toast(outcome.message)
             handle.deliverPickResult(Activity.RESULT_OK, null)
-        } else {
-            editState.hostError = context.getString(R.string.host_empty)
         }
     }
 
     fun delete() {
-        toast(deleteConfirmedProfile(context, currentProfile))
+        toast(viewModel.delete())
         handle.deliverPickResult(Activity.RESULT_OK, null)
     }
 
@@ -101,12 +97,20 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
         }
     }
 
-    DisposableEffect(handle, menuProvider, tag, remount) {
-        (context as? AppCompatActivity)?.title = context.getString(R.string.edit_profile)
+    DisposableEffect(handle, menuProvider, tag, remount, viewModel) {
         val activity = context as? AppCompatActivity
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                viewModel.persist()
+            }
+        }
+        activity?.title = context.getString(R.string.edit_profile)
+        activity?.lifecycle?.addObserver(observer)
         activity?.addMenuProvider(menuProvider)
         onDispose {
+            activity?.lifecycle?.removeObserver(observer)
             activity?.removeMenuProvider(menuProvider)
+            viewModel.persistIfBound(tag, remount)
         }
     }
 
@@ -115,7 +119,7 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
     }
 
     ProfileEditScreen(
-        state = editState,
+        state = viewModel.editState,
         saveLabel = context.getString(R.string.save),
         onSave = { save() },
         showSaveFab = false,
@@ -124,7 +128,7 @@ fun ProfileEditDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier
 
     if (showDeleteConfirm) {
         ConfirmAlertDialog(
-            title = currentProfile.name.orEmpty(),
+            title = viewModel.profile.name.orEmpty(),
             message = stringResource(R.string.confirm_delete_profile),
             onDismiss = { showDeleteConfirm = false },
             onConfirm = { delete() },
