@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.screenshot
 
 import android.content.ContentValues
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Build
@@ -19,21 +18,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.FileProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.util.GregorianCalendar
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.loadScreenshot
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -64,6 +59,7 @@ class ScreenshotReloadTrigger {
 /**
  * Phase 2.7c: Screenshot drawer leaf as a direct Compose NavHost destination.
  * Also embedded under Virtual Remote on large screens ([setTitle]=false, [actionsEnabled]=false).
+ * The load and [ScreenshotUiState] live on [ScreenshotViewModel].
  */
 @Composable
 fun ScreenshotDestination(
@@ -74,19 +70,14 @@ fun ScreenshotDestination(
     setTitle: Boolean = true,
     reloadTrigger: ScreenshotReloadTrigger? = null,
     handle: PhoneNavHandle? = null,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: ScreenshotViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val status by SessionConnectionHolder.shared.status.collectAsState()
     val blocked = status.blocksMutations
-    val uiState = remember {
-        ScreenshotUiState().apply { this.actionsEnabled = actionsEnabled }
-    }
-    var rawImage by remember { mutableStateOf(ByteArray(0)) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
-    var filename by remember { mutableStateOf<String?>(null) }
     var scanner by remember { mutableStateOf<MediaScannerConnection?>(null) }
+    viewModel.uiState.actionsEnabled = actionsEnabled
 
     fun toast(message: String) {
         Toast.makeText(context, message, Toast.LENGTH_LONG).show()
@@ -111,66 +102,6 @@ fun ScreenshotDestination(
         else -> ""
     }
 
-    fun onAvailable(bytes: ByteArray) {
-        rawImage = bytes
-        uiState.bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        uiState.loading = false
-    }
-
-    fun buildParams(): ArrayList<NameValuePair> {
-        val params = ArrayList<NameValuePair>()
-        when (type) {
-            ScreenshotParams.TYPE_OSD -> {
-                params.add(NameValuePair("o", " "))
-                params.add(NameValuePair("n", " "))
-            }
-
-            ScreenshotParams.TYPE_VIDEO -> params.add(NameValuePair("v", " "))
-
-            ScreenshotParams.TYPE_ALL -> Unit
-        }
-        when (format) {
-            ScreenshotParams.FORMAT_JPG -> params.add(NameValuePair("format", "jpg"))
-            ScreenshotParams.FORMAT_PNG -> params.add(NameValuePair("format", "png"))
-        }
-        if (size > 0) {
-            params.add(NameValuePair("r", size.toString()))
-        }
-        val ts = GregorianCalendar().timeInMillis / 1000
-        val shotFilename = "/tmp/dreamDroid-$ts"
-        filename = shotFilename
-        params.add(NameValuePair("filename", shotFilename))
-        return params
-    }
-
-    fun grabFromReceiver() {
-        if (blocked) {
-            return
-        }
-        uiState.loading = true
-        loadJob?.cancel()
-        loadJob = scope.launch {
-            val result = loadScreenshot(context.applicationContext, buildParams())
-            uiState.loading = false
-            if (result.success && result.bytes != null) {
-                onAvailable(result.bytes)
-            } else {
-                toast(
-                    result.errorText?.takeIf { it.isNotEmpty() }
-                        ?: context.getString(R.string.error)
-                )
-            }
-        }
-    }
-
-    fun onUserReload() {
-        if (handle != null) {
-            handle.runOnlineOnly { grabFromReceiver() }
-        } else if (!blocked) {
-            grabFromReceiver()
-        }
-    }
-
     fun toastGallerySaveError() {
         toast(context.getString(R.string.error))
     }
@@ -184,7 +115,7 @@ fun ScreenshotDestination(
     }
 
     fun saveToFile(inCache: Boolean): File? {
-        val bytes = rawImage
+        val bytes = viewModel.rawImage
         val extension = fileExtension()
         if (inCache) {
             if (bytes.isEmpty()) {
@@ -264,32 +195,40 @@ fun ScreenshotDestination(
         conn.connect()
         scanner = conn
         onDispose {
-            loadJob?.cancel()
-            loadJob = null
             conn.disconnect()
             scanner = null
         }
     }
 
-    LaunchedEffect(Unit) {
-        if (rawImage.isEmpty()) {
-            grabFromReceiver()
-        } else {
-            onAvailable(rawImage)
+    val error = viewModel.errorText
+    LaunchedEffect(error) {
+        if (!error.isNullOrEmpty()) {
+            toast(error)
+            viewModel.consumeError()
         }
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.start(type, format, size)
     }
 
     val triggerTick = reloadTrigger?.tick ?: 0
     LaunchedEffect(triggerTick) {
         if (triggerTick > 0) {
-            grabFromReceiver()
+            viewModel.reload(type, format, size)
         }
     }
 
     ScreenshotScreen(
-        state = uiState,
+        state = viewModel.uiState,
         grabBlocked = blocked,
-        onReload = { onUserReload() },
+        onReload = {
+            if (handle != null) {
+                handle.runOnlineOnly { viewModel.reload(type, format, size) }
+            } else if (!blocked) {
+                viewModel.reload(type, format, size)
+            }
+        },
         onShare = { share() },
         onSave = { saveToFile(false) },
         modifier = modifier
