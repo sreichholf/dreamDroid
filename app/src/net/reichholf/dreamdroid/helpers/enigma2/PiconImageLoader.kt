@@ -9,14 +9,12 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
 
 /**
  * Process-wide Coil [ImageLoader] for Enigma2 picons.
  *
  * TLS matches [EnigmaOkHttp] for the current profile, including trust-all.
- * Basic auth is read from that profile at request time, not from URL userinfo.
+ * Basic auth is added on the first request from the current profile, not from URL userinfo.
  */
 object PiconImageLoader {
     fun install(context: Context) {
@@ -52,32 +50,16 @@ object PiconImageLoader {
         val trustAll = DreamDroid.currentProfileOrNull()?.allCertsTrusted == true
         return EnigmaOkHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
             .newBuilder()
-            .authenticator { _, response ->
-                if (responseCount(response) >= 3) {
-                    null
+            .addInterceptor { chain ->
+                val profile = DreamDroid.currentProfileOrNull()
+                val request = if (profile?.login == true) {
+                    val cred = Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
+                    chain.request().newBuilder().header("Authorization", cred).build()
                 } else {
-                    profileAuthRequest(response)
+                    chain.request()
                 }
+                chain.proceed(request)
             }
             .build()
-    }
-
-    private fun profileAuthRequest(response: Response): Request? {
-        val profile = DreamDroid.currentProfileOrNull() ?: return null
-        if (!profile.login) {
-            return null
-        }
-        val cred = Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
-        return response.request.newBuilder().header("Authorization", cred).build()
-    }
-
-    private fun responseCount(response: Response): Int {
-        var result = 1
-        var prior = response.priorResponse
-        while (prior != null) {
-            result++
-            prior = prior.priorResponse
-        }
-        return result
     }
 }

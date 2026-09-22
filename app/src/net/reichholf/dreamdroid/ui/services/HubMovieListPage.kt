@@ -538,10 +538,6 @@ class HubMovieListSession : MenuProvider {
                             toastMovieDownloadFailure(outcome.result)
                         }
 
-                        is MovieFileDownload.IoFailed -> {
-                            toast(ctx.getText(R.string.get_content_error))
-                        }
-
                         is MovieFileDownload.Ready -> openCachedMovie(outcome.file)
                     }
                 } finally {
