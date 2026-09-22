@@ -39,6 +39,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
+import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
 /**
  * @author sre
@@ -104,6 +106,9 @@ class DreamDroid : Application() {
     }
 
     private fun handleProfileSwitch(context: Context) {
+        if (profile == null) {
+            return
+        }
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED,
                 false
@@ -364,81 +369,87 @@ class DreamDroid : Application() {
 
         fun getCurrentProfile(): Profile = profile!!
 
+        fun currentProfileOrNull(): Profile? = profile
+
+        fun hasCurrentProfile(): Boolean = profile != null
+
+        /**
+         * Drop a sole seeded demo, then keep the active row when it still exists.
+         * Returns false when nothing configured remains.
+         */
+        fun ensureCurrentProfile(context: Context): Boolean {
+            val dao = AppDatabase.profilesBlocking(context)
+            soleSeededDemo(dao.getProfiles())?.let { dao.deleteProfile(it) }
+            val profiles = dao.getProfiles()
+            if (profiles.isEmpty()) {
+                profile = null
+                return false
+            }
+            val currentId = profile?.id
+            if (currentId != null && profiles.any { it.id == currentId }) {
+                return true
+            }
+            val first = profiles.first().id ?: return false
+            return setCurrentProfile(context, first, true)
+        }
+
         fun loadCurrentProfile(context: Context) {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
-            val profileId = sp.getInt(CURRENT_PROFILE, 1)
-            if (profile != null && profile!!.id == profileId) {
+            val profileId = sp.getInt(CURRENT_PROFILE, -1)
+            if (profile != null && profileId > 0 && profile!!.id == profileId) {
                 return
             }
 
             val dao = AppDatabase.profilesBlocking(context)
-            val profiles = dao.getProfiles()
-            // the profile-table is initial - let's migrate the current config as
-            // default Profile
-            if (profiles.isEmpty()) {
-                val host = sp.getString("host", "dreamdroid.org")
-                val streamHost = sp.getString("host", "")
-
-                val port = Integer.valueOf(sp.getString("port", "443") ?: "443")
-                val user = sp.getString("user", "root")
-                val pass = sp.getString("pass", "dreambox")
-
-                val login = sp.getBoolean("login", false)
-                val ssl = sp.getBoolean("ssl", true)
-
-                val p = Profile(
-                    null,
-                    "Demo",
-                    host,
-                    streamHost,
-                    port,
-                    8001,
-                    80,
-                    login,
-                    user,
-                    pass,
-                    ssl,
-                    false,
-                    false,
-                    false,
-                    false,
-                    "",
-                    "",
-                    "",
-                    ""
-                )
-                p.id = dao.addProfile(p).toInt()
-
-                val editor = sp.edit()
-                editor.remove(CURRENT_PROFILE)
-                editor.apply()
+            soleSeededDemo(dao.getProfiles())?.let { dao.deleteProfile(it) }
+            if (dao.getProfiles().isEmpty()) {
+                val candidate = legacyPreferenceProfile(sp)
+                if (!candidate.matchesSeededDemo()) {
+                    val newId = dao.addProfile(candidate).toInt()
+                    setCurrentProfile(context, newId, true)
+                    return
+                }
             }
 
-            if (!setCurrentProfile(context, profileId)) {
-                // However we got here... we're creating an
-                // "do-not-crash-default-profile now
-                profile = Profile(
-                    null,
-                    "Demo",
-                    "dreamdroid.org",
-                    "",
-                    80,
-                    8001,
-                    80,
-                    false,
-                    "",
-                    "",
-                    false,
-                    false,
-                    false,
-                    false,
-                    false,
-                    "",
-                    "",
-                    "",
-                    ""
-                )
+            if (profileId > 0 && setCurrentProfile(context, profileId)) {
+                return
             }
+            val first = dao.getProfiles().firstOrNull()?.id
+            if (first != null && setCurrentProfile(context, first)) {
+                return
+            }
+            profile = null
+        }
+
+        private fun legacyPreferenceProfile(sp: SharedPreferences): Profile {
+            val host = sp.getString("host", "dreamdroid.org")
+            val streamHost = sp.getString("host", "")
+            val port = Integer.valueOf(sp.getString("port", "443") ?: "443")
+            val user = sp.getString("user", "root")
+            val pass = sp.getString("pass", "dreambox")
+            val login = sp.getBoolean("login", false)
+            val ssl = sp.getBoolean("ssl", true)
+            return Profile(
+                null,
+                "Demo",
+                host,
+                streamHost,
+                port,
+                8001,
+                80,
+                login,
+                user,
+                pass,
+                ssl,
+                false,
+                false,
+                false,
+                false,
+                "",
+                "",
+                "",
+                ""
+            )
         }
 
         fun setCurrentProfile(context: Context, id: Int): Boolean =

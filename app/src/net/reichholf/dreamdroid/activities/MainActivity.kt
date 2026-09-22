@@ -20,8 +20,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.setContent
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.widget.Toolbar
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
@@ -44,8 +48,11 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
+import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
+import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -63,6 +70,9 @@ import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
+import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
+import net.reichholf.dreamdroid.ui.setup.toSetupReceiver
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * @author sre
@@ -81,6 +91,10 @@ class MainActivity :
     private lateinit var connectionState: TextView
 
     private var checkProfileJob: Job? = null
+    private var reachabilityJob: Job? = null
+    private var showingSetup: Boolean = false
+    private var shellCallbackRegistered: Boolean = false
+    private var lanGranted by mutableStateOf(false)
 
     private var navigationHelper: NavigationHelper? = null
     private var drawerListState: DrawerListState? = null
@@ -240,11 +254,74 @@ class MainActivity :
         }
     }
 
+    override fun requestLocalNetworkOnCreate(): Boolean = DreamDroid.hasCurrentProfile()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        if (!DreamDroid.hasCurrentProfile()) {
+            showSetupAssistant()
+            return
+        }
+        startPhoneShell(savedInstanceState)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (showingSetup || !::phoneNav.isInitialized) {
+            return
+        }
+        if (!DreamDroid.ensureCurrentProfile(this)) {
+            reachabilityJob?.cancel()
+            reachabilityJob = null
+            checkProfileJob?.cancel()
+            checkProfileJob = null
+            showSetupAssistant()
+        }
+    }
+
+    private fun showSetupAssistant() {
+        showingSetup = true
+        lanGranted = LocalNetworkPermission.isGranted(this)
+        setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    localNetworkGranted = lanGranted,
+                    onRequestLocalNetwork = { ensureLocalNetworkPermission() },
+                    onSearch = {
+                        withContext(Dispatchers.IO) {
+                            DeviceDetector.getAvailableHosts().map { it.toSetupReceiver() }
+                        }
+                    },
+                    onCheck = { profile ->
+                        profile.cachedDeviceInfo = null
+                        withContext(Dispatchers.IO) {
+                            CheckProfile.checkProfile(profile, this@MainActivity)
+                        }
+                    },
+                    onSave = { profile ->
+                        val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
+                        profile.id = id
+                        DreamDroid.setCurrentProfile(this, id, true)
+                        PreferenceManager.getDefaultSharedPreferences(this).edit()
+                            .putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false)
+                            .apply()
+                        startPhoneShell(null)
+                    },
+                    onLeave = { finish() }
+                )
+            }
+        }
+    }
+
+    private fun startPhoneShell(savedInstanceState: Bundle?) {
+        showingSetup = false
         // Register before Compose so destination BackHandlers outrank leave-confirm.
-        onBackPressedDispatcher.addCallback(this, leaveAppCallback)
+        if (!shellCallbackRegistered) {
+            onBackPressedDispatcher.addCallback(this, leaveAppCallback)
+            shellCallbackRegistered = true
+        }
+        ensureLocalNetworkPermission()
 
         isDrawerOpenNotified = false
         currentProfile = Profile.getDefault()
@@ -258,11 +335,19 @@ class MainActivity :
         bindPhoneNavCompose()
         startSessionReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
-        PreferenceManager.getDefaultSharedPreferences(
-            this
-        ).registerOnSharedPreferenceChangeListener(this)
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        preferences.unregisterOnSharedPreferenceChangeListener(this)
+        preferences.registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         handleSearchIntent(intent)
+        if (slider) {
+            drawerToggle.syncState()
+        }
+        if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            checkNavigationHelper(
+                lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
+            )
+        }
     }
 
     /**
@@ -271,20 +356,26 @@ class MainActivity :
      * the profile. Auth / illegal host are not polled. Does not flash Checking.
      */
     private fun startSessionReachabilityProbe() {
-        lifecycleScope.launch {
+        reachabilityJob?.cancel()
+        reachabilityJob = lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
+                    val active = DreamDroid.currentProfileOrNull()
+                    if (active == null) {
+                        delay(SESSION_REACHABILITY_INTERVAL_MS)
+                        continue
+                    }
                     val previousSession =
                         SessionConnectionHolder.shared.status.value.session
                     val ran = probeSessionReachabilityIfNeeded(
                         holder = SessionConnectionHolder.shared,
                         hasCache = hasUseDrivenCache(
-                            DreamDroid.getCurrentProfile(),
+                            active,
                             this@MainActivity
                         ),
                         isBusy = { checkProfileJob != null },
                         check = {
-                            val profile = DreamDroid.getCurrentProfile()
+                            val profile = DreamDroid.currentProfileOrNull() ?: active
                             profile.cachedDeviceInfo = null
                             withContext(Dispatchers.IO) {
                                 CheckProfile.checkProfile(profile, this@MainActivity)
@@ -307,6 +398,10 @@ class MainActivity :
     }
 
     override fun onLocalNetworkPermissionGranted() {
+        lanGranted = true
+        if (showingSetup || !DreamDroid.hasCurrentProfile()) {
+            return
+        }
         onProfileChanged(DreamDroid.getCurrentProfile(), true)
     }
 
@@ -319,6 +414,9 @@ class MainActivity :
     /** System ACTION_SEARCH — same path as submitting the destination SearchBar. */
     private fun handleSearchIntent(intent: Intent?) {
         if (intent == null || Intent.ACTION_SEARCH != intent.action) {
+            return
+        }
+        if (!::phoneNav.isInitialized) {
             return
         }
         val query = intent.getStringExtra(SearchManager.QUERY).orEmpty()
@@ -345,7 +443,9 @@ class MainActivity :
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        phoneNav.saveState(outState)
+        if (::phoneNav.isInitialized) {
+            phoneNav.saveState(outState)
+        }
         super.onSaveInstanceState(outState)
     }
 
@@ -354,6 +454,9 @@ class MainActivity :
         resultCode: Int,
         data: Intent?
     ): Boolean {
+        if (!::phoneNav.isInitialized) {
+            return false
+        }
         phoneNav.onHostActivityResult(requestCode, resultCode, data)
         return true
     }
@@ -368,6 +471,9 @@ class MainActivity :
 
     override fun onResume() {
         super.onResume()
+        if (showingSetup || !::phoneNav.isInitialized) {
+            return
+        }
         checkNavigationHelper(true)
     }
 
@@ -544,8 +650,10 @@ class MainActivity :
             }
 
             R.id.action_search -> {
-                phoneNav.navigateToEpgSearch("")
-                return true
+                if (::phoneNav.isInitialized) {
+                    phoneNav.navigateToEpgSearch("")
+                    return true
+                }
             }
         }
         return super.onOptionsItemSelected(item)
@@ -695,7 +803,9 @@ class MainActivity :
      * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
      */
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        phoneNav.composeDialogActionListener?.onDialogAction(action, details, dialogTag)
+        if (::phoneNav.isInitialized) {
+            phoneNav.composeDialogActionListener?.onDialogAction(action, details, dialogTag)
+        }
         super.onDialogAction(action, details, dialogTag)
     }
 

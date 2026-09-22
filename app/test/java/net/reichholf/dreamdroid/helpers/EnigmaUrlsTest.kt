@@ -47,12 +47,14 @@ class EnigmaUrlsTest {
     }
 
     @Test
-    fun stream_demoHostReturnsBunny() {
-        val profile = httpProfile(host = "dreamdroid.org")
-        assertEquals(EnigmaUrls.BIG_BUCK_BUNNY_URL, EnigmaUrls.stream(profile, "1:0:1"))
-        assertEquals(EnigmaUrls.BIG_BUCK_BUNNY_URL, EnigmaUrls.serviceStream(profile, "1:0:1"))
-        assertEquals(EnigmaUrls.BIG_BUCK_BUNNY_URL, EnigmaUrls.encoderStream(profile, "1:0:1"))
-        assertEquals(EnigmaUrls.BIG_BUCK_BUNNY_URL, EnigmaUrls.fileStream(profile, "1:0:1", "a.ts"))
+    fun stream_usesTheProfileHost() {
+        val profile = streamProfile(streamHost = "dreamdroid.org")
+        val url = EnigmaUrls.serviceStream(profile, "1:0:1")
+        assertTrue(url.startsWith("http://dreamdroid.org:8001/"))
+        assertFalse(url.contains("bunny"))
+        val fileUrl = EnigmaUrls.fileStream(profile, "4097:0:0:0:0:0:0:0:0:0:", "a.ts")
+        assertTrue(fileUrl.contains("dreamdroid.org:"))
+        assertFalse(fileUrl.contains("bunny"))
     }
 
     @Test

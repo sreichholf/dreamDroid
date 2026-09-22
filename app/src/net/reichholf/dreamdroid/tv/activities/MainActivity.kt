@@ -1,8 +1,12 @@
 package net.reichholf.dreamdroid.tv.activities
 
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -18,14 +22,20 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.ProfileChangedListener
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
+import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
+import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
+import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
+import net.reichholf.dreamdroid.ui.setup.toSetupReceiver
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /**
  * Created by Stephan on 16.10.2016.
@@ -38,20 +48,79 @@ class MainActivity :
     AppCompatActivity(),
     ProfileChangedListener {
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
-        recreate()
+        lanGranted = true
+        if (!showingSetup) {
+            recreate()
+        }
     }
     private var checkProfileJob: Job? = null
+    private var reachabilityJob: Job? = null
+    private var showingSetup: Boolean = false
+    private var lanGranted by mutableStateOf(false)
     private var currentProfile: Profile = Profile.getDefault()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (!DreamDroid.hasCurrentProfile()) {
+            showSetup()
+            return
+        }
+        startHub()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (showingSetup) {
+            return
+        }
+        if (!DreamDroid.ensureCurrentProfile(this)) {
+            reachabilityJob?.cancel()
+            reachabilityJob = null
+            checkProfileJob?.cancel()
+            checkProfileJob = null
+            showSetup()
+        }
+    }
+
+    private fun showSetup() {
+        showingSetup = true
+        lanGranted = LocalNetworkPermission.isGranted(this)
+        setContent {
+            DreamDroidTvTheme {
+                SetupAssistantScreen(
+                    localNetworkGranted = lanGranted,
+                    onRequestLocalNetwork = { localNetworkPermissionRequest.ensure(this) },
+                    onSearch = {
+                        withContext(Dispatchers.IO) {
+                            DeviceDetector.getAvailableHosts().map { it.toSetupReceiver() }
+                        }
+                    },
+                    onCheck = { profile ->
+                        profile.cachedDeviceInfo = null
+                        withContext(Dispatchers.IO) {
+                            CheckProfile.checkProfile(profile, this@MainActivity)
+                        }
+                    },
+                    onSave = { profile ->
+                        val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
+                        profile.id = id
+                        DreamDroid.setCurrentProfile(this, id, true)
+                        startHub()
+                    },
+                    onLeave = { finish() }
+                )
+            }
+        }
+    }
+
+    private fun startHub() {
+        showingSetup = false
         localNetworkPermissionRequest.ensure(this)
         DreamDroid.setCurrentProfileChangedListener(this)
         startSessionReachabilityProbe()
         onProfileChanged(DreamDroid.getCurrentProfile())
-        // Phase 3.1c-iv-f: Compose hub is the TV browse host (Leanback browse removed).
         TvComposeHubHost.install(this)
         try {
             HttpsURLConnection.setFollowRedirects(false)
@@ -69,18 +138,24 @@ class MainActivity :
      * the profile. Auth / illegal host are not polled. Does not flash Checking.
      */
     private fun startSessionReachabilityProbe() {
-        lifecycleScope.launch {
+        reachabilityJob?.cancel()
+        reachabilityJob = lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
+                    val active = DreamDroid.currentProfileOrNull()
+                    if (active == null) {
+                        delay(SESSION_REACHABILITY_INTERVAL_MS)
+                        continue
+                    }
                     probeSessionReachabilityIfNeeded(
                         holder = SessionConnectionHolder.shared,
                         hasCache = hasUseDrivenCache(
-                            DreamDroid.getCurrentProfile(),
+                            active,
                             this@MainActivity
                         ),
                         isBusy = { checkProfileJob != null },
                         check = {
-                            val profile = DreamDroid.getCurrentProfile()
+                            val profile = DreamDroid.currentProfileOrNull() ?: active
                             profile.cachedDeviceInfo = null
                             withContext(Dispatchers.IO) {
                                 CheckProfile.checkProfile(profile, this@MainActivity)
