@@ -15,6 +15,7 @@ import coil3.request.error
 import coil3.size.Scale
 import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -120,17 +121,17 @@ object Picon {
         return getPiconUri(context, fileName)
     }
 
+    fun onlinePiconUrl(profile: Profile, fileName: String?): String = EnigmaUrls.page(
+        profile,
+        URIStore.FILE,
+        listOf(NameValuePair("file", fileName))
+    )
+
     fun getPiconUri(context: Context, fileName: String?): String {
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))
         ) {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("file", fileName))
-            return EnigmaUrls.authed(
-                DreamDroid.getCurrentProfile(),
-                URIStore.FILE,
-                params
-            )
+            return onlinePiconUrl(DreamDroid.getCurrentProfile(), fileName)
         }
         return String.format("file://%s", fileName)
     }

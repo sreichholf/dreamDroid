@@ -24,13 +24,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.preference.PreferenceManager
+import java.io.File
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.MovieListLoadResult
 import net.reichholf.dreamdroid.enigma.loadMovieList
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -477,16 +481,7 @@ class HubMovieListSession : MenuProvider {
 
             Statics.ACTION_DELETE_CONFIRMED -> deleteMovie()
 
-            R.id.menu_download -> {
-                val file = movie?.fileName.orEmpty()
-                val params = arrayListOf(NameValuePair("file", file))
-                val url = EnigmaUrls.page(
-                    DreamDroid.getCurrentProfile(),
-                    URIStore.FILE,
-                    params
-                )
-                ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            }
+            R.id.menu_download -> downloadSelectedMovie()
 
             R.id.menu_stream -> {
                 val host = handle ?: return false
@@ -511,6 +506,68 @@ class HubMovieListSession : MenuProvider {
             else -> return false
         }
         return true
+    }
+
+    private fun downloadSelectedMovie() {
+        val ctx = context ?: return
+        val remotePath = selectedMovie?.fileName.orEmpty()
+        if (remotePath.isEmpty()) {
+            return
+        }
+        val profile = DreamDroid.currentProfileOrNull() ?: return
+        val params = arrayListOf(NameValuePair("file", remotePath))
+        if (!profile.login) {
+            val url = EnigmaUrls.page(profile, URIStore.FILE, params)
+            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+            return
+        }
+        val host = handle ?: return
+        val coroutineScope = scope ?: return
+        host.runOnlineOnly {
+            if (progress != null) {
+                return@runOnlineOnly
+            }
+            progress = IndeterminateProgressState(message = ctx.getString(R.string.loading))
+            coroutineScope.launch {
+                try {
+                    val outcome = withContext(Dispatchers.IO) {
+                        downloadMovieFile(ctx, profile, remotePath)
+                    }
+                    when (outcome) {
+                        is MovieFileDownload.HttpFailed -> {
+                            toastMovieDownloadFailure(outcome.result)
+                        }
+
+                        is MovieFileDownload.IoFailed -> {
+                            toast(ctx.getText(R.string.get_content_error))
+                        }
+
+                        is MovieFileDownload.Ready -> openCachedMovie(outcome.file)
+                    }
+                } finally {
+                    dismissProgress()
+                }
+            }
+        }
+    }
+
+    private fun toastMovieDownloadFailure(result: EnigmaHttpResult.Failure) {
+        val ctx = context ?: return
+        var toastText = ctx.getText(R.string.get_content_error).toString()
+        val resolved = result.error.resolve(ctx)
+        if (!resolved.isNullOrEmpty()) {
+            toastText = resolved
+        }
+        toast(toastText)
+    }
+
+    private fun openCachedMovie(file: File) {
+        val ctx = context ?: return
+        try {
+            ctx.startActivity(movieViewIntent(ctx, file))
+        } catch (_: ActivityNotFoundException) {
+            toast(ctx.getText(R.string.missing_stream_player))
+        }
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
