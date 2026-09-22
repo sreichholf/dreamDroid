@@ -39,7 +39,6 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.ProfileChangedListener
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.enigma.launchVolumeSetLoad
@@ -82,13 +81,11 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  */
 class MainActivity :
     BaseActivity(),
-    MultiPaneHandler,
     ProfileChangedListener,
     DialogActionListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
 
-    private val slider: Boolean = true
     private var drawerOpen by mutableStateOf(false)
     private var profileName by mutableStateOf("")
     private var shellWasPaused: Boolean = false
@@ -698,22 +695,6 @@ class MainActivity :
             volumeSetJob = launchVolumeSetLoad(
                 listOf(NameValuePair("set", command))
             ) { _, _ -> }
-        }
-    }
-
-    override val isMultiPane: Boolean
-        get() = true
-
-    override val isDrawerOpen: Boolean
-        get() = isNavigationDrawerVisible()
-
-    fun isSlidingMenu(): Boolean = slider
-
-    fun finish(finishFragment: Boolean) {
-        if (finishFragment) {
-            // Phone destinations live in Compose NavHost; nothing to pop here.
-        } else {
-            super.finish()
         }
     }
 
