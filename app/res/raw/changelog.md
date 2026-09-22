@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.464
+* NEW: Setup assistant when no profile is saved. The offline demo receiver is gone. The wizard helps you find the box, set the address, HTTP or HTTPS, and sign-in, then checks the connection. You can still save the profile if that check fails.
+
 ## 2.0.463
 * NEW: MultiEPG — graphical EPG grid
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)

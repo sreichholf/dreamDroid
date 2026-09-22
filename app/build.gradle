@@ -79,8 +79,8 @@ android {
     compileSdk Integer.parseInt(project.COMPILE_SDK_VERSION)
 
     defaultConfig {
-        versionCode 463
-        versionName="2.0.463"
+        versionCode 464
+        versionName="2.0.464"
         minSdkVersion 26
         targetSdkVersion 37
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
