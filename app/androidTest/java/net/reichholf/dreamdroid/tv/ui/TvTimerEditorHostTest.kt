@@ -4,13 +4,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -30,6 +36,7 @@ import org.junit.Test
  * missing catalog falls through to HTTP, and that path calls
  * [DreamDroid.getCurrentProfile].
  */
+@OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHostTest {
     @get:Rule
     val composeRule = createComposeRule()
@@ -107,11 +114,30 @@ class TvTimerEditorHostTest {
         assertFalse(saved)
         assertFalse(dismissed)
         composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
-        composeRule.onNodeWithTag("hub_stream_unavailable_ok").performClick()
-        composeRule.waitForIdle()
+        dismissNeedsReceiver()
         composeRule.onNodeWithTag("hub_stream_unavailable").assertDoesNotExist()
         assertFalse(saved)
         assertFalse(dismissed)
+    }
+
+    /**
+     * OK is a TV Surface. It handles D-pad center. Android [performClick] is a
+     * touch click, which that surface ignores.
+     */
+    private fun dismissNeedsReceiver() {
+        val ok = composeRule.onNodeWithTag("hub_stream_unavailable_ok")
+        ok.assertIsDisplayed()
+        ok.requestFocus()
+        ok.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        if (
+            composeRule.onAllNodesWithTag("hub_stream_unavailable")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        ) {
+            ok.performClick()
+            composeRule.waitForIdle()
+        }
     }
 
     @Test
