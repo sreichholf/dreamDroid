@@ -8,9 +8,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 /** Enigma2 webinterface and stream URL builders. No HTTP I/O. */
 object EnigmaUrls {
-    const val BIG_BUCK_BUNNY_URL: String =
-        "https://dreamdroid.org/bunny/big_buck_bunny_720p_h264.mov"
-
     fun page(profile: Profile, uri: String, parameters: List<NameValuePair> = emptyList()): String {
         val path = withQuery(uri, parameters)
         return webPrefix(profile) + profile.host + ":" + profile.port + path
@@ -29,21 +26,13 @@ object EnigmaUrls {
         return webPrefix(profile) + loginString + profile.host + ":" + profile.port + path
     }
 
-    fun stream(profile: Profile, ref: String): String {
-        if (profile.host == "dreamdroid.org") {
-            return BIG_BUCK_BUNNY_URL
-        }
-        return if (profile.encoderStream) {
-            encoderStream(profile, ref)
-        } else {
-            serviceStream(profile, ref)
-        }
+    fun stream(profile: Profile, ref: String): String = if (profile.encoderStream) {
+        encoderStream(profile, ref)
+    } else {
+        serviceStream(profile, ref)
     }
 
     fun encoderStream(profile: Profile, ref: String): String {
-        if (profile.host == "dreamdroid.org") {
-            return BIG_BUCK_BUNNY_URL
-        }
         var encoded = ref
         try {
             encoded = URLEncoder.encode(ref, "utf-8").replace("+", "%20")
@@ -66,9 +55,6 @@ object EnigmaUrls {
     }
 
     fun serviceStream(profile: Profile, ref: String): String {
-        if (profile.host == "dreamdroid.org") {
-            return BIG_BUCK_BUNNY_URL
-        }
         var serviceRef = ref
         if (serviceRef.contains("http")) {
             try {
@@ -94,9 +80,6 @@ object EnigmaUrls {
     }
 
     fun fileStream(profile: Profile, ref: String, fileName: String?): String {
-        if (profile.host == "dreamdroid.org") {
-            return BIG_BUCK_BUNNY_URL
-        }
         if (profile.encoderStream && ref.startsWith("1:")) {
             return encoderStream(profile, ref)
         }

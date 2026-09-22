@@ -28,5 +28,5 @@ Preconditions:
 ## Gotchas
 
 - Opening Zap is not proof of a zap. The hub `Now` strip must show the new service.
-- Demo host `dreamdroid.org` usually cannot zap. Skip `zap-channel` with the error dump.
+- Zap needs a saved profile that can reach the receiver. A clear-data launch stops on the setup wizard.
 - Instant-zap settings can change whether a tap zaps immediately; still confirm the `Now` strip.

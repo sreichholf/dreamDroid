@@ -21,7 +21,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             android:scaleType="centerInside"
-            android:src="@drawable/dreamdroid_logo_simple"/>
+            android:src="@drawable/dreamdroid_logo_on_dark"/>
 
         <RelativeLayout
             android:id="@+id/drawer_profile"

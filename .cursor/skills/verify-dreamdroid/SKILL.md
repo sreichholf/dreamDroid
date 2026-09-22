@@ -41,7 +41,7 @@ Read [features/README.md](features/README.md) before driving. Exercise the mappe
 2. Install if needed: `./gradlew.bat :app:installGoogleDebug`
 3. Disposable session: `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py launch --clear-data`
 
-Ready when `pidof net.reichholf.dreamdroid.debug` returns a pid and the helper prints `started ... pid=...`. First start opens the Profiles screen and the navigation drawer. Seeded profile name is `Demo` (host `dreamdroid.org`). That host is not an offline mock: bouquets, EPG, zap, and remote still need a reachable Enigma2 WebInterface unless the recipe says otherwise.
+Ready when `pidof net.reichholf.dreamdroid.debug` returns a pid and the helper prints `started ... pid=...`. A fresh install with no saved profile opens the setup wizard (`Welcome!`) and stays there until a profile is saved. Bouquets, EPG, zap, and remote still need a reachable Enigma2 WebInterface unless the recipe says otherwise.
 
 Teardown is `cleanup` below. Do not `am force-stop` or `pm uninstall` by the release package name.
 

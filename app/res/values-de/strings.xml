@@ -383,4 +383,26 @@
     <string name="trust_all_certs">Alle Zertifikate</string>
     <string name="trust_all_certs_confirm_title">Allen Zertifikaten vertrauen?</string>
     <string name="trust_all_certs_confirm">dreamDroid prüft das HTTPS-Zertifikat dieses Profils nicht. Verwenden Sie dies nur für selbst signierte Zertifikate auf Ihrem eigenen Receiver. Das kann gefährlich sein.</string>
+    <string name="setup_welcome">Willkommen!</string>
+    <string name="setup_start">Start</string>
+    <string name="setup_back">Zurück</string>
+    <string name="setup_next">Weiter</string>
+    <string name="setup_check_connection">Verbindung prüfen</string>
+    <string name="setup_retry">Erneut versuchen</string>
+    <string name="setup_find_title">Receiver suchen</string>
+    <string name="setup_find_body">dreamDroid sucht einen Receiver in diesem Netzwerk. Die Adresse kann auch eingegeben werden.</string>
+    <string name="setup_searching">Receiver werden gesucht…</string>
+    <string name="setup_none_found">Kein Receiver in diesem Netzwerk gefunden.</string>
+    <string name="setup_address">Adresse</string>
+    <string name="setup_lan_denied">Zugriff auf das lokale Netzwerk ist aus. Die Adresse kann trotzdem eingegeben werden.</string>
+    <string name="setup_connection_title">Verbindung</string>
+    <string name="setup_connection_body">HTTP auf Port 80 verwenden, außer das WebInterface läuft über HTTPS.</string>
+    <string name="setup_http">HTTP</string>
+    <string name="setup_https">HTTPS</string>
+    <string name="setup_sign_in_title">Anmeldung</string>
+    <string name="setup_sign_in_body">Die meisten Receiver nutzen root und dreambox. Anmeldung ausschalten, wenn das WebInterface kein Passwort verlangt.</string>
+    <string name="setup_name_title">Name</string>
+    <string name="setup_name_body">Dieser Name erscheint in der Profilliste.</string>
+    <string name="setup_test_body">dreamDroid kontaktiert den Receiver, bevor das Profil gespeichert wird.</string>
+    <string name="setup_connected">Der Receiver hat geantwortet.</string>
 </resources>

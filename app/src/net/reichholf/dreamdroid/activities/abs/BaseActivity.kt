@@ -49,8 +49,17 @@ open class BaseActivity :
         }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        localNetworkPermissionRequest.ensure(this)
+        if (requestLocalNetworkOnCreate()) {
+            localNetworkPermissionRequest.ensure(this)
+        }
         applyConfiguredActivityTransitions()
+    }
+
+    /** Setup waits until the search step so the welcome animation stays uncovered. */
+    protected open fun requestLocalNetworkOnCreate(): Boolean = true
+
+    protected fun ensureLocalNetworkPermission() {
+        localNetworkPermissionRequest.ensure(this)
     }
 
     /** Recheck the box after the user grants LAN access (API 37+). */

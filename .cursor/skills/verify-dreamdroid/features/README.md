@@ -6,11 +6,11 @@ This directory is the maintained source for verifying the user-facing behavior o
 
 - Prove Compose screens with `./gradlew.bat :app:connectedGoogleDebugAndroidTest` (see `AGENTS.md`). Do not tap the emulator in a loop.
 - googleDebug is installed: `./gradlew.bat :app:installGoogleDebug`.
-- For an optional look, launch with `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py launch --clear-data`. Dismiss the first-install Changelog with `back` before driving other screens.
+- For an optional look, launch with `python .cursor/skills/verify-dreamdroid/scripts/verify-dreamdroid.py launch --clear-data`. With no saved profile the setup wizard is the first screen (`Welcome!`). The changelog waits until a profile is saved.
 - Package `net.reichholf.dreamdroid.debug` is in the foreground. `doctor` must pass.
 - Device language English unless a recipe says to match a dump instead.
 - Never drive a release install (`net.reichholf.dreamdroid`).
-- Receiver-backed features need a reachable Enigma2 WebInterface on the active profile. First-start seeds profile `Demo` at `dreamdroid.org`; that is not an offline bouquet/EPG mock.
+- Receiver-backed features need a reachable Enigma2 WebInterface on a saved profile. There is no seeded demo host.
 
 ## Driving conventions
 

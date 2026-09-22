@@ -116,6 +116,7 @@
     <color name="md_theme_dark_primaryInverse">#3A5BA8</color>
     <color name="seed">#00286A</color>
     <color name="error">#BA1B1B</color>
+    <color name="dreamdroid_logo_letter">#FF000000</color>
 
     <!-- this is needed as preference_category_material layout uses this color as the text color -->
 </resources>

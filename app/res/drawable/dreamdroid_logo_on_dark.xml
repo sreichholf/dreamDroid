@@ -29,7 +29,7 @@
         android:translateX="9.6814435e-7"
         android:translateY="-2.716779">
         <path
-            android:fillColor="@color/dreamdroid_logo_letter"
+            android:fillColor="#ffffff"
             android:strokeWidth="1"
             android:pathData="M 132.45074,103.1986 c 4.22956,0 6.86521,-1.47478 7.7,-4.424344
 0.22261,-1.224348 0.3,-2.838261 0.3,-4.841739 l 0,-28.466088 11,0 0,30.553044 c

@@ -438,4 +438,26 @@
     <string name="trust_all_certs">All certificates</string>
     <string name="trust_all_certs_confirm_title">Trust all certificates?</string>
     <string name="trust_all_certs_confirm">dreamDroid will not verify this profile\'s HTTPS certificate. Use this only for self-signed certificates on your own receiver. This can be dangerous.</string>
+    <string name="setup_welcome">Welcome!</string>
+    <string name="setup_start">Start</string>
+    <string name="setup_back">Back</string>
+    <string name="setup_next">Next</string>
+    <string name="setup_check_connection">Check connection</string>
+    <string name="setup_retry">Retry</string>
+    <string name="setup_find_title">Find your receiver</string>
+    <string name="setup_find_body">dreamDroid looks for a receiver on this network. You can also type its address.</string>
+    <string name="setup_searching">Looking for receivers…</string>
+    <string name="setup_none_found">No receiver found on this network.</string>
+    <string name="setup_address">Address</string>
+    <string name="setup_lan_denied">Local network access is off. Type the receiver address to continue.</string>
+    <string name="setup_connection_title">Connection</string>
+    <string name="setup_connection_body">Use HTTP on port 80 unless the WebInterface is HTTPS.</string>
+    <string name="setup_http">HTTP</string>
+    <string name="setup_https">HTTPS</string>
+    <string name="setup_sign_in_title">Sign in</string>
+    <string name="setup_sign_in_body">Most receivers use root and dreambox. Turn login off if the WebInterface does not ask for a password.</string>
+    <string name="setup_name_title">Name</string>
+    <string name="setup_name_body">This name is shown in the profile list.</string>
+    <string name="setup_test_body">dreamDroid contacts the receiver before saving.</string>
+    <string name="setup_connected">The receiver answered.</string>
 </resources>
