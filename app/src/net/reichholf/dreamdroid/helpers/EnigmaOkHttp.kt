@@ -46,8 +46,8 @@ internal object EnigmaOkHttp {
      * with the same [DreamDroidTrustManager] instance). Auth is an interceptor
      * so webifs that never send 401 still receive [Authorization].
      */
-    fun piconClient(timeoutMillis: Int, trustAll: Boolean): OkHttpClient {
-        return client(timeoutMillis, trustAll).newBuilder()
+    fun piconClient(timeoutMillis: Int, trustAll: Boolean): OkHttpClient =
+        client(timeoutMillis, trustAll).newBuilder()
             .addInterceptor { chain ->
                 val request = chain.request()
                 val header = piconAuthHeader(DreamDroid.currentProfileOrNull())
@@ -78,7 +78,6 @@ internal object EnigmaOkHttp {
                 }
             }
             .build()
-    }
 
     fun piconAuthHeader(profile: Profile?): String? {
         if (profile == null || !profile.login) return null

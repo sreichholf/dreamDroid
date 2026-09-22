@@ -14,10 +14,10 @@ import okhttp3.OkHttpClient
  * Process-wide Coil [ImageLoader] for Enigma2 picons.
  *
  * Shares the [EnigmaOkHttp] connection pool and dispatcher. Auth is an
- * `Authorization` interceptor (plus a URL-userinfo authenticator fallback).
+ * Authorization interceptor (plus a URL-userinfo authenticator fallback).
  * Trust-all uses the same [net.reichholf.dreamdroid.ssl.DreamDroidTrustManager]
- * instance as `/web/*`. Re-[install] with `replace = true` when the current
- * profile's login/ssl/trust-all changes; [setSafe][SingletonImageLoader.setSafe]
+ * instance as EnigmaHttp. Re-[install] with replace=true when the current
+ * profile's login/ssl/trust-all changes; [SingletonImageLoader.setSafe]
  * will not replace an already-created loader.
  */
 object PiconImageLoader {
