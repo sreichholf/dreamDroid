@@ -3,8 +3,8 @@ package net.reichholf.dreamdroid.ui.nav
 import android.content.Context
 import android.util.SparseArray
 import android.widget.Toast
-import androidx.compose.ui.platform.ComposeView
 import kotlinx.coroutines.Job
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.enigma.PowerState
@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
-import net.reichholf.dreamdroid.ui.drawer.bindDrawerScreen
 
 /**
  * Drawer click → phone [PhoneNavHandle] bridge (roots, dialogs, power / sleep timer).
@@ -38,15 +37,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     protected var simpleResultJob: Job? = null
 
     protected var selectedItemId: Int = drawerState.selectedItemId
-
-    init {
-        val drawerCompose = activity.findViewById<ComposeView>(R.id.drawer_compose)
-        if (drawerCompose != null) {
-            drawerCompose.bindDrawerScreen(drawerState) { itemId ->
-                onNavigationItemClick(itemId)
-            }
-        }
-    }
 
     protected fun getMainActivity(): MainActivity = activity
 
@@ -305,7 +295,7 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     }
 
     fun setAvailableFeatures() {
-        // TODO implement feature-handling for list-navigation
+        drawerState.sleepTimerAvailable = DreamDroid.featureSleepTimer()
     }
 
     protected fun showToast(toastText: String?) {

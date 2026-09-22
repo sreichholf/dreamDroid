@@ -38,16 +38,14 @@
             android:layout_height="wrap_content"
             android:visibility="gone" />
 
-        <net.reichholf.dreamdroid.widget.AutofitRecyclerView
-            android:id="@+id/servicelist"
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_zap_list"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:columnWidth="290dp"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp" />
+            android:visibility="gone" />
     </LinearLayout>
 </RelativeLayout>

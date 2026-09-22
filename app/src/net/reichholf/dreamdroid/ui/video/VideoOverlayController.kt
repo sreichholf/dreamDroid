@@ -23,8 +23,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.max
@@ -34,7 +32,6 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.adapter.recyclerview.ServiceAdapter
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.Service as BouquetService
@@ -57,8 +54,6 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
 import net.reichholf.dreamdroid.video.startLiveServiceStream
-import net.reichholf.dreamdroid.widget.helper.ItemClickSupport
-import net.reichholf.dreamdroid.widget.helper.SpacesItemDecoration
 import org.videolan.libvlc.MediaPlayer
 
 /**
@@ -67,7 +62,6 @@ import org.videolan.libvlc.MediaPlayer
  */
 class VideoOverlayController(private val activity: VideoActivity) :
     MediaPlayer.EventListener,
-    ItemClickSupport.OnItemClickListener,
     DialogActionListener {
 
     private var attached: Boolean = false
@@ -90,10 +84,10 @@ class VideoOverlayController(private val activity: VideoActivity) :
     private lateinit var autoHideRunnable: Runnable
     private lateinit var issueReloadRunnable: Runnable
 
-    private var itemClickSupport: ItemClickSupport? = null
+    private val tvOverlay: Boolean = DreamDroid.isTV(activity)
+    private val channelSwipe = VideoChannelSwipe()
 
     private var overlayRoot: View? = null
-    private var servicesView: RecyclerView? = null
     private var composeOverlay: ComposeView? = null
     private var composeZapList: ComposeView? = null
     private var composeBouquetBar: ComposeView? = null
@@ -112,6 +106,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
     private var bouquetBarRequested: Boolean = false
     private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
+    private var phoneZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
     private var backCallback: OnBackPressedCallback? = null
 
@@ -143,7 +138,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
         container.addView(view)
         rootView = view
         overlayRoot = view.findViewById(R.id.overlay_root)
-        servicesView = view.findViewById(R.id.servicelist)
         composeOverlay = view.findViewById(R.id.compose_overlay)
         composeZapList = view.findViewById(R.id.compose_zap_list)
         composeBouquetBar = view.findViewById(R.id.compose_bouquet_bar)
@@ -169,12 +163,16 @@ class VideoOverlayController(private val activity: VideoActivity) :
             onAudio = { onSelectAudioTrack() },
             onSubtitle = { onSelectSubtitleTrack() },
             onSeekChange = { progress -> seek(progress) },
-            uncappedDetailSheets = composeZapList != null
+            uncappedDetailSheets = tvOverlay
         )
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
-        bindTvZapListIfAllowed()
+        if (tvOverlay) {
+            bindTvZapListIfAllowed()
+        } else {
+            bindPhoneZapList()
+        }
         wireServiceListAndGestures()
         onServiceInfoChanged(true)
         backCallback =
@@ -189,7 +187,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
                 }
             }
         activity.onBackPressedDispatcher.addCallback(activity, backCallback!!)
-        if (composeZapList != null) {
+        if (tvOverlay) {
             tvSessionJob =
                 activity.lifecycleScope.launch {
                     activity.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -242,7 +240,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
         bouquetBarRequested = false
         cancelLoad()
         tvZapListBound = false
-        itemClickSupport = null
+        phoneZapListBound = false
         activity.findViewById<View>(R.id.overlay)?.setOnTouchListener(null)
         val container = activity.findViewById<ViewGroup>(R.id.overlay)
         rootView?.let { child ->
@@ -250,7 +248,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
         }
         rootView = null
         overlayRoot = null
-        servicesView = null
         composeOverlay = null
         composeZapList = null
         composeBouquetBar = null
@@ -260,7 +257,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
 
     /** TV overlay only: hide zap / stream-another chrome unless session is Online. */
     fun setTvStreamingChromeEnabled(enabled: Boolean) {
-        if (composeZapList == null) {
+        if (!tvOverlay) {
             return
         }
         if (enabled) {
@@ -274,7 +271,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
     }
 
     private fun allowsTvStreaming(): Boolean {
-        if (composeZapList == null) {
+        if (!tvOverlay) {
             return true
         }
         return SessionConnectionHolder.shared.status.value.allowsStreaming()
@@ -315,35 +312,28 @@ class VideoOverlayController(private val activity: VideoActivity) :
         tvZapListBound = false
     }
 
+    private fun bindPhoneZapList() {
+        val zapList = composeZapList ?: return
+        if (phoneZapListBound) {
+            return
+        }
+        zapList.bindPhoneZapList(
+            state = overlayUiState,
+            onServiceClick = { row -> zapToService(row) },
+            onScrollInProgress = { scrolling ->
+                if (scrolling) {
+                    handler.removeCallbacks(autoHideRunnable)
+                } else {
+                    autohide()
+                }
+            }
+        )
+        phoneZapListBound = true
+    }
+
     private fun wireServiceListAndGestures() {
-        val servicesView = this.servicesView
         if (serviceList.isEmpty()) {
             overlayUiState.showListButton = false
-        }
-        if (servicesView != null) {
-            servicesView.layoutManager = GridLayoutManager(activity, 1)
-            servicesView.addItemDecoration(
-                SpacesItemDecoration(
-                    activity.resources.getDimensionPixelSize(R.dimen.recylcerview_content_margin)
-                )
-            )
-            itemClickSupport = ItemClickSupport.addTo(servicesView)
-            itemClickSupport!!.setOnItemClickListener(this)
-
-            servicesView.adapter = ServiceAdapter(activity, serviceList)
-            servicesView.addOnScrollListener(
-                object : RecyclerView.OnScrollListener() {
-                    override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                        super.onScrollStateChanged(recyclerView, newState)
-                        if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                            autohide()
-                        } else {
-                            handler.removeCallbacks(autoHideRunnable)
-                        }
-                    }
-                }
-            )
-            servicesViewVisible = servicesView.visibility == View.VISIBLE
         }
         val zapList = composeZapList
         if (zapList != null) {
@@ -385,7 +375,7 @@ class VideoOverlayController(private val activity: VideoActivity) :
                                 onBrightnessTouch(distanceY)
                             }
                         } else if (abs(distanceX) > abs(distanceY) && distanceX != 0f) {
-                            // TODO: prev/next gesture handling)
+                            onChannelSwipe(distanceX, distanceY)
                         }
                         return true
                     }
@@ -398,6 +388,11 @@ class VideoOverlayController(private val activity: VideoActivity) :
             )
 
         activity.findViewById<View>(R.id.overlay).setOnTouchListener { _, event ->
+            if (event.actionMasked == MotionEvent.ACTION_UP ||
+                event.actionMasked == MotionEvent.ACTION_CANCEL
+            ) {
+                channelSwipe.reset()
+            }
             val metrics = activity.resources.displayMetrics
             if (surfaceHeight == 0) {
                 surfaceHeight = min(metrics.widthPixels, metrics.heightPixels)
@@ -407,6 +402,19 @@ class VideoOverlayController(private val activity: VideoActivity) :
             }
             gestureDetector!!.onTouchEvent(event)
             true
+        }
+    }
+
+    private fun onChannelSwipe(distanceX: Float, distanceY: Float) {
+        val width = if (surfaceWidth > 0) {
+            surfaceWidth
+        } else {
+            activity.resources.displayMetrics.widthPixels
+        }
+        when (channelSwipe.onScroll(distanceX, distanceY, width * 0.22f)) {
+            VideoSwipe.Next -> if (movie == null) next() else onForward()
+            VideoSwipe.Previous -> if (movie == null) previous() else onRewind()
+            VideoSwipe.None -> Unit
         }
     }
 
@@ -554,7 +562,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
 
     private fun applyServiceList(services: ArrayList<ServiceNowNext>) {
         serviceList.clear()
-        servicesView?.adapter?.notifyDataSetChanged()
         serviceList.addAll(services)
         overlayUiState.zapServices = serviceList.toList()
         overlayUiState.zapCurrentRef = serviceRef
@@ -569,7 +576,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
                     onServiceInfoChanged(false)
                 }
             }
-            servicesView?.adapter?.notifyDataSetChanged()
         }
         refreshZapChrome()
     }
@@ -969,7 +975,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
             overlayUiState.showInfoButton = false
         }
         updateProgress()
-        servicesView?.adapter?.notifyDataSetChanged()
         overlayUiState.zapCurrentRef = serviceRef
     }
 
@@ -1098,15 +1103,9 @@ class VideoOverlayController(private val activity: VideoActivity) :
         overlayUiState.selectedBouquetRef = bouquetRef
         if (showChannels) {
             val composeZapList = this.composeZapList
-            if (composeZapList != null) {
-                fadeInView(composeZapList)
-            } else {
-                servicesView?.layoutManager?.scrollToPosition(getCurrentServiceIndex())
-                fadeInView(servicesView)
-            }
+            fadeInView(composeZapList)
         } else {
             fadeOutView(composeZapList)
-            fadeOutView(servicesView)
         }
         if (showBouquets) {
             fadeInView(composeBouquetBar)
@@ -1119,7 +1118,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
     private fun hideZapOverlays() {
         if (rootView == null) return
         fadeOutView(composeZapList)
-        fadeOutView(servicesView)
         fadeOutView(composeBouquetBar)
     }
 
@@ -1181,10 +1179,6 @@ class VideoOverlayController(private val activity: VideoActivity) :
             MediaPlayer.Event.EncounteredError ->
                 Toast.makeText(activity, R.string.playback_failed, Toast.LENGTH_LONG).show()
         }
-    }
-
-    override fun onItemClick(recyclerView: RecyclerView, v: View, position: Int, id: Long) {
-        zapToService(serviceList[position])
     }
 
     private fun zapToService(row: ServiceNowNext) {

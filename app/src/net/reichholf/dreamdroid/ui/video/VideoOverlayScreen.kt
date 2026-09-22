@@ -74,7 +74,7 @@ class VideoOverlayUiState {
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
 
-    /** TV zap row (Compose Live TV cards). Phone overlay still uses the XML recycler. */
+    /** Zap rows for the Compose channel list (phone column and TV cards). */
     var zapServices by mutableStateOf<List<ServiceNowNext>>(emptyList())
     var zapCurrentRef by mutableStateOf<String?>(null)
 

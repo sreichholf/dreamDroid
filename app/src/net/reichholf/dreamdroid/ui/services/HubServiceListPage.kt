@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
+import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
@@ -545,8 +545,8 @@ class HubServiceListSession : MenuProvider {
     }
 
     override fun onPrepareMenu(menu: Menu) {
-        val mph = context as? MultiPaneHandler
-        if (mph?.isDrawerOpen == true) {
+        val activity = context as? MainActivity
+        if (activity?.isNavigationDrawerVisible() == true) {
             return
         }
         val hasBouquet = currentRef.isNotEmpty()

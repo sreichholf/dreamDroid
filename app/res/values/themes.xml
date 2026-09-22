@@ -81,6 +81,7 @@
         <item name="colorControlNormal">@color/md_theme_light_onSurface</item>
         <item name="actionMenuTextColor">@color/md_theme_light_onSurface</item>
         <item name="actionBarTheme">@style/ThemeOverlay.DreamDroid.Toolbar</item>
+        <item name="toolbarStyle">@style/ToolbarStyle</item>
         <item name="actionButtonStyle">@style/Widget.DreamDroid.ActionButton</item>
         <item name="actionOverflowButtonStyle">@style/Widget.DreamDroid.ActionButton.Overflow</item>
         <item name="colorSurfaceVariant">@color/md_theme_light_surfaceVariant</item>
@@ -174,6 +175,7 @@
         <item name="colorControlNormal">@color/md_theme_dark_onSurface</item>
         <item name="actionMenuTextColor">@color/md_theme_dark_onSurface</item>
         <item name="actionBarTheme">@style/ThemeOverlay.DreamDroid.Toolbar</item>
+        <item name="toolbarStyle">@style/ToolbarStyle</item>
         <item name="actionButtonStyle">@style/Widget.DreamDroid.ActionButton</item>
         <item name="actionOverflowButtonStyle">@style/Widget.DreamDroid.ActionButton.Overflow</item>
         <item name="colorSurfaceVariant">@color/md_theme_dark_surfaceVariant</item>

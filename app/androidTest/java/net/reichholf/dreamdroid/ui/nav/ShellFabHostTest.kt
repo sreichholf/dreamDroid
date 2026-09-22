@@ -1,8 +1,5 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.view.View
-import android.view.ViewGroup
-import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -12,34 +9,30 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.setViewTreeLifecycleOwner
-import androidx.lifecycle.setViewTreeViewModelStoreOwner
 import androidx.preference.PreferenceManager
-import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * Coordinator [R.id.fab_main] is shared across destinations. Successor binds must
- * win over a stale [DisposableEffect] dispose (NavHost / load remount flicker).
+ * The shell FAB is shared across destinations. Successor binds must win over a
+ * stale dispose (NavHost / load remount flicker). The label is merged into the
+ * button content description, so that is what these tests assert.
  */
 class ShellFabHostTest {
     @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    val composeRule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
     @Before
     fun forceAlwaysNight() {
@@ -50,111 +43,83 @@ class ShellFabHostTest {
 
     @Test
     fun remountKeepsLabeledFabVisible() {
-        val fab = hostDualpaneShell {
-            var remount by remember { mutableIntStateOf(0) }
-            key(remount) {
-                BindShellFab(
-                    contentDescription = "Add Profile",
-                    iconRes = R.drawable.ic_action_fab_add,
-                    onClick = {},
-                    text = "Add Profile"
-                )
-            }
-            Column {
-                Button(onClick = { remount += 1 }) { Text("remount") }
+        composeRule.setContent {
+            hostShell {
+                var remount by remember { mutableIntStateOf(0) }
+                key(remount) {
+                    BindShellFab(
+                        contentDescription = "Add Profile",
+                        iconRes = R.drawable.ic_action_fab_add,
+                        onClick = {},
+                        text = "Add Profile"
+                    )
+                }
+                Column {
+                    Button(onClick = { remount += 1 }) { Text("remount") }
+                }
             }
         }
-        waitUntilVisible(fab)
-        assertLabeled(fab, "Add Profile")
-
-        composeRule.onNodeWithText("remount").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Add Profile").assertIsDisplayed()
         composeRule.onNodeWithText("remount").performClick()
         composeRule.waitForIdle()
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        waitUntilVisible(fab)
-        assertLabeled(fab, "Add Profile")
+        composeRule.onNodeWithContentDescription("Add Profile").assertIsDisplayed()
     }
 
     @Test
     fun successorBindKeepsFabVisibleAndUpdatesLabel() {
-        val fab = hostDualpaneShell {
-            var owner by remember { mutableIntStateOf(1) }
-            val label = if (owner == 1) "Add Profile" else "New timer"
-            if (owner != 0) {
-                key(owner) {
-                    BindShellFab(
-                        contentDescription = label,
-                        iconRes = R.drawable.ic_action_fab_add,
-                        onClick = {},
-                        text = label
-                    )
+        composeRule.setContent {
+            hostShell {
+                var owner by remember { mutableIntStateOf(1) }
+                val label = if (owner == 1) "Add Profile" else "New timer"
+                if (owner != 0) {
+                    key(owner) {
+                        BindShellFab(
+                            contentDescription = label,
+                            iconRes = R.drawable.ic_action_fab_add,
+                            onClick = {},
+                            text = label
+                        )
+                    }
+                }
+                Column {
+                    Button(onClick = { owner = 2 }) { Text("swap") }
+                    Button(onClick = { owner = 0 }) { Text("clear") }
                 }
             }
-            Column {
-                Button(onClick = { owner = 2 }) { Text("swap") }
-                Button(onClick = { owner = 0 }) { Text("clear") }
-            }
         }
-        waitUntilVisible(fab)
-        assertLabeled(fab, "Add Profile")
-
-        composeRule.onNodeWithText("swap").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Add Profile").assertIsDisplayed()
         composeRule.onNodeWithText("swap").performClick()
         composeRule.waitForIdle()
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            fab.visibility == View.VISIBLE &&
-                fab.contentDescription == "New timer"
-        }
-        assertLabeled(fab, "New timer")
-
+        composeRule.onNodeWithContentDescription("New timer").assertIsDisplayed()
         composeRule.onNodeWithText("clear").performClick()
         composeRule.waitForIdle()
-        InstrumentationRegistry.getInstrumentation().waitForIdleSync()
         composeRule.waitUntil(timeoutMillis = 5_000) {
-            fab.visibility != View.VISIBLE
+            composeRule.onAllNodesWithContentDescription("New timer")
+                .fetchSemanticsNodes()
+                .isEmpty()
         }
     }
+}
 
-    private fun hostDualpaneShell(content: @Composable () -> Unit): ExtendedFloatingActionButton {
-        val activity = composeRule.activity
-        lateinit var fab: ExtendedFloatingActionButton
-        composeRule.runOnUiThread {
-            activity.setTheme(R.style.Theme_DreamDroid_Night)
-            activity.setContentView(R.layout.dualpane)
-            fab = activity.findViewById(R.id.fab_main)
-            val shell = activity.findViewById<ComposeView>(R.id.shell_destination_nav)
-            shell.visibility = View.VISIBLE
-            shell.layoutParams = shell.layoutParams.apply {
-                width = ViewGroup.LayoutParams.MATCH_PARENT
-                height = ViewGroup.LayoutParams.MATCH_PARENT
-            }
-            shell.setViewTreeLifecycleOwner(activity)
-            shell.setViewTreeViewModelStoreOwner(activity)
-            shell.setViewTreeSavedStateRegistryOwner(activity)
-            shell.setViewCompositionStrategy(
-                ViewCompositionStrategy.DisposeOnDetachedFromWindow
-            )
-            shell.setContent {
-                DreamDroidTheme {
-                    content()
-                }
-            }
+@Composable
+private fun hostShell(content: @Composable () -> Unit) {
+    val destination = remember { ShellDestinationBarController() }
+    val fab = remember { ShellFabController() }
+    DreamDroidTheme {
+        PhoneShell(
+            drawerListState = remember { DrawerListState() },
+            drawerOpen = false,
+            onDrawerOpenChange = {},
+            profileName = "Living Room",
+            connectionLabel = "Online",
+            onProfileClick = {},
+            onDrawerItemClick = {},
+            onNavigationClick = {},
+            destinationController = destination,
+            fabController = fab,
+            onToolbarReady = {}
+        ) {
+            content()
         }
-        composeRule.waitForIdle()
-        return fab
-    }
-
-    private fun waitUntilVisible(fab: ExtendedFloatingActionButton) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            fab.visibility == View.VISIBLE
-        }
-    }
-
-    private fun assertLabeled(fab: ExtendedFloatingActionButton, label: String) {
-        assertEquals(label, fab.contentDescription)
-        assertEquals(label, fab.text.toString())
-        assertTrue(fab.isExtended)
-        assertEquals(View.VISIBLE, fab.visibility)
     }
 }

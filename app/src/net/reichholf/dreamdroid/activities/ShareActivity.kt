@@ -12,10 +12,10 @@ import android.os.Bundle
 import android.text.format.DateFormat
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.res.stringResource
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Date
@@ -33,8 +33,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
+import net.reichholf.dreamdroid.ui.share.ShareProfilesHost
 import net.reichholf.dreamdroid.ui.share.ShareProfilesListState
-import net.reichholf.dreamdroid.ui.share.bindShareProfilesScreen
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
@@ -53,16 +54,20 @@ class ShareActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         localNetworkPermissionRequest.ensure(this)
-        setContentView(R.layout.share_list_content)
-        title = getText(R.string.watch_on_dream)
-        val toolbar = findViewById<Toolbar>(R.id.toolbar)
-        setSupportActionBar(toolbar)
         listState = ShareProfilesListState()
-        val compose = findViewById<ComposeView>(R.id.compose_profiles)
-        compose.bindShareProfilesScreen(listState) { item ->
-            val profile = profilesById[item.id]
-            if (profile != null) {
-                playOnDream(profile)
+        title = getText(R.string.watch_on_dream)
+        setContent {
+            DreamDroidTheme {
+                ShareProfilesHost(
+                    title = stringResource(R.string.watch_on_dream),
+                    state = listState,
+                    onProfileClick = { item ->
+                        val profile = profilesById[item.id]
+                        if (profile != null) {
+                            playOnDream(profile)
+                        }
+                    }
+                )
             }
         }
         load()

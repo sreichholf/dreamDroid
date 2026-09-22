@@ -15,12 +15,13 @@ class TabbedNavigationActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val intent = if (DreamDroid.isTV(this)) {
-            Intent(this, net.reichholf.dreamdroid.tv.activities.MainActivity::class.java)
+        val targetClass = if (DreamDroid.isTV(this)) {
+            net.reichholf.dreamdroid.tv.activities.MainActivity::class.java
         } else {
-            Intent(this, MainActivity::class.java)
+            MainActivity::class.java
         }
-        startActivity(intent)
+        val incoming = intent ?: Intent()
+        startActivity(forwardedLauncherIntent(this, incoming, targetClass))
         finish()
     }
 }

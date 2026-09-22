@@ -10,8 +10,6 @@ import android.app.Activity
 import java.util.Date
 import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.activities.MainActivity
-import net.reichholf.dreamdroid.activities.abs.MultiPaneHandler
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.helpers.DateTime
@@ -150,14 +148,6 @@ class Timer {
             params.add(NameValuePair("begin", timer.begin))
             params.add(NameValuePair("end", timer.end))
             return params
-        }
-
-        fun editUsingEvent(mph: MultiPaneHandler?, event: Event) {
-            edit(mph, createByEvent(event), true)
-        }
-
-        fun edit(mph: MultiPaneHandler?, timer: TypedTimer, create: Boolean) {
-            (mph as? MainActivity)?.phoneNav?.navigateToTimerEdit(timer, create)
         }
     }
 }
