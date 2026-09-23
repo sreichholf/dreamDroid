@@ -68,6 +68,7 @@ fun EpgBouquetDestination(
 
     DisposableEffect(handle, menuProvider, pickerListener, dialogSession) {
         handle.composeActivityResultListener = pickerListener
+        handle.dispatchPendingComposeActivityResult()
         activity.addMenuProvider(menuProvider)
         onDispose {
             if (handle.composeActivityResultListener === pickerListener) {

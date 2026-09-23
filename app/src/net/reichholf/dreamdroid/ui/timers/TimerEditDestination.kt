@@ -94,6 +94,7 @@ fun TimerEditDestination(
         session.context = context
         session.onRequestDeleteConfirm = { showDeleteConfirm = true }
         handle.composeActivityResultListener = session
+        handle.dispatchPendingComposeActivityResult()
         val activity = context as? AppCompatActivity
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {

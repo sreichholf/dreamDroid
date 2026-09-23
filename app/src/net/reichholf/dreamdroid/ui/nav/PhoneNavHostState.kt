@@ -66,6 +66,8 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override var composeDialogActionListener: DialogActionListener? = null
     override var composeActivityResultListener: PhoneNavHandle.ActivityResultListener? = null
+    private var pendingComposeActivityResult: PendingComposeActivityResult? = null
+    private var pendingComposeActivityData: Intent? = null
 
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var startRouteValue: String = PhoneNavRoutes.DEVICE_INFO
@@ -689,14 +691,45 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         val code = if (resultRequestCodes.isEmpty()) -1 else popResultRequestCode()
         if (!controller.popBackStack()) return
         mainHandler.post {
-            val composeListener = composeActivityResultListener
-            if (code >= 0 && composeListener != null) {
-                composeListener.onActivityResult(code, resultCode, data)
-            }
+            deliverComposeActivityResult(code, resultCode, data)
         }
     }
 
+    override fun dispatchPendingComposeActivityResult() {
+        val pending = takePendingComposeActivityResult(
+            listenerAttached = composeActivityResultListener != null,
+            pending = pendingComposeActivityResult
+        ) ?: return
+        val data = pendingComposeActivityData
+        pendingComposeActivityResult = null
+        pendingComposeActivityData = null
+        composeActivityResultListener?.onActivityResult(
+            pending.requestCode,
+            pending.resultCode,
+            data
+        )
+    }
+
     override fun onHostActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        deliverComposeActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun deliverComposeActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode < 0) {
+            return
+        }
+        val incoming = PendingComposeActivityResult(requestCode, resultCode)
+        val held = holdComposeActivityResultIfDetached(
+            listenerAttached = composeActivityResultListener != null,
+            incoming = incoming
+        )
+        if (held != null) {
+            pendingComposeActivityResult = held
+            pendingComposeActivityData = data
+            return
+        }
+        pendingComposeActivityResult = null
+        pendingComposeActivityData = null
         composeActivityResultListener?.onActivityResult(requestCode, resultCode, data)
     }
 

@@ -141,6 +141,7 @@ fun HubDestination(
             }
         }
         handle.composeActivityResultListener = listener
+        handle.dispatchPendingComposeActivityResult()
         onDispose {
             if (handle.composeActivityResultListener === listener) {
                 handle.composeActivityResultListener = null
