@@ -134,13 +134,16 @@ class ServiceListScreenTest {
         }
         composeRule.onNodeWithText("ZDF").performClick()
         composeRule.waitForIdle()
-        val zdf = composeRule.onNodeWithText("ZDF", useUnmergedTree = true).getBoundsInRoot()
-        val tapXDp = with(composeRule.density) { tapX.toDp() }
-        val tapYDp = with(composeRule.density) { tapY.toDp() }
-        assertTrue("expected tapX > 0 (not origin), got $tapXDp", tapXDp > 0.dp)
+        // The tap reports window coordinates; the compose root can sit below the status bar.
+        val ard = composeRule.onNodeWithText("ARD", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInWindow
+        val zdf = composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
+            .fetchSemanticsNode().boundsInWindow
+        assertTrue("expected tapX > 0 (not origin), got $tapX", tapX > 0)
         assertTrue(
-            "expected second-row tapY near the ZDF tile, tapY=$tapYDp tile=$zdf",
-            tapYDp > 40.dp && tapYDp <= zdf.bottom
+            "expected the ZDF row top between the ARD and ZDF titles, tapY=$tapY " +
+                "ard=$ard zdf=$zdf",
+            tapY >= ard.bottom && tapY <= zdf.top
         )
     }
 
