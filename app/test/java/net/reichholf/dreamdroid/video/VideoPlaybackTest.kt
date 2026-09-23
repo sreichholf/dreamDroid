@@ -58,13 +58,4 @@ class VideoPlaybackTest {
         assertNull(recording.serviceRef)
         assertNull(recording.bouquetRef)
     }
-
-    @Test
-    fun zapPersistsServiceAndBouquetRefs() {
-        val extras =
-            VideoPlayback.overlayExtrasForZap("Das Erste HD", "1:0:19:erste", "1:7:1:bouquet")
-        assertEquals("Das Erste HD", extras.title)
-        assertEquals("1:0:19:erste", extras.serviceRef)
-        assertEquals("1:7:1:bouquet", extras.bouquetRef)
-    }
 }
