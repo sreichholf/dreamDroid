@@ -122,13 +122,10 @@ fun PhoneShell(
                         onClick = onProfileClick
                     )
                     val status by SessionConnectionHolder.shared.status.collectAsState()
-                    // Remaining height after the header. fillMaxSize() on DrawerScreen
-                    // without weight takes the full sheet and clips TV & Movies / Settings.
                     DrawerScreen(
                         state = drawerListState,
                         onItemClick = onDrawerItemClick,
-                        boxActionsBlocked = status.blocksMutations,
-                        modifier = Modifier.weight(1f)
+                        boxActionsBlocked = status.blocksMutations
                     )
                 }
             }
