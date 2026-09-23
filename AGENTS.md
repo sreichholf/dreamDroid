@@ -15,6 +15,10 @@ Hard rules (also in `.editorconfig`):
 
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 
+## Subagents
+
+Use subagents whenever they make sense. Hand off exploration, investigation, and independent slices of work instead of doing all of it in the parent thread.
+
 ## Change the tests when the design changes
 
 A proper implementation is the goal. Do not keep a production type, or leave state on `remember` / `rememberSaveable`, so an existing test still compiles.
