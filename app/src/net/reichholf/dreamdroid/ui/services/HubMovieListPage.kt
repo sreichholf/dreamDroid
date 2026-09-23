@@ -15,14 +15,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import java.io.File
 import kotlinx.coroutines.Dispatchers
@@ -67,8 +66,8 @@ import net.reichholf.dreamdroid.widget.AnchorPopup
  * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
  *
  * Tag filter uses an in-composition [MultiChoiceAlertDialog] (Phase 2.1g-ii-e).
- * Pass the same [HubMovieListSession] instance into [HubMovieListPage] so menu actions
- * reach this page.
+ * [HubMovieListViewModel] owns [HubMovieListSession] for this location so a tab
+ * change keeps the loaded list and selected tags. Dialog flags stay in composition.
  *
  * Options menu (tags) and delete-confirm dialog actions are registered here while this
  * page stays in composition.
@@ -79,38 +78,19 @@ fun HubMovieListPage(
     location: String,
     locationIndex: Int,
     modifier: Modifier = Modifier,
-    session: HubMovieListSession = remember { HubMovieListSession() }
+    viewModel: HubMovieListViewModel = viewModel(key = "hub-movie:$location")
 ) {
     val context = LocalContext.current
     val view = LocalView.current
-    val scope = rememberCoroutineScope()
-    val listState = remember { MovieListState() }
-    val refresh = remember { ComposeRefreshState() }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
+    val session = viewModel.session
     var detailContent by remember { mutableStateOf<MovieDetailContent?>(null) }
-    session.onShowDetail = { detailContent = it }
-    var zapJob by remember { mutableStateOf<Job?>(null) }
-    var deleteJob by remember { mutableStateOf<Job?>(null) }
-
-    var selectedTags by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
     var showTagPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
 
     session.handle = handle
     session.context = context
     session.popupRoot = AnchorPopup.overlayRoot(view)
-    session.location = location
-    session.locationIndex = locationIndex
-    session.listState = listState
-    session.refresh = refresh
-    session.scope = scope
-    session.selectedTags = ArrayList(selectedTags)
-    session.onSelectedTags = { selectedTags = it.toList() }
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-    session.onZapJob = { zapJob = it }
-    session.onDeleteJob = { deleteJob = it }
+    session.onShowDetail = { detailContent = it }
     session.onRequestTagPicker = { showTagPicker = true }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
     session.profileId = DreamDroid.getCurrentProfile().id
@@ -122,20 +102,20 @@ fun HubMovieListPage(
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             activity?.removeMenuProvider(session)
-            loadJob?.cancel()
-            loadJob = null
-            zapJob?.cancel()
-            zapJob = null
-            deleteJob?.cancel()
-            deleteJob = null
-            session.dismissProgress()
+            session.popupRoot = null
+            session.onShowDetail = null
+            session.onRequestTagPicker = null
+            session.onRequestDeleteConfirm = null
         }
     }
 
-    LaunchedEffect(location, locationIndex) {
-        session.reload()
+    LaunchedEffect(viewModel, location, locationIndex) {
+        viewModel.bindLocation(location, locationIndex)
+        viewModel.ensureLoaded()
     }
 
+    val listState = checkNotNull(session.listState)
+    val refresh = checkNotNull(session.refresh)
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
@@ -145,7 +125,7 @@ fun HubMovieListPage(
         if (listState.items.isEmpty()) {
             ListEmptyState(
                 loading = refresh.isRefreshing,
-                message = emptyMessage,
+                message = viewModel.emptyMessage,
                 onRetry = { session.reload() }
             )
         } else {
@@ -167,7 +147,7 @@ fun HubMovieListPage(
     if (showTagPicker) {
         val tags = DreamDroid.getTags()
         val checked = BooleanArray(tags.size) { i ->
-            selectedTags.contains(DreamDroid.getTags()[i])
+            viewModel.selectedTags.contains(DreamDroid.getTags()[i])
         }
         MultiChoiceAlertDialog(
             title = stringResource(R.string.choose_tags),
@@ -270,6 +250,15 @@ class HubMovieListSession : MenuProvider {
 
     fun dismissProgress() {
         progress = null
+    }
+
+    fun cancelInFlight() {
+        loadJob?.cancel()
+        loadJob = null
+        zapJob?.cancel()
+        zapJob = null
+        deleteJob?.cancel()
+        deleteJob = null
     }
 
     fun setToolbarTitle(title: String) {
