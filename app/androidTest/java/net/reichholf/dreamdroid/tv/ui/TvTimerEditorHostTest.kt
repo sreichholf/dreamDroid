@@ -1,13 +1,18 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -15,6 +20,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
@@ -39,7 +45,7 @@ import org.junit.Test
 @OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHostTest {
     @get:Rule
-    val composeRule = createComposeRule()
+    val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private var previousProfile: Profile? = null
     private var seededLocation = false
@@ -148,6 +154,48 @@ class TvTimerEditorHostTest {
         }
         waitForName(timer.name)
         composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
+    }
+
+    @Test
+    fun editedTitleSurvivesActivityRecreation() {
+        val timer = sampleTimer(name = "Before recreate")
+        setActivityContent { EditorHost(timer = timer, isCreate = false) }
+        waitForName(timer.name)
+        composeRule.onNodeWithContentDescription("Title")
+            .performTextReplacement("After recreate")
+
+        composeRule.activityRule.scenario.recreate()
+        setActivityContent { EditorHost(timer = timer, isCreate = false) }
+
+        waitForName("After recreate")
+        composeRule.onNodeWithText(timer.name).assertDoesNotExist()
+    }
+
+    @Test
+    fun reopenAfterLeavingCompositionStartsFromLaunchTimer() {
+        val timer = sampleTimer(name = "Launch name")
+        var shown by mutableStateOf(true)
+        composeRule.setContent {
+            if (shown) {
+                EditorHost(timer = timer, isCreate = false)
+            }
+        }
+        waitForName(timer.name)
+        composeRule.onNodeWithContentDescription("Title")
+            .performTextReplacement("Discarded edit")
+        composeRule.onNodeWithText("Discarded edit").assertIsDisplayed()
+
+        shown = false
+        composeRule.waitForIdle()
+        shown = true
+
+        waitForName(timer.name)
+        composeRule.onNodeWithText("Discarded edit").assertDoesNotExist()
+    }
+
+    /** The rule's own setContent can only run once, on the activity recreate() replaces. */
+    private fun setActivityContent(content: @Composable () -> Unit) {
+        composeRule.runOnUiThread { composeRule.activity.setContent(content = content) }
     }
 
     @Composable
