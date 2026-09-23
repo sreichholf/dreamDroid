@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
@@ -15,17 +14,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -34,90 +28,39 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
-import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
-import net.reichholf.dreamdroid.multiepg.MultiEpgSession
-import net.reichholf.dreamdroid.multiepg.MultiEpgSync
-import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.TimerSnapshotStore
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 @Composable
-fun TvMultiEpgHost(activity: AppCompatActivity) {
+fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel = viewModel()) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    val sync = remember(context) { MultiEpgSyncHolder.shared(context) }
-    val persistGate = remember(context) {
-        MultiEpgPersistGate(UserBouquetCache.excludedHubTabRefs(context))
-    }
+    val session = viewModel.session
     val connection by SessionConnectionHolder.shared.status.collectAsState()
-    val session = remember(sync, scope, context) {
-        MultiEpgSession(
-            sync = sync,
-            scope = scope,
-            profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
-            noBouquetMessage = context.getString(R.string.multiepg_sync_test_no_bouquet),
-            fetchTimers = MultiEpgSync.httpFetchTimers(),
-            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
-            formatError = { error -> error.toEnigmaDisplayMessage(context) },
-            persistBouquet = persistGate::persist,
-            shouldSkipReceiverHttp = { hasCache ->
-                SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-            },
-            isSessionOffline = {
-                SessionConnectionHolder.shared.status.value.session ==
-                    ConnectionStatus.Session.Offline
-            },
-            loadCachedRoster = { profileId, ref ->
-                UserBouquetCache.loadRosterServices(
-                    AppDatabase.roster(context),
-                    profileId,
-                    ref
-                )
-            },
-            loadCachedTimers = { profileId ->
-                TimerSnapshotStore.load(AppDatabase.timer(context), profileId)
-            }
-        )
-    }
-    DisposableEffect(session) {
-        onDispose { session.cancel() }
-    }
-
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -126,95 +69,30 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
             prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
         )
     }
-    var visibleMinutes by rememberSaveable {
-        mutableIntStateOf(MultiEpgZoom.DEFAULT_MINUTES)
-    }
-    var bouquetRef by remember { mutableStateOf("") }
-    var bouquetName by remember { mutableStateOf("") }
-    var bouquets by remember { mutableStateOf<List<Service>>(emptyList()) }
-    var selectedServiceRef by remember { mutableStateOf("") }
-    var selectedStartSec by remember { mutableLongStateOf(0L) }
+    val bouquetRef = viewModel.bouquetRef
+    val visibleMinutes = viewModel.visibleMinutes
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
     var detailEvent by remember { mutableStateOf<Event?>(null) }
     var editTimerEvent by remember { mutableStateOf<Event?>(null) }
     var pickingBouquet by remember { mutableStateOf(false) }
-    var progress by remember { mutableStateOf<IndeterminateProgressState?>(null) }
 
-    LaunchedEffect(Unit) {
-        val excluded = UserBouquetCache.excludedHubTabRefs(context)
-        val profileId = DreamDroid.getCurrentProfile().id
-        val cachedTabs = if (profileId != null) {
-            UserBouquetCache.loadTabStripServices(
-                AppDatabase.roster(context),
-                profileId,
-                UserBouquetCache.KIND_TV
-            )
-        } else {
-            emptyList()
-        }
-        val hasCache = cachedTabs.isNotEmpty()
-        val live = if (
-            SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-        ) {
-            null
-        } else {
-            loadServiceList(
-                context,
-                listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
-            )
-        }
-        val services = when {
-            live != null && live.success -> live.services
-            cachedTabs.isNotEmpty() -> cachedTabs
-            live != null -> live.services
-            else -> emptyList()
-        }
-        val tabs = UserBouquetCache.userBouquetTabs(services, excluded)
-        persistGate.knownTabRefs = tabs.map { it.reference }
-        bouquets = services.filter { it.reference.isNotBlank() }
-        val profile = DreamDroid.getCurrentProfile()
-        val launch = resolveTvMultiEpgLaunchBouquet(
+    LaunchedEffect(viewModel) {
+        viewModel.start(
             extraRef = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_REF),
-            extraName = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_NAME),
-            defaultRef = profile.defaultBouquetTv.orEmpty(),
-            defaultName = profile.defaultBouquetTvName.orEmpty(),
-            firstBouquet = bouquets.firstOrNull()
+            extraName = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_NAME)
         )
-        bouquetRef = launch.first
-        bouquetName = launch.second
-        val now = MultiEpgNowClock.sec()
-        nowSec = now
-        session.replaceAndLoad(bouquetRef, now)
     }
 
-    LaunchedEffect(Unit) {
+    // Restarting on a bouquet change repaints "now" as the new grid loads.
+    LaunchedEffect(bouquetRef) {
         while (isActive) {
-            delay(MultiEpgNowClock.TICK_MS)
             nowSec = MultiEpgNowClock.sec()
+            delay(MultiEpgNowClock.TICK_MS)
         }
     }
 
-    LaunchedEffect(session.channels, selectedServiceRef, selectedStartSec) {
-        val channels = session.channels
-        if (channels.isEmpty()) {
-            return@LaunchedEffect
-        }
-        val current = channels.find { it.serviceRef == selectedServiceRef }
-        if (current == null) {
-            val first = channels.first()
-            selectedServiceRef = first.serviceRef
-            selectedStartSec = first.bars.firstOrNull()?.startSec ?: 0L
-            return@LaunchedEffect
-        }
-        if (current.bars.isEmpty()) {
-            return@LaunchedEffect
-        }
-        if (current.bars.none { it.startSec == selectedStartSec }) {
-            val overlap = current.bars.firstOrNull { bar ->
-                bar.startSec <= selectedStartSec && bar.endSec > selectedStartSec
-            }
-            selectedStartSec = overlap?.startSec ?: current.bars.first().startSec
-        }
+    LaunchedEffect(session.channels, viewModel.selectedServiceRef, viewModel.selectedStartSec) {
+        viewModel.reconcileSelection()
     }
 
     val zoomSeconds = visibleMinutes * 60L
@@ -225,7 +103,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
     DreamDroidTvTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             TvMultiEpgScreen(
-                bouquetName = bouquetName.ifBlank { stringResource(R.string.multiepg) },
+                bouquetName = viewModel.bouquetName.ifBlank { stringResource(R.string.multiepg) },
                 channels = session.channels,
                 timelineStartSec = session.timelineStartSec,
                 timelineEndSec = session.timelineEndSec,
@@ -233,18 +111,13 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                 originFloorSec = session.originFloorSec,
                 loading = session.syncing,
                 errorMessage = session.errorMessage,
-                selectedServiceRef = selectedServiceRef,
-                selectedStartSec = selectedStartSec,
-                onSelectedChange = { ref, start ->
-                    selectedServiceRef = ref
-                    selectedStartSec = start
-                },
+                selectedServiceRef = viewModel.selectedServiceRef,
+                selectedStartSec = viewModel.selectedStartSec,
+                onSelectedChange = viewModel::select,
                 onJumpToNow = {
                     val now = MultiEpgNowClock.sec()
                     nowSec = now
-                    selectedServiceRef = ""
-                    selectedStartSec = 0L
-                    session.replaceAndLoad(bouquetRef, now)
+                    viewModel.jumpToNow(now)
                 },
                 onPrevDay = {
                     val target = maxOf(
@@ -266,7 +139,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                 onEventClick = { event -> detailEvent = event },
                 onBouquetClick = { pickingBouquet = true },
                 visibleMinutes = visibleMinutes,
-                onVisibleMinutesChange = { visibleMinutes = it },
+                onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
                 textSize = textSize,
                 timerClocks = session.timerClocks,
                 keysEnabled = detailEvent == null && editTimerEvent == null && !pickingBouquet
@@ -277,9 +150,9 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
                     event = event,
                     bouquetRef = bouquetRef,
                     activity = activity,
-                    progress = progress,
-                    onProgress = { progress = it },
+                    progress = viewModel.setTimerProgress,
                     onDismiss = { detailEvent = null },
+                    onSetTimer = { viewModel.setTimer(event) },
                     onEditTimer = {
                         detailEvent = null
                         editTimerEvent = event
@@ -290,18 +163,10 @@ fun TvMultiEpgHost(activity: AppCompatActivity) {
             }
             if (pickingBouquet) {
                 TvMultiEpgBouquetPicker(
-                    bouquets = bouquets,
+                    bouquets = viewModel.bouquets,
                     onPick = { service ->
                         pickingBouquet = false
-                        if (service.reference != bouquetRef) {
-                            bouquetRef = service.reference
-                            bouquetName = service.name.ifBlank { service.reference }
-                            selectedServiceRef = ""
-                            selectedStartSec = 0L
-                            val now = MultiEpgNowClock.sec()
-                            nowSec = now
-                            session.replaceAndLoad(service.reference, now)
-                        }
+                        viewModel.pickBouquet(service)
                     },
                     onDismiss = { pickingBouquet = false }
                 )
@@ -329,7 +194,6 @@ internal fun TvMultiEpgEventDetail(
     event: Event,
     bouquetRef: String,
     progress: IndeterminateProgressState?,
-    onProgress: (IndeterminateProgressState?) -> Unit,
     onDismiss: () -> Unit,
     activity: AppCompatActivity? = null,
     onStream: (() -> Unit)? = null,
@@ -345,15 +209,6 @@ internal fun TvMultiEpgEventDetail(
     val content = event.toEpgDetailContentOrUnavailable(minutesShort, unavailable)
     val firstActionFocus = remember { FocusRequester() }
     var showNeedsReceiver by remember { mutableStateOf(false) }
-    var setTimerJob by remember { mutableStateOf<Job?>(null) }
-    val latestOnProgress by rememberUpdatedState(onProgress)
-    DisposableEffect(event) {
-        onDispose {
-            setTimerJob?.cancel()
-            setTimerJob = null
-            latestOnProgress(null)
-        }
-    }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(event) {
         try {
@@ -420,35 +275,7 @@ internal fun TvMultiEpgEventDetail(
                             showNeedsReceiver = true
                             return@TvMultiEpgAction
                         }
-                        if (onSetTimer != null) {
-                            onSetTimer()
-                            return@TvMultiEpgAction
-                        }
-                        val host = activity ?: return@TvMultiEpgAction
-                        if (progress != null) {
-                            return@TvMultiEpgAction
-                        }
-                        onProgress(
-                            IndeterminateProgressState(
-                                message = context.getString(R.string.saving)
-                            )
-                        )
-                        setTimerJob?.cancel()
-                        setTimerJob = host.launchSimpleResultLoad(
-                            TimerAddByEventIdRequestHandler(),
-                            Timer.getEventIdParams(event)
-                        ) { _, result, error ->
-                            onProgress(null)
-                            setTimerJob = null
-                            var toastText = context.getText(R.string.get_content_error)
-                                .toString()
-                            val stateText = result.stateText
-                            when {
-                                !stateText.isNullOrEmpty() -> toastText = stateText
-                                error != null -> toastText = error.resolve(context).orEmpty()
-                            }
-                            Toast.makeText(context, toastText, Toast.LENGTH_LONG).show()
-                        }
+                        onSetTimer?.invoke()
                     },
                     focusRequester = if (streamingEnabled) {
                         null
