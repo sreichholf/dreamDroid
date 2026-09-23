@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.enigma
 
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -23,7 +24,14 @@ fun LifecycleOwner.launchSimpleResultLoad(
     params: List<NameValuePair>,
     profile: Profile? = null,
     onResult: (success: Boolean, result: SimpleResult, error: EnigmaHttpError?) -> Unit
-): Job = lifecycleScope.launch {
+): Job = lifecycleScope.launchSimpleResultLoad(requestHandler, params, profile, onResult)
+
+fun CoroutineScope.launchSimpleResultLoad(
+    requestHandler: SimpleResultRequestHandler,
+    params: List<NameValuePair>,
+    profile: Profile? = null,
+    onResult: (success: Boolean, result: SimpleResult, error: EnigmaHttpError?) -> Unit
+): Job = launch {
     val http = if (profile != null) EnigmaHttp(profile) else EnigmaHttp()
     val outcome = withContext(Dispatchers.IO) {
         simpleResultFromFetch(requestHandler.fetch(http, params)) { xml ->

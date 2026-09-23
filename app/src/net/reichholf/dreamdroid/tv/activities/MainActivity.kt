@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.activities
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -25,16 +27,15 @@ import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
-import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
+import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
-import net.reichholf.dreamdroid.ui.setup.toSetupReceiver
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /**
@@ -50,9 +51,13 @@ class MainActivity :
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
         if (!showingSetup) {
+            // The hub ViewModel outlives recreate(), so its loads that failed
+            // without the permission have to be restarted by hand.
+            hubViewModel.reload()
             recreate()
         }
     }
+    private val hubViewModel: TvHubViewModel by viewModels { TvHubViewModel.Factory }
     private var checkProfileJob: Job? = null
     private var reachabilityJob: Job? = null
     private var showingSetup: Boolean = false
@@ -90,19 +95,9 @@ class MainActivity :
         setContent {
             DreamDroidTvTheme {
                 SetupAssistantScreen(
+                    viewModel = viewModel(),
                     localNetworkGranted = lanGranted,
                     onRequestLocalNetwork = { localNetworkPermissionRequest.ensure(this) },
-                    onSearch = {
-                        withContext(Dispatchers.IO) {
-                            DeviceDetector.getAvailableHosts().map { it.toSetupReceiver() }
-                        }
-                    },
-                    onCheck = { profile ->
-                        profile.cachedDeviceInfo = null
-                        withContext(Dispatchers.IO) {
-                            CheckProfile.checkProfile(profile, this@MainActivity)
-                        }
-                    },
                     onSave = { profile ->
                         val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
                         profile.id = id

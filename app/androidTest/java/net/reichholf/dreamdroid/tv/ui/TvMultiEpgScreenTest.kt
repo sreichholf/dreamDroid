@@ -210,7 +210,6 @@ class TvMultiEpgScreenTest {
                         ),
                         bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
-                        onProgress = {},
                         onDismiss = {},
                         onStream = { streamed = true }
                     )
@@ -244,7 +243,6 @@ class TvMultiEpgScreenTest {
                         ),
                         bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
-                        onProgress = {},
                         onDismiss = {},
                         streamingEnabled = false
                     )
@@ -272,7 +270,6 @@ class TvMultiEpgScreenTest {
                         ),
                         bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
-                        onProgress = {},
                         onDismiss = {},
                         onEditTimer = { edited = true }
                     )

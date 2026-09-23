@@ -13,18 +13,15 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -33,121 +30,68 @@ import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
+import net.reichholf.dreamdroid.ui.pick.TimerServicePickViewModel
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
-import net.reichholf.dreamdroid.ui.zap.ZapListMapper
+
+/**
+ * The picker has no nav entry of its own, so its ViewModel lives on the activity. The key
+ * carries the profile because a TV profile switch does not recreate the activity.
+ */
+internal fun tvTimerServicePickKey(): String =
+    "tv-timer-service-pick:${DreamDroid.currentProfileOrNull()?.id}"
 
 /**
  * D-pad timer service picker: bouquet list, then channels. Back on channels returns
  * to bouquets; Back on bouquets dismisses. TV then radio, markers skipped.
+ * Reopening the picker shows the bouquet and list it was left on.
  */
-@OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TvTimerServicePick(
     onPicked: (Service) -> Unit,
     onDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    viewModel: TimerServicePickViewModel = viewModel(key = tvTimerServicePickKey())
 ) {
-    val context = LocalContext.current
-    var bouquet by remember { mutableStateOf<Service?>(null) }
-    var bouquets by remember { mutableStateOf<List<Service>>(emptyList()) }
-    var channels by remember { mutableStateOf<List<Service>>(emptyList()) }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    val firstRowFocus = remember { FocusRequester() }
-    val rows = if (bouquet == null) bouquets else channels
-    val loadingText = stringResource(R.string.loading)
-    val emptyText = stringResource(R.string.no_list_item)
+    val session = viewModel.session
+    val items = session.listState.items
+    val rows = if (session.bouquetRef.isEmpty()) items.withoutMarkers() else items.toList()
 
     BackHandler {
-        if (bouquet != null) {
-            bouquet = null
-            channels = emptyList()
-            emptyMessage = null
+        if (session.bouquetRef.isNotEmpty()) {
+            session.showBouquetList()
         } else {
             onDismiss()
         }
     }
 
-    LaunchedEffect(bouquet) {
-        val selected = bouquet
-        if (selected == null) {
-            if (bouquets.isNotEmpty()) {
-                emptyMessage = null
-                return@LaunchedEffect
-            }
-            emptyMessage = loadingText
-            val result = loadBouquetList(context.applicationContext)
-            if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
-                val cached = if (profileId != null) {
-                    val dao = AppDatabase.roster(context)
-                    val cachedRows = ArrayList(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_TV
-                        )
-                    )
-                    cachedRows.addAll(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_RADIO
-                        )
-                    )
-                    cachedRows
-                } else {
-                    emptyList()
-                }
-                if (cached.isNotEmpty()) {
-                    bouquets = cached.withoutMarkers()
-                    emptyMessage = if (bouquets.isEmpty()) emptyText else null
-                    return@LaunchedEffect
-                }
-                bouquets = emptyList()
-                emptyMessage = result.errorText ?: emptyText
-                return@LaunchedEffect
-            }
-            val combined = ArrayList(result.bouquets.tv)
-            combined.addAll(result.bouquets.radio)
-            bouquets = combined.withoutMarkers()
-            emptyMessage = if (bouquets.isEmpty()) emptyText else null
-            return@LaunchedEffect
+    LaunchedEffect(viewModel) {
+        // The activity-scoped list outlives a failed load; retry it on every open.
+        if (session.listState.items.isEmpty()) {
+            session.reload()
         }
-        emptyMessage = loadingText
-        channels = emptyList()
-        val result = loadServiceList(
-            context.applicationContext,
-            listOf(NameValuePair("sRef", selected.reference))
-        )
-        if (!result.success) {
-            val profileId = DreamDroid.getCurrentProfile().id
-            val cached = if (profileId != null) {
-                UserBouquetCache.loadRosterServices(
-                    AppDatabase.roster(context),
-                    profileId,
-                    selected.reference
-                )
-            } else {
-                null
-            }
-            if (cached != null) {
-                channels = ZapListMapper.rowsFrom(cached)
-                emptyMessage = if (channels.isEmpty()) emptyText else null
-                return@LaunchedEffect
-            }
-            channels = emptyList()
-            emptyMessage = result.errorText ?: emptyText
-            return@LaunchedEffect
-        }
-        channels = ZapListMapper.rowsFrom(result.services)
-        emptyMessage = if (channels.isEmpty()) emptyText else null
     }
+
+    TvTimerServicePickScreen(
+        rows = rows,
+        emptyMessage = session.emptyMessage,
+        onRowClick = { service ->
+            session.onRowClick(service)?.let(onPicked)
+        },
+        modifier = modifier
+    )
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+fun TvTimerServicePickScreen(
+    rows: List<Service>,
+    emptyMessage: String?,
+    onRowClick: (Service) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val firstRowFocus = remember { FocusRequester() }
+    val loadingText = stringResource(R.string.loading)
 
     LaunchedEffect(rows) {
         if (rows.isEmpty()) {
@@ -186,16 +130,7 @@ fun TvTimerServicePick(
                     "${service.reference}-$index"
                 }) { index, service ->
                     Surface(
-                        onClick = {
-                            if (ServiceKeys.isMarker(service.reference)) {
-                                return@Surface
-                            }
-                            if (bouquet == null) {
-                                bouquet = service
-                            } else {
-                                onPicked(service)
-                            }
-                        },
+                        onClick = { onRowClick(service) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .then(

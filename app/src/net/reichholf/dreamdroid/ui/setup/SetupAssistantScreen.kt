@@ -46,12 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -78,67 +73,21 @@ private const val INTRO_MOVE_MS: Int = 800
 
 @Composable
 fun SetupAssistantScreen(
+    viewModel: SetupAssistantViewModel,
     localNetworkGranted: Boolean,
     onRequestLocalNetwork: () -> Unit,
-    onSearch: suspend () -> List<SetupReceiver>,
-    onCheck: suspend (Profile) -> ProfileCheckResult,
     onSave: (Profile) -> Unit,
     onLeave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var stepName by rememberSaveable { mutableStateOf(SetupStep.Welcome.name) }
-    var host by rememberSaveable { mutableStateOf("") }
-    var useHttps by rememberSaveable { mutableStateOf(false) }
-    var portText by rememberSaveable { mutableStateOf("80") }
-    var login by rememberSaveable { mutableStateOf(true) }
-    var user by rememberSaveable { mutableStateOf("root") }
-    var pass by rememberSaveable { mutableStateOf("dreambox") }
-    var profileName by rememberSaveable { mutableStateOf("") }
-    var nameEdited by rememberSaveable { mutableStateOf(false) }
-    var trustAllCerts by rememberSaveable { mutableStateOf(false) }
-    var suggestedName by rememberSaveable { mutableStateOf("") }
-    var devices by remember { mutableStateOf<List<SetupReceiver>>(emptyList()) }
-    var searching by remember { mutableStateOf(false) }
-    var searched by remember { mutableStateOf(false) }
-    var askedForNetwork by rememberSaveable { mutableStateOf(false) }
-    var checking by remember { mutableStateOf(false) }
-    var checkResult by remember { mutableStateOf<ProfileCheckResult?>(null) }
-    var submittedCheck by remember { mutableIntStateOf(0) }
-    var checkEpoch by remember { mutableIntStateOf(0) }
-    val step = SetupStep.entries.firstOrNull { it.name == stepName } ?: SetupStep.Welcome
-
-    fun portNumber(): Int = portText.toIntOrNull()?.takeIf { it in 1..65535 }
-        ?: if (useHttps) 443 else 80
-
-    fun draft(): Profile = wizardProfile(
-        name = profileName,
-        host = host,
-        port = portNumber(),
-        useHttps = useHttps,
-        login = login,
-        user = user,
-        pass = pass,
-        trustAllCerts = trustAllCerts
-    )
-
-    fun startCheck() {
-        checkEpoch += 1
-        submittedCheck = checkEpoch
-    }
-
-    fun clearCheckResult() {
-        checkEpoch += 1
-        checkResult = null
-        checking = false
-    }
+    val draft = viewModel.draft
+    val step = draft.step
+    val checking = viewModel.checking
+    val checkResult = viewModel.checkResult
 
     BackHandler {
-        when (step) {
-            SetupStep.Welcome -> onLeave()
-            SetupStep.Find -> stepName = SetupStep.Welcome.name
-            SetupStep.Connection -> stepName = SetupStep.Find.name
-            SetupStep.SignIn -> stepName = SetupStep.Connection.name
-            SetupStep.Name -> stepName = SetupStep.SignIn.name
+        if (!viewModel.back()) {
+            onLeave()
         }
     }
 
@@ -146,36 +95,11 @@ fun SetupAssistantScreen(
         if (step != SetupStep.Find) {
             return@LaunchedEffect
         }
-        if (!askedForNetwork) {
-            askedForNetwork = true
+        if (viewModel.claimNetworkRequest()) {
             onRequestLocalNetwork()
         }
-        if (!localNetworkGranted || searched) {
-            return@LaunchedEffect
-        }
-        searching = true
-        devices = onSearch()
-        searching = false
-        searched = true
-    }
-
-    LaunchedEffect(submittedCheck) {
-        val serial = submittedCheck
-        if (serial == 0 || serial != checkEpoch) {
-            return@LaunchedEffect
-        }
-        checking = true
-        checkResult = null
-        val profile = draft()
-        try {
-            val result = onCheck(profile)
-            if (serial == checkEpoch) {
-                checkResult = result
-            }
-        } finally {
-            if (serial == checkEpoch) {
-                checking = false
-            }
+        if (localNetworkGranted) {
+            viewModel.search()
         }
     }
 
@@ -190,15 +114,15 @@ fun SetupAssistantScreen(
         runCatching { startFocus.requestFocus() }
     }
     val progress = intro.value
-    val signInReady = !login || user.isNotBlank()
+    val signInReady = !draft.login || draft.user.isNotBlank()
     val signInChecked = checkResult != null && !checking
     val failed = checkResult?.hasError == true
     val actionEnabled = when (step) {
-        SetupStep.Find -> host.isNotBlank()
+        SetupStep.Find -> draft.host.isNotBlank()
 
         SetupStep.Connection -> {
-            val port = portText.toIntOrNull()
-            host.isNotBlank() && port != null && port in 1..65535
+            val port = draft.portText.toIntOrNull()
+            draft.host.isNotBlank() && port != null && port in 1..65535
         }
 
         SetupStep.SignIn -> signInReady && (signInChecked || !checking)
@@ -299,7 +223,7 @@ fun SetupAssistantScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Button(
-                                        onClick = { stepName = SetupStep.Find.name },
+                                        onClick = { viewModel.advance() },
                                         enabled = progress >= 1f,
                                         modifier = Modifier
                                             .focusRequester(startFocus)
@@ -310,87 +234,42 @@ fun SetupAssistantScreen(
                                 }
 
                                 SetupStep.Find -> FindStep(
-                                    host = host,
-                                    onHostChange = {
-                                        host = it
-                                        suggestedName = ""
-                                        clearCheckResult()
-                                    },
-                                    devices = devices,
-                                    searching = searching,
-                                    searched = searched,
+                                    host = draft.host,
+                                    onHostChange = viewModel::onFindHostChange,
+                                    devices = viewModel.devices,
+                                    searching = viewModel.searching,
+                                    searched = viewModel.searched,
                                     localNetworkGranted = localNetworkGranted,
-                                    portText = portText,
-                                    onPick = { receiver ->
-                                        host = receiver.host
-                                        portText = receiver.port.toString()
-                                        useHttps = receiver.port == 443
-                                        suggestedName = receiver.name
-                                        nameEdited = false
-                                        clearCheckResult()
-                                    }
+                                    portText = draft.portText,
+                                    onPick = viewModel::onPick
                                 )
 
                                 SetupStep.Connection -> ConnectionStep(
-                                    host = host,
-                                    onHostChange = {
-                                        host = it
-                                        clearCheckResult()
-                                    },
-                                    useHttps = useHttps,
-                                    onHttpsChange = { https ->
-                                        val current = portText.toIntOrNull()
-                                        val wasDefault =
-                                            current == null || current == 80 || current == 443
-                                        useHttps = https
-                                        if (wasDefault) {
-                                            portText = if (https) {
-                                                "443"
-                                            } else {
-                                                "80"
-                                            }
-                                        }
-                                        clearCheckResult()
-                                    },
-                                    portText = portText,
-                                    onPortChange = {
-                                        portText = it
-                                        clearCheckResult()
-                                    }
+                                    host = draft.host,
+                                    onHostChange = viewModel::onHostChange,
+                                    useHttps = draft.useHttps,
+                                    onHttpsChange = viewModel::onHttpsChange,
+                                    portText = draft.portText,
+                                    onPortChange = viewModel::onPortChange
                                 )
 
                                 SetupStep.SignIn -> SignInStep(
-                                    login = login,
-                                    onLoginChange = {
-                                        login = it
-                                        clearCheckResult()
-                                    },
-                                    user = user,
-                                    onUserChange = {
-                                        user = it
-                                        clearCheckResult()
-                                    },
-                                    pass = pass,
-                                    onPassChange = {
-                                        pass = it
-                                        clearCheckResult()
-                                    },
+                                    login = draft.login,
+                                    onLoginChange = viewModel::onLoginChange,
+                                    user = draft.user,
+                                    onUserChange = viewModel::onUserChange,
+                                    pass = draft.pass,
+                                    onPassChange = viewModel::onPassChange,
                                     checking = checking,
                                     result = checkResult,
-                                    trustAllCerts = trustAllCerts,
-                                    onTrustAllChange = { enabled ->
-                                        trustAllCerts = enabled
-                                        startCheck()
-                                    },
+                                    trustAllCerts = draft.trustAllCerts,
+                                    onTrustAllChange = viewModel::onTrustAllChange,
                                     modifier = Modifier.fillMaxWidth()
                                 )
 
                                 SetupStep.Name -> NameStep(
-                                    profileName = profileName,
-                                    onNameChange = {
-                                        profileName = it
-                                        nameEdited = true
-                                    }
+                                    profileName = draft.profileName,
+                                    onNameChange = viewModel::onNameChange
                                 )
                             }
                         }
@@ -406,51 +285,17 @@ fun SetupAssistantScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = {
-                    stepName = when (step) {
-                        SetupStep.Find -> SetupStep.Welcome.name
-                        SetupStep.Connection -> SetupStep.Find.name
-                        SetupStep.SignIn -> SetupStep.Connection.name
-                        SetupStep.Name -> SetupStep.SignIn.name
-                        SetupStep.Welcome -> SetupStep.Welcome.name
-                    }
-                }) {
+                TextButton(onClick = { viewModel.back() }) {
                     Text(stringResource(R.string.setup_back))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (step == SetupStep.SignIn && failed && !checking) {
-                        TextButton(onClick = { startCheck() }) {
+                        TextButton(onClick = viewModel::check) {
                             Text(stringResource(R.string.setup_retry))
                         }
                     }
                     Button(
-                        onClick = {
-                            when (step) {
-                                SetupStep.Find -> stepName = SetupStep.Connection.name
-
-                                SetupStep.Connection -> stepName = SetupStep.SignIn.name
-
-                                SetupStep.SignIn -> {
-                                    if (signInChecked) {
-                                        if (!nameEdited) {
-                                            profileName = suggestedName.ifBlank { host.trim() }
-                                        }
-                                        stepName = SetupStep.Name.name
-                                    } else {
-                                        startCheck()
-                                    }
-                                }
-
-                                SetupStep.Name -> {
-                                    if (profileName.isBlank()) {
-                                        profileName = host.trim()
-                                    }
-                                    onSave(draft())
-                                }
-
-                                SetupStep.Welcome -> Unit
-                            }
-                        },
+                        onClick = { viewModel.advance()?.let(onSave) },
                         enabled = actionEnabled
                     ) {
                         Text(stringResource(actionLabel))

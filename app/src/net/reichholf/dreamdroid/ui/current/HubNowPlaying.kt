@@ -1,69 +1,40 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.preference.PreferenceManager
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.loadCurrentService
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
-private const val POLL_MS = 30_000L
-private const val PROFILE_WAIT_MS = 20_000L
-
 /**
- * Polls `/web/getcurrent` into [hubState] for the Coordinator now-playing strip
- * and hosts [CurrentServiceSheet] on tap. No-op when
+ * Publishes [HubNowPlayingViewModel]'s `/web/getcurrent` into [hubState] for the
+ * Coordinator now-playing strip and hosts [CurrentServiceSheet] on tap. No-op when
  * [DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP] is off.
  */
 @Composable
-fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHubState) {
+fun HubNowPlaying(
+    handle: PhoneNavHandle,
+    reloadEpoch: Int,
+    hubState: TvMoviesHubState,
+    viewModel: HubNowPlayingViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val prefs = remember(context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-    var enabled by remember {
-        mutableStateOf(prefs.getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true))
-    }
-    var profileId by remember {
-        mutableIntStateOf(DreamDroid.getCurrentProfile().id ?: -1)
-    }
-    DisposableEffect(prefs) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP) {
-                enabled = prefs.getBoolean(key, true)
-            }
-            if (key == DreamDroid.CURRENT_PROFILE) {
-                profileId = prefs.getInt(DreamDroid.CURRENT_PROFILE, profileId)
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
+    val enabled = viewModel.enabled
     hubState.nowPlayingStripEnabled = enabled
     if (!enabled) {
         hubState.nowPlayingLabel = ""
@@ -75,46 +46,17 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
         return
     }
 
-    val scope = rememberCoroutineScope()
-    val gate = remember { CurrentServiceLoadGate() }
-    var current by remember { mutableStateOf<CurrentService?>(null) }
-    var ready by remember { mutableStateOf(false) }
     var showSheet by rememberSaveable { mutableStateOf(false) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
     val loadingText = stringResource(R.string.loading)
-    val session = SessionConnectionHolder.shared.status.collectAsState().value.session
+    val session = viewModel.sessions.status.collectAsState().value.session
     val sessionOffline = session == ConnectionStatus.Session.Offline
     val unavailableText = nowPlayingFallbackText(
         sessionOffline = sessionOffline,
         offlineText = stringResource(R.string.session_offline),
         unavailableText = stringResource(R.string.not_available)
     )
-    val shown = current.takeIf {
-        gate.lastGoodProfileId == profileId && !sessionOffline
-    }
-
-    fun reload() {
-        if (SessionConnectionHolder.shared.status.value.session ==
-            ConnectionStatus.Session.Offline
-        ) {
-            ready = true
-            return
-        }
-        val generation = gate.beginLoad()
-        val loadProfileId = DreamDroid.getCurrentProfile().id ?: -1
-        loadJob?.cancel()
-        loadJob = scope.launch {
-            val result = loadCurrentService(context.applicationContext)
-            val next = result.current
-            if (result.success && next != null) {
-                gate.applySuccess(generation, loadProfileId, next)
-            }
-            if (gate.isCurrent(generation)) {
-                current = gate.visible(DreamDroid.getCurrentProfile().id ?: -1)
-                ready = true
-            }
-        }
-    }
+    val ready = viewModel.ready
+    val shown = viewModel.shown(sessionOffline)
 
     fun stream() {
         if (!currentServiceCanStream(shown)) {
@@ -131,39 +73,9 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
         }
     }
 
-    LaunchedEffect(profileId, session) {
-        current = gate.visible(profileId)
-        ready = current != null
-        if (session == ConnectionStatus.Session.Offline) {
-            ready = true
-            return@LaunchedEffect
-        }
-        if (session != ConnectionStatus.Session.Online) {
-            withTimeoutOrNull(PROFILE_WAIT_MS) {
-                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
-                    delay(100)
-                }
-            }
-        }
-        reload()
-        while (true) {
-            delay(POLL_MS)
-            reload()
-        }
-    }
+    LaunchedEffect(viewModel.profileId, session) { viewModel.poll(session) }
 
-    LaunchedEffect(reloadEpoch) {
-        if (reloadEpoch > 0) {
-            reload()
-        }
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            loadJob?.cancel()
-            loadJob = null
-        }
-    }
+    LaunchedEffect(reloadEpoch) { viewModel.onReloadEpoch(reloadEpoch) }
 
     val service = shown?.service
     val now = shown?.now
@@ -191,7 +103,7 @@ fun HubNowPlaying(handle: PhoneNavHandle, reloadEpoch: Int, hubState: TvMoviesHu
             onStream = { stream() },
             onDismiss = {
                 showSheet = false
-                reload()
+                viewModel.reload()
             }
         )
     }

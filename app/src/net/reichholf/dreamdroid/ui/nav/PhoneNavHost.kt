@@ -206,14 +206,8 @@ private fun PhoneNavHostGraph(
                     defaultValue = ""
                 }
             )
-        ) { entry ->
-            val serviceRef = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
-            val serviceName = entry.arguments?.getString(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
-            ServiceEpgDestination(
-                handle = handle,
-                serviceRef = serviceRef,
-                serviceName = serviceName
-            )
+        ) {
+            ServiceEpgDestination(handle = handle)
         }
         composable(
             route = PhoneNavRoutes.EPG_SEARCH,

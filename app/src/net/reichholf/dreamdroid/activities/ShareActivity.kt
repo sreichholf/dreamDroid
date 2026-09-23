@@ -7,46 +7,27 @@
 package net.reichholf.dreamdroid.activities
 
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.text.format.DateFormat
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.res.stringResource
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
-import java.util.Date
-import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
-import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.share.ShareProfilesHost
-import net.reichholf.dreamdroid.ui.share.ShareProfilesListState
+import net.reichholf.dreamdroid.ui.share.ShareRequest
+import net.reichholf.dreamdroid.ui.share.ShareViewModel
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * Share / view intent → pick a profile (Compose) → play on the box via MEDIA_PLAYER_PLAY.
  */
 class ShareActivity : AppCompatActivity() {
-    private var simpleResultJob: Job? = null
-    private lateinit var listState: ShareProfilesListState
-    private var shareTitle: String? = null
-
-    private var profiles: List<Profile>? = null
-    private val profilesById: MutableMap<Int, Profile> = HashMap()
+    private val viewModel: ShareViewModel by viewModels()
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,141 +35,46 @@ class ShareActivity : AppCompatActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         localNetworkPermissionRequest.ensure(this)
-        listState = ShareProfilesListState()
         title = getText(R.string.watch_on_dream)
         setContent {
             DreamDroidTheme {
                 ShareProfilesHost(
                     title = stringResource(R.string.watch_on_dream),
-                    state = listState,
-                    onProfileClick = { item ->
-                        val profile = profilesById[item.id]
-                        if (profile != null) {
-                            playOnDream(profile)
-                        }
-                    }
+                    state = viewModel.listState,
+                    onProfileClick = viewModel::onProfileClick
                 )
             }
-        }
-        load()
-    }
-
-    override fun onDestroy() {
-        listState.progress = null
-        simpleResultJob?.cancel(null)
-        simpleResultJob = null
-        super.onDestroy()
-    }
-
-    private fun playOnDream(p: Profile) {
-        var url: String? = null
-        val i = intent
-        val extras = i.extras
-        if (Intent.ACTION_SEND == i.action) {
-            url = extras!!.getString(Intent.EXTRA_TEXT)
-        } else if (Intent.ACTION_VIEW == i.action) {
-            url = i.dataString
-        }
-
-        if (url != null) {
-            Log.i(LOG_TAG, url)
-            Log.i(LOG_TAG, p.host.orEmpty())
-
-            val time = DateFormat.getDateFormat(this).format(Date())
-            var title = getString(R.string.sent_from_dreamdroid, time)
-            if (extras != null) {
-                // semperVidLinks sends "artist" and "song" attributes for the
-                // youtube video titles
-                val song = extras.getString("song")
-                if (song != null) {
-                    val artist = extras.getString("artist")
-                    if (artist != null) title = "$artist - $song"
-                } else {
-                    val tmp = extras.getString("title")
-                    if (tmp != null) title = tmp
+            val toast = viewModel.toast
+            LaunchedEffect(toast) {
+                if (toast != null) {
+                    Toast.makeText(applicationContext, toast, Toast.LENGTH_LONG).show()
+                    viewModel.consumeToast()
                 }
             }
-            shareTitle = title
-
-            val uri = Uri.parse(url)
-            url = URLEncoder.encode(url, StandardCharsets.UTF_8).replace("+", "%20")
-            title = URLEncoder.encode(title, StandardCharsets.UTF_8).replace("+", "%20")
-
-            var ref = "4097:0:1:0:0:0:0:0:0:0:$url:$title"
-
-            if ("youtu.be" == uri.host) {
-                val vid = uri.path!!.substring(1)
-                ref = String.format(
-                    "8193:0:1:0:0:0:0:0:0:0:%s:%s",
-                    URLEncoder.encode(String.format("yt://%s", vid), StandardCharsets.UTF_8),
-                    title
-                )
+            val finished = viewModel.finished
+            LaunchedEffect(finished) {
+                if (finished) {
+                    finish()
+                }
             }
-            Log.i(LOG_TAG, ref)
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("file", ref))
-            execSimpleResultTask(params, p)
+        }
+        viewModel.start(shareRequest(intent))
+    }
+
+    private fun shareRequest(intent: Intent): ShareRequest {
+        val extras = intent.extras
+        val url = when (intent.action) {
+            Intent.ACTION_SEND -> extras?.getString(Intent.EXTRA_TEXT)
+            Intent.ACTION_VIEW -> intent.dataString
+            else -> null
+        }
+        // semperVidLinks sends "artist" and "song" for YouTube video titles.
+        val song = extras?.getString("song")
+        val title = if (song != null) {
+            extras.getString("artist")?.let { artist -> "$artist - $song" }
         } else {
-            finish()
+            extras?.getString("title")
         }
-    }
-
-    fun load() {
-        val dao = AppDatabase.profilesBlocking(this)
-        profiles = dao.getProfiles()
-        profilesById.clear()
-        val profiles = this.profiles!!
-        if (profiles.size > 1) {
-            val items = ArrayList<ProfileListItem>()
-            for (m in profiles) {
-                val id = m.id ?: 0
-                profilesById[id] = m
-                items.add(ProfileListItem(id, m.name.orEmpty(), m.host.orEmpty(), false))
-            }
-            listState.replaceAll(items)
-        } else {
-            if (profiles.size == 1) {
-                playOnDream(profiles[0])
-            } else {
-                showToast(getString(R.string.no_profile_available))
-            }
-        }
-    }
-
-    fun execSimpleResultTask(params: ArrayList<NameValuePair>, profile: Profile) {
-        if (listState.progress != null) {
-            return
-        }
-        simpleResultJob?.cancel(null)
-        listState.progress = IndeterminateProgressState(
-            title = getString(R.string.loading),
-            message = getString(R.string.loading)
-        )
-        val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
-        simpleResultJob = launchSimpleResultLoad(handler, params, profile) { _, result, error ->
-            simpleResultJob = null
-            onSimpleResult(result, error)
-        }
-    }
-
-    fun onSimpleResult(result: SimpleResult?, error: EnigmaHttpError?) {
-        listState.progress = null
-
-        if (shareTitle == null) shareTitle = "..."
-        var toastText = getString(R.string.sent_as, shareTitle)
-        if (error != null) {
-            toastText = error.resolve(this) ?: toastText
-        }
-
-        showToast(toastText)
-        finish()
-    }
-
-    fun showToast(text: String?) {
-        Toast.makeText(this, text, Toast.LENGTH_LONG).show()
-    }
-
-    companion object {
-        var LOG_TAG: String = ShareActivity::class.java.simpleName
+        return ShareRequest(url = url, title = title)
     }
 }

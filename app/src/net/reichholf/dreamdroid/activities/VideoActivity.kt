@@ -19,6 +19,7 @@ import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.WindowCompat
@@ -39,6 +40,7 @@ import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
+import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -59,6 +61,7 @@ class VideoActivity :
     lateinit var subtitlesSurfaceView: SurfaceView
     var player: VLCPlayer? = null
     var overlay: VideoOverlayController? = null
+    private val playbackViewModel: VideoPlaybackViewModel by viewModels()
 
     var onLayoutChangeListener: View.OnLayoutChangeListener? = null
 
@@ -271,7 +274,8 @@ class VideoActivity :
     }
 
     private fun initializeOverlay() {
-        val controller = overlay ?: VideoOverlayController(this).also { overlay = it }
+        val controller =
+            overlay ?: VideoOverlayController(this, playbackViewModel).also { overlay = it }
         controller.attach(intent.extras)
     }
 

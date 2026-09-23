@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.ui
 import android.content.Context
 import android.text.format.DateFormat
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -11,14 +12,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
 import java.util.Collections
 import java.util.TimeZone
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
@@ -62,9 +65,9 @@ internal fun tvTimerCheckedDays(value: Int): BooleanArray {
 }
 
 /**
- * TV / overlay timer create-edit. Service pick is in-host so form state in
- * [remember] survives. Back dismisses; [mutationsBlocked] save shows
- * [TvNeedsReceiverOverlay] instead of HTTP.
+ * TV / overlay timer create-edit. The working copy lives on [TvTimerEditViewModel], so
+ * it survives a configuration change and the in-host service pick. Back dismisses;
+ * [mutationsBlocked] save shows [TvNeedsReceiverOverlay] instead of HTTP.
  */
 @Composable
 fun TvTimerEditorHost(
@@ -73,13 +76,13 @@ fun TvTimerEditorHost(
     onDismiss: () -> Unit,
     onSaved: () -> Unit,
     modifier: Modifier = Modifier,
-    mutationsBlocked: Boolean = false
+    mutationsBlocked: Boolean = false,
+    viewModel: TvTimerEditViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val lifecycleOwner = context as? LifecycleOwner
-    val session = remember(timer, isCreate) {
-        TvTimerEditWorkingCopy(timer, isCreate)
-    }
+    val activity = LocalActivity.current
+    val session = remember(timer, isCreate, viewModel) { viewModel.bind(timer, isCreate) }
+    val currentOnSaved by rememberUpdatedState(onSaved)
     var pickingService by remember { mutableStateOf(false) }
     var showNeedsReceiver by remember { mutableStateOf(false) }
     var showRepeatingsPicker by remember { mutableStateOf(false) }
@@ -89,13 +92,23 @@ fun TvTimerEditorHost(
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
-    DisposableEffect(session) {
-        onDispose { session.dismissProgress() }
+    DisposableEffect(session, viewModel) {
+        onDispose {
+            if (activity?.isChangingConfigurations != true) {
+                viewModel.release(session)
+            }
+        }
     }
 
     LaunchedEffect(session) {
-        val host = lifecycleOwner ?: return@LaunchedEffect
-        session.ensureLocationsAndTagsThenReload(host, context)
+        session.ensureLocationsAndTagsThenReload()
+    }
+
+    LaunchedEffect(session, session.saveSucceeded) {
+        if (session.saveSucceeded) {
+            session.saveSucceeded = false
+            currentOnSaved()
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -115,9 +128,7 @@ fun TvTimerEditorHost(
                     if (mutationsBlocked) {
                         showNeedsReceiver = true
                     } else {
-                        lifecycleOwner?.let { host ->
-                            session.saveTimer(host, context, onSaved)
-                        }
+                        session.saveTimer()
                     }
                 },
                 onPickBeginDate = { pickerKind = TvTimerEditPicker.BeginDate },
@@ -141,7 +152,7 @@ fun TvTimerEditorHost(
                 initialChecked = session.checkedDays.copyOf(),
                 onDismiss = { showRepeatingsPicker = false },
                 onConfirm = { indices ->
-                    session.applyRepeatingsSelection(context, indices)
+                    session.applyRepeatingsSelection(indices)
                     showRepeatingsPicker = false
                 }
             )
@@ -219,20 +230,30 @@ private enum class TvTimerEditPicker {
     EndTime
 }
 
-internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean) {
-    var timer: TypedTimer = initial
-    val timerOld: TypedTimer? = if (isCreate) null else initial.copy()
+/**
+ * [context] is the application context and [scope] is the owning
+ * [TvTimerEditViewModel]'s scope, so loads and saves outlive the composition.
+ */
+internal class TvTimerEditWorkingCopy(
+    val launchTimer: TypedTimer,
+    val isCreate: Boolean,
+    private val context: Context,
+    private val scope: CoroutineScope
+) {
+    var timer: TypedTimer = launchTimer
+    val timerOld: TypedTimer? = if (isCreate) null else launchTimer.copy()
     val editState = TimerEditState()
     val selectedTags = ArrayList<String>()
     val checkedDays = BooleanArray(7)
     var begin: Int = 0
     var end: Int = 0
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
+    var saveSucceeded by mutableStateOf(false)
     private var locationsJob: Job? = null
     private var saveJob: Job? = null
     private var formHydrated = false
 
-    fun dismissProgress() {
+    fun cancelWork() {
         progress = null
         locationsJob?.cancel()
         locationsJob = null
@@ -245,14 +266,14 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
         editState.serviceName = timer.serviceName
     }
 
-    fun applyRepeatingsSelection(context: Context, indices: List<Int>) {
+    fun applyRepeatingsSelection(indices: List<Int>) {
         checkedDays.fill(false)
         for (which in indices) {
             if (which in checkedDays.indices) {
                 checkedDays[which] = true
             }
         }
-        editState.repeatedLabel = setRepeated(context, checkedDays)
+        editState.repeatedLabel = setRepeated(checkedDays)
     }
 
     fun applyTagsSelection(indices: List<Int>) {
@@ -288,28 +309,28 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
         onTimeSet(isBegin, hourOfDay, minute)
     }
 
-    fun ensureLocationsAndTagsThenReload(host: LifecycleOwner, context: Context) {
-        if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
-            if (locationsJob != null) {
-                return
-            }
-            locationsJob = host.launchLocationsAndTagsLoad(
-                context,
-                onProgress = { title, progressText ->
-                    progress = IndeterminateProgressState(title = title, message = progressText)
-                },
-                onReady = {
-                    locationsJob = null
-                    progress = null
-                    reload(context)
-                }
-            )
-        } else {
-            reload(context)
+    fun ensureLocationsAndTagsThenReload() {
+        if (DreamDroid.getLocations().size != 0 && DreamDroid.getTags().size != 0) {
+            reload()
+            return
         }
+        if (locationsJob != null) {
+            return
+        }
+        locationsJob = scope.launchLocationsAndTagsLoad(
+            context,
+            onProgress = { title, progressText ->
+                progress = IndeterminateProgressState(title = title, message = progressText)
+            },
+            onReady = {
+                locationsJob = null
+                progress = null
+                reload()
+            }
+        )
     }
 
-    fun reload(context: Context) {
+    fun reload() {
         if (formHydrated) {
             timer = editState.applyTo(timer)
         }
@@ -320,7 +341,7 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
             repeatedValue = DateTime.parseTimestamp(timer.repeated)
         } catch (_: NumberFormatException) {
         }
-        val repeatedText = getRepeated(context, repeatedValue)
+        val repeatedText = getRepeated(repeatedValue)
         val text = timer.tags
         selectedTags.clear()
         if (text.isNotEmpty()) {
@@ -331,7 +352,7 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
         formHydrated = true
     }
 
-    fun saveTimer(host: LifecycleOwner, context: Context, onSaved: () -> Unit) {
+    fun saveTimer() {
         if (progress != null) {
             return
         }
@@ -340,25 +361,23 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
         timer = editState.applyTo(timer)
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
-        saveJob = host.launchSimpleResultLoad(
-            TimerChangeRequestHandler(),
-            params
-        ) { _, result, _ ->
-            progress = null
-            if (Python.TRUE.equals(result.state)) {
-                editState.saveError = ""
-                onSaved()
-                return@launchSimpleResultLoad
+        saveJob =
+            scope.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
+                progress = null
+                if (Python.TRUE.equals(result.state)) {
+                    editState.saveError = ""
+                    saveSucceeded = true
+                    return@launchSimpleResultLoad
+                }
+                val stateText = result.stateText
+                editState.saveError = when {
+                    !stateText.isNullOrEmpty() -> stateText
+                    else -> context.getString(R.string.get_content_error)
+                }
             }
-            val stateText = result.stateText
-            editState.saveError = when {
-                !stateText.isNullOrEmpty() -> stateText
-                else -> context.getString(R.string.get_content_error)
-            }
-        }
     }
 
-    private fun getRepeated(context: Context, value: Int): String {
+    private fun getRepeated(value: Int): String {
         var remaining = value
         var text = ""
         val daysShort = context.resources.getTextArray(R.array.weekdays_short)
@@ -374,7 +393,7 @@ internal class TvTimerEditWorkingCopy(initial: TypedTimer, val isCreate: Boolean
         return text.ifEmpty { context.getText(R.string.none).toString() }
     }
 
-    private fun setRepeated(context: Context, days: BooleanArray): String {
+    private fun setRepeated(days: BooleanArray): String {
         var text = ""
         val value = tvTimerRepeatedValue(days)
         val daysShort = context.resources.getTextArray(R.array.weekdays_short)

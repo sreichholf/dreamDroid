@@ -42,14 +42,4 @@ object VideoPlayback {
         serviceRef: String?,
         bouquetRef: String?
     ): OverlayPlaybackExtras = OverlayPlaybackExtras(title, serviceRef, bouquetRef)
-
-    /**
-     * Zap must persist title, service ref, and bouquet ref so a later overlay
-     * rebind or restore does not keep the previous channel.
-     */
-    fun overlayExtrasForZap(
-        title: String?,
-        serviceRef: String?,
-        bouquetRef: String?
-    ): OverlayPlaybackExtras = OverlayPlaybackExtras(title, serviceRef, bouquetRef)
 }

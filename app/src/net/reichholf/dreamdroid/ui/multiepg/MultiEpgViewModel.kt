@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
@@ -40,7 +41,7 @@ class MultiEpgViewModel(application: Application, savedStateHandle: SavedStateHa
         UserBouquetCache.excludedHubTabRefs(getApplication())
     )
 
-    val session: MultiEpgSession = createSession()
+    val session: MultiEpgSession = newMultiEpgSession(application, viewModelScope, persistGate)
 
     private var appliedKey: Pair<Int, String>? = null
     private var inFlightKey: Pair<Int, String>? = null
@@ -90,38 +91,35 @@ class MultiEpgViewModel(application: Application, savedStateHandle: SavedStateHa
         val profileId = DreamDroid.getCurrentProfile().id ?: return
         persistGate.knownTabRefs = AppDatabase.roster(getApplication()).getTabStripRefs(profileId)
     }
-
-    private fun createSession(): MultiEpgSession {
-        val app = getApplication<Application>()
-        return MultiEpgSession(
-            sync = MultiEpgSyncHolder.shared(app),
-            scope = viewModelScope,
-            profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
-            noBouquetMessage = app.getString(R.string.multiepg_sync_test_no_bouquet),
-            fetchTimers = MultiEpgSync.httpFetchTimers(),
-            loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
-            formatError = { error -> error.toEnigmaDisplayMessage(app) },
-            persistBouquet = persistGate::persist,
-            shouldSkipReceiverHttp = { hasCache ->
-                SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-            },
-            isSessionOffline = {
-                SessionConnectionHolder.shared.status.value.session ==
-                    ConnectionStatus.Session.Offline
-            },
-            loadCachedRoster = { profileId, ref ->
-                UserBouquetCache.loadRosterServices(
-                    AppDatabase.roster(app),
-                    profileId,
-                    ref
-                )
-            },
-            loadCachedTimers = { profileId ->
-                TimerSnapshotStore.load(AppDatabase.timer(app), profileId)
-            }
-        )
-    }
 }
+
+/** Session wiring shared by the phone destination and the TV MultiEPG activity. */
+internal fun newMultiEpgSession(
+    app: Application,
+    scope: CoroutineScope,
+    persistGate: MultiEpgPersistGate
+): MultiEpgSession = MultiEpgSession(
+    sync = MultiEpgSyncHolder.shared(app),
+    scope = scope,
+    profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
+    noBouquetMessage = app.getString(R.string.multiepg_sync_test_no_bouquet),
+    fetchTimers = MultiEpgSync.httpFetchTimers(),
+    loadBouquetServices = MultiEpgSync.httpFetchBouquet(),
+    formatError = { error -> error.toEnigmaDisplayMessage(app) },
+    persistBouquet = persistGate::persist,
+    shouldSkipReceiverHttp = { hasCache ->
+        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
+    },
+    isSessionOffline = {
+        SessionConnectionHolder.shared.status.value.session == ConnectionStatus.Session.Offline
+    },
+    loadCachedRoster = { profileId, ref ->
+        UserBouquetCache.loadRosterServices(AppDatabase.roster(app), profileId, ref)
+    },
+    loadCachedTimers = { profileId ->
+        TimerSnapshotStore.load(AppDatabase.timer(app), profileId)
+    }
+)
 
 interface MultiEpgVisibleMinutesAccess {
     fun getVisibleMinutes(): Int?
@@ -139,7 +137,7 @@ class MapMultiEpgVisibleMinutesAccess(
     }
 }
 
-private class HandleMultiEpgVisibleMinutesAccess(private val handle: SavedStateHandle) :
+internal class HandleMultiEpgVisibleMinutesAccess(private val handle: SavedStateHandle) :
     MultiEpgVisibleMinutesAccess {
     override fun getVisibleMinutes(): Int? = handle.get<Int>(MULTI_EPG_VISIBLE_MINUTES_KEY)
 
