@@ -65,7 +65,6 @@ import net.reichholf.dreamdroid.ui.nav.ShellFabController
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
@@ -360,8 +359,6 @@ class MainActivity :
                         delay(SESSION_REACHABILITY_INTERVAL_MS)
                         continue
                     }
-                    val previousSession =
-                        SessionConnectionHolder.shared.status.value.session
                     val ran = probeSessionReachabilityIfNeeded(
                         holder = SessionConnectionHolder.shared,
                         hasCache = hasUseDrivenCache(
@@ -379,12 +376,7 @@ class MainActivity :
                     )
                     if (ran) {
                         bindDrawerConnectionChip()
-                        val session = SessionConnectionHolder.shared.status.value.session
-                        if (session == ConnectionStatus.Session.Online &&
-                            previousSession != ConnectionStatus.Session.Online
-                        ) {
-                            navigationHelper?.setAvailableFeatures()
-                        }
+                        navigationHelper?.setAvailableFeatures()
                     }
                     delay(SESSION_REACHABILITY_INTERVAL_MS)
                 }

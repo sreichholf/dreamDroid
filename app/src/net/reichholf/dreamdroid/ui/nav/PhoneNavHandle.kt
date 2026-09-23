@@ -109,6 +109,7 @@ interface PhoneNavHandle {
     fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean
     fun navigateToTimerServicePick(): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)
+    fun dispatchPendingComposeActivityResult()
     fun onActiveProfileChanged()
     fun onHostActivityResult(requestCode: Int, resultCode: Int, data: Intent?)
 }

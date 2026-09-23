@@ -41,6 +41,7 @@ fun ZapDestination(
         val listener = ZapPickerResultForwarder(viewModel)
         val menuProvider = ZapMenuProvider(viewModel)
         handle.composeActivityResultListener = listener
+        handle.dispatchPendingComposeActivityResult()
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(menuProvider)
         onDispose {

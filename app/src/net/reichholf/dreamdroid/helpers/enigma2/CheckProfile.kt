@@ -25,14 +25,14 @@ object CheckProfile {
 
     val FEATURE_POST_REQEUEST: IntArray = intArrayOf(1, 7, 3)
 
+    val FEATURE_SLEEPTIMER_VERSION: IntArray = intArrayOf(1, 6, 5)
+
     val REQUIRED_VERSION: IntArray = intArrayOf(1, 6, 5)
 
     var CURRENT_VERSION: IntArray = intArrayOf(0, 0, 0)
 
     fun checkProfile(profile: Profile, context: Context): ProfileCheckResult {
         CURRENT_VERSION = intArrayOf(0, 0, 0)
-        DreamDroid.disableSleepTimer()
-        DreamDroid.disableNowNext()
 
         val resultList = ArrayList<ProfileCheckEntry>()
         var hasError = false
@@ -73,21 +73,8 @@ object CheckProfile {
                             if (version.isEmpty()) {
                                 version = "0"
                             }
-                            val vc = checkVersion(version)
-                            if (vc >= 0) {
-                                val requiredForSleeptimer = intArrayOf(1, 6, 5)
-                                if (checkVersion(version, requiredForSleeptimer) >= 0) {
-                                    DreamDroid.enableSleepTimer()
-                                }
-                                if (checkVersion(version, FEATURE_EPGNOWNEXT_VERSION) >= 0) {
-                                    DreamDroid.enableNowNext()
-                                }
-                                if (checkVersion(version, FEATURE_POST_REQEUEST) >= 0) {
-                                    DreamDroid.setFeaturePostRequest(true)
-                                } else {
-                                    DreamDroid.setFeaturePostRequest(false)
-                                }
-
+                            applyWebInterfaceFeatures(version)
+                            if (checkVersion(version) >= 0) {
                                 resultList.add(entry(R.string.interface_version, false, version))
                             } else {
                                 resultList.add(
@@ -213,6 +200,38 @@ object CheckProfile {
         }
 
         return -1
+    }
+
+    internal data class WebInterfaceFeatures(
+        val sleepTimer: Boolean,
+        val nowNext: Boolean,
+        val postRequest: Boolean
+    )
+
+    internal fun webInterfaceFeatures(version: String): WebInterfaceFeatures = WebInterfaceFeatures(
+        sleepTimer = checkVersion(version, FEATURE_SLEEPTIMER_VERSION) >= 0,
+        nowNext = checkVersion(version, FEATURE_EPGNOWNEXT_VERSION) >= 0,
+        postRequest = checkVersion(version, FEATURE_POST_REQEUEST) >= 0
+    )
+
+    /**
+     * Sleep-timer / now-next / POST from a parsed web-interface version.
+     * A failed fetch must not call this, so a later Offline probe does not hide
+     * Sleep Timer on a box that already proved it can do it.
+     */
+    internal fun applyWebInterfaceFeatures(version: String) {
+        val features = webInterfaceFeatures(version)
+        if (features.sleepTimer) {
+            DreamDroid.enableSleepTimer()
+        } else {
+            DreamDroid.disableSleepTimer()
+        }
+        if (features.nowNext) {
+            DreamDroid.enableNowNext()
+        } else {
+            DreamDroid.disableNowNext()
+        }
+        DreamDroid.setFeaturePostRequest(features.postRequest)
     }
 
     private fun entry(

@@ -13,18 +13,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -76,49 +70,25 @@ fun HubServiceListPage(
     bouquetName: String,
     modifier: Modifier = Modifier,
     onProvideGoUp: ((() -> Unit)?) -> Unit = {},
-    onZapped: () -> Unit = {}
+    onZapped: () -> Unit = {},
+    viewModel: HubServiceListViewModel = viewModel(key = "hub-service:$bouquetRef")
 ) {
     val context = LocalContext.current
     val view = LocalView.current
-    val scope = rememberCoroutineScope()
-    val listState = remember { ServiceListState() }
-    val refresh = remember { ComposeRefreshState() }
-    val rows = remember { emptyList<ServiceNowNext>().toMutableStateList() }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
-    var zapJob by remember { mutableStateOf<Job?>(null) }
-
-    var currentRef by rememberSaveable(bouquetRef) { mutableStateOf(bouquetRef) }
-    var currentName by rememberSaveable(bouquetRef) { mutableStateOf(bouquetName) }
-    val history = remember(bouquetRef) {
-        mutableListOf<Pair<String, String>>()
-    }
-    var historyDepth by remember(bouquetRef) { mutableIntStateOf(0) }
+    val session = viewModel.session
+    val listState = checkNotNull(session.listState)
+    val refresh = checkNotNull(session.refresh)
+    val emptyMessage = viewModel.emptyMessage
+    val historyDepth = viewModel.historyDepth
 
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
 
-    val session = remember { HubServiceListSession() }
     session.handle = handle
     session.context = context
     session.popupRoot = AnchorPopup.overlayRoot(view)
-    session.currentRef = currentRef
-    session.currentName = currentName
-    session.listState = listState
-    session.refresh = refresh
-    session.rows = rows
-    session.scope = scope
     session.dialogSession = dialogSession
-    session.onCurrentRef = { currentRef = it }
-    session.onCurrentName = { currentName = it }
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-    session.onZapJob = { zapJob = it }
-    session.history = history
-    session.onHistoryDepth = { historyDepth = it }
-    session.rootRef = bouquetRef
-    session.rootName = bouquetName
     session.onZapped = onZapped
     session.profileId = DreamDroid.getCurrentProfile().id
     session.rosterDao = AppDatabase.roster(context)
@@ -137,30 +107,21 @@ fun HubServiceListPage(
     DisposableEffect(handle, session, dialogSession) {
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(session)
+        session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
+            session.chromeAttached = false
             activity?.removeMenuProvider(session)
-            loadJob?.cancel()
-            loadJob = null
-            zapJob?.cancel()
-            zapJob = null
+            session.popupRoot = null
             dialogSession.dismissProgress()
         }
     }
 
-    LaunchedEffect(bouquetRef, bouquetName) {
-        history.clear()
-        historyDepth = 0
-        currentRef = bouquetRef
-        currentName = bouquetName
-    }
-
     val connectionSession =
         SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(currentRef, currentName, connectionSession) {
-        session.currentRef = currentRef
-        session.currentName = currentName
-        session.reload()
+    LaunchedEffect(viewModel, bouquetRef, bouquetName, connectionSession) {
+        viewModel.bindRoot(bouquetRef, bouquetName)
+        viewModel.onConnection(connectionSession?.name ?: "none")
     }
 
     DreamDroidPullRefresh(
@@ -212,6 +173,7 @@ class HubServiceListSession : MenuProvider {
     var rosterDao: RosterDao? = null
     var epgDao: EpgDao? = null
     var excludedTabRefs: Set<String> = emptySet()
+    var chromeAttached: Boolean = false
     var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
         SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
     }
@@ -222,6 +184,13 @@ class HubServiceListSession : MenuProvider {
     private var loadGeneration = 0
     private var loadJob: Job? = null
     private var zapJob: Job? = null
+
+    fun cancelInFlight() {
+        loadJob?.cancel()
+        loadJob = null
+        zapJob?.cancel()
+        zapJob = null
+    }
 
     fun beginLoad(): Int = ++loadGeneration
 
@@ -240,7 +209,9 @@ class HubServiceListSession : MenuProvider {
         val refreshState = refresh ?: return
         refreshState.setRefreshing(false)
         setToolbarTitle(finishedTitle())
-        (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
+        if (chromeAttached) {
+            (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
+        }
         this.rows?.clear()
         if (!success) {
             state.replaceAll(emptyList())
@@ -308,6 +279,9 @@ class HubServiceListSession : MenuProvider {
     }
 
     fun setToolbarTitle(title: String) {
+        if (!chromeAttached) {
+            return
+        }
         (context as? AppCompatActivity)?.title = title
     }
 
@@ -411,6 +385,7 @@ class HubServiceListSession : MenuProvider {
             currentName = name
             onCurrentRef?.invoke(ref)
             onCurrentName?.invoke(name)
+            reload()
             return
         }
         val ctx = context ?: return
@@ -518,13 +493,14 @@ class HubServiceListSession : MenuProvider {
         currentName = name
         onCurrentRef?.invoke(ref)
         onCurrentName?.invoke(name)
+        reload()
         return true
     }
 
     /**
      * Tab reselect: jump back to this bouquet's root when drilled into providers/dirs,
      * otherwise reload. Matches historical ServiceListPageFragment.upOrReload.
-     * Ref changes reload via the composable LaunchedEffect(currentRef).
+     * The history-clear path calls reload() after the root ref is restored.
      */
     fun upOrReload() {
         val h = history ?: return
@@ -535,6 +511,7 @@ class HubServiceListSession : MenuProvider {
             currentName = rootName
             onCurrentRef?.invoke(rootRef)
             onCurrentName?.invoke(rootName)
+            reload()
         } else {
             reload()
         }
