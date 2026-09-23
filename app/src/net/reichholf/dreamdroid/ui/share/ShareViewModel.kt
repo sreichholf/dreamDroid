@@ -12,14 +12,10 @@ import androidx.lifecycle.viewModelScope
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Date
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
@@ -107,16 +103,13 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
             message = app.getString(R.string.loading)
         )
         sendJob?.cancel()
-        sendJob = viewModelScope.launch {
-            val handler = SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY)
-            val http = EnigmaHttp(profile)
-            val fetched = withContext(Dispatchers.IO) {
-                simpleResultFromFetch(handler.fetch(http, params)) { xml ->
-                    handler.parseSimpleResult(xml)
-                }
-            }
+        sendJob = viewModelScope.launchSimpleResultLoad(
+            SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY),
+            params,
+            profile
+        ) { _, _, error ->
             listState.progress = null
-            toast = fetched.third?.resolve(app) ?: app.getString(R.string.sent_as, title)
+            toast = error?.resolve(app) ?: app.getString(R.string.sent_as, title)
             finished = true
         }
     }
