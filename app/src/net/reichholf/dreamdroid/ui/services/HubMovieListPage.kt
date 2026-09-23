@@ -99,8 +99,10 @@ fun HubMovieListPage(
     DisposableEffect(handle, session) {
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(session)
+        session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
+            session.chromeAttached = false
             activity?.removeMenuProvider(session)
             session.popupRoot = null
             session.onShowDetail = null
@@ -204,6 +206,7 @@ class HubMovieListSession : MenuProvider {
     var onRequestDeleteConfirm: ((String) -> Unit)? = null
     var profileId: Int? = null
     var movieDao: MovieDao? = null
+    var chromeAttached: Boolean = false
     var loadMovies: suspend (
         android.content.Context,
         List<NameValuePair>
@@ -262,6 +265,9 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun setToolbarTitle(title: String) {
+        if (!chromeAttached) {
+            return
+        }
         (context as? AppCompatActivity)?.title = title
     }
 

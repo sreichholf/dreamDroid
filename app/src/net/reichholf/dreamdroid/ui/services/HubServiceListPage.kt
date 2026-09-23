@@ -107,8 +107,10 @@ fun HubServiceListPage(
     DisposableEffect(handle, session, dialogSession) {
         val activity = context as? AppCompatActivity
         activity?.addMenuProvider(session)
+        session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
+            session.chromeAttached = false
             activity?.removeMenuProvider(session)
             session.popupRoot = null
             dialogSession.dismissProgress()
@@ -171,6 +173,7 @@ class HubServiceListSession : MenuProvider {
     var rosterDao: RosterDao? = null
     var epgDao: EpgDao? = null
     var excludedTabRefs: Set<String> = emptySet()
+    var chromeAttached: Boolean = false
     var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
         SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
     }
@@ -206,7 +209,9 @@ class HubServiceListSession : MenuProvider {
         val refreshState = refresh ?: return
         refreshState.setRefreshing(false)
         setToolbarTitle(finishedTitle())
-        (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
+        if (chromeAttached) {
+            (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
+        }
         this.rows?.clear()
         if (!success) {
             state.replaceAll(emptyList())
@@ -274,6 +279,9 @@ class HubServiceListSession : MenuProvider {
     }
 
     fun setToolbarTitle(title: String) {
+        if (!chromeAttached) {
+            return
+        }
         (context as? AppCompatActivity)?.title = title
     }
 

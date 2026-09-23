@@ -76,8 +76,10 @@ fun HubTimerListPage(
         // composeActivityResultListener. Session still implements ActivityResultListener
         // if a host prefers registering it instead of remountEpoch.
         activity.addMenuProvider(session)
+        session.chromeAttached = true
         session.setToolbarTitle(context.getString(R.string.timer))
         onDispose {
+            session.chromeAttached = false
             activity.removeMenuProvider(session)
         }
     }
@@ -149,6 +151,7 @@ class HubTimerListSession :
     var timerDao: TimerDao? = null
     var loadTimers: suspend (android.content.Context) -> TimerListLoadResult =
         { context -> loadTimerList(context) }
+    var chromeAttached: Boolean = false
 
     private val timers = ArrayList<TypedTimer>()
     private var selected: TypedTimer = TypedTimer()
@@ -158,6 +161,9 @@ class HubTimerListSession :
     var progress by mutableStateOf<IndeterminateProgressState?>(null)
 
     fun setToolbarTitle(title: String) {
+        if (!chromeAttached) {
+            return
+        }
         activity?.title = title
     }
 
