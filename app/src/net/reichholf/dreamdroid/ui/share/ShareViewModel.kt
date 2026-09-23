@@ -121,15 +121,17 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
         if ("youtu.be" == uri.host) {
             val vid = uri.path!!.substring(1)
             return "8193:0:1:0:0:0:0:0:0:0:" +
-                URLEncoder.encode("yt://$vid", StandardCharsets.UTF_8) + ":" + encodedTitle
+                URLEncoder.encode("yt://$vid", UTF_8) + ":" + encodedTitle
         }
         return "4097:0:1:0:0:0:0:0:0:0:$encodedUrl:$encodedTitle"
     }
 
-    private fun encode(value: String): String =
-        URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20")
+    private fun encode(value: String): String = URLEncoder.encode(value, UTF_8).replace("+", "%20")
 
     private companion object {
         val LOG_TAG: String = ShareViewModel::class.java.simpleName
+
+        // URLEncoder.encode(String, Charset) is API 33; the String overload works on minSdk.
+        val UTF_8: String = StandardCharsets.UTF_8.name()
     }
 }
