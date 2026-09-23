@@ -36,7 +36,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -61,6 +60,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.LocalContentColor
@@ -268,7 +268,8 @@ internal val HubServiceGridCardHeight = 220.dp
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
-    onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() }
+    onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() },
+    viewModel: TvHubViewModel = viewModel(factory = TvHubViewModel.Factory)
 ) {
     val context = LocalContext.current
     val status by SessionConnectionHolder.shared.status.collectAsState()
@@ -297,15 +298,6 @@ fun ComposeTvHubApp(
     val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
-    var reloadToken by remember { mutableIntStateOf(0) }
-    var loading by remember { mutableStateOf(true) }
-    var errorText by remember { mutableStateOf<String?>(null) }
-    var bouquetRows by remember { mutableStateOf<List<HubBouquetRow>>(emptyList()) }
-    var movieLocations by remember { mutableStateOf<List<String>>(emptyList()) }
-    var moviesByLocation by remember { mutableStateOf<Map<String, List<Movie>>>(emptyMap()) }
-    var movieLoading by remember { mutableStateOf(false) }
-    var movieError by remember { mutableStateOf<String?>(null) }
-    var selectedHeaderId by remember { mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID) }
     var serviceTimerTarget by remember {
         mutableStateOf<Pair<ServiceNowNext, String?>?>(null)
     }
@@ -313,53 +305,11 @@ fun ComposeTvHubApp(
     val preferenceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-        TvComposeHubHost.applyPreferenceActivityResult(result.resultCode) {
-            reloadToken++
-        }
+        TvComposeHubHost.applyPreferenceActivityResult(result.resultCode, viewModel::reload)
     }
-
-    LaunchedEffect(reloadToken, status.session) {
-        loading = true
-        errorText = null
-        movieError = null
-        moviesByLocation = emptyMap()
-        val result = loadTvHubBrowse(activity)
-        loading = false
-        errorText = unavailableTvHubMessage(
-            result.usedCache,
-            result.rows.isNotEmpty(),
-            result.errorText
-        )
-        bouquetRows = result.rows
-        movieLocations = result.locations
-        val stillValid = TvComposeHubHost.isPersistentHubHeader(selectedHeaderId) ||
-            bouquetRows.any { it.bouquet.reference == selectedHeaderId } ||
-            TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) in movieLocations
-        if (!stillValid) {
-            selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID
-        }
-    }
-
-    // Leanback parity: load movies for a location only when its header is selected.
-    LaunchedEffect(selectedHeaderId, reloadToken, status.session) {
-        val dirname =
-            TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return@LaunchedEffect
-        if (dirname in moviesByLocation) {
-            return@LaunchedEffect
-        }
-        movieLoading = true
-        movieError = null
-        val result = loadTvHubMovies(activity, dirname)
-        movieLoading = false
-        movieError = unavailableTvHubMessage(
-            result.usedCache,
-            !result.movies.isNullOrEmpty(),
-            result.errorText
-        )
-        if (result.movies != null) {
-            moviesByLocation = moviesByLocation + (dirname to result.movies)
-        }
-    }
+    val bouquetRows = viewModel.bouquetRows
+    val movieLocations = viewModel.movieLocations
+    val selectedHeaderId = viewModel.selectedHeaderId
 
     val headers = remember(
         settingsTitle,
@@ -416,11 +366,11 @@ fun ComposeTvHubApp(
         ComposeTvHubChrome(
             headers = headers,
             selectedHeaderId = selectedHeaderId,
-            onHeaderSelected = { selectedHeaderId = it },
+            onHeaderSelected = viewModel::selectHeader,
             settingsItems = settingsItems,
             onSettingsClick = { kind ->
                 when (kind) {
-                    BrowseItem.Kind.Reload -> reloadToken++
+                    BrowseItem.Kind.Reload -> viewModel.reload()
 
                     BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
                         val intent = TvComposeHubHost.preferenceIntent(activity, kind)
@@ -431,10 +381,10 @@ fun ComposeTvHubApp(
                 }
             },
             bouquetRows = bouquetRows,
-            moviesByLocation = moviesByLocation,
-            loading = loading,
-            movieLoading = movieLoading,
-            errorText = errorText ?: movieError,
+            moviesByLocation = viewModel.moviesByLocation,
+            loading = viewModel.loading,
+            movieLoading = viewModel.movieLoading,
+            errorText = viewModel.errorText ?: viewModel.movieError,
             streamingEnabled = streamingEnabled,
             onServiceClick = { service, bouquetRef ->
                 openServiceStream(activity, service, bouquetRef)

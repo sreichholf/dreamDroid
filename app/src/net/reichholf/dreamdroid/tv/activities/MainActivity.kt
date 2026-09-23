@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.activities
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
+import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
@@ -50,9 +52,13 @@ class MainActivity :
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
         if (!showingSetup) {
+            // The hub ViewModel outlives recreate(), so its loads that failed
+            // without the permission have to be restarted by hand.
+            hubViewModel.reload()
             recreate()
         }
     }
+    private val hubViewModel: TvHubViewModel by viewModels { TvHubViewModel.Factory }
     private var checkProfileJob: Job? = null
     private var reachabilityJob: Job? = null
     private var showingSetup: Boolean = false
