@@ -182,7 +182,7 @@ class TimerServicePickSession(
                     return@launch
                 }
                 listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
+                emptyMessage = result.errorText ?: app.getString(R.string.no_list_item)
                 return@launch
             }
             val rows = ArrayList(result.bouquets.tv)
@@ -234,7 +234,7 @@ class TimerServicePickSession(
                     return@launch
                 }
                 listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
+                emptyMessage = result.errorText ?: app.getString(R.string.no_list_item)
                 return@launch
             }
             publishRows(ZapListMapper.rowsFrom(result.services))
