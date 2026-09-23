@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 
 /**
@@ -15,10 +14,9 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
  * Key this ViewModel by location on the hub back-stack entry so a tab change
  * keeps the loaded list. [HubMovieListSession] stays the list model and the menu provider.
  */
-class HubMovieListViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
+class HubMovieListViewModel(application: Application, savedStateHandle: SavedStateHandle) :
+    AndroidViewModel(application) {
+    private val savedAccess = HandleHubMovieListSavedAccess(savedStateHandle)
     val session: HubMovieListSession = HubMovieListSession()
 
     var emptyMessage by mutableStateOf<String?>(null)
@@ -38,7 +36,9 @@ class HubMovieListViewModel(
         session.onEmptyMessage = { emptyMessage = it }
         session.onSelectedTags = { next ->
             selectedTags = next
-            savedStateHandle[tagsKey()] = ArrayList(next)
+            if (locationKey.isNotEmpty()) {
+                writeHubMovieSelectedTags(savedAccess, locationKey, next)
+            }
         }
     }
 
@@ -50,8 +50,7 @@ class HubMovieListViewModel(
         locationKey = location
         session.location = location
         session.locationIndex = locationIndex
-        val saved = savedStateHandle.get<ArrayList<String>>(tagsKey()).orEmpty()
-        selectedTags = saved.toList()
+        selectedTags = readHubMovieSelectedTags(savedAccess, location)
         session.selectedTags = ArrayList(selectedTags)
     }
 
@@ -67,6 +66,16 @@ class HubMovieListViewModel(
         session.cancelInFlight()
         super.onCleared()
     }
+}
 
-    private fun tagsKey(): String = "hub_movie_selected_tags:$locationKey"
+private class HandleHubMovieListSavedAccess(private val handle: SavedStateHandle) :
+    HubMovieListSavedAccess {
+    override fun getSelectedTags(location: String): List<String>? {
+        val stored = handle.get<ArrayList<String>>(hubMovieSelectedTagsKey(location))
+        return stored?.toList()
+    }
+
+    override fun setSelectedTags(location: String, tags: List<String>) {
+        handle[hubMovieSelectedTagsKey(location)] = ArrayList(tags)
+    }
 }

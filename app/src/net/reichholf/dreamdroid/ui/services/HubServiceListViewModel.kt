@@ -16,10 +16,9 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
  * change keeps the loaded list and the directory drill-down.
  * [HubServiceListSession] stays the list model and the menu provider.
  */
-class HubServiceListViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
+class HubServiceListViewModel(application: Application, savedStateHandle: SavedStateHandle) :
+    AndroidViewModel(application) {
+    private val savedAccess = HandleHubServiceListSavedAccess(savedStateHandle)
     val session: HubServiceListSession = HubServiceListSession()
 
     var emptyMessage by mutableStateOf<String?>(null)
@@ -40,8 +39,8 @@ class HubServiceListViewModel(
         session.scope = viewModelScope
         session.onEmptyMessage = { emptyMessage = it }
         session.onHistoryDepth = { historyDepth = it }
-        session.onCurrentRef = { ref -> savedStateHandle[refKey()] = ref }
-        session.onCurrentName = { name -> savedStateHandle[nameKey()] = name }
+        session.onCurrentRef = { ref -> savedAccess.setCurrentRef(rootRef, ref) }
+        session.onCurrentName = { name -> savedAccess.setCurrentName(rootRef, name) }
     }
 
     fun bindRoot(bouquetRef: String, bouquetName: String) {
@@ -52,17 +51,19 @@ class HubServiceListViewModel(
         rootRef = bouquetRef
         session.rootRef = bouquetRef
         session.rootName = bouquetName
-        val savedRef = savedStateHandle.get<String>(refKey())
-        val savedName = savedStateHandle.get<String>(nameKey())
-        if (savedRef.isNullOrEmpty() || savedRef == bouquetRef) {
-            session.currentRef = bouquetRef
-            session.currentName = bouquetName
-            return
+        val saved = readHubServiceListSaved(savedAccess, bouquetRef)
+        val restored = restoreHubServiceDrillDown(
+            bouquetRef,
+            bouquetName,
+            saved.currentRef,
+            saved.currentName
+        )
+        restored.historyStep?.let { step ->
+            session.history?.add(step)
+            historyDepth = session.history?.size ?: 0
         }
-        session.history?.add(bouquetRef to bouquetName)
-        historyDepth = session.history?.size ?: 0
-        session.currentRef = savedRef
-        session.currentName = savedName ?: bouquetName
+        session.currentRef = restored.currentRef
+        session.currentName = restored.currentName
     }
 
     fun onConnection(connectionName: String) {
@@ -77,8 +78,21 @@ class HubServiceListViewModel(
         session.cancelInFlight()
         super.onCleared()
     }
+}
 
-    private fun refKey(): String = "hub_service_current_ref:$rootRef"
+private class HandleHubServiceListSavedAccess(private val handle: SavedStateHandle) :
+    HubServiceListSavedAccess {
+    override fun getCurrentRef(rootRef: String): String? =
+        handle.get<String>(hubServiceCurrentRefKey(rootRef))
 
-    private fun nameKey(): String = "hub_service_current_name:$rootRef"
+    override fun setCurrentRef(rootRef: String, currentRef: String) {
+        handle[hubServiceCurrentRefKey(rootRef)] = currentRef
+    }
+
+    override fun getCurrentName(rootRef: String): String? =
+        handle.get<String>(hubServiceCurrentNameKey(rootRef))
+
+    override fun setCurrentName(rootRef: String, currentName: String) {
+        handle[hubServiceCurrentNameKey(rootRef)] = currentName
+    }
 }
