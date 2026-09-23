@@ -14,13 +14,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
@@ -51,32 +50,24 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 /**
  * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
  *
- * Reload after timer edit:
- * - bump [remountEpoch] from HubDestination when returning, and/or
- * - register [HubTimerListSession] on [PhoneNavHandle.composeActivityResultListener]
- *   (this page does so while composed).
+ * The list and the reload job live on [HubTimerListViewModel]. The same
+ * [remountEpoch] does not load again, so returning to the Timers tab keeps the list.
+ * HubDestination bumps [remountEpoch] after a timer edit. It owns
+ * [PhoneNavHandle.composeActivityResultListener] for REQUEST_EDIT_TIMER.
  */
 @Composable
-fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Modifier = Modifier) {
+fun HubTimerListPage(
+    handle: PhoneNavHandle,
+    remountEpoch: Int = 0,
+    modifier: Modifier = Modifier,
+    viewModel: HubTimerListViewModel = viewModel()
+) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
-    val scope = rememberCoroutineScope()
-    val listState = remember { TimerListState() }
-    val refresh = remember { ComposeRefreshState() }
-    var emptyMessage by remember { mutableStateOf<String?>(null) }
-    var loadJob by remember { mutableStateOf<Job?>(null) }
-    var mutateJob by remember { mutableStateOf<Job?>(null) }
-
-    val session = remember { HubTimerListSession() }
+    val session = viewModel.session
     session.handle = handle
     session.context = context
     session.activity = activity
-    session.listState = listState
-    session.refresh = refresh
-    session.scope = scope
-    session.onEmptyMessage = { emptyMessage = it }
-    session.onLoadJob = { loadJob = it }
-    session.onMutateJob = { mutateJob = it }
     session.profileId = DreamDroid.getCurrentProfile().id
     session.timerDao = AppDatabase.timer(context)
 
@@ -88,11 +79,6 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         session.setToolbarTitle(context.getString(R.string.timer))
         onDispose {
             activity.removeMenuProvider(session)
-            session.dismissProgress()
-            loadJob?.cancel()
-            loadJob = null
-            mutateJob?.cancel()
-            mutateJob = null
         }
     }
 
@@ -107,14 +93,17 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
         lookDisabled = timerWritesBlocked
     )
 
-    LaunchedEffect(remountEpoch) {
-        session.reload()
+    LaunchedEffect(viewModel, remountEpoch) {
+        viewModel.onRemount(remountEpoch)
     }
 
     LaunchedEffect(session.progress) {
         activity.invalidateOptionsMenu()
     }
 
+    val emptyMessage = viewModel.emptyMessage
+    val listState = checkNotNull(session.listState)
+    val refresh = checkNotNull(session.refresh)
     DreamDroidPullRefresh(
         refreshing = refresh.isRefreshing,
         onRefresh = { session.reload() },
@@ -140,8 +129,8 @@ fun HubTimerListPage(handle: PhoneNavHandle, remountEpoch: Int = 0, modifier: Mo
 
 /**
  * Owns timer-list load/mutations and activity-result reload for the hub Timers tab.
- * HubDestination may also assign this to [PhoneNavHandle.composeActivityResultListener]
- * when the timer page is selected (the page registers itself while composed).
+ * The hub [HubTimerListViewModel] owns this session. HubDestination may assign it to
+ * [PhoneNavHandle.composeActivityResultListener] instead of bumping remountEpoch.
  */
 class HubTimerListSession :
     PhoneNavHandle.ActivityResultListener,
@@ -174,6 +163,13 @@ class HubTimerListSession :
 
     fun dismissProgress() {
         progress = null
+    }
+
+    fun cancelInFlight() {
+        loadJob?.cancel()
+        loadJob = null
+        mutateJob?.cancel()
+        mutateJob = null
     }
 
     fun toast(message: CharSequence) {
