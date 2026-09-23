@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
