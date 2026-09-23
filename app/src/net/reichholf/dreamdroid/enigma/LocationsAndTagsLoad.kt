@@ -1,9 +1,9 @@
 package net.reichholf.dreamdroid.enigma
 
 import android.content.Context
-import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -24,13 +24,17 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,
     onReady: () -> Unit,
     onLocationsResult: ((success: Boolean) -> Unit)? = null
-): Job = lifecycleScope.launch {
+): Job = lifecycleScope.launchLocationsAndTagsLoad(context, onProgress, onReady, onLocationsResult)
+
+fun CoroutineScope.launchLocationsAndTagsLoad(
+    context: Context,
+    onProgress: (title: String, progress: String) -> Unit,
+    onReady: () -> Unit,
+    onLocationsResult: ((success: Boolean) -> Unit)? = null
+): Job = launch {
     val http = EnigmaHttp()
     var locationsOk = DreamDroid.locationsLoadedFromReceiver()
     if (DreamDroid.getLocations().size == 0) {
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-            return@launch
-        }
         onProgress(
             context.getString(R.string.loading),
             context.getString(R.string.locations) + " - " +
@@ -41,9 +45,6 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
         }
     }
     if (DreamDroid.getTags().size == 0) {
-        if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-            return@launch
-        }
         onProgress(
             context.getString(R.string.loading),
             context.getString(R.string.tags) + " - " +
@@ -52,9 +53,6 @@ fun LifecycleOwner.launchLocationsAndTagsLoad(
         withContext(Dispatchers.IO) {
             DreamDroid.loadTags(http)
         }
-    }
-    if (!lifecycle.currentState.isAtLeast(Lifecycle.State.CREATED)) {
-        return@launch
     }
     onLocationsResult?.invoke(locationsOk)
     onReady()
