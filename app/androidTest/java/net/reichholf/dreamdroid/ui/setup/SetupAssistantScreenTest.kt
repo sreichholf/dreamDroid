@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -16,7 +19,9 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
+import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CompletableDeferred
 import net.reichholf.dreamdroid.DreamDroid
@@ -45,13 +50,13 @@ class SetupAssistantScreenTest {
     @Test
     fun welcomeMovesUpBeforeStartEnables() {
         composeRule.mainClock.autoAdvance = false
+        val viewModel = model()
         composeRule.setContent {
             DreamDroidTheme {
                 SetupAssistantScreen(
+                    viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSearch = { emptyList() },
-                    onCheck = { ProfileCheckResult() },
                     onSave = {},
                     onLeave = {}
                 )
@@ -96,13 +101,13 @@ class SetupAssistantScreenTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val searching = context.getString(R.string.setup_searching)
         val noneFound = context.getString(R.string.setup_none_found)
+        val viewModel = model(onSearch = { gate.await() })
         composeRule.setContent {
             DreamDroidTheme {
                 SetupAssistantScreen(
+                    viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSearch = { gate.await() },
-                    onCheck = { ProfileCheckResult() },
                     onSave = {},
                     onLeave = {}
                 )
@@ -123,22 +128,22 @@ class SetupAssistantScreenTest {
     fun failedCertificateCheckShowsWarningAndStillSaves() {
         var checks = 0
         var saved: Profile? = null
+        val viewModel = model(
+            onCheck = { profile ->
+                checks += 1
+                ProfileCheckResult(
+                    hasError = true,
+                    errorTextExt = "certificate",
+                    failure = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Ssl)
+                ).also { savedTrust = profile.allCertsTrusted }
+            }
+        )
         composeRule.setContent {
             DreamDroidTheme {
                 SetupAssistantScreen(
+                    viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSearch = { emptyList() },
-                    onCheck = { profile ->
-                        checks += 1
-                        ProfileCheckResult(
-                            hasError = true,
-                            errorTextExt = "certificate",
-                            failure = EnigmaFailure.Unreachable(
-                                EnigmaFailure.UnreachableReason.Ssl
-                            )
-                        ).also { savedTrust = profile.allCertsTrusted }
-                    },
                     onSave = { saved = it },
                     onLeave = {}
                 )
@@ -179,6 +184,72 @@ class SetupAssistantScreenTest {
         assertTrue(profile?.allCertsTrusted == true)
         assertTrue(checks >= 2)
     }
+
+    @Test
+    fun remountKeepsDraftAndInFlightCheckWithoutRerunning() {
+        val gate = CompletableDeferred<ProfileCheckResult>()
+        var searches = 0
+        var checks = 0
+        val viewModel = model(
+            onSearch = {
+                searches += 1
+                emptyList()
+            },
+            onCheck = {
+                checks += 1
+                gate.await()
+            }
+        )
+        var shown by mutableStateOf(true)
+        composeRule.setContent {
+            DreamDroidTheme {
+                if (shown) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onSave = {},
+                        onLeave = {}
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitForIdle()
+
+        shown = false
+        composeRule.waitForIdle()
+        shown = true
+        composeRule.waitForIdle()
+
+        assertEquals(SetupStep.SignIn, viewModel.draft.step)
+        assertEquals("192.168.1.2", viewModel.draft.host)
+        assertTrue(viewModel.checking)
+        gate.complete(ProfileCheckResult())
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").assertIsEnabled()
+        assertEquals(1, searches)
+        assertEquals(1, checks)
+    }
+
+    private fun model(
+        onSearch: suspend () -> List<SetupReceiver> = { emptyList() },
+        onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() }
+    ): SetupAssistantViewModel = SetupAssistantViewModel(
+        ApplicationProvider.getApplicationContext(),
+        SavedStateHandle(),
+        object : SetupAssistantBackend {
+            override suspend fun search(): List<SetupReceiver> = onSearch()
+
+            override suspend fun check(profile: Profile): ProfileCheckResult = onCheck(profile)
+        }
+    )
 
     private var savedTrust: Boolean = false
 }

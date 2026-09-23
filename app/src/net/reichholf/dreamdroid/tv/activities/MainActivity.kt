@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -26,7 +27,6 @@ import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
-import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
@@ -36,7 +36,6 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
-import net.reichholf.dreamdroid.ui.setup.toSetupReceiver
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /**
@@ -96,19 +95,9 @@ class MainActivity :
         setContent {
             DreamDroidTvTheme {
                 SetupAssistantScreen(
+                    viewModel = viewModel(),
                     localNetworkGranted = lanGranted,
                     onRequestLocalNetwork = { localNetworkPermissionRequest.ensure(this) },
-                    onSearch = {
-                        withContext(Dispatchers.IO) {
-                            DeviceDetector.getAvailableHosts().map { it.toSetupReceiver() }
-                        }
-                    },
-                    onCheck = { profile ->
-                        profile.cachedDeviceInfo = null
-                        withContext(Dispatchers.IO) {
-                            CheckProfile.checkProfile(profile, this@MainActivity)
-                        }
-                    },
                     onSave = { profile ->
                         val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
                         profile.id = id
