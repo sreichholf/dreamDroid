@@ -70,8 +70,8 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
 
     private var bouquetConnection: String? = null
     private var bouquetJob: Job? = null
-    private var locationsStarted = false
     private var locationsJob: Job? = null
+    private var lastLocationsHttpSuccess: Boolean? = null
 
     init {
         val saved = readHubShellSaved(savedAccess)
@@ -173,15 +173,22 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
     }
 
     fun ensureLocations(handle: PhoneNavHandle) {
-        if (locationsStarted) {
+        if (
+            !shouldRetryHubLocations(
+                locationsReady,
+                movieLocations,
+                locationsJob?.isActive == true,
+                lastLocationsHttpSuccess
+            )
+        ) {
             return
         }
-        locationsStarted = true
         val app = getApplication<Application>()
         locationsJob = handle.launchLocationsAndTagsLoad(
             onProgress = { _, _ -> },
             onReady = { },
             onLocationsResult = { success ->
+                lastLocationsHttpSuccess = success
                 viewModelScope.launch {
                     val painted = movieLocationsAfterHttpOrCache(
                         AppDatabase.movie(app),

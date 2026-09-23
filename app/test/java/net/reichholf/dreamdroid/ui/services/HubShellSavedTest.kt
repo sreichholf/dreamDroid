@@ -62,4 +62,48 @@ class HubShellSavedTest {
         assertFalse(shouldLoadHubPage(appliedKey = "Online", nextKey = "Online"))
         assertTrue(shouldLoadHubPage(appliedKey = "0", nextKey = "1"))
     }
+
+    @Test
+    fun emptyFailedLocationsLoadRetries() {
+        assertTrue(
+            shouldRetryHubLocations(
+                ready = false,
+                locations = emptyList(),
+                jobActive = false,
+                lastHttpSuccess = null
+            )
+        )
+        assertFalse(
+            shouldRetryHubLocations(
+                ready = true,
+                locations = listOf("/hdd/movie"),
+                jobActive = false,
+                lastHttpSuccess = false
+            )
+        )
+        assertTrue(
+            shouldRetryHubLocations(
+                ready = true,
+                locations = emptyList(),
+                jobActive = false,
+                lastHttpSuccess = false
+            )
+        )
+        assertFalse(
+            shouldRetryHubLocations(
+                ready = true,
+                locations = emptyList(),
+                jobActive = false,
+                lastHttpSuccess = true
+            )
+        )
+        assertFalse(
+            shouldRetryHubLocations(
+                ready = false,
+                locations = emptyList(),
+                jobActive = true,
+                lastHttpSuccess = null
+            )
+        )
+    }
 }

@@ -125,3 +125,25 @@ object HubModes {
  * to a tab that already loaded, keeps the list.
  */
 fun shouldLoadHubPage(appliedKey: String?, nextKey: String): Boolean = appliedKey != nextKey
+
+/**
+ * Movie locations load once while a strip is on screen. An empty failed load
+ * runs again when the hub destination re-enters.
+ */
+fun shouldRetryHubLocations(
+    ready: Boolean,
+    locations: List<String>,
+    jobActive: Boolean,
+    lastHttpSuccess: Boolean?
+): Boolean {
+    if (jobActive) {
+        return false
+    }
+    if (!ready) {
+        return true
+    }
+    if (locations.isNotEmpty()) {
+        return false
+    }
+    return lastHttpSuccess != true
+}
