@@ -18,6 +18,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLocale
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
@@ -85,7 +87,8 @@ fun EpgBouquetDestination(
         }
     }
 
-    val labelLocale = if (DreamDroid.DATE_LOCALE_WO) Locale.US else Locale.getDefault()
+    val labelLocale =
+        if (DreamDroid.DATE_LOCALE_WO) Locale.US else LocalLocale.current.platformLocale
     val is24Hour = DateFormat.is24HourFormat(context)
     val timeSec = viewModel.timeSec
         ?: (Calendar.getInstance().timeInMillis / 1000L).toInt()
@@ -127,9 +130,9 @@ fun EpgBouquetDestination(
     }
 
     val toolbarTitle = if (viewModel.refresh.isRefreshing) {
-        context.getString(R.string.loading)
+        stringResource(R.string.loading)
     } else {
-        viewModel.bouquetName.takeIf { it.isNotEmpty() } ?: context.getString(R.string.epg)
+        viewModel.bouquetName.takeIf { it.isNotEmpty() } ?: stringResource(R.string.epg)
     }
     LaunchedEffect(toolbarTitle) {
         activity.title = toolbarTitle

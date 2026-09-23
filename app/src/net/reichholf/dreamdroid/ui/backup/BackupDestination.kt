@@ -38,6 +38,10 @@ private const val BACKUP_EXPORT_FILENAME = "dreamdroid_backup.json"
 @Composable
 fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel = viewModel()) {
     val context = LocalContext.current
+    val importErrorText = stringResource(R.string.backup_import_error)
+    val importSuccessText = stringResource(R.string.backup_import_successful)
+    val exportPermissionText = stringResource(R.string.backup_export_missing_permission)
+    val title = stringResource(R.string.backup)
     var showPasswordWarning by remember { mutableStateOf(false) }
 
     fun toast(message: String) {
@@ -53,13 +57,13 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         val uri = result.data?.data ?: return@rememberLauncherForActivityResult
         try {
             if (!viewModel.importBackup(readTextFromUri(context, uri))) {
-                toast(context.getString(R.string.backup_import_error))
+                toast(importErrorText)
                 return@rememberLauncherForActivityResult
             }
-            toast(context.getString(R.string.backup_import_successful))
+            toast(importSuccessText)
         } catch (e: IOException) {
             Log.e(TAG, "unable to readTextFromUri:$uri", e)
-            toast(context.getString(R.string.backup_import_error))
+            toast(importErrorText)
         }
     }
 
@@ -79,7 +83,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         try {
             pickImportFile.launch(intent)
         } catch (e: ActivityNotFoundException) {
-            toast(e.localizedMessage ?: context.getString(R.string.backup_import_error))
+            toast(e.localizedMessage ?: importErrorText)
         }
     }
 
@@ -89,10 +93,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
             createBackupFile.launch(BACKUP_EXPORT_FILENAME)
         } catch (e: ActivityNotFoundException) {
             viewModel.pendingExportJson = null
-            toast(
-                e.localizedMessage
-                    ?: context.getString(R.string.backup_export_missing_permission)
-            )
+            toast(e.localizedMessage ?: exportPermissionText)
         }
     }
 
@@ -106,7 +107,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
 
     DisposableEffect(Unit) {
         val activity = context as? AppCompatActivity
-        activity?.title = context.getString(R.string.backup)
+        activity?.title = title
         onDispose { }
     }
 

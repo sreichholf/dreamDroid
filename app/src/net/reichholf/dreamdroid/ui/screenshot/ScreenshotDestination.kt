@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
@@ -74,6 +75,7 @@ fun ScreenshotDestination(
     viewModel: ScreenshotViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val resources = LocalResources.current
     val status by SessionConnectionHolder.shared.status.collectAsState()
     val blocked = status.blocksMutations
     var scanner by remember { mutableStateOf<MediaScannerConnection?>(null) }
@@ -87,7 +89,7 @@ fun ScreenshotDestination(
         if (!setTitle) {
             return
         }
-        (context as? AppCompatActivity)?.title = context.getText(R.string.screenshot)
+        (context as? AppCompatActivity)?.title = resources.getText(R.string.screenshot)
     }
 
     fun fileExtension(): String = when (format) {
@@ -103,7 +105,7 @@ fun ScreenshotDestination(
     }
 
     fun toastGallerySaveError() {
-        toast(context.getString(R.string.error))
+        toast(resources.getString(R.string.error))
     }
 
     fun failGallerySave(bytes: ByteArray, inserted: Boolean, ioFailed: Boolean): Boolean {
@@ -155,7 +157,7 @@ fun ScreenshotDestination(
             val pfd: ParcelFileDescriptor = resolver.openFileDescriptor(imageContentUri, "w")!!
             FileOutputStream(pfd.fileDescriptor).use { it.write(bytes) }
             pfd.close()
-            toast(context.getString(R.string.screenshot_saved, fileName))
+            toast(resources.getString(R.string.screenshot_saved, fileName))
             null
         } catch (e: IOException) {
             Log.e(DreamDroid.LOG_TAG, e.localizedMessage ?: e.toString())
@@ -166,7 +168,7 @@ fun ScreenshotDestination(
 
     fun share() {
         val file = saveToFile(true) ?: run {
-            toast(context.getString(R.string.error))
+            toast(resources.getString(R.string.error))
             return
         }
         file.setReadable(true, false)

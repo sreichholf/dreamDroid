@@ -71,13 +71,14 @@ fun HubTimerListPage(
     session.profileId = DreamDroid.getCurrentProfile().id
     session.timerDao = AppDatabase.timer(context)
 
+    val title = stringResource(R.string.timer)
     DisposableEffect(handle, session) {
         // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
         // composeActivityResultListener. Session still implements ActivityResultListener
         // if a host prefers registering it instead of remountEpoch.
         activity.addMenuProvider(session)
         session.chromeAttached = true
-        session.setToolbarTitle(context.getString(R.string.timer))
+        session.setToolbarTitle(title)
         onDispose {
             session.chromeAttached = false
             activity.removeMenuProvider(session)

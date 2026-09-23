@@ -23,6 +23,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
@@ -75,8 +76,8 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
     }
     val baseTitle = virtualRemoteToolbarTitle(
         quickZap = quickZap,
-        virtualRemote = context.getString(R.string.virtual_remote),
-        quickZapLabel = context.getString(R.string.quickzap)
+        virtualRemote = stringResource(R.string.virtual_remote),
+        quickZapLabel = stringResource(R.string.quickzap)
     )
 
     fun setToolbarTitle() {
@@ -101,6 +102,8 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
         handler.postDelayed(task, 700)
     }
 
+    val contentErrorText = stringResource(R.string.get_content_error)
+
     fun onKey(keyCode: Int, longClick: Boolean) {
         handle.runOnlineOnly {
             val msec = if (longClick) 100L else 25L
@@ -120,7 +123,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
                     error
                 ->
                 var hasError = false
-                var toastText = context.getString(R.string.get_content_error)
+                var toastText = contentErrorText
                 val stateText = result.stateText
                 val state = result.state
                 if (stateText.isNullOrEmpty()) {
@@ -150,9 +153,9 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
         if (typed.resourceId != 0) typed.resourceId else R.drawable.ic_action_list
     }
     val toggleDescription = if (quickZap) {
-        context.getString(R.string.standard)
+        stringResource(R.string.standard)
     } else {
-        context.getString(R.string.quickzap)
+        stringResource(R.string.quickzap)
     }
 
     DisposableEffect(baseTitle) {

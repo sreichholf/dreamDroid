@@ -97,6 +97,7 @@ fun ProfileEditDestination(
         }
     }
 
+    val title = stringResource(R.string.edit_profile)
     DisposableEffect(handle, menuProvider, tag, remount, viewModel) {
         val activity = context as? AppCompatActivity
         val observer = LifecycleEventObserver { _, event ->
@@ -104,7 +105,7 @@ fun ProfileEditDestination(
                 viewModel.persist()
             }
         }
-        activity?.title = context.getString(R.string.edit_profile)
+        activity?.title = title
         activity?.lifecycle?.addObserver(observer)
         activity?.addMenuProvider(menuProvider)
         onDispose {
@@ -115,12 +116,12 @@ fun ProfileEditDestination(
     }
 
     LaunchedEffect(tag, remount) {
-        (context as? AppCompatActivity)?.title = context.getString(R.string.edit_profile)
+        (context as? AppCompatActivity)?.title = title
     }
 
     ProfileEditScreen(
         state = viewModel.editState,
-        saveLabel = context.getString(R.string.save),
+        saveLabel = stringResource(R.string.save),
         onSave = { save() },
         showSaveFab = false,
         modifier = modifier

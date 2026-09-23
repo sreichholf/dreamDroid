@@ -9,6 +9,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -51,9 +52,9 @@ fun ServiceEpgDestination(
     }
 
     val toolbarTitle = if (viewModel.refresh.isRefreshing) {
-        context.getString(R.string.loading)
+        stringResource(R.string.loading)
     } else {
-        "${context.getString(R.string.epg)} - ${viewModel.serviceName}"
+        "${stringResource(R.string.epg)} - ${viewModel.serviceName}"
     }
     LaunchedEffect(toolbarTitle) {
         (context as? AppCompatActivity)?.title = toolbarTitle
