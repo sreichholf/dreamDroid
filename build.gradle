@@ -23,8 +23,9 @@ plugins {
 // https://ktlint.github.io/ktlint/latest/rules/code-styles/
 spotless {
     kotlin {
-        target 'app/**/*.kt'
-        targetExclude '**/build/**'
+        // Source roots only: a tree over app/ walks app/build, and Gradle fails spotless
+        // when KSP writes there earlier in the same build, even with the files excluded.
+        target 'app/src/**/*.kt', 'app/test/**/*.kt', 'app/androidTest/**/*.kt'
         ktlint('1.8.0')
         trimTrailingWhitespace()
         endWithNewline()
