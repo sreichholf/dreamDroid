@@ -10,6 +10,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -64,9 +65,10 @@ fun SignalDestination(
         }
     }
 
+    val signalMeterTitle = stringResource(R.string.signal_meter)
     DisposableEffect(blocked) {
         val activity = context as? AppCompatActivity
-        activity?.title = context.getString(R.string.signal_meter)
+        activity?.title = signalMeterTitle
         activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (blocked) {
             viewModel.stopPolling(clearMeter = true)

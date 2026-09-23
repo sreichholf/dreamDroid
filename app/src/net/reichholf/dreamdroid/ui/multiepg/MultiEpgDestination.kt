@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
@@ -104,8 +105,9 @@ fun MultiEpgDestination(
     menuSession.bouquetName = bouquetName
     menuSession.visibleStartSec = visibleStartSec
 
+    val defaultTitle = stringResource(R.string.multiepg)
     DisposableEffect(bouquetName) {
-        activity.title = bouquetName.ifBlank { context.getString(R.string.multiepg) }
+        activity.title = bouquetName.ifBlank { defaultTitle }
         onDispose { }
     }
 

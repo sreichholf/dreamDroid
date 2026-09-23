@@ -438,6 +438,7 @@ class VideoActivity :
 
     @TargetApi(Build.VERSION_CODES.O)
     override fun onUserLeaveHint() {
+        super.onUserLeaveHint()
         if (!isInPictureInPictureMode) doEnterPip()
     }
 

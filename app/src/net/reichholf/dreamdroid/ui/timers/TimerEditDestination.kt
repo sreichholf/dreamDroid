@@ -88,6 +88,7 @@ fun TimerEditDestination(
     var showDeleteConfirm by remember { mutableStateOf(false) }
     var pickerKind by remember { mutableStateOf<TimerEditPicker?>(null) }
     val is24Hour = DateFormat.is24HourFormat(context)
+    val title = stringResource(R.string.timer)
 
     DisposableEffect(handle, session, tag, remount, viewModel) {
         session.handle = handle
@@ -101,7 +102,7 @@ fun TimerEditDestination(
                 viewModel.persist()
             }
         }
-        activity?.title = context.getString(R.string.timer)
+        activity?.title = title
         activity?.lifecycle?.addObserver(observer)
         activity?.addMenuProvider(session)
         onDispose {
@@ -127,7 +128,7 @@ fun TimerEditDestination(
 
     TimerEditScreen(
         state = session.editState,
-        saveLabel = context.getString(R.string.save),
+        saveLabel = stringResource(R.string.save),
         onSave = { session.saveTimer() },
         onPickBeginDate = { pickerKind = TimerEditPicker.BeginDate },
         onPickBeginTime = { pickerKind = TimerEditPicker.BeginTime },

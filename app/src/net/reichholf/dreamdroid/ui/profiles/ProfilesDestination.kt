@@ -62,13 +62,14 @@ fun ProfilesDestination(
     val activity = context as AppCompatActivity
     val detectInProgress = viewModel.detectInProgress
 
+    val title = stringResource(R.string.profiles)
     DisposableEffect(handle, viewModel) {
         val menuProvider = ProfilesMenuProvider(
             viewModel = viewModel,
             onAddProfile = { handle.navigateToProfileEdit(null) }
         )
         activity.addMenuProvider(menuProvider)
-        activity.title = context.getString(R.string.profiles)
+        activity.title = title
         onDispose {
             activity.removeMenuProvider(menuProvider)
         }

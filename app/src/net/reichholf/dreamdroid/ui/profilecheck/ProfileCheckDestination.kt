@@ -1,17 +1,17 @@
 package net.reichholf.dreamdroid.ui.profilecheck
 
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 @Composable
 fun ProfileCheckDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     val ui by handle.profileCheckUiFlow().collectAsState()
-    val activity = LocalContext.current as? MainActivity
+    val activity = LocalActivity.current as? MainActivity
     ProfileCheckScreen(
         ui = ui,
         onRecheck = { activity?.recheckProfileAfterFailure() },

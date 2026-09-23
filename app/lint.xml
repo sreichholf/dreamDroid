@@ -10,7 +10,6 @@
     <issue id="CommitTransaction" severity="ignore" />
     <issue id="ContentDescription" severity="ignore" />
     <issue id="CutPasteId" severity="ignore" />
-    <issue id="DalvikOverride" severity="ignore" />
     <issue id="DefaultLocale" severity="ignore" />
     <issue id="Deprecated" severity="ignore" />
     <issue id="DisableBaselineAlignment" severity="ignore" />
@@ -25,7 +24,6 @@
     <issue id="ExportedService" severity="ignore" />
     <issue id="ExtraText" severity="ignore" />
     <issue id="ExtraTranslation" severity="ignore" />
-    <issue id="FloatMath" severity="ignore" />
     <issue id="GifUsage" severity="ignore" />
     <issue id="GrantAllUris" severity="ignore" />
     <issue id="GridLayout" severity="ignore" />
@@ -98,7 +96,6 @@
     <issue id="StringFormatCount" severity="ignore" />
     <issue id="StringFormatInvalid" severity="ignore" />
     <issue id="StringFormatMatches" severity="ignore" />
-    <issue id="StyleCycle" severity="ignore" />
     <issue id="Suspicious0dp" severity="ignore" />
     <issue id="SuspiciousImport" severity="ignore" />
     <issue id="TextFields" severity="ignore" />

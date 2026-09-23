@@ -90,7 +90,6 @@ class MainActivity :
     private var shellWasPaused: Boolean = false
 
     private var checkProfileJob: Job? = null
-    private var reachabilityJob: Job? = null
     private var volumeSetJob: Job? = null
     private var showingSetup: Boolean = false
     private var shellCallbackRegistered: Boolean = false
@@ -258,6 +257,7 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        startSessionReachabilityProbe()
         if (!DreamDroid.hasCurrentProfile()) {
             showSetupAssistant()
             return
@@ -271,8 +271,6 @@ class MainActivity :
             return
         }
         if (!DreamDroid.ensureCurrentProfile(this)) {
-            reachabilityJob?.cancel()
-            reachabilityJob = null
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetupAssistant()
@@ -319,7 +317,6 @@ class MainActivity :
         }
         phoneShellReady = true
         initViews()
-        startSessionReachabilityProbe()
         DreamDroid.setCurrentProfileChangedListener(this)
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.unregisterOnSharedPreferenceChangeListener(this)
@@ -339,12 +336,11 @@ class MainActivity :
      * the profile. Auth / illegal host are not polled. Does not flash Checking.
      */
     private fun startSessionReachabilityProbe() {
-        reachabilityJob?.cancel()
-        reachabilityJob = lifecycleScope.launch {
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
                     val active = DreamDroid.currentProfileOrNull()
-                    if (active == null) {
+                    if (active == null || showingSetup) {
                         delay(SESSION_REACHABILITY_INTERVAL_MS)
                         continue
                     }

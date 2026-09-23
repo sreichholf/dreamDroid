@@ -9,6 +9,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.android.material.color.DynamicColors
 import net.reichholf.dreamdroid.DreamDroid
@@ -29,8 +30,9 @@ fun SettingsDestination(
 ) {
     val context = LocalContext.current
     val message = viewModel.message
+    val title = stringResource(R.string.settings)
     DisposableEffect(Unit) {
-        (context as? AppCompatActivity)?.title = context.getString(R.string.settings)
+        (context as? AppCompatActivity)?.title = title
         onDispose { }
     }
     LaunchedEffect(message) {
