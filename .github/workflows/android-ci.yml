@@ -86,6 +86,10 @@ jobs:
           :app:compileGoogleDebugAndroidTestKotlin
           :app:compileGoogleDebugAndroidTestJavaWithJavac
 
+      # Lint errors fail the build (abortOnError); warnings are reported only.
+      - name: Lint googleDebug
+        run: ./gradlew -Pci --no-configuration-cache :app:lintGoogleDebug
+
       # Phone-installable arm64 APK: main pushes, PRs (so Cloud/device smoke
       # without local emulator), or workflow_dispatch with upload_apk=true.
       # -Parm64Apk builds one ABI split (~57MB), not fat -Pci.
@@ -118,6 +122,7 @@ jobs:
           path: |
             app/build/reports/tests/testGoogleDebugUnitTest/
             app/build/test-results/testGoogleDebugUnitTest/
+            app/build/reports/lint-results-googleDebug.html
           if-no-files-found: ignore
           retention-days: 14
 

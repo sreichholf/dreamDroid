@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.nav
 
 import android.app.Activity
 import android.net.Uri
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -250,14 +251,14 @@ private fun PhoneNavHostGraph(
             AboutDialog(onDismiss = { navController.popBackStack() })
         }
         dialog(PhoneNavRoutes.POWER) {
-            val activity = LocalContext.current as? MainActivity
+            val activity = LocalActivity.current as? MainActivity
             PowerStateDialog(
                 onDismiss = { navController.popBackStack() },
                 onChoice = { action -> activity?.onDrawerPowerChoice(action) }
             )
         }
         dialog(PhoneNavRoutes.SEND_MESSAGE) {
-            val activity = LocalContext.current as? MainActivity
+            val activity = LocalActivity.current as? MainActivity
             SendMessageDialog(
                 onDismiss = { navController.popBackStack() },
                 onSend = { text, type, timeout ->
@@ -266,7 +267,7 @@ private fun PhoneNavHostGraph(
             )
         }
         dialog(PhoneNavRoutes.SLEEP_TIMER) {
-            val activity = LocalContext.current as? MainActivity
+            val activity = LocalActivity.current as? MainActivity
             val args = rememberSleepTimerNavArgs {
                 handle.consumeSleepTimerArgs()
             }

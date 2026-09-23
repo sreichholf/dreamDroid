@@ -59,7 +59,6 @@ class MainActivity :
     }
     private val hubViewModel: TvHubViewModel by viewModels { TvHubViewModel.Factory }
     private var checkProfileJob: Job? = null
-    private var reachabilityJob: Job? = null
     private var showingSetup: Boolean = false
     private var lanGranted by mutableStateOf(false)
     private var currentProfile: Profile = Profile.getDefault()
@@ -68,6 +67,7 @@ class MainActivity :
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        startSessionReachabilityProbe()
         if (!DreamDroid.hasCurrentProfile()) {
             showSetup()
             return
@@ -81,8 +81,6 @@ class MainActivity :
             return
         }
         if (!DreamDroid.ensureCurrentProfile(this)) {
-            reachabilityJob?.cancel()
-            reachabilityJob = null
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetup()
@@ -114,7 +112,6 @@ class MainActivity :
         showingSetup = false
         localNetworkPermissionRequest.ensure(this)
         DreamDroid.setCurrentProfileChangedListener(this)
-        startSessionReachabilityProbe()
         onProfileChanged(DreamDroid.getCurrentProfile())
         TvComposeHubHost.install(this)
         try {
@@ -133,12 +130,11 @@ class MainActivity :
      * the profile. Auth / illegal host are not polled. Does not flash Checking.
      */
     private fun startSessionReachabilityProbe() {
-        reachabilityJob?.cancel()
-        reachabilityJob = lifecycleScope.launch {
+        lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
                     val active = DreamDroid.currentProfileOrNull()
-                    if (active == null) {
+                    if (active == null || showingSetup) {
                         delay(SESSION_REACHABILITY_INTERVAL_MS)
                         continue
                     }

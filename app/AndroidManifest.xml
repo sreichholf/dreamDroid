@@ -110,7 +110,7 @@
                 <data android:mimeType="application/x-extension-mp4"/>
                 <data android:mimeType="application/x-flac"/>
                 <data android:mimeType="application/x-matroska"/>
-                <data android:mimeType="application/x-mpegURL"/>
+                <data android:mimeType="application/x-mpegurl"/>
                 <data android:mimeType="application/x-ogg"/>
                 <data android:scheme="http"/>
                 <data android:scheme="https"/>
@@ -122,7 +122,7 @@
             <intent-filter android:label="@string/watch_on_dream">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT"/>
-                <data android:host="youtu.be" android:mimeType="text/*" />
+                <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
         <activity

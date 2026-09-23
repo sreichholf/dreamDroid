@@ -92,8 +92,8 @@ open class BaseActivity :
         if (Build.VERSION.SDK_INT < 34 && activityAnimationsEnabled()) {
             @Suppress("DEPRECATION")
             overridePendingTransition(
-                R.animator.activity_open_scale,
-                R.animator.activity_close_translate
+                R.anim.activity_open_scale,
+                R.anim.activity_close_translate
             )
         }
     }
@@ -109,19 +109,19 @@ open class BaseActivity :
         if (Build.VERSION.SDK_INT >= 34) {
             overrideActivityTransition(
                 OVERRIDE_TRANSITION_OPEN,
-                R.animator.activity_open_translate,
-                R.animator.activity_close_scale
+                R.anim.activity_open_translate,
+                R.anim.activity_close_scale
             )
             overrideActivityTransition(
                 OVERRIDE_TRANSITION_CLOSE,
-                R.animator.activity_open_scale,
-                R.animator.activity_close_translate
+                R.anim.activity_open_scale,
+                R.anim.activity_close_translate
             )
         } else {
             @Suppress("DEPRECATION")
             overridePendingTransition(
-                R.animator.activity_open_translate,
-                R.animator.activity_close_scale
+                R.anim.activity_open_translate,
+                R.anim.activity_close_scale
             )
         }
     }

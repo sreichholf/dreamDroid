@@ -1,13 +1,16 @@
 package net.reichholf.dreamdroid.helpers
 
+import android.Manifest
 import android.app.Notification
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
 import android.graphics.BitmapFactory
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import androidx.preference.PreferenceManager
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
@@ -216,6 +219,14 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
                 ?: progress.currentFile.ifEmpty {
                     applicationContext.getString(R.string.error)
                 }
+        }
+        if (Build.VERSION.SDK_INT >= 33 &&
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
         }
         // Separate id: WorkManager removes the FGS notification when the worker ends.
         NotificationManagerCompat.from(applicationContext).notify(
