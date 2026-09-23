@@ -15,78 +15,46 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.zIndex
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
-import net.reichholf.dreamdroid.DreamDroid
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Bouquets
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.MovieDao
 import net.reichholf.dreamdroid.room.MovieSnapshotStore
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
-import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
-
-private const val MODE_TV = "TV"
-private const val MODE_RADIO = "Radio"
-private const val MODE_MOVIES = "Movies"
-private const val MODE_TIMER = "Timer"
 
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
- * Owns mode + bouquet/location tabs (parity with former ServiceListPager),
- * publishes [TvMoviesHubState] through [RegisterShellDestinationBar] (phone
- * [R.id.shell_destination_nav] bar or tablet [R.id.shell_destination_rail]),
- * and routes MultiChoice / timer-edit results for the active child page.
+ * [HubViewModel] owns mode, the selected row, and bouquet or location tabs
+ * (parity with former ServiceListPager). Publishes [TvMoviesHubState] through
+ * [RegisterShellDestinationBar] (phone [R.id.shell_destination_nav] bar or tablet
+ * [R.id.shell_destination_rail]), and routes MultiChoice / timer-edit results
+ * for the active child page.
  */
 @Composable
-fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
+fun HubDestination(
+    handle: PhoneNavHandle,
+    modifier: Modifier = Modifier,
+    viewModel: HubViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-    var mode by rememberSaveable { mutableStateOf(MODE_TV) }
-    var currentTv by rememberSaveable { mutableStateOf<String?>(null) }
-    var currentRadio by rememberSaveable { mutableStateOf<String?>(null) }
-    var currentMovie by rememberSaveable { mutableStateOf<String?>(null) }
-    var selectedRow by rememberSaveable { mutableIntStateOf(0) }
-    var timerRemountEpoch by rememberSaveable { mutableIntStateOf(0) }
-    var nowPlayingReloadEpoch by rememberSaveable { mutableIntStateOf(0) }
-
-    var bouquets by remember { mutableStateOf<Bouquets?>(null) }
-    var bouquetError by remember { mutableStateOf<String?>(null) }
-    var locationsReady by remember {
-        mutableStateOf(DreamDroid.getLocations().isNotEmpty())
-    }
-    var movieLocations by remember {
-        mutableStateOf(
-            if (DreamDroid.getLocations().isNotEmpty()) {
-                DreamDroid.getLocations().toList()
-            } else {
-                emptyList()
-            }
-        )
-    }
-
-    val movieSession = remember { HubMovieListSession() }
+    val mode = viewModel.mode
+    val selectedRow = viewModel.selectedRow
+    val bouquets = viewModel.bouquets
+    val bouquetError = viewModel.bouquetError
+    val movieLocations = viewModel.movieLocations
+    val nowPlayingReloadEpoch = viewModel.nowPlayingReloadEpoch
 
     val tvBouquets = remember(bouquets) {
         buildDedicatedBouquets(
@@ -103,53 +71,32 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         )
     }
     val rows = when (mode) {
-        MODE_TV -> tvBouquets.map { it.name }
-        MODE_RADIO -> radioBouquets.map { it.name }
-        MODE_MOVIES -> movieLocations
+        HubModes.TV -> tvBouquets.map { it.name }
+        HubModes.RADIO -> radioBouquets.map { it.name }
+        HubModes.MOVIES -> movieLocations
         else -> emptyList()
     }
 
     val hubSelected = when (mode) {
-        MODE_RADIO -> TvMoviesDestination.RADIO
-        MODE_MOVIES -> TvMoviesDestination.MOVIES
-        MODE_TIMER -> TvMoviesDestination.TIMER
+        HubModes.RADIO -> TvMoviesDestination.RADIO
+        HubModes.MOVIES -> TvMoviesDestination.MOVIES
+        HubModes.TIMER -> TvMoviesDestination.TIMER
         else -> TvMoviesDestination.TV
     }
 
     fun selectDestination(dest: TvMoviesDestination) {
         when (dest) {
-            TvMoviesDestination.TV -> {
-                mode = MODE_TV
-                val (idx, ref) = resolveBouquetSelection(
-                    tvBouquets,
-                    currentTv,
-                    DreamDroid.getCurrentProfile().defaultBouquetTv
-                )
-                selectedRow = idx
-                currentTv = ref
-            }
+            TvMoviesDestination.TV -> viewModel.selectTv(tvBouquets)
 
-            TvMoviesDestination.RADIO -> {
-                mode = MODE_RADIO
-                val (idx, ref) = resolveBouquetSelection(radioBouquets, currentRadio, null)
-                selectedRow = idx
-                currentRadio = ref
-            }
+            TvMoviesDestination.RADIO -> viewModel.selectRadio(radioBouquets)
 
             TvMoviesDestination.MOVIES -> {
-                mode = MODE_MOVIES
-                if (!locationsReady || movieLocations.isEmpty()) {
+                if (!viewModel.selectMovies()) {
                     Toast.makeText(context, R.string.loading, Toast.LENGTH_SHORT).show()
-                    selectedRow = 0
-                } else {
-                    selectedRow = indexOfLocation(movieLocations, currentMovie)
                 }
             }
 
-            TvMoviesDestination.TIMER -> {
-                mode = MODE_TIMER
-                selectedRow = 0
-            }
+            TvMoviesDestination.TIMER -> viewModel.selectTimer()
         }
     }
 
@@ -169,16 +116,17 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
 
     fun onRowSelected(index: Int) {
         // Reselect active bouquet tab → go up one provider/directory level (or reload root).
-        if (index == selectedRow && (mode == MODE_TV || mode == MODE_RADIO)) {
+        if (index == selectedRow && (mode == HubModes.TV || mode == HubModes.RADIO)) {
             serviceListGoUp?.invoke()
             return
         }
-        selectedRow = index
-        when (mode) {
-            MODE_TV -> currentTv = tvBouquets.getOrNull(index)?.reference
-            MODE_RADIO -> currentRadio = radioBouquets.getOrNull(index)?.reference
-            MODE_MOVIES -> currentMovie = movieLocations.getOrNull(index)
+        val ref = when (mode) {
+            HubModes.TV -> tvBouquets.getOrNull(index)?.reference
+            HubModes.RADIO -> radioBouquets.getOrNull(index)?.reference
+            HubModes.MOVIES -> movieLocations.getOrNull(index)
+            else -> null
         }
+        viewModel.onRowSelected(index, ref)
     }
 
     // Publish Snapshot state to the NavHost-owned shell ComposeView. Installing
@@ -189,7 +137,7 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     DisposableEffect(handle) {
         val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, _ ->
             if (requestCode == Statics.REQUEST_EDIT_TIMER && resultCode == Activity.RESULT_OK) {
-                timerRemountEpoch += 1
+                viewModel.bumpTimerRemount()
             }
         }
         handle.composeActivityResultListener = listener
@@ -200,155 +148,13 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         }
     }
 
-    fun applyPaintedBouquets(painted: Bouquets, error: String?) {
-        bouquets = painted
-        bouquetError = error
-        when (mode) {
-            MODE_TV -> {
-                val list = buildDedicatedBouquets(
-                    painted.tv,
-                    context.resources.getStringArray(R.array.servicelist_dedicated),
-                    context.resources.getStringArray(R.array.servicerefstv)
-                )
-                val (idx, ref) = resolveBouquetSelection(
-                    list,
-                    currentTv,
-                    DreamDroid.getCurrentProfile().defaultBouquetTv
-                )
-                selectedRow = idx
-                currentTv = ref
-            }
+    val connectionSession = SessionConnectionHolder.shared.status.collectAsState().value.session
+    LaunchedEffect(connectionSession) { viewModel.onBouquetConnection(connectionSession) }
 
-            MODE_RADIO -> {
-                val list = buildDedicatedBouquets(
-                    painted.radio,
-                    context.resources.getStringArray(R.array.servicelist_dedicated),
-                    context.resources.getStringArray(R.array.servicerefsradio)
-                )
-                val (idx, ref) = resolveBouquetSelection(list, currentRadio, null)
-                selectedRow = idx
-                currentRadio = ref
-            }
-
-            MODE_MOVIES -> {
-                if (locationsReady) {
-                    selectedRow = indexOfLocation(movieLocations, currentMovie)
-                }
-            }
-
-            else -> selectedRow = 0
-        }
-    }
-
-    val connectionSession =
-        SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(connectionSession) {
-        val profileId = DreamDroid.getCurrentProfile().id
-        val excluded = UserBouquetCache.excludedHubTabRefs(context)
-        val dao = if (profileId != null) AppDatabase.roster(context) else null
-        val cachedTv = if (dao != null && profileId != null) {
-            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_TV)
-        } else {
-            emptyList()
-        }
-        val cachedRadio = if (dao != null && profileId != null) {
-            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_RADIO)
-        } else {
-            emptyList()
-        }
-        val hasStrip = cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()
-        if (hasStrip) {
-            val cached = Bouquets()
-            cached.tv.addAll(cachedTv)
-            cached.radio.addAll(cachedRadio)
-            applyPaintedBouquets(cached, error = null)
-        }
-        val status = SessionConnectionHolder.shared.status.value
-        if (status.shouldSkipReceiverHttp(hasStrip)) {
-            return@LaunchedEffect
-        }
-        if (shouldWaitForDeviceInfo(hasStrip)) {
-            // Cold start often composes the hub before CheckProfile finishes;
-            // wait so bouquet HTTP uses a ready client when Room cannot paint.
-            withTimeoutOrNull(20_000) {
-                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
-                    delay(100)
-                }
-            }
-        }
-        val result = loadBouquetList(context.applicationContext)
-        var painted = result.bouquets
-        var usedCache = false
-        if (dao != null && profileId != null) {
-            if (result.tvLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_TV,
-                    result.bouquets.tv,
-                    excluded
-                )
-            }
-            if (result.radioLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO,
-                    result.bouquets.radio,
-                    excluded
-                )
-            }
-            val resolved = bouquetsAfterHttpOrCache(
-                result.success,
-                result.bouquets,
-                UserBouquetCache.loadTabStripServices(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_TV
-                ),
-                UserBouquetCache.loadTabStripServices(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO
-                )
-            )
-            painted = resolved.first
-            usedCache = resolved.second
-        }
-        applyPaintedBouquets(painted, if (usedCache) null else result.errorText)
-    }
-
-    DisposableEffect(handle) {
-        val job = handle.launchLocationsAndTagsLoad(
-            onProgress = { _, _ -> },
-            onReady = { },
-            onLocationsResult = { success ->
-                scope.launch {
-                    val painted = movieLocationsAfterHttpOrCache(
-                        AppDatabase.movie(context),
-                        DreamDroid.getCurrentProfile().id,
-                        success,
-                        DreamDroid.getLocations().toList()
-                    )
-                    movieLocations = painted
-                    locationsReady = true
-                    if (mode == MODE_MOVIES) {
-                        selectedRow = indexOfLocation(painted, currentMovie)
-                    }
-                }
-            }
-        )
-        onDispose { job.cancel() }
-    }
+    LaunchedEffect(handle) { viewModel.ensureLocations(handle) }
 
     // Clamp selectedRow when the active row list shrinks (e.g. rotation before load).
-    LaunchedEffect(mode, rows.size) {
-        if (rows.isNotEmpty() && selectedRow > rows.lastIndex) {
-            selectedRow = rows.lastIndex
-        } else if (rows.isEmpty()) {
-            selectedRow = 0
-        }
-    }
+    LaunchedEffect(mode, rows.size) { viewModel.clampSelectedRow(rows.size) }
 
     Scaffold(
         modifier = modifier.fillMaxSize(),
@@ -378,7 +184,7 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                     .clipToBounds()
             ) {
                 when (mode) {
-                    MODE_TV -> {
+                    HubModes.TV -> {
                         // Wait for bouquet roots (old ServiceListPager stayed empty until then).
                         if (bouquets != null) {
                             val bouquet = tvBouquets.getOrNull(
@@ -398,14 +204,14 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
-                                        onZapped = { nowPlayingReloadEpoch += 1 }
+                                        onZapped = { viewModel.bumpNowPlayingReload() }
                                     )
                                 }
                             }
                         }
                     }
 
-                    MODE_RADIO -> {
+                    HubModes.RADIO -> {
                         if (bouquets != null) {
                             val bouquet = radioBouquets.getOrNull(
                                 if (radioBouquets.isEmpty()) {
@@ -424,14 +230,14 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                                         bouquetRef = bouquet.reference,
                                         bouquetName = bouquet.name,
                                         onProvideGoUp = { serviceListGoUp = it },
-                                        onZapped = { nowPlayingReloadEpoch += 1 }
+                                        onZapped = { viewModel.bumpNowPlayingReload() }
                                     )
                                 }
                             }
                         }
                     }
 
-                    MODE_MOVIES -> {
+                    HubModes.MOVIES -> {
                         val locationIndex = if (movieLocations.isEmpty()) {
                             0
                         } else {
@@ -443,17 +249,16 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                                 HubMovieListPage(
                                     handle = handle,
                                     location = location,
-                                    locationIndex = locationIndex,
-                                    session = movieSession
+                                    locationIndex = locationIndex
                                 )
                             }
                         }
                     }
 
-                    MODE_TIMER -> {
+                    HubModes.TIMER -> {
                         HubTimerListPage(
                             handle = handle,
-                            remountEpoch = timerRemountEpoch
+                            remountEpoch = viewModel.timerRemountEpoch
                         )
                     }
                 }
@@ -463,12 +268,6 @@ fun HubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
             )
         }
     }
-}
-
-private fun indexOfLocation(items: List<String>, location: String?): Int {
-    if (location.isNullOrEmpty() || items.isEmpty()) return 0
-    val idx = items.indexOf(location)
-    return if (idx >= 0) idx else 0
 }
 
 /**
