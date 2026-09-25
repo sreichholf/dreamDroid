@@ -12,3 +12,7 @@ build/
 local.properties
 .cursor/skills/verify-dreamdroid/artifacts/
 app/manifest-merger-release-report.txt
+
+# potetos-for-everyone:begin
+.potetos/
+# potetos-for-everyone:end

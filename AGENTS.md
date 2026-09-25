@@ -68,3 +68,13 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
 - Remaining modernization work (the intentional service-row track keep, and anything still listed under **Still to do**) lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
+
+<!-- potetos-for-everyone:begin -->
+## potetos-for-everyone
+
+For non-trivial engineering work, use the Agent Skill at `.agents/skills/poteto-mode/SKILL.md`.
+It routes the task to a playbook, loads supporting skills progressively, prefers simple changes,
+and requires evidence against the real artifact. Canonical skills are adapted from Lauren Tan's pstack.
+If native skill discovery is unavailable, read that SKILL.md and its selected playbook manually.
+dreamDroid rules above still govern build, style, and UI proof. On Cloud Agents, prove phone UI with instrumented tests, not emulator tapping.
+<!-- potetos-for-everyone:end -->
