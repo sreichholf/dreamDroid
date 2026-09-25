@@ -2,9 +2,10 @@
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
 **Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub session, Room cache paint, and Online-only streaming have landed. Widget still follows.  
-**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Chrome leftovers stay in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md) — do not fold them into leftover work. The widget stays Glance + `AndroidRemoteViews` for the dense RCU grid.
+**Not shipped from this plan:** the Compose `SnackbarHost` for mutation results (slice 2 allowed deferring it; results still go out as `Toast`), and accessibility semantics on greyed Online-only actions. Both are remediation steps A1 / A2 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md).  
+**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Architecture target and remediation (repositories, DI, ViewModel shape) live in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The cache guards and `hasCache` rules below move into repositories there (step B4) unchanged; this doc stays the source of truth for **what** is cached. The widget is Glance + `AndroidRemoteViews` for the dense RCU grid (a deliberate exception).
 
-Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs).
+Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests for UI (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs) and JVM tests for failure mapping, guards, and now/next.
 
 This plan unifies **session connectivity** with a **use-driven Room cache** so a dead box is not an app-wide disaster. Writes stay on the receiver. Reads may come from what the user already opened.
 
@@ -21,14 +22,14 @@ This plan unifies **session connectivity** with a **use-driven Room cache** so a
 | Never cache | **Provider** and **All Services** tabs **and anything drilled under them**. Never `epgmulti` the aggregate `bouquets.tv` / `bouquets.radio` **index** (`servicerefstv[0]` / `servicerefsradio[0]`). |
 | Folders as rows | Name + ref + kind only. Never insert `epg_event` with `serviceRef` = the folder. Markers: name + ref if we keep separators; no EPG. `IS_GROUP` is unused; treat as a channel until proven otherwise. A nested directory under a cacheable tab is a valid `epgmulti` `bRef` even when it is `FROM SATELLITES` (not only `userbouquet.*` files). |
 | Now / next | **Offline (and stale):** compute from Room with **phone `now()`**, not `epg_event.currentTime`. Event whose `[start, start+duration)` contains now is Now; next later start on that service is Next. Missing overlap → empty Now. **Online hub keeps `/web/epgnownext`** (see [`docs/multiepg.md`](multiepg.md)). |
-| Online-only actions | Stay visible, **look disabled**, still tappable. Tap **explains** (“Needs the receiver”). Do not use M3 `enabled = false` (it swallows clicks). |
-| Snackbar | Material 3, **low priority only**: Online mutation results (box `statetext` / `BoxRejected`). Never the session “cannot connect” surface. |
+| Online-only actions | Stay visible, **look disabled**, still tappable. Tap **explains** (“Needs the receiver”). Do not use M3 `enabled = false` (it swallows clicks). Because the control stays enabled for input, it **must** expose the blocked state to accessibility services: a `stateDescription` (“Needs the receiver”) and an `onClick` label that says the tap explains. Alpha alone is not enough. |
+| Snackbar | Material 3, **low priority only**: Online mutation results (box `statetext` / `BoxRejected`). Never the session “cannot connect” surface. Messages are UI state from the ViewModel, shown through the shell’s `SnackbarHostState` — not `Toast`. |
 | Writes in v1 | Read-only cache. No optimistic zap, no queued remote keys, no offline timer edits. |
-| Phone first | Phone shell shipped. TV hub session / cache / Online-only streaming shipped. Widget still follows (Toast, no Scaffold). |
+| Phone first | Phone shell shipped. TV hub session / cache / Online-only streaming shipped. Widget still follows (Toast is correct there: no Scaffold). |
 
 ## 2. Why this exists
 
-Today every leaf invents error chrome: ProfileCheck gate, drawer chip, list empty text, toast, silent swallow, or `Throwable` class names. HTTP failures collapse to `EnigmaHttpError` plus `errorText: String?`. Timeouts and SSL are often OkHttp `localizedMessage`. MultiEPG already peeks Room and keeps stale rows; the hub still waits up to 20s for in-memory `Profile.cachedDeviceInfo` (`@Ignore`, not Room) in both `HubDestination` and `HubNowPlaying` (`PROFILE_WAIT_MS`) before `loadBouquetList`.
+Before this plan, every leaf invented error chrome: ProfileCheck gate, drawer chip, list empty text, toast, silent swallow, or `Throwable` class names. HTTP failures collapse to `EnigmaHttpError` plus `errorText: String?`. Timeouts and SSL are often OkHttp `localizedMessage`. MultiEPG already peeks Room and keeps stale rows; the hub still waits up to 20s for in-memory `Profile.cachedDeviceInfo` (`@Ignore`, not Room) in both `HubDestination` and `HubNowPlaying` (`PROFILE_WAIT_MS`) before `loadBouquetList`.
 
 A LAN remote is often used with a sleeping box. If the user has already opened Favourites (or a movie location, or timers), that data should still be readable. Zap, remote, stream, and live meters cannot.
 
@@ -140,7 +141,7 @@ Online, Provider/All still load over HTTP as today.
 
 ### 4.6 Shared sync
 
-Hub slice 4 and MultiEPG must share **one process-wide** `MultiEpgSync` owned by the application (`DreamDroid` / a small holder). Today `MultiEpgDestination` constructs its own; `inFlight` is per instance. Otherwise opening Favourites and MultiEPG doubles `epgmulti` for the same chunk.
+Hub slice 4 and MultiEPG share **one process-wide** `MultiEpgSync` (shipped as `MultiEpgSyncHolder.shared`), so `inFlight` dedupes across callers and opening Favourites plus MultiEPG does not double `epgmulti` for the same chunk. The single instance stays; how it is provided changes from an `object` holder to a Hilt `@Singleton` behind `EpgRepository` (remediation B1 / B4).
 
 ## 5. Error and chrome (Material 3)
 
@@ -152,10 +153,10 @@ Hub slice 4 and MultiEPG must share **one process-wide** `MultiEpgSync` owned by
 | Cache hit, refresh failed | Keep content. Session **Offline**. Same stale-while-revalidate as MultiEPG. |
 | Auth | Persistent in-app copy; cache still readable; writes greyed. |
 | User taps a greyed action | Short explanation (dialog or inline). Not a session snackbar. |
-| Mutation while Online, box answers | Compose **Snackbar** (`SnackbarHost` on the phone shell): `statetext` or typed failure. Silent success for remote keys stays. |
+| Mutation while Online, box answers | Compose **Snackbar** (`SnackbarHost` on the phone shell and TV hub): `statetext` or typed failure. Silent success for remote keys stays. **Not built yet** — remediation A2. |
 | Widget RCU | Toast (no Scaffold) — already `WidgetRemoteRequest`. |
 
-Replace the unused View `Snackbar` on `MainActivity` when the Compose host exists. Do **not** replace `IndeterminateProgressHost` here — that is the separate “modal mutation progress” leftover in `modernize-dreamdroid.md`.
+Delete the leftover View `Snackbar` field on `MainActivity` (it is only ever dismissed) when the Compose host lands. Mutation progress is already the in-content `IndeterminateProgressHost` `LinearProgressIndicator`; leave it.
 
 `ListEmptyState` already has a `loading` flag; hub passes `refresh.isRefreshing`. **Fix callers** that still do `loading = emptyMessage == getString(R.string.loading)` (`PickServiceScreen`, `EpgBouquetScreen`, `ServiceEpgScreen`). Split **empty vs error** (error color; empty `onSurfaceVariant`). Do not show Reload as the only action on a true empty list unless we mean refetch.
 
@@ -206,8 +207,8 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 
 ## 8. Testing
 
-- Unit / androidTest: failure mapping (timeout ≠ cancel), roster guards, now/next overlap vs phone clock, “Provider never inserted”, nested All Services not inserted.
-- Compose: ProfileCheck **shown** without cache; **skipped** when tab strip exists (slice 3+); Offline list paints; greyed zap explains; empty vs error.
+- Unit / androidTest: failure mapping (timeout ≠ cancel), roster guards, now/next overlap vs phone clock, “Provider never inserted”, nested All Services not inserted. Prefer JVM tests for these once the guards live in repositories.
+- Compose: ProfileCheck **shown** without cache; **skipped** when tab strip exists (slice 3+); Offline list paints; greyed zap explains **and exposes its blocked state description**; empty vs error; mutation result shows a Snackbar.
 - Fixtures: `AppDatabase.inMemory` (already used by MultiEPG tests).
 - Cloud: `bash .cursor/cloud/connected-test.sh` for touched classes. No adb tap loops, no Cloud screenshot walkthroughs (`AGENTS.md`).
 
@@ -216,9 +217,8 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 - Idle / full EPG sync, AutoTimer, OpenWebif-only APIs
 - Caching Provider / All Services
 - Optimistic offline writes or a command queue
-- TV hub session / Room cache / Online-only streaming shipped; widget still follows
 - OS `ConnectivityManager` as a third copy — box unreachable is enough for v1
-- Folding tablet `NavigationRail`, video overlay shell, or `IndeterminateProgressHost` replacement into these PRs. The widget hybrid (Glance + `AndroidRemoteViews` dense RCU) is a keep, not a leftover.
+- Folding architecture remediation (repositories, DI, ViewModel shape, toolbar, navigation) into offline fixes. Those are separate steps in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md).
 - Changing MultiEPG zoom/TTL/retention defaults
 - Switching Online hub off `epgnownext` unless the operator re-locks that
 

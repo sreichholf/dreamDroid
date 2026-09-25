@@ -1,7 +1,7 @@
 # Graphical MultiEPG (plan)
 
-**Status:** **Accepted** (operator lock-in 2026-09-12 — “Defaults look good”).  
-**Implementation gate:** no MultiEPG feature code until Phase 0 spike notes land (real Dreambox `/web/epgmulti` sizes + `endTime` units).  
+**Status:** **Shipped** on phone (phases 0–4, including timer clocks) and on TV (§9). Defaults accepted by the operator 2026-09-12 (“Defaults look good”). Still open: prime-time jump (polish), live `epgmulti` size measurements (§5), and the `epgservice` fallback (deferred until a box without `epgmulti` shows up).  
+**Architecture:** `MultiEpgSync` / Room access move behind `EpgRepository` with injected dependencies, and the MultiEPG ViewModels move to the target shape — see remediation B1, B4, C2 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The fetch, cache, and TTL rules in this doc do not change.  
 **Product reference:** on-box **GraphMultiEPG** (`enigma2-plugin-extensions-graphmultiepg` on DreamOS; same family as [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG)) — channel rows × time columns, prime time, zoom, timer clocks.  
 **Target API:** genuine Dreambox WebInterface only (not OpenWebif extensions). On-box GraphMultiEPG reads `eEPGCache` locally; dreamDroid must use `/web/epgmulti` over the network.  
 **Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif. GraphMultiEPG plugin source (behaviour reference): Enigma2 `Plugins/Extensions/GraphMultiEPG/` (e.g. OpenPLi tree; DreamOS ships the same plugin package).
@@ -17,10 +17,8 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
 | **Sync** | Room cache + ~20–30 min TTL; 2-day retention prune; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
-| **Out** | No webif patches; no OpenWebif-only APIs; no TV v1; timer overlays from `/web/timerlist` (shipped) |
-| **Next** | Phase 0 spike on a real Dreambox → then Phase 1+ implementation |
-
-**Follow-on (not a §6 reopen):** Android TV GraphMultiEPG is a later requested surface. Phone v1 stays phone-only in this brief / §1 / §6. See §9.
+| **Out** | No webif patches; no OpenWebif-only APIs. Timer overlays from `/web/timerlist` shipped. TV was out of the phone v1 lock-in and shipped later as its own surface (§9). |
+| **Next** | Prime-time jump; operator live-size run of `scripts/epgmulti-spike.sh` (§5) |
 
 Full detail in §§1–9 below.
 
@@ -37,8 +35,8 @@ Full detail in §§1–9 below.
 | Density | Time-scale zoom **1 / 2 / 4 / 5 h** (within GraphMultiEPG 60–300 min range); **text size Compact / Comfortable** (Settings → Appearance, default Comfortable) |
 | Jump | Now, ±1 day; prime time (GraphMultiEPG `prime_time`) in polish |
 | Tap | Existing EPG detail sheet (timer / zap / search); OK semantics later: info vs zap |
-| Timer bars | **Not** in v1 (v1.1 — GraphMultiEPG `show_record_clocks`) |
-| TV / Leanback | Out of scope for v1 |
+| Timer bars | Shipped as record clocks on bars (GraphMultiEPG `show_record_clocks`), phase 4 |
+| TV | Not part of phone v1; shipped separately as a Compose TV surface (§9) |
 | List EPG | **Keep** drawer list EPG (“what’s on at time x”); MultiEPG is nested from the hub toolbar/overflow and list EPG Timeline |
 
 Not in v1: STB colour-key remapping, AutoTimer, TMDb/IMDB from skin mods.
@@ -79,7 +77,7 @@ Sticky channel column + time header; vertical channel scroll; horizontal time pa
 | `prev_time_period` 60–300 (default 120) | Zoom 1 / 2 / 4 / 5 h (default 2 h) |
 | Now / ±day / prime time | Now + ±day; prime time in polish |
 | OK → info / zap / zap+exit | Tap → detail sheet (info); zap from sheet |
-| Record clocks on events | **v1.1** |
+| Record clocks on events | Shipped (phase 4) |
 | `items_per_page` (default 6) | Vertically scrollable channel list (no hard page size) |
 | Reads `eEPGCache` on box | `/web/epgmulti` + Room cache on phone |
 
@@ -174,20 +172,23 @@ One windowed `epgmulti` is still one heavy cache lookup on the box; bounds + TTL
 
 ---
 
-## 4. App architecture (when implementing)
+## 4. App architecture
+
+Target (after remediation B4 / C2 / D1 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md)):
 
 ```text
-Hub toolbar / overflow or list EPG Timeline
-  → nested PhoneNavRoutes.MULTI_EPG
-  → MultiEpgDestination (Compose)
-       ├── MultiEpgSync / EnigmaClient.getEvents(…, URIStore.EPG_MULTI)
-       ├── Room EpgDao
-       └── MultiEpgScreen (grid)
-            └── tap → existing EpgDetail sheet / timer session
-            └── At this time → list EPG (pop if nested on EPG)
+Hub top bar action or list EPG Timeline
+  → nested MultiEpg route (type-safe, bouquet ref in the route)
+  → MultiEpgDestination → MultiEpgViewModel (hiltViewModel, StateFlow<MultiEpgUiState>)
+       └── EpgRepository (single @Singleton MultiEpgSync, EnigmaClient EPG_MULTI, Room EpgDao)
+  → MultiEpgScreen (stateless grid)
+       └── tap → EPG detail sheet / timer flow
+       └── At this time → list EPG (pop if nested on EPG)
 ```
 
-### Existing hooks (no code yet — for implementers)
+Today `MultiEpgViewModel` is an `AndroidViewModel` wrapping `MultiEpgSession` and reads `MultiEpgSyncHolder.shared`; the hub and list EPG open it through a toolbar `MenuProvider` and a string route. Those are remediation P2–P6, not MultiEPG design.
+
+### Code map
 
 | Concern | Current beachhead |
 | --- | --- |
@@ -199,7 +200,8 @@ Hub toolbar / overflow or list EPG Timeline
 | Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
 | Detail / timer | Reuse `EpgEventDialogSession` (`ui/epg/EpgEventDialogSession.kt`) from bouquet/service EPG |
-| Room today | `room/AppDatabase.kt` is **Profile-only** (v1) — MultiEPG needs a schema bump + entities |
+| Room | `room/AppDatabase.kt` holds profiles plus the EPG event / chunk entities and the offline roster / snapshot tables |
+| Sync | `multiepg/MultiEpgSync.kt` (one shared instance), `MultiEpgTimerClocks.kt` for record clocks |
 | Proof | `bash .cursor/cloud/connected-test.sh …` (not emulator tap loops); see `AGENTS.md` |
 
 ### Room sketch (Phase 1 — illustrative)
@@ -234,7 +236,7 @@ EpgChunkMeta
 **Phase 0 gate (2026-09-12):** units + XML shape confirmed from [opendreambox `EPG.py` / `epgmulti.xml`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface); live byte/event counts deferred (no Cloud-agent box). Operator script: [`scripts/epgmulti-spike.sh`](../scripts/epgmulti-spike.sh).
 
 
-**TEMP debug hook:** Settings → enable Developer settings → **Run MultiEPG sync test**. Nested **MultiEPG** (hub toolbar/overflow or list EPG Timeline) opens the Phase 2 grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
+**Debug hook (to remove, remediation A4):** Settings → enable Developer settings → **Run MultiEPG sync test**. It ships in release builds; `MultiEpgSyncTest` covers the same path. Nested **MultiEPG** (hub toolbar/overflow or list EPG Timeline) opens the grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
 
 **Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including next-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right appends upcoming chunks and drops chunks that have left the padded viewport at the front; panning back toward now reattaches those chunks from Room at the front and drops far-future chunks at the back. The toolbar shows the local calendar day under the viewport.
 
@@ -299,8 +301,8 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 | 3 | Prefetch | +24 h Room chunks |
 | 4 | Cache TTL | ~20–30 min; 2-day retention prune; no idle sync |
 | 5 | Fallback | Defer `epgservice` fallback until spike proves need |
-| 6 | TV | Phone-only v1 |
-| 7 | Timer bars | v1.1 (`show_record_clocks`) |
+| 6 | TV | Phone-only v1 (TV shipped later, §9) |
+| 7 | Timer bars | v1.1 (`show_record_clocks`) — shipped as phase 4 |
 
 Operator confirmed 2026-09-12 (“Defaults look good”). No overrides.
 
@@ -318,7 +320,7 @@ This **planning** goal is complete when all of the following are true:
 1. `docs/multiepg.md` describes product, Dreambox `/web/epgmulti` sync model, phases 0–4, and non-goals — **done**.
 2. Operator has explicitly accepted the Decision brief / §6 (or recorded overrides in this doc) — **done** (2026-09-12).
 3. Status line is **Accepted** — **done**.
-4. No MultiEPG feature implementation has started before that acceptance — **still holds**; Phase 0 is the next step (separate work).
+4. No MultiEPG feature implementation started before that acceptance — **held**; phases 0–4 then shipped.
 
 ---
 
@@ -349,7 +351,7 @@ Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. Phone Grap
 
 | | |
 | --- | --- |
-| **Entry** | Compose TV hub **drawer** destination (`HEADER_MULTIEPG_ID`, label `R.string.multiepg`) alongside bouquets and movie locations. Focus/OK selects a **bouquet card grid** (`bouquetRows`). OK on a card opens `MultiEpgActivity` for that bouquet (`EXTRA_BOUQUET_REF` / `EXTRA_BOUQUET_NAME`). A clock action on the bouquet **service grid** title row (`hub_bouquet_multiepg`) opens the same graph for the selected bouquet. The graph starts on the chosen bouquet; in-graph `TvMultiEpgBouquetPicker` can still switch later. |
+| **Entry** | Compose TV hub **drawer** destination (`HEADER_MULTIEPG_ID`, label `R.string.multiepg`) alongside bouquets and movie locations. Focus/OK selects a **bouquet card grid** (`bouquetRows`). OK on a card opens `MultiEpgActivity` for that bouquet (`EXTRA_BOUQUET_REF` / `EXTRA_BOUQUET_NAME`). A clock action on the bouquet **service grid** title row (`hub_bouquet_multiepg`) opens the same graph for the selected bouquet. The graph starts on the chosen bouquet; in-graph `TvMultiEpgBouquetPicker` can still switch later. `MultiEpgActivity` becomes a TV NavHost destination with the bouquet in a type-safe route (remediation D2); the entry points stay the same. |
 | **Grid** | GraphMultiEPG channel rows × time bars; one D-pad cursor (`selectedServiceRef` + `selectedStartSec`); chrome (Now / ±day / zoom / bouquet) is a separate TV Surface row |
 | **Session** | Same `MultiEpgSession` + `MultiEpgSyncHolder.shared` Room `/web/epgmulti` cache as phone. No second sync. TV reads `SessionConnectionHolder` for `shouldSkipReceiverHttp` / Offline (same as phone `MultiEpgDestination`); peek Room first (stale-while-revalidate). Do not invent a second MultiEPG store. |
 | **Persist** | `MultiEpgPersistGate` (shared with phone). TV `knownTabRefs` comes from `UserBouquetCache.userBouquetTabs(loadServiceList(BOUQUETS_TV), excluded)` — never `{ true }`, never the phone tab strip. Fail-closed for empty known tabs, excluded refs, and FROM PROVIDERS. |
