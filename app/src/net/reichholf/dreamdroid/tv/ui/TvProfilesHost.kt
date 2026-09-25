@@ -155,6 +155,7 @@ private fun TvProfilesEditor(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
+    val hostEmpty = stringResource(R.string.host_empty)
     ProfileEditScreen(
         state = state,
         saveLabel = stringResource(R.string.save),
@@ -162,7 +163,7 @@ private fun TvProfilesEditor(
             state.applyTo(profile)
             val outcome = persistEditedProfile(context, profile)
             if (!outcome.saved) {
-                state.hostError = context.getString(R.string.host_empty)
+                state.hostError = hostEmpty
                 onOutcome(TvProfilesEvent.Save(saved = false, currentProfile = false))
             } else {
                 val currentId = DreamDroid.currentProfileOrNull()?.id
