@@ -36,7 +36,8 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
  * Activity-scoped state for [TvMultiEpgHost]: the loaded grid, the bouquet list, the
- * focused cell, the saved visible-minute span, and the add-timer request.
+ * focused cell, the saved visible-minute span, the open detail, timer editor, and
+ * bouquet picker, and the add-timer request.
  */
 class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
@@ -62,6 +63,12 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
     var selectedStartSec by mutableLongStateOf(0L)
         private set
     var setTimerProgress by mutableStateOf<IndeterminateProgressState?>(null)
+        private set
+    var detailEvent by mutableStateOf<Event?>(null)
+        private set
+    var editTimerEvent by mutableStateOf<Event?>(null)
+        private set
+    var pickingBouquet by mutableStateOf(false)
         private set
 
     private var startJob: Job? = null
@@ -112,12 +119,37 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
     }
 
     fun pickBouquet(service: Service) {
+        pickingBouquet = false
         if (service.reference == bouquetRef) {
             return
         }
         bouquetRef = service.reference
         bouquetName = service.name.ifBlank { service.reference }
         jumpToNow(MultiEpgNowClock.sec())
+    }
+
+    fun showDetail(event: Event) {
+        detailEvent = event
+    }
+
+    fun showTimerEditor(event: Event) {
+        editTimerEvent = event
+    }
+
+    fun showBouquetPicker() {
+        pickingBouquet = true
+    }
+
+    fun dismissDetail() {
+        detailEvent = null
+    }
+
+    fun dismissTimerEditor() {
+        editTimerEvent = null
+    }
+
+    fun dismissBouquetPicker() {
+        pickingBouquet = false
     }
 
     fun onVisibleMinutesChange(minutes: Int) {

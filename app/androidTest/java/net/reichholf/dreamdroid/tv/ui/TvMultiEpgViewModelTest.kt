@@ -10,6 +10,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.reflect.KClass
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.ui.multiepg.MULTI_EPG_VISIBLE_MINUTES_KEY
 import org.junit.After
@@ -46,6 +48,28 @@ class TvMultiEpgViewModelTest {
         }
         withViewModel(SavedStateHandle()) { viewModel ->
             assertEquals(MultiEpgZoom.DEFAULT_MINUTES, viewModel.visibleMinutes)
+        }
+    }
+
+    @Test
+    fun overlayStateStaysOnTheViewModel() {
+        val event = Event(eventId = "42", title = "News")
+        withViewModel(SavedStateHandle()) { viewModel ->
+            assertEquals(null, viewModel.detailEvent)
+            assertEquals(null, viewModel.editTimerEvent)
+            assertEquals(false, viewModel.pickingBouquet)
+            viewModel.showDetail(event)
+            assertEquals(event, viewModel.detailEvent)
+            viewModel.dismissDetail()
+            viewModel.showTimerEditor(event)
+            assertEquals(null, viewModel.detailEvent)
+            assertEquals(event, viewModel.editTimerEvent)
+            viewModel.dismissTimerEditor()
+            assertEquals(null, viewModel.editTimerEvent)
+            viewModel.showBouquetPicker()
+            assertEquals(true, viewModel.pickingBouquet)
+            viewModel.pickBouquet(Service(viewModel.bouquetRef, "Same"))
+            assertEquals(false, viewModel.pickingBouquet)
         }
     }
 

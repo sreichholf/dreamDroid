@@ -22,7 +22,6 @@ import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.loadTimerList
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
@@ -103,9 +102,8 @@ fun TvTimerHost(
     mutationsBlocked: Boolean = false,
     viewModel: TvTimerHostViewModel = viewModel()
 ) {
-    var page by remember { mutableStateOf<TvTimerPage>(TvTimerPage.List) }
+    val page = viewModel.page
     var showNeedsReceiver by remember { mutableStateOf(false) }
-    val timers = viewModel.timers
     val items = viewModel.items
 
     fun toggleEnabled(index: Int) {
@@ -125,11 +123,11 @@ fun TvTimerHost(
     }
 
     fun onEditorDismiss() {
-        page = TvTimerPage.List
+        viewModel.showList()
     }
 
     fun onEditorSaved() {
-        page = TvTimerPage.List
+        viewModel.showList()
         viewModel.reload()
     }
 
@@ -138,7 +136,7 @@ fun TvTimerHost(
     }
 
     BackHandler(enabled = page !is TvTimerPage.List) {
-        page = TvTimerPage.List
+        viewModel.showList()
     }
 
     Box(
@@ -155,11 +153,11 @@ fun TvTimerHost(
                             if (mutationsBlocked) {
                                 showNeedsReceiver = true
                             } else {
-                                page = TvTimerPage.Add
+                                viewModel.showAdd()
                             }
                         },
                         onToggleEnabled = { toggleEnabled(it) },
-                        onEdit = { index -> page = TvTimerPage.Edit(index) },
+                        onEdit = { index -> viewModel.showEdit(index) },
                         onDelete = {},
                         onDeleteConfirmed = { deleteTimer(it) },
                         modifier = Modifier.fillMaxSize()
@@ -178,22 +176,24 @@ fun TvTimerHost(
             }
 
             TvTimerPage.Add -> {
-                val created = remember { Timer.getInitialTimer() }
-                TvTimerEditorHost(
-                    timer = created,
-                    isCreate = true,
-                    onDismiss = { onEditorDismiss() },
-                    onSaved = { onEditorSaved() },
-                    modifier = Modifier.fillMaxSize(),
-                    mutationsBlocked = mutationsBlocked
-                )
+                val created = viewModel.editorTimer
+                if (created != null) {
+                    TvTimerEditorHost(
+                        timer = created,
+                        isCreate = true,
+                        onDismiss = { onEditorDismiss() },
+                        onSaved = { onEditorSaved() },
+                        modifier = Modifier.fillMaxSize(),
+                        mutationsBlocked = mutationsBlocked
+                    )
+                }
             }
 
             is TvTimerPage.Edit -> {
-                val editing = remember(current.index) { timers.getOrNull(current.index) }
+                val editing = viewModel.editorTimer
                 if (editing == null) {
                     LaunchedEffect(current.index) {
-                        page = TvTimerPage.List
+                        viewModel.showList()
                     }
                 } else {
                     TvTimerEditorHost(
