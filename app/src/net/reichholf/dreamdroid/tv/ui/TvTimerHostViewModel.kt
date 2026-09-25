@@ -26,10 +26,22 @@ import net.reichholf.dreamdroid.ui.services.TimerListItem
 import net.reichholf.dreamdroid.ui.services.timerListItemsFrom
 
 /**
- * TV hub timer list for [TvTimerHost]. Scoped to the TV activity, so leaving the Timers
- * header and coming back paints the loaded list while [reload] refreshes it.
+ * TV hub timer list and list / add / edit [page] for [TvTimerHost]. The activity scope
+ * keeps [page] and the loaded list across a configuration change. [reload] still runs
+ * on each entry. Process death may drop [page]; it has no SavedStateHandle key.
  */
 class TvTimerHostViewModel(application: Application) : AndroidViewModel(application) {
+    internal var page by mutableStateOf<TvTimerPage>(TvTimerPage.List)
+        private set
+
+    /**
+     * Timer passed into the add/edit editor. Held here so a configuration change
+     * does not call [Timer.getInitialTimer] again (that stamps a new begin time
+     * and the editor treats it as a different draft).
+     */
+    internal var editorTimer by mutableStateOf<TypedTimer?>(null)
+        private set
+
     var timers by mutableStateOf<List<TypedTimer>>(emptyList())
         private set
 
@@ -47,6 +59,29 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
     private var loadJob: Job? = null
     private var mutateJob: Job? = null
     private var profileId: Int? = null
+
+    fun showList() {
+        page = TvTimerPage.List
+        editorTimer = null
+    }
+
+    fun showAdd() {
+        if (page is TvTimerPage.Add && editorTimer != null) {
+            return
+        }
+        editorTimer = Timer.getInitialTimer()
+        page = TvTimerPage.Add
+    }
+
+    fun showEdit(index: Int) {
+        val timer = timers.getOrNull(index)
+        if (timer == null) {
+            showList()
+            return
+        }
+        editorTimer = timer
+        page = TvTimerPage.Edit(index)
+    }
 
     fun reload() {
         val app = getApplication<Application>()

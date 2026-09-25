@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -34,7 +35,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +60,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -272,7 +273,7 @@ fun ComposeTvHubApp(
     viewModel: TvHubViewModel = viewModel(factory = TvHubViewModel.Factory)
 ) {
     val context = LocalContext.current
-    val status by SessionConnectionHolder.shared.status.collectAsState()
+    val status by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
     val profile = DreamDroid.getCurrentProfile()
     // One blocking Room read seeds the gate so Checking never flashes ProfileCheck.
     // Later refreshes run on IO when the profile or session changes.
@@ -298,10 +299,6 @@ fun ComposeTvHubApp(
     val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
-    var serviceTimerTarget by remember {
-        mutableStateOf<Pair<ServiceNowNext, String?>?>(null)
-    }
-    var editTimerEvent by remember { mutableStateOf<Event?>(null) }
     val preferenceLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -405,34 +402,32 @@ fun ComposeTvHubApp(
             },
             mutationsBlocked = status.blocksMutations,
             onServiceInfo = { service, bouquetRef ->
-                serviceTimerTarget = service to bouquetRef
+                viewModel.showServiceTimer(service, bouquetRef)
             }
         )
-        val overlayTarget = serviceTimerTarget
-        val editorEvent = editTimerEvent
+        val overlayTarget = viewModel.serviceTimerTarget
+        val editorEvent = viewModel.editTimerEvent
         // Drop the INFO overlay while the editor is open so D-pad reaches the form
         // (same as MultiEPG dismissing detail before TvTimerEditorHost).
         if (overlayTarget != null && editorEvent == null) {
             DreamDroidTvTheme {
                 TvServiceTimerOverlay(
                     service = overlayTarget.first,
-                    onDismiss = { serviceTimerTarget = null },
+                    onDismiss = viewModel::dismissServiceTimer,
                     onStream = {
                         openServiceStream(
                             activity,
                             overlayTarget.first,
                             overlayTarget.second
                         )
-                        serviceTimerTarget = null
+                        viewModel.dismissServiceTimer()
                     },
                     onSetTimer = { event ->
                         setTimerFromEvent(activity, event) {
-                            serviceTimerTarget = null
+                            viewModel.dismissServiceTimer()
                         }
                     },
-                    onEditTimer = { event ->
-                        editTimerEvent = event
-                    },
+                    onEditTimer = viewModel::showEditTimer,
                     streamingEnabled = streamingEnabled,
                     mutationsBlocked = status.blocksMutations
                 )
@@ -443,10 +438,10 @@ fun ComposeTvHubApp(
                 TvTimerEditorHost(
                     timer = Timer.createByEvent(editorEvent),
                     isCreate = true,
-                    onDismiss = { editTimerEvent = null },
+                    onDismiss = viewModel::dismissEditTimer,
                     onSaved = {
-                        editTimerEvent = null
-                        serviceTimerTarget = null
+                        viewModel.dismissEditTimer()
+                        viewModel.dismissServiceTimer()
                     },
                     mutationsBlocked = status.blocksMutations
                 )
@@ -559,11 +554,11 @@ fun ComposeTvHubChrome(
                     .fillMaxSize()
                     .testTag("compose_tv_hub_chrome"),
                 drawerContent = {
-                    Column(
+                    LazyColumn(
                         modifier = Modifier.padding(vertical = 24.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        headers.forEach { header ->
+                        items(headers, key = { header -> header.id }) { header ->
                             NavigationDrawerItem(
                                 selected = header.id == selectedHeaderId,
                                 onClick = { onHeaderSelected(header.id) },

@@ -1,25 +1,17 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.app.Activity
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.preference.PreferenceManager
+import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditScreen
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditState
-import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.profiles.deleteConfirmedProfile
 import net.reichholf.dreamdroid.ui.profiles.persistEditedProfile
 
@@ -65,40 +57,22 @@ internal fun tvProfilesResultPolicy(event: TvProfilesEvent): TvProfilesResultPol
         )
 }
 
-internal fun tvProfileListItems(context: Context): List<ProfileListItem> {
-    val dao = AppDatabase.profilesBlocking(context)
-    val prefId = PreferenceManager.getDefaultSharedPreferences(context)
-        .getInt(DreamDroid.CURRENT_PROFILE, -1)
-    val liveId = DreamDroid.getCurrentProfile().id ?: -1
-    val activeId = if (prefId > -1) prefId else liveId
-    return dao.getProfiles().map { profile ->
-        val id = profile.id ?: 0
-        ProfileListItem(
-            id = id,
-            name = profile.name.orEmpty(),
-            host = profile.host.orEmpty(),
-            active = id > 0 && id == activeId
-        )
-    }
-}
-
 /**
  * TV Settings → Profile: list / add / edit / delete Room profiles.
- * Persist only on Save. List Back uses the system finish (default CANCELED).
+ * [TvProfilesHostViewModel] owns the page and the open editor. Persist only on Save.
+ * List Back uses the system finish (default CANCELED).
  */
 @Composable
-fun TvProfilesHost(modifier: Modifier = Modifier) {
+fun TvProfilesHost(
+    modifier: Modifier = Modifier,
+    viewModel: TvProfilesHostViewModel = viewModel()
+) {
     val context = LocalContext.current
-    val activity = context as Activity
-    var page by remember { mutableStateOf<TvProfilesPage>(TvProfilesPage.List) }
-    var profiles by remember { mutableStateOf(tvProfileListItems(context)) }
-
-    fun reloadRows() {
-        profiles = tvProfileListItems(context)
-    }
+    val page = viewModel.page
 
     fun applyPolicy(event: TvProfilesEvent) {
         val policy = tvProfilesResultPolicy(event)
+        val activity = context as? Activity ?: return
         if (policy.setResultOk) {
             activity.setResult(Activity.RESULT_OK)
         }
@@ -110,55 +84,48 @@ fun TvProfilesHost(modifier: Modifier = Modifier) {
     fun onEditorOutcome(event: TvProfilesEvent.Save) {
         applyPolicy(event)
         if (event.saved) {
-            page = TvProfilesPage.List
-            reloadRows()
+            viewModel.showList()
+        }
+    }
+
+    fun confirmDelete(id: Int) {
+        val profile = viewModel.loadedProfile(id) ?: return
+        val currentId = DreamDroid.currentProfileOrNull()?.id
+        val deletingCurrent = profile.id != null && profile.id == currentId
+        deleteConfirmedProfile(context, profile)
+        applyPolicy(TvProfilesEvent.Delete(deletingCurrent))
+        if (!deletingCurrent) {
+            viewModel.reload()
         }
     }
 
     BackHandler(enabled = page !is TvProfilesPage.List) {
-        page = TvProfilesPage.List
-        reloadRows()
+        viewModel.showList()
     }
 
     when (val current = page) {
         TvProfilesPage.List -> {
             TvProfilesScreen(
-                profiles = profiles,
-                onAdd = { page = TvProfilesPage.Add },
+                profiles = viewModel.profiles,
+                onAdd = { viewModel.showAdd() },
                 onActivate = { id ->
-                    val success = DreamDroid.setCurrentProfile(activity, id, true)
+                    val success = DreamDroid.setCurrentProfile(context, id, true)
                     applyPolicy(TvProfilesEvent.Activate(success))
                 },
-                onEdit = { id -> page = TvProfilesPage.Edit(id) },
+                onEdit = { id -> viewModel.showEdit(id) },
                 onDelete = {},
-                onDeleteConfirmed = { id ->
-                    val profile = AppDatabase.profilesBlocking(context).getProfile(id)
-                        ?: return@TvProfilesScreen
-                    val currentId = DreamDroid.getCurrentProfile().id
-                    val deletingCurrent = profile.id != null && profile.id == currentId
-                    deleteConfirmedProfile(context, profile)
-                    applyPolicy(TvProfilesEvent.Delete(deletingCurrent))
-                    if (!deletingCurrent) {
-                        reloadRows()
-                    }
-                },
+                onDeleteConfirmed = { id -> confirmDelete(id) },
                 modifier = modifier
             )
         }
 
         is TvProfilesPage.Edit -> {
-            val loaded = remember(current.profileId) {
-                AppDatabase.profilesBlocking(context).getProfile(current.profileId)
-            }
-            if (loaded == null) {
-                LaunchedEffect(current.profileId) {
-                    page = TvProfilesPage.List
-                    reloadRows()
-                }
-            } else {
+            val profile = viewModel.editingProfile
+            val state = viewModel.editState
+            if (profile != null && state != null && profile.id == current.profileId) {
                 TvProfilesEditor(
-                    activity = activity,
-                    profile = loaded,
+                    profile = profile,
+                    state = state,
                     onOutcome = { onEditorOutcome(it) },
                     modifier = modifier
                 )
@@ -166,39 +133,43 @@ fun TvProfilesHost(modifier: Modifier = Modifier) {
         }
 
         TvProfilesPage.Add -> {
-            val created = remember { Profile.getDefault() }
-            TvProfilesEditor(
-                activity = activity,
-                profile = created,
-                onOutcome = { onEditorOutcome(it) },
-                modifier = modifier
-            )
+            val profile = viewModel.editingProfile
+            val state = viewModel.editState
+            if (profile != null && state != null) {
+                TvProfilesEditor(
+                    profile = profile,
+                    state = state,
+                    onOutcome = { onEditorOutcome(it) },
+                    modifier = modifier
+                )
+            }
         }
     }
 }
 
 @Composable
 private fun TvProfilesEditor(
-    activity: Activity,
     profile: Profile,
+    state: ProfileEditState,
     onOutcome: (TvProfilesEvent.Save) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val state = remember(profile) { ProfileEditState.fromProfile(profile) }
+    val context = LocalContext.current
+    val hostEmpty = stringResource(R.string.host_empty)
     ProfileEditScreen(
         state = state,
         saveLabel = stringResource(R.string.save),
         onSave = {
             state.applyTo(profile)
-            val outcome = persistEditedProfile(activity, profile)
+            val outcome = persistEditedProfile(context, profile)
             if (!outcome.saved) {
-                state.hostError = activity.getString(R.string.host_empty)
+                state.hostError = hostEmpty
                 onOutcome(TvProfilesEvent.Save(saved = false, currentProfile = false))
             } else {
-                val currentId = DreamDroid.getCurrentProfile().id
+                val currentId = DreamDroid.currentProfileOrNull()?.id
                 val isCurrent = profile.id != null && profile.id == currentId
                 if (isCurrent) {
-                    DreamDroid.reloadCurrentProfile(activity)
+                    DreamDroid.reloadCurrentProfile(context)
                 }
                 onOutcome(TvProfilesEvent.Save(saved = true, currentProfile = isCurrent))
             }

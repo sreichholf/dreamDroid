@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -28,6 +27,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import androidx.tv.material3.ClickableSurfaceDefaults
@@ -60,7 +60,7 @@ import net.reichholf.dreamdroid.video.startLiveServiceStream
 fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel = viewModel()) {
     val context = LocalContext.current
     val session = viewModel.session
-    val connection by SessionConnectionHolder.shared.status.collectAsState()
+    val connection by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -71,10 +71,10 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
     }
     val bouquetRef = viewModel.bouquetRef
     val visibleMinutes = viewModel.visibleMinutes
+    val detailEvent = viewModel.detailEvent
+    val editTimerEvent = viewModel.editTimerEvent
+    val pickingBouquet = viewModel.pickingBouquet
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
-    var detailEvent by remember { mutableStateOf<Event?>(null) }
-    var editTimerEvent by remember { mutableStateOf<Event?>(null) }
-    var pickingBouquet by remember { mutableStateOf(false) }
 
     LaunchedEffect(viewModel) {
         viewModel.start(
@@ -136,8 +136,8 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
                     session.load(session.anchorSec, forceRefresh = true, isPull = false)
                 },
                 onVisibleWindow = onVisibleWindow,
-                onEventClick = { event -> detailEvent = event },
-                onBouquetClick = { pickingBouquet = true },
+                onEventClick = viewModel::showDetail,
+                onBouquetClick = viewModel::showBouquetPicker,
                 visibleMinutes = visibleMinutes,
                 onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
                 textSize = textSize,
@@ -151,11 +151,11 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
                     bouquetRef = bouquetRef,
                     activity = activity,
                     progress = viewModel.setTimerProgress,
-                    onDismiss = { detailEvent = null },
+                    onDismiss = viewModel::dismissDetail,
                     onSetTimer = { viewModel.setTimer(event) },
                     onEditTimer = {
-                        detailEvent = null
-                        editTimerEvent = event
+                        viewModel.dismissDetail()
+                        viewModel.showTimerEditor(event)
                     },
                     streamingEnabled = connection.allowsStreaming(),
                     mutationsBlocked = connection.blocksMutations
@@ -164,11 +164,8 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
             if (pickingBouquet) {
                 TvMultiEpgBouquetPicker(
                     bouquets = viewModel.bouquets,
-                    onPick = { service ->
-                        pickingBouquet = false
-                        viewModel.pickBouquet(service)
-                    },
-                    onDismiss = { pickingBouquet = false }
+                    onPick = viewModel::pickBouquet,
+                    onDismiss = viewModel::dismissBouquetPicker
                 )
             }
             val editingEvent = editTimerEvent
@@ -176,9 +173,9 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
                 TvTimerEditorHost(
                     timer = Timer.createByEvent(editingEvent),
                     isCreate = true,
-                    onDismiss = { editTimerEvent = null },
+                    onDismiss = viewModel::dismissTimerEditor,
                     onSaved = {
-                        editTimerEvent = null
+                        viewModel.dismissTimerEditor()
                         session.load(session.anchorSec, forceRefresh = true, isPull = false)
                     },
                     mutationsBlocked = connection.blocksMutations

@@ -12,7 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-import javax.net.ssl.HttpsURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -115,9 +114,8 @@ class MainActivity :
         onProfileChanged(DreamDroid.getCurrentProfile())
         TvComposeHubHost.install(this)
         try {
-            HttpsURLConnection.setFollowRedirects(false)
-            // Coil ImageLoader w/ OkHttpClient. Do not mutate process-wide
-            // HttpsURLConnection defaults; trust-all is per OkHttp client.
+            // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
+            // Do not flip process-wide HttpsURLConnection follow-redirects.
             PiconImageLoader.install(applicationContext)
         } catch (e: Exception) {
             e.printStackTrace()

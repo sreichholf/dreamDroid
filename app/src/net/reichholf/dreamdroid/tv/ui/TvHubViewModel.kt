@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -31,9 +33,11 @@ private class ApplicationTvHubLoader(private val app: Application) : TvHubLoader
 }
 
 /**
- * Selected header, bouquet rows, and per-location movies for [ComposeTvHubApp],
- * scoped to the TV activity. Each new [ConnectionStatus.Session] reloads the
- * browse data; switching headers keeps movies already loaded for a location.
+ * Selected header, bouquet rows, per-location movies, and the open bouquet
+ * Info/Menu overlay or timer editor for [ComposeTvHubApp], scoped to the TV
+ * activity. Each new [ConnectionStatus.Session] reloads the browse data;
+ * switching headers keeps movies already loaded for a location. Overlay state
+ * survives configuration changes with this activity-scoped ViewModel.
  */
 class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionStatus.Session?>) :
     ViewModel() {
@@ -59,6 +63,12 @@ class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionS
         private set
 
     var movieError by mutableStateOf<String?>(null)
+        private set
+
+    var serviceTimerTarget by mutableStateOf<Pair<ServiceNowNext, String?>?>(null)
+        private set
+
+    var editTimerEvent by mutableStateOf<Event?>(null)
         private set
 
     private var browseJob: Job? = null
@@ -105,6 +115,22 @@ class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionS
         }
         selectedHeaderId = headerId
         loadSelectedMovies()
+    }
+
+    fun showServiceTimer(service: ServiceNowNext, bouquetRef: String?) {
+        serviceTimerTarget = service to bouquetRef
+    }
+
+    fun dismissServiceTimer() {
+        serviceTimerTarget = null
+    }
+
+    fun showEditTimer(event: Event) {
+        editTimerEvent = event
+    }
+
+    fun dismissEditTimer() {
+        editTimerEvent = null
     }
 
     // Leanback parity: load movies for a location only when its header is selected.
