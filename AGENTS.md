@@ -19,6 +19,8 @@ Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.m
 
 Use subagents whenever they make sense. Hand off exploration, investigation, and independent slices of work instead of doing all of it in the parent thread.
 
+**Never spawn subagents in fast mode.** Do not pass a model slug that ends in `-fast` or any other fast variant. Use a non-fast model. `inherit` is allowed only when the parent model itself is not a fast variant.
+
 ## Change the tests when the design changes
 
 A proper implementation is the goal. Do not keep a production type, or leave state on `remember` / `rememberSaveable`, so an existing test still compiles.
