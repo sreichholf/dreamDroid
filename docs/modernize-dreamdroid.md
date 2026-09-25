@@ -17,7 +17,7 @@ This is what "current best practice" means for this app. It follows Google's [gu
 | ViewModel | Scoped to its `NavBackStackEntry` (or the activity for shell / host state). Constructor takes repositories and `SavedStateHandle`. No `Application`, `Context`, `View`, `Menu`, or activity. Exposes one immutable `StateFlow<*UiState>`; the UI collects it with `collectAsStateWithLifecycle()`. Work runs in `viewModelScope`. |
 | UI events | User messages (mutation results, errors) are part of UI state, shown by the screen through a `SnackbarHostState`, then cleared by the screen calling back into the ViewModel. No `Toast` in the app UI. |
 | Screens | Stateless `*Screen(state, onAction…)` composables. Top bar, actions, overflow, and search are Material 3 `TopAppBar` / `SearchBar` driven by screen state. No View `Toolbar`, `setSupportActionBar`, options menu, or `MenuProvider`. |
-| Navigation | Single activity per form factor (phone, TV). Navigation Compose with **type-safe routes** (`@Serializable` route classes; arguments live in the route, not in a shared holder). Deep links are declared on routes. Navigation 3 is evaluated once type-safe routes land (route classes carry over as keys). |
+| Navigation | Single activity per form factor (phone, TV). Navigation Compose with **type-safe routes** (`@Serializable` route classes; arguments live in the route, not in a shared holder). Deep links are declared on routes. Navigation 3 is evaluated only after type-safe routes land (route classes carry over as keys). |
 | Adaptive layout | Layout decisions use `currentWindowAdaptiveInfo()` / window size classes, not `Configuration.smallestScreenWidthDp`, so multi-window, foldables, and desktop windowing work. Prefer `NavigationSuiteScaffold` for bar vs rail. |
 | Settings | Preferences DataStore behind a settings repository, exposed as `Flow`. One `SharedPreferencesMigration` imports old values. |
 | Networking | One HTTP stack: typed `EnigmaClient` over OkHttp with sealed `EnigmaFailure`. No parallel request-handler hierarchy. |
@@ -61,6 +61,15 @@ These deviate from a platform default on purpose. Each needs its reason to stay 
 ## Remediation plan
 
 Earlier rules in this doc protected legacy patterns ("`MenuProvider` stays", "`NavigationHelper` stays on the activity", "ViewModels take `Application`", "no DI framework or repository layer", "the existing state class stays the model"). Those rules are withdrawn. This section lists what they left behind and the order to fix it.
+
+### Locked decisions (operator, 2026-09-25)
+
+| Decision | Settlement |
+| --- | --- |
+| Dependency injection | **Hilt** with KSP. No hand-rolled container, no Koin. |
+| Navigation | **Type-safe Navigation Compose first** (D1). Navigation 3 only afterwards, and only if it removes code (D3). |
+| Launcher trampoline | **Replace** `TabbedNavigationActivity` with launcher categories on the phone and TV activities (D2). Before deleting it, check whether 1.15 pinned shortcuts or widgets target it; if they do, keep an `activity-alias` under the old name. |
+| Problem table | Counts and file lists in "What is wrong today" are a snapshot. Each step's PR deletes the rows it fixes; there is no separate recount. |
 
 One PR per numbered step unless the step says otherwise. Each PR leaves the app shippable, adds or updates tests for what it moves, and runs `spotlessCheck`, `:app:testGoogleDebugUnitTest`, and the touched instrumented classes via `bash .cursor/cloud/connected-test.sh`. **2.0 blocker** marks what must land before release; the rest can land before or after 2.0 but in this order.
 
@@ -126,7 +135,7 @@ One PR per numbered step unless the step says otherwise. Each PR leaves the app 
 | E1 | P13 | Baseline Profile module (macrobenchmark) covering cold start → hub, hub scroll, MultiEPG pan. Ship `profileinstaller`. | Benchmark numbers in the PR. |
 | E2 | — | Release checks: R8 `googleRelease` smoke, Room 1.15→2.0 migration tests, `ACCESS_LOCAL_NETWORK` flow on SDK 37. | Pre-release row above. |
 
-When a step lands, mark it here and drop its row from "What is wrong today".
+When a step lands, its PR marks the step done here and deletes the rows it fixed from "What is wrong today".
 
 ## ViewModel history
 
