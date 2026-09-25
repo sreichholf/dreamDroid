@@ -1,0 +1,6 @@
+name: potetos-for-everyone
+version: 0.1.0
+commit: f494e1ab9f275a7c93cdb0389f0c99ac22df389e
+url: https://github.com/TheOnlyFusionCube/potetos-for-everyone
+package: https://pi.dev/packages/potetos-for-everyone
+upstream: https://github.com/cursor/plugins/tree/main/pstack
