@@ -13,6 +13,8 @@ Hard rules (also in `.editorconfig`):
 - ASCII-sorted imports; no wildcards
 - One statement per line; no semicolons
 
+**Architecture:** new and touched code follows the target architecture in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md#target-architecture): repositories + Hilt, ViewModels without `Application`/`Context` exposing `StateFlow` UI state, Material 3 `TopAppBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`, type-safe routes, DataStore. Do not copy a legacy pattern from neighboring code because it is still there; it is listed under remediation.
+
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).
 
 ## Subagents
@@ -39,7 +41,7 @@ Default proof for Compose and in-app UI:
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest
 ```
 
-Use `JAVA_HOME` pointing at JDK 25. Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+Use `JAVA_HOME` pointing at JDK 25. Instrumented tests live in `app/androidTest/java`. ViewModels, repositories, and parsers also get JVM tests in `app/test` (`:app:testGoogleDebugUnitTest`) with fake repositories. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
 Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
 
@@ -67,7 +69,7 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 - `main` is the rewrite. Do not merge rewrite work into `master`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
-- Remaining modernization work (the intentional service-row track keep, and anything still listed under **Still to do**) lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
+- Remaining modernization work (the remediation steps, anything still listed under **Still to do**, and the **Deliberate exceptions** that must not be "fixed") lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
 
 <!-- potetos-for-everyone:begin -->
 ## potetos-for-everyone
