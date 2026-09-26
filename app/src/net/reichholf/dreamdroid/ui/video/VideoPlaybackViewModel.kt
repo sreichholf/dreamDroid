@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadBouquetList
@@ -111,7 +112,7 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         }
         bouquetJob = viewModelScope.launch {
             val ctx = getApplication<Application>()
-            val profileId = DreamDroid.getCurrentProfile().id
+            val profileId = ProfileRepository.get().requireCurrent().id
             val dao = if (profileId != null) AppDatabase.roster(ctx) else null
             val excluded = UserBouquetCache.excludedHubTabRefs(ctx)
             val cachedTv = if (dao != null && profileId != null) {

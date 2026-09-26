@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
@@ -357,7 +358,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override fun navigateToDrawerEpg(): Boolean {
         val ctx = lifecycleOwner as Context
-        val profile = DreamDroid.getCurrentProfile()
+        val profile = ProfileRepository.get().requireCurrent()
         val ref = profile.defaultBouquetTv
         val name = profile.defaultBouquetTvName
         val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)

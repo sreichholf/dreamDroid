@@ -20,6 +20,7 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.loadTimerList
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -57,12 +58,12 @@ internal fun tvTimerPaintFromLoad(
 }
 
 internal suspend fun tvTimerPersistSnapshot(context: Context, timers: List<TypedTimer>) {
-    val pid = DreamDroid.getCurrentProfile().id ?: return
+    val pid = ProfileRepository.get().requireCurrent().id ?: return
     TimerSnapshotStore.replace(AppDatabase.timer(context), pid, timers)
 }
 
 internal suspend fun tvTimerLoadSnapshot(context: Context): List<TypedTimer>? {
-    val pid = DreamDroid.getCurrentProfile().id ?: return null
+    val pid = ProfileRepository.get().requireCurrent().id ?: return null
     return TimerSnapshotStore.load(AppDatabase.timer(context), pid)
 }
 

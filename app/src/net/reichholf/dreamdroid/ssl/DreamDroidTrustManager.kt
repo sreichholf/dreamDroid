@@ -10,13 +10,14 @@ import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 
 class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
     HostnameVerifier,
     X509TrustManager {
     constructor(ctx: Context?) : this(
         ctx,
-        DreamDroid.getCurrentProfile().allCertsTrusted
+        ProfileRepository.get().requireCurrent().allCertsTrusted
     )
 
     private var platformTrustManager: X509TrustManager? = getDefaultTrustManager()

@@ -23,6 +23,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.TimerListLoadResult
@@ -68,7 +69,7 @@ fun HubTimerListPage(
     session.handle = handle
     session.context = context
     session.activity = activity
-    session.profileId = DreamDroid.getCurrentProfile().id
+    session.profileId = ProfileRepository.get().requireCurrent().id
     session.timerDao = AppDatabase.timer(context)
 
     val title = stringResource(R.string.timer)

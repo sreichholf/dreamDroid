@@ -5,6 +5,7 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import okhttp3.Credentials
@@ -47,11 +48,11 @@ object PiconImageLoader {
 
     @Suppress("UNUSED_PARAMETER")
     fun newOkHttpClient(context: Context): OkHttpClient {
-        val trustAll = DreamDroid.currentProfileOrNull()?.allCertsTrusted == true
+        val trustAll = ProfileRepository.get().current.value?.allCertsTrusted == true
         return EnigmaOkHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
             .newBuilder()
             .addInterceptor { chain ->
-                val profile = DreamDroid.currentProfileOrNull()
+                val profile = ProfileRepository.get().current.value
                 val request = if (profile?.login == true) {
                     val cred = Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
                     chain.request().newBuilder().header("Authorization", cred).build()

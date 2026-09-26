@@ -13,6 +13,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadServiceList
@@ -151,7 +152,7 @@ class TimerServicePickSession(
             refresh.setRefreshing(false)
             toolbarTitle = app.getString(R.string.service)
             if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
+                val profileId = ProfileRepository.get().requireCurrent().id
                 val cached = if (profileId != null) {
                     val dao = AppDatabase.roster(app)
                     val cachedRows = ArrayList(
@@ -216,7 +217,7 @@ class TimerServicePickSession(
             refresh.setRefreshing(false)
             toolbarTitle = title
             if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
+                val profileId = ProfileRepository.get().requireCurrent().id
                 val cached = if (profileId != null) {
                     UserBouquetCache.loadRosterServices(
                         AppDatabase.roster(app),

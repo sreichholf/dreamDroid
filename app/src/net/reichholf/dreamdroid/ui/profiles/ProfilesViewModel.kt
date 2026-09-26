@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
 import net.reichholf.dreamdroid.room.AppDatabase
 
@@ -64,7 +65,7 @@ class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHa
     fun activateProfile(item: ProfileListItem) {
         selectProfile(item)
         val app = getApplication<Application>()
-        val activated = DreamDroid.setCurrentProfile(app, selected.id ?: -1, true)
+        val activated = ProfileRepository.get().setCurrent(app, selected.id ?: -1, true)
         val label = if (activated) {
             R.string.profile_activated
         } else {

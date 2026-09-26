@@ -12,6 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
@@ -115,7 +116,7 @@ class TvProfilesHostViewModel(application: Application) : AndroidViewModel(appli
         val app = getApplication<Application>()
         val prefId = PreferenceManager.getDefaultSharedPreferences(app)
             .getInt(DreamDroid.CURRENT_PROFILE, -1)
-        val liveId = DreamDroid.currentProfileOrNull()?.id ?: -1
+        val liveId = ProfileRepository.get().current.value?.id ?: -1
         loadedProfiles = loaded.toList()
         profiles = tvProfileRows(loadedProfiles, prefId, liveId)
     }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -63,7 +64,7 @@ class SettingsViewModel(application: Application, savedStateHandle: SavedStateHa
             if (allProfiles) {
                 UseDrivenCache.clearAll(db)
             } else {
-                val profileId = DreamDroid.getCurrentProfile().id
+                val profileId = ProfileRepository.get().requireCurrent().id
                 if (profileId != null) {
                     UseDrivenCache.clearForProfile(db, profileId)
                 }

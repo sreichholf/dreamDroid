@@ -12,6 +12,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
 import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
 import net.reichholf.dreamdroid.multiepg.MultiEpgSession
@@ -88,7 +89,7 @@ class MultiEpgViewModel(application: Application, savedStateHandle: SavedStateHa
     }
 
     private suspend fun fillKnownTabRefs() {
-        val profileId = DreamDroid.getCurrentProfile().id ?: return
+        val profileId = ProfileRepository.get().requireCurrent().id ?: return
         persistGate.knownTabRefs = AppDatabase.roster(getApplication()).getTabStripRefs(profileId)
     }
 }
@@ -101,7 +102,7 @@ internal fun newMultiEpgSession(
 ): MultiEpgSession = MultiEpgSession(
     sync = MultiEpgSyncHolder.shared(app),
     scope = scope,
-    profileId = { DreamDroid.getCurrentProfile().id ?: -1 },
+    profileId = { ProfileRepository.get().requireCurrent().id ?: -1 },
     noBouquetMessage = app.getString(R.string.multiepg_sync_test_no_bouquet),
     fetchTimers = MultiEpgSync.httpFetchTimers(),
     loadBouquetServices = MultiEpgSync.httpFetchBouquet(),

@@ -147,9 +147,6 @@ class Profile : Serializable {
     @Ignore
     var sessionId: String? = null
 
-    @Ignore
-    var cachedDeviceInfo: String? = null
-
     @ColumnInfo(name = "ssid")
     var ssid: String? = null
 
@@ -284,7 +281,6 @@ class Profile : Serializable {
     ) {
         this.id = id
         sessionId = null
-        cachedDeviceInfo = null
         this.name = name
         this.host = host
         this.streamHost = streamHost

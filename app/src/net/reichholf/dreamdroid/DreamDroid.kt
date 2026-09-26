@@ -12,7 +12,6 @@ import android.app.NotificationManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
@@ -31,16 +30,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
-import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
 /**
  * @author sre
@@ -82,10 +77,8 @@ class DreamDroid : Application() {
         DatabaseHelper.migrateIntoRoomIfNeeded(appContext)
 
         initChannels()
-        locationList = ArrayList()
-        tagList = ArrayList()
-
-        loadCurrentProfile(this)
+        ProfileRepository.install(this)
+        ProfileRepository.get().loadCurrent(this)
 
         handleProfileSwitch(this)
         PiconImageLoader.install(this)
@@ -106,31 +99,28 @@ class DreamDroid : Application() {
     }
 
     private fun handleProfileSwitch(context: Context) {
-        if (profile == null) {
-            return
-        }
+        val profiles = ProfileRepository.get()
+        val currentProfile = profiles.current.value ?: return
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED,
                 false
             )
         ) {
             val currentWifiName = getWifiName(context)
-            val currentProfile = getCurrentProfile()
 
             Log.i(LOG_TAG, "currentWifiName = $currentWifiName")
             Log.i(LOG_TAG, "currentProfileSsid = ${currentProfile.ssid}")
-            val dao = AppDatabase.profilesBlocking(getAppContext()!!)
+            val rows = profilesStore(context)
             if (currentWifiName == null) {
                 Log.i(LOG_TAG, "not connected to wifi, will search for default profile")
                 // not connected to wifi, search for default profile
                 if (currentProfile.isDefaultProfileOnNoWifi) {
                     Log.i(LOG_TAG, "currentProfile is default for NO WIFI, so no action required")
                 } else {
-                    val noWifiDefault = dao.getProfiles()
-                        .firstOrNull { it.isDefaultProfileOnNoWifi }
+                    val noWifiDefault = rows.firstOrNull { it.isDefaultProfileOnNoWifi }
                     if (noWifiDefault != null) {
                         Log.i(LOG_TAG, "found profile for default ")
-                        setCurrentProfile(context, noWifiDefault.id ?: -1)
+                        profiles.setCurrent(context, noWifiDefault.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no default profile on no wifi found in all profiles.")
                     }
@@ -154,13 +144,12 @@ class DreamDroid : Application() {
                         "connected to wifi $currentWifiName will search for profile " +
                             "with this wifi name configured"
                     )
-                    val wifiProfile = dao.getProfiles()
-                        .firstOrNull { p ->
-                            p.ssid != null && p.ssid.equals(currentWifiName, ignoreCase = true)
-                        }
+                    val wifiProfile = rows.firstOrNull { p ->
+                        p.ssid != null && p.ssid.equals(currentWifiName, ignoreCase = true)
+                    }
                     if (wifiProfile != null) {
                         Log.i(LOG_TAG, "found profile with configured ssid ")
-                        setCurrentProfile(context, wifiProfile.id ?: -1)
+                        profiles.setCurrent(context, wifiProfile.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no profile found with ssid configured for $wifiProfile")
                     }
@@ -168,6 +157,9 @@ class DreamDroid : Application() {
             }
         }
     }
+
+    private fun profilesStore(context: Context) =
+        AppDatabase.profilesBlocking(context).getProfiles()
 
     private fun getWifiName(context: Context): String? {
         val appContext = context.applicationContext
@@ -289,20 +281,6 @@ class DreamDroid : Application() {
 
         private var sleepTimerEnabled: Boolean = true
         private var nowNextEnabled: Boolean = true
-        private var xmlDump: Boolean = false
-
-        private var profile: Profile? = null
-        private var locationList: ArrayList<String> = ArrayList()
-        private var tagList: ArrayList<String> = ArrayList()
-
-        /**
-         * True when [locationList] came from a successful locations HTTP parse.
-         * False for empty, profile reset, or the `/hdd/movie` load-failure fallback.
-         */
-        @Volatile
-        private var locationsFromReceiver: Boolean = false
-
-        private var profileChangedListener: ProfileChangedListener? = null
 
         private var postRequestEnabled: Boolean = true
 
@@ -367,219 +345,7 @@ class DreamDroid : Application() {
 
         fun featureSleepTimer(): Boolean = sleepTimerEnabled
 
-        fun getCurrentProfile(): Profile = profile!!
-
-        fun currentProfileOrNull(): Profile? = profile
-
-        fun hasCurrentProfile(): Boolean = profile != null
-
-        /**
-         * Drop a sole seeded demo, then keep the active row when it still exists.
-         * Returns false when nothing configured remains.
-         */
-        fun ensureCurrentProfile(context: Context): Boolean {
-            val dao = AppDatabase.profilesBlocking(context)
-            soleSeededDemo(dao.getProfiles())?.let { dao.deleteProfile(it) }
-            val profiles = dao.getProfiles()
-            if (profiles.isEmpty()) {
-                profile = null
-                return false
-            }
-            val currentId = profile?.id
-            if (currentId != null && profiles.any { it.id == currentId }) {
-                return true
-            }
-            val first = profiles.first().id ?: return false
-            return setCurrentProfile(context, first, true)
-        }
-
-        fun loadCurrentProfile(context: Context) {
-            val sp = PreferenceManager.getDefaultSharedPreferences(context)
-            val profileId = sp.getInt(CURRENT_PROFILE, -1)
-            if (profile != null && profileId > 0 && profile!!.id == profileId) {
-                return
-            }
-
-            val dao = AppDatabase.profilesBlocking(context)
-            soleSeededDemo(dao.getProfiles())?.let { dao.deleteProfile(it) }
-            if (dao.getProfiles().isEmpty()) {
-                val candidate = legacyPreferenceProfile(sp)
-                if (!candidate.matchesSeededDemo()) {
-                    val newId = dao.addProfile(candidate).toInt()
-                    setCurrentProfile(context, newId, true)
-                    return
-                }
-            }
-
-            if (profileId > 0 && setCurrentProfile(context, profileId)) {
-                return
-            }
-            val first = dao.getProfiles().firstOrNull()?.id
-            if (first != null && setCurrentProfile(context, first)) {
-                return
-            }
-            profile = null
-        }
-
-        private fun legacyPreferenceProfile(sp: SharedPreferences): Profile {
-            val host = sp.getString("host", "dreamdroid.org")
-            val streamHost = sp.getString("host", "")
-            val port = Integer.valueOf(sp.getString("port", "443") ?: "443")
-            val user = sp.getString("user", "root")
-            val pass = sp.getString("pass", "dreambox")
-            val login = sp.getBoolean("login", false)
-            val ssl = sp.getBoolean("ssl", true)
-            return Profile(
-                null,
-                "Demo",
-                host,
-                streamHost,
-                port,
-                8001,
-                80,
-                login,
-                user,
-                pass,
-                ssl,
-                false,
-                false,
-                false,
-                false,
-                "",
-                "",
-                "",
-                ""
-            )
-        }
-
-        fun setCurrentProfile(context: Context, id: Int): Boolean =
-            setCurrentProfile(context, id, false)
-
-        fun dumpXml(): Boolean = xmlDump
-
-        /**
-         * @param id
-         * @return
-         */
-        fun setCurrentProfile(context: Context, id: Int, forceEvent: Boolean): Boolean {
-            xmlDump = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean("xml_debug", false)
-
-            var oldProfile = profile
-            if (oldProfile == null) {
-                oldProfile = Profile.getDefault()
-            }
-
-            profile = AppDatabase.profilesBlocking(context).getProfile(id)
-
-            if (profile != null) {
-                val editor = PreferenceManager.getDefaultSharedPreferences(context).edit()
-                editor.putInt(CURRENT_PROFILE, id)
-                editor.apply()
-                if (!profile!!.hasSameSettings(oldProfile) || forceEvent) {
-                    // reset locations and tags, they will be reloaded when needed the next time
-                    locationList.clear()
-                    locationsFromReceiver = false
-                    tagList.clear()
-                    activeProfileChanged()
-                } else if (profile!!.id == oldProfile.id) {
-                    profile!!.sessionId = oldProfile.sessionId
-                }
-                return true
-            } else {
-                Log.w(LOG_TAG, "no profile with given id [$id] found")
-            }
-            return false
-        }
-
-        fun setCurrentProfile(profile: Profile) {
-            this.profile = profile
-        }
-
-        fun profileChanged(context: Context, p: Profile) {
-            if (p.id == profile!!.id) {
-                reloadCurrentProfile(context)
-            }
-        }
-
-        private fun activeProfileChanged() {
-            if (profileChangedListener != null) {
-                profileChangedListener!!.onProfileChanged(profile!!)
-            }
-        }
-
-        fun setCurrentProfileChangedListener(listener: ProfileChangedListener?) {
-            profileChangedListener = listener
-        }
-
-        fun getCurrentProfileChangedListener(): ProfileChangedListener? = profileChangedListener
-
-        /**
-         * @return
-         */
-        fun reloadCurrentProfile(ctx: Context): Boolean =
-            setCurrentProfile(ctx, profile!!.id ?: -1, true)
-
-        /**
-         * @param shc
-         */
-        @Synchronized
-        fun loadLocations(http: EnigmaHttp): Boolean {
-            locationList.clear()
-            locationsFromReceiver = false
-
-            var gotLoc = false
-            val handler = LocationListRequestHandler()
-            val xml = handler.getList(http)
-
-            if (xml != null) {
-                if (handler.parseList(xml, locationList)) {
-                    gotLoc = true
-                }
-            }
-
-            if (!gotLoc) {
-                Log.e(LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
-                locationList = ArrayList()
-                locationList.add("/hdd/movie")
-            } else {
-                locationsFromReceiver = true
-            }
-
-            return gotLoc
-        }
-
-        fun getLocations(): ArrayList<String> = locationList
-
-        fun locationsLoadedFromReceiver(): Boolean = locationsFromReceiver
-
-        /**
-         * @param shc
-         */
-        @Synchronized
-        fun loadTags(http: EnigmaHttp): Boolean {
-            tagList.clear()
-            var gotTags = false
-
-            val handler = TagListRequestHandler()
-
-            val xmlLoc = handler.getList(http)
-
-            if (xmlLoc != null) {
-                if (handler.parseList(xmlLoc, tagList)) {
-                    gotTags = true
-                }
-            }
-
-            if (!gotTags) {
-                Log.e(LOG_TAG, "Error parsing Tags, no more Tags will be available")
-                tagList = ArrayList()
-            }
-
-            return gotTags
-        }
-
-        fun getTags(): ArrayList<String> = tagList
+        fun dumpXml(): Boolean = ProfileRepository.get().dumpXml()
 
         @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
         fun scheduleBackup(context: Context) {
