@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.nav
 
 import android.content.Context
 import android.util.SparseArray
-import android.widget.Toast
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
@@ -230,16 +229,13 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     }
 
     private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
-        var toastText = getString(R.string.get_content_error)
-        val stateText = result.stateText
-
-        if (stateText != null && stateText != "") {
-            toastText = stateText
-        } else if (error != null) {
-            toastText = error.resolve(getContext()) ?: toastText
-        }
-
-        showToast(toastText)
+        showShellMessage(
+            mutationResultText(
+                stateText = result.stateText,
+                errorText = error?.resolve(getContext()),
+                fallback = getString(R.string.get_content_error)
+            )
+        )
     }
 
     /**
@@ -299,8 +295,11 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     }
 
     protected fun showToast(toastText: String?) {
-        val toast = Toast.makeText(getMainActivity(), toastText, Toast.LENGTH_LONG)
-        toast.show()
+        showShellMessage(toastText)
+    }
+
+    private fun showShellMessage(message: String?) {
+        ShellMessages.post(message)
     }
 
     fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {

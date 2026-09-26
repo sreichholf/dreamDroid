@@ -85,6 +85,8 @@ import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.MainActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -421,13 +423,13 @@ private fun setTimerFromEvent(activity: ComponentActivity, event: Event, onDone:
         TimerAddByEventIdRequestHandler(),
         Timer.getEventIdParams(event)
     ) { _, result, error ->
-        var toastText = activity.getText(R.string.get_content_error).toString()
-        val stateText = result.stateText
-        when {
-            !stateText.isNullOrEmpty() -> toastText = stateText
-            error != null -> toastText = error.resolve(activity).orEmpty()
-        }
-        Toast.makeText(activity, toastText, Toast.LENGTH_LONG).show()
+        ShellMessages.post(
+            mutationResultText(
+                stateText = result.stateText,
+                errorText = error?.resolve(activity),
+                fallback = activity.getString(R.string.get_content_error)
+            )
+        )
         onDone()
     }
 }

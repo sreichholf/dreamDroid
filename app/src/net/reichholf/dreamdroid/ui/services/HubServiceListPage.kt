@@ -6,7 +6,6 @@ import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -50,6 +49,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -291,8 +291,7 @@ class HubServiceListSession : MenuProvider {
     }
 
     fun toast(message: CharSequence) {
-        val ctx = context ?: return
-        Toast.makeText(ctx, message, Toast.LENGTH_LONG).show()
+        ShellMessages.post(message)
     }
 
     fun httpParams(): List<NameValuePair> {

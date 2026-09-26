@@ -2,11 +2,16 @@ package net.reichholf.dreamdroid.tv.ui
 
 import android.content.SharedPreferences
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -17,8 +22,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
+import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.settings.SettingsState
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /** Hub entry flag. A settings write or a profile save sets it; the hub consumes it. */
@@ -50,6 +57,35 @@ fun TvHubNavHost(
     ),
     navController: NavHostController = rememberNavController(),
     startDestination: Any = TvHub
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        TvHubNavGraph(
+            activity = activity,
+            onRecheckProfile = onRecheckProfile,
+            hubViewModel = hubViewModel,
+            navController = navController,
+            startDestination = startDestination
+        )
+        // TV Material is not Material 3. The snackbar uses the phone theme.
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+        ) {
+            DreamDroidTheme {
+                ShellSnackbarHost()
+            }
+        }
+    }
+}
+
+@Composable
+private fun TvHubNavGraph(
+    activity: ComponentActivity,
+    onRecheckProfile: () -> Unit,
+    hubViewModel: TvHubViewModel,
+    navController: NavHostController,
+    startDestination: Any
 ) {
     NavHost(
         navController = navController,
