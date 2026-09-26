@@ -1,0 +1,86 @@
+[versions]
+activity = "1.13.0"
+agp = "9.4.1"
+androidxJunit = "1.3.0"
+androidxTest = "1.7.0"
+annotation = "1.10.0"
+coil = "3.6.2"
+commonsNet = "3.13.0"
+composeBom = "2026.09.00"
+coroutines = "1.11.0"
+fragment = "1.9.0"
+glance = "1.2.0"
+gson = "2.14.0"
+jmdns = "3.6.3"
+junitBom = "6.1.3"
+kotlin = "2.4.20"
+ksp = "2.3.12"
+ktlint = "1.8.0"
+lifecycle = "2.11.0"
+material = "1.14.0"
+navigation = "2.10.1"
+okhttp = "5.5.0"
+preference = "1.2.1"
+recyclerview = "1.4.0"
+room = "3.0.3"
+serialization = "1.11.0"
+spotless = "8.10.2"
+sqlite = "2.7.1"
+tvMaterial = "1.1.0"
+vlc = "3.7.5"
+work = "2.10.5"
+
+[libraries]
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
+androidx-junit = { module = "androidx.test.ext:junit", version.ref = "androidxJunit" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidxTest" }
+androidx-test-rules = { module = "androidx.test:rules", version.ref = "androidxTest" }
+androidx-test-runner = { module = "androidx.test:runner", version.ref = "androidxTest" }
+annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+commons-net = { module = "commons-net:commons-net", version.ref = "commonsNet" }
+compose-adaptive = { module = "androidx.compose.material3.adaptive:adaptive" }
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
+compose-foundation = { module = "androidx.compose.foundation:foundation" }
+compose-material3 = { module = "androidx.compose.material3:material3" }
+compose-runtime = { module = "androidx.compose.runtime:runtime" }
+compose-ui = { module = "androidx.compose.ui:ui" }
+compose-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+compose-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
+glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
+glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+jmdns = { module = "org.jmdns:jmdns", version.ref = "jmdns" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
+navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+okhttp-mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "okhttp" }
+preference = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
+recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
+room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
+room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
+serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", version.ref = "sqlite" }
+tv-material = { module = "androidx.tv:tv-material", version.ref = "tvMaterial" }
+vlc = { module = "org.videolan.android:libvlc-all", version.ref = "vlc" }
+work-runtime = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

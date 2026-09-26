@@ -4,7 +4,10 @@
 .gradle
 .kotlin/
 .idea/
-gradle/
+gradle/*
+!gradle/wrapper/
+!gradle/wrapper/**
+!gradle/libs.versions.toml
 bin/
 gen/
 build/

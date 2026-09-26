@@ -58,8 +58,6 @@ fun SettingsDestination(
         onSyncPicons = {
             (context as? BaseActivity)?.startPiconSync()
         },
-        // TEMP MultiEPG Phase 1 — remove with Phase 2 UI.
-        onMultiEpgSyncTest = { viewModel.runMultiEpgSyncTest() },
         onAbout = {
             // Phase 2.1g-ii-b: Navigation Compose dialog (no DialogFragment).
             handle.navigateToAbout()
