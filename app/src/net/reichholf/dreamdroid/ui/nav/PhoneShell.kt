@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -168,24 +169,33 @@ private fun ShellBody(
                 onNavigationClick = onNavigationClick,
                 onToolbarReady = onToolbarReady
             )
-            Box(
+            Scaffold(
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth()
-                    .padding(
-                        horizontal = if (usesRail) {
-                            dimensionResource(R.dimen.content_margin_horizontal)
-                        } else {
-                            0.dp
-                        }
+                    .fillMaxWidth(),
+                containerColor = Color.Transparent,
+                contentWindowInsets = WindowInsets(0, 0, 0, 0),
+                snackbarHost = { ShellSnackbarHost() }
+            ) { innerPadding ->
+                Box(
+                    modifier = Modifier
+                        .padding(innerPadding)
+                        .fillMaxSize()
+                        .padding(
+                            horizontal = if (usesRail) {
+                                dimensionResource(R.dimen.content_margin_horizontal)
+                            } else {
+                                0.dp
+                            }
+                        )
+                ) {
+                    content()
+                    ShellChromeAndFab(
+                        usesRail = usesRail,
+                        destinationController = destinationController,
+                        fabController = fabController
                     )
-            ) {
-                content()
-                ShellChromeAndFab(
-                    usesRail = usesRail,
-                    destinationController = destinationController,
-                    fabController = fabController
-                )
+                }
             }
         }
     }

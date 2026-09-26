@@ -28,7 +28,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
-import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -102,7 +101,6 @@ class MainActivity :
     val phoneNav: PhoneNavHostState by viewModels()
 
     private var phoneShellReady: Boolean = false
-    private var snackbar: Snackbar? = null
 
     /** When true, a successful profile check opens the start route (after Recheck). */
     private var openStartOnProfileSuccess: Boolean = false
@@ -132,19 +130,12 @@ class MainActivity :
         }
     }
 
-    private fun dismissSnackbar() {
-        snackbar?.dismiss()
-        snackbar = null
-    }
-
     private fun showProfileCheckChecking(message: String) {
-        dismissSnackbar()
         val ui = ProfileCheckUi.Checking(message)
         phoneNav.navigateToProfileCheck(ui)
     }
 
     private fun showProfileCheckFailed(result: ProfileCheckResult) {
-        dismissSnackbar()
         openStartOnProfileSuccess = true
         var error: String? = getString(result.errorTextId)
         if (result.errorTextExt.isNotEmpty()) {
@@ -232,7 +223,6 @@ class MainActivity :
                 leaveProfileCheckGate(isFirstStart)
             }
         } else {
-            dismissSnackbar()
             val openStart = openStartOnProfileSuccess
             openStartOnProfileSuccess = false
             val onGate = phoneNav.isOnProfileCheckRoute()
@@ -513,9 +503,6 @@ class MainActivity :
                     drawerListState = drawerListState,
                     drawerOpen = drawerOpen,
                     onDrawerOpenChange = { open ->
-                        if (open && !drawerOpen) {
-                            dismissSnackbar()
-                        }
                         drawerOpen = open
                     },
                     profileName = profileName,

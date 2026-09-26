@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.app.Application
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -32,6 +31,8 @@ import net.reichholf.dreamdroid.ui.multiepg.HandleMultiEpgVisibleMinutesAccess
 import net.reichholf.dreamdroid.ui.multiepg.newMultiEpgSession
 import net.reichholf.dreamdroid.ui.multiepg.readMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.multiepg.writeMultiEpgVisibleMinutes
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -169,13 +170,13 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
         ) { _, result, error ->
             setTimerProgress = null
             setTimerJob = null
-            val stateText = result.stateText
-            val toastText = when {
-                !stateText.isNullOrEmpty() -> stateText
-                error != null -> error.resolve(app).orEmpty()
-                else -> app.getText(R.string.get_content_error).toString()
-            }
-            Toast.makeText(app, toastText, Toast.LENGTH_LONG).show()
+            ShellMessages.post(
+                mutationResultText(
+                    stateText = result.stateText,
+                    errorText = error?.resolve(app),
+                    fallback = app.getString(R.string.get_content_error)
+                )
+            )
         }
     }
 

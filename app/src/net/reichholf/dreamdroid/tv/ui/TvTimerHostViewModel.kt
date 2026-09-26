@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.tv.ui
 
 import android.app.Application
 import android.content.Context
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -22,6 +21,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultReque
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.services.TimerListItem
 import net.reichholf.dreamdroid.ui.services.timerListItemsFrom
 
@@ -133,13 +134,13 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
     private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
         val app = getApplication<Application>()
         progress = null
-        var toastText = app.getText(R.string.get_content_error).toString()
-        val stateText = result.stateText
-        when {
-            !stateText.isNullOrEmpty() -> toastText = stateText
-            error != null -> toastText = error.resolve(app).orEmpty()
-        }
-        Toast.makeText(app, toastText, Toast.LENGTH_LONG).show()
+        ShellMessages.post(
+            mutationResultText(
+                stateText = result.stateText,
+                errorText = error?.resolve(app),
+                fallback = app.getString(R.string.get_content_error)
+            )
+        )
         reload()
     }
 
