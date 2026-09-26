@@ -77,12 +77,11 @@ One PR per numbered step unless the step says otherwise. Each PR leaves the app 
 
 | # | Problem | Where | Caused by |
 | --- | --- | --- | --- |
-| P1 | Receiver writes (power, sleep timer, send message, and their results) run on jobs launched from `MainActivity` via `NavigationHelper`; a rotation or process death cancels them mid-request. Results post to the shell snackbar; the jobs still die with the activity. | `ui/nav/NavigationHelper.kt`, `enigma/launch*Load` helpers | "`NavigationHelper` stays on the activity"; row 22 closed as a no-op |
 | P2 | The phone top bar is a View `Toolbar` passed to `setSupportActionBar`, with `onCreateOptionsMenu` and 9 destinations registering `MenuProvider`s. Icons are tinted by hand. Search uses `android.app.default_searchable`. | `MainActivity`, `ToolbarMenuIcons.kt`, `MultiEpgDestination`, `Hub*Page`, `Profiles*Destination`, `TimerEditDestination`, `EpgBouquetDestination`, `ZapDestination` | "`MenuProvider` stays registered by the composable" |
 | P3 | 29 ViewModels extend `AndroidViewModel` and pull strings, preferences, and `DreamDroid` globals through `Application`. They cannot be JVM-tested without Android. | every `*ViewModel.kt` | "A `ViewModel` takes `Application`" |
 | P4 | Screen state is mutable Compose-state `*Session` / `*State` classes owned by the ViewModel, not an immutable `StateFlow` UI state. Loads live in the session, not in a data layer. | 81 files with `mutableStateOf`, 4 with `StateFlow` | "The existing state class stays the model" |
 | P5 | No data layer and no DI. Process-wide mutable singletons: `DreamDroid` companion (current profile, location list, tag list, profile-changed listener, `getAppContext()`), `SessionConnectionHolder.shared`, `MultiEpgSyncHolder`, `UseDrivenCache`, `UserBouquetCache`, `TimerSnapshotStore`, `MovieSnapshotStore`, `ListEpgCache`, `PiconSync`. | `DreamDroid.kt`, `room/*Store.kt`, `room/*Cache.kt`, `multiepg/`, `ui/session/ConnectionStatus.kt` | "A new DI framework, repository layer … leave as they are" |
-| P8 | The shell snackbar covers hub-page messages (including missing player, no EPG, and an unset default bouquet), navigation-helper results, and TV timer / MultiEPG set-timer results. Other in-app results still use `Toast` (destinations, EPG dialog, video, profiles, backup, screenshot, picon sync, hub loading, and the TV missing-player toast). | `*Destination`, `EpgEventDialogSession`, `VideoOverlayController`, `BaseActivity`, `HubDestination`, `TvComposeHubHost` | Remaining toasts move into ViewModel UI state in C2 |
+| P8 | The shell snackbar covers hub-page messages (including missing player, no EPG, and an unset default bouquet), shell power / sleep / message results, and TV timer / MultiEPG set-timer results. Other in-app results still use `Toast` (destinations, EPG dialog, video, profiles, backup, screenshot, picon sync, hub loading, and the TV missing-player toast). | `*Destination`, `EpgEventDialogSession`, `VideoOverlayController`, `BaseActivity`, `HubDestination`, `TvComposeHubHost` | Remaining toasts move into ViewModel UI state in C2 |
 | P9 | Two HTTP paths: typed `EnigmaClient` and 16 `helpers/enigma2/requesthandler/*RequestHandler` classes behind `launchSimpleResultLoad`. | `helpers/enigma2/requesthandler/`, `enigma/` | Listed as "pre-release" with no owner |
 | P11 | Tablet vs phone is `LocalConfiguration.smallestScreenWidthDp >= 600`, which ignores multi-window and foldable postures. | `ui/nav/PhoneShell.kt` | Not covered by any rule |
 | P12 | Settings are raw `SharedPreferences` in 34 files, read synchronously, with `MainActivity` implementing `OnSharedPreferenceChangeListener`. | `SettingsState`, `DreamDroid`, `MainActivity`, widget, backup agent, … | Not covered by any rule |
@@ -112,7 +111,7 @@ One PR per numbered step unless the step says otherwise. Each PR leaves the app 
 
 | Step | Fixes | Change | Proof |
 | --- | --- | --- | --- |
-| C1 **2.0 blocker** | P1 | Receiver actions move off the activity: power, sleep timer, and send message run in an activity-scoped `ShellViewModel` (or the dialog route's parent entry) through `ReceiverRepository` (or the existing client until B4 lands). Results go to the A2 Snackbar. Reverses the row 22 no-op. `NavigationHelper` keeps only navigation. | Instrumented test: start a power toggle, recreate the activity, the result still arrives. |
+| C1 **Done** | — | Power, sleep timer, and send message run in an activity-scoped `ShellViewModel` (`viewModelScope`) through the existing client. Results post to the shell snackbar. A sleep-timer read that should open the dialog waits for the current activity. `NavigationHelper` only navigates and dispatches those ids. | `ShellPowerSurvivalTest`: a power toggle started before `recreate()` still shows the standby snackbar. |
 | C2 | P3, P4, P8 | Per screen group, in the ViewModel history order: the ViewModel takes repositories + `SavedStateHandle` (`hiltViewModel()`), drops `AndroidViewModel`, exposes `StateFlow<*UiState>`, and puts user messages in that state instead of `Toast`. The `*Session` class goes away or becomes a plain state holder inside the ViewModel. Strings resolve in the UI (`@StringRes` / `UiText`), not in the ViewModel. | Each PR adds a JVM ViewModel test with fake repositories; the `*Screen` Compose test updates to the new state type. |
 | C3 | P2 | Replace the View toolbar with a Material 3 `TopAppBar` in `PhoneShell`; each destination supplies title, actions, and overflow from its UI state. Search becomes a Compose `SearchBar` route. Remove `setSupportActionBar`, `onCreateOptionsMenu`, all `MenuProvider`s, `ToolbarMenuIcons`, the `default_searchable` meta-data, and the `ACTION_SEARCH` intent filter on `MainActivity`. Once nothing needs AppCompat, `BaseActivity` moves to `ComponentActivity`. Can be split by destination; the shell PR goes first. | Compose tests click toolbar actions by content description on each migrated destination. |
 | C4 | P9 | Move each `*RequestHandler` call to a typed `EnigmaClient` function behind `ReceiverRepository` / `TimerRepository`; delete `helpers/enigma2/requesthandler/` and `launchSimpleResultLoad`. | JVM tests on XML fixtures for each moved call; `BoxRejected` mapping preserved. |
@@ -138,7 +137,7 @@ When a step lands, its PR marks the step done here and deletes the rows it fixed
 
 Status (2026-09-23): every screen and host has a `ViewModel`; row 22 closed as a no-op (reopened by C1). Phone NavHost destinations get their state from an entry-scoped `ViewModel`, `PhoneNavHostState` is activity-scoped on a `SavedStateHandle`, the hub pages share the hub entry's scope, and the TV, share, setup, and player hosts use activity-scoped ViewModels.
 
-That pass moved **ownership**: state and load jobs left `remember` / `rememberSaveable` and survive rotation and back-stack pops. It deliberately kept the old `*Session` state classes, `Application` constructors, `MenuProvider`s, and activity-held receiver actions so each PR stayed small. Those are no longer rules; they are remediation P1–P5 and C1–C3. Current ViewModel rules are the [target architecture](#target-architecture) row.
+That pass moved **ownership**: state and load jobs left `remember` / `rememberSaveable` and survive rotation and back-stack pops. It deliberately kept the old `*Session` state classes, `Application` constructors, `MenuProvider`s, and activity-held receiver actions so each PR stayed small. Those leftovers that remain are P2–P5 and C2–C3. Current ViewModel rules are the [target architecture](#target-architecture) row.
 
 Rules from that pass that still hold:
 
@@ -158,7 +157,7 @@ Rules from that pass that still hold:
 | 19a–19b | Service EPG, Hub now playing | Done |
 | 20 | TV hosts (`TvComposeHubHost`, `TvTimerHost`, `TvTimerEditor`, `TvTimerServicePick`, `TvMultiEpgHost`) | Done |
 | 21 | Share and setup | Done |
-| 22 | Dialog routes (`SleepTimer`, `SendMessage`, `Power`) | Closed as no-op; reopened as remediation C1 |
+| 22 | Dialog routes (`SleepTimer`, `SendMessage`, `Power`) | Done in C1. The routes stay; the requests run on `ShellViewModel`. |
 | 23 | Player | Done |
 
 ## Out of scope until asked

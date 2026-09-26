@@ -61,6 +61,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.PhoneShell
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
 import net.reichholf.dreamdroid.ui.nav.ShellFabController
+import net.reichholf.dreamdroid.ui.nav.ShellViewModel
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
@@ -99,6 +100,7 @@ class MainActivity :
     private val destinationController = ShellDestinationBarController()
     private val fabController = ShellFabController()
     val phoneNav: PhoneNavHostState by viewModels()
+    val shellActions: ShellViewModel by viewModels { ShellViewModel.Factory }
 
     private var phoneShellReady: Boolean = false
 
@@ -247,6 +249,9 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        shellActions.bindSleepTimerOpener(this) { timer ->
+            phoneNav.navigateToSleepTimer(timer)
+        }
         startSessionReachabilityProbe()
         if (!DreamDroid.hasCurrentProfile()) {
             showSetupAssistant()
@@ -432,7 +437,7 @@ class MainActivity :
     }
 
     override fun onDestroy() {
-        navigationHelper?.onDestroy()
+        shellActions.unbindSleepTimerOpener(this)
         navigationHelper = null
         PreferenceManager.getDefaultSharedPreferences(
             this
@@ -670,7 +675,9 @@ class MainActivity :
     }
 
     fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
-        navigationHelper?.onSetSleepTimer(time, action, enabled)
+        phoneNav.runOnlineOnly {
+            shellActions.setSleepTimer(time, action, enabled)
+        }
     }
 
     fun onDrawerPowerChoice(action: Int) {
@@ -678,7 +685,9 @@ class MainActivity :
     }
 
     fun onSendMessage(text: String, type: String, timeout: String) {
-        navigationHelper?.onSendMessage(text, type, timeout)
+        phoneNav.runOnlineOnly {
+            shellActions.sendMessage(text, type, timeout)
+        }
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
