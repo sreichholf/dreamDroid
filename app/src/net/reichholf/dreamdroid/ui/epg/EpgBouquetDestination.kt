@@ -26,10 +26,9 @@ import java.util.Calendar
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
-import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.Epg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -42,6 +41,7 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 @Composable
 fun EpgBouquetDestination(
     handle: PhoneNavHandle,
+    route: Epg,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: EpgBouquetViewModel = viewModel()
@@ -114,15 +114,10 @@ fun EpgBouquetDestination(
 
     val connectionSession =
         SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(remountEpoch, connectionSession, viewModel, handle) {
-        val args = handle.epgLeafArguments()
-        val leafRef = args.getString(Event.KEY_SERVICE_REFERENCE).orEmpty()
-        val leafName = args.getString(Event.KEY_SERVICE_NAME).orEmpty()
-        val leafTime = if (args.containsKey(NavExtras.EPG_TIME_SEC)) {
-            args.getLong(NavExtras.EPG_TIME_SEC)
-        } else {
-            null
-        }
+    LaunchedEffect(remountEpoch, connectionSession, viewModel, handle, route) {
+        val leafRef = route.serviceRef
+        val leafName = route.serviceName
+        val leafTime = route.timeOrNull()
         val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
         viewModel.ensureEpoch(remountEpoch, leafRef, leafName, leafTime, nowSec)
         viewModel.applyLeaf(leafRef, leafName)

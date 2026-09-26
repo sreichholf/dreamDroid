@@ -26,7 +26,6 @@ import kotlinx.coroutines.isActive
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.helpers.enigma2.Event as EventKeys
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
@@ -34,7 +33,7 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
-import net.reichholf.dreamdroid.ui.nav.NavExtras
+import net.reichholf.dreamdroid.ui.nav.MultiEpg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 
 /**
@@ -48,6 +47,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 @Composable
 fun MultiEpgDestination(
     handle: PhoneNavHandle,
+    route: MultiEpg,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: MultiEpgViewModel = viewModel()
@@ -55,20 +55,11 @@ fun MultiEpgDestination(
     val context = LocalContext.current
     val activity = context as AppCompatActivity
     val session = viewModel.session
-    val leafArgs = handle.epgLeafArguments()
-    val bouquetRef = MultiEpgRestore.bouquetRef(
-        leafArgs.getString(EventKeys.KEY_SERVICE_REFERENCE)
-    )
-    val bouquetName = MultiEpgRestore.bouquetName(
-        leafArgs.getString(EventKeys.KEY_SERVICE_NAME)
-    )
-    val focusedServiceRef = leafArgs.getString(NavExtras.FOCUSED_SERVICE_REF)
+    val bouquetRef = MultiEpgRestore.bouquetRef(route.serviceRef)
+    val bouquetName = MultiEpgRestore.bouquetName(route.serviceName)
+    val focusedServiceRef = route.focusedOrNull()
     var anchorSec by remember(remountEpoch, bouquetRef) {
-        val launchSec = if (leafArgs.containsKey(NavExtras.EPG_TIME_SEC)) {
-            leafArgs.getLong(NavExtras.EPG_TIME_SEC)
-        } else {
-            System.currentTimeMillis() / 1000L
-        }
+        val launchSec = route.timeOrNull() ?: System.currentTimeMillis() / 1000L
         mutableLongStateOf(launchSec)
     }
     var visibleStartSec by remember(remountEpoch, bouquetRef) {

@@ -11,9 +11,9 @@ import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.nav.NavExtras
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.PhoneNavSavedKeys
+import net.reichholf.dreamdroid.ui.nav.ProfileEdit
 
 internal enum class ProfileEditBind {
     Keep,
@@ -54,9 +54,9 @@ internal fun initialProfileForEdit(action: String?, profile: Profile?): Profile 
 /**
  * Working [Profile] and [ProfileEditState] for [ProfileEditDestination].
  * Delete confirmation stays in the composable.
- * The snapshot uses [PhoneNavSavedKeys.PROFILE_EDIT_ARGS] (action + profile)
- * and [PhoneNavSavedKeys.PROFILE_EDIT_TAG] so a new launch is not restored
- * over a different profile.
+ * The snapshot uses [PROFILE_EDIT_ARGS] (action + profile) and [PROFILE_EDIT_TAG]
+ * on this entry's [SavedStateHandle] so a new launch is not restored over a
+ * different profile.
  */
 class ProfileEditViewModel(
     application: Application,
@@ -78,9 +78,8 @@ class ProfileEditViewModel(
     private var boundEpoch: Int = 0
     private var action: String = Intent.ACTION_EDIT
 
-    fun start(handle: PhoneNavHandle) {
-        val tag = handle.profileEditRouteTag()
-        val remount = handle.profileEditRemountEpoch
+    fun start(route: ProfileEdit, remountEpoch: Int) {
+        val tag = route.tag()
         val saved = if (hasBound) null else readSavedEdit()
         when (
             profileEditBind(
@@ -88,7 +87,7 @@ class ProfileEditViewModel(
                 boundTag = boundTag,
                 boundEpoch = boundEpoch,
                 routeTag = tag,
-                remountEpoch = remount,
+                remountEpoch = remountEpoch,
                 savedTag = saved?.tag
             )
         ) {
@@ -99,10 +98,10 @@ class ProfileEditViewModel(
 
             ProfileEditBind.RestoreSaved -> {
                 val restored = checkNotNull(saved)
-                applyProfile(restored.profile, restored.action, tag, remount)
+                applyProfile(restored.profile, restored.action, tag, remountEpoch)
             }
 
-            ProfileEditBind.LoadLaunch -> loadFromLaunch(handle, tag, remount)
+            ProfileEditBind.LoadLaunch -> loadFromLaunch(route, tag, remountEpoch)
         }
     }
 
@@ -133,8 +132,8 @@ class ProfileEditViewModel(
             putString(NavExtras.ACTION, action)
             putSerializable(NavExtras.DATA, profile)
         }
-        savedStateHandle[PhoneNavSavedKeys.PROFILE_EDIT_ARGS] = bundle
-        savedStateHandle[PhoneNavSavedKeys.PROFILE_EDIT_TAG] = boundTag
+        savedStateHandle[PROFILE_EDIT_ARGS] = bundle
+        savedStateHandle[PROFILE_EDIT_TAG] = boundTag
     }
 
     /**
@@ -147,16 +146,14 @@ class ProfileEditViewModel(
         }
     }
 
-    private fun loadFromLaunch(handle: PhoneNavHandle, tag: String, remount: Int) {
-        val args = handle.profileEditLeafArguments()
-        val launchAction = args.getString(NavExtras.ACTION)
-        val extras = args.getSerializableCompat<Profile>(NavExtras.DATA)
-        applyProfile(
-            initialProfileForEdit(launchAction, extras),
-            launchAction ?: Intent.ACTION_EDIT,
-            tag,
-            remount
-        )
+    private fun loadFromLaunch(route: ProfileEdit, tag: String, remount: Int) {
+        val launch = if (route.profileId > 0) {
+            AppDatabase.profilesBlocking(getApplication()).getProfile(route.profileId)
+                ?: Profile.getDefault()
+        } else {
+            route.launchProfile() ?: Profile.getDefault()
+        }
+        applyProfile(launch, Intent.ACTION_EDIT, tag, remount)
     }
 
     private fun applyProfile(next: Profile, nextAction: String, tag: String, remount: Int) {
@@ -172,13 +169,16 @@ class ProfileEditViewModel(
     }
 
     private fun readSavedEdit(): SavedProfileEdit? {
-        val tag = savedStateHandle.get<String>(PhoneNavSavedKeys.PROFILE_EDIT_TAG) ?: return null
-        val bundle = savedStateHandle.get<Bundle>(PhoneNavSavedKeys.PROFILE_EDIT_ARGS)
+        val tag = savedStateHandle.get<String>(PROFILE_EDIT_TAG) ?: return null
+        val bundle = savedStateHandle.get<Bundle>(PROFILE_EDIT_ARGS)
             ?: return null
         val savedProfile = bundle.getSerializableCompat<Profile>(NavExtras.DATA) ?: return null
         val savedAction = bundle.getString(NavExtras.ACTION) ?: Intent.ACTION_EDIT
         return SavedProfileEdit(action = savedAction, profile = savedProfile, tag = tag)
     }
 }
+
+private const val PROFILE_EDIT_ARGS = "phone_nav_profile_edit_args"
+private const val PROFILE_EDIT_TAG = "phone_nav_profile_edit_tag"
 
 private data class SavedProfileEdit(val action: String, val profile: Profile, val tag: String)

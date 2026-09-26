@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.nav
 
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
@@ -61,31 +60,25 @@ interface PhoneNavHandle {
     fun clearNeedsReceiver()
 
     fun startRoute(): String
-    fun epgLeafArguments(): Bundle
-    fun profileEditRouteTag(): String
-    fun profileEditLeafArguments(): Bundle
-    fun timerEditRouteTag(): String
-    fun timerEditLeafArguments(): Bundle
 
     fun attachNavController(controller: NavHostController)
     fun detachNavController(controller: NavHostController)
 
-    fun navigateToRoute(route: String): Boolean
+    fun navigateToRoute(route: Any): Boolean
     fun navigateToBackup(): Boolean
     fun navigateToAbout(): Boolean
     fun navigateToPower(): Boolean
     fun navigateToSendMessage(): Boolean
     fun navigateToSleepTimer(timer: SleepTimer): Boolean
     fun queueSleepTimer(timer: SleepTimer)
-    fun consumeSleepTimerArgs(): SleepTimerNavArgs
     fun navigateToChangelog(): Boolean
     fun queueChangelog()
     fun updateProfileCheckUi(ui: ProfileCheckUi)
     fun isOnProfileCheckRoute(): Boolean
     fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean
     fun queueProfileCheck(ui: ProfileCheckUi)
-    fun navigateAboveProfileCheck(route: String): Boolean
-    fun navigateReplacingProfileCheck(route: String): Boolean
+    fun navigateAboveProfileCheck(route: Any): Boolean
+    fun navigateReplacingProfileCheck(route: Any): Boolean
     fun navigateToEpg(
         serviceReference: String?,
         serviceName: String?,
@@ -133,6 +126,15 @@ data class SleepTimerNavArgs(val minutes: Int, val enabled: Boolean, val action:
             SleepTimerKeys.ACTION_STANDBY
         )
     }
+}
+
+fun SleepTimer.toSleepTimerRoute(): SleepTimerRoute {
+    val args = SleepTimerNavArgs.from(this)
+    return SleepTimerRoute(
+        minutes = args.minutes,
+        enabled = args.enabled,
+        action = args.action
+    )
 }
 
 fun PhoneNavHandle.runOnlineOnly(action: () -> Unit) {

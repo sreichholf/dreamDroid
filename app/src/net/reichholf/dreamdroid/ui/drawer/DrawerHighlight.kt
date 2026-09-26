@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.drawer
 
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.routeKey
 
 /**
  * Map the NavHost destination to the drawer row that should stay selected.
@@ -10,38 +11,38 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
  */
 object DrawerHighlight {
     fun itemIdForRoute(route: String?, previousRoute: String? = null): Int? {
-        val r = route ?: return null
+        val r = routeKey(route) ?: return null
         if (r == PhoneNavRoutes.PICK_SERVICE) {
             return itemIdForRoute(previousRoute)
         }
-        return when {
-            r == PhoneNavRoutes.HUB ||
-                r == PhoneNavRoutes.CURRENT ||
-                r == PhoneNavRoutes.TIMER_EDIT ||
-                r == PhoneNavRoutes.TIMER_SERVICE_PICK -> R.id.menu_navigation_services
+        return when (r) {
+            PhoneNavRoutes.HUB,
+            PhoneNavRoutes.CURRENT,
+            PhoneNavRoutes.TIMER_EDIT,
+            PhoneNavRoutes.TIMER_SERVICE_PICK -> R.id.menu_navigation_services
 
-            r == PhoneNavRoutes.TOOLS ||
-                r == PhoneNavRoutes.DEVICE_INFO ||
-                r == PhoneNavRoutes.SIGNAL ||
-                r == PhoneNavRoutes.SCREENSHOT -> R.id.menu_navigation_tools
+            PhoneNavRoutes.TOOLS,
+            PhoneNavRoutes.DEVICE_INFO,
+            PhoneNavRoutes.SIGNAL,
+            PhoneNavRoutes.SCREENSHOT -> R.id.menu_navigation_tools
 
-            r == PhoneNavRoutes.REMOTE -> R.id.menu_navigation_remote
+            PhoneNavRoutes.REMOTE -> R.id.menu_navigation_remote
 
-            r == PhoneNavRoutes.ZAP -> R.id.menu_navigation_zap
+            PhoneNavRoutes.ZAP -> R.id.menu_navigation_zap
 
-            r == PhoneNavRoutes.EPG ||
-                r.startsWith("service_epg") ||
-                r.startsWith("epg_search") -> R.id.menu_navigation_epg
+            PhoneNavRoutes.EPG,
+            PhoneNavRoutes.SERVICE_EPG,
+            PhoneNavRoutes.EPG_SEARCH -> R.id.menu_navigation_epg
 
-            r == PhoneNavRoutes.MULTI_EPG ->
+            PhoneNavRoutes.MULTI_EPG ->
                 itemIdForRoute(previousRoute) ?: R.id.menu_navigation_epg
 
-            r == PhoneNavRoutes.SETTINGS || r == PhoneNavRoutes.BACKUP ->
-                R.id.menu_navigation_settings
+            PhoneNavRoutes.SETTINGS,
+            PhoneNavRoutes.BACKUP -> R.id.menu_navigation_settings
 
-            r == PhoneNavRoutes.PROFILES ||
-                r == PhoneNavRoutes.PROFILE_EDIT ||
-                r == PhoneNavRoutes.PROFILE_CHECK -> R.id.menu_none
+            PhoneNavRoutes.PROFILES,
+            PhoneNavRoutes.PROFILE_EDIT,
+            PhoneNavRoutes.PROFILE_CHECK -> R.id.menu_none
 
             else -> null
         }

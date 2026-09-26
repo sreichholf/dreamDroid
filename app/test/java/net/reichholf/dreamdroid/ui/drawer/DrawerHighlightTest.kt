@@ -68,8 +68,24 @@ class DrawerHighlightTest {
         assertEquals(
             R.id.menu_navigation_epg,
             DrawerHighlight.itemIdForRoute(
-                PhoneNavRoutes.epgSearchRoute("Tagesschau / Wetter")
+                "epg_search?query=Tagesschau%20%2F%20Wetter"
             )
+        )
+    }
+
+    @Test
+    fun argumentedRoutesKeepTheirDrawerRow() {
+        assertEquals(
+            R.id.menu_none,
+            DrawerHighlight.itemIdForRoute("profile_edit?profileId=3&name=Box")
+        )
+        assertEquals(
+            R.id.menu_navigation_services,
+            DrawerHighlight.itemIdForRoute("timer_edit?create=true&begin=10")
+        )
+        assertEquals(
+            R.id.menu_navigation_epg,
+            DrawerHighlight.itemIdForRoute("multi_epg?serviceRef=1%3A0%3A1")
         )
     }
 
