@@ -11,12 +11,14 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:9.4.1'
         classpath "org.jetbrains.kotlin:compose-compiler-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
         classpath "com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.3.12"
     }
 }
 apply plugin: 'com.android.application'
 // AGP 9: Kotlin is built-in. Compose needs the Compose compiler Gradle plugin.
 apply plugin: 'org.jetbrains.kotlin.plugin.compose'
+apply plugin: 'org.jetbrains.kotlin.plugin.serialization'
 // Room needs KSP for Kotlin @Database / @Entity (Java annotationProcessor is not enough).
 apply plugin: 'com.google.devtools.ksp'
 
@@ -47,6 +49,7 @@ dependencies {
     implementation 'org.videolan.android:libvlc-all:3.7.5'
     implementation 'com.squareup.okhttp3:okhttp:5.5.0'
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-serialization-core:1.11.0"
     implementation 'io.coil-kt.coil3:coil:3.6.2'
     implementation 'io.coil-kt.coil3:coil-compose:3.6.2'
     implementation 'io.coil-kt.coil3:coil-network-okhttp:3.6.2'

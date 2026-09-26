@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.Application
 import android.content.Context
 import android.content.Intent
-import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.AndroidViewModel
@@ -22,12 +21,14 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Event
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+
+internal const val PHONE_NAV_SCHEMA_KEY = "dreamdroid_nav_schema"
+internal const val PHONE_NAV_SCHEMA_VERSION = 2
 
 /**
  * Activity-scoped ViewModel for phone NavHost state (result stacks, queued extras,
@@ -71,25 +72,17 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var startRouteValue: String = PhoneNavRoutes.DEVICE_INFO
-    private var epgServiceReference: String? = null
-    private var epgServiceName: String? = null
-    private var epgFocusedServiceRef: String? = null
-    private var epgTimeSec: Long? = null
-    private var profileEditArgs: Bundle? = null
-    private var profileEditTag: String = PhoneNavRoutes.PROFILE_EDIT
-    private var timerEditArgs: Bundle? = null
-    private var timerEditTag: String = PhoneNavRoutes.TIMER_EDIT
     private var pendingProfileEditRequested: Boolean = false
     private var pendingProfileEdit: Profile? = null
     private var pendingTimerEdit: Timer? = null
     private var pendingTimerCreate: Boolean = false
     private var pendingEpgSearchQuery: String? = null
-    private var pendingSleepTimerArgs: SleepTimerNavArgs? = null
+    private var pendingSleepTimer: SleepTimerRoute? = null
     private var pendingOpenSleepTimer: Boolean = false
+    private var pendingMultiEpg: MultiEpg? = null
     private var pendingChangelog: Boolean = false
     private var pendingProfileCheck: Boolean = false
-    private var pendingDrawerRoot: String? = null
-    private var pendingNestedMultiEpg: Boolean = false
+    private var pendingDrawerRoot: Any? = null
     private var pendingAbout: Boolean = false
     private var pendingPower: Boolean = false
     private var pendingSendMessage: Boolean = false
@@ -127,17 +120,17 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         startRouteSaved = bag.hasSavedStartRoute()
         startRouteValue = bag.startRoute ?: PhoneNavRoutes.DEVICE_INFO
         bag.pickRequestCodes.forEach { resultRequestCodes.addLast(it) }
-        profileEditTag = bag.profileEditTag
-        timerEditTag = bag.timerEditTag
-        epgServiceReference = bag.epgRef
-        epgServiceName = bag.epgName
-        epgFocusedServiceRef = bag.epgFocusedRef
-        epgTimeSec = bag.epgTimeSec
-        profileEditArgs = savedStateHandle.get<Bundle>(PhoneNavSavedKeys.PROFILE_EDIT_ARGS)
-        timerEditArgs = savedStateHandle.get<Bundle>(PhoneNavSavedKeys.TIMER_EDIT_ARGS)
     }
 
     fun hasSavedStartRoute(): Boolean = startRouteSaved
+
+    /** False until this process has accepted the type-safe route schema. */
+    fun hasNavSchema(): Boolean =
+        savedStateHandle.get<Int>(PHONE_NAV_SCHEMA_KEY) == PHONE_NAV_SCHEMA_VERSION
+
+    fun markNavSchema() {
+        savedStateHandle[PHONE_NAV_SCHEMA_KEY] = PHONE_NAV_SCHEMA_VERSION
+    }
 
     fun setStartRoute(route: String) {
         startRouteValue = route
@@ -148,53 +141,11 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     private fun persistPlain() {
         PhoneNavStateBag(
             startRoute = if (startRouteSaved) startRouteValue else null,
-            pickRequestCodes = resultRequestCodes.toList(),
-            profileEditTag = profileEditTag,
-            timerEditTag = timerEditTag,
-            epgRef = epgServiceReference,
-            epgName = epgServiceName,
-            epgFocusedRef = epgFocusedServiceRef,
-            epgTimeSec = epgTimeSec
+            pickRequestCodes = resultRequestCodes.toList()
         ).writePlain(plainAccess)
     }
 
-    private fun putOrRemove(key: String, value: Any?) {
-        if (value == null) {
-            savedStateHandle.remove<Any>(key)
-        } else {
-            savedStateHandle[key] = value
-        }
-    }
-
-    private fun persistProfileEditArgs() {
-        putOrRemove(PhoneNavSavedKeys.PROFILE_EDIT_ARGS, profileEditArgs)
-    }
-
-    private fun persistTimerEditArgs() {
-        putOrRemove(PhoneNavSavedKeys.TIMER_EDIT_ARGS, timerEditArgs)
-    }
-
-    private fun updateEpgLeaf(
-        serviceReference: String?,
-        serviceName: String?,
-        focusedServiceRef: String?,
-        timeSec: Long?
-    ) {
-        epgServiceReference = serviceReference
-        epgServiceName = serviceName
-        epgFocusedServiceRef = focusedServiceRef
-        epgTimeSec = timeSec
-        persistPlain()
-    }
-
     override fun startRoute(): String = startRouteValue
-
-    override fun epgLeafArguments(): Bundle = Bundle().apply {
-        putString(Event.KEY_SERVICE_REFERENCE, epgServiceReference)
-        putString(Event.KEY_SERVICE_NAME, epgServiceName)
-        putString(NavExtras.FOCUSED_SERVICE_REF, epgFocusedServiceRef)
-        epgTimeSec?.let { putLong(NavExtras.EPG_TIME_SEC, it) }
-    }
 
     override fun attachNavController(controller: NavHostController) {
         navController = controller
@@ -218,18 +169,19 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         }
     }
 
-    override fun navigateToRoute(route: String): Boolean {
+    override fun navigateToRoute(route: Any): Boolean {
         clearResultRequestCodes()
+        val destination = normalizeRoute(route)
         val controller = navController
         if (controller == null) {
-            pendingDrawerRoot = route
+            pendingDrawerRoot = destination
             return true
         }
-        if (route == PhoneNavRoutes.SETTINGS) {
+        if (destination is Settings) {
             controller.navigateDrawerSettings()
             return true
         }
-        controller.navigateDrawerRoot(route)
+        controller.navigateDrawerRoot(destination)
         return true
     }
 
@@ -274,26 +226,21 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     }
 
     override fun navigateToSleepTimer(timer: SleepTimer): Boolean {
-        pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
+        pendingSleepTimer = timer.toSleepTimerRoute()
         val controller = navController
         if (controller == null) {
             pendingOpenSleepTimer = true
             return true
         }
-        controller.navigateToSleepTimer()
+        controller.navigateToSleepTimer(pendingSleepTimer ?: SleepTimerRoute())
+        pendingSleepTimer = null
         return true
     }
 
     override fun queueSleepTimer(timer: SleepTimer) {
-        pendingSleepTimerArgs = SleepTimerNavArgs.from(timer)
+        pendingSleepTimer = timer.toSleepTimerRoute()
         pendingOpenSleepTimer = true
         flushPendingNavigations()
-    }
-
-    override fun consumeSleepTimerArgs(): SleepTimerNavArgs {
-        val args = pendingSleepTimerArgs ?: SleepTimerNavArgs.defaults()
-        pendingSleepTimerArgs = null
-        return args
     }
 
     override fun navigateToChangelog(): Boolean {
@@ -343,7 +290,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     }
 
     override fun isOnProfileCheckRoute(): Boolean =
-        navController?.currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK
+        routeKey(navController?.currentDestination?.route) == PhoneNavRoutes.PROFILE_CHECK
 
     override fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean {
         updateProfileCheckUi(ui)
@@ -362,13 +309,13 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         flushPendingNavigations()
     }
 
-    override fun navigateAboveProfileCheck(route: String): Boolean {
+    override fun navigateAboveProfileCheck(route: Any): Boolean {
         val controller = navController ?: return false
         controller.navigateAboveProfileCheck(route)
         return true
     }
 
-    override fun navigateReplacingProfileCheck(route: String): Boolean {
+    override fun navigateReplacingProfileCheck(route: Any): Boolean {
         val controller = navController ?: return false
         controller.navigateReplacingProfileCheck(route)
         return true
@@ -379,25 +326,30 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         serviceName: String?,
         timeSec: Long?
     ): Boolean {
+        val route = Epg(
+            serviceRef = serviceReference.orEmpty(),
+            serviceName = serviceName.orEmpty(),
+            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC
+        )
         val controller = navController
-        updateEpgLeaf(serviceReference, serviceName, null, timeSec)
         if (controller == null) {
-            pendingDrawerRoot = PhoneNavRoutes.EPG
+            pendingDrawerRoot = route
             return true
         }
-        val currentRoute = controller.currentDestination?.route
-        if (currentRoute == PhoneNavRoutes.MULTI_EPG) {
-            val previous = controller.previousBackStackEntry?.destination?.route
-            if (previous == PhoneNavRoutes.EPG) {
-                clearResultRequestCodes()
-                controller.popBackStack()
-                epgRemountState.value = epgRemountState.value + 1
-                return true
-            }
+        val currentRoute = routeKey(controller.currentDestination?.route)
+        val previous = routeKey(controller.previousBackStackEntry?.destination?.route)
+        if (currentRoute == PhoneNavRoutes.MULTI_EPG && previous == PhoneNavRoutes.EPG) {
+            clearResultRequestCodes()
+            controller.popBackStack()
+            controller.replaceRoute<Epg>(route)
+            epgRemountState.value = epgRemountState.value + 1
+            return true
         }
         if (currentRoute != PhoneNavRoutes.EPG) {
             clearResultRequestCodes()
-            controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+            controller.navigateDrawerRoot(route)
+        } else {
+            controller.replaceRoute<Epg>(route)
         }
         epgRemountState.value = epgRemountState.value + 1
         return true
@@ -412,22 +364,22 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         if (!DrawerEpgMode.isMulti(prefs)) {
             return navigateToEpg(ref, name)
         }
+        val listRoute = Epg(serviceRef = ref.orEmpty(), serviceName = name.orEmpty())
         val controller = navController
-        updateEpgLeaf(ref, name, null, null)
         if (controller == null) {
-            pendingDrawerRoot = PhoneNavRoutes.EPG
-            pendingNestedMultiEpg = true
+            pendingDrawerRoot = listRoute
+            pendingMultiEpg = MultiEpg(serviceRef = ref.orEmpty(), serviceName = name.orEmpty())
             return true
         }
-        val currentRoute = controller.currentDestination?.route
-        val previous = controller.previousBackStackEntry?.destination?.route
+        val currentRoute = routeKey(controller.currentDestination?.route)
+        val previous = routeKey(controller.previousBackStackEntry?.destination?.route)
         if (DrawerEpgMode.isNestedOnListEpg(currentRoute, previous)) {
             epgRemountState.value = epgRemountState.value + 1
             return true
         }
         if (currentRoute != PhoneNavRoutes.EPG) {
             clearResultRequestCodes()
-            controller.navigateDrawerRoot(PhoneNavRoutes.EPG)
+            controller.navigateDrawerRoot(listRoute)
         }
         return navigateToMultiEpg(ref, name)
     }
@@ -438,20 +390,25 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         focusedServiceRef: String?,
         timeSec: Long?
     ): Boolean {
+        val route = MultiEpg(
+            serviceRef = serviceReference.orEmpty(),
+            serviceName = serviceName.orEmpty(),
+            focusedServiceRef = focusedServiceRef.orEmpty(),
+            timeSec = timeSec ?: PhoneNavRoutes.ABSENT_TIME_SEC
+        )
         val controller = navController
-        updateEpgLeaf(serviceReference, serviceName, focusedServiceRef, timeSec)
         if (controller == null) {
-            pendingNestedMultiEpg = true
+            pendingMultiEpg = route
             return true
         }
-        if (controller.currentDestination?.route != PhoneNavRoutes.MULTI_EPG) {
+        val onMulti = routeKey(controller.currentDestination?.route) == PhoneNavRoutes.MULTI_EPG
+        if (!onMulti) {
             clearResultRequestCodes()
+            controller.navigate(route) { launchSingleTop = true }
+        } else {
+            controller.replaceRoute<MultiEpg>(route)
         }
-        if (controller.currentDestination?.route == PhoneNavRoutes.MULTI_EPG) {
-            epgRemountState.value = epgRemountState.value + 1
-            return true
-        }
-        controller.navigateToMultiEpg()
+        epgRemountState.value = epgRemountState.value + 1
         return true
     }
 
@@ -468,13 +425,15 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
             pendingEpgSearchQuery = q
             return true
         }
-        val onSearch = controller.currentDestination?.route == PhoneNavRoutes.EPG_SEARCH ||
-            controller.currentDestination?.route?.startsWith("epg_search") == true
+        val route = EpgSearch(query = q)
+        val onSearch = routeKey(controller.currentDestination?.route) == PhoneNavRoutes.EPG_SEARCH
         if (onSearch && q.isEmpty()) {
             return true
         }
         if (onSearch) {
+            controller.replaceRoute(route)
             epgSearchRemountState.value = epgSearchRemountState.value + 1
+            return true
         }
         controller.navigateToEpgSearch(q)
         return true
@@ -483,7 +442,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     override fun navigateToPickBouquet(requestCode: Int): Boolean {
         val controller = navController ?: return false
         pushResultRequestCode(requestCode)
-        controller.navigate(PhoneNavRoutes.PICK_SERVICE)
+        controller.navigate(PickService)
         return true
     }
 
@@ -547,7 +506,9 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         }
         if (pendingOpenSleepTimer) {
             pendingOpenSleepTimer = false
-            navController?.navigateToSleepTimer()
+            val route = pendingSleepTimer ?: SleepTimerRoute()
+            pendingSleepTimer = null
+            navController?.navigateToSleepTimer(route)
         }
         if (pendingChangelog) {
             pendingChangelog = false
@@ -557,20 +518,17 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
             pendingProfileCheck = false
             navController?.navigateToProfileCheck()
         }
-        if (pendingNestedMultiEpg) {
-            pendingNestedMultiEpg = false
+        val multi = pendingMultiEpg
+        if (multi != null) {
+            pendingMultiEpg = null
             navigateToMultiEpg(
-                epgServiceReference,
-                epgServiceName,
-                epgFocusedServiceRef,
-                epgTimeSec
+                multi.serviceRef.ifEmpty { null },
+                multi.serviceName.ifEmpty { null },
+                multi.focusedOrNull(),
+                multi.timeOrNull()
             )
         }
     }
-
-    override fun profileEditRouteTag(): String = profileEditTag
-
-    override fun profileEditLeafArguments(): Bundle = profileEditArgs ?: Bundle()
 
     override fun navigateToProfileEdit(profile: Profile?): Boolean {
         val controller = navController
@@ -579,25 +537,13 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
             return true
         }
         pushResultRequestCode(Statics.REQUEST_EDIT_PROFILE)
-        val data = Bundle().apply {
-            putString(NavExtras.ACTION, Intent.ACTION_EDIT)
-            if (profile != null) {
-                putSerializable(NavExtras.DATA, profile)
-            }
-        }
-        profileEditArgs = data
-        profileEditTag = if (profile != null) {
-            "profile_edit:${profile.id}"
-        } else {
-            "profile_edit:new"
-        }
-        persistProfileEditArgs()
-        persistPlain()
-        if (controller.currentDestination?.route == PhoneNavRoutes.PROFILE_EDIT) {
+        val route = profile.toProfileEditRoute()
+        if (routeKey(controller.currentDestination?.route) == PhoneNavRoutes.PROFILE_EDIT) {
+            controller.replaceRoute(route)
             profileEditRemountState.value = profileEditRemountState.value + 1
             return true
         }
-        controller.navigate(PhoneNavRoutes.PROFILE_EDIT)
+        controller.navigate(route)
         return true
     }
 
@@ -610,10 +556,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         return controller.popBackStack()
     }
 
-    override fun timerEditRouteTag(): String = timerEditTag
-
-    override fun timerEditLeafArguments(): Bundle = timerEditArgs ?: Bundle()
-
     override fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean {
         val controller = navController
         if (controller == null) {
@@ -621,27 +563,13 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
             return true
         }
         pushResultRequestCode(Statics.REQUEST_EDIT_TIMER)
-        timerEditArgs = Bundle().apply {
-            putSerializable(NavExtras.DATA, timer)
-            putString(
-                NavExtras.ACTION,
-                if (create) DreamDroid.ACTION_CREATE else Intent.ACTION_EDIT
-            )
-        }
-        val ref = timer.reference
-        val begin = timer.begin
-        timerEditTag = if (create) {
-            "timer_edit:new:$begin"
-        } else {
-            "timer_edit:$ref:$begin"
-        }
-        persistTimerEditArgs()
-        persistPlain()
-        if (controller.currentDestination?.route == PhoneNavRoutes.TIMER_EDIT) {
+        val route = TimerEdit.from(timer, create)
+        if (routeKey(controller.currentDestination?.route) == PhoneNavRoutes.TIMER_EDIT) {
+            controller.replaceRoute(route)
             timerEditRemountState.value = timerEditRemountState.value + 1
             return true
         }
-        controller.navigate(PhoneNavRoutes.TIMER_EDIT)
+        controller.navigate(route)
         return true
     }
 
@@ -665,11 +593,11 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     }
 
     private fun isResultDestination(route: String?): Boolean {
-        if (route == null) return false
-        return route == PhoneNavRoutes.PICK_SERVICE ||
-            route == PhoneNavRoutes.PROFILE_EDIT ||
-            route == PhoneNavRoutes.TIMER_EDIT ||
-            route == PhoneNavRoutes.TIMER_SERVICE_PICK
+        val key = routeKey(route) ?: return false
+        return key == PhoneNavRoutes.PICK_SERVICE ||
+            key == PhoneNavRoutes.PROFILE_EDIT ||
+            key == PhoneNavRoutes.TIMER_EDIT ||
+            key == PhoneNavRoutes.TIMER_SERVICE_PICK
     }
 
     private fun discardResultRequestCodeForCurrentRoute() {
@@ -682,7 +610,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     override fun navigateToTimerServicePick(): Boolean {
         val controller = navController ?: return false
         pushResultRequestCode(Statics.REQUEST_PICK_SERVICE)
-        controller.navigate(PhoneNavRoutes.TIMER_SERVICE_PICK)
+        controller.navigate(TimerServicePick)
         return true
     }
 
@@ -757,16 +685,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
                 handle.remove<IntArray>(key)
             } else {
                 handle[key] = value.toIntArray()
-            }
-        }
-
-        override fun getLong(key: String): Long? = handle.get<Long>(key)
-
-        override fun putLong(key: String, value: Long?) {
-            if (value == null) {
-                handle.remove<Long>(key)
-            } else {
-                handle[key] = value
             }
         }
     }

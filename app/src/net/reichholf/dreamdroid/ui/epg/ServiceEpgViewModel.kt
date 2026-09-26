@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
@@ -20,7 +21,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgDao
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.ServiceEpg
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -31,10 +32,9 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
  */
 class ServiceEpgViewModel(application: Application, savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
-    val serviceRef: String =
-        savedStateHandle.get<String>(PhoneNavRoutes.ARG_SERVICE_REF).orEmpty()
-    val serviceName: String =
-        savedStateHandle.get<String>(PhoneNavRoutes.ARG_SERVICE_NAME).orEmpty()
+    private val route: ServiceEpg = savedStateHandle.toRoute()
+    val serviceRef: String = route.serviceRef
+    val serviceName: String = route.serviceName
 
     val listState: ServiceEpgListState = ServiceEpgListState()
     val refresh: ComposeRefreshState = ComposeRefreshState()

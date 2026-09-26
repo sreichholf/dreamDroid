@@ -43,7 +43,7 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     /**
      * Open a migrated phone NavHost leaf via the activity-owned [PhoneNavHandle].
      */
-    protected fun navigatePhoneNavRoot(route: String) {
+    protected fun navigatePhoneNavRoot(route: Any) {
         getMainActivity().phoneNav.navigateToRoute(route)
     }
 
@@ -319,14 +319,14 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         )
 
         /** Drawer menu ids that open a PhoneNavHost root (no extras). EPG is separate. */
-        private val navRootRoutes: SparseArray<String> = SparseArray<String>().apply {
-            put(R.id.menu_navigation_services, PhoneNavRoutes.HUB)
-            put(R.id.menu_navigation_tools, PhoneNavRoutes.TOOLS)
-            put(R.id.menu_navigation_current, PhoneNavRoutes.HUB)
-            put(R.id.menu_navigation_remote, PhoneNavRoutes.REMOTE)
-            put(R.id.menu_navigation_settings, PhoneNavRoutes.SETTINGS)
-            put(R.id.menu_navigation_profiles, PhoneNavRoutes.PROFILES)
-            put(R.id.menu_navigation_zap, PhoneNavRoutes.ZAP)
+        private val navRootRoutes: SparseArray<Any> = SparseArray<Any>().apply {
+            put(R.id.menu_navigation_services, Hub)
+            put(R.id.menu_navigation_tools, Tools)
+            put(R.id.menu_navigation_current, Hub)
+            put(R.id.menu_navigation_remote, Remote)
+            put(R.id.menu_navigation_settings, Settings)
+            put(R.id.menu_navigation_profiles, Profiles)
+            put(R.id.menu_navigation_zap, Zap)
         }
     }
 }

@@ -33,5 +33,6 @@ object DrawerEpgMode {
     }
 
     fun isNestedOnListEpg(currentRoute: String?, previousRoute: String?): Boolean =
-        currentRoute == PhoneNavRoutes.MULTI_EPG && previousRoute == PhoneNavRoutes.EPG
+        routeKey(currentRoute) == PhoneNavRoutes.MULTI_EPG &&
+            routeKey(previousRoute) == PhoneNavRoutes.EPG
 }

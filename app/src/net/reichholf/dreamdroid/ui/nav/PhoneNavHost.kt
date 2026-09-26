@@ -1,16 +1,15 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.app.Activity
-import android.net.Uri
+import android.os.Bundle
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.saveable.listSaver
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
@@ -19,13 +18,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.ui.about.AboutDialog
@@ -58,25 +56,20 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
 
-private val SleepTimerNavArgsSaver = listSaver<SleepTimerNavArgs, Any>(
-    save = { listOf(it.minutes, it.enabled, it.action) },
-    restore = {
-        SleepTimerNavArgs(
-            minutes = it[0] as Int,
-            enabled = it[1] as Boolean,
-            action = it[2] as String
-        )
-    }
-)
-
 /**
- * Snapshot sleep-timer args once per dialog entry. [PhoneNavHandle.consumeSleepTimerArgs]
- * nulls pending args, so calling it on every composition would reset to
- * [SleepTimerNavArgs.defaults].
+ * [rememberNavController], and on the first launch after type-safe routes, drop
+ * a back stack saved with the old string patterns so [NavHost] can start cleanly.
  */
 @Composable
-fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavArgs =
-    rememberSaveable(saver = SleepTimerNavArgsSaver) { consume() }
+fun rememberPhoneNavController(handle: PhoneNavHandle): NavHostController {
+    val controller = rememberNavController()
+    val state = handle as? PhoneNavHostState
+    if (state != null && !state.hasNavSchema()) {
+        controller.restoreState(Bundle())
+    }
+    SideEffect { state?.markNavSchema() }
+    return controller
+}
 
 /**
  * Phone shell [NavHost]. Drawer leaves through hub + settings; Backup is nested from Settings.
@@ -86,8 +79,8 @@ fun rememberSleepTimerNavArgs(consume: () -> SleepTimerNavArgs): SleepTimerNavAr
 @Composable
 fun PhoneNavHost(
     handle: PhoneNavHandle,
-    navController: NavHostController = rememberNavController(),
-    startDestination: String = handle.startRoute()
+    navController: NavHostController = rememberPhoneNavController(handle),
+    startDestination: Any = startDestinationForSavedId(handle.startRoute(), DeviceInfo)
 ) {
     DisposableEffect(navController) {
         handle.attachNavController(navController)
@@ -142,7 +135,7 @@ fun PhoneNavHost(
 private fun PhoneNavHostGraph(
     handle: PhoneNavHandle,
     navController: NavHostController,
-    startDestination: String,
+    startDestination: Any,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -150,76 +143,69 @@ private fun PhoneNavHostGraph(
         startDestination = startDestination,
         modifier = modifier
     ) {
-        composable(PhoneNavRoutes.DEVICE_INFO) {
+        composable<DeviceInfo> {
             DeviceInfoDestination()
         }
-        composable(PhoneNavRoutes.SIGNAL) {
+        composable<Signal> {
             SignalDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.SCREENSHOT) {
+        composable<Screenshot> {
             ScreenshotDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.CURRENT) {
+        composable<Current> {
             CurrentServiceDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.ZAP) {
+        composable<Zap> {
             ZapDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.BACKUP) {
+        composable<Backup> {
             BackupDestination()
         }
-        composable(PhoneNavRoutes.PROFILES) {
+        composable<Profiles> {
             ProfilesDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.EPG) {
+        composable<Epg> { entry ->
+            val route = entry.toRoute<Epg>()
             val remount by handle.epgRemountFlow().collectAsState()
             key(remount) {
-                EpgBouquetDestination(handle = handle, remountEpoch = remount)
+                EpgBouquetDestination(
+                    handle = handle,
+                    route = route,
+                    remountEpoch = remount
+                )
             }
         }
-        composable(PhoneNavRoutes.MULTI_EPG) {
+        composable<MultiEpg> { entry ->
+            val route = entry.toRoute<MultiEpg>()
             val remount by handle.epgRemountFlow().collectAsState()
             key(remount) {
-                MultiEpgDestination(handle = handle, remountEpoch = remount)
+                MultiEpgDestination(
+                    handle = handle,
+                    route = route,
+                    remountEpoch = remount
+                )
             }
         }
-        composable(PhoneNavRoutes.REMOTE) {
+        composable<Remote> {
             VirtualRemoteDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.SETTINGS) {
+        composable<Settings> {
             SettingsDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.HUB) {
+        composable<Hub> {
             HubDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.TOOLS) {
+        composable<Tools> {
             ToolsHubDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.PROFILE_CHECK) {
+        composable<ProfileCheck> {
             ProfileCheckDestination(handle = handle)
         }
-        composable(
-            route = PhoneNavRoutes.SERVICE_EPG,
-            arguments = listOf(
-                navArgument(PhoneNavRoutes.ARG_SERVICE_REF) { type = NavType.StringType },
-                navArgument(PhoneNavRoutes.ARG_SERVICE_NAME) {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
-            )
-        ) {
+        composable<ServiceEpg> {
             ServiceEpgDestination(handle = handle)
         }
-        composable(
-            route = PhoneNavRoutes.EPG_SEARCH,
-            arguments = listOf(
-                navArgument(PhoneNavRoutes.ARG_QUERY) {
-                    type = NavType.StringType
-                    defaultValue = ""
-                }
-            )
-        ) { entry ->
-            val query = entry.arguments?.getString(PhoneNavRoutes.ARG_QUERY).orEmpty()
+        composable<EpgSearch> { entry ->
+            val query = entry.toRoute<EpgSearch>().query
             val remount by handle.epgSearchRemountFlow().collectAsState()
             key(query, remount) {
                 EpgSearchDestination(
@@ -229,35 +215,45 @@ private fun PhoneNavHostGraph(
                 )
             }
         }
-        composable(PhoneNavRoutes.PICK_SERVICE) {
+        composable<PickService> {
             PickServiceDestination(handle = handle)
         }
-        composable(PhoneNavRoutes.PROFILE_EDIT) {
+        composable<ProfileEdit> { entry ->
+            val route = entry.toRoute<ProfileEdit>()
             val remount by handle.profileEditRemountFlow().collectAsState()
-            key(handle.profileEditRouteTag(), remount) {
-                ProfileEditDestination(handle = handle)
+            key(route.tag(), remount) {
+                ProfileEditDestination(
+                    handle = handle,
+                    route = route,
+                    remountEpoch = remount
+                )
             }
         }
-        composable(PhoneNavRoutes.TIMER_EDIT) {
+        composable<TimerEdit> { entry ->
+            val route = entry.toRoute<TimerEdit>()
             val remount by handle.timerEditRemountFlow().collectAsState()
-            key(handle.timerEditRouteTag(), remount) {
-                TimerEditDestination(handle = handle)
+            key(route.tag(), remount) {
+                TimerEditDestination(
+                    handle = handle,
+                    route = route,
+                    remountEpoch = remount
+                )
             }
         }
-        composable(PhoneNavRoutes.TIMER_SERVICE_PICK) {
+        composable<TimerServicePick> {
             TimerServicePickDestination(handle = handle)
         }
-        dialog(PhoneNavRoutes.ABOUT) {
+        dialog<About> {
             AboutDialog(onDismiss = { navController.popBackStack() })
         }
-        dialog(PhoneNavRoutes.POWER) {
+        dialog<Power> {
             val activity = LocalActivity.current as? MainActivity
             PowerStateDialog(
                 onDismiss = { navController.popBackStack() },
                 onChoice = { action -> activity?.onDrawerPowerChoice(action) }
             )
         }
-        dialog(PhoneNavRoutes.SEND_MESSAGE) {
+        dialog<SendMessage> {
             val activity = LocalActivity.current as? MainActivity
             SendMessageDialog(
                 onDismiss = { navController.popBackStack() },
@@ -266,11 +262,9 @@ private fun PhoneNavHostGraph(
                 }
             )
         }
-        dialog(PhoneNavRoutes.SLEEP_TIMER) {
+        dialog<SleepTimerRoute> { entry ->
             val activity = LocalActivity.current as? MainActivity
-            val args = rememberSleepTimerNavArgs {
-                handle.consumeSleepTimerArgs()
-            }
+            val args = entry.toRoute<SleepTimerRoute>()
             SleepTimerDialog(
                 initialMinutes = args.minutes,
                 initialEnabled = args.enabled,
@@ -281,8 +275,7 @@ private fun PhoneNavHostGraph(
                 }
             )
         }
-        dialog(
-            PhoneNavRoutes.CHANGELOG,
+        dialog<Changelog>(
             dialogProperties = DialogProperties(
                 usePlatformDefaultWidth = false,
                 decorFitsSystemWindows = false,
@@ -294,114 +287,116 @@ private fun PhoneNavHostGraph(
     }
 }
 
+/** Pop [route]'s destination, then push [route], so new arguments replace the entry. */
+inline fun <reified T : Any> NavHostController.replaceRoute(route: T) {
+    navigate(route) {
+        popUpTo<T> { inclusive = true }
+        launchSingleTop = true
+    }
+}
+
 /** Push About as a Navigation `dialog` (back / dismiss pops it). */
 fun NavHostController.navigateToAbout() {
-    if (currentDestination?.route == PhoneNavRoutes.ABOUT) return
-    navigate(PhoneNavRoutes.ABOUT)
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.ABOUT) return
+    navigate(About)
 }
 
 /** Push drawer Power as a Navigation `dialog`. */
 fun NavHostController.navigateToPower() {
-    if (currentDestination?.route == PhoneNavRoutes.POWER) return
-    navigate(PhoneNavRoutes.POWER)
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.POWER) return
+    navigate(Power)
 }
 
 /** Push drawer Send Message as a Navigation `dialog`. */
 fun NavHostController.navigateToSendMessage() {
-    if (currentDestination?.route == PhoneNavRoutes.SEND_MESSAGE) return
-    navigate(PhoneNavRoutes.SEND_MESSAGE)
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.SEND_MESSAGE) return
+    navigate(SendMessage)
 }
 
-/** Push drawer Sleep Timer as a Navigation `dialog` (args via host). */
-fun NavHostController.navigateToSleepTimer() {
-    if (currentDestination?.route == PhoneNavRoutes.SLEEP_TIMER) return
-    navigate(PhoneNavRoutes.SLEEP_TIMER)
+/** Push drawer Sleep Timer as a Navigation `dialog`. Args live on [route]. */
+fun NavHostController.navigateToSleepTimer(route: SleepTimerRoute = SleepTimerRoute()) {
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.SLEEP_TIMER) return
+    navigate(route)
 }
 
 /** Push Changelog as a Navigation `dialog` that hosts [ChangelogDialog]'s sheet. */
 fun NavHostController.navigateToChangelog() {
-    if (currentDestination?.route == PhoneNavRoutes.CHANGELOG) return
-    navigate(PhoneNavRoutes.CHANGELOG)
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.CHANGELOG) return
+    navigate(Changelog)
 }
 
 /** Push the full-screen profile-check gate (checking / failed) onto the back stack. */
 fun NavHostController.navigateToProfileCheck() {
-    if (currentDestination?.route == PhoneNavRoutes.PROFILE_CHECK) return
-    navigate(PhoneNavRoutes.PROFILE_CHECK) {
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.PROFILE_CHECK) return
+    navigate(ProfileCheck) {
         launchSingleTop = true
     }
 }
 
 /**
- * Open a drawer root above [PhoneNavRoutes.PROFILE_CHECK] without popping the gate
+ * Open a drawer root above [ProfileCheck] without popping the gate
  * (e.g. Profiles from a failed check so Back can return to Recheck).
  */
-fun NavHostController.navigateAboveProfileCheck(route: String) {
-    if (currentDestination?.route == route) return
-    navigate(route) {
+fun NavHostController.navigateAboveProfileCheck(route: Any) {
+    val destination = normalizeRoute(route)
+    if (routeKey(currentDestination?.route) == routeId(destination)) {
+        return
+    }
+    navigate(destination) {
         launchSingleTop = true
     }
 }
 
 /**
- * Leave the profile-check gate for [route], removing [PhoneNavRoutes.PROFILE_CHECK]
+ * Leave the profile-check gate for [route], removing [ProfileCheck]
  * from the back stack so Back from the service list does not return to the check.
  */
-fun NavHostController.navigateReplacingProfileCheck(route: String) {
-    navigate(route) {
-        popUpTo(PhoneNavRoutes.PROFILE_CHECK) {
-            inclusive = true
-        }
+fun NavHostController.navigateReplacingProfileCheck(route: Any) {
+    navigate(normalizeRoute(route)) {
+        popUpTo<ProfileCheck> { inclusive = true }
         launchSingleTop = true
     }
 }
 
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */
-fun NavHostController.navigateDrawerRoot(route: String) {
-    navigate(route) {
+fun NavHostController.navigateDrawerRoot(route: Any) {
+    val destination = normalizeRoute(route)
+    val keepSavedState = destination !is Epg && destination !is MultiEpg
+    navigate(destination) {
         popUpTo(graph.findStartDestination().id) {
             saveState = true
         }
         launchSingleTop = true
-        restoreState = true
+        restoreState = keepSavedState
     }
 }
 
 /** Nested service EPG: push onto the NavHost back stack (back returns to hub). */
 fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: String?) {
-    val route = "service_epg/${Uri.encode(serviceRef)}" +
-        "?serviceName=${Uri.encode(serviceName.orEmpty())}"
-    navigate(route)
-}
-
-/** Nested MultiEPG: push onto the back stack (back returns to hub or list EPG). */
-fun NavHostController.navigateToMultiEpg() {
-    navigate(PhoneNavRoutes.MULTI_EPG) {
-        launchSingleTop = true
-    }
+    navigate(ServiceEpg(serviceRef = serviceRef, serviceName = serviceName.orEmpty()))
 }
 
 /** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */
 fun NavHostController.navigateToEpgSearch(query: String) {
-    navigate(PhoneNavRoutes.epgSearchRoute(query)) {
+    navigate(EpgSearch(query = query)) {
         launchSingleTop = true
     }
 }
 
 /** Nested Backup from Settings. Back returns to Settings. */
 fun NavHostController.navigateToBackup() {
-    if (currentDestination?.route == PhoneNavRoutes.BACKUP) return
-    navigate(PhoneNavRoutes.BACKUP) { launchSingleTop = true }
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.BACKUP) return
+    navigate(Backup) { launchSingleTop = true }
 }
 
 /** Drawer Settings: land on Settings, not a nested Backup restored on top. */
 fun NavHostController.navigateDrawerSettings() {
-    if (currentDestination?.route == PhoneNavRoutes.BACKUP) {
-        if (popBackStack(PhoneNavRoutes.SETTINGS, false)) return
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.BACKUP) {
+        if (popBackStack<Settings>(inclusive = false)) return
     }
-    navigateDrawerRoot(PhoneNavRoutes.SETTINGS)
-    if (currentDestination?.route == PhoneNavRoutes.BACKUP) {
-        popBackStack(PhoneNavRoutes.SETTINGS, false)
+    navigateDrawerRoot(Settings)
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.BACKUP) {
+        popBackStack<Settings>(inclusive = false)
     }
 }
 

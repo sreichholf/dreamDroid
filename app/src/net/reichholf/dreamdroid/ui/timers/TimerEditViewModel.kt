@@ -11,7 +11,7 @@ import androidx.lifecycle.viewModelScope
 import java.util.ArrayList
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.TimerEdit
 
 internal enum class TimerEditBind {
     Keep,
@@ -57,9 +57,8 @@ class TimerEditViewModel(application: Application, private val savedStateHandle:
     private var boundTag: String = ""
     private var boundEpoch: Int = 0
 
-    fun start(handle: PhoneNavHandle) {
-        val tag = handle.timerEditRouteTag()
-        val remount = handle.timerEditRemountEpoch
+    fun start(route: TimerEdit, remountEpoch: Int) {
+        val tag = route.tag()
         val saved = if (hasBound) null else readSession()
         when (
             timerEditBind(
@@ -67,7 +66,7 @@ class TimerEditViewModel(application: Application, private val savedStateHandle:
                 boundTag = boundTag,
                 boundEpoch = boundEpoch,
                 routeTag = tag,
-                remountEpoch = remount,
+                remountEpoch = remountEpoch,
                 savedTag = saved?.routeTag
             )
         ) {
@@ -77,14 +76,14 @@ class TimerEditViewModel(application: Application, private val savedStateHandle:
             }
 
             TimerEditBind.RestoreSaved -> {
-                bindSession(checkNotNull(saved).withRouteEpoch(remount), tag, remount)
+                bindSession(checkNotNull(saved).withRouteEpoch(remountEpoch), tag, remountEpoch)
             }
 
             TimerEditBind.LoadLaunch -> {
                 bindSession(
-                    TimerEditSession.fromArgs(handle.timerEditLeafArguments(), tag, remount),
+                    TimerEditSession.fromRoute(route, tag, remountEpoch),
                     tag,
-                    remount
+                    remountEpoch
                 )
             }
         }

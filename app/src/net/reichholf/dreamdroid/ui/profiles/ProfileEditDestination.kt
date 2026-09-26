@@ -29,23 +29,25 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ProfileEdit
 
 /**
  * Profile create/edit as a Compose NavHost destination.
  * The working profile and [ProfileEditState] live on [ProfileEditViewModel].
- * Remounts when [PhoneNavHandle.profileEditRouteTag] / remount epoch changes.
+ * Remounts when [route] or [remountEpoch] changes.
  */
 @Composable
 fun ProfileEditDestination(
     handle: PhoneNavHandle,
+    route: ProfileEdit,
+    remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: ProfileEditViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val remount = handle.profileEditRemountEpoch
-    val tag = handle.profileEditRouteTag()
-    LaunchedEffect(tag, remount) {
-        viewModel.start(handle)
+    val tag = route.tag()
+    LaunchedEffect(tag, remountEpoch, route) {
+        viewModel.start(route, remountEpoch)
     }
     var showDeleteConfirm by remember { mutableStateOf(false) }
     if (!viewModel.ready) {
@@ -98,7 +100,7 @@ fun ProfileEditDestination(
     }
 
     val title = stringResource(R.string.edit_profile)
-    DisposableEffect(handle, menuProvider, tag, remount, viewModel) {
+    DisposableEffect(handle, menuProvider, tag, remountEpoch, viewModel) {
         val activity = context as? AppCompatActivity
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
@@ -111,11 +113,11 @@ fun ProfileEditDestination(
         onDispose {
             activity?.lifecycle?.removeObserver(observer)
             activity?.removeMenuProvider(menuProvider)
-            viewModel.persistIfBound(tag, remount)
+            viewModel.persistIfBound(tag, remountEpoch)
         }
     }
 
-    LaunchedEffect(tag, remount) {
+    LaunchedEffect(tag, remountEpoch) {
         (context as? AppCompatActivity)?.title = title
     }
 

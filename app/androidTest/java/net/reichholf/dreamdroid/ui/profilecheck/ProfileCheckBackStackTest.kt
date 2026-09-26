@@ -11,10 +11,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.nav.Hub
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.ProfileCheck
+import net.reichholf.dreamdroid.ui.nav.Profiles
 import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateReplacingProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
+import net.reichholf.dreamdroid.ui.nav.routeKey
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -46,17 +50,18 @@ class ProfileCheckBackStackTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = PhoneNavRoutes.HUB
+                    startDestination = Hub
                 ) {
-                    composable(PhoneNavRoutes.HUB) { Text("Hub") }
-                    composable(PhoneNavRoutes.PROFILE_CHECK) { Text("ProfileCheck") }
-                    composable(PhoneNavRoutes.PROFILES) { Text("Profiles") }
+                    composable<Hub> { Text("Hub") }
+                    composable<ProfileCheck> { Text("ProfileCheck") }
+                    composable<Profiles> { Text("Profiles") }
                 }
                 LaunchedEffect(Unit) {
                     navController.navigateToProfileCheck()
-                    navController.navigateReplacingProfileCheck(PhoneNavRoutes.HUB)
-                    backStackRoutes =
-                        navController.currentBackStack.value.mapNotNull { it.destination.route }
+                    navController.navigateReplacingProfileCheck(Hub)
+                    backStackRoutes = navController.currentBackStack.value.mapNotNull {
+                        routeKey(it.destination.route)
+                    }
                 }
             }
         }
@@ -79,17 +84,18 @@ class ProfileCheckBackStackTest {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
-                    startDestination = PhoneNavRoutes.HUB
+                    startDestination = Hub
                 ) {
-                    composable(PhoneNavRoutes.HUB) { Text("Hub") }
-                    composable(PhoneNavRoutes.PROFILE_CHECK) { Text("ProfileCheck") }
-                    composable(PhoneNavRoutes.PROFILES) { Text("Profiles") }
+                    composable<Hub> { Text("Hub") }
+                    composable<ProfileCheck> { Text("ProfileCheck") }
+                    composable<Profiles> { Text("Profiles") }
                 }
                 LaunchedEffect(Unit) {
                     navController.navigateToProfileCheck()
-                    navController.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
-                    backStackRoutes =
-                        navController.currentBackStack.value.mapNotNull { it.destination.route }
+                    navController.navigateAboveProfileCheck(Profiles)
+                    backStackRoutes = navController.currentBackStack.value.mapNotNull {
+                        routeKey(it.destination.route)
+                    }
                 }
             }
         }

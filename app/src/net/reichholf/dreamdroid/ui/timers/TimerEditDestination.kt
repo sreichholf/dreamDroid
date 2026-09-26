@@ -55,6 +55,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.TimerEdit as TimerEditRoute
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 private const val LOG_TAG = "TimerEditDestination"
@@ -66,14 +67,15 @@ private const val LOG_TAG = "TimerEditDestination"
 @Composable
 fun TimerEditDestination(
     handle: PhoneNavHandle,
+    route: TimerEditRoute,
+    remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: TimerEditViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val remount = handle.timerEditRemountEpoch
-    val tag = handle.timerEditRouteTag()
-    LaunchedEffect(tag, remount) {
-        viewModel.start(handle)
+    val tag = route.tag()
+    LaunchedEffect(tag, remountEpoch, route) {
+        viewModel.start(route, remountEpoch)
         val current = viewModel.session ?: return@LaunchedEffect
         current.handle = handle
         current.context = context
@@ -90,7 +92,7 @@ fun TimerEditDestination(
     val is24Hour = DateFormat.is24HourFormat(context)
     val title = stringResource(R.string.timer)
 
-    DisposableEffect(handle, session, tag, remount, viewModel) {
+    DisposableEffect(handle, session, tag, remountEpoch, viewModel) {
         session.handle = handle
         session.context = context
         session.onRequestDeleteConfirm = { showDeleteConfirm = true }
@@ -118,7 +120,7 @@ fun TimerEditDestination(
             session.onRequestDeleteConfirm = null
             activity?.lifecycle?.removeObserver(observer)
             activity?.removeMenuProvider(session)
-            viewModel.persistIfBound(tag, remount)
+            viewModel.persistIfBound(tag, remountEpoch)
         }
     }
 
@@ -631,6 +633,24 @@ class TimerEditSession(
         const val STATE_CHECKED = "timer_edit_session_checked"
         const val STATE_TAG = "timer_edit_session_tag"
         const val STATE_REMOUNT = "timer_edit_session_remount"
+
+        fun fromRoute(
+            route: TimerEditRoute,
+            routeTag: String,
+            remountEpoch: Int
+        ): TimerEditSession {
+            val timer = route.toTimer()
+            val timerOld = if (route.create) null else timer.copy()
+            return TimerEditSession(
+                routeTag = routeTag,
+                remountEpoch = remountEpoch,
+                timer = timer,
+                timerOld = timerOld,
+                isCreate = route.create,
+                selectedTags = ArrayList(),
+                checkedDays = BooleanArray(7)
+            )
+        }
 
         fun fromArgs(
             args: android.os.Bundle,
