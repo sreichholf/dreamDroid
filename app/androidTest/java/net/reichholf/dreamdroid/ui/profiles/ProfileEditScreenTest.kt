@@ -61,7 +61,7 @@ class ProfileEditScreenTest {
         val state = ProfileEditState.fromProfile(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                // Default showSaveFab=true is the TV PreferenceActivity host.
+                // Default showSaveFab=true is the TV profiles destination.
                 // Phone ProfileEditDestination passes showSaveFab=false (toolbar Save).
                 ProfileEditScreen(
                     state = state,

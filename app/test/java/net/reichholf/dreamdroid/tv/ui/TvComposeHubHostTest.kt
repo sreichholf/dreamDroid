@@ -1,10 +1,8 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.app.Activity
+import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.tv.BrowseItem
-import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
-import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -18,34 +16,25 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun resultOkReloadsHubBrowseData() {
-        var reloads = 0
-        TvComposeHubHost.applyPreferenceActivityResult(Activity.RESULT_OK) {
-            reloads++
-        }
-        assertEquals(1, reloads)
+    fun savedReloadFlagReloadsOnce() {
+        val handle = SavedStateHandle()
+        assertFalse(consumeTvHubReload(handle))
+        markTvHubReload(handle)
+        assertTrue(consumeTvHubReload(handle))
+        assertFalse(consumeTvHubReload(handle))
     }
 
     @Test
-    fun canceledPreferenceResultDoesNotReload() {
-        var reloads = 0
-        TvComposeHubHost.applyPreferenceActivityResult(Activity.RESULT_CANCELED) {
-            reloads++
-        }
-        assertEquals(0, reloads)
+    fun unmarkedHubDoesNotReload() {
+        assertFalse(consumeTvHubReload(SavedStateHandle()))
+        markTvHubReload(null)
     }
 
     @Test
-    fun preferenceTypeForSettingsKinds() {
-        assertEquals(
-            PreferenceActivity.PREFS_TYPE_GENERIC,
-            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Preferences)
-        )
-        assertEquals(
-            PreferenceActivity.PREFS_TYPE_PROFILE,
-            TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Profile)
-        )
-        assertNull(TvComposeHubHost.preferenceTypeForKind(BrowseItem.Kind.Reload))
+    fun destinationForSettingsKinds() {
+        assertEquals(TvSettings, TvComposeHubHost.destinationForKind(BrowseItem.Kind.Preferences))
+        assertEquals(TvProfiles, TvComposeHubHost.destinationForKind(BrowseItem.Kind.Profile))
+        assertNull(TvComposeHubHost.destinationForKind(BrowseItem.Kind.Reload))
     }
 
     @Test
@@ -71,20 +60,17 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun multiEpgIntentPutsBouquetExtrasWhenSupplied() {
+    fun multiEpgRouteKeepsNonBlankBouquetFields() {
         val ref = "1:7:1:0:0:0:0:0:0:0:Favourites"
         assertEquals(
-            mapOf(
-                MultiEpgActivity.EXTRA_BOUQUET_REF to ref,
-                MultiEpgActivity.EXTRA_BOUQUET_NAME to "Favourites"
-            ),
-            TvComposeHubHost.multiEpgIntentExtras(ref, "Favourites")
+            TvMultiEpg(bouquetRef = ref, bouquetName = "Favourites"),
+            TvComposeHubHost.tvMultiEpgRoute(ref, "Favourites")
         )
-        assertTrue(TvComposeHubHost.multiEpgIntentExtras().isEmpty())
-        assertTrue(TvComposeHubHost.multiEpgIntentExtras("  ", "").isEmpty())
+        assertEquals(TvMultiEpg(), TvComposeHubHost.tvMultiEpgRoute())
+        assertEquals(TvMultiEpg(), TvComposeHubHost.tvMultiEpgRoute("  ", ""))
         assertEquals(
-            mapOf(MultiEpgActivity.EXTRA_BOUQUET_REF to ref),
-            TvComposeHubHost.multiEpgIntentExtras(ref, "  ")
+            TvMultiEpg(bouquetRef = ref),
+            TvComposeHubHost.tvMultiEpgRoute(ref, "  ")
         )
     }
 
