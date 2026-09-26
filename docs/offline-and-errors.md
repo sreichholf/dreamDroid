@@ -2,7 +2,7 @@
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
 **Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub session, Room cache paint, and Online-only streaming have landed. Widget still follows.  
-**Not shipped from this plan:** accessibility semantics on greyed Online-only actions. That is remediation A1 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The Compose `SnackbarHost` for mutation results shipped as A2.  
+**Follow-ups shipped:** accessibility semantics on greyed Online-only actions (A1) and the Compose `SnackbarHost` for mutation results (A2). See [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md).
 **Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Architecture target and remediation (repositories, DI, ViewModel shape) live in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The cache guards and `hasCache` rules below move into repositories there (step B4) unchanged; this doc stays the source of truth for **what** is cached. The widget is Glance + `AndroidRemoteViews` for the dense RCU grid (a deliberate exception).
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests for UI (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs) and JVM tests for failure mapping, guards, and now/next.
