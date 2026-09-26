@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
@@ -54,7 +55,7 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
         prefs.getBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, false)
     }
     val simpleRemote = remember {
-        DreamDroid.getCurrentProfile().simpleRemote
+        ProfileRepository.get().requireCurrent().simpleRemote
     }
     val defaultPage = remember {
         if (!prefs.getBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, true)) 1 else 0

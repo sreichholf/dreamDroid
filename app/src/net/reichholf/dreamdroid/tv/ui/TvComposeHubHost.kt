@@ -72,6 +72,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
@@ -241,7 +242,7 @@ fun ComposeTvHubApp(
 ) {
     val context = LocalContext.current
     val status by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
-    val profile = DreamDroid.getCurrentProfile()
+    val profile = ProfileRepository.get().requireCurrent()
     // One blocking Room read seeds the gate so Checking never flashes ProfileCheck.
     // Later refreshes run on IO when the profile or session changes.
     var hasCache by remember(profile.id) {

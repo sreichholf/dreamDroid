@@ -17,6 +17,7 @@ import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
@@ -131,7 +132,7 @@ object Picon {
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))
         ) {
-            return onlinePiconUrl(DreamDroid.getCurrentProfile(), fileName)
+            return onlinePiconUrl(ProfileRepository.get().requireCurrent(), fileName)
         }
         return String.format("file://%s", fileName)
     }

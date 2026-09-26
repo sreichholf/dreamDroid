@@ -9,6 +9,7 @@ import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -64,7 +65,7 @@ object IntentFactory {
         serviceInfo: ServiceNowNext?
     ): Intent = streamIntent(
         context,
-        EnigmaUrls.stream(DreamDroid.getCurrentProfile(), ref),
+        EnigmaUrls.stream(ProfileRepository.get().requireCurrent(), ref),
         "Service-Streaming URL set to",
         title,
         ref,
@@ -80,7 +81,7 @@ object IntentFactory {
         fileInfo: Movie?
     ): Intent {
         val uriString = EnigmaUrls.fileStream(
-            DreamDroid.getCurrentProfile(),
+            ProfileRepository.get().requireCurrent(),
             ref,
             fileName
         )

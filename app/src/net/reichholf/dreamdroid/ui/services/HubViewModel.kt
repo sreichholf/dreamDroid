@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
@@ -82,7 +83,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
         selectedRow = saved.selectedRow
         timerRemountEpoch = saved.timerRemountEpoch
         nowPlayingReloadEpoch = saved.nowPlayingReloadEpoch
-        val knownLocations = DreamDroid.getLocations()
+        val knownLocations = ProfileRepository.get().locations()
         locationsReady = knownLocations.isNotEmpty()
         if (knownLocations.isNotEmpty()) {
             movieLocations = knownLocations.toList()
@@ -94,7 +95,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
         val (idx, ref) = resolveBouquetSelection(
             tvBouquets,
             currentTv,
-            DreamDroid.getCurrentProfile().defaultBouquetTv
+            ProfileRepository.get().requireCurrent().defaultBouquetTv
         )
         selectedRow = idx
         currentTv = ref
@@ -192,9 +193,9 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
                 viewModelScope.launch {
                     val painted = movieLocationsAfterHttpOrCache(
                         AppDatabase.movie(app),
-                        DreamDroid.getCurrentProfile().id,
+                        ProfileRepository.get().requireCurrent().id,
                         success,
-                        DreamDroid.getLocations().toList()
+                        ProfileRepository.get().locations().toList()
                     )
                     movieLocations = painted
                     locationsReady = true
@@ -215,7 +216,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
 
     private suspend fun loadBouquets() {
         val app = getApplication<Application>()
-        val profileId = DreamDroid.getCurrentProfile().id
+        val profileId = ProfileRepository.get().requireCurrent().id
         val excluded = UserBouquetCache.excludedHubTabRefs(app)
         val dao = if (profileId != null) AppDatabase.roster(app) else null
         val cachedTv = if (dao != null && profileId != null) {
@@ -241,7 +242,10 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
         }
         if (shouldWaitForDeviceInfo(hasStrip)) {
             withTimeoutOrNull(20_000) {
-                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
+                while (ProfileRepository.get().deviceInfo(
+                        ProfileRepository.get().requireCurrent()
+                    ) == null
+                ) {
                     delay(100)
                 }
             }
@@ -301,7 +305,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
                 val (idx, ref) = resolveBouquetSelection(
                     list,
                     currentTv,
-                    DreamDroid.getCurrentProfile().defaultBouquetTv
+                    ProfileRepository.get().requireCurrent().defaultBouquetTv
                 )
                 selectedRow = idx
                 currentTv = ref

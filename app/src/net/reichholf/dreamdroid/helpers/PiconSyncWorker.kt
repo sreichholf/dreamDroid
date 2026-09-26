@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.enigma2.Picon
 import org.apache.commons.net.ftp.FTPClient
 import org.apache.commons.net.ftp.FTPFileFilter
@@ -58,7 +59,7 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
         Log.i(TAG, "Syncing from $remotePath to $localPath")
         val client = FTPClient()
-        val profile = DreamDroid.getCurrentProfile()
+        val profile = ProfileRepository.get().requireCurrent()
         try {
             var tmpFile = File(localPath)
             if (!tmpFile.exists()) {

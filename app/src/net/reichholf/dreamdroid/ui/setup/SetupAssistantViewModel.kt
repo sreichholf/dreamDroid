@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.DeviceDetector
@@ -28,7 +29,7 @@ private class DeviceSetupBackend(private val context: Context) : SetupAssistantB
     }
 
     override suspend fun check(profile: Profile): ProfileCheckResult {
-        profile.cachedDeviceInfo = null
+        ProfileRepository.get().setDeviceInfo(profile, null)
         return withContext(Dispatchers.IO) { CheckProfile.checkProfile(profile, context) }
     }
 }

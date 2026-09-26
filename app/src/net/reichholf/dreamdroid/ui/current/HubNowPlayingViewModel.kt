@@ -16,6 +16,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.CurrentServiceLoadResult
 import net.reichholf.dreamdroid.enigma.loadCurrentService
@@ -83,7 +84,10 @@ class HubNowPlayingViewModel(
         }
         if (session != ConnectionStatus.Session.Online) {
             withTimeoutOrNull(PROFILE_WAIT_MS) {
-                while (DreamDroid.getCurrentProfile().cachedDeviceInfo == null) {
+                while (ProfileRepository.get().deviceInfo(
+                        ProfileRepository.get().requireCurrent()
+                    ) == null
+                ) {
                     delay(100)
                 }
             }
@@ -135,5 +139,5 @@ class HubNowPlayingViewModel(
         super.onCleared()
     }
 
-    private fun currentProfileId(): Int = DreamDroid.getCurrentProfile().id ?: -1
+    private fun currentProfileId(): Int = ProfileRepository.get().requireCurrent().id ?: -1
 }

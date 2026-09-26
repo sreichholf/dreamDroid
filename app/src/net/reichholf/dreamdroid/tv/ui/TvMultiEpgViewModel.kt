@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
@@ -86,7 +87,7 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
             persistGate.knownTabRefs = UserBouquetCache.userBouquetTabs(services, excluded)
                 .map { it.reference }
             bouquets = services.filter { it.reference.isNotBlank() }
-            val profile = DreamDroid.getCurrentProfile()
+            val profile = ProfileRepository.get().requireCurrent()
             val launch = resolveTvMultiEpgLaunchBouquet(
                 extraRef = extraRef,
                 extraName = extraName,
@@ -189,7 +190,7 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
 
     private suspend fun loadBouquets(): List<Service> {
         val app = getApplication<Application>()
-        val profileId = DreamDroid.getCurrentProfile().id
+        val profileId = ProfileRepository.get().requireCurrent().id
         val cachedTabs = if (profileId != null) {
             UserBouquetCache.loadTabStripServices(
                 AppDatabase.roster(app),

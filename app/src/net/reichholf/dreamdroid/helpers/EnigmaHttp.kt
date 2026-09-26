@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
@@ -44,7 +45,7 @@ sealed class EnigmaHttpResult {
  * this type across concurrent fetches (a second [fetch] cancels the first).
  */
 class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS) {
-    private val profile: Profile = profile ?: DreamDroid.getCurrentProfile()
+    private val profile: Profile = profile ?: ProfileRepository.get().requireCurrent()
     private var timeoutMillis: Int = timeoutMillis
     private var rememberedReturnCode: Int = 0
 

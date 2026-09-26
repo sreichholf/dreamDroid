@@ -27,6 +27,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -40,7 +41,7 @@ import org.junit.Test
  * Shared TV add/edit host. Catalogs are prefilled so [TvTimerEditorHost] reloads
  * the form without a receiver round-trip. A profile is still installed because a
  * missing catalog falls through to HTTP, and that path calls
- * [DreamDroid.getCurrentProfile].
+ * [net.reichholf.dreamdroid.data.ProfileRepository.requireCurrent].
  */
 @OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHostTest {
@@ -53,20 +54,20 @@ class TvTimerEditorHostTest {
 
     @Before
     fun seedProfileAndCatalogs() {
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(
             Profile().apply {
                 host = "127.0.0.1"
                 port = 80
                 streamPort = 8001
             }
         )
-        if (DreamDroid.getLocations().isEmpty()) {
-            DreamDroid.getLocations().add("/hdd/movie/")
+        if (ProfileRepository.get().locations().isEmpty()) {
+            ProfileRepository.get().locations().add("/hdd/movie/")
             seededLocation = true
         }
-        if (DreamDroid.getTags().isEmpty()) {
-            DreamDroid.getTags().add("News")
+        if (ProfileRepository.get().tags().isEmpty()) {
+            ProfileRepository.get().tags().add("News")
             seededTag = true
         }
     }
@@ -74,18 +75,18 @@ class TvTimerEditorHostTest {
     @After
     fun restoreProfileAndCatalogs() {
         if (seededLocation) {
-            DreamDroid.getLocations().remove("/hdd/movie/")
+            ProfileRepository.get().locations().remove("/hdd/movie/")
             seededLocation = false
         }
         if (seededTag) {
-            DreamDroid.getTags().remove("News")
+            ProfileRepository.get().tags().remove("News")
             seededTag = false
         }
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(targetContext())
+            ProfileRepository.get().loadCurrent(targetContext())
         }
     }
 

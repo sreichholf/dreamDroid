@@ -39,6 +39,7 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
@@ -249,7 +250,7 @@ private class ProfilesMenuProvider(
 
 internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {
     val deletedId = profile.id
-    val currentId = DreamDroid.getCurrentProfile().id
+    val currentId = ProfileRepository.get().requireCurrent().id
     AppDatabase.profilesBlocking(context).deleteProfile(profile)
     if (deletedId != null) {
         runBlocking(Dispatchers.IO) {
@@ -260,13 +261,13 @@ internal fun deleteConfirmedProfile(context: Context, profile: Profile): String 
         val next = AppDatabase.profilesBlocking(context).getProfiles()
             .firstOrNull { it.id != null && it.id != deletedId }
         if (next != null) {
-            DreamDroid.setCurrentProfile(context, next.id!!, true)
+            ProfileRepository.get().setCurrent(context, next.id!!, true)
         } else {
             PreferenceManager.getDefaultSharedPreferences(context)
                 .edit()
                 .remove(DreamDroid.CURRENT_PROFILE)
                 .apply()
-            DreamDroid.setCurrentProfile(Profile.getDefault())
+            ProfileRepository.get().setCurrent(Profile.getDefault())
         }
     }
     return context.getString(R.string.profile_deleted) + " '" + profile.name + "'"

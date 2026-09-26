@@ -14,6 +14,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -47,7 +48,7 @@ class ProfilesScreenTest {
             .filter { it.name?.startsWith("f05-") == true }
             .forEach { dao.deleteProfile(it) }
         if (keep?.id != null) {
-            DreamDroid.setCurrentProfile(ctx, keep.id!!, true)
+            ProfileRepository.get().setCurrent(ctx, keep.id!!, true)
         }
     }
 
@@ -154,13 +155,13 @@ class ProfilesScreenTest {
         }
         keep.id = dao.addProfile(keep).toInt()
         gone.id = dao.addProfile(gone).toInt()
-        DreamDroid.setCurrentProfile(context, gone.id!!, true)
+        ProfileRepository.get().setCurrent(context, gone.id!!, true)
 
         val message = deleteConfirmedProfile(context, gone)
 
         assertEquals("Deleted profile 'f05-gone'", message)
         assertFalse(dao.getProfiles().any { it.id == gone.id })
-        val currentId = DreamDroid.getCurrentProfile().id
+        val currentId = ProfileRepository.get().requireCurrent().id
         assertTrue(currentId != gone.id)
         assertTrue(dao.getProfiles().any { it.id == currentId })
         val prefId = PreferenceManager.getDefaultSharedPreferences(context)

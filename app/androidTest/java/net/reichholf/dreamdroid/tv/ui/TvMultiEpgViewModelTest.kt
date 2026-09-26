@@ -10,6 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.reflect.KClass
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
@@ -24,17 +25,17 @@ class TvMultiEpgViewModelTest {
 
     @Before
     fun installProfile() {
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(Profile().apply { host = "127.0.0.1" })
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(Profile().apply { host = "127.0.0.1" })
     }
 
     @After
     fun restoreProfile() {
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(app())
+            ProfileRepository.get().loadCurrent(app())
         }
     }
 
