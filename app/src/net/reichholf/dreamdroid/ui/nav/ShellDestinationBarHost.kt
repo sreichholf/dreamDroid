@@ -61,8 +61,9 @@ val LocalShellDestinationBarController =
 const val SHELL_CHROME_TAG = "shell_destination_chrome"
 
 /**
- * True when the activity hosts [R.id.shell_destination_rail] (sw720dp). Hubs skip the
- * bottom destination-bar spacer in that case — destinations live on the start rail.
+ * True when destinations sit on the start rail. [PhoneShell] sets this from the window
+ * size class. The legacy [R.id.shell_destination_rail] slot still counts. Hubs skip the
+ * bottom destination-bar spacer in that case.
  */
 val LocalShellUsesDestinationRail = staticCompositionLocalOf { false }
 

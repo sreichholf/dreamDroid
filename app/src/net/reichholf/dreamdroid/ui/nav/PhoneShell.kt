@@ -29,6 +29,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -46,7 +47,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
@@ -57,6 +57,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.window.core.layout.WindowSizeClass
 import com.google.android.material.appbar.MaterialToolbar
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -65,11 +66,11 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 const val SHELL_PROFILE_NAME_TAG = "shell_profile_name"
 
-private const val TABLET_SMALLEST_WIDTH_DP = 720
-
 /**
  * Phone and tablet shell: modal drawer, toolbar, destination rail or bottom chrome,
- * and the shared FAB. Destination chrome and the FAB sit in the content box.
+ * and the shared FAB. Destination chrome and the FAB sit in the content box so the
+ * FAB can dodge their measured height. Bar versus rail follows the window size class
+ * unless [usesRail] is set.
  */
 @Composable
 fun PhoneShell(
@@ -88,9 +89,7 @@ fun PhoneShell(
     usesRail: Boolean? = null,
     content: @Composable () -> Unit
 ) {
-    val rail = usesRail ?: (
-        LocalConfiguration.current.smallestScreenWidthDp >= TABLET_SMALLEST_WIDTH_DP
-        )
+    val rail = usesRail ?: windowUsesDestinationRail()
     val drawerState = rememberDrawerState(
         if (drawerOpen) DrawerValue.Open else DrawerValue.Closed
     )
@@ -141,6 +140,21 @@ fun PhoneShell(
             )
         }
     }
+}
+
+/**
+ * Same bar-versus-rail split as NavigationSuiteScaffoldDefaults: a rail unless the
+ * width or height size class is Compact, or the posture is tabletop. The suite
+ * scaffold itself is not used; this shell measures the now-playing strip and the
+ * destination bar so the FAB can dodge them.
+ */
+@Composable
+private fun windowUsesDestinationRail(): Boolean {
+    val info = currentWindowAdaptiveInfoV2()
+    val size = info.windowSizeClass
+    return !info.windowPosture.isTabletop &&
+        size.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
+        size.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 }
 
 @Composable
