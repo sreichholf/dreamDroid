@@ -1,7 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
@@ -46,7 +46,6 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
@@ -57,7 +56,12 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 @Composable
-fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel = viewModel()) {
+fun TvMultiEpgHost(
+    activity: ComponentActivity,
+    bouquetRef: String = "",
+    bouquetName: String = "",
+    viewModel: TvMultiEpgViewModel = viewModel()
+) {
     val context = LocalContext.current
     val session = viewModel.session
     val connection by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
@@ -69,7 +73,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
             prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
         )
     }
-    val bouquetRef = viewModel.bouquetRef
+    val shownBouquetRef = viewModel.bouquetRef
     val visibleMinutes = viewModel.visibleMinutes
     val detailEvent = viewModel.detailEvent
     val editTimerEvent = viewModel.editTimerEvent
@@ -78,13 +82,13 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
 
     LaunchedEffect(viewModel) {
         viewModel.start(
-            extraRef = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_REF),
-            extraName = activity.intent.getStringExtra(MultiEpgActivity.EXTRA_BOUQUET_NAME)
+            extraRef = bouquetRef.takeIf { it.isNotBlank() },
+            extraName = bouquetName.takeIf { it.isNotBlank() }
         )
     }
 
     // Restarting on a bouquet change repaints "now" as the new grid loads.
-    LaunchedEffect(bouquetRef) {
+    LaunchedEffect(shownBouquetRef) {
         while (isActive) {
             nowSec = MultiEpgNowClock.sec()
             delay(MultiEpgNowClock.TICK_MS)
@@ -148,7 +152,7 @@ fun TvMultiEpgHost(activity: AppCompatActivity, viewModel: TvMultiEpgViewModel =
             if (event != null) {
                 TvMultiEpgEventDetail(
                     event = event,
-                    bouquetRef = bouquetRef,
+                    bouquetRef = shownBouquetRef,
                     activity = activity,
                     progress = viewModel.setTimerProgress,
                     onDismiss = viewModel::dismissDetail,
@@ -192,7 +196,7 @@ internal fun TvMultiEpgEventDetail(
     bouquetRef: String,
     progress: IndeterminateProgressState?,
     onDismiss: () -> Unit,
-    activity: AppCompatActivity? = null,
+    activity: ComponentActivity? = null,
     onStream: (() -> Unit)? = null,
     onSetTimer: (() -> Unit)? = null,
     onEditTimer: (() -> Unit)? = null,

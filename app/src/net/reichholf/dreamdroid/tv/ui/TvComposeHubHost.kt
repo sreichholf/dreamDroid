@@ -7,9 +7,7 @@ import android.content.Intent
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
@@ -85,8 +83,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventId
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.MainActivity
-import net.reichholf.dreamdroid.tv.activities.MultiEpgActivity
-import net.reichholf.dreamdroid.tv.activities.PreferenceActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -122,11 +118,18 @@ object TvComposeHubHost {
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
 
-    fun preferenceTypeForKind(kind: BrowseItem.Kind): String? = when (kind) {
-        BrowseItem.Kind.Preferences -> PreferenceActivity.PREFS_TYPE_GENERIC
-        BrowseItem.Kind.Profile -> PreferenceActivity.PREFS_TYPE_PROFILE
+    fun destinationForKind(kind: BrowseItem.Kind): Any? = when (kind) {
+        BrowseItem.Kind.Preferences -> TvSettings
+        BrowseItem.Kind.Profile -> TvProfiles
         BrowseItem.Kind.Reload -> null
     }
+
+    /** Blank ref or name is omitted, matching a launch that used to send no extras. */
+    fun tvMultiEpgRoute(bouquetRef: String? = null, bouquetName: String? = null): TvMultiEpg =
+        TvMultiEpg(
+            bouquetRef = bouquetRef?.takeIf { it.isNotBlank() }.orEmpty(),
+            bouquetName = bouquetName?.takeIf { it.isNotBlank() }.orEmpty()
+        )
 
     fun defaultSettingsKinds(): List<BrowseItem.Kind> = listOf(
         BrowseItem.Kind.Reload,
@@ -161,41 +164,6 @@ object TvComposeHubHost {
         else -> R.drawable.ic_menu_tv
     }
 
-    fun multiEpgIntentExtras(
-        bouquetRef: String? = null,
-        bouquetName: String? = null
-    ): Map<String, String> = buildMap {
-        bouquetRef?.takeIf { it.isNotBlank() }?.let { ref ->
-            put(MultiEpgActivity.EXTRA_BOUQUET_REF, ref)
-        }
-        bouquetName?.takeIf { it.isNotBlank() }?.let { name ->
-            put(MultiEpgActivity.EXTRA_BOUQUET_NAME, name)
-        }
-    }
-
-    fun multiEpgIntent(
-        context: Context,
-        bouquetRef: String? = null,
-        bouquetName: String? = null
-    ): Intent {
-        val intent = Intent(context, MultiEpgActivity::class.java)
-        multiEpgIntentExtras(bouquetRef, bouquetName).forEach { (key, value) ->
-            intent.putExtra(key, value)
-        }
-        return intent
-    }
-
-    fun multiEpgIntent(context: Context, bouquet: Service): Intent =
-        multiEpgIntent(context, bouquet.reference, bouquet.name)
-
-    fun preferenceIntent(context: Context, kind: BrowseItem.Kind): Intent? {
-        val type = preferenceTypeForKind(kind) ?: return null
-        return Intent(context, PreferenceActivity::class.java).putExtra(
-            PreferenceActivity.KEY_PREFS_TYPE,
-            type
-        )
-    }
-
     fun streamServiceIntent(
         context: Context,
         service: ServiceNowNext,
@@ -228,12 +196,6 @@ object TvComposeHubHost {
         }
     }
 
-    fun applyPreferenceActivityResult(resultCode: Int, onReload: () -> Unit) {
-        if (resultCode == Activity.RESULT_OK) {
-            onReload()
-        }
-    }
-
     fun shouldShowBrowseError(
         selectedHeaderId: String,
         loading: Boolean,
@@ -249,7 +211,7 @@ object TvComposeHubHost {
     fun install(activity: ComponentActivity) {
         val host = activity as? MainActivity
         activity.setContent {
-            ComposeTvHubApp(
+            TvHubNavHost(
                 activity = activity,
                 onRecheckProfile = { host?.recheckProfile() }
             )
@@ -270,7 +232,10 @@ internal val HubServiceGridCardHeight = 220.dp
 fun ComposeTvHubApp(
     activity: ComponentActivity,
     onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() },
-    viewModel: TvHubViewModel = viewModel(factory = TvHubViewModel.Factory)
+    viewModel: TvHubViewModel = viewModel(factory = TvHubViewModel.Factory),
+    onOpenSettings: () -> Unit = {},
+    onOpenProfiles: () -> Unit = {},
+    onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> }
 ) {
     val context = LocalContext.current
     val status by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
@@ -299,11 +264,6 @@ fun ComposeTvHubApp(
     val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
-    val preferenceLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        TvComposeHubHost.applyPreferenceActivityResult(result.resultCode, viewModel::reload)
-    }
     val bouquetRows = viewModel.bouquetRows
     val movieLocations = viewModel.movieLocations
     val selectedHeaderId = viewModel.selectedHeaderId
@@ -341,12 +301,7 @@ fun ComposeTvHubApp(
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
     }
-    val openProfiles = {
-        val intent = TvComposeHubHost.preferenceIntent(activity, BrowseItem.Kind.Profile)
-        if (intent != null) {
-            preferenceLauncher.launch(intent)
-        }
-    }
+    val openProfiles = onOpenProfiles
 
     if (gate is TvSessionGate.Checking || gate is TvSessionGate.Failed) {
         DreamDroidTvTheme {
@@ -368,13 +323,8 @@ fun ComposeTvHubApp(
             onSettingsClick = { kind ->
                 when (kind) {
                     BrowseItem.Kind.Reload -> viewModel.reload()
-
-                    BrowseItem.Kind.Preferences, BrowseItem.Kind.Profile -> {
-                        val intent = TvComposeHubHost.preferenceIntent(activity, kind)
-                        if (intent != null) {
-                            preferenceLauncher.launch(intent)
-                        }
-                    }
+                    BrowseItem.Kind.Preferences -> onOpenSettings()
+                    BrowseItem.Kind.Profile -> onOpenProfiles()
                 }
             },
             bouquetRows = bouquetRows,
@@ -389,11 +339,7 @@ fun ComposeTvHubApp(
             onMovieClick = { movie ->
                 openMovieStream(activity, movie)
             },
-            onOpenMultiEpg = { reference, name ->
-                activity.startActivity(
-                    TvComposeHubHost.multiEpgIntent(activity, reference, name)
-                )
-            },
+            onOpenMultiEpg = onOpenMultiEpg,
             sessionChipLabel = stringResource(status.chipLabelRes()),
             onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
                 onRecheckProfile

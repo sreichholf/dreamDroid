@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -31,11 +30,10 @@ internal sealed interface TvProfilesEvent {
 internal data class TvProfilesResultPolicy(val setResultOk: Boolean, val finish: Boolean)
 
 /**
- * Result / finish table for TV profile mutations.
+ * Reload / leave table for TV profile mutations.
  *
- * [setResultOk] true means [Activity.setResult] `RESULT_OK`. False means leave the
- * current result as-is (never reset an already-set `RESULT_OK`; list Back relies on
- * the default `RESULT_CANCELED`).
+ * [TvProfilesResultPolicy.setResultOk] marks the hub to reload when this destination
+ * pops. False leaves a mark already set by an earlier save. List Back does not clear it.
  */
 internal fun tvProfilesResultPolicy(event: TvProfilesEvent): TvProfilesResultPolicy = when (event) {
     TvProfilesEvent.ListBack ->
@@ -60,11 +58,13 @@ internal fun tvProfilesResultPolicy(event: TvProfilesEvent): TvProfilesResultPol
 /**
  * TV Settings → Profile: list / add / edit / delete Room profiles.
  * [TvProfilesHostViewModel] owns the page and the open editor. Persist only on Save.
- * List Back uses the system finish (default CANCELED).
+ * List Back pops this destination and does not mark a reload by itself.
  */
 @Composable
 fun TvProfilesHost(
     modifier: Modifier = Modifier,
+    onMarkReload: () -> Unit = {},
+    onLeave: () -> Unit = {},
     viewModel: TvProfilesHostViewModel = viewModel()
 ) {
     val context = LocalContext.current
@@ -72,12 +72,11 @@ fun TvProfilesHost(
 
     fun applyPolicy(event: TvProfilesEvent) {
         val policy = tvProfilesResultPolicy(event)
-        val activity = context as? Activity ?: return
         if (policy.setResultOk) {
-            activity.setResult(Activity.RESULT_OK)
+            onMarkReload()
         }
         if (policy.finish) {
-            activity.finish()
+            onLeave()
         }
     }
 
