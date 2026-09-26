@@ -1,39 +1,18 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.content.Context
 import android.util.SparseArray
-import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
-import net.reichholf.dreamdroid.enigma.PowerState
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.SleepTimer
-import net.reichholf.dreamdroid.enigma.launchPowerStateSetLoad
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.enigma.launchSleepTimerLoad
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Message
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 
 /**
- * Drawer click → phone [PhoneNavHandle] bridge (roots, dialogs, power / sleep timer).
+ * Drawer click → phone [PhoneNavHandle] bridge. Power, sleep timer, and send
+ * message run on [ShellViewModel]; this type only navigates and dispatches.
  */
 open class NavigationHelper(activity: MainActivity, protected val drawerState: DrawerListState) {
     var activity: MainActivity = activity
-
-    protected var powerStateJob: Job? = null
-
-    protected var sleepTimerJob: Job? = null
-
-    protected var simpleResultJob: Job? = null
 
     protected var selectedItemId: Int = drawerState.selectedItemId
 
@@ -45,32 +24,6 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     protected fun navigatePhoneNavRoot(route: Any) {
         getMainActivity().phoneNav.navigateToRoute(route)
     }
-
-    fun onDestroy() {
-        powerStateJob?.cancel(null)
-        powerStateJob = null
-        sleepTimerJob?.cancel(null)
-        sleepTimerJob = null
-        simpleResultJob?.cancel(null)
-        simpleResultJob = null
-    }
-
-    protected fun getText(resId: Int): CharSequence = activity.getText(resId)
-
-    private fun onPowerStateSet(success: Boolean, result: PowerState, resultText: String?) {
-        if (!success) {
-            showToast(resultText)
-            return
-        }
-        val isRunning = result.isRunning == true
-        if (isRunning) {
-            showToast(getString(R.string.is_running))
-        } else {
-            showToast(getString(R.string.in_standby))
-        }
-    }
-
-    protected fun getString(resId: Int): String = activity.getString(resId)
 
     fun onProfileChanged() {
         getMainActivity().phoneNav.onActiveProfileChanged()
@@ -114,24 +67,12 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
                 }
             }
 
-            Statics.ITEM_TOGGLE_STANDBY ->
-                getMainActivity().phoneNav.runOnlineOnly {
-                    setPowerState(PowerStateKeys.STATE_TOGGLE)
-                }
-
-            Statics.ITEM_RESTART_GUI ->
-                getMainActivity().phoneNav.runOnlineOnly {
-                    setPowerState(PowerStateKeys.STATE_GUI_RESTART)
-                }
-
-            Statics.ITEM_REBOOT ->
-                getMainActivity().phoneNav.runOnlineOnly {
-                    setPowerState(PowerStateKeys.STATE_SYSTEM_REBOOT)
-                }
-
+            Statics.ITEM_TOGGLE_STANDBY,
+            Statics.ITEM_RESTART_GUI,
+            Statics.ITEM_REBOOT,
             Statics.ITEM_SHUTDOWN ->
                 getMainActivity().phoneNav.runOnlineOnly {
-                    setPowerState(PowerStateKeys.STATE_SHUTDOWN)
+                    getMainActivity().shellActions.onPowerMenuAction(itemId)
                 }
 
             R.id.menu_navigation_power -> {
@@ -150,7 +91,7 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
 
             R.id.menu_navigation_sleeptimer ->
                 getMainActivity().phoneNav.runOnlineOnly {
-                    getSleepTimer(true)
+                    getMainActivity().shellActions.loadSleepTimerForDialog()
                 }
 
             R.id.menu_navigation_epg ->
@@ -171,142 +112,13 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         getMainActivity().phoneNav.navigateToDrawerEpg()
     }
 
-    /**
-     * @param time
-     * @param action
-     * @param enabled
-     */
-    fun onSetSleepTimer(time: String?, action: String?, enabled: Boolean) {
-        getMainActivity().phoneNav.runOnlineOnly {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("cmd", SleepTimerKeys.CMD_SET))
-            params.add(NameValuePair("time", time))
-            params.add(NameValuePair("action", action))
-
-            if (enabled) {
-                params.add(NameValuePair("enabled", Python.TRUE))
-            } else {
-                params.add(NameValuePair("enabled", Python.FALSE))
-            }
-
-            execSleepTimerTask(params, false)
-        }
-    }
-
-    protected fun getSleepTimer(showDialogOnFinish: Boolean) {
-        val params = ArrayList<NameValuePair>()
-        execSleepTimerTask(params, showDialogOnFinish)
-    }
-
-    private fun onSleepTimerSet(
-        success: Boolean,
-        result: SleepTimer,
-        openDialog: Boolean,
-        errorText: String?
-    ) {
-        if (success) {
-            if (openDialog) {
-                getMainActivity().phoneNav.navigateToSleepTimer(result)
-                return
-            }
-            val text = result.text
-            showToast(text)
-        } else {
-            showToast(getString(R.string.error))
-        }
-    }
-
-    fun execSimpleResultTask(
-        handler: SimpleResultRequestHandler,
-        params: ArrayList<NameValuePair>
-    ) {
-        simpleResultJob?.cancel(null)
-        simpleResultJob =
-            activity.launchSimpleResultLoad(handler, params) { _, result, error ->
-                simpleResultJob = null
-                onSimpleResult(result, error)
-            }
-    }
-
-    private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
-        showShellMessage(
-            mutationResultText(
-                stateText = result.stateText,
-                errorText = error?.resolve(getContext()),
-                fallback = getString(R.string.get_content_error)
-            )
-        )
-    }
-
-    /**
-     * @param params
-     */
-    @Suppress("UNCHECKED_CAST")
-    protected fun execSleepTimerTask(
-        params: ArrayList<NameValuePair>,
-        showDialogOnFinish: Boolean
-    ) {
-        sleepTimerJob?.cancel(null)
-
-        sleepTimerJob = activity.launchSleepTimerLoad(
-            params,
-            showDialogOnFinish,
-            activity
-        ) { success, result, openDialog, errorText ->
-            sleepTimerJob = null
-            onSleepTimerSet(success, result, openDialog, errorText)
-        }
-    }
-
-    /**
-     * @param state The powerstate to set. For example defined in
-     * `helpers.enigma2.PowerState.STATE_*`
-     */
-    protected fun setPowerState(state: String) {
-        getMainActivity().phoneNav.runOnlineOnly {
-            powerStateJob?.cancel(null)
-
-            powerStateJob = activity.launchPowerStateSetLoad(
-                state,
-                activity
-            ) { success, result, errorText ->
-                powerStateJob = null
-                onPowerStateSet(success, result, errorText)
-            }
-        }
-    }
-
-    /**
-     * Send a message to the target device which will be shown on TV
-     *
-     * @param text    The message text
-     * @param type    Type of the message as defined in
-     * `helpers.enigma2.Message.STATE_*`
-     * @param timeout Timeout for the message, 0 means no timeout will occur
-     */
-    fun onSendMessage(text: String?, type: String?, timeout: String?) {
-        getMainActivity().phoneNav.runOnlineOnly {
-            execSimpleResultTask(MessageRequestHandler(), Message.getParams(text, type, timeout))
-        }
-    }
-
     fun setAvailableFeatures() {
         drawerState.sleepTimerAvailable = DreamDroid.featureSleepTimer()
-    }
-
-    protected fun showToast(toastText: String?) {
-        showShellMessage(toastText)
-    }
-
-    private fun showShellMessage(message: String?) {
-        ShellMessages.post(message)
     }
 
     fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         onNavigationItemClick(action)
     }
-
-    fun getContext(): Context = getMainActivity()
 
     companion object {
         protected val dialogItemIds: IntArray = intArrayOf(

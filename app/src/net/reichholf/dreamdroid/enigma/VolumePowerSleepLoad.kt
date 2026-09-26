@@ -43,24 +43,74 @@ fun LifecycleOwner.launchVolumeSetLoad(
     onResult(pair.first, pair.second)
 }
 
+data class PowerStateSetOutcome(
+    val success: Boolean,
+    val powerState: PowerState,
+    val errorText: String?
+)
+
+suspend fun fetchPowerStateSet(state: String, context: Context): PowerStateSetOutcome =
+    withContext(Dispatchers.IO) {
+        val http = EnigmaHttp()
+        val handler = PowerStateRequestHandler()
+        when (val fetched = handler.fetch(http, PowerStateKeys.getStateParams(state))) {
+            is EnigmaHttpResult.Success ->
+                PowerStateSetOutcome(
+                    success = true,
+                    powerState = PowerStateParser.parse(fetched.text) ?: PowerState(),
+                    errorText = null
+                )
+
+            is EnigmaHttpResult.Failure ->
+                PowerStateSetOutcome(
+                    success = false,
+                    powerState = PowerState(),
+                    errorText = fetched.error.contentError(context)
+                )
+        }
+    }
+
 fun LifecycleOwner.launchPowerStateSetLoad(
     state: String,
     context: Context,
     onResult: (success: Boolean, result: PowerState, errorText: String?) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = EnigmaHttp()
-    val triple = withContext(Dispatchers.IO) {
-        val handler = PowerStateRequestHandler()
-        when (val fetched = handler.fetch(http, PowerStateKeys.getStateParams(state))) {
-            is EnigmaHttpResult.Success ->
-                Triple(true, PowerStateParser.parse(fetched.text) ?: PowerState(), null as String?)
+    val outcome = fetchPowerStateSet(state, context)
+    onResult(outcome.success, outcome.powerState, outcome.errorText)
+}
+
+data class SleepTimerLoadOutcome(
+    val success: Boolean,
+    val timer: SleepTimer,
+    val errorText: String?
+)
+
+suspend fun fetchSleepTimer(params: List<NameValuePair>, context: Context): SleepTimerLoadOutcome =
+    withContext(Dispatchers.IO) {
+        val http = EnigmaHttp()
+        val handler = SleepTimerRequestHandler()
+        when (val fetched = handler.fetch(http, params)) {
+            is EnigmaHttpResult.Success -> {
+                val result = SleepTimerParser.parse(fetched.text) ?: SleepTimer()
+                if (result.enabled != null) {
+                    SleepTimerLoadOutcome(success = true, timer = result, errorText = null)
+                } else {
+                    SleepTimerLoadOutcome(
+                        success = false,
+                        timer = SleepTimer(),
+                        errorText = context.getString(R.string.get_content_error)
+                    )
+                }
+            }
 
             is EnigmaHttpResult.Failure ->
-                Triple(false, PowerState(), fetched.error.contentError(context))
+                SleepTimerLoadOutcome(
+                    success = false,
+                    timer = SleepTimer(),
+                    errorText = fetched.error.contentError(context)
+                )
         }
     }
-    onResult(triple.first, triple.second, triple.third)
-}
 
 fun LifecycleOwner.launchSleepTimerLoad(
     params: List<NameValuePair>,
@@ -73,22 +123,6 @@ fun LifecycleOwner.launchSleepTimerLoad(
         errorText: String?
     ) -> Unit
 ): Job = lifecycleScope.launch {
-    val http = EnigmaHttp()
-    val outcome = withContext(Dispatchers.IO) {
-        val handler = SleepTimerRequestHandler()
-        when (val fetched = handler.fetch(http, params)) {
-            is EnigmaHttpResult.Success -> {
-                val result = SleepTimerParser.parse(fetched.text) ?: SleepTimer()
-                if (result.enabled != null) {
-                    Triple(true, result, null as String?)
-                } else {
-                    Triple(false, SleepTimer(), context.getString(R.string.get_content_error))
-                }
-            }
-
-            is EnigmaHttpResult.Failure ->
-                Triple(false, SleepTimer(), fetched.error.contentError(context))
-        }
-    }
-    onResult(outcome.first, outcome.second, openDialog, outcome.third)
+    val outcome = fetchSleepTimer(params, context)
+    onResult(outcome.success, outcome.timer, openDialog, outcome.errorText)
 }
