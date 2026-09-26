@@ -13,12 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.toEnigmaDisplayMessage
-import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
-import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UseDrivenCache
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -57,54 +53,6 @@ class SettingsViewModel(application: Application, savedStateHandle: SavedStateHa
         } else {
             messageDuration = next.duration
             message = next.text
-        }
-    }
-
-    fun runMultiEpgSyncTest() {
-        val app = getApplication<Application>()
-        val profile = DreamDroid.getCurrentProfile()
-        val bouquet = profile.defaultBouquetTv?.takeIf { it.isNotBlank() }
-        if (bouquet == null) {
-            postMessage(
-                app.getString(R.string.multiepg_sync_test_no_bouquet),
-                Toast.LENGTH_LONG
-            )
-            return
-        }
-        postMessage(app.getString(R.string.multiepg_sync_test_running), Toast.LENGTH_SHORT)
-        viewModelScope.launch {
-            val started = System.currentTimeMillis()
-            val text = try {
-                val profileId = profile.id ?: -1
-                val events = UserBouquetEpgFill.ensureNowChunk(
-                    sync = MultiEpgSyncHolder.shared(app),
-                    rosterDao = AppDatabase.roster(app),
-                    profileId = profileId,
-                    containerRef = bouquet,
-                    tabRootRef = bouquet,
-                    excludedTabRefs = UserBouquetCache.excludedHubTabRefs(app),
-                    unixSec = System.currentTimeMillis() / 1000L,
-                    forceRefresh = true
-                )
-                val ms = System.currentTimeMillis() - started
-                if (events.isEmpty()) {
-                    app.getString(
-                        R.string.multiepg_sync_test_empty,
-                        bouquet.take(48),
-                        ms
-                    )
-                } else {
-                    app.getString(R.string.multiepg_sync_test_ok, events.size, ms)
-                }
-            } catch (t: Throwable) {
-                app.getString(
-                    R.string.multiepg_sync_test_fail,
-                    t.toEnigmaDisplayMessage(app)
-                )
-            }
-            withContext(Dispatchers.Main.immediate) {
-                postMessage(text, Toast.LENGTH_LONG)
-            }
         }
     }
 

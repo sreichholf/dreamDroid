@@ -96,7 +96,7 @@ True iff:
 
 Anything whose **root tab** is Provider or All Services: **no Room**, including nested `FROM SATELLITES` folders. Guard on **tab ancestry**, not only `currentRef`. Nested All Services directories will not equal the All Services root ref.
 
-Also guard **writers**, not only the hub: Zap default bouquet, list EPG, MultiEPG, and the Settings MultiEPG sync test (`ensureChunk` on `defaultBouquetTv`). If default is Provider, **do not persist**. Prefer the guard inside `MultiEpgSync.ensureChunk` (and the roster writer) so every caller is covered.
+Also guard **writers**, not only the hub: Zap default bouquet, list EPG, and MultiEPG. If default is Provider, **do not persist**. Prefer the guard inside `MultiEpgSync.ensureChunk` (and the roster writer) so every caller is covered.
 
 ### 4.3 Folders vs `epgmulti`
 

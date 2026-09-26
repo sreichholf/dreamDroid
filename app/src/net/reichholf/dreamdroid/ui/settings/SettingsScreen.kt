@@ -49,7 +49,6 @@ fun SettingsScreen(
     onThemeChanged: () -> Unit,
     onDynamicColorsChanged: () -> Unit,
     onSyncPicons: () -> Unit,
-    onMultiEpgSyncTest: () -> Unit = {},
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
@@ -305,13 +304,6 @@ fun SettingsScreen(
                 checked = state.xmlDebug,
                 enabled = state.enableDeveloper,
                 onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) }
-            )
-            // TEMP MultiEPG Phase 1 beachhead — remove once Phase 2 grid ships.
-            ActionPreferenceRow(
-                title = stringResource(R.string.multiepg_sync_test),
-                summary = stringResource(R.string.multiepg_sync_test_long),
-                enabled = state.enableDeveloper,
-                onClick = onMultiEpgSyncTest
             )
         }
 
@@ -581,7 +573,6 @@ fun ComposeView.bindSettingsScreen(
     onThemeChanged: () -> Unit,
     onDynamicColorsChanged: () -> Unit,
     onSyncPicons: () -> Unit,
-    onMultiEpgSyncTest: () -> Unit = {},
     onAbout: () -> Unit,
     onChangelog: () -> Unit,
     onBackup: () -> Unit,
@@ -595,7 +586,6 @@ fun ComposeView.bindSettingsScreen(
                 onThemeChanged = onThemeChanged,
                 onDynamicColorsChanged = onDynamicColorsChanged,
                 onSyncPicons = onSyncPicons,
-                onMultiEpgSyncTest = onMultiEpgSyncTest,
                 onAbout = onAbout,
                 onChangelog = onChangelog,
                 onBackup = onBackup,
