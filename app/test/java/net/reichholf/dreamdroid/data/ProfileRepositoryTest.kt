@@ -1,10 +1,14 @@
 package net.reichholf.dreamdroid.data
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -58,6 +62,46 @@ class ProfileRepositoryTest {
         assertEquals("Living Room", repo.requireCurrent().name)
         assertEquals(listOf("/hdd/movie"), repo.locations())
         assertEquals("<deviceinfo/>", repo.deviceInfo(edited))
+    }
+
+    @Test
+    fun editingConnectionSettingsDropsDeviceInfoOnly() {
+        val first = profile(1, "living-room")
+        val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
+        assertTrue(repo.activate(first.id!!, forceEvent = true))
+        repo.locations().add("/hdd/movie")
+        repo.setDeviceInfo(first, "<deviceinfo/>")
+
+        repo.setCurrent(profile(1, "other-box"))
+
+        assertEquals("other-box", repo.requireCurrent().host)
+        assertNull(repo.deviceInfo(repo.requireCurrent()))
+        assertEquals(listOf("/hdd/movie"), repo.locations())
+    }
+
+    @Test
+    fun switchesKeepLatestWhenCollectorIsBehind() {
+        val profiles = (1..3).map { profile(it, "box-$it") }
+        val repo = ProfileRepository(MemoryProfileStore(profiles))
+        val switchedIds = mutableListOf<Int>()
+        runBlocking {
+            val gate = CompletableDeferred<Unit>()
+            val collector = launch(start = CoroutineStart.UNDISPATCHED) {
+                repo.switches.collect {
+                    gate.await()
+                    switchedIds.add(it.id!!)
+                }
+            }
+            assertTrue(repo.activate(1, forceEvent = true))
+            yield()
+            assertTrue(repo.activate(2, forceEvent = true))
+            assertTrue(repo.activate(3, forceEvent = true))
+            gate.complete(Unit)
+            yield()
+            yield()
+            collector.cancel()
+        }
+        assertEquals(3, switchedIds.last())
     }
 }
 

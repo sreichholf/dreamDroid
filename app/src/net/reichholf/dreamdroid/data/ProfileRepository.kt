@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -29,7 +30,10 @@ class ProfileRepository(private val store: ProfileStore) {
     private val _current = MutableStateFlow<Profile?>(null)
     val current: StateFlow<Profile?> = _current.asStateFlow()
 
-    private val _switches = MutableSharedFlow<Profile>(extraBufferCapacity = 1)
+    private val _switches = MutableSharedFlow<Profile>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     val switches: SharedFlow<Profile> = _switches.asSharedFlow()
 
     private var locationList: ArrayList<String> = ArrayList()
@@ -84,7 +88,17 @@ class ProfileRepository(private val store: ProfileStore) {
         locationsFromReceiver = loaded
     }
 
+    /**
+     * Replaces the in-memory current profile (the edit path). Locations and tags stay.
+     * Device-info XML is dropped when connection settings changed, so the next check
+     * talks to the edited receiver instead of reusing the old one's answer.
+     */
+    @Synchronized
     fun setCurrent(profile: Profile) {
+        val previous = _current.value
+        if (previous != null && !profile.hasSameSettings(previous)) {
+            setDeviceInfo(profile, null)
+        }
         _current.value = profile
     }
 
