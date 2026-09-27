@@ -51,9 +51,9 @@ CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `spotlessChe
 
 `verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 
-## Cloud Agent environment
+## Cursor Cloud Agents
 
-Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+This section applies to Cursor Cloud Agent VMs only; Claude Code sessions are covered in the next section. Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
 
 **Do not visually drive the emulator in Cloud Agent sessions.** Do not use `computerUse`, GUI tapping, screenshot/recording walkthroughs of the phone UI, or `verify-dreamdroid.py launch` / adb tap loops to “look at” the app. Soft-accelerated TCG plus the agent display path is too slow and unreliable here; those attempts waste the session. Prove UI with instrumented tests (`bash .cursor/cloud/connected-test.sh …`) and log/output artifacts only.
 
@@ -65,6 +65,19 @@ Because of the slow emulator, the stock `:app:connectedGoogleDebugAndroidTest` t
 bash .cursor/cloud/connected-test.sh            # whole suite
 bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScreenTest
 ```
+
+## Claude Code
+
+Claude Code reads this file through the one-line `CLAUDE.md` (`@AGENTS.md`). It finds skills in `.claude/skills/`, which is a symlink to `.agents/skills/`, so `poteto-mode` and the other pstack skills load by name. On Windows, enable symlinks (`git config core.symlinks true` with Developer Mode) or read `.agents/skills/<name>/SKILL.md` directly.
+
+Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Out of the box its container has JDK 21, no Android SDK (`ANDROID_HOME` unset), no `adb`, and no emulator. So:
+
+- Do not run `.cursor/cloud/connected-test.sh` or try to boot an emulator there.
+- Gradle tasks need an Android SDK. Without one, say so and do not claim a build or test passed.
+- Proof of phone UI in a cloud session is: write or update the instrumented test and make it compile, then rely on CI. Run `workflow_dispatch` on `android-ci.yml` for the emulator job if the change needs it before merge.
+- To run Gradle checks in cloud sessions, install JDK 25 + the Android SDK from the environment's setup script (see `.cursor/cloud/install.sh` for the packages; skip the AVD/emulator steps).
+
+Claude Code running locally on a machine with JDK 25, the SDK, and a device or emulator follows the normal rules above (`./gradlew :app:connectedGoogleDebugAndroidTest`).
 
 ## Other traps
 
