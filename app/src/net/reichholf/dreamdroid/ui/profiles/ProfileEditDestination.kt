@@ -2,10 +2,6 @@ package net.reichholf.dreamdroid.ui.profiles
 
 import android.app.Activity
 import android.content.Context
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -17,7 +13,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,10 +22,12 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
+import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ProfileEdit
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Profile create/edit as a Compose NavHost destination.
@@ -57,7 +54,7 @@ fun ProfileEditDestination(
     val canDelete = viewModel.canDelete
 
     fun toast(message: CharSequence) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        ShellMessages.post(message)
     }
 
     fun save() {
@@ -73,35 +70,18 @@ fun ProfileEditDestination(
         handle.deliverPickResult(Activity.RESULT_OK, null)
     }
 
-    val menuProvider = remember(canDelete) {
-        object : MenuProvider {
-            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-                menuInflater.inflateSaveAndDelete(menu, canDelete = canDelete)
-            }
-
-            override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
-                Statics.ITEM_SAVE -> {
-                    save()
-                    true
-                }
-
-                Statics.ITEM_DELETE -> {
-                    showDeleteConfirm = true
-                    true
-                }
-
-                Statics.ITEM_CANCEL -> {
-                    handle.deliverPickResult(Activity.RESULT_CANCELED, null)
-                    true
-                }
-
-                else -> false
-            }
-        }
-    }
+    BindShellTopBarActions(
+        saveAndDeleteActions(
+            saveLabel = stringResource(R.string.save),
+            deleteLabel = stringResource(R.string.delete),
+            canDelete = canDelete,
+            onSave = { save() },
+            onDelete = { showDeleteConfirm = true }
+        )
+    )
 
     val title = stringResource(R.string.edit_profile)
-    DisposableEffect(handle, menuProvider, tag, remountEpoch, viewModel) {
+    DisposableEffect(handle, tag, remountEpoch, viewModel) {
         val activity = context as? AppCompatActivity
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_PAUSE) {
@@ -110,10 +90,8 @@ fun ProfileEditDestination(
         }
         activity?.title = title
         activity?.lifecycle?.addObserver(observer)
-        activity?.addMenuProvider(menuProvider)
         onDispose {
             activity?.lifecycle?.removeObserver(observer)
-            activity?.removeMenuProvider(menuProvider)
             viewModel.persistIfBound(tag, remountEpoch)
         }
     }

@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.device
 
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -8,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Phase 2.7b: Device Info as a direct Compose NavHost destination (no nested Fragment).
@@ -26,7 +26,7 @@ fun DeviceInfoDestination(
     }
     LaunchedEffect(error) {
         if (!error.isNullOrEmpty()) {
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            ShellMessages.post(error)
             viewModel.consumeError()
         }
     }

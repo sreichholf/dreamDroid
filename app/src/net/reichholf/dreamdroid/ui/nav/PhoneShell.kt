@@ -1,10 +1,5 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.content.Context
-import android.util.TypedValue
-import android.view.ContextThemeWrapper
-import android.view.ViewGroup
-import androidx.appcompat.graphics.drawable.DrawerArrowDrawable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,7 +42,6 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
@@ -56,9 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
 import androidx.window.core.layout.WindowSizeClass
-import com.google.android.material.appbar.MaterialToolbar
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
@@ -67,7 +59,7 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 const val SHELL_PROFILE_NAME_TAG = "shell_profile_name"
 
 /**
- * Phone and tablet shell: modal drawer, toolbar, destination rail or bottom chrome,
+ * Phone and tablet shell: modal drawer, top app bar, destination rail or bottom chrome,
  * and the shared FAB. Destination chrome and the FAB sit in the content box so the
  * FAB can dodge their measured height. Bar versus rail follows the window size class
  * unless [usesRail] is set.
@@ -84,8 +76,9 @@ fun PhoneShell(
     onNavigationClick: () -> Unit,
     destinationController: ShellDestinationBarController,
     fabController: ShellFabController,
-    onToolbarReady: (MaterialToolbar) -> Unit,
+    topBarController: ShellTopBarController,
     modifier: Modifier = Modifier,
+    trailingTopBarActions: List<ShellTopBarAction> = emptyList(),
     usesRail: Boolean? = null,
     content: @Composable () -> Unit
 ) {
@@ -109,6 +102,7 @@ fun PhoneShell(
     CompositionLocalProvider(
         LocalShellDestinationBarController provides destinationController,
         LocalShellFabController provides fabController,
+        LocalShellTopBarController provides topBarController,
         LocalShellUsesDestinationRail provides rail
     ) {
         ModalNavigationDrawer(
@@ -135,7 +129,8 @@ fun PhoneShell(
                 destinationController = destinationController,
                 fabController = fabController,
                 onNavigationClick = onNavigationClick,
-                onToolbarReady = onToolbarReady,
+                topBarController = topBarController,
+                trailingTopBarActions = trailingTopBarActions,
                 content = content
             )
         }
@@ -163,7 +158,8 @@ private fun ShellBody(
     destinationController: ShellDestinationBarController,
     fabController: ShellFabController,
     onNavigationClick: () -> Unit,
-    onToolbarReady: (MaterialToolbar) -> Unit,
+    topBarController: ShellTopBarController,
+    trailingTopBarActions: List<ShellTopBarAction>,
     content: @Composable () -> Unit
 ) {
     Row(
@@ -179,9 +175,10 @@ private fun ShellBody(
                 .weight(1f)
                 .fillMaxHeight()
         ) {
-            ShellToolbar(
+            ShellTopAppBar(
+                controller = topBarController,
                 onNavigationClick = onNavigationClick,
-                onToolbarReady = onToolbarReady
+                trailingActions = trailingTopBarActions
             )
             Scaffold(
                 modifier = Modifier
@@ -292,52 +289,6 @@ private fun ShellFabButton(
             .testTag(SHELL_FAB_TAG)
             .semantics { contentDescription = spec.contentDescription }
     )
-}
-
-@Composable
-private fun ShellToolbar(onNavigationClick: () -> Unit, onToolbarReady: (MaterialToolbar) -> Unit) {
-    val context = LocalContext.current
-    AndroidView(
-        modifier = Modifier.fillMaxWidth(),
-        factory = {
-            val toolbarContext = shellToolbarContext(context)
-            MaterialToolbar(toolbarContext).apply {
-                id = R.id.toolbar
-                val typed = TypedValue()
-                val resolved = toolbarContext.theme.resolveAttribute(
-                    android.R.attr.actionBarSize,
-                    typed,
-                    true
-                )
-                if (resolved) {
-                    val px = TypedValue.complexToDimensionPixelSize(
-                        typed.data,
-                        toolbarContext.resources.displayMetrics
-                    )
-                    minimumHeight = px
-                    layoutParams = ViewGroup.LayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        px
-                    )
-                }
-                navigationContentDescription = toolbarContext.getString(R.string.drawer_open)
-                onToolbarReady(this)
-                navigationIcon = DrawerArrowDrawable(toolbarContext)
-                setNavigationOnClickListener { onNavigationClick() }
-            }
-        }
-    )
-}
-
-/**
- * [MaterialToolbar] requires an AppCompat theme. Compose hosts (and instrumented
- * [androidx.activity.ComponentActivity] tests) do not always provide one, and the
- * old XML toolbar also applied [R.style.ToolbarStyle]'s menu overlay.
- */
-private fun shellToolbarContext(context: Context): Context {
-    val themed = ContextThemeWrapper(context, R.style.Theme_DreamDroid)
-    themed.theme.applyStyle(R.style.ThemeOverlay_DreamDroid_Toolbar, true)
-    return themed
 }
 
 @Composable

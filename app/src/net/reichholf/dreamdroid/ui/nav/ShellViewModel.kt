@@ -13,19 +13,19 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.PowerStateSetOutcome
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.SleepTimerLoadOutcome
 import net.reichholf.dreamdroid.enigma.fetchPowerStateSet
 import net.reichholf.dreamdroid.enigma.fetchSleepTimer
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Message
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MessageRequestHandler
 
 /**
  * Power, sleep timer, and send message. Activity-scoped so a configuration
@@ -99,19 +99,10 @@ class ShellViewModel(
 
     fun sendMessage(text: String?, type: String?, timeout: String?) {
         messageJob?.cancel()
-        messageJob = viewModelScope.launchSimpleResultLoad(
-            MessageRequestHandler(),
-            Message.getParams(text, type, timeout)
-        ) { _, result, error ->
+        messageJob = viewModelScope.launch {
+            val response = EnigmaClient().sendMessage(Message.getParams(text, type, timeout))
             messageJob = null
-            val app = getApplication<Application>()
-            ShellMessages.post(
-                mutationResultText(
-                    stateText = result.stateText,
-                    errorText = error?.resolve(app),
-                    fallback = app.getString(R.string.get_content_error)
-                )
-            )
+            ShellMessages.post(response.userMessage(getApplication()))
         }
     }
 

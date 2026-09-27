@@ -2,8 +2,6 @@ package net.reichholf.dreamdroid.ui.timers
 
 import android.app.Activity
 import android.content.Intent
-import android.view.MenuInflater
-import androidx.appcompat.view.menu.MenuBuilder
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -329,15 +327,13 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun createMenuOmitsDeleteAndEditMenuIncludesIt() {
-        val createMenu = menuFrom(sessionFrom(sampleTimer(), isCreate = true))
-        assertNotNull(createMenu.findItem(R.id.menu_save))
-        assertNull(createMenu.findItem(R.id.menu_delete))
+    fun createTopBarOmitsDeleteAndEditTopBarIncludesIt() {
+        val create = actionsFrom(sessionFrom(sampleTimer(), isCreate = true))
+        assertEquals(listOf(R.id.menu_save), create.map { it.id })
 
-        val editMenu = menuFrom(sessionFrom(sampleTimer(), isCreate = false))
-        assertNotNull(editMenu.findItem(R.id.menu_save))
-        assertNotNull(editMenu.findItem(R.id.menu_delete))
-        assertTrue(editMenu.findItem(R.id.menu_delete).isEnabled)
+        val edit = actionsFrom(sessionFrom(sampleTimer(), isCreate = false))
+        assertEquals(listOf(R.id.menu_save, R.id.menu_delete), edit.map { it.id })
+        assertTrue(edit.all { it.enabled })
     }
 
     @Test
@@ -389,12 +385,8 @@ class TimerEditScreenTest {
         return session
     }
 
-    private fun menuFrom(session: TimerEditSession): MenuBuilder {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val menu = MenuBuilder(context)
-        session.onCreateMenu(menu, MenuInflater(context))
-        return menu
-    }
+    private fun actionsFrom(session: TimerEditSession) =
+        session.topBarActions(saveLabel = "Save", deleteLabel = "Delete")
 
     @Composable
     private fun timerEditForm(state: TimerEditState) {

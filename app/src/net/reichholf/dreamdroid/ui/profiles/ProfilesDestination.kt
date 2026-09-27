@@ -1,10 +1,6 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import android.content.Context
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +41,10 @@ import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 
 /**
  * Phase 2.7e: Profiles list as a direct Compose NavHost destination.
@@ -64,17 +62,20 @@ fun ProfilesDestination(
     val detectInProgress = viewModel.detectInProgress
 
     val title = stringResource(R.string.profiles)
-    DisposableEffect(handle, viewModel) {
-        val menuProvider = ProfilesMenuProvider(
-            viewModel = viewModel,
-            onAddProfile = { handle.navigateToProfileEdit(null) }
-        )
-        activity.addMenuProvider(menuProvider)
+    LaunchedEffect(activity, title) {
         activity.title = title
-        onDispose {
-            activity.removeMenuProvider(menuProvider)
-        }
     }
+    BindShellTopBarActions(
+        listOf(
+            ShellTopBarAction(
+                id = Statics.ITEM_DETECT_DEVICES,
+                label = stringResource(R.string.autodiscover_dreamboxes),
+                iconRes = R.drawable.ic_action_devices,
+                enabled = !detectInProgress,
+                onClick = { viewModel.detectDevices() }
+            )
+        )
+    )
 
     val addLabel = stringResource(R.string.profile_add)
     BindShellFab(
@@ -93,11 +94,10 @@ fun ProfilesDestination(
     var discoveryFailed by remember { mutableStateOf(false) }
     LaunchedEffect(detectInProgress) {
         showDetectProgress = detectInProgress
-        activity.invalidateOptionsMenu()
     }
-    LaunchedEffect(viewModel, context) {
-        viewModel.toastMessages.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    LaunchedEffect(viewModel) {
+        viewModel.messages.collect { message ->
+            ShellMessages.post(message)
         }
     }
     LaunchedEffect(viewModel) {
@@ -214,38 +214,6 @@ private fun AutodiscoveryDevicesDialog(
             }
         }
     )
-}
-
-private class ProfilesMenuProvider(
-    private val viewModel: ProfilesViewModel,
-    private val onAddProfile: () -> Unit
-) : MenuProvider {
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.profiles, menu)
-        applyDetectEnabled(menu)
-    }
-
-    override fun onPrepareMenu(menu: Menu) {
-        applyDetectEnabled(menu)
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
-        Statics.ITEM_ADD_PROFILE -> {
-            onAddProfile()
-            true
-        }
-
-        Statics.ITEM_DETECT_DEVICES -> {
-            viewModel.detectDevices()
-            true
-        }
-
-        else -> false
-    }
-
-    private fun applyDetectEnabled(menu: Menu) {
-        menu.findItem(Statics.ITEM_DETECT_DEVICES)?.isEnabled = !viewModel.detectInProgress
-    }
 }
 
 internal fun deleteConfirmedProfile(context: Context, profile: Profile): String {

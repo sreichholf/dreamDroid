@@ -35,7 +35,6 @@ object Statics {
     const val ITEM_CHANGELOG: Int = R.id.menu_navigation_changelog
     const val ITEM_SLEEPTIMER: Int = 0x6020
     const val ITEM_PROFILES: Int = R.id.menu_navigation_profiles
-    const val ITEM_ADD_PROFILE: Int = 0x6023
     const val ITEM_SAVE: Int = R.id.menu_save
     const val ITEM_CANCEL: Int = R.id.menu_cancel
     const val ITEM_PICK_SERVICE: Int = 0x6027
@@ -46,7 +45,6 @@ object Statics {
     const val ITEM_SELECT_LOCATION: Int = 0x6033
     const val ITEM_SET_DEFAULT: Int = R.id.menu_default
     const val ITEM_TAGS: Int = R.id.menu_tags
-    const val ITEM_NEW_TIMER: Int = 0x6032
     const val ITEM_CLEANUP: Int = R.id.menu_cleanup
     const val ITEM_HOME: Int = 0x6039
     const val ITEM_DETECT_DEVICES: Int = R.id.menu_detect_devices

@@ -40,8 +40,8 @@ class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHa
     private val discoveryChannel = Channel<List<Profile>>(Channel.CONFLATED)
     val discoveryResults: Flow<List<Profile>> = discoveryChannel.receiveAsFlow()
 
-    private val toastChannel = Channel<String>(Channel.BUFFERED)
-    val toastMessages: Flow<String> = toastChannel.receiveAsFlow()
+    private val messageChannel = Channel<String>(Channel.BUFFERED)
+    val messages: Flow<String> = messageChannel.receiveAsFlow()
 
     private val profiles = ArrayList<Profile>()
     private var selected: Profile = Profile.getDefault()
@@ -71,7 +71,7 @@ class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHa
         } else {
             R.string.profile_not_activated
         }
-        postToast(label, selected.name)
+        postMessage(label, selected.name)
         reloadProfiles()
     }
 
@@ -121,7 +121,7 @@ class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHa
             val dao = AppDatabase.profilesBlocking(app)
             for (profile in detected) {
                 profile.id = dao.addProfile(profile).toInt()
-                postToast(R.string.profile_added, profile.name)
+                postMessage(R.string.profile_added, profile.name)
             }
             if (isActive) {
                 reloadProfiles()
@@ -172,8 +172,8 @@ class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHa
         }
     }
 
-    private fun postToast(messageRes: Int, name: String?) {
+    private fun postMessage(messageRes: Int, name: String?) {
         val app = getApplication<Application>()
-        toastChannel.trySend(app.getText(messageRes).toString() + " '" + name + "'")
+        messageChannel.trySend(app.getText(messageRes).toString() + " '" + name + "'")
     }
 }

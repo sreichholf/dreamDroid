@@ -13,12 +13,11 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.util.Date
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
@@ -103,11 +102,8 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
             message = app.getString(R.string.loading)
         )
         sendJob?.cancel()
-        sendJob = viewModelScope.launchSimpleResultLoad(
-            SimpleResultRequestHandler(URIStore.MEDIA_PLAYER_PLAY),
-            params,
-            profile
-        ) { _, _, error ->
+        sendJob = viewModelScope.launch {
+            val error = EnigmaClient(profile).playMedia(params).error
             listState.progress = null
             toast = error?.resolve(app) ?: app.getString(R.string.sent_as, title)
             finished = true

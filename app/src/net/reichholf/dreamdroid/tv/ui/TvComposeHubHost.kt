@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -59,6 +58,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -69,25 +69,25 @@ import androidx.tv.material3.NavigationDrawerItem
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.activities.MainActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -195,7 +195,7 @@ object TvComposeHubHost {
         try {
             activity.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(activity, R.string.missing_stream_player, Toast.LENGTH_LONG).show()
+            ShellMessages.post(activity.getString(R.string.missing_stream_player))
         }
     }
 
@@ -420,17 +420,9 @@ private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
 }
 
 private fun setTimerFromEvent(activity: ComponentActivity, event: Event, onDone: () -> Unit) {
-    activity.launchSimpleResultLoad(
-        TimerAddByEventIdRequestHandler(),
-        Timer.getEventIdParams(event)
-    ) { _, result, error ->
-        ShellMessages.post(
-            mutationResultText(
-                stateText = result.stateText,
-                errorText = error?.resolve(activity),
-                fallback = activity.getString(R.string.get_content_error)
-            )
-        )
+    activity.lifecycleScope.launch {
+        val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(event))
+        ShellMessages.post(response.userMessage(activity))
         onDone()
     }
 }

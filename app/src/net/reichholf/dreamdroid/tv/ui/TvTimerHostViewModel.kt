@@ -12,18 +12,14 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
+import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.services.TimerListItem
 import net.reichholf.dreamdroid.ui.services.timerListItemsFrom
 
@@ -106,18 +102,19 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
     fun toggleEnabled(index: Int) {
         val timer = timers.getOrNull(index) ?: return
         val timerNew = timer.copy(disabled = tvTimerToggledDisabled(timer.disabled))
-        mutate(R.string.saving, TimerChangeRequestHandler(), Timer.getSaveParams(timerNew, timer))
+        val params = Timer.getSaveParams(timerNew, timer)
+        mutate(R.string.saving) { changeTimer(params) }
     }
 
     fun deleteTimer(index: Int) {
         val timer = timers.getOrNull(index) ?: return
-        mutate(R.string.deleting, TimerDeleteRequestHandler(), Timer.getDeleteParams(timer))
+        val params = Timer.getDeleteParams(timer)
+        mutate(R.string.deleting) { deleteTimer(params) }
     }
 
     private fun mutate(
         messageRes: Int,
-        requestHandler: SimpleResultRequestHandler,
-        params: List<NameValuePair>
+        call: suspend EnigmaClient.() -> EnigmaResponse<SimpleResult>
     ) {
         if (progress != null) {
             return
@@ -126,23 +123,12 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
             message = getApplication<Application>().getString(messageRes)
         )
         mutateJob?.cancel()
-        mutateJob =
-            viewModelScope.launchSimpleResultLoad(requestHandler, params) { _, result, error ->
-                onSimpleResult(result, error)
-            }
-    }
-
-    private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
-        val app = getApplication<Application>()
-        progress = null
-        ShellMessages.post(
-            mutationResultText(
-                stateText = result.stateText,
-                errorText = error?.resolve(app),
-                fallback = app.getString(R.string.get_content_error)
-            )
-        )
-        reload()
+        mutateJob = viewModelScope.launch {
+            val response = EnigmaClient().call()
+            progress = null
+            ShellMessages.post(response.userMessage(getApplication()))
+            reload()
+        }
     }
 
     private fun applyPaint(paint: TvTimerLoadPaint) {

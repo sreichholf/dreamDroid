@@ -18,14 +18,11 @@ import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadMovieList
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -145,17 +142,6 @@ fun PhoneNavHandle.runOnlineOnly(action: () -> Unit) {
         action()
     }
 }
-
-fun PhoneNavHandle.launchSimpleResultLoad(
-    requestHandler: SimpleResultRequestHandler,
-    params: List<NameValuePair>,
-    profile: Profile? = null,
-    onResult: (
-        success: Boolean,
-        result: net.reichholf.dreamdroid.enigma.SimpleResult,
-        error: EnigmaHttpError?
-    ) -> Unit
-): Job = lifecycleOwner.launchSimpleResultLoad(requestHandler, params, profile, onResult)
 
 fun PhoneNavHandle.launchLocationsAndTagsLoad(
     onProgress: (title: String, progress: String) -> Unit,

@@ -4,9 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.text.format.DateFormat
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -18,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -33,29 +29,29 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
-import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
+import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.TimerEdit as TimerEditRoute
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
@@ -107,7 +103,6 @@ fun TimerEditDestination(
         }
         activity?.title = title
         activity?.lifecycle?.addObserver(observer)
-        activity?.addMenuProvider(session)
         onDispose {
             if (handle.composeActivityResultListener === session) {
                 handle.composeActivityResultListener = null
@@ -120,14 +115,16 @@ fun TimerEditDestination(
             }
             session.onRequestDeleteConfirm = null
             activity?.lifecycle?.removeObserver(observer)
-            activity?.removeMenuProvider(session)
             viewModel.persistIfBound(tag, remountEpoch)
         }
     }
 
-    LaunchedEffect(session.progress) {
-        (context as? AppCompatActivity)?.invalidateOptionsMenu()
-    }
+    BindShellTopBarActions(
+        session.topBarActions(
+            saveLabel = stringResource(R.string.save),
+            deleteLabel = stringResource(R.string.delete)
+        )
+    )
 
     TimerEditScreen(
         state = session.editState,
@@ -251,8 +248,7 @@ class TimerEditSession(
     var isCreate: Boolean,
     val selectedTags: ArrayList<String>,
     val checkedDays: BooleanArray
-) : PhoneNavHandle.ActivityResultListener,
-    MenuProvider {
+) : PhoneNavHandle.ActivityResultListener {
 
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
@@ -285,38 +281,16 @@ class TimerEditSession(
         }
     }
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflateSaveAndDelete(
-            menu,
+    /** Save, plus Delete for an existing timer; both disabled while a request runs. */
+    fun topBarActions(saveLabel: String, deleteLabel: String): List<ShellTopBarAction> =
+        saveAndDeleteActions(
+            saveLabel = saveLabel,
+            deleteLabel = deleteLabel,
             canDelete = !isCreate,
-            actionsEnabled = progress == null
+            actionsEnabled = progress == null,
+            onSave = { saveTimer() },
+            onDelete = { requestDelete() }
         )
-    }
-
-    override fun onPrepareMenu(menu: Menu) {
-        val enabled = progress == null
-        menu.findItem(Statics.ITEM_SAVE)?.isEnabled = enabled
-        menu.findItem(Statics.ITEM_DELETE)?.isEnabled = enabled
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
-        Statics.ITEM_SAVE -> {
-            saveTimer()
-            true
-        }
-
-        Statics.ITEM_DELETE -> {
-            requestDelete()
-            true
-        }
-
-        Statics.ITEM_CANCEL -> {
-            handle?.deliverPickResult(Activity.RESULT_CANCELED, null)
-            true
-        }
-
-        else -> false
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode != Statics.REQUEST_PICK_SERVICE || resultCode != Activity.RESULT_OK) {
@@ -461,15 +435,9 @@ class TimerEditSession(
             timer = editState.applyTo(timer)
             notifyWorkingCopy()
             val params = Timer.getSaveParams(timer, timerOld)
-            val handler = TimerChangeRequestHandler()
             saveJob?.cancel()
             saveJob = scope.launch {
-                val fetched = withContext(Dispatchers.IO) {
-                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
-                        handler.parseSimpleResult(xml)
-                    }
-                }
-                onSaveResult(fetched.second)
+                onSaveResult(EnigmaClient().changeTimer(params).value ?: SimpleResult())
             }
         }
     }
@@ -494,15 +462,9 @@ class TimerEditSession(
             editState.saveError = ""
             progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
             val params = Timer.getDeleteParams(toDelete)
-            val handler = TimerDeleteRequestHandler()
             saveJob?.cancel()
             saveJob = scope.launch {
-                val fetched = withContext(Dispatchers.IO) {
-                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
-                        handler.parseSimpleResult(xml)
-                    }
-                }
-                onSaveResult(fetched.second)
+                onSaveResult(EnigmaClient().deleteTimer(params).value ?: SimpleResult())
             }
         }
     }

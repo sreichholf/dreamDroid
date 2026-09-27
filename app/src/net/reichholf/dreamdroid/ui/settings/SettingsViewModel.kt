@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.settings
 
 import android.app.Application
-import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -31,30 +30,18 @@ class SettingsViewModel(application: Application, savedStateHandle: SavedStateHa
     var message by mutableStateOf<String?>(null)
         private set
 
-    var messageDuration by mutableStateOf(Toast.LENGTH_LONG)
-        private set
+    private val pendingMessages = ArrayDeque<String>()
 
-    private val pendingMessages = ArrayDeque<PendingMessage>()
-
-    private data class PendingMessage(val text: String, val duration: Int)
-
-    private fun postMessage(text: String, duration: Int) {
+    private fun postMessage(text: String) {
         if (message == null) {
-            messageDuration = duration
             message = text
         } else {
-            pendingMessages.addLast(PendingMessage(text, duration))
+            pendingMessages.addLast(text)
         }
     }
 
     fun consumeMessage() {
-        val next = pendingMessages.removeFirstOrNull()
-        if (next == null) {
-            message = null
-        } else {
-            messageDuration = next.duration
-            message = next.text
-        }
+        message = pendingMessages.removeFirstOrNull()
     }
 
     fun resetUseDrivenCache(allProfiles: Boolean) {
@@ -71,7 +58,7 @@ class SettingsViewModel(application: Application, savedStateHandle: SavedStateHa
             }
             SessionConnectionHolder.shared.onUseDrivenCacheCleared()
             withContext(Dispatchers.Main.immediate) {
-                postMessage(app.getString(R.string.reset_cache_done), Toast.LENGTH_SHORT)
+                postMessage(app.getString(R.string.reset_cache_done))
             }
         }
     }

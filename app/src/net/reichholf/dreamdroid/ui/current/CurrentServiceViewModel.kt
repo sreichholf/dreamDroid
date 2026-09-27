@@ -9,23 +9,19 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.loadCurrentService
-import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 
 /**
@@ -153,19 +149,12 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
         progress = IndeterminateProgressState(message = app.getString(R.string.saving))
         setTimerJob?.cancel()
         setTimerJob = viewModelScope.launch {
-            val handler = TimerAddByEventIdRequestHandler()
-            val params = Timer.getEventIdParams(event)
-            val http = EnigmaHttp()
-            val fetched = withContext(Dispatchers.IO) {
-                simpleResultFromFetch(handler.fetch(http, params)) { xml ->
-                    handler.parseSimpleResult(xml)
-                }
-            }
+            val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(event))
             if (!isActive) {
                 return@launch
             }
             progress = null
-            errorText = timerResultMessage(fetched.second, fetched.third)
+            errorText = timerResultMessage(response.value ?: SimpleResult(), response.error)
         }
     }
 

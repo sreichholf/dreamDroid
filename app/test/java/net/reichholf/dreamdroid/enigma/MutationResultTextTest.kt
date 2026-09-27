@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.ui.nav
+package net.reichholf.dreamdroid.enigma
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test

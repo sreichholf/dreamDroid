@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -21,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
@@ -32,6 +32,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -84,6 +85,7 @@ fun HubDestination(
         else -> TvMoviesDestination.TV
     }
 
+    val loadingText = stringResource(R.string.loading)
     fun selectDestination(dest: TvMoviesDestination) {
         when (dest) {
             TvMoviesDestination.TV -> viewModel.selectTv(tvBouquets)
@@ -92,7 +94,7 @@ fun HubDestination(
 
             TvMoviesDestination.MOVIES -> {
                 if (!viewModel.selectMovies()) {
-                    Toast.makeText(context, R.string.loading, Toast.LENGTH_SHORT).show()
+                    ShellMessages.post(loadingText)
                 }
             }
 

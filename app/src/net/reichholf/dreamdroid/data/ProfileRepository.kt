@@ -13,9 +13,10 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.StringListParser
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.LocationListRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TagListRequestHandler
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
+import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
@@ -196,12 +197,10 @@ class ProfileRepository(private val store: ProfileStore) {
         locationList.clear()
         locationsFromReceiver = false
         var gotLoc = false
-        val handler = LocationListRequestHandler()
-        val xml = handler.getList(http)
-        if (xml != null) {
-            if (handler.parseList(xml, locationList)) {
-                gotLoc = true
-            }
+        val parsed = http.fetchStringList(URIStore.LOCATIONS, "e2location")
+        if (parsed != null) {
+            locationList.addAll(parsed)
+            gotLoc = true
         }
         if (!gotLoc) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
@@ -217,12 +216,10 @@ class ProfileRepository(private val store: ProfileStore) {
     fun loadTags(http: EnigmaHttp): Boolean {
         tagList.clear()
         var gotTags = false
-        val handler = TagListRequestHandler()
-        val xml = handler.getList(http)
-        if (xml != null) {
-            if (handler.parseList(xml, tagList)) {
-                gotTags = true
-            }
+        val parsed = http.fetchStringList(URIStore.TAGS, "e2tag")
+        if (parsed != null) {
+            tagList.addAll(parsed)
+            gotTags = true
         }
         if (!gotTags) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing Tags, no more Tags will be available")
@@ -315,3 +312,6 @@ class RoomProfileStore(private val context: Context) : ProfileStore {
         AppDatabase.profilesBlocking(context).deleteProfile(profile)
     }
 }
+
+private fun EnigmaHttp.fetchStringList(uri: String, itemTag: String): List<String>? =
+    (fetch(uri) as? EnigmaHttpResult.Success)?.let { StringListParser.parse(it.text, itemTag) }

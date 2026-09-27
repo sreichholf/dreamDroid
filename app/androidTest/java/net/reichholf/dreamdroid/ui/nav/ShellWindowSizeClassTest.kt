@@ -92,7 +92,7 @@ private fun WindowSizeHost() {
         onNavigationClick = {},
         destinationController = destination,
         fabController = remember { ShellFabController() },
-        onToolbarReady = {}
+        topBarController = remember { ShellTopBarController() }
     ) {}
 }
 

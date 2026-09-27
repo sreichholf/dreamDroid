@@ -6,23 +6,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
 /**
- * Mutation copy for the shell snackbar. A non-blank box `statetext` wins, including
- * [net.reichholf.dreamdroid.enigma.EnigmaFailure.BoxRejected].
- */
-fun mutationResultText(stateText: String?, errorText: String?, fallback: String): String = when {
-    !stateText.isNullOrEmpty() -> stateText
-    !errorText.isNullOrEmpty() -> errorText
-    else -> fallback
-}
-
-/**
- * One-shot messages for the phone shell and the TV hub. Callers that are not
- * composable (navigation helper, hub pages, TV mutation callbacks) post here.
- * The shell collects them into a [SnackbarHostState].
+ * One-shot user messages for the phone shell, the TV hub, and the player. In-app
+ * results post here instead of using `Toast`; each started host collects them into a
+ * [SnackbarHostState]. There is no replay: a message posted while no host is started
+ * (for example a mutation that finishes with the app in the background) is dropped.
  */
 object ShellMessages {
     private val pending = MutableSharedFlow<String>(extraBufferCapacity = 16)
@@ -40,10 +34,13 @@ object ShellMessages {
 @Composable
 fun ShellSnackbarHost(modifier: Modifier = Modifier) {
     val hostState = remember { SnackbarHostState() }
-    LaunchedEffect(hostState) {
-        ShellMessages.messages.collect { text ->
-            hostState.showSnackbar(text)
-        }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    // Only a started host collects: a stopped shell under the player must not queue
+    // (and later replay) the player's messages.
+    LaunchedEffect(hostState, lifecycleOwner) {
+        ShellMessages.messages
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect { text -> hostState.showSnackbar(text) }
     }
     SnackbarHost(hostState = hostState, modifier = modifier)
 }

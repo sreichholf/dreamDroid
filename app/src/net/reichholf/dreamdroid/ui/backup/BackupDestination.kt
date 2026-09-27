@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -26,6 +25,7 @@ import java.io.IOException
 import java.io.InputStreamReader
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 private const val TAG = "BackupDestination"
 
@@ -45,7 +45,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
     var showPasswordWarning by remember { mutableStateOf(false) }
 
     fun toast(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        ShellMessages.post(message)
     }
 
     val pickImportFile = rememberLauncherForActivityResult(

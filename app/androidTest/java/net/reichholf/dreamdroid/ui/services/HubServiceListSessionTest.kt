@@ -60,18 +60,19 @@ class HubServiceListSessionTest {
     }
 
     @Test
-    fun serviceListToolbarHasMultiEpgAndPopupDoesNot() {
+    fun serviceListTopBarHasEpgJumpsAndPopupDoesNot() {
         val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val inflater = android.view.MenuInflater(ctx)
-        val toolbarAnchor = android.widget.TextView(ctx)
-        val toolbarMenu = androidx.appcompat.widget.PopupMenu(ctx, toolbarAnchor).menu
-        inflater.inflate(R.menu.servicelistpage, toolbarMenu)
-        assertNotNull(toolbarMenu.findItem(R.id.menu_multiepg))
-        assertNotNull(toolbarMenu.findItem(R.id.menu_epg_list))
+        val session = HubServiceListSession()
+        session.context = ctx
+        session.currentRef = "1:7:1:B"
+        assertEquals(
+            listOf(R.id.menu_multiepg, R.id.menu_epg_list, R.id.menu_default),
+            actionIds(session)
+        )
 
         val popupAnchor = android.widget.TextView(ctx)
         val popupMenu = androidx.appcompat.widget.PopupMenu(ctx, popupAnchor).menu
-        inflater.inflate(R.menu.popup_servicelist, popupMenu)
+        android.view.MenuInflater(ctx).inflate(R.menu.popup_servicelist, popupMenu)
         assertNotNull(popupMenu.findItem(R.id.menu_browse_epg))
         assertNull(popupMenu.findItem(R.id.menu_multiepg))
     }
@@ -93,19 +94,18 @@ class HubServiceListSessionTest {
 
     @Test
     fun serviceListHidesEpgActionsUntilBouquetIsSet() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
         val session = HubServiceListSession()
-        session.context = ctx
-        val inflater = android.view.MenuInflater(ctx)
-        val menu = androidx.appcompat.widget.PopupMenu(ctx, android.widget.TextView(ctx)).menu
-        session.onCreateMenu(menu, inflater)
+        session.context = InstrumentationRegistry.getInstrumentation().targetContext
         session.currentRef = ""
-        session.onPrepareMenu(menu)
-        assertFalse(menu.findItem(R.id.menu_multiepg).isVisible)
-        assertFalse(menu.findItem(R.id.menu_epg_list).isVisible)
+        assertEquals(listOf(R.id.menu_default), actionIds(session))
         session.currentRef = "1:7:1:B"
-        session.onPrepareMenu(menu)
-        assertTrue(menu.findItem(R.id.menu_multiepg).isVisible)
-        assertTrue(menu.findItem(R.id.menu_epg_list).isVisible)
+        assertTrue(actionIds(session).containsAll(listOf(R.id.menu_multiepg, R.id.menu_epg_list)))
     }
+
+    private fun actionIds(session: HubServiceListSession): List<Int> = session.topBarActions(
+        multiEpgLabel = "MultiEPG",
+        listEpgLabel = "EPG list",
+        setDefaultLabel = "Set default",
+        resetDefaultLabel = "Reset default"
+    ).map { it.id }
 }

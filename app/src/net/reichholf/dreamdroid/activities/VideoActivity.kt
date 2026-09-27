@@ -22,6 +22,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -38,7 +39,9 @@ import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.video.VLCPlayer
@@ -100,6 +103,11 @@ class VideoActivity :
         }
         localNetworkPermissionRequest.ensure(this)
         setContentView(R.layout.video_player)
+        findViewById<ComposeView>(R.id.video_snackbar_host).setContent {
+            DreamDroidTheme(forceDark = true) {
+                ShellSnackbarHost()
+            }
+        }
         surfaceFrameAddLayoutListener(true)
         currentScreenOrientation = resources.configuration.orientation
         title = ""

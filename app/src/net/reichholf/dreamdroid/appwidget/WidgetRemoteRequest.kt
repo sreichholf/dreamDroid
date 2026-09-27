@@ -12,11 +12,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
 
 /**
  * Home-screen Virtual Remote click handler. Runs RCU HTTP on [Dispatchers.IO]
@@ -45,33 +43,26 @@ object WidgetRemoteRequest {
         }
     }
 
-    private fun doRemoteRequest(context: Context, intent: Intent) {
+    private suspend fun doRemoteRequest(context: Context, intent: Intent) {
         val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
             context,
             intent.getIntExtra(KEY_WIDGETID, -1)
         ) ?: return
 
-        val http = EnigmaHttp(profile)
-        val handler = RemoteCommandRequestHandler()
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("command", intent.getStringExtra(KEY_KEYID)))
         params.add(NameValuePair("rcu", "advanced"))
-        when (val fetched = handler.fetch(http, params)) {
-            is EnigmaHttpResult.Success -> {
-                val result = handler.parseSimpleResult(fetched.text)
-                if (Python.FALSE == result.state) {
-                    val stateText = result.stateText
-                    val errorText = stateText ?: context.getString(R.string.connection_error)
-                    Log.w(TAG, stateText.orEmpty())
-                    showToast(context, errorText)
-                }
-            }
-
-            is EnigmaHttpResult.Failure -> {
-                val errorText = fetched.error.resolve(context).orEmpty()
-                Log.w(TAG, errorText)
-                showToast(context, errorText)
-            }
+        val response = EnigmaClient(profile).remoteCommand(params)
+        val error = response.error
+        val errorText = when {
+            response.value == null && error != null -> error.resolve(context).orEmpty()
+            response.value == null -> context.getString(R.string.connection_error)
+            Python.FALSE == response.value.state -> response.value.stateText
+            else -> null
+        }
+        if (errorText != null) {
+            Log.w(TAG, errorText)
+            showToast(context, errorText)
         }
     }
 

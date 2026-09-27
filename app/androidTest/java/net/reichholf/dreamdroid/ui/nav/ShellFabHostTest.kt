@@ -117,7 +117,7 @@ private fun hostShell(content: @Composable () -> Unit) {
             onNavigationClick = {},
             destinationController = destination,
             fabController = fab,
-            onToolbarReady = {}
+            topBarController = remember { ShellTopBarController() }
         ) {
             content()
         }

@@ -8,7 +8,6 @@ import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +30,7 @@ import java.util.GregorianCalendar
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -82,7 +82,7 @@ fun ScreenshotDestination(
     viewModel.uiState.actionsEnabled = actionsEnabled
 
     fun toast(message: String) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        ShellMessages.post(message)
     }
 
     fun setToolbarTitle() {

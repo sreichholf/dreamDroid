@@ -9,24 +9,21 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UserBouquetCache
@@ -136,25 +133,11 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
         val app = getApplication<Application>()
         zapJob?.cancel()
         zapJob = viewModelScope.launch {
-            val handler = ZapRequestHandler()
-            val params = listOf(NameValuePair("sRef", reference))
-            val outcome = withContext(Dispatchers.IO) {
-                simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
-                    handler.parseSimpleResult(xml)
-                }
-            }
+            val response = EnigmaClient().zap(listOf(NameValuePair("sRef", reference)))
             if (!isActive) {
                 return@launch
             }
-            val result = outcome.second
-            val error = outcome.third
-            var toastText = app.getText(R.string.get_content_error).toString()
-            val stateText = result.stateText
-            when {
-                !stateText.isNullOrEmpty() -> toastText = stateText
-                error != null -> toastText = error.resolve(app).orEmpty()
-            }
-            errorText = toastText
+            errorText = response.userMessage(app)
         }
     }
 

@@ -1,23 +1,25 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.enigma.withReadableTimes
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 /**
@@ -59,18 +61,10 @@ class EpgEventDialogSession {
         host.runOnlineOnly {
             progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
             setTimerJob?.cancel()
-            setTimerJob = host.launchSimpleResultLoad(
-                TimerAddByEventIdRequestHandler(),
-                Timer.getEventIdParams(item)
-            ) { _, result, error ->
+            setTimerJob = host.lifecycleOwner.lifecycleScope.launch {
+                val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(item))
                 dismissProgress()
-                var toastText = ctx.getText(R.string.get_content_error).toString()
-                val stateText = result.stateText
-                when {
-                    !stateText.isNullOrEmpty() -> toastText = stateText
-                    error != null -> toastText = error.resolve(ctx).orEmpty()
-                }
-                Toast.makeText(ctx, toastText, Toast.LENGTH_LONG).show()
+                ShellMessages.post(response.userMessage(ctx))
             }
         }
     }

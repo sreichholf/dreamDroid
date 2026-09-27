@@ -39,4 +39,10 @@
         android:layout_alignParentTop="true"
         android:background="@android:color/transparent" />
 
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/video_snackbar_host"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true" />
+
 </RelativeLayout>

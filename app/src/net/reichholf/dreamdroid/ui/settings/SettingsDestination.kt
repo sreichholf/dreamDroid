@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.settings
 
 import android.os.Handler
 import android.os.Looper
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -17,6 +16,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Phase 2.7e: Settings as a direct Compose NavHost destination.
@@ -37,7 +37,7 @@ fun SettingsDestination(
     }
     LaunchedEffect(message) {
         if (!message.isNullOrEmpty()) {
-            Toast.makeText(context, message, viewModel.messageDuration).show()
+            ShellMessages.post(message)
             viewModel.consumeMessage()
         }
     }
