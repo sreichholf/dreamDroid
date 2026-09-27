@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Real 1.15 → 2.0 upgrade on a booted emulator.
 #
-# For each scenario: install 1.15, cold start it so its own code creates
+# For each scenario: install 1.15 (v1.15.460), cold start it so its own code creates
 # `dreambox` (Room v1), `dreamdroid` (SQLite v14) and the prefs file, seed
 # seed-profile.sql, `adb install -r` the 2.0 APK over it, cold start 2.0 from
 # the launcher, then run Upgrade115Test against the upgraded data.

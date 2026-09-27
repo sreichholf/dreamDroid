@@ -15,7 +15,7 @@ on:
         type: boolean
         default: false
       upgrade_from_115:
-        description: Upgrade a real 1.15 (master) install to this build on an emulator, instead of the instrumented suite
+        description: Upgrade a real v1.15.460 install to this build on an emulator, instead of the instrumented suite
         type: boolean
         default: false
 
@@ -210,24 +210,25 @@ jobs:
   # debug.keystore and net.reichholf.dreamdroid.debug, so `adb install -r` is a
   # real in-place upgrade. See .github/upgrade-from-115/run.sh.
   build115:
-    name: Build 1.15 googleDebug (master)
+    name: Build 1.15 googleDebug (v1.15.460)
     if: github.event_name == 'workflow_dispatch' && inputs.upgrade_from_115
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - name: Checkout master
+      # The last published 1.x release (GitHub, Play, F-Droid).
+      - name: Checkout v1.15.460
         uses: actions/checkout@v5
         with:
-          ref: master
+          ref: v1.15.460
 
-      # AGP 8.2 / Gradle 8.2 need JDK 17.
+      # AGP 8.1 / Gradle 8.0 need JDK 17.
       - name: Set up JDK 17
         uses: actions/setup-java@v5
         with:
           java-version: "17"
           distribution: temurin
 
-      # master signs with AGP's default ~/.android/debug.keystore; use the repo
+      # 1.15 signs with AGP's default ~/.android/debug.keystore; use the repo
       # copy main signs with. JCenter is gone: org.openhab.jmdns 3.4.2 only
       # lived there, javax.jmdns 3.4.1 on Maven Central has the same API.
       # gradle.properties jvmargs carry CMS flags JDK 17 rejects.
