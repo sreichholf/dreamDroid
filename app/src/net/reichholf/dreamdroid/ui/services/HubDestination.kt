@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
@@ -84,6 +85,7 @@ fun HubDestination(
         else -> TvMoviesDestination.TV
     }
 
+    val loadingText = stringResource(R.string.loading)
     fun selectDestination(dest: TvMoviesDestination) {
         when (dest) {
             TvMoviesDestination.TV -> viewModel.selectTv(tvBouquets)
@@ -92,7 +94,7 @@ fun HubDestination(
 
             TvMoviesDestination.MOVIES -> {
                 if (!viewModel.selectMovies()) {
-                    ShellMessages.post(context.getString(R.string.loading))
+                    ShellMessages.post(loadingText)
                 }
             }
 
