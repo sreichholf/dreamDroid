@@ -14,8 +14,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 /**
  * One-shot user messages for the phone shell, the TV hub, and the player. In-app
- * results post here instead of using `Toast`; each host collects them into a
- * [SnackbarHostState].
+ * results post here instead of using `Toast`; each started host collects them into a
+ * [SnackbarHostState]. There is no replay: a message posted while no host is started
+ * (for example a mutation that finishes with the app in the background) is dropped.
  */
 object ShellMessages {
     private val pending = MutableSharedFlow<String>(extraBufferCapacity = 16)
