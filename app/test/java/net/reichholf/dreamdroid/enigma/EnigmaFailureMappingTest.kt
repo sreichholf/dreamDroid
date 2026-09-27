@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.Python
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -110,8 +111,7 @@ class EnigmaFailureMappingTest {
         val error = EnigmaHttpError(EnigmaFailure.Auth)
         val outcome =
             simpleResultFromFetch(EnigmaHttpResult.Failure(error)) { error("unused") }
-        assertEquals(false, outcome.success)
-        assertNull(outcome.result.stateText)
+        assertNull(outcome.value)
         assertSame(error, outcome.error)
     }
 
@@ -122,9 +122,9 @@ class EnigmaFailureMappingTest {
             simpleResultFromFetch(xml) {
                 SimpleResult(state = Python.FALSE, stateText = "Timer conflict")
             }
-        assertEquals(true, outcome.success)
-        assertEquals(Python.FALSE, outcome.result.state)
-        assertEquals("Timer conflict", outcome.result.stateText)
+        assertNotNull(outcome.value)
+        assertEquals(Python.FALSE, outcome.value!!.state)
+        assertEquals("Timer conflict", outcome.value!!.stateText)
         assertEquals(
             EnigmaFailure.BoxRejected("Timer conflict"),
             outcome.error!!.failure
@@ -138,7 +138,7 @@ class EnigmaFailureMappingTest {
             simpleResultFromFetch(xml) {
                 SimpleResult(state = Python.TRUE, stateText = "OK")
             }
-        assertEquals(true, outcome.success)
+        assertNotNull(outcome.value)
         assertNull(outcome.error)
     }
 

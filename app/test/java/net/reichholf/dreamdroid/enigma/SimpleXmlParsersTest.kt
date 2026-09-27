@@ -81,9 +81,9 @@ class SimpleXmlParsersTest {
                 EnigmaHttpResult.Success(xml.toByteArray()),
                 SimpleResultParser::parse
             )
-        assertTrue(response.success)
-        assertEquals("True", response.result.state)
-        assertEquals("Done", response.result.stateText)
+        assertEquals("True", response.value!!.state)
+        assertEquals("Done", response.value!!.stateText)
+        assertNull(response.error)
     }
 
     @Test
@@ -191,8 +191,7 @@ class SimpleXmlParsersTest {
                 EnigmaHttpResult.Success("<e2simplexmlresult><e2state>".toByteArray()),
                 SimpleResultParser::parse
             )
-        assertFalse(fallback.success)
-        assertNull(fallback.result.stateText)
+        assertNull(fallback.value)
         assertNull(fallback.error)
     }
 }

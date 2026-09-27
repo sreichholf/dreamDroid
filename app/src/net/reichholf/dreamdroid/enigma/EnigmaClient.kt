@@ -102,36 +102,37 @@ class EnigmaClient(private val http: EnigmaHttp = EnigmaHttp()) {
             }
         }
 
-    suspend fun zap(params: List<NameValuePair>): SimpleResultResponse =
+    // Mutations below: a rejected command has a value and a BoxRejected error.
+    suspend fun zap(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.ZAP, params)
 
-    suspend fun remoteCommand(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun remoteCommand(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.REMOTECONTROL, params)
 
-    suspend fun sendMessage(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun sendMessage(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.MESSAGE, params)
 
-    suspend fun playMedia(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun playMedia(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.MEDIA_PLAYER_PLAY, params)
 
-    suspend fun deleteMovie(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun deleteMovie(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.MOVIE_DELETE, params)
 
-    suspend fun addTimerByEventId(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun addTimerByEventId(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.TIMER_ADD_BY_EVENT_ID, params)
 
-    suspend fun changeTimer(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun changeTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.TIMER_CHANGE, params)
 
-    suspend fun deleteTimer(params: List<NameValuePair>): SimpleResultResponse =
+    suspend fun deleteTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.TIMER_DELETE, params)
 
-    suspend fun cleanupTimers(): SimpleResultResponse = simpleResult(URIStore.TIMER_CLEANUP)
+    suspend fun cleanupTimers(): EnigmaResponse<SimpleResult> = simpleResult(URIStore.TIMER_CLEANUP)
 
     private suspend fun simpleResult(
         uri: String,
         params: List<NameValuePair> = emptyList()
-    ): SimpleResultResponse = withContext(Dispatchers.IO) {
+    ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
         simpleResultFromFetch(http.fetch(uri, params), SimpleResultParser::parse)
     }
 

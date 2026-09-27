@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
@@ -119,7 +120,8 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
                 }
             }
             handle.lifecycleOwner.lifecycleScope.launch {
-                val (_, result, error) = EnigmaClient().remoteCommand(params)
+                val (value, error) = EnigmaClient().remoteCommand(params)
+                val result = value ?: SimpleResult()
                 var hasError = false
                 var toastText = contentErrorText
                 val stateText = result.stateText

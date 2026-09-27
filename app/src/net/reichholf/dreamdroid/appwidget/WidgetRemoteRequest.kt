@@ -55,9 +55,9 @@ object WidgetRemoteRequest {
         val response = EnigmaClient(profile).remoteCommand(params)
         val error = response.error
         val errorText = when {
-            !response.success && error != null -> error.resolve(context).orEmpty()
-            !response.success -> context.getString(R.string.connection_error)
-            Python.FALSE == response.result.state -> response.result.stateText
+            response.value == null && error != null -> error.resolve(context).orEmpty()
+            response.value == null -> context.getString(R.string.connection_error)
+            Python.FALSE == response.value.state -> response.value.stateText
             else -> null
         }
         if (errorText != null) {

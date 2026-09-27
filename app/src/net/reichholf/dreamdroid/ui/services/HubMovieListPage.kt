@@ -422,7 +422,7 @@ class HubMovieListSession {
                 val response = EnigmaClient().deleteMovie(MovieKeys.getDeleteParams(movie))
                 dismissProgress()
                 toast(response.userMessage(ctx))
-                if (reloadOnSimpleResult && Python.TRUE == response.result.state) {
+                if (reloadOnSimpleResult && Python.TRUE == response.value?.state) {
                     reloadOnSimpleResult = false
                     reload()
                 }

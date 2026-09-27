@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.helpers.DateTime
@@ -365,7 +366,7 @@ internal class TvTimerEditWorkingCopy(
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
         saveJob = scope.launch {
-            val result = EnigmaClient().changeTimer(params).result
+            val result = EnigmaClient().changeTimer(params).value ?: SimpleResult()
             progress = null
             if (Python.TRUE.equals(result.state)) {
                 editState.saveError = ""

@@ -9,7 +9,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -39,8 +39,7 @@ class EnigmaClientMutationTest {
         val request = server.takeRequest()
         assertEquals("/web/zap", request.requestUrl!!.encodedPath)
         assertEquals("1:0:1:a", request.requestUrl!!.queryParameter("sRef"))
-        assertTrue(response.success)
-        assertEquals("Active service is now", response.result.stateText)
+        assertEquals("Active service is now", response.value!!.stateText)
         assertNull(response.error)
     }
 
@@ -49,7 +48,7 @@ class EnigmaClientMutationTest {
         server.enqueue(MockResponse().setBody(simpleResult(Python.FALSE, "Conflicting timer")))
         val response = client().changeTimer(listOf(NameValuePair("sRef", "1:0:1:a")))
         assertEquals("/web/timerchange", server.takeRequest().requestUrl!!.encodedPath)
-        assertTrue(response.success)
+        assertNotNull(response.value)
         assertEquals(EnigmaFailure.BoxRejected("Conflicting timer"), response.error!!.failure)
     }
 
@@ -67,7 +66,7 @@ class EnigmaClientMutationTest {
         server.enqueue(MockResponse().setResponseCode(500))
         val response = client().deleteMovie(listOf(NameValuePair("sRef", "1:0:0:m")))
         assertEquals("/web/moviedelete", server.takeRequest().requestUrl!!.encodedPath)
-        assertFalse(response.success)
+        assertNull(response.value)
         assertTrue(response.error!!.failure is EnigmaFailure.Http)
     }
 
@@ -76,7 +75,7 @@ class EnigmaClientMutationTest {
         server.enqueue(MockResponse().setBody("<e2simplexmlresult><e2state>True</e2state>"))
         val response = client().remoteCommand(listOf(NameValuePair("command", "352")))
         assertEquals("/web/remotecontrol", server.takeRequest().requestUrl!!.encodedPath)
-        assertFalse(response.success)
+        assertNull(response.value)
         assertNull(response.error)
     }
 

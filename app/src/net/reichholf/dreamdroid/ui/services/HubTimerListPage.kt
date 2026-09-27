@@ -22,7 +22,8 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.SimpleResultResponse
+import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.TimerListLoadResult
 import net.reichholf.dreamdroid.enigma.loadTimerList
@@ -295,7 +296,7 @@ class HubTimerListSession : PhoneNavHandle.ActivityResultListener {
         }
     }
 
-    private fun onSimpleResult(response: SimpleResultResponse) {
+    private fun onSimpleResult(response: EnigmaResponse<SimpleResult>) {
         dismissProgress()
         val ctx = context ?: return
         toast(response.userMessage(ctx))

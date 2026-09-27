@@ -58,8 +58,8 @@ fun LifecycleOwner.startLiveServiceStream(
         return null
     }
     return lifecycleScope.launch {
-        val (success, result, error) = EnigmaClient().zap(listOf(NameValuePair("sRef", serviceRef)))
-        if (success && error == null) {
+        val (result, error) = EnigmaClient().zap(listOf(NameValuePair("sRef", serviceRef)))
+        if (result != null && error == null) {
             play()
         } else {
             toastZapFailure(context, result, error)
@@ -67,9 +67,9 @@ fun LifecycleOwner.startLiveServiceStream(
     }
 }
 
-private fun toastZapFailure(context: Context, result: SimpleResult, error: EnigmaHttpError?) {
+private fun toastZapFailure(context: Context, result: SimpleResult?, error: EnigmaHttpError?) {
     val message = zapThenStreamFailureText(
-        result.stateText,
+        result?.stateText,
         error?.resolve(context),
         context.getString(R.string.get_content_error)
     )

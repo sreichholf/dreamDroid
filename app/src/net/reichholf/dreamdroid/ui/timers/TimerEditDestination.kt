@@ -437,7 +437,7 @@ class TimerEditSession(
             val params = Timer.getSaveParams(timer, timerOld)
             saveJob?.cancel()
             saveJob = scope.launch {
-                onSaveResult(EnigmaClient().changeTimer(params).result)
+                onSaveResult(EnigmaClient().changeTimer(params).value ?: SimpleResult())
             }
         }
     }
@@ -464,7 +464,7 @@ class TimerEditSession(
             val params = Timer.getDeleteParams(toDelete)
             saveJob?.cancel()
             saveJob = scope.launch {
-                onSaveResult(EnigmaClient().deleteTimer(params).result)
+                onSaveResult(EnigmaClient().deleteTimer(params).value ?: SimpleResult())
             }
         }
     }

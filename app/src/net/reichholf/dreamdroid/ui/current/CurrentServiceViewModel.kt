@@ -154,7 +154,7 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
                 return@launch
             }
             progress = null
-            errorText = timerResultMessage(response.result, response.error)
+            errorText = timerResultMessage(response.value ?: SimpleResult(), response.error)
         }
     }
 

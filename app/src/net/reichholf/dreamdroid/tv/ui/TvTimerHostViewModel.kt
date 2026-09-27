@@ -13,7 +13,8 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.SimpleResultResponse
+import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
@@ -111,7 +112,10 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
         mutate(R.string.deleting) { deleteTimer(params) }
     }
 
-    private fun mutate(messageRes: Int, call: suspend EnigmaClient.() -> SimpleResultResponse) {
+    private fun mutate(
+        messageRes: Int,
+        call: suspend EnigmaClient.() -> EnigmaResponse<SimpleResult>
+    ) {
         if (progress != null) {
             return
         }
