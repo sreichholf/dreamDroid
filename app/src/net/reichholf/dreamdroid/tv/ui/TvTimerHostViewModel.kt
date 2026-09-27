@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
@@ -86,7 +87,7 @@ class TvTimerHostViewModel(application: Application) : AndroidViewModel(applicat
 
     fun reload() {
         val app = getApplication<Application>()
-        val currentProfileId = DreamDroid.currentProfileOrNull()?.id
+        val currentProfileId = ProfileRepository.get().current.value?.id
         // The activity outlives a profile switch in TvProfilesHost.
         if (currentProfileId != profileId) {
             profileId = currentProfileId

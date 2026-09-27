@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
@@ -62,7 +63,7 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
     private var zapJob: Job? = null
 
     init {
-        val profile = DreamDroid.getCurrentProfile()
+        val profile = ProfileRepository.get().requireCurrent()
         saved = readZapNavSaved(
             savedAccess,
             defaultBouquetRef = profile.defaultBouquetTv.orEmpty(),
@@ -106,7 +107,7 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
             refresh.setRefreshing(false)
             toolbarTitle = finishedTitle()
             if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
+                val profileId = ProfileRepository.get().requireCurrent().id
                 val cached = if (profileId != null) {
                     UserBouquetCache.loadRosterServices(
                         AppDatabase.roster(app),

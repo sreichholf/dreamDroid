@@ -18,6 +18,7 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickViewModel
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -42,8 +43,8 @@ class TvTimerServicePickTest {
 
     @Before
     fun installProfile() {
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(
             Profile().apply {
                 id = 4711
                 host = "127.0.0.1"
@@ -57,9 +58,9 @@ class TvTimerServicePickTest {
     fun restoreProfile() {
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(
+            ProfileRepository.get().loadCurrent(
                 InstrumentationRegistry.getInstrumentation().targetContext
             )
         }

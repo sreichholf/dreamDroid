@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
@@ -169,9 +170,11 @@ fun TimerEditDestination(
         )
     }
     if (showTagsPicker) {
-        val tags = DreamDroid.getTags()
+        val tags = ProfileRepository.get().tags()
         val checked =
-            BooleanArray(tags.size) { i -> session.selectedTags.contains(DreamDroid.getTags()[i]) }
+            BooleanArray(tags.size) { i ->
+                session.selectedTags.contains(ProfileRepository.get().tags()[i])
+            }
         MultiChoiceAlertDialog(
             title = stringResource(R.string.choose_tags),
             items = tags,
@@ -341,7 +344,7 @@ class TimerEditSession(
     }
 
     fun applyTagsSelection(indices: List<Int>) {
-        val tags = DreamDroid.getTags()
+        val tags = ProfileRepository.get().tags()
         val next = ArrayList<String>()
         for (which in indices) {
             if (which in tags.indices) {
@@ -379,7 +382,9 @@ class TimerEditSession(
             return
         }
         val scope = workScope ?: return
-        if (DreamDroid.getLocations().size == 0 || DreamDroid.getTags().size == 0) {
+        if (ProfileRepository.get().locations().size == 0 ||
+            ProfileRepository.get().tags().size == 0
+        ) {
             if (locationsJob != null) {
                 return
             }
@@ -387,24 +392,24 @@ class TimerEditSession(
             locationsJob = scope.launch {
                 val http = EnigmaHttp()
                 try {
-                    if (DreamDroid.getLocations().size == 0) {
+                    if (ProfileRepository.get().locations().size == 0) {
                         progress = IndeterminateProgressState(
                             title = ctx.getString(R.string.loading),
                             message = ctx.getString(R.string.locations) + " - " +
                                 ctx.getString(R.string.fetching_data)
                         )
                         withContext(Dispatchers.IO) {
-                            DreamDroid.loadLocations(http)
+                            ProfileRepository.get().loadLocations(http)
                         }
                     }
-                    if (DreamDroid.getTags().size == 0) {
+                    if (ProfileRepository.get().tags().size == 0) {
                         progress = IndeterminateProgressState(
                             title = ctx.getString(R.string.loading),
                             message = ctx.getString(R.string.tags) + " - " +
                                 ctx.getString(R.string.fetching_data)
                         )
                         withContext(Dispatchers.IO) {
-                            DreamDroid.loadTags(http)
+                            ProfileRepository.get().loadTags(http)
                         }
                     }
                 } finally {
@@ -437,7 +442,7 @@ class TimerEditSession(
             Collections.addAll(selectedTags, *text.split(" ").toTypedArray())
         }
         val afterEvents = ctx.resources.getTextArray(R.array.afterevents).map { it.toString() }
-        editState.loadFrom(timer, afterEvents, DreamDroid.getLocations(), repeatedText)
+        editState.loadFrom(timer, afterEvents, ProfileRepository.get().locations(), repeatedText)
         formHydrated = true
         notifyWorkingCopy()
     }

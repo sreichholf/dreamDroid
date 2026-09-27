@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 
 /**
@@ -33,25 +34,25 @@ fun CoroutineScope.launchLocationsAndTagsLoad(
     onLocationsResult: ((success: Boolean) -> Unit)? = null
 ): Job = launch {
     val http = EnigmaHttp()
-    var locationsOk = DreamDroid.locationsLoadedFromReceiver()
-    if (DreamDroid.getLocations().size == 0) {
+    var locationsOk = ProfileRepository.get().locationsLoadedFromReceiver()
+    if (ProfileRepository.get().locations().size == 0) {
         onProgress(
             context.getString(R.string.loading),
             context.getString(R.string.locations) + " - " +
                 context.getString(R.string.fetching_data)
         )
         locationsOk = withContext(Dispatchers.IO) {
-            DreamDroid.loadLocations(http)
+            ProfileRepository.get().loadLocations(http)
         }
     }
-    if (DreamDroid.getTags().size == 0) {
+    if (ProfileRepository.get().tags().size == 0) {
         onProgress(
             context.getString(R.string.loading),
             context.getString(R.string.tags) + " - " +
                 context.getString(R.string.fetching_data)
         )
         withContext(Dispatchers.IO) {
-            DreamDroid.loadTags(http)
+            ProfileRepository.get().loadTags(http)
         }
     }
     onLocationsResult?.invoke(locationsOk)

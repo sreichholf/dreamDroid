@@ -18,6 +18,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.lang.reflect.Proxy
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.CurrentServiceLoadResult
 import net.reichholf.dreamdroid.enigma.Event
@@ -50,8 +51,8 @@ class HubNowPlayingRetentionTest {
 
     @Before
     fun seedProfileAndStrip() {
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(Profile().apply { id = 7 })
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(Profile().apply { id = 7 })
         PreferenceManager.getDefaultSharedPreferences(app).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .putBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true)
@@ -62,9 +63,9 @@ class HubNowPlayingRetentionTest {
     fun restoreProfile() {
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(app)
+            ProfileRepository.get().loadCurrent(app)
         }
     }
 

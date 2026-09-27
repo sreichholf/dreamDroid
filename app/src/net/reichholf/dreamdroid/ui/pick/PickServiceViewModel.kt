@@ -12,6 +12,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -69,7 +70,7 @@ class PickServiceViewModel(application: Application, savedStateHandle: SavedStat
             refresh.setRefreshing(false)
             toolbarTitle = app.getString(R.string.services)
             if (!result.success) {
-                val profileId = DreamDroid.getCurrentProfile().id
+                val profileId = ProfileRepository.get().requireCurrent().id
                 val cached = if (profileId != null) {
                     val dao = AppDatabase.roster(app)
                     val rows = ArrayList(

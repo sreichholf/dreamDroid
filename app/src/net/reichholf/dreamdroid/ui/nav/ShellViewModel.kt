@@ -7,9 +7,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.PowerStateSetOutcome
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.SleepTimerLoadOutcome
@@ -41,6 +44,17 @@ class ShellViewModel(
     private var sleepTimerOpenerOwner: Any? = null
     private var sleepTimerOpener: ((SleepTimer) -> Unit)? = null
     private var pendingSleepTimer: SleepTimer? = null
+
+    private var profileChangedOwner: Any? = null
+    private var profileChanged: ((Profile) -> Unit)? = null
+
+    init {
+        viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+            ProfileRepository.get().switches.collect { profile ->
+                profileChanged?.invoke(profile)
+            }
+        }
+    }
 
     fun onPowerMenuAction(itemId: Int) {
         val state = when (itemId) {
@@ -121,6 +135,25 @@ class ShellViewModel(
         }
         sleepTimerOpenerOwner = null
         sleepTimerOpener = null
+    }
+
+    /**
+     * The current activity handles a profile switch. [ProfileRepository.switches]
+     * is collected here for the life of the shell, so a configuration change does
+     * not drop the subscription. [unbindProfileChanged] ignores a call from an
+     * activity that is no longer the owner.
+     */
+    fun bindProfileChanged(owner: Any, handler: (Profile) -> Unit) {
+        profileChangedOwner = owner
+        profileChanged = handler
+    }
+
+    fun unbindProfileChanged(owner: Any) {
+        if (profileChangedOwner !== owner) {
+            return
+        }
+        profileChangedOwner = null
+        profileChanged = null
     }
 
     private fun publishPower(outcome: PowerStateSetOutcome) {

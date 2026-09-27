@@ -7,6 +7,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.VideoActivity
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -25,8 +26,8 @@ class TvComposeHubStreamIntentTest {
 
     @Before
     fun installProfile() {
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(
             Profile().apply {
                 host = "127.0.0.1"
                 port = 80
@@ -43,9 +44,9 @@ class TvComposeHubStreamIntentTest {
             .commit()
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(context())
+            ProfileRepository.get().loadCurrent(context())
         }
     }
 

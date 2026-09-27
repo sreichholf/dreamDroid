@@ -37,9 +37,9 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.ProfileChangedListener
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.enigma.launchVolumeSetLoad
@@ -80,7 +80,6 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  */
 class MainActivity :
     BaseActivity(),
-    ProfileChangedListener,
     DialogActionListener,
     SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
@@ -146,7 +145,7 @@ class MainActivity :
         if (error.isNullOrEmpty()) {
             error = getString(result.errorTextId)
         }
-        val p = DreamDroid.getCurrentProfile()
+        val p = ProfileRepository.get().requireCurrent()
         val title = String.format("%s@%s:%s", p.user, p.host, p.port)
         val ui = ProfileCheckUi.Failed(title = title, message = error.orEmpty())
         phoneNav.navigateToProfileCheck(ui)
@@ -161,8 +160,8 @@ class MainActivity :
     fun recheckProfileAfterFailure() {
         // Keep openStartOnProfileSuccess so a later success opens the start route.
         showProfileCheckChecking(getString(R.string.checking_connection))
-        val p = DreamDroid.getCurrentProfile()
-        p.cachedDeviceInfo = null
+        val p = ProfileRepository.get().requireCurrent()
+        ProfileRepository.get().setDeviceInfo(p, null)
         onProfileChanged(p, true)
     }
 
@@ -205,7 +204,7 @@ class MainActivity :
     }
 
     fun onProfileChecked(result: ProfileCheckResult) {
-        val hasCache = hasUseDrivenCache(DreamDroid.getCurrentProfile(), this)
+        val hasCache = hasUseDrivenCache(ProfileRepository.get().requireCurrent(), this)
         // Apply before any UI/helper gate so a finished check cannot leave Checking
         // stuck (paused window, or helper recreated between onPause and RESUMED).
         SessionConnectionHolder.shared.applyProfileCheckResult(result, hasCache)
@@ -244,7 +243,7 @@ class MainActivity :
         }
     }
 
-    override fun requestLocalNetworkOnCreate(): Boolean = DreamDroid.hasCurrentProfile()
+    override fun requestLocalNetworkOnCreate(): Boolean = ProfileRepository.get().hasCurrent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
@@ -253,7 +252,7 @@ class MainActivity :
             phoneNav.navigateToSleepTimer(timer)
         }
         startSessionReachabilityProbe()
-        if (!DreamDroid.hasCurrentProfile()) {
+        if (!ProfileRepository.get().hasCurrent()) {
             showSetupAssistant()
             return
         }
@@ -265,7 +264,7 @@ class MainActivity :
         if (showingSetup || !phoneShellReady) {
             return
         }
-        if (!DreamDroid.ensureCurrentProfile(this)) {
+        if (!ProfileRepository.get().ensureCurrent(this)) {
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetupAssistant()
@@ -284,7 +283,7 @@ class MainActivity :
                     onSave = { profile ->
                         val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
                         profile.id = id
-                        DreamDroid.setCurrentProfile(this, id, true)
+                        ProfileRepository.get().setCurrent(this, id, true)
                         PreferenceManager.getDefaultSharedPreferences(this).edit()
                             .putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false)
                             .apply()
@@ -312,7 +311,9 @@ class MainActivity :
         }
         phoneShellReady = true
         initViews()
-        DreamDroid.setCurrentProfileChangedListener(this)
+        shellActions.bindProfileChanged(this) { profile ->
+            onProfileChanged(profile, false)
+        }
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.unregisterOnSharedPreferenceChangeListener(this)
         preferences.registerOnSharedPreferenceChangeListener(this)
@@ -334,7 +335,7 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    val active = DreamDroid.currentProfileOrNull()
+                    val active = ProfileRepository.get().current.value
                     if (active == null || showingSetup) {
                         delay(SESSION_REACHABILITY_INTERVAL_MS)
                         continue
@@ -347,8 +348,8 @@ class MainActivity :
                         ),
                         isBusy = { checkProfileJob != null },
                         check = {
-                            val profile = DreamDroid.currentProfileOrNull() ?: active
-                            profile.cachedDeviceInfo = null
+                            val profile = ProfileRepository.get().current.value ?: active
+                            ProfileRepository.get().setDeviceInfo(profile, null)
                             withContext(Dispatchers.IO) {
                                 CheckProfile.checkProfile(profile, this@MainActivity)
                             }
@@ -366,10 +367,10 @@ class MainActivity :
 
     override fun onLocalNetworkPermissionGranted() {
         lanGranted = true
-        if (showingSetup || !DreamDroid.hasCurrentProfile()) {
+        if (showingSetup || !ProfileRepository.get().hasCurrent()) {
             return
         }
-        onProfileChanged(DreamDroid.getCurrentProfile(), true)
+        onProfileChanged(ProfileRepository.get().requireCurrent(), true)
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -432,19 +433,17 @@ class MainActivity :
         }
         if (shellWasPaused) {
             shellWasPaused = false
-            onProfileChanged(DreamDroid.getCurrentProfile(), true)
+            onProfileChanged(ProfileRepository.get().requireCurrent(), true)
         }
     }
 
     override fun onDestroy() {
         shellActions.unbindSleepTimerOpener(this)
+        shellActions.unbindProfileChanged(this)
         navigationHelper = null
         PreferenceManager.getDefaultSharedPreferences(
             this
         ).unregisterOnSharedPreferenceChangeListener(this)
-        if (DreamDroid.getCurrentProfileChangedListener() === this) {
-            DreamDroid.setCurrentProfileChangedListener(null)
-        }
         if (phoneShellReady) {
             phoneNav.detach()
         }
@@ -465,7 +464,7 @@ class MainActivity :
             return false
         }
         ensureNavigationHelper()
-        onProfileChanged(DreamDroid.getCurrentProfile(), isResume)
+        onProfileChanged(ProfileRepository.get().requireCurrent(), isResume)
         return true
     }
 
@@ -564,16 +563,6 @@ class MainActivity :
         drawerOpen = false
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see net.reichholf.dreamdroid.OnActiveProfileChangedListener#
-     * onActiveProfileChanged(net.reichholf.dreamdroid.Profile)
-     */
-    override fun onProfileChanged(p: Profile) {
-        onProfileChanged(p, false)
-    }
-
     fun onProfileChanged(p: Profile, isResuming: Boolean) {
         if (!isResuming && isPaused()) {
             return
@@ -584,7 +573,7 @@ class MainActivity :
             bindDrawerConnectionChip()
         }
         setProfileName()
-        if (p.cachedDeviceInfo == null) {
+        if (ProfileRepository.get().deviceInfo(p) == null) {
             if (p == currentProfile && checkProfileJob != null) {
                 return
             }
@@ -619,14 +608,14 @@ class MainActivity :
      *
      */
     fun setProfileName() {
-        profileName = DreamDroid.getCurrentProfile().name.orEmpty()
+        profileName = ProfileRepository.get().requireCurrent().name.orEmpty()
     }
 
     private fun bindDrawerConnectionChip() {
         if (!phoneShellReady) {
             return
         }
-        profileName = DreamDroid.getCurrentProfile().name.orEmpty()
+        profileName = ProfileRepository.get().requireCurrent().name.orEmpty()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

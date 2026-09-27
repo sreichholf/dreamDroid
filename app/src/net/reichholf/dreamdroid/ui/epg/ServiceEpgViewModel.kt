@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.EventListLoadResult
 import net.reichholf.dreamdroid.enigma.loadEventList
@@ -125,7 +126,7 @@ class ServiceEpgViewModel(application: Application, savedStateHandle: SavedState
 }
 
 internal class ServiceEpgLoadHooks(
-    val profileId: () -> Int? = { DreamDroid.getCurrentProfile().id },
+    val profileId: () -> Int? = { ProfileRepository.get().requireCurrent().id },
     val epgDao: (Context) -> EpgDao = { context -> AppDatabase.epg(context) },
     val shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
         SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)

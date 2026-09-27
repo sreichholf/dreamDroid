@@ -10,6 +10,7 @@ import android.content.Context
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckEntry
@@ -51,7 +52,8 @@ object CheckProfile {
                 if (port > 0 && port <= 65535) {
                     resultList.add(entry(R.string.port, false, port.toString()))
                     val http = EnigmaHttp(profile)
-                    var xml = profile.cachedDeviceInfo
+                    val profiles = ProfileRepository.get()
+                    var xml = profiles.deviceInfo(profile)
                     var fetchError: EnigmaHttpError? = null
                     if (xml == null) {
                         when (val fetched = http.fetch(URIStore.DEVICE_INFO)) {
@@ -64,7 +66,7 @@ object CheckProfile {
                         val deviceInfo = DeviceInfoParser.parse(xml)
 
                         if (deviceInfo != null && !deviceInfo.isEmpty()) {
-                            profile.cachedDeviceInfo = xml
+                            profiles.setDeviceInfo(profile, xml)
                             resultList.add(
                                 entry(R.string.device_name, false, deviceInfo.deviceName)
                             )
@@ -90,7 +92,7 @@ object CheckProfile {
                                 errorTextId = R.string.version_too_low
                             }
                         } else {
-                            profile.cachedDeviceInfo = null
+                            profiles.setDeviceInfo(profile, null)
                             resultList.add(
                                 entry(
                                     R.string.connection,

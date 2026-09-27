@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
@@ -181,13 +182,13 @@ fun PhoneNavHandle.launchMovieListLoad(
     return lifecycleOwner.lifecycleScope.launch {
         val http = EnigmaHttp()
         withContext(Dispatchers.IO) {
-            if (DreamDroid.getLocations().size <= 1) {
-                if (!DreamDroid.loadLocations(http)) {
+            if (ProfileRepository.get().locations().size <= 1) {
+                if (!ProfileRepository.get().loadLocations(http)) {
                     android.util.Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")
                 }
             }
-            if (DreamDroid.getTags().size <= 1) {
-                if (!DreamDroid.loadTags(http)) {
+            if (ProfileRepository.get().tags().size <= 1) {
+                if (!ProfileRepository.get().loadTags(http)) {
                     android.util.Log.e(DreamDroid.LOG_TAG, "ERROR loading tags")
                 }
             }

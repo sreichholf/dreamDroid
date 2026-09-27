@@ -29,6 +29,7 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickViewModel
@@ -39,7 +40,7 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
  * carries the profile because a TV profile switch does not recreate the activity.
  */
 internal fun tvTimerServicePickKey(): String =
-    "tv-timer-service-pick:${DreamDroid.currentProfileOrNull()?.id}"
+    "tv-timer-service-pick:${ProfileRepository.get().current.value?.id}"
 
 /**
  * D-pad timer service picker: bouquet list, then channels. Back on channels returns

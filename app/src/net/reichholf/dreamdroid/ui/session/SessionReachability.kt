@@ -37,7 +37,7 @@ fun EnigmaFailure?.isReachabilityFailure(): Boolean = when (this) {
 
 /**
  * Run [check] when [shouldProbeReachability] is true. Returns true if a check ran.
- * Callers must fetch live (clear `cachedDeviceInfo`); a cached XML hit is not a recheck.
+ * Callers must fetch live (clear device info on ProfileRepository); a cached XML hit is not a recheck.
  */
 suspend fun probeSessionReachabilityIfNeeded(
     holder: SessionConnectionHolder,

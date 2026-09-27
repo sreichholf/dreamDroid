@@ -5,6 +5,7 @@ import android.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -46,7 +47,7 @@ data class TvHubMoviesResult(
  */
 suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     val app = context.applicationContext
-    val profileId = DreamDroid.getCurrentProfile().id
+    val profileId = ProfileRepository.get().requireCurrent().id
     val excluded = UserBouquetCache.excludedHubTabRefs(app)
     val db = AppDatabase.database(app)
     val rosterDao = db.rosterDao()
@@ -99,8 +100,8 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
                 profileId = profileId,
                 tabs = cachedTabs,
                 locations = movieHeadersForTvHub(
-                    locationsFromReceiver = DreamDroid.locationsLoadedFromReceiver(),
-                    liveLocations = DreamDroid.getLocations().toList(),
+                    locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
+                    liveLocations = ProfileRepository.get().locations().toList(),
                     cachedLocations = cachedMovies
                 )
             )
@@ -108,8 +109,8 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
         return TvHubBrowseResult(
             rows = emptyList(),
             locations = movieHeadersForTvHub(
-                locationsFromReceiver = DreamDroid.locationsLoadedFromReceiver(),
-                liveLocations = DreamDroid.getLocations().toList(),
+                locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
+                liveLocations = ProfileRepository.get().locations().toList(),
                 cachedLocations = cachedMovies
             ),
             errorText = bouquetResult.errorText,
@@ -178,16 +179,16 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
             rows.add(cached)
         }
     }
-    if (profileId != null && DreamDroid.locationsLoadedFromReceiver()) {
+    if (profileId != null && ProfileRepository.get().locationsLoadedFromReceiver()) {
         MovieSnapshotStore.replaceLocations(
             movieDao,
             profileId,
-            DreamDroid.getLocations().toList()
+            ProfileRepository.get().locations().toList()
         )
     }
     val locations = movieHeadersForTvHub(
-        locationsFromReceiver = DreamDroid.locationsLoadedFromReceiver(),
-        liveLocations = DreamDroid.getLocations().toList(),
+        locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
+        liveLocations = ProfileRepository.get().locations().toList(),
         cachedLocations = cachedMovies
     )
     return TvHubBrowseResult(
@@ -200,7 +201,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
 
 suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResult {
     val app = context.applicationContext
-    val profileId = DreamDroid.getCurrentProfile().id
+    val profileId = ProfileRepository.get().requireCurrent().id
     val movieDao = AppDatabase.movie(app)
     val cached = if (profileId != null) {
         MovieSnapshotStore.loadMovies(movieDao, profileId, dirname)
@@ -243,13 +244,13 @@ suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResul
 
 internal fun prefetchTvLocationsAndTags() {
     val http = EnigmaHttp()
-    if (DreamDroid.getLocations().size <= 1) {
-        if (!DreamDroid.loadLocations(http)) {
+    if (ProfileRepository.get().locations().size <= 1) {
+        if (!ProfileRepository.get().loadLocations(http)) {
             Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")
         }
     }
-    if (DreamDroid.getTags().size <= 1) {
-        if (!DreamDroid.loadTags(http)) {
+    if (ProfileRepository.get().tags().size <= 1) {
+        if (!ProfileRepository.get().loadTags(http)) {
             Log.e(DreamDroid.LOG_TAG, "ERROR loading tags")
         }
     }

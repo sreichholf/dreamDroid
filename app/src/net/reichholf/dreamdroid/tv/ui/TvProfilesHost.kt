@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditScreen
 import net.reichholf.dreamdroid.ui.profiles.ProfileEditState
 import net.reichholf.dreamdroid.ui.profiles.deleteConfirmedProfile
@@ -89,7 +90,7 @@ fun TvProfilesHost(
 
     fun confirmDelete(id: Int) {
         val profile = viewModel.loadedProfile(id) ?: return
-        val currentId = DreamDroid.currentProfileOrNull()?.id
+        val currentId = ProfileRepository.get().current.value?.id
         val deletingCurrent = profile.id != null && profile.id == currentId
         deleteConfirmedProfile(context, profile)
         applyPolicy(TvProfilesEvent.Delete(deletingCurrent))
@@ -108,7 +109,7 @@ fun TvProfilesHost(
                 profiles = viewModel.profiles,
                 onAdd = { viewModel.showAdd() },
                 onActivate = { id ->
-                    val success = DreamDroid.setCurrentProfile(context, id, true)
+                    val success = ProfileRepository.get().setCurrent(context, id, true)
                     applyPolicy(TvProfilesEvent.Activate(success))
                 },
                 onEdit = { id -> viewModel.showEdit(id) },
@@ -165,10 +166,10 @@ private fun TvProfilesEditor(
                 state.hostError = hostEmpty
                 onOutcome(TvProfilesEvent.Save(saved = false, currentProfile = false))
             } else {
-                val currentId = DreamDroid.currentProfileOrNull()?.id
+                val currentId = ProfileRepository.get().current.value?.id
                 val isCurrent = profile.id != null && profile.id == currentId
                 if (isCurrent) {
-                    DreamDroid.reloadCurrentProfile(context)
+                    ProfileRepository.get().reloadCurrent(context)
                 }
                 onOutcome(TvProfilesEvent.Save(saved = true, currentProfile = isCurrent))
             }

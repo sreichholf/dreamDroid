@@ -12,6 +12,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.ProfileChangedListener
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
@@ -44,9 +45,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
  * Owns CheckProfile + the 30s reachability probe so the hub can show Online /
  * Offline / Checking from [SessionConnectionHolder].
  */
-class MainActivity :
-    AppCompatActivity(),
-    ProfileChangedListener {
+class MainActivity : AppCompatActivity() {
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
         if (!showingSetup) {
@@ -58,6 +57,7 @@ class MainActivity :
     }
     private val hubViewModel: TvHubViewModel by viewModels { TvHubViewModel.Factory }
     private var checkProfileJob: Job? = null
+    private var profileChangesJob: Job? = null
     private var showingSetup: Boolean = false
     private var lanGranted by mutableStateOf(false)
     private var currentProfile: Profile = Profile.getDefault()
@@ -67,7 +67,7 @@ class MainActivity :
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         startSessionReachabilityProbe()
-        if (!DreamDroid.hasCurrentProfile()) {
+        if (!ProfileRepository.get().hasCurrent()) {
             showSetup()
             return
         }
@@ -79,7 +79,7 @@ class MainActivity :
         if (showingSetup) {
             return
         }
-        if (!DreamDroid.ensureCurrentProfile(this)) {
+        if (!ProfileRepository.get().ensureCurrent(this)) {
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetup()
@@ -98,7 +98,7 @@ class MainActivity :
                     onSave = { profile ->
                         val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
                         profile.id = id
-                        DreamDroid.setCurrentProfile(this, id, true)
+                        ProfileRepository.get().setCurrent(this, id, true)
                         startHub()
                     },
                     onLeave = { finish() }
@@ -110,8 +110,12 @@ class MainActivity :
     private fun startHub() {
         showingSetup = false
         localNetworkPermissionRequest.ensure(this)
-        DreamDroid.setCurrentProfileChangedListener(this)
-        onProfileChanged(DreamDroid.getCurrentProfile())
+        if (profileChangesJob == null) {
+            profileChangesJob = lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                ProfileRepository.get().switches.collect { onProfileChanged(it) }
+            }
+        }
+        onProfileChanged(ProfileRepository.get().requireCurrent())
         TvComposeHubHost.install(this)
         try {
             // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
@@ -131,7 +135,7 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    val active = DreamDroid.currentProfileOrNull()
+                    val active = ProfileRepository.get().current.value
                     if (active == null || showingSetup) {
                         delay(SESSION_REACHABILITY_INTERVAL_MS)
                         continue
@@ -144,8 +148,8 @@ class MainActivity :
                         ),
                         isBusy = { checkProfileJob != null },
                         check = {
-                            val profile = DreamDroid.currentProfileOrNull() ?: active
-                            profile.cachedDeviceInfo = null
+                            val profile = ProfileRepository.get().current.value ?: active
+                            ProfileRepository.get().setDeviceInfo(profile, null)
                             withContext(Dispatchers.IO) {
                                 CheckProfile.checkProfile(profile, this@MainActivity)
                             }
@@ -159,17 +163,17 @@ class MainActivity :
 
     /** Hub / ProfileCheck Recheck. Clears device-info and re-runs CheckProfile. */
     fun recheckProfile() {
-        val profile = DreamDroid.getCurrentProfile()
-        profile.cachedDeviceInfo = null
+        val profile = ProfileRepository.get().requireCurrent()
+        ProfileRepository.get().setDeviceInfo(profile, null)
         SessionConnectionHolder.shared.beginChecking()
         startCheckProfile(profile)
     }
 
-    override fun onProfileChanged(p: Profile) {
+    private fun onProfileChanged(p: Profile) {
         if (p.id != currentProfile.id) {
             SessionConnectionHolder.shared.resetForProfileChange()
         }
-        if (p.cachedDeviceInfo == null) {
+        if (ProfileRepository.get().deviceInfo(p) == null) {
             if (p == currentProfile && checkProfileJob != null) {
                 return
             }
@@ -201,14 +205,13 @@ class MainActivity :
     private fun onProfileChecked(result: ProfileCheckResult) {
         SessionConnectionHolder.shared.applyProfileCheckResult(
             result,
-            hasUseDrivenCache(DreamDroid.getCurrentProfile(), this)
+            hasUseDrivenCache(ProfileRepository.get().requireCurrent(), this)
         )
     }
 
     override fun onDestroy() {
-        if (DreamDroid.getCurrentProfileChangedListener() === this) {
-            DreamDroid.setCurrentProfileChangedListener(null)
-        }
+        profileChangesJob?.cancel()
+        profileChangesJob = null
         super.onDestroy()
     }
 }

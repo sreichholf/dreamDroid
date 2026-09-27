@@ -25,6 +25,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
@@ -158,7 +159,7 @@ fun TvTimerEditorHost(
             )
         }
         if (showTagsPicker) {
-            val tags = DreamDroid.getTags()
+            val tags = ProfileRepository.get().tags()
             val checked = BooleanArray(tags.size) { i ->
                 session.selectedTags.contains(tags[i])
             }
@@ -277,7 +278,7 @@ internal class TvTimerEditWorkingCopy(
     }
 
     fun applyTagsSelection(indices: List<Int>) {
-        val tags = DreamDroid.getTags()
+        val tags = ProfileRepository.get().tags()
         val next = ArrayList<String>()
         for (which in indices) {
             if (which in tags.indices) {
@@ -310,7 +311,9 @@ internal class TvTimerEditWorkingCopy(
     }
 
     fun ensureLocationsAndTagsThenReload() {
-        if (DreamDroid.getLocations().size != 0 && DreamDroid.getTags().size != 0) {
+        if (ProfileRepository.get().locations().size != 0 &&
+            ProfileRepository.get().tags().size != 0
+        ) {
             reload()
             return
         }
@@ -348,7 +351,7 @@ internal class TvTimerEditWorkingCopy(
             Collections.addAll(selectedTags, *text.split(" ").toTypedArray())
         }
         val afterEvents = context.resources.getTextArray(R.array.afterevents).map { it.toString() }
-        editState.loadFrom(timer, afterEvents, DreamDroid.getLocations(), repeatedText)
+        editState.loadFrom(timer, afterEvents, ProfileRepository.get().locations(), repeatedText)
         formHydrated = true
     }
 

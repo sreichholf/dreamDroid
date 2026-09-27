@@ -18,6 +18,7 @@ import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CompletableDeferred
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -75,13 +76,13 @@ class TvTimerHostRetentionTest {
 
     @Test
     fun reenteringTimersKeepsAddEditor() {
-        val seededLocation = DreamDroid.getLocations().isEmpty()
-        val seededTag = DreamDroid.getTags().isEmpty()
+        val seededLocation = ProfileRepository.get().locations().isEmpty()
+        val seededTag = ProfileRepository.get().tags().isEmpty()
         if (seededLocation) {
-            DreamDroid.getLocations().add("/hdd/movie/")
+            ProfileRepository.get().locations().add("/hdd/movie/")
         }
         if (seededTag) {
-            DreamDroid.getTags().add("News")
+            ProfileRepository.get().tags().add("News")
         }
         try {
             val app = ApplicationProvider.getApplicationContext<Application>()
@@ -114,10 +115,10 @@ class TvTimerHostRetentionTest {
             assertAddEditorShowing()
         } finally {
             if (seededLocation) {
-                DreamDroid.getLocations().remove("/hdd/movie/")
+                ProfileRepository.get().locations().remove("/hdd/movie/")
             }
             if (seededTag) {
-                DreamDroid.getTags().remove("News")
+                ProfileRepository.get().tags().remove("News")
             }
         }
     }

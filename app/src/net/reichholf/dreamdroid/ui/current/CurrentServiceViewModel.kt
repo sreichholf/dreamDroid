@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
@@ -284,7 +285,7 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
         return app.getString(R.string.get_content_error)
     }
 
-    private fun currentProfileId(): Int = DreamDroid.getCurrentProfile().id ?: -1
+    private fun currentProfileId(): Int = ProfileRepository.get().requireCurrent().id ?: -1
 
     private fun baseTitle(): String =
         getApplication<Application>().getString(R.string.current_service)

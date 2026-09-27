@@ -29,7 +29,7 @@ This plan unifies **session connectivity** with a **use-driven Room cache** so a
 
 ## 2. Why this exists
 
-Before this plan, every leaf invented error chrome: ProfileCheck gate, drawer chip, list empty text, toast, silent swallow, or `Throwable` class names. HTTP failures collapse to `EnigmaHttpError` plus `errorText: String?`. Timeouts and SSL are often OkHttp `localizedMessage`. MultiEPG already peeks Room and keeps stale rows; the hub still waits up to 20s for in-memory `Profile.cachedDeviceInfo` (`@Ignore`, not Room) in both `HubDestination` and `HubNowPlaying` (`PROFILE_WAIT_MS`) before `loadBouquetList`.
+Before this plan, every leaf invented error chrome: ProfileCheck gate, drawer chip, list empty text, toast, silent swallow, or `Throwable` class names. HTTP failures collapse to `EnigmaHttpError` plus `errorText: String?`. Timeouts and SSL are often OkHttp `localizedMessage`. MultiEPG already peeks Room and keeps stale rows; the hub still waits up to 20s for in-memory device-info XML on `ProfileRepository` (not a Room column) in both `HubDestination` and `HubNowPlaying` (`PROFILE_WAIT_MS`) before `loadBouquetList`.
 
 A LAN remote is often used with a sleeping box. If the user has already opened Favourites (or a movie location, or timers), that data should still be readable. Zap, remote, stream, and live meters cannot.
 
@@ -66,7 +66,7 @@ Drawer shows **Online** / **Offline** (optional last-updated) / **Checking**. Pe
 2. After slice 3: skip the UI when the TV/Radio **tab strip** exists (the start route can paint). MultiEPG `epg_chunk` **alone** does not skip the gate — that user would land on a tabless hub. They still keep Room EPG for MultiEPG after they get past a live check or a later tab-strip write.
 3. Slices 6–7 extend `hasCache` with timer / movie snapshots the same way (can paint that start surface).
 
-Skip **UI** ≠ skip **work**. Always still run `CheckProfile` when a profile is selected so webif feature flags (now/next, POST, sleep timer) and `cachedDeviceInfo` stay current when the box answers.
+Skip **UI** ≠ skip **work**. Always still run `CheckProfile` when a profile is selected so webif feature flags (now/next, POST, sleep timer) and device-info XML stay current when the box answers.
 
 ## 4. Use-driven cache
 

@@ -29,6 +29,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.MovieListLoadResult
 import net.reichholf.dreamdroid.enigma.loadMovieList
@@ -93,7 +94,7 @@ fun HubMovieListPage(
     session.onShowDetail = { detailContent = it }
     session.onRequestTagPicker = { showTagPicker = true }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
-    session.profileId = DreamDroid.getCurrentProfile().id
+    session.profileId = ProfileRepository.get().requireCurrent().id
     session.movieDao = AppDatabase.movie(context)
 
     DisposableEffect(handle, session) {
@@ -147,9 +148,9 @@ fun HubMovieListPage(
     }
 
     if (showTagPicker) {
-        val tags = DreamDroid.getTags()
+        val tags = ProfileRepository.get().tags()
         val checked = BooleanArray(tags.size) { i ->
-            viewModel.selectedTags.contains(DreamDroid.getTags()[i])
+            viewModel.selectedTags.contains(ProfileRepository.get().tags()[i])
         }
         MultiChoiceAlertDialog(
             title = stringResource(R.string.choose_tags),
@@ -382,7 +383,7 @@ class HubMovieListSession : MenuProvider {
     }
 
     fun applyTagSelection(indices: List<Int>) {
-        val tags = DreamDroid.getTags()
+        val tags = ProfileRepository.get().tags()
         val next = ArrayList<String>()
         for (which in indices) {
             if (which in tags.indices) {
@@ -508,7 +509,7 @@ class HubMovieListSession : MenuProvider {
         if (remotePath.isEmpty()) {
             return
         }
-        val profile = DreamDroid.currentProfileOrNull() ?: return
+        val profile = ProfileRepository.get().current.value ?: return
         val params = arrayListOf(NameValuePair("file", remotePath))
         if (!profile.login) {
             val url = EnigmaUrls.page(profile, URIStore.FILE, params)

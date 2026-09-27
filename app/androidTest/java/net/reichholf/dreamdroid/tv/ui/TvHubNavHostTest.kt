@@ -12,6 +12,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.flow.emptyFlow
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileRepository
 import org.junit.After
 import org.junit.Before
 import org.junit.Rule
@@ -29,17 +30,17 @@ class TvHubNavHostTest {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .commit()
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(Profile().apply { host = "127.0.0.1" })
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(Profile().apply { host = "127.0.0.1" })
     }
 
     @After
     fun restoreProfile() {
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(
+            ProfileRepository.get().loadCurrent(
                 InstrumentationRegistry.getInstrumentation().targetContext
             )
         }

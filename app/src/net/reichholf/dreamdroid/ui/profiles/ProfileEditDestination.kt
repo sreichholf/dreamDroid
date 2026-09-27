@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
@@ -157,8 +158,8 @@ internal fun persistEditedProfile(context: Context, profile: Profile): ProfilePe
     val id = profile.id ?: 0
     if (id > 0) {
         dao.updateProfile(profile)
-        if (profile.id == DreamDroid.getCurrentProfile().id) {
-            DreamDroid.setCurrentProfile(profile)
+        if (profile.id == ProfileRepository.get().requireCurrent().id) {
+            ProfileRepository.get().setCurrent(profile)
         }
         return ProfilePersistOutcome(
             saved = true,

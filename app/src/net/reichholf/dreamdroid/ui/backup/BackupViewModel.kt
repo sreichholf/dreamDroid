@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.BackupService
 
@@ -28,7 +29,7 @@ class BackupViewModel(application: Application, savedStateHandle: SavedStateHand
         backupData = data
         uiState.setProfilesFromBackup(
             data.profiles,
-            DreamDroid.getCurrentProfile().id ?: -1,
+            ProfileRepository.get().requireCurrent().id ?: -1,
             app.getString(R.string.backup_current_profile)
         )
     }

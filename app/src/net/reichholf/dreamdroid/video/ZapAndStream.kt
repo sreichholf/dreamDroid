@@ -7,6 +7,7 @@ import kotlinx.coroutines.Job
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -47,7 +48,7 @@ fun LifecycleOwner.startLiveServiceStream(
     serviceRef: String,
     play: () -> Unit
 ): Job? {
-    if (!ZapAndStream.required(DreamDroid.getCurrentProfile())) {
+    if (!ZapAndStream.required(ProfileRepository.get().requireCurrent())) {
         play()
         return null
     }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -28,17 +29,17 @@ class EnigmaClientHttpFailTest {
     fun startServer() {
         server = MockWebServer()
         server.start()
-        previousProfile = DreamDroid.currentProfileOrNull()
-        DreamDroid.setCurrentProfile(profileForServer())
+        previousProfile = ProfileRepository.get().current.value
+        ProfileRepository.get().setCurrent(profileForServer())
     }
 
     @After
     fun stopServer() {
         val previous = previousProfile
         if (previous != null) {
-            DreamDroid.setCurrentProfile(previous)
+            ProfileRepository.get().setCurrent(previous)
         } else {
-            DreamDroid.loadCurrentProfile(appContext())
+            ProfileRepository.get().loadCurrent(appContext())
         }
         server.shutdown()
     }

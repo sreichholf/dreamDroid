@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
@@ -90,7 +91,7 @@ fun HubServiceListPage(
     session.popupRoot = AnchorPopup.overlayRoot(view)
     session.dialogSession = dialogSession
     session.onZapped = onZapped
-    session.profileId = DreamDroid.getCurrentProfile().id
+    session.profileId = ProfileRepository.get().requireCurrent().id
     session.rosterDao = AppDatabase.roster(context)
     session.epgDao = AppDatabase.epg(context)
     session.excludedTabRefs = UserBouquetCache.excludedHubTabRefs(context)
@@ -530,7 +531,7 @@ class HubServiceListSession : MenuProvider {
         menu.findItem(R.id.menu_epg_list)?.isVisible = hasBouquet
         val setDefault = menu.findItem(R.id.menu_default) ?: return
         setDefault.isVisible = true
-        val defaultReference = DreamDroid.getCurrentProfile().defaultBouquetTv
+        val defaultReference = ProfileRepository.get().requireCurrent().defaultBouquetTv
         if (defaultReference != null && defaultReference == currentRef) {
             setDefault.setIcon(R.drawable.ic_action_fav)
             setDefault.setTitle(R.string.reset_default)
@@ -557,7 +558,7 @@ class HubServiceListSession : MenuProvider {
             toast(ctx.getText(R.string.default_bouquet_not_set))
             return true
         }
-        val p: Profile = DreamDroid.getCurrentProfile()
+        val p: Profile = ProfileRepository.get().requireCurrent()
         var reset = false
         if (p.defaultBouquetTv != null && p.defaultBouquetTv == currentRef) {
             p.defaultBouquetTv = null
