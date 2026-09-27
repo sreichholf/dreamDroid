@@ -1,17 +1,12 @@
 # dreamDroid agent notes
 
-Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Build with **JDK 25**.
+Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. CI builds with **JDK 25**; use it locally too (Gradle does not enforce it, app bytecode is Java 17).
 
 **New code is Kotlin.** `app/src` has no Java sources. Do not add `.java` types under `app/src`. Prefer coroutines over executors/`AsyncTask`/`JobIntentService`. Do not add `@JvmStatic`/`@JvmOverloads`/`@JvmField` for Java callers.
 
 **Style:** New Kotlin follows [Google’s Android Kotlin style guide](https://developer.android.com/kotlin/style-guide). Spotless + ktlint `android_studio` is the checker (`.editorconfig`). Run `./gradlew spotlessApply` on Kotlin you touch; `./gradlew spotlessCheck` is in CI (every Kotlin file under `app/src`, `app/test`, `app/androidTest`). Do not hand-retab or invent a house indent.
 
-Hard rules (also in `.editorconfig`):
-- 4 spaces, never tabs
-- 100-character column limit (except `package` / `import` and unavoidable KDoc URLs)
-- K&R braces (`{` on the same line); wrap long function signatures with one parameter per line and `)` on its own line at the same indent as `fun`
-- ASCII-sorted imports; no wildcards
-- One statement per line; no semicolons
+`.editorconfig` and ktlint are the source of truth for indent (4 spaces), the 100-column limit, braces, wrapping, import order (no wildcards), and semicolons. If `spotlessApply` changes your code, keep its output.
 
 **Architecture:** new and touched code follows the target architecture in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md#target-architecture): repositories + Hilt, ViewModels without `Application`/`Context` exposing `StateFlow` UI state, Material 3 `TopAppBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`, type-safe routes, DataStore. Do not copy a legacy pattern from neighboring code because it is still there; it is listed under remediation.
 
@@ -19,9 +14,9 @@ Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.m
 
 ## Subagents
 
-Use subagents whenever they make sense. Hand off exploration, investigation, and independent slices of work instead of doing all of it in the parent thread.
+Hand off broad exploration, investigation, and independent slices of work to subagents. Do small, focused tasks in the parent thread; a subagent starts cold and has to rebuild context.
 
-**Never spawn subagents in fast mode.** Do not pass a model slug that ends in `-fast` or any other fast variant. Use a non-fast model. `inherit` is allowed only when the parent model itself is not a fast variant.
+**Never run subagents on a fast model variant.** In Cursor, do not pass a model slug that ends in `-fast`; `inherit` is allowed only when the parent model is not a fast variant. In Claude Code, do not spawn subagents while fast mode (`/fast`) is on.
 
 ## Change the tests when the design changes
 
@@ -40,41 +35,63 @@ Do not prove phone UI by tapping the emulator through `adb` / `verify-dreamdroid
 Default proof for Compose and in-app UI:
 
 ```bash
-./gradlew.bat :app:connectedGoogleDebugAndroidTest
+./gradlew :app:connectedGoogleDebugAndroidTest      # Linux / macOS
+./gradlew.bat :app:connectedGoogleDebugAndroidTest  # Windows
 ```
 
 Use `JAVA_HOME` pointing at JDK 25. Instrumented tests live in `app/androidTest/java`. ViewModels, repositories, and parsers also get JVM tests in `app/test` (`:app:testGoogleDebugUnitTest`) with fake repositories. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
-Do not pass `-Pandroid.testInstrumentationRunnerArguments...`. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter a class with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner`.
+To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner` (see **Other traps** for what not to pass to Gradle).
 
-CI: `.github/workflows/android-ci.yml` — on every PR/`main` push: `spotlessCheck`, `:app:testGoogleDebugUnitTest`, androidTest compile (with `-Pci`). Arm64 `dreamdroid-google-debug-apk` (2-day retention) uploads on `main` pushes, or `workflow_dispatch` with `upload_apk=true`. Emulator `connectedGoogleDebugAndroidTest` (API 30) on `main` pushes / `workflow_dispatch` (slow/flaky on PR). Local cloud helper: `bash .cursor/cloud/connected-test.sh`.
+CI is [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml); read it for what runs on which event. Before pushing, run what the PR job runs:
+
+```bash
+./gradlew -Pci spotlessCheck :app:testGoogleDebugUnitTest :app:compileGoogleDebugAndroidTestKotlin :app:lintGoogleDebug
+```
+
+The emulator job does not run on PRs; trigger it with `workflow_dispatch` when a change needs it before merge.
 
 `verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 
-## Cloud Agent environment
+## Cursor Cloud Agents
 
-Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+This section applies to Cursor Cloud Agent VMs only; Claude Code sessions are covered in the next section. Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (build-tools 36, platform 34, `google_apis;x86_64` image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
 
 **Do not visually drive the emulator in Cloud Agent sessions.** Do not use `computerUse`, GUI tapping, screenshot/recording walkthroughs of the phone UI, or `verify-dreamdroid.py launch` / adb tap loops to “look at” the app. Soft-accelerated TCG plus the agent display path is too slow and unreliable here; those attempts waste the session. Prove UI with instrumented tests (`bash .cursor/cloud/connected-test.sh …`) and log/output artifacts only.
 
 Nested KVM guest execution hangs on Cursor Cloud VMs: `/dev/kvm` exists and `kvm-ok` passes, but under `-enable-kvm` the guest vCPU never runs (0% CPU, no kernel output). The emulator therefore runs under software (`-accel off`, TCG). It works but is slow. Set `DREAMDROID_EMU_ACCEL=auto` to try KVM on a host that supports nested virt.
 
-Because of the slow emulator, the stock `:app:connectedGoogleDebugAndroidTest` task fails: UTP pushes the ~196 MB universal debug APK over ddmlib's sync protocol and the per-read socket timeout fires (it ignores `adbOptions.timeOutInMs`). On the Cloud VM, verify with the helper instead, which streams the standalone x86_64 APK and runs `am instrument`. That ABI-split APK vs CI `-Pci` (one fat APK, needed so UTP can install on GHA) is **intentional** — do not force the helper onto `-Pci`.
+Because of the slow emulator, the stock `:app:connectedGoogleDebugAndroidTest` task fails: UTP pushes the ~196 MB universal debug APK over ddmlib's sync protocol and the per-read socket timeout fires (it ignores `adbOptions.timeOutInMs`). On the Cloud VM, verify with the helper instead, which streams the standalone x86_64 APK and runs `am instrument` (see the `-Pci` trap below).
 
 ```bash
 bash .cursor/cloud/connected-test.sh            # whole suite
 bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScreenTest
 ```
 
+## Claude Code
+
+Claude Code reads this file through the one-line `CLAUDE.md` (`@AGENTS.md`). It finds skills in `.claude/skills/`, which is a symlink to `.agents/skills/`, so `poteto-mode` and the other pstack skills load by name. On Windows, enable symlinks (`git config core.symlinks true` with Developer Mode) or read `.agents/skills/<name>/SKILL.md` directly.
+
+Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Out of the box its container has JDK 21, no Android SDK (`ANDROID_HOME` unset), no `adb`, and no emulator. So:
+
+- Do not run `.cursor/cloud/connected-test.sh` or try to boot an emulator there.
+- Gradle tasks need an Android SDK. Without one, say so and do not claim a build or test passed.
+- Proof of phone UI in a cloud session is: write or update the instrumented test and make it compile, then rely on CI. Run `workflow_dispatch` on `android-ci.yml` for the emulator job if the change needs it before merge.
+- To run Gradle checks in cloud sessions, install JDK 25 + the Android SDK from the environment's setup script (see `.cursor/cloud/install.sh` for the packages; skip the AVD/emulator steps).
+
+Claude Code running locally on a machine with JDK 25, the SDK, and a device or emulator follows the normal rules above (`./gradlew :app:connectedGoogleDebugAndroidTest`).
+
 ## Other traps
 
 - `main` is the rewrite. Do not merge rewrite work into `master`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
+- Do not pass `-Pandroid.testInstrumentationRunnerArguments...` to Gradle. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -e class ...` instead.
+- `-Pci` builds one fat APK so UTP can install it on GitHub Actions; `.cursor/cloud/connected-test.sh` deliberately uses the ABI-split x86_64 APK. The split is **intentional**; do not force the helper onto `-Pci` or drop `-Pci` from CI.
 - Remaining modernization work (the remediation steps, anything still listed under **Still to do**, and the **Deliberate exceptions** that must not be "fixed") lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
 
 <!-- potetos-for-everyone:begin -->
-## potetos-for-everyone
+## Engineering workflow (poteto-mode)
 
 For non-trivial engineering work, use the Agent Skill at `.agents/skills/poteto-mode/SKILL.md`.
 It routes the task to a playbook, loads supporting skills progressively, prefers simple changes,
