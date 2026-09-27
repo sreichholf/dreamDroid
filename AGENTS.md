@@ -72,12 +72,12 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 
 Claude Code reads this file through the one-line `CLAUDE.md` (`@AGENTS.md`). It finds skills in `.claude/skills/`, which is a symlink to `.agents/skills/`, so `poteto-mode` and the other pstack skills load by name. On Windows, enable symlinks (`git config core.symlinks true` with Developer Mode) or read `.agents/skills/<name>/SKILL.md` directly.
 
-Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Out of the box its container has JDK 21, no Android SDK (`ANDROID_HOME` unset), no `adb`, and no emulator. So:
+Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Instead, the SessionStart hook [`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh) (registered in `.claude/settings.json`, remote sessions only) installs JDK 25 and the Android SDK (the platforms and build-tools CI uses) into `~/Android/Sdk`, writes `local.properties`, and exports `JAVA_HOME` / `ANDROID_HOME`. It does not install an emulator or system image. So:
 
+- Run the PR job's Gradle checks (above) as usual. If Maven Central answers `429 Too Many Requests` through the session proxy, re-run; Gradle keeps what it already downloaded. Do not claim a check passed that did not run.
 - Do not run `.cursor/cloud/connected-test.sh` or try to boot an emulator there.
-- Gradle tasks need an Android SDK. Without one, say so and do not claim a build or test passed.
 - Proof of phone UI in a cloud session is: write or update the instrumented test and make it compile, then rely on CI. Run `workflow_dispatch` on `android-ci.yml` for the emulator job if the change needs it before merge.
-- To run Gradle checks in cloud sessions, install JDK 25 + the Android SDK from the environment's setup script (see `.cursor/cloud/install.sh` for the packages; skip the AVD/emulator steps).
+- Keep the hook's SDK package list in step with `android-ci.yml` when CI changes platforms or build-tools.
 
 Claude Code running locally on a machine with JDK 25, the SDK, and a device or emulator follows the normal rules above (`./gradlew :app:connectedGoogleDebugAndroidTest`).
 
