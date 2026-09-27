@@ -2,9 +2,6 @@ package net.reichholf.dreamdroid.ui.multiepg
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -18,7 +15,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
@@ -32,17 +28,19 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.MultiEpg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 
 /**
  * MultiEPG destination with stale-while-revalidate sync:
  * paint Room immediately when present, refresh/prefetch in the background,
  * keep stale data on refresh failure, replace on bouquet/profile remount.
  *
- * Loaded grid state lives on [MultiEpgViewModel]. [MultiEpgMenuSession] is still
- * the [MenuProvider] registered here. The toolbar title is set here.
+ * Loaded grid state lives on [MultiEpgViewModel]. [MultiEpgTopBarSession] supplies
+ * the list-EPG top-bar action. The toolbar title is set here.
  */
 @Composable
 fun MultiEpgDestination(
@@ -89,7 +87,7 @@ fun MultiEpgDestination(
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
-    val menuSession = remember { MultiEpgMenuSession() }
+    val menuSession = remember { MultiEpgTopBarSession() }
     menuSession.handle = handle
     menuSession.context = context
     menuSession.bouquetRef = bouquetRef
@@ -102,10 +100,7 @@ fun MultiEpgDestination(
         onDispose { }
     }
 
-    DisposableEffect(handle, menuSession, remountEpoch) {
-        activity.addMenuProvider(menuSession)
-        onDispose { activity.removeMenuProvider(menuSession) }
-    }
+    BindShellTopBarActions(menuSession.topBarActions(stringResource(R.string.epg_list)))
 
     DisposableEffect(dialogSession) {
         onDispose {
@@ -184,27 +179,25 @@ fun MultiEpgDestination(
     EpgEventDetailSheetHost(session = dialogSession)
 }
 
-internal class MultiEpgMenuSession : MenuProvider {
+internal class MultiEpgTopBarSession {
     var handle: PhoneNavHandle? = null
     var context: Context? = null
     var bouquetRef: String = ""
     var bouquetName: String = ""
     var visibleStartSec: Long = 0
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.multiepg, menu)
-    }
-
-    override fun onPrepareMenu(menu: Menu) {
-        menu.findItem(R.id.menu_epg_list)?.isVisible = bouquetRef.isNotEmpty()
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId != R.id.menu_epg_list) {
-            return false
-        }
-        openListEpg()
-        return true
+    /** The list-EPG jump, once a bouquet is set. */
+    fun topBarActions(listEpgLabel: String): List<ShellTopBarAction> = if (bouquetRef.isEmpty()) {
+        emptyList()
+    } else {
+        listOf(
+            ShellTopBarAction(
+                id = R.id.menu_epg_list,
+                label = listEpgLabel,
+                iconRes = R.drawable.ic_action_list,
+                onClick = { openListEpg() }
+            )
+        )
     }
 
     fun openListEpg() {

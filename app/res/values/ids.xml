@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <item name="toolbar" type="id"/>
     <item name="shell_destination_nav" type="id"/>
     <item name="shell_destination_rail" type="id"/>
     <item name="menu_none" type="id"/>
@@ -23,6 +22,16 @@
     <item name="menu_navigation_device_info" type="id"/>
     <item name="menu_navigation_screenshot" type="id"/>
     <item name="menu_cancel" type="id"/>
+    <item name="action_search" type="id"/>
+    <item name="menu_multiepg" type="id"/>
+    <item name="menu_epg_list" type="id"/>
+    <item name="menu_default" type="id"/>
+    <item name="menu_pick_bouquet" type="id"/>
+    <item name="menu_tags" type="id"/>
+    <item name="menu_cleanup" type="id"/>
+    <item name="menu_detect_devices" type="id"/>
+    <item name="menu_save" type="id"/>
+    <item name="menu_delete" type="id"/>
     <item name="phone_nav_compose" type="id"/>
 
 </resources>

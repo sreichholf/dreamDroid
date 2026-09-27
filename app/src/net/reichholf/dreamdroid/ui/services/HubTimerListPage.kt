@@ -3,9 +3,6 @@ package net.reichholf.dreamdroid.ui.services
 import android.app.Activity
 import android.content.Intent
 import android.util.Log
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -17,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Job
@@ -42,8 +38,10 @@ import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -76,14 +74,13 @@ fun HubTimerListPage(
         // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
         // composeActivityResultListener. Session still implements ActivityResultListener
         // if a host prefers registering it instead of remountEpoch.
-        activity.addMenuProvider(session)
         session.chromeAttached = true
         session.setToolbarTitle(title)
         onDispose {
             session.chromeAttached = false
-            activity.removeMenuProvider(session)
         }
     }
+    BindShellTopBarActions(session.topBarActions(stringResource(R.string.cleanup)))
 
     val newTimerLabel = stringResource(R.string.new_timer)
     val timerWritesBlocked =
@@ -98,10 +95,6 @@ fun HubTimerListPage(
 
     LaunchedEffect(viewModel, remountEpoch) {
         viewModel.onRemount(remountEpoch)
-    }
-
-    LaunchedEffect(session.progress) {
-        activity.invalidateOptionsMenu()
     }
 
     val emptyMessage = viewModel.emptyMessage
@@ -135,9 +128,7 @@ fun HubTimerListPage(
  * The hub [HubTimerListViewModel] owns this session. HubDestination may assign it to
  * [PhoneNavHandle.composeActivityResultListener] instead of bumping remountEpoch.
  */
-class HubTimerListSession :
-    PhoneNavHandle.ActivityResultListener,
-    MenuProvider {
+class HubTimerListSession : PhoneNavHandle.ActivityResultListener {
 
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
@@ -311,19 +302,16 @@ class HubTimerListSession :
         reload()
     }
 
-    private fun onItemSelected(id: Int): Boolean = when (id) {
-        Statics.ITEM_NEW_TIMER -> {
-            createTimer()
-            true
-        }
-
-        Statics.ITEM_CLEANUP -> {
-            cleanupTimerList()
-            true
-        }
-
-        else -> false
-    }
+    /** Cleanup, disabled while a request runs. */
+    fun topBarActions(cleanupLabel: String): List<ShellTopBarAction> = listOf(
+        ShellTopBarAction(
+            id = Statics.ITEM_CLEANUP,
+            label = cleanupLabel,
+            iconRes = R.drawable.ic_action_clean,
+            enabled = progress == null,
+            onClick = { cleanupTimerList() }
+        )
+    )
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode != Statics.REQUEST_EDIT_TIMER) {
@@ -334,11 +322,4 @@ class HubTimerListSession :
             reload()
         }
     }
-
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.timerlist, menu)
-        menu.findItem(Statics.ITEM_CLEANUP)?.isEnabled = progress == null
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = onItemSelected(menuItem.itemId)
 }

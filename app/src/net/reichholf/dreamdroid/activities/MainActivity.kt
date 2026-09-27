@@ -6,15 +6,12 @@
 
 package net.reichholf.dreamdroid.activities
 
-import android.app.SearchManager
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -61,6 +58,8 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.PhoneShell
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
 import net.reichholf.dreamdroid.ui.nav.ShellFabController
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarController
 import net.reichholf.dreamdroid.ui.nav.ShellViewModel
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
@@ -98,6 +97,7 @@ class MainActivity :
     private val drawerListState = DrawerListState()
     private val destinationController = ShellDestinationBarController()
     private val fabController = ShellFabController()
+    private val topBarController = ShellTopBarController()
     val phoneNav: PhoneNavHostState by viewModels()
     val shellActions: ShellViewModel by viewModels { ShellViewModel.Factory }
 
@@ -318,7 +318,6 @@ class MainActivity :
         preferences.unregisterOnSharedPreferenceChangeListener(this)
         preferences.registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
-        handleSearchIntent(intent)
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             checkNavigationHelper(
                 lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
@@ -376,19 +375,11 @@ class MainActivity :
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        handleSearchIntent(intent)
     }
 
-    /** System ACTION_SEARCH — same path as submitting the destination SearchBar. */
-    private fun handleSearchIntent(intent: Intent?) {
-        if (intent == null || Intent.ACTION_SEARCH != intent.action) {
-            return
-        }
-        if (!phoneShellReady) {
-            return
-        }
-        val query = intent.getStringExtra(SearchManager.QUERY).orEmpty()
-        phoneNav.navigateToEpgSearch(query)
+    override fun onTitleChanged(title: CharSequence?, color: Int) {
+        super.onTitleChanged(title, color)
+        topBarController.title = title?.toString().orEmpty()
     }
 
     /**
@@ -493,12 +484,6 @@ class MainActivity :
         super.onStop()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        super.onCreateOptionsMenu(menu)
-        menuInflater.inflate(R.menu.search, menu)
-        return true
-    }
-
     private fun initViews() {
         setContent {
             DreamDroidTheme {
@@ -522,35 +507,24 @@ class MainActivity :
                     onNavigationClick = { toggle() },
                     destinationController = destinationController,
                     fabController = fabController,
-                    onToolbarReady = { toolbar ->
-                        if (supportActionBar == null) {
-                            setSupportActionBar(toolbar)
-                            supportActionBar?.setDisplayHomeAsUpEnabled(true)
-                            supportActionBar?.setHomeButtonEnabled(true)
-                        }
-                    }
+                    topBarController = topBarController,
+                    trailingTopBarActions = listOf(
+                        ShellTopBarAction(
+                            id = R.id.action_search,
+                            label = stringResource(R.string.epg_search),
+                            iconRes = R.drawable.ic_action_search,
+                            onClick = {
+                                if (phoneShellReady) {
+                                    phoneNav.navigateToEpgSearch("")
+                                }
+                            }
+                        )
+                    )
                 ) {
                     PhoneNavHost(handle = phoneNav)
                 }
             }
         }
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-            android.R.id.home -> {
-                toggle()
-                return true
-            }
-
-            R.id.action_search -> {
-                if (phoneShellReady) {
-                    phoneNav.navigateToEpgSearch("")
-                    return true
-                }
-            }
-        }
-        return super.onOptionsItemSelected(item)
     }
 
     fun isNavigationDrawerVisible(): Boolean = drawerOpen

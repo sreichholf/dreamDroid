@@ -3,9 +3,6 @@ package net.reichholf.dreamdroid.ui.epg
 import android.content.Context
 import android.content.Intent
 import android.text.format.DateFormat
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -20,16 +17,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.Calendar
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.Epg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -53,30 +51,34 @@ fun EpgBouquetDestination(
     val dialogSession = remember { EpgEventDialogSession() }
     dialogSession.handle = handle
     dialogSession.context = context
-    val menuProvider = remember(viewModel, context, handle) {
-        EpgBouquetMenuProvider(viewModel) {
-            val atSec = viewModel.timeSec?.toLong()
-                ?: Calendar.getInstance().timeInMillis / 1000L
-            openBouquetMultiEpg(
-                context,
-                handle,
-                viewModel.bouquetRef,
-                viewModel.bouquetName,
-                atSec
-            )
-        }
-    }
+    BindShellTopBarActions(
+        epgBouquetTopBarActions(
+            bouquetRef = viewModel.bouquetRef,
+            multiEpgLabel = stringResource(R.string.multiepg),
+            pickBouquetLabel = stringResource(R.string.bouquet_overview),
+            onOpenMultiEpg = {
+                val atSec = viewModel.timeSec?.toLong()
+                    ?: Calendar.getInstance().timeInMillis / 1000L
+                openBouquetMultiEpg(
+                    context,
+                    handle,
+                    viewModel.bouquetRef,
+                    viewModel.bouquetName,
+                    atSec
+                )
+            },
+            onPickBouquet = { viewModel.pickBouquet() }
+        )
+    )
     val pickerListener = remember(viewModel) { EpgBouquetPickerForwarder(viewModel) }
 
-    DisposableEffect(handle, menuProvider, pickerListener, dialogSession) {
+    DisposableEffect(handle, pickerListener, dialogSession) {
         handle.composeActivityResultListener = pickerListener
         handle.dispatchPendingComposeActivityResult()
-        activity.addMenuProvider(menuProvider)
         onDispose {
             if (handle.composeActivityResultListener === pickerListener) {
                 handle.composeActivityResultListener = null
             }
-            activity.removeMenuProvider(menuProvider)
             dialogSession.dismissProgress()
         }
     }
@@ -196,29 +198,32 @@ internal fun openBouquetMultiEpg(
     handle?.navigateToMultiEpg(bouquetRef, bouquetName, timeSec = timeSec)
 }
 
-internal class EpgBouquetMenuProvider(
-    private val viewModel: EpgBouquetViewModel,
-    private val onOpenMultiEpg: () -> Unit
-) : MenuProvider {
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.epgbouquet, menu)
+/** MultiEPG jump (once a bouquet is set) and the bouquet picker. */
+internal fun epgBouquetTopBarActions(
+    bouquetRef: String,
+    multiEpgLabel: String,
+    pickBouquetLabel: String,
+    onOpenMultiEpg: () -> Unit,
+    onPickBouquet: () -> Unit
+): List<ShellTopBarAction> = buildList {
+    if (bouquetRef.isNotEmpty()) {
+        add(
+            ShellTopBarAction(
+                id = R.id.menu_multiepg,
+                label = multiEpgLabel,
+                iconRes = R.drawable.ic_multiepg,
+                onClick = onOpenMultiEpg
+            )
+        )
     }
-
-    override fun onPrepareMenu(menu: Menu) {
-        menu.findItem(R.id.menu_multiepg)?.isVisible = viewModel.bouquetRef.isNotEmpty()
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId == R.id.menu_multiepg) {
-            onOpenMultiEpg()
-            return true
-        }
-        if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            viewModel.pickBouquet()
-            return true
-        }
-        return false
-    }
+    add(
+        ShellTopBarAction(
+            id = R.id.menu_pick_bouquet,
+            label = pickBouquetLabel,
+            iconRes = R.drawable.ic_action_list,
+            onClick = onPickBouquet
+        )
+    )
 }
 
 private class EpgBouquetPickerForwarder(private val viewModel: EpgBouquetViewModel) :

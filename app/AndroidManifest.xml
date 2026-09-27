@@ -45,9 +45,6 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DreamDroid"
         android:usesCleartextTraffic="true">
-        <meta-data
-            android:name="android.app.default_searchable"
-            android:value=".activities.MainActivity"/>
 
         <activity
             android:name=".tv.activities.MainActivity"
@@ -115,10 +112,6 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
                 <category android:name="android.intent.category.MULTIWINDOW_LAUNCHER"/>
-            </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH"/>
-                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
             <intent-filter>
                 <data android:scheme="dreamdroid"/>

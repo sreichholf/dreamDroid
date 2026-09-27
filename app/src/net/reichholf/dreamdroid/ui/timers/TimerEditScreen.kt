@@ -42,8 +42,8 @@ fun TimerEditScreen(
 ) {
     // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
     // and lift a FAB (#263). Bottom inset is PhoneNavHost when the shell
-    // destination bar is hidden. Phone save/delete is toolbar-only
-    // ([R.menu.save] plus [R.menu.edit_delete] when editing).
+    // destination bar is hidden. Phone save/delete is top-bar only
+    // ([TimerEditSession.topBarActions]).
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),

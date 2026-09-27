@@ -2,23 +2,22 @@ package net.reichholf.dreamdroid.ui.zap
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.view.MenuProvider
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
@@ -39,18 +38,24 @@ fun ZapDestination(
 
     DisposableEffect(handle, viewModel) {
         val listener = ZapPickerResultForwarder(viewModel)
-        val menuProvider = ZapMenuProvider(viewModel)
         handle.composeActivityResultListener = listener
         handle.dispatchPendingComposeActivityResult()
-        val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(menuProvider)
         onDispose {
             if (handle.composeActivityResultListener === listener) {
                 handle.composeActivityResultListener = null
             }
-            activity?.removeMenuProvider(menuProvider)
         }
     }
+    BindShellTopBarActions(
+        listOf(
+            ShellTopBarAction(
+                id = R.id.menu_pick_bouquet,
+                label = stringResource(R.string.bouquet_overview),
+                iconRes = R.drawable.ic_action_list,
+                onClick = { viewModel.pickBouquet() }
+            )
+        )
+    )
 
     LaunchedEffect(title) {
         (context as? AppCompatActivity)?.title = title
@@ -106,20 +111,6 @@ fun ZapDestination(
             },
             onItemLongClick = { service: Service -> viewModel.requestStream(service) }
         )
-    }
-}
-
-private class ZapMenuProvider(private val viewModel: ZapViewModel) : MenuProvider {
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.epgbouquet, menu)
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId == R.id.menu_pick_bouquet) {
-            viewModel.pickBouquet()
-            return true
-        }
-        return false
     }
 }
 

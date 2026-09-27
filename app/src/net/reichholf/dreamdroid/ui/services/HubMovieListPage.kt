@@ -3,9 +3,6 @@ package net.reichholf.dreamdroid.ui.services
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -19,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
-import androidx.core.view.MenuProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
@@ -58,8 +54,10 @@ import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
@@ -97,14 +95,12 @@ fun HubMovieListPage(
     session.profileId = ProfileRepository.get().requireCurrent().id
     session.movieDao = AppDatabase.movie(context)
 
+    BindShellTopBarActions(session.topBarActions(stringResource(R.string.tags)))
     DisposableEffect(handle, session) {
-        val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session)
         session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             session.chromeAttached = false
-            activity?.removeMenuProvider(session)
             session.popupRoot = null
             session.onShowDetail = null
             session.onRequestTagPicker = null
@@ -186,7 +182,7 @@ fun HubMovieListPage(
  *
  * Tag filter is requested via [onRequestTagPicker]; the page hosts [MultiChoiceAlertDialog].
  */
-class HubMovieListSession : MenuProvider {
+class HubMovieListSession {
 
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
@@ -545,16 +541,12 @@ class HubMovieListSession : MenuProvider {
         }
     }
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.locactions_and_tags, menu)
-    }
-
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
-        Statics.ITEM_TAGS -> {
-            pickTags()
-            true
-        }
-
-        else -> false
-    }
+    fun topBarActions(tagsLabel: String): List<ShellTopBarAction> = listOf(
+        ShellTopBarAction(
+            id = Statics.ITEM_TAGS,
+            label = tagsLabel,
+            iconRes = R.drawable.ic_action_tags,
+            onClick = { pickTags() }
+        )
+    )
 }

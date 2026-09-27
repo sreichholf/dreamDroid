@@ -2,9 +2,6 @@ package net.reichholf.dreamdroid.ui.services
 
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
 import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
@@ -12,11 +9,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
-import androidx.core.view.MenuProvider
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
@@ -49,9 +49,11 @@ import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.startLiveServiceStream
@@ -105,14 +107,21 @@ fun HubServiceListPage(
         onDispose { onProvideGoUp(null) }
     }
 
+    // Reading the revision recomposes the actions when the bouquet or its default flag changes.
+    session.topBarRevision
+    BindShellTopBarActions(
+        session.topBarActions(
+            multiEpgLabel = stringResource(R.string.multiepg),
+            listEpgLabel = stringResource(R.string.epg_list),
+            setDefaultLabel = stringResource(R.string.set_default),
+            resetDefaultLabel = stringResource(R.string.reset_default)
+        )
+    )
     DisposableEffect(handle, session, dialogSession) {
-        val activity = context as? AppCompatActivity
-        activity?.addMenuProvider(session)
         session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             session.chromeAttached = false
-            activity?.removeMenuProvider(session)
             session.popupRoot = null
             dialogSession.dismissProgress()
         }
@@ -149,7 +158,11 @@ fun HubServiceListPage(
     EpgEventDetailSheetHost(dialogSession)
 }
 
-class HubServiceListSession : MenuProvider {
+class HubServiceListSession {
+    /** Bumped when [currentRef] or the default bouquet changes; the page re-reads actions. */
+    var topBarRevision by mutableIntStateOf(0)
+        private set
+
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
     var popupRoot: ViewGroup? = null
@@ -210,9 +223,7 @@ class HubServiceListSession : MenuProvider {
         val refreshState = refresh ?: return
         refreshState.setRefreshing(false)
         setToolbarTitle(finishedTitle())
-        if (chromeAttached) {
-            (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
-        }
+        topBarRevision++
         this.rows?.clear()
         if (!success) {
             state.replaceAll(emptyList())
@@ -509,46 +520,51 @@ class HubServiceListSession : MenuProvider {
         }
     }
 
-    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
-        menuInflater.inflate(R.menu.servicelistpage, menu)
-    }
-
-    override fun onPrepareMenu(menu: Menu) {
-        val activity = context as? MainActivity
-        if (activity?.isNavigationDrawerVisible() == true) {
-            return
+    /**
+     * EPG jumps once a bouquet is open, then the default-bouquet toggle (a filled
+     * star when [currentRef] is the profile's default).
+     */
+    fun topBarActions(
+        multiEpgLabel: String,
+        listEpgLabel: String,
+        setDefaultLabel: String,
+        resetDefaultLabel: String
+    ): List<ShellTopBarAction> = buildList {
+        if (currentRef.isNotEmpty()) {
+            add(
+                ShellTopBarAction(
+                    id = R.id.menu_multiepg,
+                    label = multiEpgLabel,
+                    iconRes = R.drawable.ic_multiepg,
+                    onClick = { openMultiEpg() }
+                )
+            )
+            add(
+                ShellTopBarAction(
+                    id = R.id.menu_epg_list,
+                    label = listEpgLabel,
+                    iconRes = R.drawable.ic_action_list,
+                    onClick = { openListEpg() }
+                )
+            )
         }
-        val hasBouquet = currentRef.isNotEmpty()
-        menu.findItem(R.id.menu_multiepg)?.isVisible = hasBouquet
-        menu.findItem(R.id.menu_epg_list)?.isVisible = hasBouquet
-        val setDefault = menu.findItem(R.id.menu_default) ?: return
-        setDefault.isVisible = true
         val defaultReference = ProfileRepository.get().requireCurrent().defaultBouquetTv
-        if (defaultReference != null && defaultReference == currentRef) {
-            setDefault.setIcon(R.drawable.ic_action_fav)
-            setDefault.setTitle(R.string.reset_default)
-        } else {
-            setDefault.setIcon(R.drawable.ic_action_nofav)
-            setDefault.setTitle(R.string.set_default)
-        }
+        val isDefault = defaultReference != null && defaultReference == currentRef
+        add(
+            ShellTopBarAction(
+                id = Statics.ITEM_SET_DEFAULT,
+                label = if (isDefault) resetDefaultLabel else setDefaultLabel,
+                iconRes = if (isDefault) R.drawable.ic_action_fav else R.drawable.ic_action_nofav,
+                onClick = { toggleDefaultBouquet() }
+            )
+        )
     }
 
-    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
-        if (menuItem.itemId == R.id.menu_multiepg) {
-            openMultiEpg()
-            return true
-        }
-        if (menuItem.itemId == R.id.menu_epg_list) {
-            openListEpg()
-            return true
-        }
-        if (menuItem.itemId != Statics.ITEM_SET_DEFAULT) {
-            return false
-        }
-        val ctx = context ?: return true
+    fun toggleDefaultBouquet() {
+        val ctx = context ?: return
         if (currentRef.isEmpty()) {
             toast(ctx.getText(R.string.default_bouquet_not_set))
-            return true
+            return
         }
         val p: Profile = ProfileRepository.get().requireCurrent()
         var reset = false
@@ -564,8 +580,7 @@ class HubServiceListSession : MenuProvider {
                 ctx.getText(R.string.default_bouquet_set_to).toString() + " '" + currentName + "'"
             )
         }
-        (ctx as? AppCompatActivity)?.invalidateOptionsMenu()
-        return true
+        topBarRevision++
     }
 
     fun openMultiEpg(focusedServiceRef: String? = null) {

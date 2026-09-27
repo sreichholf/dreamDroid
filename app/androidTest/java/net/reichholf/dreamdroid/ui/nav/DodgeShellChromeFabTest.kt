@@ -95,7 +95,7 @@ private fun ChromeHost(stripEnabled: Boolean) {
             onNavigationClick = {},
             destinationController = destination,
             fabController = fab,
-            onToolbarReady = {},
+            topBarController = remember { ShellTopBarController() },
             usesRail = false
         ) {
             BindShellFab(

@@ -10,12 +10,8 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.View
-import android.view.Window
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import javax.net.ssl.HttpsURLConnection
@@ -26,7 +22,6 @@ import net.reichholf.dreamdroid.helpers.PiconSync
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.tintToolbarMenuIcons
 
 /**
  * Created by Stephan on 06.11.13.
@@ -128,16 +123,6 @@ open class BaseActivity :
 
     override fun onResume() {
         super.onResume()
-    }
-
-    override fun onPreparePanel(featureId: Int, view: View?, menu: Menu): Boolean {
-        // MenuHostHelper.onPrepareMenu runs after onPrepareOptionsMenu and can
-        // replace icons (default bouquet fav/nofav). Tint after that.
-        val shown = super.onPreparePanel(featureId, view, menu)
-        if (featureId == Window.FEATURE_OPTIONS_PANEL) {
-            tintToolbarMenuIcons(findViewById<Toolbar>(R.id.toolbar), menu)
-        }
-        return shown
     }
 
     override fun onDestroy() {
