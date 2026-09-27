@@ -13,7 +13,6 @@ import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.view.Window
-import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -26,6 +25,7 @@ import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.PiconSync
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.tintToolbarMenuIcons
 
 /**
@@ -161,10 +161,10 @@ open class BaseActivity :
             )
         }
         if (!PiconSync.enqueue(this)) {
-            Toast.makeText(this, R.string.picon_sync_running, Toast.LENGTH_LONG).show()
+            ShellMessages.post(getString(R.string.picon_sync_running))
             return
         }
-        Toast.makeText(this, R.string.picon_sync_started, Toast.LENGTH_LONG).show()
+        ShellMessages.post(getString(R.string.picon_sync_started))
     }
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {

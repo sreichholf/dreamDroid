@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -47,6 +46,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Phase 2.7e: Profiles list as a direct Compose NavHost destination.
@@ -96,8 +96,8 @@ fun ProfilesDestination(
         activity.invalidateOptionsMenu()
     }
     LaunchedEffect(viewModel, context) {
-        viewModel.toastMessages.collect { message ->
-            Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        viewModel.messages.collect { message ->
+            ShellMessages.post(message)
         }
     }
     LaunchedEffect(viewModel) {

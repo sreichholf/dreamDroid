@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.video
 
 import android.content.Context
-import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
@@ -14,6 +13,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Single-tuner boxes can stream a service only while they are tuned to that
@@ -54,7 +54,7 @@ fun LifecycleOwner.startLiveServiceStream(
         return null
     }
     if (serviceRef.isEmpty()) {
-        Toast.makeText(context, R.string.get_content_error, Toast.LENGTH_LONG).show()
+        ShellMessages.post(context.getString(R.string.get_content_error))
         return null
     }
     return lifecycleScope.launch {
@@ -73,5 +73,5 @@ private fun toastZapFailure(context: Context, result: SimpleResult, error: Enigm
         error?.resolve(context),
         context.getString(R.string.get_content_error)
     )
-    Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+    ShellMessages.post(message)
 }

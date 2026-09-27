@@ -16,7 +16,6 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.lifecycle.Lifecycle
@@ -44,6 +43,7 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
@@ -189,7 +189,7 @@ class VideoOverlayController(
             launch { playback.session.collect { onSessionChanged(it) } }
             playback.errors.collect { message ->
                 Log.e(LOG_TAG, message)
-                Toast.makeText(activity, message, Toast.LENGTH_LONG).show()
+                ShellMessages.post(message)
             }
         }
         autohide()
@@ -499,7 +499,7 @@ class VideoOverlayController(
         dialogTag: String
     ) {
         if (descriptions == null || descriptions.isEmpty()) {
-            Toast.makeText(activity, R.string.no_tracks, Toast.LENGTH_SHORT).show()
+            ShellMessages.post(activity.getString(R.string.no_tracks))
             return
         }
         val labels = descriptions.map { it.name }
@@ -962,7 +962,7 @@ class VideoOverlayController(
             MediaPlayer.Event.PositionChanged -> updateProgress()
 
             MediaPlayer.Event.EncounteredError ->
-                Toast.makeText(activity, R.string.playback_failed, Toast.LENGTH_LONG).show()
+                ShellMessages.post(activity.getString(R.string.playback_failed))
         }
     }
 

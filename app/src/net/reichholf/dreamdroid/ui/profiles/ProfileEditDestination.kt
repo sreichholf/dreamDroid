@@ -5,7 +5,6 @@ import android.content.Context
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -31,6 +30,7 @@ import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ProfileEdit
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Profile create/edit as a Compose NavHost destination.
@@ -57,7 +57,7 @@ fun ProfileEditDestination(
     val canDelete = viewModel.canDelete
 
     fun toast(message: CharSequence) {
-        Toast.makeText(context, message, Toast.LENGTH_LONG).show()
+        ShellMessages.post(message)
     }
 
     fun save() {

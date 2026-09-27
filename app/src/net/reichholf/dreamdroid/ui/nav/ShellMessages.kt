@@ -20,9 +20,9 @@ fun mutationResultText(stateText: String?, errorText: String?, fallback: String)
 }
 
 /**
- * One-shot messages for the phone shell and the TV hub. Callers that are not
- * composable (navigation helper, hub pages, TV mutation callbacks) post here.
- * The shell collects them into a [SnackbarHostState].
+ * One-shot user messages for the phone shell, the TV hub, and the player. In-app
+ * results post here instead of using `Toast`; each host collects them into a
+ * [SnackbarHostState].
  */
 object ShellMessages {
     private val pending = MutableSharedFlow<String>(extraBufferCapacity = 16)

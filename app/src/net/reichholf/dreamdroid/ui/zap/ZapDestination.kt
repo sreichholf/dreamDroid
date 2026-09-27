@@ -5,7 +5,6 @@ import android.content.Intent
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -19,6 +18,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
@@ -57,7 +57,7 @@ fun ZapDestination(
     }
     LaunchedEffect(error) {
         if (!error.isNullOrEmpty()) {
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            ShellMessages.post(error)
             viewModel.consumeError()
         }
     }

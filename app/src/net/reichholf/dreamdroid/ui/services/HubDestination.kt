@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.app.Activity
-import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
@@ -32,6 +31,7 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -92,7 +92,7 @@ fun HubDestination(
 
             TvMoviesDestination.MOVIES -> {
                 if (!viewModel.selectMovies()) {
-                    Toast.makeText(context, R.string.loading, Toast.LENGTH_SHORT).show()
+                    ShellMessages.post(context.getString(R.string.loading))
                 }
             }
 

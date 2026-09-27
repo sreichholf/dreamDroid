@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -24,6 +23,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
@@ -58,7 +58,7 @@ fun CurrentServiceDestination(
     }
     LaunchedEffect(error) {
         if (!error.isNullOrEmpty()) {
-            Toast.makeText(context, error, Toast.LENGTH_LONG).show()
+            ShellMessages.post(error)
             viewModel.consumeError()
         }
     }

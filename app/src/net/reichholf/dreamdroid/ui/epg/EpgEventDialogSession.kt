@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,6 +19,7 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 
 /**
@@ -64,7 +64,7 @@ class EpgEventDialogSession {
             setTimerJob = host.lifecycleOwner.lifecycleScope.launch {
                 val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(item))
                 dismissProgress()
-                Toast.makeText(ctx, response.userMessage(ctx), Toast.LENGTH_LONG).show()
+                ShellMessages.post(response.userMessage(ctx))
             }
         }
     }

@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -196,7 +195,7 @@ object TvComposeHubHost {
         try {
             activity.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            Toast.makeText(activity, R.string.missing_stream_player, Toast.LENGTH_LONG).show()
+            ShellMessages.post(activity.getString(R.string.missing_stream_player))
         }
     }
 
