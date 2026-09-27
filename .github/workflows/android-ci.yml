@@ -228,15 +228,14 @@ jobs:
           java-version: "17"
           distribution: temurin
 
-      # 1.15 signs with AGP's default ~/.android/debug.keystore; use the repo
-      # copy main signs with. JCenter is gone: org.openhab.jmdns 3.4.2 only
-      # lived there, javax.jmdns 3.4.1 on Maven Central has the same API.
+      # 1.15 has no signingConfigs; inject the repo debug.keystore main signs
+      # with (copying it to ~/.android did not take on the runner). JCenter is
+      # gone: org.openhab.jmdns 3.4.2 only lived there, javax.jmdns 3.4.1 on
+      # Maven Central has the same API.
       # gradle.properties jvmargs carry CMS flags JDK 17 rejects.
       - name: Assemble 1.15 googleDebug
         run: |
           set -euo pipefail
-          mkdir -p ~/.android
-          cp debug.keystore ~/.android/debug.keystore
           sed -i \
             -e 's/org.openhab.jmdns:jmdns:3.4.2/javax.jmdns:jmdns:3.4.1/' \
             -e 's/jcenter()/mavenCentral()/' \
@@ -244,6 +243,10 @@ jobs:
           chmod +x gradlew
           ./gradlew --no-daemon --no-configuration-cache \
             "-Dorg.gradle.jvmargs=-Xmx3g --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" \
+            -Pandroid.injected.signing.store.file="$PWD/debug.keystore" \
+            -Pandroid.injected.signing.store.password=android \
+            -Pandroid.injected.signing.key.alias=androiddebugkey \
+            -Pandroid.injected.signing.key.password=android \
             :app:assembleGoogleDebug
 
       - name: Upload 1.15 x86_64 APK
@@ -301,6 +304,19 @@ jobs:
         with:
           name: dreamdroid-115-x86_64-apk
           path: old
+
+      # Fail before booting the emulator if install -r would be rejected.
+      - name: Check both APKs share a signer
+        run: |
+          set -euo pipefail
+          signer() {
+            "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --print-certs "$1" | grep 'certificate SHA-256'
+          }
+          old=$(signer old/app-google-x86_64-debug.apk)
+          new=$(signer app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk)
+          echo "1.15: $old"
+          echo "2.0:  $new"
+          [[ "$old" == "$new" ]]
 
       - name: Upgrade on emulator
         uses: reactivecircus/android-emulator-runner@v2
