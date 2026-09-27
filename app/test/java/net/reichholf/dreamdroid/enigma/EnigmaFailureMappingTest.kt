@@ -110,9 +110,9 @@ class EnigmaFailureMappingTest {
         val error = EnigmaHttpError(EnigmaFailure.Auth)
         val outcome =
             simpleResultFromFetch(EnigmaHttpResult.Failure(error)) { error("unused") }
-        assertEquals(false, outcome.first)
-        assertNull(outcome.second.stateText)
-        assertSame(error, outcome.third)
+        assertEquals(false, outcome.success)
+        assertNull(outcome.result.stateText)
+        assertSame(error, outcome.error)
     }
 
     @Test
@@ -122,12 +122,12 @@ class EnigmaFailureMappingTest {
             simpleResultFromFetch(xml) {
                 SimpleResult(state = Python.FALSE, stateText = "Timer conflict")
             }
-        assertEquals(true, outcome.first)
-        assertEquals(Python.FALSE, outcome.second.state)
-        assertEquals("Timer conflict", outcome.second.stateText)
+        assertEquals(true, outcome.success)
+        assertEquals(Python.FALSE, outcome.result.state)
+        assertEquals("Timer conflict", outcome.result.stateText)
         assertEquals(
             EnigmaFailure.BoxRejected("Timer conflict"),
-            outcome.third!!.failure
+            outcome.error!!.failure
         )
     }
 
@@ -138,8 +138,8 @@ class EnigmaFailureMappingTest {
             simpleResultFromFetch(xml) {
                 SimpleResult(state = Python.TRUE, stateText = "OK")
             }
-        assertEquals(true, outcome.first)
-        assertNull(outcome.third)
+        assertEquals(true, outcome.success)
+        assertNull(outcome.error)
     }
 
     @Test

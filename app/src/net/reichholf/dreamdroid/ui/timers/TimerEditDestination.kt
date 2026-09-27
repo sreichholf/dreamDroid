@@ -33,18 +33,16 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.simpleResultFromFetch
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerDeleteRequestHandler
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.ui.compose.inflateSaveAndDelete
@@ -461,15 +459,9 @@ class TimerEditSession(
             timer = editState.applyTo(timer)
             notifyWorkingCopy()
             val params = Timer.getSaveParams(timer, timerOld)
-            val handler = TimerChangeRequestHandler()
             saveJob?.cancel()
             saveJob = scope.launch {
-                val fetched = withContext(Dispatchers.IO) {
-                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
-                        handler.parseSimpleResult(xml)
-                    }
-                }
-                onSaveResult(fetched.second)
+                onSaveResult(EnigmaClient().changeTimer(params).result)
             }
         }
     }
@@ -494,15 +486,9 @@ class TimerEditSession(
             editState.saveError = ""
             progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
             val params = Timer.getDeleteParams(toDelete)
-            val handler = TimerDeleteRequestHandler()
             saveJob?.cancel()
             saveJob = scope.launch {
-                val fetched = withContext(Dispatchers.IO) {
-                    simpleResultFromFetch(handler.fetch(EnigmaHttp(), params)) { xml ->
-                        handler.parseSimpleResult(xml)
-                    }
-                }
-                onSaveResult(fetched.second)
+                onSaveResult(EnigmaClient().deleteTimer(params).result)
             }
         }
     }

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Job
@@ -26,14 +27,14 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Service
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
@@ -51,7 +52,6 @@ import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.startLiveServiceStream
@@ -403,17 +403,9 @@ class HubServiceListSession : MenuProvider {
         val ctx = context ?: return
         host.runOnlineOnly {
             zapJob?.cancel()
-            zapJob = host.launchSimpleResultLoad(
-                ZapRequestHandler(),
-                listOf(NameValuePair("sRef", ref))
-            ) { _, result, error ->
-                var toastText = ctx.getText(R.string.get_content_error).toString()
-                val stateText = result.stateText
-                when {
-                    !stateText.isNullOrEmpty() -> toastText = stateText
-                    error != null -> toastText = error.resolve(ctx).orEmpty()
-                }
-                toast(toastText)
+            zapJob = host.lifecycleOwner.lifecycleScope.launch {
+                val response = EnigmaClient().zap(listOf(NameValuePair("sRef", ref)))
+                toast(response.userMessage(ctx))
                 onZapped?.invoke()
             }
             onZapJob?.invoke(zapJob)

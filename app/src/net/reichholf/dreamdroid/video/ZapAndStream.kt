@@ -3,16 +3,17 @@ package net.reichholf.dreamdroid.video
 import android.content.Context
 import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 
 /**
  * Single-tuner boxes can stream a service only while they are tuned to that
@@ -56,10 +57,8 @@ fun LifecycleOwner.startLiveServiceStream(
         Toast.makeText(context, R.string.get_content_error, Toast.LENGTH_LONG).show()
         return null
     }
-    return launchSimpleResultLoad(
-        ZapRequestHandler(),
-        listOf(NameValuePair("sRef", serviceRef))
-    ) { success, result, error ->
+    return lifecycleScope.launch {
+        val (success, result, error) = EnigmaClient().zap(listOf(NameValuePair("sRef", serviceRef)))
         if (success && error == null) {
             play()
         } else {

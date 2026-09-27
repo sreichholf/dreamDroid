@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import java.io.File
@@ -30,9 +31,11 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.MovieListLoadResult
 import net.reichholf.dreamdroid.enigma.loadMovieList
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -41,8 +44,6 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.MovieDeleteRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.ZapRequestHandler
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.MovieDao
@@ -59,7 +60,6 @@ import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.widget.AnchorPopup
 
@@ -403,17 +403,9 @@ class HubMovieListSession : MenuProvider {
         val ctx = context ?: return
         host.runOnlineOnly {
             zapJob?.cancel()
-            zapJob = host.launchSimpleResultLoad(
-                ZapRequestHandler(),
-                listOf(NameValuePair("sRef", ref))
-            ) { _, result, error ->
-                var toastText = ctx.getText(R.string.get_content_error).toString()
-                val stateText = result.stateText
-                when {
-                    !stateText.isNullOrEmpty() -> toastText = stateText
-                    error != null -> toastText = error.resolve(ctx).orEmpty()
-                }
-                toast(toastText)
+            zapJob = host.lifecycleOwner.lifecycleScope.launch {
+                val response = EnigmaClient().zap(listOf(NameValuePair("sRef", ref)))
+                toast(response.userMessage(ctx))
             }
             onZapJob?.invoke(zapJob)
         }
@@ -430,19 +422,11 @@ class HubMovieListSession : MenuProvider {
             progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
             reloadOnSimpleResult = true
             deleteJob?.cancel()
-            deleteJob = host.launchSimpleResultLoad(
-                MovieDeleteRequestHandler(),
-                MovieKeys.getDeleteParams(movie)
-            ) { _, result, error ->
+            deleteJob = host.lifecycleOwner.lifecycleScope.launch {
+                val response = EnigmaClient().deleteMovie(MovieKeys.getDeleteParams(movie))
                 dismissProgress()
-                var toastText = ctx.getText(R.string.get_content_error).toString()
-                val stateText = result.stateText
-                when {
-                    !stateText.isNullOrEmpty() -> toastText = stateText
-                    error != null -> toastText = error.resolve(ctx).orEmpty()
-                }
-                toast(toastText)
-                if (reloadOnSimpleResult && Python.TRUE == result.state) {
+                toast(response.userMessage(ctx))
+                if (reloadOnSimpleResult && Python.TRUE == response.result.state) {
                     reloadOnSimpleResult = false
                     reload()
                 }

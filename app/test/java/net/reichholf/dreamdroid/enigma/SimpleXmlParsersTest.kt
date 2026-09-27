@@ -1,8 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
-import net.reichholf.dreamdroid.helpers.enigma2.Request
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.SimpleResultRequestHandler
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.VolumeRequestHandler
+import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -69,9 +67,8 @@ class SimpleXmlParsersTest {
     }
 
     @Test
-    fun requestHandlerCopiesSimpleResultFields() {
-        val handler = SimpleResultRequestHandler("/web/message")
-        val parsed = handler.parseSimpleResult(
+    fun simpleResultResponseCopiesParsedFields() {
+        val xml =
             """
             <?xml version="1.0" encoding="UTF-8"?>
             <e2simplexmlresult>
@@ -79,9 +76,14 @@ class SimpleXmlParsersTest {
             <e2statetext>Done</e2statetext>
             </e2simplexmlresult>
             """.trimIndent()
-        )
-        assertEquals("True", parsed.state)
-        assertEquals("Done", parsed.stateText)
+        val response =
+            simpleResultFromFetch(
+                EnigmaHttpResult.Success(xml.toByteArray()),
+                SimpleResultParser::parse
+            )
+        assertTrue(response.success)
+        assertEquals("True", response.result.state)
+        assertEquals("Done", response.result.stateText)
     }
 
     @Test
@@ -100,18 +102,6 @@ class SimpleXmlParsersTest {
         assertEquals("True", volume!!.result)
         assertEquals("40", volume.current)
         assertEquals("False", volume.muted)
-
-        val fromHandler = VolumeRequestHandler().parseVolume(
-            """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <e2volume>
-            <e2result>True</e2result>
-            <e2current>40</e2current>
-            <e2ismuted>False</e2ismuted>
-            </e2volume>
-            """.trimIndent()
-        )
-        assertEquals("40", fromHandler.current)
     }
 
     @Test
@@ -196,25 +186,13 @@ class SimpleXmlParsersTest {
     @Test
     fun malformedSimpleResultUsesDefault() {
         assertNull(SimpleResultParser.parse("<e2simplexmlresult><e2state>"))
-        val fallback = SimpleResultRequestHandler("/web/message")
-            .parseSimpleResult("<e2simplexmlresult><e2state>")
-        assertEquals("False", fallback.state)
-        assertNull(fallback.stateText)
-    }
-
-    @Test
-    fun requestParseListFillsLocations() {
-        val list = ArrayList<String>()
-        assertTrue(
-            Request.parseList(
-                """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <e2locations><e2location>/hdd/movie/</e2location></e2locations>
-                """.trimIndent(),
-                list,
-                "e2location"
+        val fallback =
+            simpleResultFromFetch(
+                EnigmaHttpResult.Success("<e2simplexmlresult><e2state>".toByteArray()),
+                SimpleResultParser::parse
             )
-        )
-        assertEquals(listOf("/hdd/movie/"), list)
+        assertFalse(fallback.success)
+        assertNull(fallback.result.stateText)
+        assertNull(fallback.error)
     }
 }

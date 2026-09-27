@@ -14,13 +14,13 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadServiceList
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerAddByEventIdRequestHandler
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
@@ -33,7 +33,6 @@ import net.reichholf.dreamdroid.ui.multiepg.newMultiEpgSession
 import net.reichholf.dreamdroid.ui.multiepg.readMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.multiepg.writeMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.mutationResultText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -165,19 +164,11 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
         }
         val app = getApplication<Application>()
         setTimerProgress = IndeterminateProgressState(message = app.getString(R.string.saving))
-        setTimerJob = viewModelScope.launchSimpleResultLoad(
-            TimerAddByEventIdRequestHandler(),
-            Timer.getEventIdParams(event)
-        ) { _, result, error ->
+        setTimerJob = viewModelScope.launch {
+            val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(event))
             setTimerProgress = null
             setTimerJob = null
-            ShellMessages.post(
-                mutationResultText(
-                    stateText = result.stateText,
-                    errorText = error?.resolve(app),
-                    fallback = app.getString(R.string.get_content_error)
-                )
-            )
+            ShellMessages.post(response.userMessage(app))
         }
     }
 

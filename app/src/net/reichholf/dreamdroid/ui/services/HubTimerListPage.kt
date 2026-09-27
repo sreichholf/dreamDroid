@@ -18,21 +18,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.core.view.MenuProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.EnigmaClient
+import net.reichholf.dreamdroid.enigma.SimpleResultResponse
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.TimerListLoadResult
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.enigma.loadTimerList
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerCleanupRequestHandler
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.TimerDao
 import net.reichholf.dreamdroid.room.TimerSnapshotStore
@@ -44,7 +44,6 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -298,26 +297,17 @@ class HubTimerListSession :
                 message = ctx.getString(R.string.cleaning_timerlist)
             )
             mutateJob?.cancel()
-            mutateJob = host.launchSimpleResultLoad(
-                TimerCleanupRequestHandler(),
-                emptyList()
-            ) { _, result, error ->
-                onSimpleResult(result, error)
+            mutateJob = host.lifecycleOwner.lifecycleScope.launch {
+                onSimpleResult(EnigmaClient().cleanupTimers())
             }
             onMutateJob?.invoke(mutateJob)
         }
     }
 
-    private fun onSimpleResult(result: SimpleResult, error: EnigmaHttpError?) {
+    private fun onSimpleResult(response: SimpleResultResponse) {
         dismissProgress()
         val ctx = context ?: return
-        var toastText = ctx.getText(R.string.get_content_error).toString()
-        val stateText = result.stateText
-        when {
-            !stateText.isNullOrEmpty() -> toastText = stateText
-            error != null -> toastText = error.resolve(ctx).orEmpty()
-        }
-        toast(toastText)
+        toast(response.userMessage(ctx))
         reload()
     }
 

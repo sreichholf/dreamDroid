@@ -23,18 +23,18 @@ import java.util.Collections
 import java.util.TimeZone
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Tag
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.TimerChangeRequestHandler
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
@@ -364,20 +364,20 @@ internal class TvTimerEditWorkingCopy(
         timer = editState.applyTo(timer)
         val params = Timer.getSaveParams(timer, timerOld)
         saveJob?.cancel()
-        saveJob =
-            scope.launchSimpleResultLoad(TimerChangeRequestHandler(), params) { _, result, _ ->
-                progress = null
-                if (Python.TRUE.equals(result.state)) {
-                    editState.saveError = ""
-                    saveSucceeded = true
-                    return@launchSimpleResultLoad
-                }
-                val stateText = result.stateText
-                editState.saveError = when {
-                    !stateText.isNullOrEmpty() -> stateText
-                    else -> context.getString(R.string.get_content_error)
-                }
+        saveJob = scope.launch {
+            val result = EnigmaClient().changeTimer(params).result
+            progress = null
+            if (Python.TRUE.equals(result.state)) {
+                editState.saveError = ""
+                saveSucceeded = true
+                return@launch
             }
+            val stateText = result.stateText
+            editState.saveError = when {
+                !stateText.isNullOrEmpty() -> stateText
+                else -> context.getString(R.string.get_content_error)
+            }
+        }
     }
 
     private fun getRepeated(value: Int): String {

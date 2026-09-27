@@ -25,17 +25,17 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.launchSimpleResultLoad
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
-import net.reichholf.dreamdroid.helpers.enigma2.requesthandler.RemoteCommandRequestHandler
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchSimpleResultLoad
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotReloadTrigger
@@ -118,11 +118,8 @@ fun VirtualRemoteDestination(handle: PhoneNavHandle, modifier: Modifier = Modifi
                     add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
                 }
             }
-            handle.launchSimpleResultLoad(RemoteCommandRequestHandler(), params) {
-                    _,
-                    result,
-                    error
-                ->
+            handle.lifecycleOwner.lifecycleScope.launch {
+                val (_, result, error) = EnigmaClient().remoteCommand(params)
                 var hasError = false
                 var toastText = contentErrorText
                 val stateText = result.stateText
