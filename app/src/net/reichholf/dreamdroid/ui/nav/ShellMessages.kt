@@ -6,18 +6,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
-
-/**
- * Mutation copy for the shell snackbar. A non-blank box `statetext` wins, including
- * [net.reichholf.dreamdroid.enigma.EnigmaFailure.BoxRejected].
- */
-fun mutationResultText(stateText: String?, errorText: String?, fallback: String): String = when {
-    !stateText.isNullOrEmpty() -> stateText
-    !errorText.isNullOrEmpty() -> errorText
-    else -> fallback
-}
 
 /**
  * One-shot user messages for the phone shell, the TV hub, and the player. In-app
@@ -40,10 +33,13 @@ object ShellMessages {
 @Composable
 fun ShellSnackbarHost(modifier: Modifier = Modifier) {
     val hostState = remember { SnackbarHostState() }
-    LaunchedEffect(hostState) {
-        ShellMessages.messages.collect { text ->
-            hostState.showSnackbar(text)
-        }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    // Only a started host collects: a stopped shell under the player must not queue
+    // (and later replay) the player's messages.
+    LaunchedEffect(hostState, lifecycleOwner) {
+        ShellMessages.messages
+            .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)
+            .collect { text -> hostState.showSnackbar(text) }
     }
     SnackbarHost(hostState = hostState, modifier = modifier)
 }

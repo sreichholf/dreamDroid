@@ -36,12 +36,19 @@ internal fun simpleResultFromFetch(
 }
 
 /** The receiver's `statetext`, else the HTTP error, else the generic content error. */
-fun EnigmaResponse<SimpleResult>.userMessage(context: Context): String {
-    val stateText = value?.stateText
-    val errorText = error?.resolve(context)
-    return when {
+fun EnigmaResponse<SimpleResult>.userMessage(context: Context): String = mutationResultText(
+    stateText = value?.stateText,
+    errorText = error?.resolve(context),
+    fallback = context.getString(R.string.get_content_error)
+)
+
+/**
+ * Mutation copy: a non-blank box `statetext` wins (including [EnigmaFailure.BoxRejected]),
+ * then a non-blank error, then [fallback].
+ */
+internal fun mutationResultText(stateText: String?, errorText: String?, fallback: String): String =
+    when {
         !stateText.isNullOrEmpty() -> stateText
         !errorText.isNullOrEmpty() -> errorText
-        else -> context.getString(R.string.get_content_error)
+        else -> fallback
     }
-}

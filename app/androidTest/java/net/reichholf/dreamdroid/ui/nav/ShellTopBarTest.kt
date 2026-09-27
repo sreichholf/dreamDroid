@@ -6,15 +6,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -94,6 +100,65 @@ class ShellTopBarTest {
         assertGone("Clean up")
         composeRule.onNodeWithText("clear").performClick()
         assertGone("Detect devices")
+    }
+
+    @Test
+    fun stateChangeReachesTheRenderedAction() {
+        composeRule.setContent {
+            hostShell(controller = remember { ShellTopBarController() }) {
+                var busy by remember { mutableStateOf(false) }
+                BindShellTopBarActions(
+                    listOf(
+                        ShellTopBarAction(
+                            id = R.id.menu_cleanup,
+                            label = "Clean up",
+                            iconRes = R.drawable.ic_action_clean,
+                            enabled = !busy,
+                            onClick = {}
+                        )
+                    )
+                )
+                Button(onClick = { busy = !busy }) { Text("toggle") }
+            }
+        }
+        composeRule.onNodeWithContentDescription("Clean up").assertIsEnabled()
+        composeRule.onNodeWithText("toggle").performClick()
+        composeRule.onNodeWithContentDescription("Clean up").assertIsNotEnabled()
+        composeRule.onNodeWithText("toggle").performClick()
+        composeRule.onNodeWithContentDescription("Clean up").assertIsEnabled()
+    }
+
+    @Test
+    fun navHostPushAndPopHandActionsBetweenDestinations() {
+        lateinit var nav: NavHostController
+        composeRule.setContent {
+            hostShell(controller = remember { ShellTopBarController() }) {
+                nav = rememberNavController()
+                NavHost(navController = nav, startDestination = "list") {
+                    composable("list") {
+                        BindShellTopBarActions(listOf(action("Clean up")))
+                    }
+                    composable("edit") {
+                        BindShellTopBarActions(listOf(action("Delete")))
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithContentDescription("Clean up").assertIsDisplayed()
+        composeRule.runOnIdle { nav.navigate("edit") }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Delete")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        assertGone("Clean up")
+        composeRule.runOnIdle { nav.popBackStack() }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Clean up")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        assertGone("Delete")
     }
 
     @Test

@@ -36,8 +36,9 @@ data class ShellTopBarAction(
 
 /**
  * Title and destination actions for the phone shell's [TopAppBar]. The title follows
- * the activity title. Actions come from the destination that bound last; a leaving
- * destination that recomposes after its successor bound does not take them back.
+ * the activity title. Every attached [BindShellTopBarActions] keeps a binding; the
+ * newest one is shown. When it leaves (a pop, or a cancelled predictive-back preview
+ * of the previous destination), the newest remaining binding shows again.
  */
 class ShellTopBarController {
     var title by mutableStateOf("")
@@ -45,29 +46,36 @@ class ShellTopBarController {
     var actions by mutableStateOf<List<ShellTopBarAction>>(emptyList())
         private set
 
-    private var owner = 0
-    private var nextOwner = 0
+    private val bindings = sortedMapOf<Int, List<ShellTopBarAction>>()
+    private var nextEpoch = 0
 
     internal fun claim(): Int {
-        nextOwner += 1
-        return nextOwner
+        nextEpoch += 1
+        return nextEpoch
     }
 
     internal fun bind(epoch: Int, actions: List<ShellTopBarAction>) {
-        owner = epoch
-        this.actions = actions
+        bindings[epoch] = actions
+        publish()
     }
 
     internal fun update(epoch: Int, actions: List<ShellTopBarAction>) {
-        if (owner == epoch) {
-            this.actions = actions
+        if (epoch in bindings) {
+            bindings[epoch] = actions
+            publish()
         }
     }
 
     internal fun release(epoch: Int) {
-        if (owner == epoch) {
-            owner = 0
-            actions = emptyList()
+        if (bindings.remove(epoch) != null) {
+            publish()
+        }
+    }
+
+    private fun publish() {
+        val newest = if (bindings.isEmpty()) emptyList() else bindings.getValue(bindings.lastKey())
+        if (newest !== actions) {
+            actions = newest
         }
     }
 }

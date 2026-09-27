@@ -138,15 +138,6 @@
         <item name="actionOverflowButtonStyle">@style/Widget.DreamDroid.ActionButton.Overflow</item>
     </style>
 
-    <style name="ToolbarStyle" parent="@style/Widget.Material3.Toolbar.OnSurface">
-        <item name="titleTextColor">?attr/colorOnSurface</item>
-        <item name="subtitleTextColor">?attr/colorOnSurfaceVariant</item>
-        <item name="navigationIconTint">?attr/colorOnSurface</item>
-        <item name="android:theme">@style/ThemeOverlay.DreamDroid.Toolbar</item>
-        <item name="iconTint">?attr/colorOnSurface</item>
-        <item name="actionMenuTextColor">?attr/colorOnSurface</item>
-    </style>
-
     <style name="ActionModeStyle" parent="@style/Widget.Material3.ActionMode">
         <item name="background">?attr/colorSurfaceContainerHigh</item>
     </style>
