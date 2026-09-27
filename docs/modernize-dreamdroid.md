@@ -41,7 +41,7 @@ One PR per item unless asked otherwise. Do not fold these into unrelated chrome 
 | Remediation | The [remediation plan](#remediation-plan) below. It replaces the old "leave as they are" list. |
 | Operator usertests | **Phone verified** (2026-09-19). **Tablet verified** (2026-09-21). **TV / box verified** (2026-09-21) except newly added timer surfaces. Phone drawer EPG and the bouquet service list remember list vs MultiEPG. Remaining box pass: hub **Timers** list add/edit/delete (`TvTimerHost`); bouquet service INFO/MENU overlay (stream / set / edit); MultiEPG detail set/edit (`TvTimerEditorHost`). File bugs; no drive-by refactors. Then a bugfix pass, one PR per fix. In-tree timer gate: `TvTimerHostTest` / `TvTimerListScreenTest` / `TvServiceTimerOverlayTest`. Re-run the phone pass after C2 and C3 land; they change shell messages and the top bar. |
 | 2.0 bugs | GitHub label `2.0-bug`. One PR per fix. Do not treat `feature` issues as ship blockers. Do not close more tickets unless asked. |
-| Pre-release | Not GitHub-issue work; tracked as E2. Migration tests exist (`AppDatabaseMigrationTest` for Room v1→8, `DatabaseHelperMigrateTest` for the 1.15 SQLite import); still missing is one upgrade over a real 1.15 install on a device. Minified `googleRelease` smoke (CI builds only debug). `ACCESS_LOCAL_NETWORK` is declared and requested (`LocalNetworkPermissionRequest` in the phone, TV, share, and video activities); still missing is a grant and deny pass on an API 37 device. |
+| Pre-release | Not GitHub-issue work; tracked as E2. Migration tests exist (`AppDatabaseMigrationTest` for Room v1→8, `DatabaseHelperMigrateTest` for the 1.15 SQLite import); a real `v1.15.460` install upgraded in place runs on the emulator via `workflow_dispatch` on `android-ci.yml` with `upgrade_from_115` (`.github/upgrade-from-115/run.sh`, `Upgrade115Test`: 1.15's Room v1 profiles, and a pre-1.15 `dreamdroid`-only install). Both passed on API 30 (2026-09-27, [run 36342967629](https://github.com/sreichholf/dreamDroid/actions/runs/36342967629)); the release-signed Play upgrade stays with the R8 smoke. Minified `googleRelease` smoke (CI builds only debug). `ACCESS_LOCAL_NETWORK` is declared and requested (`LocalNetworkPermissionRequest` in the phone, TV, share, and video activities); still missing is a grant and deny pass on an API 37 device. |
 
 ## Deliberate exceptions
 
@@ -51,7 +51,7 @@ These deviate from a platform default on purpose. Each needs its reason to stay 
 | --- | --- | --- |
 | Service-row / now-playing progress is a transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)) | Product design choice for dense rows. Do not "restore" a Material track. | Design changes. |
 | Widget is Glance + `AndroidRemoteViews` for the dense RCU grid | Glance cannot lay out the grid at that density; a Glance-only rewrite does not pay for itself. | Glance gains an equivalent layout. |
-| `DatabaseHelper` stays as a read-only importer of leftover `dreamdroid` SQLite rows | Room has not shipped on Play yet; 1.15 users and cloud backups still carry the old file. It never creates `dreamdroid`. | One release after Room ships on Play, with migration telemetry or a support window agreed. |
+| `DatabaseHelper` stays as a read-only importer of leftover `dreamdroid` SQLite rows | 1.15 already moves profiles into Room v1 (`dreambox`) on first start, but installs that skipped 1.15 and old cloud backups still carry the file. It never creates `dreamdroid`. | One release after 2.0 ships on Play, with migration telemetry or a support window agreed. |
 | libVLC, not Media3 | Enigma2 streams (MPEG-TS, varied codecs, some transcoded) need libVLC coverage. `VideoOverlayController` stays the `View` + libVLC binder; its chrome is Compose. | Media3 covers the receiver formats. |
 | Phone and TV are separate activities | Different input model (touch vs D-pad), theme (`androidx.tv` Material), and launcher category. Within each form factor there is one activity (D2). | — |
 | `uses-feature android.software.leanback` (required = false) | Needed for the Android TV launcher. Leanback **libraries** are gone. | — |
@@ -80,7 +80,7 @@ Re-rated 2026-09-27 against the size of the app (a single-maintainer remote: abo
 | Rank | Item | Why this rank |
 | --- | --- | --- |
 | 1. **2.0 blocker** | TV timer box pass, then `2.0-bug` fixes | Real user-facing surfaces nobody has verified on a box. |
-| 2. **2.0 blocker** | E2 release checks | The missing pieces are small: one R8 `googleRelease` smoke, one upgrade over a real 1.15 install, one grant/deny pass for `ACCESS_LOCAL_NETWORK` on API 37. The tests and the permission request already exist. |
+| 2. **2.0 blocker** | E2 release checks | The missing pieces are small: one R8 `googleRelease` smoke, one grant/deny pass for `ACCESS_LOCAL_NETWORK` on API 37. The tests and the permission request already exist. |
 | 3. **Done** | C4: one HTTP stack | Deletes a parallel stack (16 handlers, 14 `launchSimpleResultLoad` callers) and needs no Hilt or repositories: move the calls onto `EnigmaClient` directly. |
 | 4. **Done** | C2 message part: remaining `Toast`s → shell snackbar | About 20 files. `ShellMessages` already exists, so this needs no Hilt either. Can land per destination. |
 | 5. **Done** | C3: Material 3 `TopAppBar` | 9 `MenuProvider` destinations and hand-tinted icons; visible consistency win. `BaseActivity` still needs AppCompat for night mode and the row `PopupMenu`. |
@@ -140,7 +140,7 @@ Re-rated 2026-09-27 against the size of the app (a single-maintainer remote: abo
 | Step | Fixes | Change | Proof |
 | --- | --- | --- | --- |
 | E1 | P13 | Baseline Profile module (macrobenchmark) covering cold start → hub, hub scroll, MultiEPG pan. Ship `profileinstaller`. | Benchmark numbers in the PR. |
-| E2 **2.0 blocker** | — | Release checks: R8 `googleRelease` smoke, Room 1.15→2.0 migration tests, `ACCESS_LOCAL_NETWORK` flow on SDK 37. | Pre-release row above. |
+| E2 **2.0 blocker** | — | Release checks: R8 `googleRelease` smoke, 1.15→2.0 upgrade (emulator job `upgrade_from_115`), `ACCESS_LOCAL_NETWORK` flow on SDK 37. | Pre-release row above. |
 
 When a step lands, its PR marks the step done here and deletes the rows it fixed from "What is wrong today".
 
