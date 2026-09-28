@@ -263,10 +263,12 @@ class HubServiceListViewModelTest {
 
         viewModel.navigateUp()
         val fresh = viewModel.settled()
-        release.countDown()
-        Thread.sleep(200)
-
         assertEquals(listOf("Favourites (TV)", "Das Erste HD", "--------"), fresh.items.names())
+        release.countDown()
+        // Join the ViewModel instead of sleeping: the released stale answer resumes
+        // the already-cancelled load, which discards it, and joining proves no
+        // stale rows can still arrive before asserting the fresh list survived.
+        viewModel.cancelAndJoin()
         assertEquals(fresh.items, viewModel.uiState.value.items)
     }
 
