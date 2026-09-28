@@ -218,16 +218,8 @@ private fun PhoneNavHostGraph(
         composable<ProfileEdit> {
             ProfileEditDestination(handle = handle)
         }
-        composable<TimerEdit> { entry ->
-            val route = entry.toRoute<TimerEdit>()
-            val remount by handle.timerEditRemountFlow().collectAsState()
-            key(route.tag(), remount) {
-                TimerEditDestination(
-                    handle = handle,
-                    route = route,
-                    remountEpoch = remount
-                )
-            }
+        composable<TimerEdit> {
+            TimerEditDestination(handle = handle)
         }
         composable<TimerServicePick> {
             TimerServicePickDestination(handle = handle)

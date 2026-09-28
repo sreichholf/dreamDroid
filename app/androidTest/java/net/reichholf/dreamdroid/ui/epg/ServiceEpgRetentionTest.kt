@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -64,6 +65,7 @@ class ServiceEpgRetentionTest {
     private val clients = EnigmaClientFactory(profiles)
     private val sessions = SessionConnectionHolder().apply { onSuccess() }
     private val repository = EpgRepository(clients, profiles, database, sessions)
+    private val timers = TimerRepository(clients, profiles, database)
 
     @Before
     fun forceAlwaysNight() {
@@ -95,7 +97,7 @@ class ServiceEpgRetentionTest {
                             ServiceEpgViewModel(createSavedStateHandle(), repository, sessions)
                         }
                         val detail = viewModel {
-                            EpgEventDetailViewModel(createSavedStateHandle(), clients)
+                            EpgEventDetailViewModel(createSavedStateHandle(), timers)
                         }
                         viewModels += viewModel
                         ServiceEpgDestination(

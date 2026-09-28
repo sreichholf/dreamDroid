@@ -342,7 +342,6 @@ fun ComposeTvHubApp(
             } else {
                 null
             },
-            mutationsBlocked = status.blocksMutations,
             onServiceInfo = { service, bouquetRef ->
                 viewModel.showServiceTimer(service, bouquetRef)
             }
@@ -384,8 +383,7 @@ fun ComposeTvHubApp(
                     onSaved = {
                         viewModel.dismissEditTimer()
                         viewModel.dismissServiceTimer()
-                    },
-                    mutationsBlocked = status.blocksMutations
+                    }
                 )
             }
         }
@@ -442,13 +440,9 @@ fun ComposeTvHubChrome(
     sessionChipLabel: String? = null,
     onSessionRecheck: (() -> Unit)? = null,
     sessionRecheckLabel: String? = null,
-    mutationsBlocked: Boolean = false,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
     timerContent: @Composable () -> Unit = {
-        TvTimerHost(
-            modifier = Modifier.fillMaxSize(),
-            mutationsBlocked = mutationsBlocked
-        )
+        TvTimerHost(modifier = Modifier.fillMaxSize())
     }
 ) {
     var showStreamUnavailable by remember { mutableStateOf(false) }
