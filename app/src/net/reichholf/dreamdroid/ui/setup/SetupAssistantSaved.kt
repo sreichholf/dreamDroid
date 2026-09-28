@@ -17,35 +17,31 @@ object SetupAssistantSavedKeys {
     const val ASKED_FOR_NETWORK = "setup_asked_for_network"
 }
 
-/** The wizard fields that survive process death. Defaults are a fresh wizard. */
+/**
+ * The wizard's choices that survive process death. Defaults are a fresh wizard. The
+ * typed fields (host, port, user, password, name) are `SavedTextField`s on the
+ * ViewModel, saved under the matching [SetupAssistantSavedKeys].
+ */
 data class SetupDraft(
     val step: SetupStep = SetupStep.Welcome,
-    val host: String = "",
     val useHttps: Boolean = false,
-    val portText: String = "80",
     val login: Boolean = true,
-    val user: String = "root",
-    val pass: String = "dreambox",
-    val profileName: String = "",
     val nameEdited: Boolean = false,
     val trustAllCerts: Boolean = false,
     val suggestedName: String = "",
     val askedForNetwork: Boolean = false
-) {
-    fun portNumber(): Int = portText.toIntOrNull()?.takeIf { it in 1..65535 }
-        ?: if (useHttps) 443 else 80
+)
 
-    fun toProfile() = wizardProfile(
-        name = profileName,
-        host = host,
-        port = portNumber(),
-        useHttps = useHttps,
-        login = login,
-        user = user,
-        pass = pass,
-        trustAllCerts = trustAllCerts
-    )
+/** Defaults of the typed fields in a fresh wizard. */
+object SetupDefaults {
+    const val PORT_TEXT = "80"
+    const val USER = "root"
+    const val PASS = "dreambox"
 }
+
+/** [portText] as a port, or the default for [useHttps] when it is not one. */
+fun setupPort(portText: String, useHttps: Boolean): Int =
+    portText.toIntOrNull()?.takeIf { it in 1..65535 } ?: if (useHttps) 443 else 80
 
 /** Absent or unknown keys read as the fresh-wizard default. Reading does not write. */
 fun readSetupDraft(handle: SavedStateHandle): SetupDraft {
@@ -55,13 +51,8 @@ fun readSetupDraft(handle: SavedStateHandle): SetupDraft {
     val stepName = handle.get<Any>(SetupAssistantSavedKeys.STEP) as? String
     return SetupDraft(
         step = SetupStep.entries.firstOrNull { it.name == stepName } ?: defaults.step,
-        host = string(SetupAssistantSavedKeys.HOST, defaults.host),
         useHttps = flag(SetupAssistantSavedKeys.USE_HTTPS, defaults.useHttps),
-        portText = string(SetupAssistantSavedKeys.PORT_TEXT, defaults.portText),
         login = flag(SetupAssistantSavedKeys.LOGIN, defaults.login),
-        user = string(SetupAssistantSavedKeys.USER, defaults.user),
-        pass = string(SetupAssistantSavedKeys.PASS, defaults.pass),
-        profileName = string(SetupAssistantSavedKeys.PROFILE_NAME, defaults.profileName),
         nameEdited = flag(SetupAssistantSavedKeys.NAME_EDITED, defaults.nameEdited),
         trustAllCerts = flag(SetupAssistantSavedKeys.TRUST_ALL_CERTS, defaults.trustAllCerts),
         suggestedName = string(SetupAssistantSavedKeys.SUGGESTED_NAME, defaults.suggestedName),
@@ -71,13 +62,8 @@ fun readSetupDraft(handle: SavedStateHandle): SetupDraft {
 
 fun SetupDraft.writeTo(handle: SavedStateHandle) {
     handle[SetupAssistantSavedKeys.STEP] = step.name
-    handle[SetupAssistantSavedKeys.HOST] = host
     handle[SetupAssistantSavedKeys.USE_HTTPS] = useHttps
-    handle[SetupAssistantSavedKeys.PORT_TEXT] = portText
     handle[SetupAssistantSavedKeys.LOGIN] = login
-    handle[SetupAssistantSavedKeys.USER] = user
-    handle[SetupAssistantSavedKeys.PASS] = pass
-    handle[SetupAssistantSavedKeys.PROFILE_NAME] = profileName
     handle[SetupAssistantSavedKeys.NAME_EDITED] = nameEdited
     handle[SetupAssistantSavedKeys.TRUST_ALL_CERTS] = trustAllCerts
     handle[SetupAssistantSavedKeys.SUGGESTED_NAME] = suggestedName

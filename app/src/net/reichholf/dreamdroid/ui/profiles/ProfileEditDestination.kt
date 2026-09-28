@@ -56,8 +56,10 @@ fun ProfileEditDestination(
 
     ProfileEditScreen(
         form = form,
+        fields = viewModel.fields,
         hostError = uiState.hostError?.asString(),
         onFormChange = viewModel::onFormChange,
+        onSslChange = viewModel::onSslChange,
         saveLabel = stringResource(R.string.save),
         onSave = viewModel::save,
         showSaveFab = false,

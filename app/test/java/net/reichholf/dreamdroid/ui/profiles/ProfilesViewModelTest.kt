@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.awaitIdle
+import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -40,7 +40,7 @@ class ProfilesViewModelTest {
 
     @AfterEach
     fun tearDown() {
-        runBlocking { viewModels.forEach { it.awaitIdle() } }
+        runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         Dispatchers.resetMain()
     }
 

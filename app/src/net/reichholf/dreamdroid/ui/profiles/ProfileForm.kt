@@ -1,100 +1,121 @@
 package net.reichholf.dreamdroid.ui.profiles
 
+import androidx.lifecycle.SavedStateHandle
 import java.io.Serializable
+import kotlinx.coroutines.CoroutineScope
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.ui.text.SavedTextField
 
 /**
- * The editable fields of a [Profile], as typed. Numbers stay text until [applyTo], so a
- * half-typed port survives. Serializable so a ViewModel can keep it in its
- * `SavedStateHandle`.
+ * The switches of a profile being edited. The typed fields are [ProfileTextFields].
+ * Serializable so a ViewModel can keep it in its `SavedStateHandle`.
  */
 data class ProfileForm(
-    val name: String = "",
-    val host: String = "",
-    val streamHost: String = "",
-    val port: String = "80",
-    val streamPort: String = "8001",
-    val filePort: String = "80",
     val ssl: Boolean = false,
     val trustAllCerts: Boolean = false,
     val login: Boolean = false,
     val streamLogin: Boolean = false,
     val fileSsl: Boolean = false,
     val fileLogin: Boolean = false,
-    val user: String = "",
-    val pass: String = "",
     val simpleRemote: Boolean = false,
-    val ssid: String = "",
     val defaultOnNoWifi: Boolean = false,
     val encoderStream: Boolean = false,
     val zapAndStream: Boolean = false,
-    val encoderLogin: Boolean = false,
-    val encoderPath: String = "stream",
-    val encoderUser: String = "",
-    val encoderPass: String = "",
-    val encoderVideoBitrate: String = "2500",
-    val encoderAudioBitrate: String = "128",
-    val encoderPort: String = "554"
+    val encoderLogin: Boolean = false
 ) : Serializable {
-    /** Switching https moves the port between 80 and 443. */
-    fun withSsl(checked: Boolean): ProfileForm =
-        copy(ssl = checked, port = if (checked) "443" else "80")
-
-    fun applyTo(profile: Profile) {
-        profile.name = name
-        profile.host = host.trim()
-        profile.streamHost = streamHost.trim()
-        profile.setPort(port, ssl, trustAllCerts)
-        profile.setStreamPort(streamPort)
-        profile.setFilePort(filePort)
-        profile.login = login
-        profile.streamLogin = streamLogin
-        profile.fileLogin = fileLogin
-        profile.fileSsl = fileSsl
-        profile.user = user
-        profile.pass = pass
-        profile.simpleRemote = simpleRemote
-        profile.ssid = ssid.trim()
-        profile.isDefaultProfileOnNoWifi = defaultOnNoWifi
-        profile.encoderStream = encoderStream
-        profile.zapAndStream = zapAndStream
-        profile.encoderPath = encoderPath
-        profile.setEncoderPort(encoderPort)
-        profile.encoderLogin = encoderLogin
-        profile.encoderUser = encoderUser
-        profile.encoderPass = encoderPass
-        profile.setEncoderAudioBitrate(encoderAudioBitrate)
-        profile.setEncoderVideoBitrate(encoderVideoBitrate)
-    }
-
     companion object {
         fun from(profile: Profile): ProfileForm = ProfileForm(
-            name = profile.name.orEmpty(),
-            host = profile.host.orEmpty(),
-            streamHost = profile.streamHost.orEmpty(),
             ssl = profile.ssl,
             trustAllCerts = profile.allCertsTrusted,
-            port = profile.port.toString(),
-            streamPort = profile.streamPort.toString(),
-            filePort = profile.filePort.toString(),
             login = profile.login,
             streamLogin = profile.streamLogin,
-            user = profile.user.orEmpty(),
-            pass = profile.pass.orEmpty(),
-            fileLogin = profile.fileLogin,
             fileSsl = profile.fileSsl,
+            fileLogin = profile.fileLogin,
             simpleRemote = profile.simpleRemote,
-            ssid = profile.ssid.orEmpty(),
             defaultOnNoWifi = profile.isDefaultProfileOnNoWifi,
             encoderStream = profile.encoderStream,
             zapAndStream = profile.zapAndStream,
-            encoderPath = profile.encoderPath.orEmpty(),
-            encoderPort = profile.encoderPort.toString(),
-            encoderLogin = profile.encoderLogin,
-            encoderUser = profile.encoderUser.orEmpty(),
-            encoderPass = profile.encoderPass.orEmpty(),
-            encoderVideoBitrate = profile.encoderVideoBitrate.toString(),
-            encoderAudioBitrate = profile.encoderAudioBitrate.toString()
+            encoderLogin = profile.encoderLogin
         )
+    }
+}
+
+/**
+ * The typed fields of a profile being edited, owned by its ViewModel. Numbers stay text
+ * until [applyTo], so a half-typed port survives. With a [handle], the text survives
+ * process death; [onHostEdit] runs when the user changes the host.
+ */
+class ProfileTextFields(
+    private val scope: CoroutineScope,
+    private val handle: SavedStateHandle? = null,
+    onHostEdit: () -> Unit = {}
+) {
+    private fun textField(key: String, onEdit: (String) -> Unit = {}) =
+        SavedTextField(scope, handle, "profile_text_$key", onEdit = onEdit)
+
+    val name = textField("name")
+    val host = textField("host") { onHostEdit() }
+    val streamHost = textField("stream_host")
+    val port = textField("port")
+    val streamPort = textField("stream_port")
+    val filePort = textField("file_port")
+    val user = textField("user")
+    val pass = textField("pass")
+    val ssid = textField("ssid")
+    val encoderPath = textField("encoder_path")
+    val encoderPort = textField("encoder_port")
+    val encoderUser = textField("encoder_user")
+    val encoderPass = textField("encoder_pass")
+    val encoderVideoBitrate = textField("encoder_video_bitrate")
+    val encoderAudioBitrate = textField("encoder_audio_bitrate")
+
+    fun fill(profile: Profile) {
+        name.set(profile.name.orEmpty())
+        host.set(profile.host.orEmpty())
+        streamHost.set(profile.streamHost.orEmpty())
+        port.set(profile.port.toString())
+        streamPort.set(profile.streamPort.toString())
+        filePort.set(profile.filePort.toString())
+        user.set(profile.user.orEmpty())
+        pass.set(profile.pass.orEmpty())
+        ssid.set(profile.ssid.orEmpty())
+        encoderPath.set(profile.encoderPath.orEmpty())
+        encoderPort.set(profile.encoderPort.toString())
+        encoderUser.set(profile.encoderUser.orEmpty())
+        encoderPass.set(profile.encoderPass.orEmpty())
+        encoderVideoBitrate.set(profile.encoderVideoBitrate.toString())
+        encoderAudioBitrate.set(profile.encoderAudioBitrate.toString())
+    }
+
+    /** Switching https moves the port between 80 and 443. */
+    fun onSslChanged(checked: Boolean) {
+        port.set(if (checked) "443" else "80")
+    }
+
+    fun applyTo(profile: Profile, form: ProfileForm) {
+        profile.name = name.text
+        profile.host = host.text.trim()
+        profile.streamHost = streamHost.text.trim()
+        profile.setPort(port.text, form.ssl, form.trustAllCerts)
+        profile.setStreamPort(streamPort.text)
+        profile.setFilePort(filePort.text)
+        profile.login = form.login
+        profile.streamLogin = form.streamLogin
+        profile.fileLogin = form.fileLogin
+        profile.fileSsl = form.fileSsl
+        profile.user = user.text
+        profile.pass = pass.text
+        profile.simpleRemote = form.simpleRemote
+        profile.ssid = ssid.text.trim()
+        profile.isDefaultProfileOnNoWifi = form.defaultOnNoWifi
+        profile.encoderStream = form.encoderStream
+        profile.zapAndStream = form.zapAndStream
+        profile.encoderPath = encoderPath.text
+        profile.setEncoderPort(encoderPort.text)
+        profile.encoderLogin = form.encoderLogin
+        profile.encoderUser = encoderUser.text
+        profile.encoderPass = encoderPass.text
+        profile.setEncoderAudioBitrate(encoderAudioBitrate.text)
+        profile.setEncoderVideoBitrate(encoderVideoBitrate.text)
     }
 }

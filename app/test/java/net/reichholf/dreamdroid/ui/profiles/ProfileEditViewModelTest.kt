@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.profiles
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -13,7 +15,8 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.awaitIdle
+import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -37,42 +40,44 @@ class ProfileEditViewModelTest {
 
     @AfterEach
     fun tearDown() {
-        runBlocking { viewModels.forEach { it.awaitIdle() } }
+        runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         Dispatchers.resetMain()
     }
 
     @Test
     fun routeWithoutIdIsTheCreateForm() {
-        val state = viewModel(SavedStateHandle()).uiState.value
+        val viewModel = viewModel(SavedStateHandle())
+        val state = viewModel.uiState.value
 
         assertEquals(ProfileForm.from(Profile.getDefault()), state.form)
+        assertEquals(Profile.getDefault().port.toString(), viewModel.fields.port.text)
         assertFalse(state.canDelete)
         assertEquals(UiText.Resource(R.string.edit_profile), state.title)
     }
 
     @Test
-    fun discoveryRoutePrefillsTheForm() {
+    fun discoveryRoutePrefillsTheFields() {
         val handle = SavedStateHandle(
             mapOf("name" to "dm920", "host" to "10.0.0.9", "port" to 8080, "user" to "admin")
         )
 
-        val form = viewModel(handle).uiState.value.form
+        val fields = viewModel(handle).fields
 
-        assertEquals("dm920", form?.name)
-        assertEquals("10.0.0.9", form?.host)
-        assertEquals("10.0.0.9", form?.streamHost)
-        assertEquals("8080", form?.port)
-        assertEquals("admin", form?.user)
+        assertEquals("dm920", fields.name.text)
+        assertEquals("10.0.0.9", fields.host.text)
+        assertEquals("10.0.0.9", fields.streamHost.text)
+        assertEquals("8080", fields.port.text)
+        assertEquals("admin", fields.user.text)
     }
 
     @Test
     fun routeWithIdLoadsTheSavedProfile() = runTest {
         val saved = receiver("Living Room", "10.0.0.1").also { profiles.save(it) }
+        val viewModel = viewModel(SavedStateHandle(mapOf("profileId" to saved.id!!)))
 
-        val state = viewModel(SavedStateHandle(mapOf("profileId" to saved.id!!))).uiState
-            .first { it.form != null }
+        val state = viewModel.uiState.first { it.form != null }
 
-        assertEquals("Living Room", state.form?.name)
+        assertEquals("Living Room", viewModel.fields.name.text)
         assertEquals("Living Room", state.savedName)
         assertTrue(state.canDelete)
     }
@@ -80,32 +85,46 @@ class ProfileEditViewModelTest {
     @Test
     fun emptyHostIsAnErrorUntilTheHostChanges() {
         val viewModel = viewModel(SavedStateHandle())
-        val form = checkNotNull(viewModel.uiState.value.form).copy(name = "box", host = " ")
-        viewModel.onFormChange(form)
+        type(viewModel.fields.name, "box")
+        type(viewModel.fields.host, " ")
 
         viewModel.save()
 
         assertEquals(UiText.Resource(R.string.host_empty), viewModel.uiState.value.hostError)
-        viewModel.onFormChange(form.copy(name = "box 2"))
+        type(viewModel.fields.name, "box 2")
         assertEquals(UiText.Resource(R.string.host_empty), viewModel.uiState.value.hostError)
-        viewModel.onFormChange(form.copy(host = "10.0.0.3"))
+        type(viewModel.fields.host, "10.0.0.3")
         assertNull(viewModel.uiState.value.hostError)
         assertTrue(profiles.profiles().isEmpty())
         assertNull(viewModel.uiState.value.finished)
     }
 
     @Test
+    fun httpsMovesThePort() {
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.onSslChange(true)
+
+        assertTrue(viewModel.uiState.value.form?.ssl == true)
+        assertEquals("443", viewModel.fields.port.text)
+        viewModel.onSslChange(false)
+        assertEquals("80", viewModel.fields.port.text)
+    }
+
+    @Test
     fun savingANewProfileAddsIt() = runTest {
         val viewModel = viewModel(SavedStateHandle())
-        viewModel.onFormChange(
-            checkNotNull(viewModel.uiState.value.form).copy(name = "Kitchen", host = "10.0.0.4")
-        )
+        type(viewModel.fields.name, "Kitchen")
+        type(viewModel.fields.host, "10.0.0.4")
+        viewModel.onFormChange(checkNotNull(viewModel.uiState.value.form).copy(login = true))
 
         viewModel.save()
         val state = viewModel.uiState.first { it.finished != null }
 
         assertEquals(namedMessage(R.string.profile_added, "Kitchen"), state.finished)
-        assertEquals(listOf("10.0.0.4"), profiles.profiles().map { it.host })
+        val added = profiles.profiles().single()
+        assertEquals("10.0.0.4", added.host)
+        assertTrue(added.login)
     }
 
     @Test
@@ -113,9 +132,9 @@ class ProfileEditViewModelTest {
         val saved = receiver("Living Room", "10.0.0.1").also { profiles.save(it) }
         profiles.setCurrent(saved.id!!)
         val viewModel = viewModel(SavedStateHandle(mapOf("profileId" to saved.id!!)))
-        val form = checkNotNull(viewModel.uiState.first { it.form != null }.form)
+        viewModel.uiState.first { it.form != null }
 
-        viewModel.onFormChange(form.copy(name = "Lounge"))
+        type(viewModel.fields.name, "Lounge")
         viewModel.save()
         val state = viewModel.uiState.first { it.finished != null }
 
@@ -138,21 +157,32 @@ class ProfileEditViewModelTest {
     }
 
     @Test
-    fun typedFieldsSurviveAsSavedState() = runTest {
+    fun typedTextAndSwitchesSurviveANewViewModel() = runTest {
         val saved = receiver("Living Room", "10.0.0.1").also { profiles.save(it) }
         val handle = SavedStateHandle(mapOf("profileId" to saved.id!!))
         val first = viewModel(handle)
         val form = checkNotNull(first.uiState.first { it.form != null }.form)
-        first.onFormChange(form.copy(name = "Half typed", port = "80"))
+        type(first.fields.name, "Half typed")
+        type(first.fields.port, "80")
+        first.onFormChange(form.copy(login = true))
         profiles.delete(saved)
 
-        val restored = viewModel(handle).uiState.value
+        val restored = viewModel(handle)
 
-        assertEquals("Half typed", restored.form?.name)
-        assertEquals("Living Room", restored.savedName)
-        assertTrue(restored.canDelete)
+        assertEquals("Half typed", restored.fields.name.text)
+        assertEquals("80", restored.fields.port.text)
+        assertEquals("10.0.0.1", restored.fields.host.text)
+        assertTrue(restored.uiState.value.form?.login == true)
+        assertEquals("Living Room", restored.uiState.value.savedName)
+        assertTrue(restored.uiState.value.canDelete)
     }
 
     private fun viewModel(handle: SavedStateHandle) =
         ProfileEditViewModel(handle, profiles).also { viewModels += it }
+
+    /** Types into [field] the way the text field does, then lets observers see it. */
+    private fun type(field: SavedTextField, text: String) {
+        field.state.setTextAndPlaceCursorAtEnd(text)
+        Snapshot.sendApplyNotifications()
+    }
 }

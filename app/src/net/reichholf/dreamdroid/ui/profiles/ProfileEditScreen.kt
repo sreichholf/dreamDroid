@@ -31,8 +31,10 @@ import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 @Composable
 fun ProfileEditScreen(
     form: ProfileForm,
+    fields: ProfileTextFields,
     hostError: String?,
     onFormChange: (ProfileForm) -> Unit,
+    onSslChange: (Boolean) -> Unit,
     saveLabel: String,
     onSave: () -> Unit,
     showSaveFab: Boolean = true,
@@ -67,8 +69,7 @@ fun ProfileEditScreen(
         ) {
             EditFormSection(title = stringResource(R.string.profile)) {
                 EditOutlinedTextField(
-                    value = form.name,
-                    onValueChange = { onFormChange(form.copy(name = it)) },
+                    state = fields.name.state,
                     label = stringResource(R.string.profile_name)
                 )
                 EditSwitchRow(
@@ -81,16 +82,14 @@ fun ProfileEditScreen(
             EditFormSection(title = stringResource(R.string.connection)) {
                 EditPairedRow {
                     EditOutlinedTextField(
-                        value = form.host,
-                        onValueChange = { onFormChange(form.copy(host = it)) },
+                        state = fields.host.state,
                         label = stringResource(R.string.host_long),
                         isError = hostError != null,
                         supportingText = hostError,
                         modifier = Modifier.weight(1f)
                     )
                     EditOutlinedTextField(
-                        value = form.port,
-                        onValueChange = { onFormChange(form.copy(port = it)) },
+                        state = fields.port.state,
                         label = stringResource(R.string.port),
                         keyboardType = KeyboardType.Number,
                         modifier = Modifier.weight(0.45f)
@@ -98,7 +97,7 @@ fun ProfileEditScreen(
                 }
                 EditSwitchRow(
                     checked = form.ssl,
-                    onCheckedChange = { onFormChange(form.withSsl(it)) },
+                    onCheckedChange = { onSslChange(it) },
                     label = stringResource(R.string.ssl_enabled)
                 )
                 if (form.ssl) {
@@ -122,14 +121,12 @@ fun ProfileEditScreen(
                 if (form.login) {
                     EditPairedRow {
                         EditOutlinedTextField(
-                            value = form.user,
-                            onValueChange = { onFormChange(form.copy(user = it)) },
+                            state = fields.user.state,
                             label = stringResource(R.string.user),
                             modifier = Modifier.weight(1f)
                         )
                         EditOutlinedTextField(
-                            value = form.pass,
-                            onValueChange = { onFormChange(form.copy(pass = it)) },
+                            state = fields.pass.state,
                             label = stringResource(R.string.pass),
                             keyboardType = KeyboardType.Password,
                             password = true,
@@ -141,8 +138,7 @@ fun ProfileEditScreen(
 
             EditFormSection(title = stringResource(R.string.auto_switch_profile_wifi_based_long)) {
                 EditOutlinedTextField(
-                    value = form.ssid,
-                    onValueChange = { onFormChange(form.copy(ssid = it)) },
+                    state = fields.ssid.state,
                     label = stringResource(R.string.ssid)
                 )
                 EditSwitchRow(
@@ -154,8 +150,7 @@ fun ProfileEditScreen(
 
             EditFormSection(title = stringResource(R.string.streaming)) {
                 EditOutlinedTextField(
-                    value = form.streamHost,
-                    onValueChange = { onFormChange(form.copy(streamHost = it)) },
+                    state = fields.streamHost.state,
                     label = stringResource(R.string.stream_host_long)
                 )
                 EditSwitchRow(
@@ -170,9 +165,9 @@ fun ProfileEditScreen(
                     label = stringResource(R.string.use_encoder)
                 )
                 if (form.encoderStream) {
-                    EncoderSection(form, onFormChange)
+                    EncoderSection(form, fields, onFormChange)
                 } else {
-                    StreamPortsSection(form, onFormChange)
+                    StreamPortsSection(form, fields, onFormChange)
                 }
             }
 
@@ -193,17 +188,19 @@ fun ProfileEditScreen(
 }
 
 @Composable
-private fun EncoderSection(form: ProfileForm, onFormChange: (ProfileForm) -> Unit) {
+private fun EncoderSection(
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    onFormChange: (ProfileForm) -> Unit
+) {
     EditPairedRow {
         EditOutlinedTextField(
-            value = form.encoderPath,
-            onValueChange = { onFormChange(form.copy(encoderPath = it)) },
+            state = fields.encoderPath.state,
             label = stringResource(R.string.encoder_path),
             modifier = Modifier.weight(1f)
         )
         EditOutlinedTextField(
-            value = form.encoderPort,
-            onValueChange = { onFormChange(form.copy(encoderPort = it)) },
+            state = fields.encoderPort.state,
             label = stringResource(R.string.encoder_port),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
@@ -217,14 +214,12 @@ private fun EncoderSection(form: ProfileForm, onFormChange: (ProfileForm) -> Uni
     if (form.encoderLogin) {
         EditPairedRow {
             EditOutlinedTextField(
-                value = form.encoderUser,
-                onValueChange = { onFormChange(form.copy(encoderUser = it)) },
+                state = fields.encoderUser.state,
                 label = stringResource(R.string.encoder_user),
                 modifier = Modifier.weight(1f)
             )
             EditOutlinedTextField(
-                value = form.encoderPass,
-                onValueChange = { onFormChange(form.copy(encoderPass = it)) },
+                state = fields.encoderPass.state,
                 label = stringResource(R.string.encoder_pass),
                 keyboardType = KeyboardType.Password,
                 password = true,
@@ -234,15 +229,13 @@ private fun EncoderSection(form: ProfileForm, onFormChange: (ProfileForm) -> Uni
     }
     EditPairedRow {
         EditOutlinedTextField(
-            value = form.encoderVideoBitrate,
-            onValueChange = { onFormChange(form.copy(encoderVideoBitrate = it)) },
+            state = fields.encoderVideoBitrate.state,
             label = stringResource(R.string.video_bitrate),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
         )
         EditOutlinedTextField(
-            value = form.encoderAudioBitrate,
-            onValueChange = { onFormChange(form.copy(encoderAudioBitrate = it)) },
+            state = fields.encoderAudioBitrate.state,
             label = stringResource(R.string.audio_bitrate),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
@@ -251,11 +244,14 @@ private fun EncoderSection(form: ProfileForm, onFormChange: (ProfileForm) -> Uni
 }
 
 @Composable
-private fun StreamPortsSection(form: ProfileForm, onFormChange: (ProfileForm) -> Unit) {
+private fun StreamPortsSection(
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    onFormChange: (ProfileForm) -> Unit
+) {
     EditFormSubsection(title = stringResource(R.string.live)) {
         EditOutlinedTextField(
-            value = form.streamPort,
-            onValueChange = { onFormChange(form.copy(streamPort = it)) },
+            state = fields.streamPort.state,
             label = stringResource(R.string.port_stream_live),
             keyboardType = KeyboardType.Number
         )
@@ -267,8 +263,7 @@ private fun StreamPortsSection(form: ProfileForm, onFormChange: (ProfileForm) ->
     }
     EditFormSubsection(title = stringResource(R.string.movies)) {
         EditOutlinedTextField(
-            value = form.filePort,
-            onValueChange = { onFormChange(form.copy(filePort = it)) },
+            state = fields.filePort.state,
             label = stringResource(R.string.port_stream_file),
             keyboardType = KeyboardType.Number
         )

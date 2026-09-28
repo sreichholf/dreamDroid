@@ -234,7 +234,7 @@ class SetupAssistantScreenTest {
 
         val state = viewModel.uiState.value
         assertEquals(SetupStep.SignIn, state.draft.step)
-        assertEquals("192.168.1.2", state.draft.host)
+        assertEquals("192.168.1.2", viewModel.host.text)
         assertTrue(state.checking)
         gate.complete(ProfileCheckResult())
         composeRule.waitForIdle()

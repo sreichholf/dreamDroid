@@ -17,10 +17,12 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.ui.profiles.ProfileForm
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
+import net.reichholf.dreamdroid.ui.profiles.ProfileTextFields
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * [page] and, on Add or Edit, the open [form]. [event] is the last activation, save,
+ * [page] and, on Add or Edit, the open [form] (its switches; the typed fields are
+ * [TvProfilesHostViewModel.fields]). [event] is the last activation, save,
  * or delete, until the host has applied its result policy.
  */
 data class TvProfilesUiState(
@@ -40,6 +42,11 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
     ViewModel() {
     private val _uiState = MutableStateFlow(TvProfilesUiState())
     val uiState: StateFlow<TvProfilesUiState> = _uiState.asStateFlow()
+
+    /** The open draft's typed fields; filled again each time an editor opens. */
+    val fields = ProfileTextFields(viewModelScope) {
+        _uiState.update { it.copy(hostError = null) }
+    }
 
     private var loaded: List<Profile> = emptyList()
     private var editing: Profile? = null
@@ -97,10 +104,13 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
     }
 
     fun onFormChange(form: ProfileForm) {
-        _uiState.update {
-            val hostError = if (form.host == it.form?.host) it.hostError else null
-            it.copy(form = form, hostError = hostError)
-        }
+        _uiState.update { it.copy(form = form) }
+    }
+
+    fun onSslChange(checked: Boolean) {
+        val form = _uiState.value.form ?: return
+        onFormChange(form.copy(ssl = checked))
+        fields.onSslChanged(checked)
     }
 
     fun activate(id: Int) {
@@ -117,7 +127,7 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
     fun save() {
         val profile = editing ?: return
         val form = _uiState.value.form ?: return
-        if (form.host.isBlank()) {
+        if (fields.host.text.isBlank()) {
             _uiState.update {
                 it.copy(
                     hostError = UiText.Resource(R.string.host_empty),
@@ -126,7 +136,7 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
             }
             return
         }
-        form.applyTo(profile)
+        fields.applyTo(profile, form)
         if (profile.streamHost == null) {
             profile.streamHost = ""
         }
@@ -167,6 +177,7 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
 
     private fun open(profile: Profile, page: TvProfilesPage) {
         editing = profile
+        fields.fill(profile)
         _uiState.update {
             it.copy(page = page, form = ProfileForm.from(profile), hostError = null)
         }

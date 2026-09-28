@@ -13,6 +13,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ApplicationProvider
 import net.reichholf.dreamdroid.R
@@ -57,11 +58,8 @@ class TvProfilesHostRetentionTest {
         composeRule.onNodeWithContentDescription(app.getString(R.string.profile_name))
             .assertIsDisplayed()
 
-        composeRule.runOnIdle {
-            viewModel.onFormChange(
-                checkNotNull(viewModel.uiState.value.form).copy(name = "Draft Box")
-            )
-        }
+        composeRule.onNodeWithContentDescription(app.getString(R.string.profile_name))
+            .performTextReplacement("Draft Box")
         composeRule.onNodeWithText("Draft Box").assertIsDisplayed()
 
         shown = false
@@ -70,7 +68,7 @@ class TvProfilesHostRetentionTest {
 
         shown = true
         composeRule.waitForIdle()
-        assertEquals("Draft Box", viewModel.uiState.value.form?.name)
+        assertEquals("Draft Box", viewModel.fields.name.text)
         composeRule.onNodeWithContentDescription(app.getString(R.string.profile_name))
             .assertIsDisplayed()
         composeRule.onNodeWithText("Draft Box").assertIsDisplayed()

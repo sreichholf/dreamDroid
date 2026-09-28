@@ -19,9 +19,9 @@ import net.reichholf.dreamdroid.ui.nav.ProfileEdit
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * One profile being created or edited. [form] is null while a saved profile loads.
- * [finished] is set once a save or delete went through; the destination then leaves
- * with [finished]'s message.
+ * One profile being created or edited. [form] (the switches) is null while a saved
+ * profile loads; the typed fields are [ProfileEditViewModel.fields]. [finished] is set
+ * once a save or delete went through; the destination then leaves with its message.
  */
 data class ProfileEditUiState(
     val form: ProfileForm? = null,
@@ -35,8 +35,8 @@ data class ProfileEditUiState(
 }
 
 /**
- * Create or edit the profile named by the [ProfileEdit] route. The typed fields and
- * the profile they apply to survive process death in the [SavedStateHandle].
+ * Create or edit the profile named by the [ProfileEdit] route. The switches, the typed
+ * fields, and the profile they apply to survive process death in the [SavedStateHandle].
  */
 @HiltViewModel
 class ProfileEditViewModel @Inject constructor(
@@ -46,6 +46,10 @@ class ProfileEditViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(ProfileEditUiState())
     val uiState: StateFlow<ProfileEditUiState> = _uiState.asStateFlow()
 
+    val fields = ProfileTextFields(viewModelScope, savedStateHandle) {
+        _uiState.update { it.copy(hostError = null) }
+    }
+
     private var profile: Profile = Profile.getDefault()
 
     init {
@@ -53,36 +57,36 @@ class ProfileEditViewModel @Inject constructor(
         val savedForm = savedStateHandle.get<ProfileForm>(KEY_FORM)
         val route = savedStateHandle.profileEditRoute()
         when {
-            savedProfile != null && savedForm != null -> bind(savedProfile, savedForm)
+            // The typed fields restored themselves from the handle.
+            savedProfile != null && savedForm != null -> show(savedProfile, savedForm)
 
             route.profileId > 0 -> viewModelScope.launch {
                 val loaded = withContext(Dispatchers.IO) { profiles.profile(route.profileId) }
-                val next = loaded ?: Profile.getDefault()
-                bind(next, ProfileForm.from(next))
+                bind(loaded ?: Profile.getDefault())
             }
 
-            else -> {
-                val next = route.launchProfile() ?: Profile.getDefault()
-                bind(next, ProfileForm.from(next))
-            }
+            else -> bind(route.launchProfile() ?: Profile.getDefault())
         }
     }
 
     fun onFormChange(form: ProfileForm) {
         savedStateHandle[KEY_FORM] = form
-        _uiState.update {
-            val hostError = if (form.host == it.form?.host) it.hostError else null
-            it.copy(form = form, hostError = hostError)
-        }
+        _uiState.update { it.copy(form = form) }
+    }
+
+    fun onSslChange(checked: Boolean) {
+        val form = _uiState.value.form ?: return
+        onFormChange(form.copy(ssl = checked))
+        fields.onSslChanged(checked)
     }
 
     fun save() {
         val form = _uiState.value.form ?: return
-        if (form.host.isBlank()) {
+        if (fields.host.text.isBlank()) {
             _uiState.update { it.copy(hostError = UiText.Resource(R.string.host_empty)) }
             return
         }
-        form.applyTo(profile)
+        fields.applyTo(profile, form)
         if (profile.streamHost == null) {
             profile.streamHost = ""
         }
@@ -104,10 +108,16 @@ class ProfileEditViewModel @Inject constructor(
         }
     }
 
-    private fun bind(next: Profile, form: ProfileForm) {
-        profile = next
+    private fun bind(next: Profile) {
+        fields.fill(next)
         savedStateHandle[KEY_PROFILE] = next
+        val form = ProfileForm.from(next)
         savedStateHandle[KEY_FORM] = form
+        show(next, form)
+    }
+
+    private fun show(next: Profile, form: ProfileForm) {
+        profile = next
         _uiState.value = ProfileEditUiState(
             form = form,
             savedName = next.name.orEmpty(),

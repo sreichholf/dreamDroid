@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.Dispatchers
@@ -15,8 +17,9 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.awaitIdle
+import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.ui.text.SavedTextField
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -48,7 +51,7 @@ class SetupAssistantViewModelTest {
 
     @AfterEach
     fun tearDown() {
-        runBlocking { viewModels.forEach { it.awaitIdle() } }
+        runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         server.shutdown()
         Dispatchers.resetMain()
     }
@@ -71,9 +74,9 @@ class SetupAssistantViewModelTest {
         server.enqueue(MockResponse().setBody(loadWebFixture("deviceinfo.xml")))
         val viewModel = viewModel(SavedStateHandle())
         viewModel.advance()
-        viewModel.onFindHostChange(server.hostName)
+        type(viewModel.host, server.hostName)
         viewModel.advance()
-        viewModel.onPortChange(server.port.toString())
+        type(viewModel.port, server.port.toString())
         viewModel.advance()
 
         viewModel.advance()
@@ -83,7 +86,7 @@ class SetupAssistantViewModelTest {
         assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
         viewModel.advance()
         assertEquals(SetupStep.Name, viewModel.uiState.value.draft.step)
-        assertEquals(server.hostName, viewModel.uiState.value.draft.profileName)
+        assertEquals(server.hostName, viewModel.profileName.text)
 
         viewModel.advance()
         val finished = viewModel.uiState.first { it.finished }
@@ -93,6 +96,8 @@ class SetupAssistantViewModelTest {
         assertEquals(server.port, saved.port)
         assertEquals(saved.id, profiles.requireCurrent().id)
         assertEquals(SetupDraft(), finished.draft)
+        assertEquals("", viewModel.host.text)
+        assertEquals("80", viewModel.port.text)
         viewModel.onFinishHandled()
         assertFalse(viewModel.uiState.value.finished)
     }
@@ -102,8 +107,8 @@ class SetupAssistantViewModelTest {
         // An HTTP error resolves its text through Resources, which the JVM only stubs.
         server.enqueue(MockResponse().setBody("<html>not a receiver</html>"))
         val viewModel = viewModel(SavedStateHandle())
-        viewModel.onHostChange(server.hostName)
-        viewModel.onPortChange(server.port.toString())
+        type(viewModel.host, server.hostName)
+        type(viewModel.port, server.port.toString())
 
         viewModel.check()
         val result = viewModel.uiState.first { it.checkResult != null }.checkResult!!
@@ -116,31 +121,63 @@ class SetupAssistantViewModelTest {
     fun editingTheDraftDropsTheCheckResult() = runTest {
         server.enqueue(MockResponse().setBody(loadWebFixture("deviceinfo.xml")))
         val viewModel = viewModel(SavedStateHandle())
-        viewModel.onHostChange(server.hostName)
-        viewModel.onPortChange(server.port.toString())
+        type(viewModel.host, server.hostName)
+        type(viewModel.port, server.port.toString())
         viewModel.check()
         viewModel.uiState.first { it.checkResult != null }
 
-        viewModel.onUserChange("admin")
+        type(viewModel.user, "admin")
 
         assertEquals(null, viewModel.uiState.value.checkResult)
         assertFalse(viewModel.uiState.value.checking)
     }
 
     @Test
-    fun draftSurvivesInSavedState() {
+    fun draftAndTypedTextSurviveInSavedState() {
         val handle = SavedStateHandle()
         val first = viewModel(handle)
         first.advance()
-        first.onFindHostChange("10.0.0.7")
+        type(first.host, "10.0.0.7")
         first.onHttpsChange(true)
+        type(first.user, "admin")
 
-        val draft = viewModel(handle).uiState.value.draft
+        val restored = viewModel(handle)
 
+        val draft = restored.uiState.value.draft
         assertEquals(SetupStep.Find, draft.step)
-        assertEquals("10.0.0.7", draft.host)
-        assertEquals("443", draft.portText)
         assertTrue(draft.useHttps)
+        assertEquals("10.0.0.7", restored.host.text)
+        assertEquals("443", restored.port.text)
+        assertEquals("admin", restored.user.text)
+        assertEquals("dreambox", restored.pass.text)
+    }
+
+    @Test
+    fun pickingAReceiverIsNotATypedEdit() {
+        val viewModel = viewModel(SavedStateHandle())
+        viewModel.advance()
+
+        viewModel.onPick(SetupReceiver("dm920", "10.0.0.9", 443))
+        Snapshot.sendApplyNotifications()
+
+        assertEquals("dm920", viewModel.uiState.value.draft.suggestedName)
+        assertEquals("443", viewModel.port.text)
+        type(viewModel.host, "10.0.0.10")
+        assertEquals("", viewModel.uiState.value.draft.suggestedName)
+    }
+
+    @Test
+    fun typingANameKeepsItOverTheSuggestion() {
+        val viewModel = viewModel(SavedStateHandle())
+        type(viewModel.profileName, "Living room")
+
+        assertTrue(viewModel.uiState.value.draft.nameEdited)
+    }
+
+    /** Types into [field] the way the text field does, then lets observers see it. */
+    private fun type(field: SavedTextField, text: String) {
+        field.state.setTextAndPlaceCursorAtEnd(text)
+        Snapshot.sendApplyNotifications()
     }
 
     private fun viewModel(handle: SavedStateHandle) = SetupAssistantViewModel(

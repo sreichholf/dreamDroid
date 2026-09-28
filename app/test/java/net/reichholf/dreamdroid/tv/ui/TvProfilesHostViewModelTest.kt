@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +18,8 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.awaitIdle
+import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -39,7 +42,7 @@ class TvProfilesHostViewModelTest {
 
     @AfterEach
     fun tearDown() {
-        runBlocking { viewModels.forEach { it.awaitIdle() } }
+        runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         Dispatchers.resetMain()
     }
 
@@ -59,12 +62,12 @@ class TvProfilesHostViewModelTest {
     fun addingSavesTheDraftAndReturnsToTheList() = runTest {
         val viewModel = viewModel()
         viewModel.showAdd()
-        val form = checkNotNull(viewModel.uiState.value.form)
         assertEquals(TvProfilesPage.Add, viewModel.uiState.value.page)
 
-        viewModel.onFormChange(form.copy(name = "Kitchen", host = "10.0.0.4"))
+        type(viewModel.fields.name, "Kitchen")
+        type(viewModel.fields.host, "10.0.0.4")
         viewModel.showAdd()
-        assertEquals("Kitchen", viewModel.uiState.value.form?.name)
+        assertEquals("Kitchen", viewModel.fields.name.text)
         viewModel.save()
         val state = viewModel.uiState.first { it.event != null && it.profiles.size == 1 }
 
@@ -81,7 +84,7 @@ class TvProfilesHostViewModelTest {
         val viewModel = viewModel()
         viewModel.showAdd()
 
-        viewModel.onFormChange(checkNotNull(viewModel.uiState.value.form).copy(host = ""))
+        type(viewModel.fields.host, "")
         viewModel.save()
 
         val state = viewModel.uiState.value
@@ -101,9 +104,9 @@ class TvProfilesHostViewModelTest {
         val viewModel = viewModel()
 
         viewModel.showEdit(living.id!!)
-        val form = checkNotNull(viewModel.uiState.first { it.form != null }.form)
+        viewModel.uiState.first { it.form != null }
         assertEquals(TvProfilesPage.Edit(living.id!!), viewModel.uiState.value.page)
-        viewModel.onFormChange(form.copy(host = "10.0.0.99"))
+        type(viewModel.fields.host, "10.0.0.99")
         viewModel.save()
         val state = viewModel.uiState.first { it.event != null }
 
@@ -142,6 +145,12 @@ class TvProfilesHostViewModelTest {
     }
 
     private fun viewModel() = TvProfilesHostViewModel(profiles).also { viewModels += it }
+
+    /** Types into [field] the way the text field does, then lets observers see it. */
+    private fun type(field: SavedTextField, text: String) {
+        field.state.setTextAndPlaceCursorAtEnd(text)
+        Snapshot.sendApplyNotifications()
+    }
 
     private fun saved(name: String): Profile = Profile.getDefault().apply {
         this.name = name

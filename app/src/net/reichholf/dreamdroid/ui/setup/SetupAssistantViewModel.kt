@@ -13,14 +13,17 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.text.SavedTextField
 
 /**
  * The wizard: its [draft] (saved across process death), the receiver search, and the
- * connection check. [finished] is set once the new profile is saved and active.
+ * connection check. The typed fields are on [SetupAssistantViewModel]. [finished] is
+ * set once the new profile is saved and active.
  */
 data class SetupAssistantUiState(
     val draft: SetupDraft = SetupDraft(),
@@ -48,6 +51,22 @@ class SetupAssistantViewModel @Inject constructor(
         SetupAssistantUiState(draft = readSetupDraft(savedStateHandle))
     )
     val uiState: StateFlow<SetupAssistantUiState> = _uiState.asStateFlow()
+
+    /** Typed on Find and Connection. On Find, typing drops the picked receiver's name. */
+    val host = textField(SetupAssistantSavedKeys.HOST, "") {
+        if (_uiState.value.draft.step == SetupStep.Find) {
+            updateDraft { it.copy(suggestedName = "") }
+        }
+        clearCheckResult()
+    }
+    val port = textField(SetupAssistantSavedKeys.PORT_TEXT, SetupDefaults.PORT_TEXT) {
+        clearCheckResult()
+    }
+    val user = textField(SetupAssistantSavedKeys.USER, SetupDefaults.USER) { clearCheckResult() }
+    val pass = textField(SetupAssistantSavedKeys.PASS, SetupDefaults.PASS) { clearCheckResult() }
+    val profileName = textField(SetupAssistantSavedKeys.PROFILE_NAME, "") {
+        updateDraft { it.copy(nameEdited = true) }
+    }
 
     private var searchJob: Job? = null
     private var checkJob: Job? = null
@@ -77,7 +96,7 @@ class SetupAssistantViewModel @Inject constructor(
     fun check() {
         checkJob?.cancel()
         _uiState.update { it.copy(checking = true, checkResult = null) }
-        val profile = _uiState.value.draft.toProfile()
+        val profile = toProfile(profileName.text)
         checkJob = viewModelScope.launch {
             val result = checks.check(profile)
             _uiState.update { it.copy(checking = false, checkResult = result) }
@@ -111,14 +130,10 @@ class SetupAssistantViewModel @Inject constructor(
                 if (state.checkResult == null || state.checking) {
                     check()
                 } else {
-                    updateDraft {
-                        val name = if (it.nameEdited) {
-                            it.profileName
-                        } else {
-                            it.suggestedName.ifBlank { it.host.trim() }
-                        }
-                        it.copy(step = SetupStep.Name, profileName = name)
+                    if (!state.draft.nameEdited) {
+                        profileName.set(state.draft.suggestedName.ifBlank { host.text.trim() })
                     }
+                    updateDraft { it.copy(step = SetupStep.Name) }
                 }
             }
 
@@ -130,21 +145,11 @@ class SetupAssistantViewModel @Inject constructor(
         _uiState.update { it.copy(finished = false) }
     }
 
-    fun onHostChange(host: String) {
-        updateDraft { it.copy(host = host) }
-        clearCheckResult()
-    }
-
-    fun onFindHostChange(host: String) {
-        updateDraft { it.copy(host = host, suggestedName = "") }
-        clearCheckResult()
-    }
-
     fun onPick(receiver: SetupReceiver) {
+        host.set(receiver.host)
+        port.set(receiver.port.toString())
         updateDraft {
             it.copy(
-                host = receiver.host,
-                portText = receiver.port.toString(),
                 useHttps = receiver.port == 443,
                 suggestedName = receiver.name,
                 nameEdited = false
@@ -154,21 +159,12 @@ class SetupAssistantViewModel @Inject constructor(
     }
 
     fun onHttpsChange(https: Boolean) {
-        updateDraft {
-            val current = it.portText.toIntOrNull()
-            val wasDefault = current == null || current == 80 || current == 443
-            val port = when {
-                !wasDefault -> it.portText
-                https -> "443"
-                else -> "80"
-            }
-            it.copy(useHttps = https, portText = port)
+        val current = port.text.toIntOrNull()
+        val wasDefault = current == null || current == 80 || current == 443
+        if (wasDefault) {
+            port.set(if (https) "443" else "80")
         }
-        clearCheckResult()
-    }
-
-    fun onPortChange(portText: String) {
-        updateDraft { it.copy(portText = portText) }
+        updateDraft { it.copy(useHttps = https) }
         clearCheckResult()
     }
 
@@ -177,32 +173,16 @@ class SetupAssistantViewModel @Inject constructor(
         clearCheckResult()
     }
 
-    fun onUserChange(user: String) {
-        updateDraft { it.copy(user = user) }
-        clearCheckResult()
-    }
-
-    fun onPassChange(pass: String) {
-        updateDraft { it.copy(pass = pass) }
-        clearCheckResult()
-    }
-
     fun onTrustAllChange(enabled: Boolean) {
         updateDraft { it.copy(trustAllCerts = enabled) }
         check()
-    }
-
-    fun onNameChange(name: String) {
-        updateDraft { it.copy(profileName = name, nameEdited = true) }
     }
 
     private fun save() {
         if (saveJob?.isActive == true) {
             return
         }
-        val profile = _uiState.value.draft.let {
-            if (it.profileName.isBlank()) it.copy(profileName = it.host.trim()) else it
-        }.toProfile()
+        val profile = toProfile(profileName.text.ifBlank { host.text.trim() })
         saveJob = viewModelScope.launch {
             withContext(Dispatchers.IO) {
                 profiles.save(profile)
@@ -213,6 +193,20 @@ class SetupAssistantViewModel @Inject constructor(
             reset()
             _uiState.update { it.copy(finished = true) }
         }
+    }
+
+    private fun toProfile(name: String): Profile {
+        val draft = _uiState.value.draft
+        return wizardProfile(
+            name = name,
+            host = host.text,
+            port = setupPort(port.text, draft.useHttps),
+            useHttps = draft.useHttps,
+            login = draft.login,
+            user = user.text,
+            pass = pass.text,
+            trustAllCerts = draft.trustAllCerts
+        )
     }
 
     private fun clearCheckResult() {
@@ -226,6 +220,11 @@ class SetupAssistantViewModel @Inject constructor(
         searchJob = null
         checkJob?.cancel()
         checkJob = null
+        host.set("")
+        port.set(SetupDefaults.PORT_TEXT)
+        user.set(SetupDefaults.USER)
+        pass.set(SetupDefaults.PASS)
+        profileName.set("")
         val fresh = SetupDraft()
         fresh.writeTo(savedStateHandle)
         _uiState.value = SetupAssistantUiState(draft = fresh)
@@ -236,4 +235,7 @@ class SetupAssistantViewModel @Inject constructor(
         next.writeTo(savedStateHandle)
         _uiState.update { it.copy(draft = next) }
     }
+
+    private fun textField(key: String, initial: String, onEdit: () -> Unit) =
+        SavedTextField(viewModelScope, savedStateHandle, key, initial) { onEdit() }
 }

@@ -23,14 +23,19 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -50,7 +55,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun addModeShowsDefaultsKeyLabelsAndTvSaveFab() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 // Default showSaveFab=true is the TV profiles destination.
@@ -76,7 +81,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun lastFieldsScrollIntoViewWithoutScaffoldFab() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 // Phone destination composition: toolbar Save, no in-content FAB.
@@ -93,7 +98,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun lastMoviesSwitchClearsHostBottomInsetWithoutScaffoldFab() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 Box(Modifier.fillMaxSize().testTag("host")) {
@@ -125,7 +130,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun liveAndMoviesStackFullWidthSwitchRows() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen(showSaveFab = false)
@@ -176,7 +181,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun togglingLoginAndEncoderShowsAndHidesSections() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen()
@@ -210,7 +215,7 @@ class ProfileEditScreenTest {
         profile.setPort("8080", false, false)
         profile.login = true
         profile.user = "admin"
-        form = ProfileForm.from(profile)
+        show(profile)
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen()
@@ -226,8 +231,22 @@ class ProfileEditScreenTest {
     }
 
     @Test
+    fun typingGoesIntoTheOwnedTextFieldState() {
+        show(Profile.getDefault().apply { host = "" })
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen()
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Hostname or IP").performTextInput("10.0.0.5")
+
+        composeRule.runOnIdle { assertEquals("10.0.0.5", fields.host.text) }
+    }
+
+    @Test
     fun hostErrorShowsUnderTheHostField() {
-        form = ProfileForm.from(Profile.getDefault()).copy(host = "")
+        show(Profile.getDefault().apply { host = "" })
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen(hostError = "The host name cannot be empty!")
@@ -239,7 +258,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun enablingAllCertificatesShowsWarningAndCancelLeavesOff() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen()
@@ -262,7 +281,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun enablingAllCertificatesConfirmTurnsSwitchOn() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen()
@@ -278,7 +297,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun zapAndStreamStartsOffAndRoundTripsThroughTheProfile() {
-        form = ProfileForm.from(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen(showSaveFab = false)
@@ -297,7 +316,7 @@ class ProfileEditScreenTest {
         assertTrue(form.zapAndStream)
 
         val profile = Profile.getDefault()
-        form.applyTo(profile)
+        fields.applyTo(profile, form)
         assertTrue(profile.zapAndStream)
         val reloaded = ProfileForm.from(profile)
         assertTrue(reloaded.zapAndStream)
@@ -307,7 +326,7 @@ class ProfileEditScreenTest {
     fun disablingAllCertificatesDoesNotShowWarning() {
         val profile = Profile.getDefault()
         profile.allCertsTrusted = true
-        form = ProfileForm.from(profile)
+        show(profile)
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen()
@@ -322,15 +341,32 @@ class ProfileEditScreenTest {
         assertFalse(form.trustAllCerts)
     }
 
+    private val scope = MainScope()
+    private val fields = ProfileTextFields(scope)
     private var form by mutableStateOf(ProfileForm())
 
-    /** The screen with its form hoisted here, as a ViewModel would hold it. */
+    @After
+    fun cancelFields() {
+        scope.cancel()
+    }
+
+    private fun show(profile: Profile) {
+        form = ProfileForm.from(profile)
+        fields.fill(profile)
+    }
+
+    /** The screen with its state hoisted here, as a ViewModel would hold it. */
     @Composable
     private fun EditableScreen(showSaveFab: Boolean = true, hostError: String? = null) {
         ProfileEditScreen(
             form = form,
+            fields = fields,
             hostError = hostError,
             onFormChange = { form = it },
+            onSslChange = {
+                form = form.copy(ssl = it)
+                fields.onSslChanged(it)
+            },
             saveLabel = "Save",
             onSave = {},
             showSaveFab = showSaveFab
