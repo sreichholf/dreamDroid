@@ -66,6 +66,9 @@ class VideoPlaybackViewModelTest {
         assertEquals(ZDF, state.currentService?.serviceReference)
         val request = receiver.requestsTo(EPG_NOW_NEXT).single()
         assertEquals(BOUQUET, request.requestUrl?.queryParameter("bRef"))
+        // The bouquet bar loads alongside the reload; await it before asserting
+        // its request, instead of assuming it already fired.
+        viewModel.uiState.first { it.bouquets.isNotEmpty() }
         assertTrue(receiver.requestsTo(GET_SERVICES).isNotEmpty())
     }
 
