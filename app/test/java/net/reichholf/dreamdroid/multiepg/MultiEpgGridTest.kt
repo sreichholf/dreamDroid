@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.multiepg
 
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.delay
@@ -12,26 +10,25 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.room.AppDatabase
-import org.junit.After
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
-import org.junit.Assert.assertTrue
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
+import net.reichholf.dreamdroid.testutil.TestContext
+import net.reichholf.dreamdroid.ui.text.UiText
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 
-@RunWith(AndroidJUnit4::class)
-class MultiEpgSessionTest {
+class MultiEpgGridTest {
     private lateinit var db: AppDatabase
 
-    @Before
+    @BeforeEach
     fun setUp() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        db = AppDatabase.inMemory(context)
+        db = AppDatabase.inMemory(TestContext())
     }
 
-    @After
+    @AfterEach
     fun tearDown() {
         db.close()
     }
@@ -61,21 +58,20 @@ class MultiEpgSessionTest {
         )
         sync.ensureChunk(1, "bouquet-a", t0)
         now += 2_000L
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
-        assertEquals("T1", titleOnFocusedChunk(session, t0))
-        assertTrue(session.syncing)
+        grid.replaceAndLoad("bouquet-a", t0)
+        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        assertEquals("T1", titleOnFocusedChunk(grid, t0))
+        assertTrue(grid.state.value.syncing)
         gate.complete(Unit)
-        session.awaitIdle()
-        assertEquals("T2", titleOnFocusedChunk(session, t0))
-        assertFalse(session.syncing)
-        assertEquals(null, session.errorMessage)
+        grid.awaitIdle()
+        assertEquals("T2", titleOnFocusedChunk(grid, t0))
+        assertFalse(grid.state.value.syncing)
+        assertEquals(null, grid.state.value.errorMessage)
     }
 
     @Test
@@ -96,17 +92,16 @@ class MultiEpgSessionTest {
         )
         sync.ensureChunk(1, "bouquet-a", t0)
         now += 2_000L
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
-        assertEquals("Old", titleOnFocusedChunk(session, t0))
-        assertEquals("box down", session.errorMessage)
-        assertFalse(session.syncing)
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+        assertEquals("Old", titleOnFocusedChunk(grid, t0))
+        assertEquals(UiText.Raw("box down"), grid.state.value.errorMessage)
+        assertFalse(grid.state.value.syncing)
     }
 
     @Test
@@ -125,21 +120,20 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
         val afterLoad = visibleFetches.get()
         assertTrue(afterLoad >= 1)
-        session.load(t0, forceRefresh = true, isPull = true)
-        assertTrue(session.pullRefreshing)
-        session.awaitIdle()
+        grid.load(t0, forceRefresh = true, isPull = true)
+        assertTrue(grid.state.value.pullRefreshing)
+        grid.awaitIdle()
         assertEquals(afterLoad + 1, visibleFetches.get())
-        assertFalse(session.pullRefreshing)
+        assertFalse(grid.state.value.pullRefreshing)
     }
 
     @Test
@@ -159,19 +153,18 @@ class MultiEpgSessionTest {
             ttlMs = 25L * 60L * 1000L
         )
         sync.ensureChunk(1, "bouquet-a", t0)
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { session.channels.isNotEmpty() }
-        assertEquals("T", titleOnFocusedChunk(session, t0))
-        assertTrue(session.syncing)
+        grid.replaceAndLoad("bouquet-a", t0)
+        waitUntil { grid.state.value.channels.isNotEmpty() }
+        assertEquals("T", titleOnFocusedChunk(grid, t0))
+        assertTrue(grid.state.value.syncing)
         gate.complete(Unit)
-        session.awaitIdle()
-        assertFalse(session.syncing)
+        grid.awaitIdle()
+        assertFalse(grid.state.value.syncing)
     }
 
     @Test
@@ -186,19 +179,18 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
-        assertEquals("A", titleOnFocusedChunk(session, t0))
-        session.replaceAndLoad("bouquet-b", t0)
-        assertTrue(session.channels.isEmpty())
-        session.awaitIdle()
-        assertEquals("B", titleOnFocusedChunk(session, t0))
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+        assertEquals("A", titleOnFocusedChunk(grid, t0))
+        grid.replaceAndLoad("bouquet-b", t0)
+        assertTrue(grid.state.value.channels.isEmpty())
+        grid.awaitIdle()
+        assertEquals("B", titleOnFocusedChunk(grid, t0))
     }
 
     @Test
@@ -213,20 +205,19 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", lateNow)
-        session.awaitIdle()
-        assertEquals(lateNow, session.timelineStartSec)
-        assertEquals(lateNow, session.originFloorSec)
-        assertTrue(session.timelineEndSec > chunk.endSec)
-        assertEquals(chunk.startSec, session.loadedWindowStarts.minOrNull())
+        grid.replaceAndLoad("bouquet-a", lateNow)
+        grid.awaitIdle()
+        assertEquals(lateNow, grid.state.value.timelineStartSec)
+        assertEquals(lateNow, grid.state.value.originFloorSec)
+        assertTrue(grid.state.value.timelineEndSec > chunk.endSec)
+        assertEquals(chunk.startSec, grid.loadedWindowStarts.minOrNull())
         assertFalse(
-            session.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS)
+            grid.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS)
         )
     }
 
@@ -245,37 +236,36 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        assertTrue(session.loadedWindowStarts.contains(chunk.startSec))
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertTrue(grid.loadedWindowStarts.contains(chunk.startSec))
 
-        session.onVisibleWindow(now, now + 7200L)
-        session.awaitIdle()
+        grid.onVisibleWindow(now, now + 7200L)
+        grid.awaitIdle()
         assertTrue(
-            "panning inside the padded window must keep today",
-            session.loadedWindowStarts.contains(chunk.startSec)
+            grid.loadedWindowStarts.contains(chunk.startSec),
+            "panning inside the padded window must keep today"
         )
 
-        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
-        session.awaitIdle()
-        assertFalse(session.loadedWindowStarts.contains(chunk.startSec))
-        assertTrue(session.timelineStartSec >= chunk.endSec)
+        grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        grid.awaitIdle()
+        assertFalse(grid.loadedWindowStarts.contains(chunk.startSec))
+        assertTrue(grid.state.value.timelineStartSec >= chunk.endSec)
 
         val fetchesBeforeRestore = fetches.size
-        session.onVisibleWindow(now, now + 7200L)
-        session.awaitIdle()
-        assertTrue(session.loadedWindowStarts.contains(chunk.startSec))
-        assertEquals(now, session.timelineStartSec)
+        grid.onVisibleWindow(now, now + 7200L)
+        grid.awaitIdle()
+        assertTrue(grid.loadedWindowStarts.contains(chunk.startSec))
+        assertEquals(now, grid.state.value.timelineStartSec)
         assertEquals(
-            "restoring today should peek Room, not refetch the box",
             fetchesBeforeRestore,
-            fetches.size
+            fetches.size,
+            "restoring today should peek Room, not refetch the box"
         )
     }
 
@@ -294,22 +284,21 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        session.onVisibleWindow(now, now + 7200L)
-        session.awaitIdle()
-        session.focusAt(now - MultiEpgWindows.CHUNK_SECONDS)
-        session.awaitIdle()
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        grid.onVisibleWindow(now, now + 7200L)
+        grid.awaitIdle()
+        grid.focusAt(now - MultiEpgWindows.CHUNK_SECONDS)
+        grid.awaitIdle()
         assertFalse(fetches.contains(yesterday))
-        assertFalse(session.loadedWindowStarts.contains(yesterday))
-        assertEquals(now, session.originFloorSec)
-        assertEquals(now, session.timelineStartSec)
+        assertFalse(grid.loadedWindowStarts.contains(yesterday))
+        assertEquals(now, grid.state.value.originFloorSec)
+        assertEquals(now, grid.state.value.timelineStartSec)
     }
 
     @Test
@@ -346,18 +335,17 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        assertEquals(earliest, session.timelineStartSec)
-        assertEquals(now, session.originFloorSec)
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertEquals(earliest, grid.state.value.timelineStartSec)
+        assertEquals(now, grid.state.value.originFloorSec)
         assertFalse(fetches.contains(yesterday))
-        assertFalse(session.loadedWindowStarts.contains(yesterday))
+        assertFalse(grid.loadedWindowStarts.contains(yesterday))
     }
 
     @Test
@@ -377,24 +365,23 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        assertFalse(session.syncing)
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertFalse(grid.state.value.syncing)
 
-        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
-        waitUntil { session.syncing }
-        assertTrue(session.channels.isNotEmpty())
+        grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        waitUntil { grid.state.value.syncing }
+        assertTrue(grid.state.value.channels.isNotEmpty())
         gate.complete(Unit)
-        session.awaitIdle()
-        assertFalse(session.syncing)
-        assertTrue(session.loadedWindowStarts.contains(day2))
-        assertTrue(session.channels.isNotEmpty())
+        grid.awaitIdle()
+        assertFalse(grid.state.value.syncing)
+        assertTrue(grid.loadedWindowStarts.contains(day2))
+        assertTrue(grid.state.value.channels.isNotEmpty())
     }
 
     @Test
@@ -409,24 +396,23 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             fetchTimers = {
                 gate.await()
                 error("timerlist down")
             }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { session.channels.isNotEmpty() }
-        assertTrue(session.timerClocks.isEmpty())
+        grid.replaceAndLoad("bouquet-a", t0)
+        waitUntil { grid.state.value.channels.isNotEmpty() }
+        assertTrue(grid.state.value.timerClocks.isEmpty())
         gate.complete(Unit)
-        session.awaitIdle()
-        assertTrue(session.channels.isNotEmpty())
-        assertTrue(session.timerClocks.isEmpty())
-        assertEquals(null, session.errorMessage)
+        grid.awaitIdle()
+        assertTrue(grid.state.value.channels.isNotEmpty())
+        assertTrue(grid.state.value.timerClocks.isEmpty())
+        assertEquals(null, grid.state.value.errorMessage)
     }
 
     @Test
@@ -440,11 +426,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             fetchTimers = {
                 listOf(
                     Timer(
@@ -458,12 +443,12 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
-        waitUntil(dump = { gridDump(session, t0) + " clocks=${session.timerClocks}" }) {
-            session.timerClocks.isNotEmpty()
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+        waitUntil(dump = { gridDump(grid, t0) + " clocks=${grid.state.value.timerClocks}" }) {
+            grid.state.value.timerClocks.isNotEmpty()
         }
-        assertEquals(MultiEpgTimerClock.Record, session.timerClocks.values.single())
+        assertEquals(MultiEpgTimerClock.Record, grid.state.value.timerClocks.values.single())
     }
 
     @Test
@@ -502,11 +487,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             loadBouquetServices = {
                 listOf(
                     Service(withEpg, "Das Erste"),
@@ -514,22 +498,22 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        assertEquals(2, session.channels.size)
-        assertEquals("Das Erste", session.channels[0].serviceName)
-        assertEquals("ZDF", session.channels[1].serviceName)
-        assertTrue(session.channels[1].bars.isNotEmpty())
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertEquals(2, grid.state.value.channels.size)
+        assertEquals("Das Erste", grid.state.value.channels[0].serviceName)
+        assertEquals("ZDF", grid.state.value.channels[1].serviceName)
+        assertTrue(grid.state.value.channels[1].bars.isNotEmpty())
 
-        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
-        session.awaitIdle()
-        assertEquals(2, session.channels.size)
-        assertEquals("ZDF", session.channels[1].serviceName)
+        grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        grid.awaitIdle()
+        assertEquals(2, grid.state.value.channels.size)
+        assertEquals("ZDF", grid.state.value.channels[1].serviceName)
         assertTrue(
-            "ZDF stays in the grid after today is dropped",
-            session.channels[1].bars.isEmpty()
+            grid.state.value.channels[1].bars.isEmpty(),
+            "ZDF stays in the grid after today is dropped"
         )
-        assertTrue(session.channels[0].bars.isNotEmpty())
+        assertTrue(grid.state.value.channels[0].bars.isNotEmpty())
     }
 
     @Test
@@ -561,17 +545,16 @@ class MultiEpgSessionTest {
             ttlMs = 25L * 60L * 1000L
         )
         val origin = chunk0.endSec - 600L
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", origin)
-        session.awaitIdle()
-        session.onVisibleWindow(origin, origin + 4L * 3600L)
-        session.awaitIdle()
-        val spanBars = session.channels.single().bars.filter { it.event.eventId == "span" }
+        grid.replaceAndLoad("bouquet-a", origin)
+        grid.awaitIdle()
+        grid.onVisibleWindow(origin, origin + 4L * 3600L)
+        grid.awaitIdle()
+        val spanBars = grid.state.value.channels.single().bars.filter { it.event.eventId == "span" }
         assertEquals(1, spanBars.size)
         assertEquals("Overnight", spanBars.single().event.title)
     }
@@ -599,11 +582,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             loadBouquetServices = {
                 if (bouquetCalls.incrementAndGet() > 1) {
                     error("getservices down")
@@ -614,17 +596,17 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad("bouquet-a", now)
-        session.awaitIdle()
-        assertEquals(2, session.channels.size)
-        assertEquals("ZDF", session.channels[1].serviceName)
-        assertEquals(null, session.errorMessage)
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertEquals(2, grid.state.value.channels.size)
+        assertEquals("ZDF", grid.state.value.channels[1].serviceName)
+        assertEquals(null, grid.state.value.errorMessage)
 
-        session.load(now, forceRefresh = true, isPull = true)
-        session.awaitIdle()
-        assertEquals(2, session.channels.size)
-        assertEquals("ZDF", session.channels[1].serviceName)
-        assertEquals("getservices down", session.errorMessage)
+        grid.load(now, forceRefresh = true, isPull = true)
+        grid.awaitIdle()
+        assertEquals(2, grid.state.value.channels.size)
+        assertEquals("ZDF", grid.state.value.channels[1].serviceName)
+        assertEquals(UiText.Raw("getservices down"), grid.state.value.errorMessage)
     }
 
     @Test
@@ -649,11 +631,10 @@ class MultiEpgSessionTest {
         sync.ensureChunk(1, "bouquet-a", t0)
         now += 2_000L
         val bouquetCalls = AtomicInteger(0)
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             persistBouquet = { false },
             shouldSkipReceiverHttp = { hasCache -> hasCache },
             loadBouquetServices = {
@@ -662,13 +643,13 @@ class MultiEpgSessionTest {
                 error("getservices down")
             }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
-        assertEquals("Cached", titleOnFocusedChunk(session, t0))
+        grid.replaceAndLoad("bouquet-a", t0)
+        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        assertEquals("Cached", titleOnFocusedChunk(grid, t0))
         assertEquals(1, fetches.get())
         assertEquals(0, bouquetCalls.get())
-        assertEquals(null, session.errorMessage)
-        session.cancel()
+        assertEquals(null, grid.state.value.errorMessage)
+        grid.cancel()
         hang.cancel()
     }
 
@@ -699,11 +680,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 1_000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             persistBouquet = { false },
             isSessionOffline = { true },
             loadBouquetServices = {
@@ -714,13 +694,13 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
-        assertEquals("HubFill", titleOnFocusedChunk(session, t0))
+        grid.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        assertEquals("HubFill", titleOnFocusedChunk(grid, t0))
         assertEquals(0, fetches.get())
         assertEquals(0, bouquetCalls.get())
-        assertEquals(null, session.errorMessage)
-        session.cancel()
+        assertEquals(null, grid.state.value.errorMessage)
+        grid.cancel()
         hang.cancel()
     }
 
@@ -742,11 +722,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 1_000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             persistBouquet = { false },
             isSessionOffline = { true },
             loadBouquetServices = {
@@ -757,12 +736,12 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
         assertEquals(0, fetches.get())
         assertEquals(0, bouquetCalls.get())
-        assertEquals(null, session.errorMessage)
-        session.cancel()
+        assertEquals(null, grid.state.value.errorMessage)
+        grid.cancel()
         hang.cancel()
     }
 
@@ -785,17 +764,16 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 1_000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
-        session.awaitIdle()
+        grid.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitIdle()
         assertTrue(fetches.get() >= 1)
-        assertEquals("Live", titleOnFocusedChunk(session, t0))
+        assertEquals("Live", titleOnFocusedChunk(grid, t0))
     }
 
     @Test
@@ -816,11 +794,10 @@ class MultiEpgSessionTest {
             ttlMs = 25L * 60L * 1000L
         )
         sync.ensureChunk(1, "bouquet-a", t0)
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             persistBouquet = { false },
             isSessionOffline = { true },
             loadBouquetServices = {
@@ -829,15 +806,15 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
-        assertEquals("Cached", titleOnFocusedChunk(session, t0))
-        assertEquals(null, session.errorMessage)
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+        assertEquals("Cached", titleOnFocusedChunk(grid, t0))
+        assertEquals(null, grid.state.value.errorMessage)
 
-        session.load(t0, forceRefresh = true, isPull = true)
-        session.awaitIdle()
-        assertEquals("Cached", titleOnFocusedChunk(session, t0))
-        assertEquals(null, session.errorMessage)
+        grid.load(t0, forceRefresh = true, isPull = true)
+        grid.awaitIdle()
+        assertEquals("Cached", titleOnFocusedChunk(grid, t0))
+        assertEquals(null, grid.state.value.errorMessage)
         assertTrue(fetches.get() >= 2)
     }
 
@@ -865,11 +842,10 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 1_000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
             profileId = { 1 },
-            noBouquetMessage = "no bouquet",
             persistBouquet = { false },
             isSessionOffline = { true },
             loadBouquetServices = {
@@ -880,18 +856,18 @@ class MultiEpgSessionTest {
                 )
             }
         )
-        session.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(session, t0) != null }
-        session.awaitIdle()
-        assertEquals("HubFill", titleOnFocusedChunk(session, t0))
+        grid.replaceAndLoad(bouquet, t0)
+        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitIdle()
+        assertEquals("HubFill", titleOnFocusedChunk(grid, t0))
         val day2 = MultiEpgWindows.chunkContaining(t0).startSec +
             2L * MultiEpgWindows.CHUNK_SECONDS
-        session.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
-        session.awaitIdle()
+        grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
+        grid.awaitIdle()
         assertEquals(0, fetches.get())
         assertEquals(0, bouquetCalls.get())
-        assertEquals(null, session.errorMessage)
-        session.cancel()
+        assertEquals(null, grid.state.value.errorMessage)
+        grid.cancel()
         hang.cancel()
     }
 
@@ -910,26 +886,25 @@ class MultiEpgSessionTest {
             clockMs = { 1_000_000L },
             ttlMs = 25L * 60L * 1000L
         )
-        val session = MultiEpgSession(
+        val grid = MultiEpgGrid(
             sync = sync,
             scope = this,
-            profileId = { 1 },
-            noBouquetMessage = "no bouquet"
+            profileId = { 1 }
         )
-        session.replaceAndLoad("bouquet-a", t0)
-        session.awaitIdle()
-        assertEquals("T", titleOnFocusedChunk(session, t0))
-        assertTrue(session.channels.isNotEmpty())
-        assertEquals("prefetch down", session.errorMessage)
+        grid.replaceAndLoad("bouquet-a", t0)
+        grid.awaitIdle()
+        assertEquals("T", titleOnFocusedChunk(grid, t0))
+        assertTrue(grid.state.value.channels.isNotEmpty())
+        assertEquals(UiText.Raw("prefetch down"), grid.state.value.errorMessage)
     }
 
-    private fun titleOnFocusedChunk(session: MultiEpgSession, unixSec: Long): String =
-        titleOnFocusedChunkOrNull(session, unixSec)
-            ?: error(gridDump(session, unixSec))
+    private fun titleOnFocusedChunk(grid: MultiEpgGrid, unixSec: Long): String =
+        titleOnFocusedChunkOrNull(grid, unixSec)
+            ?: error(gridDump(grid, unixSec))
 
-    private fun titleOnFocusedChunkOrNull(session: MultiEpgSession, unixSec: Long): String? {
+    private fun titleOnFocusedChunkOrNull(grid: MultiEpgGrid, unixSec: Long): String? {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
-        for (channel in session.channels) {
+        for (channel in grid.state.value.channels) {
             val bars = channel.bars.overlapping(chunk.startSec, chunk.endSec)
             if (bars.isNotEmpty()) {
                 return bars.first().event.title
@@ -938,14 +913,14 @@ class MultiEpgSessionTest {
         return null
     }
 
-    private fun gridDump(session: MultiEpgSession, unixSec: Long): String {
+    private fun gridDump(grid: MultiEpgGrid, unixSec: Long): String {
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
-        val bars = session.channels.joinToString { ch ->
+        val bars = grid.state.value.channels.joinToString { ch ->
             ch.bars.joinToString { "${it.event.title}:${it.startSec}-${it.endSec}" }
         }
         return "no bar in chunk ${chunk.startSec} " +
-            "windows=${session.loadedWindowStarts} " +
-            "origin=${session.originFloorSec} bars=[$bars]"
+            "windows=${grid.loadedWindowStarts} " +
+            "origin=${grid.state.value.originFloorSec} bars=[$bars]"
     }
 
     private fun programme(
@@ -972,7 +947,7 @@ class MultiEpgSessionTest {
         val startMs = System.currentTimeMillis()
         while (!condition()) {
             if (System.currentTimeMillis() - startMs > timeoutMs) {
-                error("timed out waiting for session condition ${dump()}")
+                error("timed out waiting for grid condition ${dump()}")
             }
             delay(10)
         }

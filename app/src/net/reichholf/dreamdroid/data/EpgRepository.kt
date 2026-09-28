@@ -1,21 +1,31 @@
 package net.reichholf.dreamdroid.data
 
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
+import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.nowNextForService
 import net.reichholf.dreamdroid.multiepg.toEvent
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgEventEntity
+import net.reichholf.dreamdroid.room.UserBouquetCache
+import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /** One step of a list EPG load. */
@@ -28,17 +38,34 @@ sealed interface EventListLoad {
 }
 
 /**
- * EPG of the active profile. List EPG (`/web/epgbouquet`, `/web/epgservice`) reads the
- * MultiEPG Room chunks as its offline cache and never writes them; see
- * docs/offline-and-errors.md and docs/multiepg.md.
+ * EPG of the active profile. MultiEPG (`/web/epgmulti`) fills Room chunks through
+ * [multiEpgSync]. List EPG (`/web/epgbouquet`, `/web/epgservice`) reads those chunks as its
+ * offline cache and never writes them; see docs/offline-and-errors.md and docs/multiepg.md.
  */
 @Singleton
 class EpgRepository @Inject constructor(
     private val clients: EnigmaClientFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    @param:ApplicationContext private val context: Context
 ) {
+    private val epgMultiRequest = Mutex()
+
+    /**
+     * The process's one MultiEPG chunk cache. MultiEPG, the hub service list, and the TV hub
+     * share it, so they coalesce `/web/epgmulti` work. Built on first use: Hilt constructs
+     * this repository before the pre-Room import runs.
+     */
+    val multiEpgSync: MultiEpgSync by lazy {
+        MultiEpgSync(dao = database.epgDao(), fetch = ::fetchEpgMulti)
+    }
+
+    /** The TV and radio "all bouquets" roots. MultiEPG never persists them. */
+    private val excludedTabRefs: Set<String> by lazy {
+        UserBouquetCache.excludedHubTabRefs(context)
+    }
+
     /**
      * One programme per channel of [bouquetRef] at [atSec]. See [listLoad] for the
      * cache and receiver order.
@@ -73,6 +100,78 @@ class EpgRepository @Inject constructor(
     /** Receiver-side EPG search by title. Not cached. */
     suspend fun search(query: String): EnigmaResponse<List<Event>> =
         clients.current().getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
+
+    /** A MultiEPG persist gate that knows no user bouquet yet, so it persists nothing. */
+    fun multiEpgPersistGate(): MultiEpgPersistGate = MultiEpgPersistGate(excludedTabRefs)
+
+    /** The phone hub's user bouquet tabs in Room, the bouquets phone MultiEPG persists. */
+    suspend fun hubTabStripRefs(): List<String> {
+        val profileId = profiles.requireCurrent().id ?: return emptyList()
+        return database.rosterDao().getTabStripRefs(profileId)
+    }
+
+    /** The user bouquet tabs among [bouquets], the bouquets TV MultiEPG persists. */
+    fun userBouquetTabRefs(bouquets: List<Service>): List<String> =
+        UserBouquetCache.userBouquetTabs(bouquets, excludedTabRefs).map { it.reference }
+
+    /**
+     * TV bouquets for the TV MultiEPG picker. Room's TV tab strip answers while the session
+     * skips the receiver, and when the receiver fails.
+     */
+    suspend fun tvBouquets(): List<Service> {
+        val profileId = profiles.requireCurrent().id
+        val cached = profileId?.let {
+            UserBouquetCache.loadTabStripServices(
+                database.rosterDao(),
+                it,
+                UserBouquetCache.KIND_TV
+            )
+        }.orEmpty()
+        if (sessions.status.value.shouldSkipReceiverHttp(cached.isNotEmpty())) {
+            return cached
+        }
+        return clients.current()
+            .getServices(listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV)))
+            .value ?: cached
+    }
+
+    /** Members of [bouquetRef] from `/web/getservices`, the MultiEPG rows. Failures throw. */
+    suspend fun bouquetServices(bouquetRef: String): List<Service> =
+        clients.current().getServices(listOf(NameValuePair("sRef", bouquetRef))).valueOrThrow()
+
+    /** The roster of [bouquetRef] in Room, or null when it was never written. */
+    suspend fun cachedBouquetServices(profileId: Int, bouquetRef: String): List<Service>? =
+        UserBouquetCache.loadRosterServices(database.rosterDao(), profileId, bouquetRef)
+
+    /** Drops MultiEPG events and chunks that ended two days before [nowSec] or earlier. */
+    suspend fun pruneExpiredMultiEpgCache(nowSec: Long = System.currentTimeMillis() / 1000L) {
+        database.epgDao().pruneOlderThan(MultiEpgWindows.retentionCutoffSec(nowSec))
+    }
+
+    /**
+     * One `/web/epgmulti` window. `time` is the unix start; `endTime` is the **duration in
+     * minutes** (eEPGCache's 4th tuple arg, as GraphMultiEPG passes it) despite its name. An
+     * absolute unix end overflows on the box and yields no events. Requests run one at a
+     * time, so the box never serves two bouquet dumps at once.
+     */
+    private suspend fun fetchEpgMulti(
+        bouquetRef: String,
+        timeSec: Long,
+        endTimeSec: Long
+    ): List<Event> {
+        require(endTimeSec > timeSec) { "window end must be after start" }
+        val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
+        return epgMultiRequest.withLock {
+            clients.current().getEvents(
+                listOf(
+                    NameValuePair("bRef", bouquetRef),
+                    NameValuePair("time", timeSec.toString()),
+                    NameValuePair("endTime", durationMinutes.toString())
+                ),
+                URIStore.EPG_MULTI
+            ).valueOrThrow()
+        }
+    }
 
     /**
      * Unless [forceRefresh], paints Room first and skips the receiver while the session is

@@ -1,49 +1,65 @@
 package net.reichholf.dreamdroid.multiepg
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
+import net.reichholf.dreamdroid.enigma.toEnigmaDisplayText
+import net.reichholf.dreamdroid.ui.text.UiText
+
+/** What the MultiEPG grid paints. [MultiEpgGrid] replaces it as a whole on every change. */
+data class MultiEpgGridState(
+    val bouquetRef: String = "",
+    val channels: List<MultiEpgChannel> = emptyList(),
+    val timelineStartSec: Long = 0L,
+    val timelineEndSec: Long = 0L,
+    val anchorSec: Long = 0L,
+    val originFloorSec: Long = 0L,
+    val syncingCount: Int = 0,
+    val pullRefreshing: Boolean = false,
+    val errorMessage: UiText? = null,
+    val timerClocks: Map<String, MultiEpgTimerClock> = emptyMap()
+) {
+    val syncing: Boolean
+        get() = syncingCount > 0
+}
 
 /**
- * Stale-while-revalidate MultiEPG grid session: peek Room, refresh and prefetch
- * in the background, keep stale rows on error, replace on bouquet/profile remount.
- * Offline skips Enigma HTTP (pull-to-refresh still fetches). Room paints from a
- * stored chunk or from events overlapping now for 24 h, like list EPG.
+ * Stale-while-revalidate MultiEPG grid loader shared by the phone and TV ViewModels:
+ * peek Room, refresh and prefetch in the background, keep stale rows on error, replace
+ * on bouquet/profile remount. Offline skips Enigma HTTP (pull-to-refresh still fetches).
+ * Room paints from a stored chunk or from events overlapping now for 24 h, like list EPG.
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
- * is the earliest start among programmes overlapping [originFloorSec] ("now"),
- * the right grows as the viewport moves into the future, and chunks that no
+ * is the earliest start among programmes overlapping [MultiEpgGridState.originFloorSec]
+ * ("now"), the right grows as the viewport moves into the future, and chunks that no
  * longer overlap the padded viewport leave at the front or back. Room still
  * holds them; scrolling back reattaches from cache. Bouquet services loaded
  * from `/web/getservices` keep a row even when a window has no events.
  */
-class MultiEpgSession(
+class MultiEpgGrid(
     private val sync: MultiEpgSync,
     private val scope: CoroutineScope,
     private val profileId: () -> Int,
-    private val noBouquetMessage: String,
     private val fetchTimers: suspend () -> List<Timer> = { emptyList() },
     private val loadBouquetServices: suspend (String) -> List<Service> = { emptyList() },
-    private val formatError: (Throwable) -> String = { error ->
-        error.message ?: error.javaClass.simpleName
-    },
     private val persistBouquet: (String) -> Boolean = { true },
     private val shouldSkipReceiverHttp: (Boolean) -> Boolean = { false },
     private val isSessionOffline: () -> Boolean = { false },
@@ -51,32 +67,14 @@ class MultiEpgSession(
         { _, _ -> null },
     private val loadCachedTimers: suspend (Int) -> List<Timer>? = { null }
 ) {
-    var bouquetRef: String = ""
-        private set
-    var channels by mutableStateOf<List<MultiEpgChannel>>(emptyList())
-        private set
-    var timelineStartSec by mutableLongStateOf(0L)
-        private set
-    var timelineEndSec by mutableLongStateOf(0L)
-        private set
-    var anchorSec by mutableLongStateOf(0L)
-        private set
-    var originFloorSec by mutableLongStateOf(0L)
-        private set
-    var syncingCount by mutableIntStateOf(0)
-        private set
-    var pullRefreshing by mutableStateOf(false)
-        private set
-    var errorMessage by mutableStateOf<String?>(null)
-        private set
-    var timerClocks by mutableStateOf<Map<String, MultiEpgTimerClock>>(emptyMap())
-        private set
-
-    val syncing: Boolean
-        get() = syncingCount > 0
+    private val _state = MutableStateFlow(MultiEpgGridState())
+    val state: StateFlow<MultiEpgGridState> = _state.asStateFlow()
 
     val loadedWindowStarts: Set<Long>
         get() = eventsByWindow.keys.toSet()
+
+    private val bouquetRef: String
+        get() = _state.value.bouquetRef
 
     private var loadJob: Job? = null
     private var prefetchJob: Job? = null
@@ -96,7 +94,7 @@ class MultiEpgSession(
 
     /**
      * Drop the painted grid immediately and load [bouquetRef] at [anchorSec].
-     * [anchorSec] becomes the left clamp ("now") for this session.
+     * [anchorSec] becomes the left clamp ("now") for this grid.
      */
     fun replaceAndLoad(bouquetRef: String, anchorSec: Long) {
         loadJob?.cancel()
@@ -104,15 +102,19 @@ class MultiEpgSession(
         windowJob?.cancel()
         eventsByWindow.clear()
         bouquetRoster = emptyList()
-        channels = emptyList()
-        timerClocks = emptyMap()
         timers = emptyList()
-        timelineStartSec = 0L
-        timelineEndSec = 0L
-        errorMessage = null
-        this.bouquetRef = bouquetRef
-        this.anchorSec = anchorSec
-        this.originFloorSec = anchorSec
+        _state.update {
+            it.copy(
+                bouquetRef = bouquetRef,
+                channels = emptyList(),
+                timerClocks = emptyMap(),
+                timelineStartSec = 0L,
+                timelineEndSec = 0L,
+                errorMessage = null,
+                anchorSec = anchorSec,
+                originFloorSec = anchorSec
+            )
+        }
         visibleStartSec = 0L
         visibleEndSec = 0L
         load(anchorSec, forceRefresh = false, isPull = false)
@@ -121,18 +123,24 @@ class MultiEpgSession(
     fun load(anchorSec: Long, forceRefresh: Boolean = false, isPull: Boolean = false) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty()) {
-            errorMessage = noBouquetMessage
-            channels = emptyList()
-            timerClocks = emptyMap()
             timers = emptyList()
+            _state.update {
+                it.copy(
+                    errorMessage = UiText.Resource(R.string.multiepg_sync_test_no_bouquet),
+                    channels = emptyList(),
+                    timerClocks = emptyMap()
+                )
+            }
             return
         }
         loadJob?.cancel()
-        errorMessage = null
-        if (isPull) {
-            pullRefreshing = true
+        _state.update {
+            it.copy(
+                errorMessage = null,
+                pullRefreshing = it.pullRefreshing || isPull,
+                anchorSec = anchorSec
+            )
         }
-        this.anchorSec = anchorSec
         loadJob = scope.launch {
             beginSync()
             var timersDeferred: Deferred<List<Timer>>? = null
@@ -176,7 +184,7 @@ class MultiEpgSession(
                     try {
                         fetchTimers()
                     } catch (t: Throwable) {
-                        if (t is kotlinx.coroutines.CancellationException) {
+                        if (t is CancellationException) {
                             throw t
                         }
                         emptyList()
@@ -186,7 +194,7 @@ class MultiEpgSession(
                     try {
                         MultiEpgRosterFetch(loadBouquetServices(ref))
                     } catch (t: Throwable) {
-                        if (t is kotlinx.coroutines.CancellationException) {
+                        if (t is CancellationException) {
                             throw t
                         }
                         MultiEpgRosterFetch(error = t)
@@ -194,10 +202,10 @@ class MultiEpgSession(
                 }
                 val fetched = rosterDeferred.await()
                 gridMutex.withLock {
-                    val applied = applyBouquetRoster(bouquetRoster, fetched, formatError)
+                    val applied = applyBouquetRoster(bouquetRoster, fetched)
                     bouquetRoster = applied.roster
                     if (applied.errorMessage != null) {
-                        errorMessage = applied.errorMessage
+                        _state.update { it.copy(errorMessage = applied.errorMessage) }
                     }
                 }
                 if (peek != null && peek.events.isNotEmpty()) {
@@ -219,12 +227,12 @@ class MultiEpgSession(
                 putWindow(chunk.startSec, events)
                 prefetchFuture(anchorSec)
             } catch (t: Throwable) {
-                if (t is kotlinx.coroutines.CancellationException) {
+                if (t is CancellationException) {
                     throw t
                 }
                 surfaceError(t)
             } finally {
-                pullRefreshing = false
+                _state.update { it.copy(pullRefreshing = false) }
                 endSync()
                 val pendingTimers = timersDeferred
                 if (isActive && pendingTimers != null) {
@@ -236,11 +244,11 @@ class MultiEpgSession(
 
     /**
      * Move the sliding window so [unixSec] is in view. Never loads earlier than
-     * [originFloorSec].
+     * [MultiEpgGridState.originFloorSec].
      */
     fun focusAt(unixSec: Long) {
-        val t = unixSec.coerceAtLeast(originFloorSec)
-        anchorSec = t
+        val t = unixSec.coerceAtLeast(_state.value.originFloorSec)
+        _state.update { it.copy(anchorSec = t) }
         onVisibleWindow(t, t + DEFAULT_VISIBLE_SECONDS)
     }
 
@@ -256,7 +264,7 @@ class MultiEpgSession(
         this.visibleStartSec = visibleStartSec
         this.visibleEndSec = visibleEndSec
         val want = MultiEpgWindows.slidingChunks(
-            originFloorSec = originFloorSec,
+            originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
             visibleEndSec = visibleEndSec
         )
@@ -269,18 +277,18 @@ class MultiEpgSession(
         beginSync()
         windowJob = scope.launch {
             try {
-                var snapStart = this@MultiEpgSession.visibleStartSec
-                var snapEnd = this@MultiEpgSession.visibleEndSec
+                var snapStart: Long
+                var snapEnd: Long
                 do {
-                    snapStart = this@MultiEpgSession.visibleStartSec
-                    snapEnd = this@MultiEpgSession.visibleEndSec
+                    snapStart = this@MultiEpgGrid.visibleStartSec
+                    snapEnd = this@MultiEpgGrid.visibleEndSec
                     applySlidingWindow(snapStart, snapEnd)
                 } while (
-                    snapStart != this@MultiEpgSession.visibleStartSec ||
-                    snapEnd != this@MultiEpgSession.visibleEndSec
+                    snapStart != this@MultiEpgGrid.visibleStartSec ||
+                    snapEnd != this@MultiEpgGrid.visibleEndSec
                 )
             } catch (t: Throwable) {
-                if (t is kotlinx.coroutines.CancellationException) {
+                if (t is CancellationException) {
                     throw t
                 }
                 surfaceError(t)
@@ -309,7 +317,7 @@ class MultiEpgSession(
             try {
                 attachWindow(anchor + MultiEpgWindows.CHUNK_SECONDS)
             } catch (t: Throwable) {
-                if (t is kotlinx.coroutines.CancellationException) {
+                if (t is CancellationException) {
                     throw t
                 }
                 surfaceError(t)
@@ -325,7 +333,7 @@ class MultiEpgSession(
             return
         }
         val chunk = MultiEpgWindows.chunkContaining(unixSec)
-        if (chunk.endSec <= originFloorSec) {
+        if (chunk.endSec <= _state.value.originFloorSec) {
             return
         }
         val already = gridMutex.withLock {
@@ -364,7 +372,7 @@ class MultiEpgSession(
 
     private suspend fun applySlidingWindow(visibleStartSec: Long, visibleEndSec: Long) {
         val want = MultiEpgWindows.slidingChunks(
-            originFloorSec = originFloorSec,
+            originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
             visibleEndSec = visibleEndSec
         )
@@ -392,10 +400,14 @@ class MultiEpgSession(
 
     private suspend fun publishGridLocked() {
         if (eventsByWindow.isEmpty()) {
-            timelineStartSec = 0L
-            timelineEndSec = 0L
-            channels = emptyList()
-            timerClocks = emptyMap()
+            _state.update {
+                it.copy(
+                    timelineStartSec = 0L,
+                    timelineEndSec = 0L,
+                    channels = emptyList(),
+                    timerClocks = emptyMap()
+                )
+            }
             return
         }
         val starts = eventsByWindow.keys.sorted()
@@ -404,42 +416,46 @@ class MultiEpgSession(
             merged.addAll(eventsByWindow[start].orEmpty())
         }
         val nextStart = MultiEpgWindows.paintedTimelineStart(
-            nowSec = originFloorSec,
+            nowSec = _state.value.originFloorSec,
             minWindowStartSec = starts.first(),
             events = merged
         )
         val nextEnd = starts.last() + MultiEpgWindows.CHUNK_SECONDS
-        val previous = channels
+        val previous = _state.value.channels
         val next = withContext(Dispatchers.Default) {
             buildMultiEpgChannels(merged, previous, bouquetRoster)
         }
-        timelineStartSec = nextStart
-        timelineEndSec = nextEnd
-        if (next !== previous) {
-            channels = next
+        val clocks = buildMultiEpgTimerClocks(next, timers)
+        _state.update {
+            it.copy(
+                timelineStartSec = nextStart,
+                timelineEndSec = nextEnd,
+                channels = next,
+                timerClocks = clocks
+            )
         }
-        timerClocks = buildMultiEpgTimerClocks(channels, timers)
     }
 
     private suspend fun applyTimers(list: List<Timer>) {
         gridMutex.withLock {
             timers = list
-            timerClocks = buildMultiEpgTimerClocks(channels, timers)
+            val clocks = buildMultiEpgTimerClocks(_state.value.channels, list)
+            _state.update { it.copy(timerClocks = clocks) }
         }
     }
 
     private fun surfaceError(t: Throwable) {
         if (!t.isUnreachableEnigmaFailure()) {
-            errorMessage = formatError(t)
+            _state.update { it.copy(errorMessage = t.toEnigmaDisplayText()) }
         }
     }
 
     private fun beginSync() {
-        syncingCount += 1
+        _state.update { it.copy(syncingCount = it.syncingCount + 1) }
     }
 
     private fun endSync() {
-        syncingCount = (syncingCount - 1).coerceAtLeast(0)
+        _state.update { it.copy(syncingCount = (it.syncingCount - 1).coerceAtLeast(0)) }
     }
 
     companion object {

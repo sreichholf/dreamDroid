@@ -116,11 +116,12 @@ fun Throwable.isUnreachableEnigmaFailure(): Boolean {
     return failure is EnigmaFailure.Unreachable
 }
 
-fun Throwable.toEnigmaDisplayMessage(context: Context): String {
+/** In-content text for a failed load: the Enigma failure's text, else the message. */
+fun Throwable.toEnigmaDisplayText(): UiText {
     if (this is EnigmaFailureException) {
-        return failure.userMessage(context)
+        return failure.userMessageText()
     }
-    return message ?: javaClass.simpleName
+    return UiText.Raw(message ?: javaClass.simpleName)
 }
 
 private fun causeChain(throwable: Throwable): List<Throwable> {

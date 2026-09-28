@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.testutil
 
+import java.util.Collections
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -26,7 +27,8 @@ class EpgTestReceiver {
         EnigmaClientFactory(profiles.repository),
         profiles.repository,
         profiles.database,
-        sessions
+        sessions,
+        profiles.context
     )
 
     /** Answer for every request. Defaults to the two-event `epgservice.xml`. */
@@ -35,9 +37,18 @@ class EpgTestReceiver {
         MockResponse().setBody(loadWebFixture("epgservice.xml"))
     }
 
+    private val recorded = Collections.synchronizedList(mutableListOf<RecordedRequest>())
+
+    /** Requests so far, oldest first. */
+    val requests: List<RecordedRequest>
+        get() = synchronized(recorded) { recorded.toList() }
+
     fun start() {
         server.dispatcher = object : Dispatcher() {
-            override fun dispatch(request: RecordedRequest): MockResponse = answer(request)
+            override fun dispatch(request: RecordedRequest): MockResponse {
+                recorded += request
+                return answer(request)
+            }
         }
         server.start()
         // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.

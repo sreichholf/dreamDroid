@@ -1,24 +1,27 @@
 package net.reichholf.dreamdroid.multiepg
 
 import android.content.Context
-import net.reichholf.dreamdroid.room.AppDatabase
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import net.reichholf.dreamdroid.data.EpgRepository
 
 /**
- * Process-wide [MultiEpgSync] so the hub service list and MultiEPG share
- * in-flight `/web/epgmulti` work. Tests construct [MultiEpgSync] directly.
+ * Transitional lookup of the process's [MultiEpgSync], which the Hilt-owned [EpgRepository]
+ * builds and owns. The hub service list and the TV hub browse load reach it here until they
+ * move to injected repositories (hilt-migration PRs 9 and 12); delete this with the last
+ * caller. Tests construct [MultiEpgSync] directly.
  */
 object MultiEpgSyncHolder {
-    @Volatile
-    private var instance: MultiEpgSync? = null
+    fun shared(context: Context): MultiEpgSync = EntryPointAccessors
+        .fromApplication(context.applicationContext, MultiEpgSyncEntryPoint::class.java)
+        .epgRepository()
+        .multiEpgSync
+}
 
-    fun shared(context: Context): MultiEpgSync {
-        instance?.let { return it }
-        return synchronized(this) {
-            instance?.let { return it }
-            MultiEpgSync(
-                dao = AppDatabase.epg(context.applicationContext),
-                fetch = MultiEpgSync.httpFetch()
-            ).also { instance = it }
-        }
-    }
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface MultiEpgSyncEntryPoint {
+    fun epgRepository(): EpgRepository
 }

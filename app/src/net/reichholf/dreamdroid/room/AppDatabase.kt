@@ -338,8 +338,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun roster(context: Context): RosterDao = database(context).rosterDao()
 
-        fun timer(context: Context): TimerDao = database(context).timerDao()
-
         fun movie(context: Context): MovieDao = database(context).movieDao()
 
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():

@@ -1,9 +1,11 @@
 package net.reichholf.dreamdroid.multiepg
 
 import java.net.UnknownHostException
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -23,21 +25,20 @@ class MultiEpgRosterFetchTest {
             MultiEpgRosterFetch(error = IllegalStateException("getservices down"))
         )
         assertSame(previous, applied.roster)
-        assertEquals("getservices down", applied.errorMessage)
+        assertEquals(UiText.Raw("getservices down"), applied.errorMessage)
     }
 
     @Test
-    fun failedGetservicesUsesFormatErrorForEnigmaFailure() {
+    fun failedGetservicesShowsTheEnigmaFailureText() {
         val previous = playableMultiEpgRoster(
             listOf(Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"))
         )
         val applied = applyBouquetRoster(
             previous,
-            MultiEpgRosterFetch(error = EnigmaFailureException(EnigmaFailure.Auth)),
-            formatError = { "authorization failed" }
+            MultiEpgRosterFetch(error = EnigmaFailureException(EnigmaFailure.Auth))
         )
         assertSame(previous, applied.roster)
-        assertEquals("authorization failed", applied.errorMessage)
+        assertEquals(UiText.Resource(R.string.auth_error), applied.errorMessage)
     }
 
     @Test
@@ -51,8 +52,7 @@ class MultiEpgRosterFetchTest {
                 error = EnigmaFailureException(
                     EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Dns)
                 )
-            ),
-            formatError = { "host_not_found" }
+            )
         )
         assertSame(previous, applied.roster)
         assertEquals(null, applied.errorMessage)
@@ -65,8 +65,7 @@ class MultiEpgRosterFetchTest {
         )
         val applied = applyBouquetRoster(
             previous,
-            MultiEpgRosterFetch(error = UnknownHostException("box.local")),
-            formatError = { "host_not_found" }
+            MultiEpgRosterFetch(error = UnknownHostException("box.local"))
         )
         assertSame(previous, applied.roster)
         assertEquals(null, applied.errorMessage)

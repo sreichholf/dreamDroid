@@ -64,7 +64,13 @@ class ServiceEpgRetentionTest {
     )
     private val clients = EnigmaClientFactory(profiles)
     private val sessions = SessionConnectionHolder().apply { onSuccess() }
-    private val repository = EpgRepository(clients, profiles, database, sessions)
+    private val repository = EpgRepository(
+        clients,
+        profiles,
+        database,
+        sessions,
+        InstrumentationRegistry.getInstrumentation().targetContext
+    )
     private val timers = TimerRepository(clients, profiles, database)
 
     @Before

@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.multiepg
 
 import android.content.Context
 import android.content.SharedPreferences
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -16,7 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -26,14 +25,15 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
-import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.MultiEpg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * MultiEPG destination with stale-while-revalidate sync:
@@ -41,7 +41,7 @@ import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
  * keep stale data on refresh failure, replace on bouquet/profile remount.
  *
  * Loaded grid state lives on [MultiEpgViewModel]. [MultiEpgTopBarSession] supplies
- * the list-EPG top-bar action. The toolbar title is set here.
+ * the list-EPG top-bar action.
  */
 @Composable
 fun MultiEpgDestination(
@@ -49,22 +49,19 @@ fun MultiEpgDestination(
     route: MultiEpg,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
-    viewModel: MultiEpgViewModel = viewModel(),
+    viewModel: MultiEpgViewModel = hiltViewModel(),
     detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val activity = context as AppCompatActivity
-    val session = viewModel.session
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val grid = uiState.grid
     val bouquetRef = MultiEpgRestore.bouquetRef(route.serviceRef)
     val bouquetName = MultiEpgRestore.bouquetName(route.serviceName)
     val focusedServiceRef = route.focusedOrNull()
-    var anchorSec by remember(remountEpoch, bouquetRef) {
-        val launchSec = route.timeOrNull() ?: System.currentTimeMillis() / 1000L
-        mutableLongStateOf(launchSec)
+    val launchSec = remember(remountEpoch, bouquetRef) {
+        route.timeOrNull() ?: MultiEpgNowClock.sec()
     }
-    var visibleStartSec by remember(remountEpoch, bouquetRef) {
-        mutableLongStateOf(anchorSec)
-    }
+    var visibleStartSec by remember(remountEpoch, bouquetRef) { mutableLongStateOf(launchSec) }
     var focusEpoch by remember { mutableIntStateOf(0) }
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -93,16 +90,11 @@ fun MultiEpgDestination(
     menuSession.bouquetName = bouquetName
     menuSession.visibleStartSec = visibleStartSec
 
-    val defaultTitle = stringResource(R.string.multiepg)
-    DisposableEffect(bouquetName) {
-        activity.title = bouquetName.ifBlank { defaultTitle }
-        onDispose { }
-    }
-
+    ShellTitle(uiState.title)
     BindShellTopBarActions(menuSession.topBarActions(stringResource(R.string.epg_list)))
 
     LaunchedEffect(remountEpoch, bouquetRef) {
-        viewModel.ensureLoaded(remountEpoch, bouquetRef, anchorSec)
+        viewModel.ensureLoaded(remountEpoch, bouquetRef, bouquetName, launchSec)
     }
 
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
@@ -113,10 +105,10 @@ fun MultiEpgDestination(
         }
     }
 
-    val onVisibleWindow = remember(session) {
+    val onVisibleWindow = remember(viewModel) {
         { start: Long, end: Long ->
             visibleStartSec = start
-            session.onVisibleWindow(start, end)
+            viewModel.onVisibleWindow(start, end)
         }
     }
     val onEventClick = remember(detailViewModel) {
@@ -125,45 +117,35 @@ fun MultiEpgDestination(
 
     MultiEpgScreen(
         bouquetName = bouquetName,
-        channels = session.channels,
-        timelineStartSec = session.timelineStartSec,
-        timelineEndSec = session.timelineEndSec,
+        channels = grid.channels,
+        timelineStartSec = grid.timelineStartSec,
+        timelineEndSec = grid.timelineEndSec,
         nowSec = nowSec,
-        loading = session.syncing,
-        pullRefreshing = session.pullRefreshing,
-        errorMessage = session.errorMessage,
-        focusSec = session.anchorSec,
+        loading = grid.syncing,
+        pullRefreshing = grid.pullRefreshing,
+        errorMessage = grid.errorMessage?.asString(),
+        focusSec = grid.anchorSec,
         focusEpoch = focusEpoch,
         onJumpToNow = {
             val now = MultiEpgNowClock.sec()
             nowSec = now
-            anchorSec = now
-            session.replaceAndLoad(bouquetRef, now)
+            viewModel.jumpToNow(now)
             focusEpoch += 1
         },
         onPrevDay = {
-            val target = maxOf(
-                session.originFloorSec,
-                session.anchorSec - MultiEpgWindows.CHUNK_SECONDS
-            )
-            anchorSec = target
-            session.focusAt(target)
+            viewModel.previousDay()
             focusEpoch += 1
         },
         onNextDay = {
-            val target = session.anchorSec + MultiEpgWindows.CHUNK_SECONDS
-            anchorSec = target
-            session.focusAt(target)
+            viewModel.nextDay()
             focusEpoch += 1
         },
-        onRefresh = {
-            session.load(session.anchorSec, forceRefresh = true, isPull = true)
-        },
+        onRefresh = viewModel::refresh,
         onVisibleWindow = onVisibleWindow,
         onEventClick = onEventClick,
         onAtThisTime = { menuSession.openListEpg() },
-        timerClocks = session.timerClocks,
-        visibleMinutes = viewModel.visibleMinutes,
+        timerClocks = grid.timerClocks,
+        visibleMinutes = uiState.visibleMinutes,
         onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
         textSize = textSize,
         focusedServiceRef = focusedServiceRef,

@@ -3,18 +3,26 @@ package net.reichholf.dreamdroid.testutil
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
+import android.content.res.Resources
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
- * A JVM stand-in for the application context: default preferences live in memory,
- * everything else is the android.jar stub.
+ * A JVM stand-in for the application context: default preferences live in memory, string
+ * arrays are empty, everything else is the android.jar stub.
  */
 class TestContext : ContextWrapper(null) {
     private val preferences = HashMap<String, MemorySharedPreferences>()
 
+    @Suppress("DEPRECATION")
+    private val resources = object : Resources(null, null, null) {
+        override fun getStringArray(id: Int): Array<String> = emptyArray()
+    }
+
     override fun getApplicationContext(): Context = this
+
+    override fun getResources(): Resources = resources
 
     override fun getPackageName(): String = "net.reichholf.dreamdroid.test"
 

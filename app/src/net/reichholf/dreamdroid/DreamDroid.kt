@@ -32,12 +32,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
-import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * @author sre
@@ -50,9 +49,12 @@ class DreamDroid : Application() {
     @Inject
     lateinit var profiles: ProfileRepository
 
+    @Inject
+    lateinit var epg: EpgRepository
+
     override fun onCreate() {
-        // Hilt injects here, before the pre-Room import below. Building ProfileRepository
-        // does not read the database; loadCurrent() further down is the first read.
+        // Hilt injects here, before the pre-Room import below. Building ProfileRepository and
+        // EpgRepository does not read the database; loadCurrent() further down is the first read.
         super.onCreate()
         ProfileRepository.install(profiles)
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
@@ -91,10 +93,7 @@ class DreamDroid : Application() {
     private fun pruneExpiredMultiEpgCache() {
         ioScope.launch {
             try {
-                val nowSec = System.currentTimeMillis() / 1000L
-                AppDatabase.epg(this@DreamDroid).pruneOlderThan(
-                    MultiEpgWindows.retentionCutoffSec(nowSec)
-                )
+                epg.pruneExpiredMultiEpgCache()
             } catch (t: Throwable) {
                 Log.w(LOG_TAG, "MultiEPG cache prune failed", t)
             }

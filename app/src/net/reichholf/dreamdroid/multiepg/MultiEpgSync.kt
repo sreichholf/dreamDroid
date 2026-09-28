@@ -5,20 +5,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.Timer
-import net.reichholf.dreamdroid.enigma.valueOrThrow
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgDao
 
 /**
  * Windowed `/web/epgmulti` fetch with Room TTL cache and single-flight coalescing.
- * Never omits `endTime` — unbounded bouquet EPG is not allowed.
+ * Never omits `endTime` — unbounded bouquet EPG is not allowed. [fetch] gets the window
+ * as unix seconds; [net.reichholf.dreamdroid.data.EpgRepository] owns the one instance
+ * per process and its receiver fetch.
  */
 class MultiEpgSync(
     private val dao: EpgDao,
@@ -179,46 +174,5 @@ class MultiEpgSync(
                 }
             }
         }
-    }
-
-    companion object {
-        /**
-         * Dreambox `/web/epgmulti` query params:
-         * - `time` = unix start
-         * - `endTime` = **duration in minutes** (eEPGCache 4th tuple arg), despite the name —
-         *   GraphMultiEPG passes `time_epoch` minutes the same way. Absolute unix end is wrong
-         *   and yields empty results (overflow in startTimeQuery).
-         */
-        fun httpFetch(
-            http: EnigmaHttp = EnigmaHttp()
-        ): suspend (String, Long, Long) -> List<Event> = { bouquetRef, timeSec, endTimeSec ->
-            require(endTimeSec > timeSec) { "window end must be after start" }
-            val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
-            EnigmaClient(http).getEvents(
-                listOf(
-                    NameValuePair("bRef", bouquetRef),
-                    NameValuePair("time", timeSec.toString()),
-                    NameValuePair("endTime", durationMinutes.toString())
-                ),
-                URIStore.EPG_MULTI
-            ).valueOrThrow()
-        }
-
-        /**
-         * Live `/web/timerlist` for MultiEPG clocks. The Room snapshot belongs to
-         * [net.reichholf.dreamdroid.data.TimerRepository] (Timers tab); this fetch stays
-         * in-memory for the grid.
-         */
-        fun httpFetchTimers(http: EnigmaHttp = EnigmaHttp()): suspend () -> List<Timer> = {
-            EnigmaClient(http).getTimers().value ?: emptyList()
-        }
-
-        /** Bouquet members from `/web/getservices?sRef=`. HTTP failures throw. */
-        fun httpFetchBouquet(http: EnigmaHttp = EnigmaHttp()): suspend (String) -> List<Service> =
-            { bouquetRef ->
-                EnigmaClient(http).getServices(
-                    listOf(NameValuePair("sRef", bouquetRef))
-                ).valueOrThrow()
-            }
     }
 }
