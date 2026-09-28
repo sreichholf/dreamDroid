@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
@@ -99,7 +100,9 @@ fun PhoneShell(
             drawerState.close()
         }
     }
+    val snackbarHostState = remember { SnackbarHostState() }
     CompositionLocalProvider(
+        LocalShellSnackbarHostState provides snackbarHostState,
         LocalShellDestinationBarController provides destinationController,
         LocalShellFabController provides fabController,
         LocalShellTopBarController provides topBarController,
@@ -131,6 +134,7 @@ fun PhoneShell(
                 onNavigationClick = onNavigationClick,
                 topBarController = topBarController,
                 trailingTopBarActions = trailingTopBarActions,
+                snackbarHostState = snackbarHostState,
                 content = content
             )
         }
@@ -160,6 +164,7 @@ private fun ShellBody(
     onNavigationClick: () -> Unit,
     topBarController: ShellTopBarController,
     trailingTopBarActions: List<ShellTopBarAction>,
+    snackbarHostState: SnackbarHostState,
     content: @Composable () -> Unit
 ) {
     Row(
@@ -186,7 +191,7 @@ private fun ShellBody(
                     .fillMaxWidth(),
                 containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { ShellSnackbarHost() }
+                snackbarHost = { ShellSnackbarHost(hostState = snackbarHostState) }
             ) { innerPadding ->
                 Box(
                     modifier = Modifier

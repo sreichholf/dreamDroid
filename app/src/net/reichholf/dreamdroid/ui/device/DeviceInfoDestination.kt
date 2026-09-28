@@ -1,44 +1,29 @@
 package net.reichholf.dreamdroid.ui.device
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
-/**
- * Phase 2.7b: Device Info as a direct Compose NavHost destination (no nested Fragment).
- * The load and saved model live on [DeviceInfoViewModel].
- */
+/** Device info as a NavHost destination: title and messages go to the shell. */
 @Composable
 fun DeviceInfoDestination(
     modifier: Modifier = Modifier,
-    viewModel: DeviceInfoViewModel = viewModel()
+    viewModel: DeviceInfoViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val title = viewModel.toolbarTitle
-    val error = viewModel.errorText
-    LaunchedEffect(title) {
-        (context as? AppCompatActivity)?.title = title
-    }
-    LaunchedEffect(error) {
-        if (!error.isNullOrEmpty()) {
-            ShellMessages.post(error)
-            viewModel.consumeError()
-        }
-    }
-    LaunchedEffect(Unit) {
-        viewModel.start()
-    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
     DreamDroidPullRefresh(
-        refreshing = viewModel.refreshing,
-        onRefresh = { viewModel.reload() },
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::refresh,
         enabled = true,
         modifier = modifier
     ) {
-        DeviceInfoScreen(state = viewModel.uiState)
+        DeviceInfoScreen(state = uiState)
     }
 }

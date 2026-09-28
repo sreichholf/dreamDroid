@@ -9,9 +9,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -20,71 +17,16 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 
-data class DeviceInfoRow(val title: String, val subtitle: String)
-
-class DeviceInfoUiState {
-    var guiVersion by mutableStateOf("")
-        private set
-    var imageVersion by mutableStateOf("")
-        private set
-    var interfaceVersion by mutableStateOf("")
-        private set
-    var frontProcessorVersion by mutableStateOf("")
-        private set
-    var deviceName by mutableStateOf("")
-        private set
-    var frontends by mutableStateOf<List<DeviceInfoRow>>(emptyList())
-        private set
-    var nics by mutableStateOf<List<DeviceInfoRow>>(emptyList())
-        private set
-    var hdds by mutableStateOf<List<DeviceInfoRow>>(emptyList())
-        private set
-    var ready by mutableStateOf(false)
-        private set
-
-    fun apply(info: DeviceInfo?, hddCapacityFormat: (capacity: String, free: String) -> String) {
-        if (info == null || info.isEmpty()) {
-            ready = true
-            return
-        }
-        guiVersion = info.guiVersion
-        imageVersion = info.imageVersion
-        interfaceVersion = info.interfaceVersion
-        frontProcessorVersion = info.frontProcessorVersion
-        deviceName = info.deviceName
-        frontends = info.frontends.map { DeviceInfoRow(it.name, it.model) }
-        nics = info.nics.map { DeviceInfoRow(it.name, it.ip) }
-        hdds = info.hdds.map { DeviceInfoRow(it.model, hddCapacityFormat(it.capacity, it.free)) }
-        ready = true
-    }
-
-    fun beginLoading() {
-        ready = false
-        guiVersion = ""
-        imageVersion = ""
-        interfaceVersion = ""
-        frontProcessorVersion = ""
-        deviceName = ""
-        frontends = emptyList()
-        nics = emptyList()
-        hdds = emptyList()
-    }
-}
-
-internal fun restoreDeviceInfoUiState(
-    uiState: DeviceInfoUiState,
-    info: DeviceInfo?,
-    deviceInfoReady: Boolean,
-    hddCapacityFormat: (capacity: String, free: String) -> String
-) {
-    if (deviceInfoReady && info != null && !info.isEmpty() && !uiState.ready) {
-        uiState.apply(info, hddCapacityFormat)
-    }
-}
+private data class DeviceInfoRow(val title: String, val subtitle: String)
 
 @Composable
 fun DeviceInfoScreen(state: DeviceInfoUiState, modifier: Modifier = Modifier) {
     val loading = stringResource(R.string.loading)
+    val ready = !state.loading
+    val info = state.info ?: DeviceInfo()
+    val hdds = info.hdds.map {
+        DeviceInfoRow(it.model, stringResource(R.string.hdd_capacity, it.capacity, it.free))
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -93,40 +35,40 @@ fun DeviceInfoScreen(state: DeviceInfoUiState, modifier: Modifier = Modifier) {
     ) {
         DeviceInfoField(
             label = stringResource(R.string.gui_version),
-            value = if (state.ready) state.guiVersion else loading
+            value = if (ready) info.guiVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.image_version),
-            value = if (state.ready) state.imageVersion else loading
+            value = if (ready) info.imageVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.interface_version),
-            value = if (state.ready) state.interfaceVersion else loading
+            value = if (ready) info.interfaceVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.front_processor_version),
-            value = if (state.ready) state.frontProcessorVersion else loading
+            value = if (ready) info.frontProcessorVersion else loading
         )
         DeviceInfoField(
             label = stringResource(R.string.device_name),
-            value = if (state.ready) state.deviceName else loading
+            value = if (ready) info.deviceName else loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.frontends),
-            rows = state.frontends,
-            ready = state.ready,
+            rows = info.frontends.map { DeviceInfoRow(it.name, it.model) },
+            ready = ready,
             loading = loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.nics),
-            rows = state.nics,
-            ready = state.ready,
+            rows = info.nics.map { DeviceInfoRow(it.name, it.ip) },
+            ready = ready,
             loading = loading
         )
         DeviceInfoSection(
             label = stringResource(R.string.hdds),
-            rows = state.hdds,
-            ready = state.ready,
+            rows = hdds,
+            ready = ready,
             loading = loading
         )
     }

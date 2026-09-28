@@ -10,6 +10,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * One top-bar action. With [iconRes] it is an icon button whose content description is
@@ -36,9 +39,10 @@ data class ShellTopBarAction(
 
 /**
  * Title and destination actions for the phone shell's [TopAppBar]. The title follows
- * the activity title. Every attached [BindShellTopBarActions] keeps a binding; the
- * newest one is shown. When it leaves (a pop, or a cancelled predictive-back preview
- * of the previous destination), the newest remaining binding shows again.
+ * the activity title, or [ShellTitle] for destinations that keep it in UI state. Every
+ * attached [BindShellTopBarActions] keeps a binding; the newest one is shown. When it
+ * leaves (a pop, or a cancelled predictive-back preview of the previous destination), the
+ * newest remaining binding shows again.
  */
 class ShellTopBarController {
     var title by mutableStateOf("")
@@ -81,6 +85,19 @@ class ShellTopBarController {
 }
 
 val LocalShellTopBarController = staticCompositionLocalOf<ShellTopBarController?> { null }
+
+/**
+ * Reports a destination's title from its UI state to the shell top bar. Destinations
+ * that have not moved to this still set `Activity.title`, which `MainActivity` forwards.
+ */
+@Composable
+fun ShellTitle(title: UiText) {
+    val controller = LocalShellTopBarController.current ?: return
+    val text = title.asString()
+    LaunchedEffect(controller, text) {
+        controller.title = text
+    }
+}
 
 /** Shows [actions] in the shell top bar while this composition is attached. */
 @Composable
