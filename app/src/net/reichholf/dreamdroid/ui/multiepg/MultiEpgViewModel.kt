@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerListResult
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.multiepg.MultiEpgGrid
@@ -50,7 +51,8 @@ data class MultiEpgUiState(
 @HiltViewModel
 class MultiEpgViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val epg: EpgRepository,
+    epg: EpgRepository,
+    private val services: ServiceRepository,
     timers: TimerRepository,
     profiles: ProfileRepository,
     sessions: SessionConnectionHolder
@@ -59,6 +61,7 @@ class MultiEpgViewModel @Inject constructor(
     private val grid = newMultiEpgGrid(
         viewModelScope,
         epg,
+        services,
         timers,
         profiles,
         sessions,
@@ -93,7 +96,7 @@ class MultiEpgViewModel @Inject constructor(
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
             try {
-                persistGate.knownTabRefs = epg.hubTabStripRefs()
+                persistGate.knownTabRefs = services.hubTabStripRefs()
                 if (generation != loadGeneration) {
                     return@launch
                 }
@@ -143,6 +146,7 @@ class MultiEpgViewModel @Inject constructor(
 internal fun newMultiEpgGrid(
     scope: CoroutineScope,
     epg: EpgRepository,
+    services: ServiceRepository,
     timers: TimerRepository,
     profiles: ProfileRepository,
     sessions: SessionConnectionHolder,
@@ -157,7 +161,7 @@ internal fun newMultiEpgGrid(
             is TimerListResult.Failed -> emptyList()
         }
     },
-    loadBouquetServices = epg::bouquetServices,
+    loadBouquetServices = services::bouquetServices,
     persistBouquet = persistGate::persist,
     shouldSkipReceiverHttp = { hasCache ->
         sessions.status.value.shouldSkipReceiverHttp(hasCache)
@@ -165,7 +169,7 @@ internal fun newMultiEpgGrid(
     isSessionOffline = {
         sessions.status.value.session == ConnectionStatus.Session.Offline
     },
-    loadCachedRoster = epg::cachedBouquetServices,
+    loadCachedRoster = services::cachedBouquetServices,
     loadCachedTimers = { timers.snapshot() }
 )
 

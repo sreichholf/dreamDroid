@@ -1,70 +1,42 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.content.ActivityNotFoundException
-import android.content.Context
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
-import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
-import net.reichholf.dreamdroid.enigma.userMessage
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.intents.IntentFactory
-import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
-import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
-import net.reichholf.dreamdroid.multiepg.overlayNowNext
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.room.RosterDao
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
- * Phase 2.7h: one TV/Radio hub bouquet page as Compose
- * (parity with former ServiceListPageFragment).
- * Host must keep this in composition only while the page is the active hub child so
- * the options menu stay scoped.
- * System back pops one directory drill-down level before leaving the hub.
+ * One TV/Radio hub bouquet tab. The ViewModel is keyed by the tab's ref on the hub
+ * back-stack entry. The host keeps this in composition only while it is the active hub
+ * child, so the top bar actions stay scoped. System back closes one opened folder before
+ * leaving the hub; [onProvideGoUp] hands the host the tab-reselect action.
  */
 @Composable
 fun HubServiceListPage(
@@ -74,520 +46,187 @@ fun HubServiceListPage(
     modifier: Modifier = Modifier,
     onProvideGoUp: ((() -> Unit)?) -> Unit = {},
     onZapped: () -> Unit = {},
-    viewModel: HubServiceListViewModel = viewModel(key = "hub-service:$bouquetRef"),
+    viewModel: HubServiceListViewModel =
+        hiltViewModel<HubServiceListViewModel, HubServiceListViewModel.Factory>(
+            key = "hub-service:$bouquetRef"
+        ) { factory -> factory.create(Service(bouquetRef, bouquetName)) },
     detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val session = viewModel.session
-    val listState = checkNotNull(session.listState)
-    val refresh = checkNotNull(session.refresh)
-    val emptyMessage = viewModel.emptyMessage
-    val historyDepth = viewModel.historyDepth
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
-    var rowMenu by remember { mutableStateOf<RowMenuState<ServiceRowAction>?>(null) }
-
-    session.handle = handle
-    session.context = context
-    session.onShowMenu = { rowMenu = it }
-    session.onShowEvent = detailViewModel::showDetail
-    session.onZapped = onZapped
-    session.profileId = ProfileRepository.get().requireCurrent().id
-    session.rosterDao = AppDatabase.roster(context)
-    session.epgDao = AppDatabase.epg(context)
-    session.excludedTabRefs = UserBouquetCache.excludedHubTabRefs(context)
-
-    BackHandler(enabled = historyDepth > 0) {
-        session.navigateUp()
+    BackHandler(enabled = uiState.historyDepth > 0) {
+        viewModel.navigateUp()
     }
 
-    DisposableEffect(session) {
-        onProvideGoUp { session.upOrReload() }
+    DisposableEffect(viewModel) {
+        onProvideGoUp(viewModel::upOrReload)
         onDispose { onProvideGoUp(null) }
     }
 
-    // Reading the revision recomposes the actions when the bouquet or its default flag changes.
-    session.topBarRevision
     BindShellTopBarActions(
-        session.topBarActions(
+        hubServiceTopBarActions(
+            state = uiState,
             multiEpgLabel = stringResource(R.string.multiepg),
             listEpgLabel = stringResource(R.string.epg_list),
             setDefaultLabel = stringResource(R.string.set_default),
-            resetDefaultLabel = stringResource(R.string.reset_default)
+            resetDefaultLabel = stringResource(R.string.reset_default),
+            onMultiEpg = {
+                DrawerEpgMode.saveMulti(context)
+                handle.navigateToMultiEpg(uiState.currentRef, uiState.currentName)
+            },
+            onListEpg = {
+                DrawerEpgMode.saveList(context)
+                handle.navigateToEpg(uiState.currentRef, uiState.currentName)
+            },
+            onToggleDefault = viewModel::toggleDefaultBouquet
         )
     )
-    DisposableEffect(handle, session) {
-        session.chromeAttached = true
-        session.setToolbarTitle(session.finishedTitle())
-        onDispose {
-            session.chromeAttached = false
-            session.onShowMenu = null
+
+    val currentOnZapped by rememberUpdatedState(onZapped)
+    val effect = uiState.effect
+    LaunchedEffect(effect) {
+        when (effect) {
+            null -> return@LaunchedEffect
+
+            is HubServiceEffect.ShowEvent -> detailViewModel.showDetail(effect.event)
+
+            is HubServiceEffect.ServiceEpg ->
+                handle.navigateToServiceEpg(effect.reference, effect.name)
+
+            is HubServiceEffect.Stream -> {
+                val row = effect.row
+                handle.lifecycleOwner.startLiveServiceStream(context, row.serviceReference) {
+                    try {
+                        context.startActivity(
+                            IntentFactory.getStreamServiceIntent(
+                                context,
+                                row.serviceReference,
+                                row.serviceName,
+                                effect.bouquetRef,
+                                row
+                            )
+                        )
+                    } catch (_: ActivityNotFoundException) {
+                        viewModel.onStreamFailed()
+                    }
+                }
+            }
+
+            HubServiceEffect.Zapped -> currentOnZapped()
         }
+        viewModel.onEffectHandled()
     }
 
-    val connectionSession =
-        SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(viewModel, bouquetRef, bouquetName, connectionSession) {
-        viewModel.bindRoot(bouquetRef, bouquetName)
-        viewModel.onConnection(connectionSession?.name ?: "none")
-    }
+    HubServiceListScreen(
+        state = uiState,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
+        onItemClick = { item, isLong ->
+            when (item.kind) {
+                ServiceRowKind.MARKER -> Unit
 
-    DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload(forceRefresh = true) },
-        enabled = refresh.enabled,
+                ServiceRowKind.DIRECTORY -> viewModel.openDirectory(item.index)
+
+                ServiceRowKind.CHANNEL -> {
+                    val instantZap = PreferenceManager.getDefaultSharedPreferences(context)
+                        .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
+                    if (instantZap != isLong) {
+                        handle.runOnlineOnly { viewModel.zap(item.index) }
+                    } else {
+                        viewModel.onItemMenu(item.index)
+                    }
+                }
+            }
+        },
+        onMenuAction = { action ->
+            if (action.onlineOnly) {
+                handle.runOnlineOnly { viewModel.onMenuAction(action) }
+            } else {
+                viewModel.onMenuAction(action)
+            }
+        },
+        onMenuDismiss = viewModel::onMenuDismiss,
         modifier = modifier
-    ) {
-        if (listState.items.isEmpty()) {
-            ListEmptyState(
-                loading = refresh.isRefreshing,
-                message = emptyMessage,
-                onRetry = { session.reload(forceRefresh = true) }
-            )
-        } else {
-            ServiceListScreen(
-                items = listState.items,
-                onItemClick = { session.onItemClick(it, isLong = false) },
-                onItemLongClick = { session.onItemClick(it, isLong = true) },
-                menu = rowMenu,
-                onMenuAction = session::onRowAction,
-                onMenuDismiss = { rowMenu = null }
-            )
-        }
-    }
+    )
 
     EpgEventDetailHost(handle, detailViewModel)
 }
 
-class HubServiceListSession {
-    /** Bumped when [currentRef] or the default bouquet changes; the page re-reads actions. */
-    var topBarRevision by mutableIntStateOf(0)
-        private set
-
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var onShowMenu: ((RowMenuState<ServiceRowAction>?) -> Unit)? = null
-    private var menuRow: ServiceNowNext? = null
-    var currentRef: String = ""
-    var currentName: String = ""
-    var rootRef: String = ""
-    var rootName: String = ""
-    var listState: ServiceListState? = null
-    var refresh: ComposeRefreshState? = null
-    var rows: MutableList<ServiceNowNext>? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var onShowEvent: ((Event) -> Unit)? = null
-    var history: MutableList<Pair<String, String>>? = null
-    var onHistoryDepth: ((Int) -> Unit)? = null
-    var onCurrentRef: ((String) -> Unit)? = null
-    var onCurrentName: ((String) -> Unit)? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    var onZapJob: ((Job?) -> Unit)? = null
-    var onZapped: (() -> Unit)? = null
-    var profileId: Int? = null
-    var rosterDao: RosterDao? = null
-    var epgDao: EpgDao? = null
-    var excludedTabRefs: Set<String> = emptySet()
-    var chromeAttached: Boolean = false
-    var shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
-        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-    }
-    var loadNowNext: suspend (Context, List<NameValuePair>) -> EpgNowNextLoadResult =
-        { context, params ->
-            loadBouquetServiceNowNext(context, params)
-        }
-    private var loadGeneration = 0
-    private var loadJob: Job? = null
-    private var zapJob: Job? = null
-
-    fun cancelInFlight() {
-        loadJob?.cancel()
-        loadJob = null
-        zapJob?.cancel()
-        zapJob = null
-    }
-
-    fun beginLoad(): Int = ++loadGeneration
-
-    fun applyLoadResult(
-        generation: Int,
-        success: Boolean,
-        rows: List<ServiceNowNext>,
-        errorText: String?,
-        persist: Boolean = true
+/** [HubServiceListPage] without its ViewModel: the list and its row menu. */
+@Composable
+fun HubServiceListScreen(
+    state: HubServiceListUiState,
+    onRefresh: () -> Unit,
+    onItemClick: (item: ServiceListItem, isLong: Boolean) -> Unit,
+    onMenuAction: (ServiceRowAction) -> Unit,
+    onMenuDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    DreamDroidPullRefresh(
+        refreshing = state.refreshing,
+        onRefresh = onRefresh,
+        modifier = modifier
     ) {
-        if (generation != loadGeneration) {
-            return
-        }
-        // Rows may change under an open menu; its row and action would be stale.
-        onShowMenu?.invoke(null)
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        refreshState.setRefreshing(false)
-        setToolbarTitle(finishedTitle())
-        topBarRevision++
-        this.rows?.clear()
-        if (!success) {
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(errorText)
-            return
-        }
-        if (rows.isEmpty()) {
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-        } else {
-            onEmptyMessage?.invoke(null)
-            this.rows?.addAll(rows)
-            state.replaceAll(serviceListItemsFromNowNext(rows))
-        }
-        if (persist) {
-            persistRoster(rows)
-        }
-    }
-
-    private fun fillEpgNowChunk() {
-        val ctx = context ?: return
-        val dao = rosterDao ?: return
-        val pid = profileId ?: return
-        val coroutineScope = scope ?: return
-        val persistRef = currentRef
-        val persistTabRoot = rootRef
-        val excluded = excludedTabRefs
-        coroutineScope.launch {
-            try {
-                UserBouquetEpgFill.ensureNowChunk(
-                    sync = MultiEpgSyncHolder.shared(ctx),
-                    rosterDao = dao,
-                    profileId = pid,
-                    containerRef = persistRef,
-                    tabRootRef = persistTabRoot,
-                    excludedTabRefs = excluded,
-                    unixSec = System.currentTimeMillis() / 1000L
-                )
-            } catch (t: Throwable) {
-                if (t is kotlinx.coroutines.CancellationException) {
-                    throw t
-                }
-            }
-        }
-    }
-
-    private fun persistRoster(rows: List<ServiceNowNext>) {
-        val dao = rosterDao ?: return
-        val pid = profileId ?: return
-        val coroutineScope = scope ?: return
-        val persistRef = currentRef
-        val persistTabRoot = rootRef
-        val persistRows = rows.toList()
-        val excluded = excludedTabRefs
-        coroutineScope.launch {
-            UserBouquetCache.persistRosterIfCacheable(
-                dao = dao,
-                profileId = pid,
-                ref = persistRef,
-                tabRootRef = persistTabRoot,
-                rows = persistRows,
-                excludedTabRefs = excluded
-            )
-        }
-    }
-
-    fun setToolbarTitle(title: String) {
-        if (!chromeAttached) {
-            return
-        }
-        (context as? AppCompatActivity)?.title = title
-    }
-
-    fun finishedTitle(): String {
-        val ctx = context ?: return ""
-        return currentName.takeIf { it.isNotEmpty() } ?: ctx.getString(R.string.services)
-    }
-
-    fun toast(message: CharSequence) {
-        ShellMessages.post(message)
-    }
-
-    fun httpParams(): List<NameValuePair> {
-        val param = if (Service.isBouquet(currentRef)) "bRef" else "sRef"
-        return listOf(NameValuePair(param, currentRef))
-    }
-
-    fun reload(forceRefresh: Boolean = false) {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
         if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        val generation = beginLoad()
-        loadJob?.cancel()
-        loadJob = coroutineScope.launch {
-            loadAndApply(generation, forceRefresh)
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    suspend fun loadAndApply(generation: Int, forceRefresh: Boolean = false) {
-        val ctx = context ?: return
-        if (!forceRefresh) {
-            val hadCache = applyCachedRoster(generation)
-            if (shouldSkipReceiverHttp(hadCache)) {
-                return
-            }
-        }
-        val result = loadNowNext(ctx.applicationContext, httpParams())
-        if (generation != loadGeneration) {
-            return
-        }
-        if (result.success) {
-            applyLoadResult(generation, true, result.rows, null)
-            fillEpgNowChunk()
-            return
-        }
-        if (applyCachedRoster(generation)) {
-            return
-        }
-        applyLoadResult(generation, false, emptyList(), result.errorText)
-    }
-
-    private suspend fun applyCachedRoster(generation: Int): Boolean {
-        val dao = rosterDao ?: return false
-        val pid = profileId ?: return false
-        val cached = UserBouquetCache.loadRosterNowNext(dao, pid, currentRef) ?: return false
-        val nowSec = System.currentTimeMillis() / 1000L
-        val epg = epgDao
-        val events = if (epg != null) {
-            val chunk = MultiEpgWindows.chunkContaining(nowSec)
-            epg.eventsOverlapping(pid, currentRef, chunk.startSec, chunk.endSec)
-        } else {
-            emptyList()
-        }
-        applyLoadResult(
-            generation,
-            true,
-            overlayNowNext(cached, events, nowSec),
-            null,
-            persist = false
-        )
-        return true
-    }
-
-    fun onItemClick(item: ServiceListItem, isLong: Boolean) {
-        val index = item.index
-        val rowList = rows ?: return
-        if (index < 0 || index >= rowList.size) {
-            return
-        }
-        val row = rowList[index]
-        val ref = row.serviceReference
-        val name = row.serviceName
-        if (Service.isMarker(ref)) {
-            return
-        }
-        if (Service.isDirectory(ref)) {
-            val h = history ?: return
-            h.add(currentRef to currentName)
-            onHistoryDepth?.invoke(h.size)
-            currentRef = ref
-            currentName = name
-            onCurrentRef?.invoke(ref)
-            onCurrentName?.invoke(name)
-            reload()
-            return
-        }
-        val ctx = context ?: return
-        val instantZap = PreferenceManager.getDefaultSharedPreferences(ctx)
-            .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
-        if ((instantZap && !isLong) || (!instantZap && isLong)) {
-            zapTo(ref)
-        } else {
-            menuRow = row
-            onShowMenu?.invoke(RowMenuState(serviceRowKey(item), rowActions(row)))
-        }
-    }
-
-    fun zapTo(ref: String) {
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            zapJob?.cancel()
-            zapJob = host.lifecycleOwner.lifecycleScope.launch {
-                val response = EnigmaClient().zap(listOf(NameValuePair("sRef", ref)))
-                toast(response.userMessage(ctx))
-                onZapped?.invoke()
-            }
-            onZapJob?.invoke(zapJob)
-        }
-    }
-
-    fun rowActions(row: ServiceNowNext): List<ServiceRowAction> = ServiceRowAction.entries.filter {
-        it != ServiceRowAction.NextEvent || (DreamDroid.featureNowNext() && row.next != null)
-    }
-
-    fun onRowAction(action: ServiceRowAction) {
-        val row = menuRow ?: return
-        val ctx = context ?: return
-        val host = handle ?: return
-        val showEvent = onShowEvent ?: return
-        val ref = row.serviceReference
-        val name = row.serviceName
-        when (action) {
-            ServiceRowAction.NextEvent -> row.next?.let(showEvent)
-
-            ServiceRowAction.CurrentEvent -> row.now?.let(showEvent)
-
-            ServiceRowAction.BrowseEpg -> host.navigateToServiceEpg(ref, name)
-
-            ServiceRowAction.Zap -> zapTo(ref)
-
-            ServiceRowAction.Stream -> {
-                host.runOnlineOnly {
-                    host.lifecycleOwner.startLiveServiceStream(ctx, ref) {
-                        try {
-                            val activity = ctx as AppCompatActivity
-                            activity.startActivity(
-                                IntentFactory.getStreamServiceIntent(
-                                    activity,
-                                    ref,
-                                    name,
-                                    currentRef,
-                                    row
-                                )
-                            )
-                        } catch (_: ActivityNotFoundException) {
-                            toast(ctx.getText(R.string.missing_stream_player))
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    /** Pop one directory level; returns false when already at the hub bouquet. */
-    fun navigateUp(): Boolean {
-        val h = history ?: return false
-        if (h.isEmpty()) {
-            return false
-        }
-        val (ref, name) = h.removeAt(h.lastIndex)
-        onHistoryDepth?.invoke(h.size)
-        currentRef = ref
-        currentName = name
-        onCurrentRef?.invoke(ref)
-        onCurrentName?.invoke(name)
-        reload()
-        return true
-    }
-
-    /**
-     * Tab reselect: jump back to this bouquet's root when drilled into providers/dirs,
-     * otherwise reload. Matches historical ServiceListPageFragment.upOrReload.
-     * The history-clear path calls reload() after the root ref is restored.
-     */
-    fun upOrReload() {
-        val h = history ?: return
-        if (h.isNotEmpty()) {
-            h.clear()
-            onHistoryDepth?.invoke(0)
-            currentRef = rootRef
-            currentName = rootName
-            onCurrentRef?.invoke(rootRef)
-            onCurrentName?.invoke(rootName)
-            reload()
-        } else {
-            reload()
-        }
-    }
-
-    /**
-     * EPG jumps once a bouquet is open, then the default-bouquet toggle (a filled
-     * star when [currentRef] is the profile's default).
-     */
-    fun topBarActions(
-        multiEpgLabel: String,
-        listEpgLabel: String,
-        setDefaultLabel: String,
-        resetDefaultLabel: String
-    ): List<ShellTopBarAction> = buildList {
-        if (currentRef.isNotEmpty()) {
-            add(
-                ShellTopBarAction(
-                    id = R.id.menu_multiepg,
-                    label = multiEpgLabel,
-                    iconRes = R.drawable.ic_multiepg,
-                    onClick = { openMultiEpg() }
-                )
+            ListEmptyState(
+                loading = state.refreshing,
+                message = state.emptyMessage?.asString(),
+                onRetry = onRefresh
             )
-            add(
-                ShellTopBarAction(
-                    id = R.id.menu_epg_list,
-                    label = listEpgLabel,
-                    iconRes = R.drawable.ic_action_list,
-                    onClick = { openListEpg() }
-                )
+        } else {
+            ServiceListScreen(
+                items = state.items,
+                onItemClick = { onItemClick(it, false) },
+                onItemLongClick = { onItemClick(it, true) },
+                menu = state.menu,
+                onMenuAction = onMenuAction,
+                onMenuDismiss = onMenuDismiss
             )
         }
-        val defaultReference = ProfileRepository.get().requireCurrent().defaultBouquetTv
-        val isDefault = defaultReference != null && defaultReference == currentRef
+    }
+}
+
+/**
+ * EPG jumps once a list is open, then the default-bouquet toggle (a filled star when the
+ * list on screen is the profile's default).
+ */
+fun hubServiceTopBarActions(
+    state: HubServiceListUiState,
+    multiEpgLabel: String,
+    listEpgLabel: String,
+    setDefaultLabel: String,
+    resetDefaultLabel: String,
+    onMultiEpg: () -> Unit,
+    onListEpg: () -> Unit,
+    onToggleDefault: () -> Unit
+): List<ShellTopBarAction> = buildList {
+    if (state.currentRef.isNotEmpty()) {
         add(
             ShellTopBarAction(
-                id = Statics.ITEM_SET_DEFAULT,
-                label = if (isDefault) resetDefaultLabel else setDefaultLabel,
-                iconRes = if (isDefault) R.drawable.ic_action_fav else R.drawable.ic_action_nofav,
-                onClick = { toggleDefaultBouquet() }
+                id = R.id.menu_multiepg,
+                label = multiEpgLabel,
+                iconRes = R.drawable.ic_multiepg,
+                onClick = onMultiEpg
+            )
+        )
+        add(
+            ShellTopBarAction(
+                id = R.id.menu_epg_list,
+                label = listEpgLabel,
+                iconRes = R.drawable.ic_action_list,
+                onClick = onListEpg
             )
         )
     }
-
-    fun toggleDefaultBouquet() {
-        val ctx = context ?: return
-        if (currentRef.isEmpty()) {
-            toast(ctx.getText(R.string.default_bouquet_not_set))
-            return
-        }
-        val p: Profile = ProfileRepository.get().requireCurrent()
-        var reset = false
-        if (p.defaultBouquetTv != null && p.defaultBouquetTv == currentRef) {
-            p.defaultBouquetTv = null
-            reset = true
-        } else {
-            p.setDefaultRefValues(currentRef, currentName)
-        }
-        AppDatabase.profilesBlocking(ctx).updateProfile(p)
-        if (!reset) {
-            toast(
-                ctx.getText(R.string.default_bouquet_set_to).toString() + " '" + currentName + "'"
-            )
-        }
-        topBarRevision++
-    }
-
-    fun openMultiEpg(focusedServiceRef: String? = null) {
-        val ctx = context ?: return
-        if (currentRef.isEmpty()) {
-            return
-        }
-        DrawerEpgMode.saveMulti(ctx)
-        handle?.navigateToMultiEpg(
-            currentRef,
-            currentName,
-            focusedServiceRef = focusedServiceRef
+    val isDefault = state.isDefaultBouquet
+    add(
+        ShellTopBarAction(
+            id = Statics.ITEM_SET_DEFAULT,
+            label = if (isDefault) resetDefaultLabel else setDefaultLabel,
+            iconRes = if (isDefault) R.drawable.ic_action_fav else R.drawable.ic_action_nofav,
+            onClick = onToggleDefault
         )
-    }
-
-    fun openListEpg() {
-        val ctx = context ?: return
-        if (currentRef.isEmpty()) {
-            return
-        }
-        DrawerEpgMode.saveList(ctx)
-        handle?.navigateToEpg(currentRef, currentName)
-    }
+    )
 }

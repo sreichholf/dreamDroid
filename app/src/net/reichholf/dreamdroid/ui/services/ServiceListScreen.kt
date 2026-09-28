@@ -36,12 +36,12 @@ import net.reichholf.dreamdroid.ui.compose.RowMenuAction
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
-enum class ServiceRowAction(override val label: Int) : RowMenuAction {
-    CurrentEvent(R.string.current_event),
-    NextEvent(R.string.next_event),
-    BrowseEpg(R.string.browse_epg),
-    Zap(R.string.zap),
-    Stream(R.string.stream)
+enum class ServiceRowAction(override val label: Int, val onlineOnly: Boolean) : RowMenuAction {
+    CurrentEvent(R.string.current_event, onlineOnly = false),
+    NextEvent(R.string.next_event, onlineOnly = false),
+    BrowseEpg(R.string.browse_epg, onlineOnly = false),
+    Zap(R.string.zap, onlineOnly = true),
+    Stream(R.string.stream, onlineOnly = true)
 }
 
 fun serviceRowKey(item: ServiceListItem): String = "${item.index}:${item.reference}"

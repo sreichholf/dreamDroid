@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
-import net.reichholf.dreamdroid.data.CacheRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -48,7 +48,7 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val settings: SettingsRepository,
-    private val cache: CacheRepository
+    private val services: ServiceRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         SettingsUiState(
@@ -102,7 +102,7 @@ class SettingsViewModel @Inject constructor(
 
     fun resetCache(allProfiles: Boolean) {
         viewModelScope.launch {
-            cache.clearUseDrivenCache(allProfiles)
+            services.clearUseDrivenCache(allProfiles)
             _uiState.update { it.copy(userMessage = UiText.Resource(R.string.reset_cache_done)) }
         }
     }

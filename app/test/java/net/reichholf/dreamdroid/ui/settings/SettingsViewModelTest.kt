@@ -17,14 +17,12 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
-import net.reichholf.dreamdroid.data.CacheRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.room.MovieLocationStripEntity
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -34,14 +32,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** [SettingsViewModel] over the real settings and cache repositories. */
+/** [SettingsViewModel] over the real settings and service repositories. */
 @OptIn(ExperimentalCoroutinesApi::class)
 class SettingsViewModelTest {
     private val testProfiles = TestProfiles()
     private val profiles = testProfiles.repository
     private val database = testProfiles.database
     private val preferences = PreferenceManager.getDefaultSharedPreferences(testProfiles.context)
-    private val connection = SessionConnectionHolder()
+    private val connection = testProfiles.sessions
     private val viewModels = mutableListOf<ViewModel>()
 
     @BeforeEach
@@ -186,7 +184,7 @@ class SettingsViewModelTest {
         SettingsViewModel(
             handle,
             SettingsRepository(preferences),
-            CacheRepository(database, profiles, connection)
+            testProfiles.services
         ).also { viewModels += it }
 
     private fun type(viewModel: SettingsViewModel, text: String) {

@@ -9,9 +9,8 @@ import net.reichholf.dreamdroid.data.EpgRepository
 
 /**
  * Transitional lookup of the process's [MultiEpgSync], which the Hilt-owned [EpgRepository]
- * builds and owns. The hub service list and the TV hub browse load reach it here until they
- * move to injected repositories (hilt-migration PRs 9 and 12); delete this with the last
- * caller. Tests construct [MultiEpgSync] directly.
+ * builds and owns. The TV hub browse load is the last caller; delete this when it moves to
+ * injected repositories (hilt-migration PR 12). Tests construct [MultiEpgSync] directly.
  */
 object MultiEpgSyncHolder {
     fun shared(context: Context): MultiEpgSync = EntryPointAccessors

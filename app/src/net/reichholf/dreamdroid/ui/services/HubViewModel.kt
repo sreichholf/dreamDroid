@@ -13,13 +13,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BouquetListLoad
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.movieRepository
+import net.reichholf.dreamdroid.data.serviceRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
+import net.reichholf.dreamdroid.enigma.contentError
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -212,24 +212,10 @@ class HubViewModel(application: Application, private val savedStateHandle: Saved
 
     private suspend fun loadBouquets() {
         val app = getApplication<Application>()
-        val profileId = ProfileRepository.get().requireCurrent().id
-        val excluded = UserBouquetCache.excludedHubTabRefs(app)
-        val dao = if (profileId != null) AppDatabase.roster(app) else null
-        val cachedTv = if (dao != null && profileId != null) {
-            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_TV)
-        } else {
-            emptyList()
-        }
-        val cachedRadio = if (dao != null && profileId != null) {
-            UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_RADIO)
-        } else {
-            emptyList()
-        }
-        val hasStrip = cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()
+        val services = serviceRepository(app)
+        val cached = services.cachedBouquets()
+        val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
         if (hasStrip) {
-            val cached = Bouquets()
-            cached.tv.addAll(cachedTv)
-            cached.radio.addAll(cachedRadio)
             applyPaintedBouquets(app, cached, error = null)
         }
         val status = SessionConnectionHolder.shared.status.value
@@ -246,46 +232,12 @@ class HubViewModel(application: Application, private val savedStateHandle: Saved
                 }
             }
         }
-        val result = loadBouquetList(app)
-        var painted = result.bouquets
-        var usedCache = false
-        if (dao != null && profileId != null) {
-            if (result.tvLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_TV,
-                    result.bouquets.tv,
-                    excluded
-                )
-            }
-            if (result.radioLoaded) {
-                UserBouquetCache.replaceTabStrip(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO,
-                    result.bouquets.radio,
-                    excluded
-                )
-            }
-            val resolved = bouquetsAfterHttpOrCache(
-                result.success,
-                result.bouquets,
-                UserBouquetCache.loadTabStripServices(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_TV
-                ),
-                UserBouquetCache.loadTabStripServices(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO
-                )
-            )
-            painted = resolved.first
-            usedCache = resolved.second
+        when (val load = services.bouquets()) {
+            is BouquetListLoad.Loaded -> applyPaintedBouquets(app, load.bouquets, error = null)
+
+            is BouquetListLoad.Failed ->
+                applyPaintedBouquets(app, Bouquets(), load.error.contentError(app))
         }
-        applyPaintedBouquets(app, painted, if (usedCache) null else result.errorText)
     }
 
     private fun applyPaintedBouquets(app: Application, painted: Bouquets, error: String?) {

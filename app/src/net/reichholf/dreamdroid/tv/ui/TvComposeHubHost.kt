@@ -108,11 +108,6 @@ object TvComposeHubHost {
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
     const val HEADER_MOVIE_PREFIX: String = "movie:"
 
-    /** Same bouquet query formerly on RootBrowseFragment.BOUQUETS_TV. */
-    const val BOUQUETS_TV: String =
-        "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || " +
-            "(type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet"
-
     fun movieHeaderId(dirname: String): String = HEADER_MOVIE_PREFIX + dirname
 
     fun movieDirnameFromHeader(headerId: String): String? =

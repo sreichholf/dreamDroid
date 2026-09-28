@@ -182,6 +182,7 @@ class TvMultiEpgViewModelTest {
         TvMultiEpgViewModel(
             handle,
             receiver.repository,
+            receiver.services,
             TimerRepository(
                 EnigmaClientFactory(receiver.profiles.repository),
                 receiver.profiles.repository,

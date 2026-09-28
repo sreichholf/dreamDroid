@@ -178,6 +178,7 @@
     <string name="set_default">Set as default</string>
     <string name="default_bouquet_set_to">Default bouquet has been set to: </string>
     <string name="default_bouquet_not_set">Default bouquet could not be set!</string>
+    <string name="default_bouquet_set_to_name" translatable="false">%1$s \'%2$s\'</string>
     <string name="loading">Loading&#8230;</string>
     <string name="about">About</string>
     <string name="changelog">Changelog</string>

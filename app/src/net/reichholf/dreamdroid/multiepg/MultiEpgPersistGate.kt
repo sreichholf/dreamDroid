@@ -7,8 +7,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
  * writes (Provider / All Services must not land in the shared cache).
  *
  * Phone fills [knownTabRefs] from the hub tab strip. TV fills it from
- * [net.reichholf.dreamdroid.room.UserBouquetCache.userBouquetTabs] of the
- * live TV bouquet list — the TV hub does not write the phone tab strip.
+ * [net.reichholf.dreamdroid.data.ServiceRepository.userBouquetTabs] of the
+ * TV bouquet list.
  */
 class MultiEpgPersistGate(private val excludedTabRefs: Collection<String>) {
     @Volatile
