@@ -1,11 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import android.content.Context
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -185,18 +181,3 @@ private fun movieCacheFileName(remotePath: String): String {
     }
     return base
 }
-
-/**
- * Transitional lookup for the TV hub browse load, which is not Hilt-injected yet. It runs
- * in an activity, after `DreamDroid` was injected. Delete with the last caller (PR 12 in
- * docs/hilt-migration.md).
- */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface MovieRepositoryEntryPoint {
-    fun movieRepository(): MovieRepository
-}
-
-fun movieRepository(context: Context): MovieRepository = EntryPointAccessors
-    .fromApplication(context.applicationContext, MovieRepositoryEntryPoint::class.java)
-    .movieRepository()

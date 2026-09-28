@@ -396,8 +396,9 @@ fun userBouquetTabs(loaded: List<Service>, excludedTabRefs: Collection<String>):
     }
 
 /**
- * Transitional lookup for callers that are not Hilt-injected yet: the TV hub browse load
- * (PR 12) and the player (PR 13). Both run after `DreamDroid` was injected. Delete with the last caller (docs/hilt-migration.md).
+ * Transitional lookup for the player (`VideoPlaybackViewModel`), which is not Hilt-injected
+ * yet. It runs after `DreamDroid` was injected. Delete with the last caller (PR 13 in
+ * docs/hilt-migration.md).
  */
 @EntryPoint
 @InstallIn(SingletonComponent::class)
