@@ -243,7 +243,8 @@ class TvHubViewModelTest {
         val request = receiver.requestsTo("/web/timeraddbyeventid").single()
         assertEquals("42", request.requestUrl!!.queryParameter("eventid"))
         viewModel.onMessageShown()
-        assertNull(viewModel.uiState.value.userMessage)
+        // uiState is combined; the cleared message arrives asynchronously.
+        awaitState(viewModel) { it.userMessage == null }
     }
 
     @Test

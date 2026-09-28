@@ -5,7 +5,7 @@ dreamDroid 2.0 is a Compose Material 3 Enigma2 remote for phone and a Compose (`
 ## Done
 
 - **UI:** every phone screen is a Compose NavHost destination with type-safe `@Serializable` routes (D1). Dialogs and sheets are Compose `AlertDialog` / `ModalBottomSheet` / Navigation `dialog`s. `PhoneShell` draws a Material 3 `TopAppBar` with no options menu or `MenuProvider` (C3), and picks rail vs bar from `currentWindowAdaptiveInfoV2()` (A3). TV is one Compose `NavHost` (hub, MultiEPG, settings, profiles); Leanback browse is gone (D2). Phone and TV activities own their launcher categories; the trampoline activity is deleted. Navigation 3 was evaluated and rejected (D3).
-- **Messages:** in-app results show in a snackbar via `ShellMessages` (shell, TV hub, player) (A2, C1, C2 message part). Power, sleep timer, and send message run on `ShellViewModel`.
+- **Messages:** in-app results show in a snackbar via `ShellMessages` (shell, TV hub) or, in the player, ViewModel UI state (A2, C1, C2 message part). Power, sleep timer, and send message run on `ShellViewModel`.
 - **Data:** one HTTP stack, typed `EnigmaClient` over OkHttp with sealed `EnigmaFailure`; the request-handler hierarchy is gone (C4). Profiles in Room with `ProfileRepository` exposing the current profile as `StateFlow` (B3). Offline cache and unified errors shipped.
 - **ViewModels:** every screen and host has a `ViewModel` scoped to its back-stack entry or activity; state and load jobs no longer live in `remember`. They do not yet match the target shape (see B1 + C2).
 - **Platform:** edge-to-edge and predictive back on every activity. Online-only controls have accessibility semantics (A1). Glance widget. libVLC player with Compose overlay chrome.

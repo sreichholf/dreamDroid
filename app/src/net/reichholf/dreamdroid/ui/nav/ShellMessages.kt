@@ -18,10 +18,10 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * One-shot user messages for the phone shell, the TV hub, and the player. In-app
- * results post here instead of using `Toast`; each started host collects them into a
- * [SnackbarHostState]. There is no replay: a message posted while no host is started
- * (for example a mutation that finishes with the app in the background) is dropped.
+ * One-shot user messages for the phone shell and the TV hub. In-app results post here
+ * instead of using `Toast`; each started host collects them into a [SnackbarHostState].
+ * There is no replay: a message posted while no host is started (for example a mutation
+ * that finishes with the app in the background) is dropped.
  */
 object ShellMessages {
     private val pending = MutableSharedFlow<String>(extraBufferCapacity = 16)
@@ -49,7 +49,7 @@ fun ShellSnackbarHost(
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
     // Only a started host collects: a stopped shell under the player must not queue
-    // (and later replay) the player's messages.
+    // (and later replay) messages.
     LaunchedEffect(hostState, lifecycleOwner) {
         ShellMessages.messages
             .flowWithLifecycle(lifecycleOwner.lifecycle, Lifecycle.State.STARTED)

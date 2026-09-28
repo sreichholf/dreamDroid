@@ -1,13 +1,9 @@
 package net.reichholf.dreamdroid.enigma
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -111,20 +107,6 @@ class EnigmaClientHttpFailTest {
         val rows = EnigmaClient(profileForServer()).getEpgNowNext().value
         assertEquals(emptyList<ServiceNowNext>(), rows)
     }
-
-    @Test
-    fun loadEpgNowNext_httpFailIsNotEmptySuccess() = runBlocking {
-        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val result = loadEpgNowNext(appContext(), listOf(NameValuePair("bRef", "1:7:1")))
-        assertEquals(false, result.success)
-        assertEquals(emptyList<ServiceNowNext>(), result.rows)
-        assertEquals(contentError("Server Error"), result.errorText)
-    }
-
-    private fun appContext(): Context = ApplicationProvider.getApplicationContext()
-
-    private fun contentError(httpMessage: String): String =
-        appContext().getString(R.string.get_content_error) + "\n" + httpMessage
 
     private fun profileForServer(): Profile = Profile().apply {
         host = "127.0.0.1"

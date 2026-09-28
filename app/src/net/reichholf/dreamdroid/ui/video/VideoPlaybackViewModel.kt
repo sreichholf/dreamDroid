@@ -1,43 +1,49 @@
 package net.reichholf.dreamdroid.ui.video
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.Serializable
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
-import net.reichholf.dreamdroid.data.serviceRepository
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadEpgNowNext
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.video.ZapAndStream
 
 /**
  * Zap list, zap position, and now/next for the player overlay, with their loads.
  * Scoped to [net.reichholf.dreamdroid.activities.VideoActivity] so a recreate keeps
- * the loaded list. [VideoOverlayController] observes [session] and keeps libVLC and
+ * the loaded list. [VideoOverlayController] observes [uiState] and keeps libVLC and
  * the views.
  */
-class VideoPlaybackViewModel(application: Application) : AndroidViewModel(application) {
-    private val mutableSession = MutableStateFlow(VideoPlaybackSession())
-    val session: StateFlow<VideoPlaybackSession> = mutableSession.asStateFlow()
-
-    private val errorChannel = Channel<String>(Channel.BUFFERED)
-    val errors: Flow<String> = errorChannel.receiveAsFlow()
+@HiltViewModel
+class VideoPlaybackViewModel @Inject constructor(
+    private val services: ServiceRepository,
+    private val receiver: ReceiverRepository,
+    private val profiles: ProfileRepository,
+    private val sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(VideoPlaybackUiState())
+    val uiState: StateFlow<VideoPlaybackUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
     private var bouquetJob: Job? = null
+    private var zapJob: Job? = null
 
     /** Returns whether the title or a ref changed. */
     fun applyExtras(
@@ -46,9 +52,9 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         bouquetRef: String?,
         info: Serializable?
     ): Boolean {
-        val before = mutableSession.value
+        val before = _uiState.value
         val after = before.withExtras(title, serviceRef, bouquetRef, info)
-        mutableSession.value = after
+        _uiState.value = after
         if (after.movie != null) {
             bouquetJob?.cancel()
             bouquetJob = null
@@ -61,39 +67,39 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     }
 
     fun zapTo(row: ServiceNowNext) {
-        mutableSession.update { it.zappedTo(row) }
+        _uiState.update { it.zappedTo(row) }
     }
 
     /** Moves the zap position one row; returns false when the list has no neighbour. */
     fun step(forward: Boolean): Boolean {
-        val row = mutableSession.value.neighbour(forward) ?: return false
+        val row = _uiState.value.neighbour(forward) ?: return false
         zapTo(row)
         return true
     }
 
     /** Returns false when [ref] is empty or already the bouquet. */
     fun selectBouquet(ref: String): Boolean {
-        if (ref.isEmpty() || ref == mutableSession.value.bouquetRef) {
+        if (ref.isEmpty() || ref == _uiState.value.bouquetRef) {
             return false
         }
-        mutableSession.update { it.copy(bouquetRef = ref) }
+        _uiState.update { it.copy(bouquetRef = ref) }
         return true
     }
 
     fun reload() {
-        val bouquetRef = mutableSession.value.bouquetRef
+        val bouquetRef = _uiState.value.bouquetRef
         if (bouquetRef.isNullOrEmpty()) {
             return
         }
-        val app = getApplication<Application>()
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val result = loadEpgNowNext(app, arrayListOf(NameValuePair("bRef", bouquetRef)))
-            if (!result.success) {
-                errorChannel.trySend(result.errorText ?: app.getString(R.string.get_content_error))
+            val response = services.bouquetNowNext(bouquetRef)
+            val rows = response.value
+            if (rows == null) {
+                showMessage(response.error.contentErrorText())
                 return@launch
             }
-            mutableSession.update { it.withServices(result.rows) }
+            _uiState.update { it.withServices(rows) }
         }
     }
 
@@ -102,21 +108,58 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
         loadJob = null
     }
 
-    /** Cache first, then the receiver. One load per session; a recording clears it. */
+    /**
+     * Sets [VideoPlaybackUiState.streamRef] to the zap position once the receiver can stream
+     * it: right away, or after `/web/zap` when the profile is zap-and-stream
+     * ([ZapAndStream]). A failed zap shows a message and streams nothing.
+     */
+    fun streamCurrent() {
+        val ref = _uiState.value.serviceRef ?: return
+        zapJob?.cancel()
+        if (!ZapAndStream.required(profiles.requireCurrent())) {
+            _uiState.update { it.copy(streamRef = ref) }
+            return
+        }
+        if (ref.isEmpty()) {
+            showMessage(UiText.Resource(R.string.get_content_error))
+            return
+        }
+        zapJob = viewModelScope.launch {
+            val response = receiver.zap(ref)
+            if (response.value != null && response.error == null) {
+                _uiState.update { it.copy(streamRef = ref) }
+            } else {
+                showMessage(response.userMessageText())
+            }
+        }
+    }
+
+    /** The overlay started [VideoPlaybackUiState.streamRef]. */
+    fun onStreamStarted() {
+        _uiState.update { it.copy(streamRef = null) }
+    }
+
+    fun showMessage(message: UiText) {
+        _uiState.update { it.copy(userMessage = message) }
+    }
+
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
+    }
+
+    /** Cache first, then the receiver. One load per ViewModel; a recording clears it. */
     private fun loadBouquetBar() {
         if (bouquetJob != null) {
             return
         }
         bouquetJob = viewModelScope.launch {
-            val services = serviceRepository(getApplication<Application>())
             val excluded = services.excludedTabRefs
             val cached = services.cachedBouquets()
             val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
             if (hasStrip) {
                 publishBouquets(overlayBouquets(cached.tv, cached.radio, excluded))
             }
-            val status = SessionConnectionHolder.shared.status.value
-            if (status.shouldSkipReceiverHttp(hasStrip)) {
+            if (sessions.status.value.shouldSkipReceiverHttp(hasStrip)) {
                 return@launch
             }
             val painted = when (val load = services.bouquets()) {
@@ -128,8 +171,8 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun publishBouquets(items: List<Service>) {
-        mutableSession.update { session ->
-            if (session.movie != null) session else session.copy(bouquets = items)
+        _uiState.update { state ->
+            if (state.movie != null) state else state.copy(bouquets = items)
         }
     }
 }

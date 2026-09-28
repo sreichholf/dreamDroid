@@ -89,17 +89,14 @@ class ShareProfilesScreenTest {
     fun progressBlocksProfileRowClicks() {
         val profile =
             ProfileListItem(id = 1, name = "Living Room", host = "dm7080.local", active = false)
-        val state = ShareProfilesListState(listOf(profile))
-        state.progress = IndeterminateProgressState(message = "Loading")
         var clicked: ProfileListItem? = null
         composeRule.setContent {
             DreamDroidTheme {
-                ShareProfilesScreen(
-                    profiles = state.profiles,
-                    onProfileClick = { clicked = it },
-                    clicksEnabled = state.progress == null
+                ShareProfilesHost(
+                    title = "Share",
+                    state = ShareUiState(profiles = listOf(profile), sending = true),
+                    onProfileClick = { clicked = it }
                 )
-                IndeterminateProgressHost(state.progress)
             }
         }
         composeRule.onNodeWithText("Living Room").performClick()

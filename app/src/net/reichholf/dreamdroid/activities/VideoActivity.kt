@@ -23,14 +23,18 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlinx.coroutines.launch
@@ -40,11 +44,11 @@ import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
+import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -53,6 +57,7 @@ import org.videolan.libvlc.interfaces.IVLCVout
 /**
  * Created by reichi on 16/02/16.
  */
+@AndroidEntryPoint
 class VideoActivity :
     AppCompatActivity(),
     IVLCVout.OnNewVideoLayoutListener,
@@ -66,6 +71,9 @@ class VideoActivity :
     var player: VLCPlayer? = null
     var overlay: VideoOverlayController? = null
     private val playbackViewModel: VideoPlaybackViewModel by viewModels()
+
+    @Inject
+    lateinit var sessions: SessionConnectionHolder
 
     var onLayoutChangeListener: View.OnLayoutChangeListener? = null
 
@@ -94,7 +102,7 @@ class VideoActivity :
         val isTelevision = isTelevisionDevice()
         if (!shouldKeepTvStreamingActivity(
                 isTelevision,
-                SessionConnectionHolder.shared.status.value,
+                sessions.status.value,
                 playbackAlreadyStarted
             )
         ) {
@@ -109,7 +117,8 @@ class VideoActivity :
         setContentView(R.layout.video_player)
         findViewById<ComposeView>(R.id.video_snackbar_host).setContent {
             DreamDroidTheme(forceDark = true) {
-                ShellSnackbarHost()
+                val uiState by playbackViewModel.uiState.collectAsStateWithLifecycle()
+                VideoSnackbarHost(uiState.userMessage, playbackViewModel::onMessageShown)
             }
         }
         surfaceFrameAddLayoutListener(true)
@@ -125,7 +134,7 @@ class VideoActivity :
     private fun observeTvSession() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                SessionConnectionHolder.shared.status.collect { status ->
+                sessions.status.collect { status ->
                     if (!shouldKeepTvStreamingActivity(
                             isTelevisionDevice(),
                             status,
@@ -268,7 +277,7 @@ class VideoActivity :
 
     private fun initialize() {
         cleanup()
-        player = VLCPlayer.get()
+        player = VLCPlayer.get(this)
 
         surfaceFrame = findViewById(R.id.player_surface_frame)
         surfaceView = findViewById(R.id.player_surface)
@@ -278,8 +287,8 @@ class VideoActivity :
 
         player!!.attach(this, surfaceView, subtitlesSurfaceView)
 
-        VLCPlayer.getMediaPlayer()!!.vlcVout.addCallback(this)
-        VLCPlayer.getMediaPlayer()!!.setEventListener(this)
+        VLCPlayer.getMediaPlayer(this)!!.vlcVout.addCallback(this)
+        VLCPlayer.getMediaPlayer(this)!!.setEventListener(this)
 
         handleIntent(intent)
         setFullScreen()
@@ -287,7 +296,8 @@ class VideoActivity :
 
     private fun initializeOverlay() {
         val controller =
-            overlay ?: VideoOverlayController(this, playbackViewModel).also { overlay = it }
+            overlay
+                ?: VideoOverlayController(this, playbackViewModel, sessions).also { overlay = it }
         controller.attach(intent.extras)
     }
 
@@ -296,13 +306,13 @@ class VideoActivity :
     }
 
     private fun cleanup(force: Boolean) {
-        if (player == null && force) player = VLCPlayer.get()
+        if (player == null && force) player = VLCPlayer.get(this)
         if (player == null) return
         player!!.detach()
         player = null
         surfaceView = null
-        VLCPlayer.getMediaPlayer()!!.vlcVout.removeCallback(this)
-        VLCPlayer.getMediaPlayer()!!.setEventListener(null)
+        VLCPlayer.getMediaPlayer(this)!!.vlcVout.removeCallback(this)
+        VLCPlayer.getMediaPlayer(this)!!.setEventListener(null)
     }
 
     private fun onMediaPlaying() {
@@ -338,7 +348,7 @@ class VideoActivity :
             Log.e(TAG, "Invalid surface size")
             return
         }
-        val player = VLCPlayer.getMediaPlayer()
+        val player = VLCPlayer.getMediaPlayer(this)
         if (player != null) {
             val vlcVout = player.vlcVout
             vlcVout.setWindowSize(sw, sh)
@@ -479,7 +489,7 @@ class VideoActivity :
     }
 
     override fun onSurfacesCreated(vlcVout: IVLCVout) {
-        val mediaPlayer = VLCPlayer.getMediaPlayer()!!
+        val mediaPlayer = VLCPlayer.getMediaPlayer(this)!!
         mediaPlayer.setAspectRatio(null)
         mediaPlayer.setScale(0f)
         mediaPlayer.setVideoTrackEnabled(true)

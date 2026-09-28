@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
-class VideoPlaybackSessionTest {
+class VideoPlaybackUiStateTest {
     private val a = ServiceNowNext("1:0:1:a", "A", now = Event(title = "News A"))
     private val b = ServiceNowNext("1:0:1:b", "B", now = Event(title = "News B"))
     private val c = ServiceNowNext("1:0:1:c", "C", now = Event(title = "News C"))
 
-    private val live = VideoPlaybackSession().withExtras("B", "1:0:1:b", "bouquet", null)
+    private val live = VideoPlaybackUiState().withExtras("B", "1:0:1:b", "bouquet", null)
 
     @Test
     fun loadedListMakesTheMatchingRowThePlayingService() {

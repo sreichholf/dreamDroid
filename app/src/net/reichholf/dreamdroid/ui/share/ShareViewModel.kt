@@ -1,48 +1,56 @@
 package net.reichholf.dreamdroid.ui.share
 
-import android.app.Application
-import android.net.Uri
-import android.text.format.DateFormat
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.Date
-import kotlinx.coroutines.Job
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
+import net.reichholf.dreamdroid.ui.text.UiText
 
-/** What the share or view intent carries. A null [title] falls back to "sent from". */
-data class ShareRequest(val url: String?, val title: String?)
+/** What the share or view intent carries. [title] is the media title sent to the box. */
+data class ShareRequest(val url: String?, val title: String)
+
+/**
+ * [profiles] to pick from when there is more than one. [sending] while the box is asked to
+ * play. [userMessage] shows as a toast; [finished] closes the activity.
+ */
+data class ShareUiState(
+    val profiles: List<ProfileListItem> = emptyList(),
+    val sending: Boolean = false,
+    val userMessage: UiText? = null,
+    val finished: Boolean = false
+)
 
 /**
  * Profile list and MEDIA_PLAYER_PLAY request for [net.reichholf.dreamdroid.activities.ShareActivity].
  * Activity-scoped, so a rotation keeps the list and an in-flight send instead of
  * reloading profiles and sending again.
  */
-class ShareViewModel(application: Application) : AndroidViewModel(application) {
-    val listState = ShareProfilesListState()
+@HiltViewModel
+class ShareViewModel @Inject constructor(
+    private val profiles: ProfileRepository,
+    private val receiver: ReceiverRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(ShareUiState())
+    val uiState: StateFlow<ShareUiState> = _uiState.asStateFlow()
 
-    var toast by mutableStateOf<String?>(null)
-        private set
-
-    var finished by mutableStateOf(false)
-        private set
-
-    private var request = ShareRequest(url = null, title = null)
-    private val profilesById: MutableMap<Int, Profile> = HashMap()
+    private var request = ShareRequest(url = null, title = "")
+    private var profilesById: Map<Int, Profile> = emptyMap()
     private var started = false
-    private var sendJob: Job? = null
 
     fun start(request: ShareRequest) {
         if (started) {
@@ -50,22 +58,28 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
         }
         started = true
         this.request = request
-        val app = getApplication<Application>()
-        val profiles = AppDatabase.profilesBlocking(app).getProfiles()
-        when {
-            profiles.size > 1 -> {
-                listState.replaceAll(
-                    profiles.map { profile ->
-                        val id = profile.id ?: 0
-                        profilesById[id] = profile
-                        ProfileListItem(id, profile.name.orEmpty(), profile.host.orEmpty(), false)
+        viewModelScope.launch {
+            val saved = withContext(Dispatchers.IO) { profiles.profiles() }
+            when {
+                saved.size > 1 -> {
+                    profilesById = saved.associateBy { it.id ?: 0 }
+                    val items = saved.map { profile ->
+                        ProfileListItem(
+                            profile.id ?: 0,
+                            profile.name.orEmpty(),
+                            profile.host.orEmpty(),
+                            false
+                        )
                     }
-                )
+                    _uiState.update { it.copy(profiles = items) }
+                }
+
+                saved.size == 1 -> play(saved[0])
+
+                else -> _uiState.update {
+                    it.copy(userMessage = UiText.Resource(R.string.no_profile_available))
+                }
             }
-
-            profiles.size == 1 -> play(profiles[0])
-
-            else -> toast = app.getString(R.string.no_profile_available)
         }
     }
 
@@ -73,61 +87,50 @@ class ShareViewModel(application: Application) : AndroidViewModel(application) {
         profilesById[item.id]?.let { play(it) }
     }
 
-    fun consumeToast() {
-        toast = null
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
     private fun play(profile: Profile) {
         val url = request.url
         if (url == null) {
-            finished = true
+            _uiState.update { it.copy(finished = true) }
             return
         }
-        if (listState.progress != null) {
+        if (_uiState.value.sending) {
             return
         }
-        val app = getApplication<Application>()
-        Log.i(LOG_TAG, url)
-        Log.i(LOG_TAG, profile.host.orEmpty())
         val title = request.title
-            ?: app.getString(
-                R.string.sent_from_dreamdroid,
-                DateFormat.getDateFormat(app).format(Date())
-            )
-        val ref = mediaPlayerRef(url, title)
-        Log.i(LOG_TAG, ref)
-        val params = listOf(NameValuePair("file", ref))
-        listState.progress = IndeterminateProgressState(
-            title = app.getString(R.string.loading),
-            message = app.getString(R.string.loading)
-        )
-        sendJob?.cancel()
-        sendJob = viewModelScope.launch {
-            val error = EnigmaClient(profile).playMedia(params).error
-            listState.progress = null
-            toast = error?.resolve(app) ?: app.getString(R.string.sent_as, title)
-            finished = true
+        _uiState.update { it.copy(sending = true) }
+        viewModelScope.launch {
+            val error = receiver.playMedia(profile, mediaPlayerRef(url, title)).error
+            val failure = error?.failure?.userMessageText()?.takeIf { it != UiText.Raw("") }
+            _uiState.update {
+                it.copy(
+                    sending = false,
+                    userMessage = failure ?: UiText.Resource(R.string.sent_as, listOf(title)),
+                    finished = true
+                )
+            }
         }
     }
-
-    private fun mediaPlayerRef(url: String, title: String): String {
-        val encodedUrl = encode(url)
-        val encodedTitle = encode(title)
-        val uri = Uri.parse(url)
-        if ("youtu.be" == uri.host) {
-            val vid = uri.path!!.substring(1)
-            return "8193:0:1:0:0:0:0:0:0:0:" +
-                URLEncoder.encode("yt://$vid", UTF_8) + ":" + encodedTitle
-        }
-        return "4097:0:1:0:0:0:0:0:0:0:$encodedUrl:$encodedTitle"
-    }
-
-    private fun encode(value: String): String = URLEncoder.encode(value, UTF_8).replace("+", "%20")
 
     private companion object {
-        val LOG_TAG: String = ShareViewModel::class.java.simpleName
-
         // URLEncoder.encode(String, Charset) is API 33; the String overload works on minSdk.
         val UTF_8: String = StandardCharsets.UTF_8.name()
+
+        fun encode(value: String): String = URLEncoder.encode(value, UTF_8).replace("+", "%20")
+
+        /** A `4097` service ref for [url]; a youtu.be link becomes a `yt://` ref. */
+        fun mediaPlayerRef(url: String, title: String): String {
+            val encodedTitle = encode(title)
+            val uri = runCatching { URI(url) }.getOrNull()
+            if (uri?.host == "youtu.be") {
+                val vid = uri.path.orEmpty().removePrefix("/")
+                return "8193:0:1:0:0:0:0:0:0:0:" +
+                    URLEncoder.encode("yt://$vid", UTF_8) + ":" + encodedTitle
+            }
+            return "4097:0:1:0:0:0:0:0:0:0:${encode(url)}:$encodedTitle"
+        }
     }
 }

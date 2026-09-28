@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–9 merged; PRs 10 and 12 in review. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–9 and 12 merged; PRs 10 and 13 in review. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -153,10 +153,10 @@ One line per PR: state, then PR link once opened.
 - [x] 7 List EPG — merged, [#529](https://github.com/sreichholf/dreamDroid/pull/529)
 - [x] 8 MultiEPG — merged, [#533](https://github.com/sreichholf/dreamDroid/pull/533)
 - [x] 9 Service lists + pickers — merged, [#534](https://github.com/sreichholf/dreamDroid/pull/534) (hub service list) and [#535](https://github.com/sreichholf/dreamDroid/pull/535) (pickers)
-- [ ] 10 Hub, now playing, zap — in progress
+- [x] 10 Hub, now playing, zap — merged, [#537](https://github.com/sreichholf/dreamDroid/pull/537)
 - [ ] 11 Phone shell
-- [ ] 12 TV hub — in review, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
-- [ ] 13 Player + share
+- [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
+- [ ] 13 Player + share — in review, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
 - [ ] 14 Non-UI entry points + locator removal
 - [ ] 15 *(optional)* Hilt instrumented tests
 

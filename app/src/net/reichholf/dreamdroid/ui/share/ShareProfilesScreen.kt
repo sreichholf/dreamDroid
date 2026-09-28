@@ -15,16 +15,19 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShareProfilesHost(
     title: String,
-    state: ShareProfilesListState,
+    state: ShareUiState,
     onProfileClick: (ProfileListItem) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -42,9 +45,14 @@ fun ShareProfilesHost(
             ShareProfilesScreen(
                 profiles = state.profiles,
                 onProfileClick = onProfileClick,
-                clicksEnabled = state.progress == null
+                clicksEnabled = !state.sending
             )
-            IndeterminateProgressHost(state.progress)
+            if (state.sending) {
+                val loading = stringResource(R.string.loading)
+                IndeterminateProgressHost(
+                    IndeterminateProgressState(message = loading, title = loading)
+                )
+            }
         }
     }
 }
