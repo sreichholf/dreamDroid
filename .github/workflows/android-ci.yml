@@ -73,6 +73,11 @@ jobs:
           # Same-repo PRs may write caches; forks stay read-only.
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
 
+      # Sonatype rate-limits Maven Central per egress IP (429s on shared
+      # runners). After setup-gradle so its cache restore cannot drop it.
+      - name: Resolve Maven Central through Google's mirror
+        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
+
       - name: Make gradlew executable
         run: chmod +x gradlew
 
@@ -178,6 +183,11 @@ jobs:
         with:
           cache-provider: basic
 
+      # Sonatype rate-limits Maven Central per egress IP (429s on shared
+      # runners). After setup-gradle so its cache restore cannot drop it.
+      - name: Resolve Maven Central through Google's mirror
+        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
+
       - name: Make gradlew executable
         run: chmod +x gradlew
 
@@ -227,6 +237,21 @@ jobs:
         with:
           java-version: "17"
           distribution: temurin
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+
+      # v1.15.460 predates the mirror init script; take it from this commit.
+      - name: Checkout Maven Central mirror init script
+        uses: actions/checkout@v5
+        with:
+          path: ci-scripts
+          sparse-checkout: scripts/gradle
+
+      - name: Resolve Maven Central through Google's mirror
+        run: install -D -m 644 ci-scripts/scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
 
       # 1.15 has no signingConfigs; inject the repo debug.keystore main signs
       # with (copying it to ~/.android did not take on the runner). JCenter is
@@ -291,6 +316,11 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           cache-provider: basic
+
+      # Sonatype rate-limits Maven Central per egress IP (429s on shared
+      # runners). After setup-gradle so its cache restore cannot drop it.
+      - name: Resolve Maven Central through Google's mirror
+        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
 
       # ABI splits on (no -Pci): the x86_64 split's versionCode (9×10⁷ + base)
       # must beat 1.15's x86_64 split, as on Play.

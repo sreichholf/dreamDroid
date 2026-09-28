@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # SessionStart hook for Claude Code on the web.
 # Installs JDK 25 and the Android SDK (no emulator) so Gradle checks run in
-# cloud sessions. Idempotent; the container is cached after the first run.
+# cloud sessions, and routes Maven Central through Google's mirror.
+# Idempotent; the container is cached after the first run.
 set -euo pipefail
 
 if [ "${CLAUDE_CODE_REMOTE:-}" != "true" ]; then
@@ -60,6 +61,12 @@ if [ "${#missing[@]}" -gt 0 ]; then
 fi
 
 printf 'sdk.dir=%s\n' "$ANDROID_SDK_ROOT" > "$REPO_ROOT/local.properties"
+
+# Sonatype rate-limits Maven Central per egress IP, and every cloud session
+# shares the proxy's. Resolve Maven Central through Google's mirror instead.
+GRADLE_INIT_DIR="${GRADLE_USER_HOME:-$HOME/.gradle}/init.d"
+mkdir -p "$GRADLE_INIT_DIR"
+cp "$REPO_ROOT/scripts/gradle/maven-central-mirror.init.gradle.kts" "$GRADLE_INIT_DIR/"
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {
