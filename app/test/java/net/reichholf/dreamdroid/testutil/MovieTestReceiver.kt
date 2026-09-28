@@ -28,7 +28,7 @@ class MovieTestReceiver {
         profiles.repository,
         profiles.database
     )
-    val receiver = ReceiverRepository(clients)
+    val receiver = ReceiverRepository(clients, profiles.repository)
 
     /**
      * Answer for every request. Defaults to the two-movie `movielist.xml` for the movie list

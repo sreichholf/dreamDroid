@@ -25,8 +25,15 @@ sealed interface TimerListResult {
     data class Failed(val message: UiText) : TimerListResult
 }
 
-/** Recording locations and tags the receiver offers for a timer. */
-data class TimerChoices(val locations: List<String>, val tags: List<String>)
+/**
+ * Recording locations and tags the receiver offers for a timer. [locationsFromReceiver] is
+ * false when [locations] is the `/hdd/movie` stand-in for a failed request.
+ */
+data class TimerChoices(
+    val locations: List<String>,
+    val tags: List<String>,
+    val locationsFromReceiver: Boolean
+)
 
 /**
  * Timers of the active profile. A live `/web/timerlist` replaces the profile's Room
@@ -98,7 +105,11 @@ class TimerRepository @Inject constructor(
                 }
             }
         }
-        return TimerChoices(profiles.locations().toList(), profiles.tags().toList())
+        return TimerChoices(
+            profiles.locations().toList(),
+            profiles.tags().toList(),
+            profiles.locationsLoadedFromReceiver()
+        )
     }
 
     /** The last timer list the receiver sent for the active profile, or null if none. */

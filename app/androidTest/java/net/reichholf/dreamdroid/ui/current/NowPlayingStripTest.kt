@@ -64,92 +64,12 @@ class NowPlayingStripTest {
     }
 
     @Test
-    fun headlineJoinsServiceAndTitleWhenReady() {
-        assertEquals(
-            "Das Erste HD · Tagesschau",
-            nowPlayingHeadline(
-                ready = true,
-                serviceName = "Das Erste HD",
-                eventTitle = "Tagesschau",
-                loadingText = "Loading",
-                unavailableText = "Not available"
-            )
-        )
-        assertEquals(
-            "Loading",
-            nowPlayingHeadline(
-                ready = false,
-                serviceName = "Das Erste HD",
-                eventTitle = "Tagesschau",
-                loadingText = "Loading",
-                unavailableText = "Not available"
-            )
-        )
-        assertEquals(
-            "Not available",
-            nowPlayingHeadline(
-                ready = true,
-                serviceName = "",
-                eventTitle = "",
-                loadingText = "Loading",
-                unavailableText = "Not available"
-            )
-        )
-        assertEquals(
-            "Offline",
-            nowPlayingHeadline(
-                ready = true,
-                serviceName = "",
-                eventTitle = "",
-                loadingText = "Loading",
-                unavailableText = nowPlayingFallbackText(
-                    sessionOffline = true,
-                    offlineText = "Offline",
-                    unavailableText = "Not available"
-                )
-            )
-        )
-        assertEquals(
-            "Not available",
-            nowPlayingFallbackText(
-                sessionOffline = false,
-                offlineText = "Offline",
-                unavailableText = "Not available"
-            )
-        )
-        assertEquals(
-            "Connection",
-            nowPlayingLabelText(
-                sessionOffline = true,
-                connectionText = "Connection",
-                currentServiceText = "Now"
-            )
-        )
-        assertEquals(
-            "Now",
-            nowPlayingLabelText(
-                sessionOffline = false,
-                connectionText = "Connection",
-                currentServiceText = "Now"
-            )
-        )
-    }
-
-    @Test
     fun offlineStripShowsConnectionOffline() {
         composeRule.setContent {
             DreamDroidTheme {
                 NowPlayingStrip(
-                    label = nowPlayingLabelText(
-                        sessionOffline = true,
-                        connectionText = "Connection",
-                        currentServiceText = "Now"
-                    ),
-                    headline = nowPlayingFallbackText(
-                        sessionOffline = true,
-                        offlineText = "Offline",
-                        unavailableText = "Not available"
-                    ),
+                    label = "Connection",
+                    headline = "Offline",
                     progress = 0f,
                     serviceReference = "",
                     serviceName = "",

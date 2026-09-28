@@ -21,7 +21,6 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -63,7 +62,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         detach()
     }
 
-    override var composeDialogActionListener: DialogActionListener? = null
     override var composeActivityResultListener: PhoneNavHandle.ActivityResultListener? = null
     private var pendingComposeActivityResult: PendingComposeActivityResult? = null
     private var pendingComposeActivityData: Intent? = null

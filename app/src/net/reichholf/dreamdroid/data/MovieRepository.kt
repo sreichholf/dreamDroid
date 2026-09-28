@@ -187,9 +187,9 @@ private fun movieCacheFileName(remotePath: String): String {
 }
 
 /**
- * Transitional lookup for the phone and TV hub ViewModels, which are not Hilt ViewModels
- * yet. Both run in an activity, after `DreamDroid` was injected. Delete with the last caller
- * (PRs 10 and 12 in docs/hilt-migration.md).
+ * Transitional lookup for the TV hub browse load, which is not Hilt-injected yet. It runs
+ * in an activity, after `DreamDroid` was injected. Delete with the last caller (PR 12 in
+ * docs/hilt-migration.md).
  */
 @EntryPoint
 @InstallIn(SingletonComponent::class)

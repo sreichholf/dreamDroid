@@ -15,6 +15,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
@@ -23,8 +24,10 @@ import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -42,6 +45,8 @@ class HubServiceListViewModelTest {
     private val receiver = EpgTestReceiver()
     private val services = receiver.services
     private val viewModels = mutableListOf<HubServiceListViewModel>()
+    private val preferences = MemorySharedPreferences()
+    private val settings = SettingsRepository(preferences)
 
     @BeforeEach
     fun setUp() {
@@ -397,6 +402,28 @@ class HubServiceListViewModelTest {
     }
 
     @Test
+    fun epgJumpsOpenTheListOnScreenAndRememberTheDrawerEpgMode() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.openMultiEpg()
+
+        assertEquals(HubServiceEffect.MultiEpg(TAB, "Tab"), viewModel.uiState.value.effect)
+        assertTrue(DrawerEpgMode.isMulti(preferences))
+        assertTrue(settings.drawerEpgMulti)
+        viewModel.onEffectHandled()
+
+        viewModel.openListEpg()
+
+        assertEquals(HubServiceEffect.ListEpg(TAB, "Tab"), viewModel.uiState.value.effect)
+        assertEquals(
+            DrawerEpgMode.LIST,
+            preferences.getString(DreamDroid.PREFS_KEY_DRAWER_EPG_MODE, null)
+        )
+        assertFalse(settings.drawerEpgMulti)
+    }
+
+    @Test
     fun topBarHasEpgJumpsOnceAListIsOpen() {
         val none = HubServiceListUiState(currentRef = "", currentName = "")
         assertEquals(listOf(Statics.ITEM_SET_DEFAULT), actions(none).map { it.id })
@@ -459,9 +486,13 @@ class HubServiceListViewModelTest {
             handle,
             services,
             receiver.repository,
-            ReceiverRepository(EnigmaClientFactory(receiver.profiles.repository)),
+            ReceiverRepository(
+                EnigmaClientFactory(receiver.profiles.repository),
+                receiver.profiles.repository
+            ),
             receiver.profiles.repository,
-            receiver.sessions
+            receiver.sessions,
+            settings
         ).also { viewModels += it }
 
     private suspend fun HubServiceListViewModel.settled(): HubServiceListUiState =

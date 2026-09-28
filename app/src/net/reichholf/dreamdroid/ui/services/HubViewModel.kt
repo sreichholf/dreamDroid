@@ -1,295 +1,298 @@
 package net.reichholf.dreamdroid.ui.services
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
+import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.data.movieRepository
-import net.reichholf.dreamdroid.data.serviceRepository
-import net.reichholf.dreamdroid.enigma.Bouquets
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.contentError
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * Hub mode, selected row, and bouquet or location refs for [HubDestination].
- * Bouquet and movie-location loads stay on [viewModelScope], so leaving the
- * destination and popping back keeps the strip. Child lists use their own
- * ViewModels on this same back-stack entry.
+ * The hub shell: its [mode], the tab row [selectedRow], and the tabs. [tvBouquets] and
+ * [radioBouquets] are the user bouquets the receiver or Room gave; the UI appends the
+ * dedicated roots with their names. [bouquetsLoaded] is false until a first strip
+ * painted. The child lists report the title.
  */
-class HubViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+data class HubUiState(
+    val mode: String = HubModes.TV,
+    val selectedRow: Int = 0,
+    val tvBouquets: List<Service> = emptyList(),
+    val radioBouquets: List<Service> = emptyList(),
+    val bouquetsLoaded: Boolean = false,
+    val bouquetError: UiText? = null,
+    val movieLocations: List<String> = emptyList(),
+    val locationsReady: Boolean = false,
+    val timerRemountEpoch: Int = 0,
+    val nowPlayingReloadEpoch: Int = 0,
+    val userMessage: UiText? = null
+)
 
-    var mode by mutableStateOf(HubModes.TV)
-        private set
-
-    var currentTv by mutableStateOf<String?>(null)
-        private set
-
-    var currentRadio by mutableStateOf<String?>(null)
-        private set
-
-    var currentMovie by mutableStateOf<String?>(null)
-        private set
-
-    var selectedRow by mutableIntStateOf(0)
-        private set
-
-    var timerRemountEpoch by mutableIntStateOf(0)
-        private set
-
-    var nowPlayingReloadEpoch by mutableIntStateOf(0)
-        private set
-
-    var bouquets by mutableStateOf<Bouquets?>(null)
-        private set
-
-    var bouquetError by mutableStateOf<String?>(null)
-        private set
-
-    var locationsReady by mutableStateOf(false)
-        private set
-
-    var movieLocations by mutableStateOf<List<String>>(emptyList())
-        private set
-
-    private var bouquetConnection: String? = null
+/**
+ * Hub mode, selected row, and bouquet or location tabs for [HubDestination]. The bouquet
+ * strip loads again on each session change; loads run on [viewModelScope], so leaving the
+ * destination and popping back keeps the strip. Child lists use their own ViewModels on
+ * this same back-stack entry.
+ */
+@HiltViewModel
+class HubViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val services: ServiceRepository,
+    private val movies: MovieRepository,
+    private val timers: TimerRepository,
+    private val receiver: ReceiverRepository,
+    private val profiles: ProfileRepository,
+    private val sessions: SessionConnectionHolder
+) : ViewModel() {
+    private var currentTv: String?
+    private var currentRadio: String?
+    private var currentMovie: String?
     private var bouquetJob: Job? = null
     private var locationsJob: Job? = null
     private var lastLocationsHttpSuccess: Boolean? = null
 
+    private val _uiState: MutableStateFlow<HubUiState>
+    val uiState: StateFlow<HubUiState>
+
     init {
         val saved = readHubShellSaved(savedStateHandle)
-        mode = saved.mode
         currentTv = saved.currentTv
         currentRadio = saved.currentRadio
         currentMovie = saved.currentMovie
-        selectedRow = saved.selectedRow
-        timerRemountEpoch = saved.timerRemountEpoch
-        nowPlayingReloadEpoch = saved.nowPlayingReloadEpoch
-        val knownLocations = ProfileRepository.get().locations()
-        locationsReady = knownLocations.isNotEmpty()
-        if (knownLocations.isNotEmpty()) {
-            movieLocations = knownLocations.toList()
-        }
-    }
-
-    fun selectTv(tvBouquets: List<Service>) {
-        mode = HubModes.TV
-        val (idx, ref) = resolveBouquetSelection(
-            tvBouquets,
-            currentTv,
-            ProfileRepository.get().requireCurrent().defaultBouquetTv
+        val knownLocations = profiles.locations().toList()
+        _uiState = MutableStateFlow(
+            HubUiState(
+                mode = saved.mode,
+                selectedRow = saved.selectedRow,
+                movieLocations = knownLocations,
+                locationsReady = knownLocations.isNotEmpty(),
+                timerRemountEpoch = saved.timerRemountEpoch,
+                nowPlayingReloadEpoch = saved.nowPlayingReloadEpoch
+            )
         )
-        selectedRow = idx
-        currentTv = ref
-        persist()
-    }
-
-    fun selectRadio(radioBouquets: List<Service>) {
-        mode = HubModes.RADIO
-        val (idx, ref) = resolveBouquetSelection(radioBouquets, currentRadio, null)
-        selectedRow = idx
-        currentRadio = ref
-        persist()
-    }
-
-    /** Returns false when movie locations are not ready yet. */
-    fun selectMovies(): Boolean {
-        mode = HubModes.MOVIES
-        if (!locationsReady || movieLocations.isEmpty()) {
-            selectedRow = 0
-            persist()
-            return false
+        uiState = _uiState.asStateFlow()
+        viewModelScope.launch {
+            sessions.status.map { it.session }.distinctUntilChanged().collect {
+                bouquetJob?.cancel()
+                bouquetJob = launch { loadBouquets() }
+            }
         }
-        selectedRow = indexOfLocation(movieLocations, currentMovie)
-        persist()
-        return true
+    }
+
+    fun selectTv() {
+        val (index, ref) = resolveBouquetSelection(tvTabs(), currentTv, defaultTvBouquet())
+        currentTv = ref
+        update { it.copy(mode = HubModes.TV, selectedRow = index) }
+    }
+
+    fun selectRadio() {
+        val (index, ref) = resolveBouquetSelection(radioTabs(), currentRadio, null)
+        currentRadio = ref
+        update { it.copy(mode = HubModes.RADIO, selectedRow = index) }
+    }
+
+    /** Until the movie locations are known, shows row 0 and says they are loading. */
+    fun selectMovies() {
+        val state = _uiState.value
+        if (!state.locationsReady || state.movieLocations.isEmpty()) {
+            update {
+                it.copy(
+                    mode = HubModes.MOVIES,
+                    selectedRow = 0,
+                    userMessage = UiText.Resource(R.string.loading)
+                )
+            }
+            return
+        }
+        update {
+            it.copy(
+                mode = HubModes.MOVIES,
+                selectedRow = indexOfLocation(it.movieLocations, currentMovie)
+            )
+        }
     }
 
     fun selectTimer() {
-        mode = HubModes.TIMER
-        selectedRow = 0
-        persist()
+        update { it.copy(mode = HubModes.TIMER, selectedRow = 0) }
     }
 
-    fun onRowSelected(index: Int, refForMode: String?) {
-        selectedRow = index
-        when (mode) {
-            HubModes.TV -> currentTv = refForMode
-            HubModes.RADIO -> currentRadio = refForMode
-            HubModes.MOVIES -> currentMovie = refForMode
+    /** Selects the tab at [index] of the current mode. */
+    fun onRowSelected(index: Int) {
+        val state = _uiState.value
+        when (state.mode) {
+            HubModes.TV -> currentTv = tvTabs().getOrNull(index)?.reference
+            HubModes.RADIO -> currentRadio = radioTabs().getOrNull(index)?.reference
+            HubModes.MOVIES -> currentMovie = state.movieLocations.getOrNull(index)
         }
-        persist()
+        update { it.copy(selectedRow = index) }
     }
 
+    /** A timer was edited; the timer list loads again. */
     fun bumpTimerRemount() {
-        timerRemountEpoch += 1
-        persist()
+        update { it.copy(timerRemountEpoch = it.timerRemountEpoch + 1) }
     }
 
+    /** A zap finished; the now-playing strip loads again. */
     fun bumpNowPlayingReload() {
-        nowPlayingReloadEpoch += 1
-        persist()
+        update { it.copy(nowPlayingReloadEpoch = it.nowPlayingReloadEpoch + 1) }
     }
 
+    /** Keeps [HubUiState.selectedRow] inside a row list of [rowCount]. */
     fun clampSelectedRow(rowCount: Int) {
+        val selected = _uiState.value.selectedRow
         val next = when {
-            rowCount > 0 && selectedRow > rowCount - 1 -> rowCount - 1
+            rowCount > 0 && selected > rowCount - 1 -> rowCount - 1
             rowCount == 0 -> 0
             else -> return
         }
-        if (next == selectedRow) {
-            return
+        if (next != selected) {
+            update { it.copy(selectedRow = next) }
         }
-        selectedRow = next
-        persist()
     }
 
-    fun onBouquetConnection(connection: ConnectionStatus.Session?) {
-        val key = connection?.name ?: "none"
-        val inFlight = bouquets != null || bouquetJob?.isActive == true
-        if (!shouldLoadHubPage(bouquetConnection, key) && inFlight) {
-            return
-        }
-        bouquetConnection = key
-        bouquetJob?.cancel()
-        bouquetJob = viewModelScope.launch { loadBouquets() }
-    }
-
-    fun ensureLocations(handle: PhoneNavHandle) {
-        if (
-            !shouldRetryHubLocations(
-                locationsReady,
-                movieLocations,
-                locationsJob?.isActive == true,
-                lastLocationsHttpSuccess
-            )
-        ) {
-            return
-        }
-        val app = getApplication<Application>()
-        locationsJob = handle.launchLocationsAndTagsLoad(
-            onProgress = { _, _ -> },
-            onReady = { },
-            onLocationsResult = { success ->
-                lastLocationsHttpSuccess = success
-                viewModelScope.launch {
-                    val painted = movieRepository(app).locationsOrCached(
-                        receiverAnswered = success,
-                        live = ProfileRepository.get().locations().toList()
-                    )
-                    movieLocations = painted
-                    locationsReady = true
-                    if (mode == HubModes.MOVIES) {
-                        selectedRow = indexOfLocation(painted, currentMovie)
-                        persist()
-                    }
-                }
-            }
+    /**
+     * Loads the movie locations once; an empty failed load runs again on the next call,
+     * which the destination makes each time it enters.
+     */
+    fun ensureLocations() {
+        val state = _uiState.value
+        val retry = shouldRetryHubLocations(
+            state.locationsReady,
+            state.movieLocations,
+            locationsJob?.isActive == true,
+            lastLocationsHttpSuccess
         )
+        if (!retry) {
+            return
+        }
+        locationsJob = viewModelScope.launch {
+            val choices = timers.locationsAndTags()
+            lastLocationsHttpSuccess = choices.locationsFromReceiver
+            val painted = movies.locationsOrCached(
+                receiverAnswered = choices.locationsFromReceiver,
+                live = choices.locations
+            )
+            update {
+                it.copy(
+                    movieLocations = painted,
+                    locationsReady = true,
+                    selectedRow = if (it.mode == HubModes.MOVIES) {
+                        indexOfLocation(painted, currentMovie)
+                    } else {
+                        it.selectedRow
+                    }
+                )
+            }
+        }
     }
 
-    override fun onCleared() {
-        bouquetJob?.cancel()
-        locationsJob?.cancel()
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
     private suspend fun loadBouquets() {
-        val app = getApplication<Application>()
-        val services = serviceRepository(app)
         val cached = services.cachedBouquets()
         val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
         if (hasStrip) {
-            applyPaintedBouquets(app, cached, error = null)
+            applyBouquets(cached.tv, cached.radio, error = null)
         }
-        val status = SessionConnectionHolder.shared.status.value
-        if (status.shouldSkipReceiverHttp(hasStrip)) {
+        if (sessions.status.value.shouldSkipReceiverHttp(hasStrip)) {
             return
         }
         if (shouldWaitForDeviceInfo(hasStrip)) {
-            withTimeoutOrNull(20_000) {
-                while (ProfileRepository.get().deviceInfo(
-                        ProfileRepository.get().requireCurrent()
-                    ) == null
-                ) {
-                    delay(100)
-                }
-            }
+            receiver.awaitProfileCheck()
         }
         when (val load = services.bouquets()) {
-            is BouquetListLoad.Loaded -> applyPaintedBouquets(app, load.bouquets, error = null)
+            is BouquetListLoad.Loaded ->
+                applyBouquets(load.bouquets.tv, load.bouquets.radio, error = null)
 
             is BouquetListLoad.Failed ->
-                applyPaintedBouquets(app, Bouquets(), load.error.contentError(app))
+                applyBouquets(emptyList(), emptyList(), load.error.contentErrorText())
         }
     }
 
-    private fun applyPaintedBouquets(app: Application, painted: Bouquets, error: String?) {
-        bouquets = painted
-        bouquetError = error
-        when (mode) {
+    private fun applyBouquets(tv: List<Service>, radio: List<Service>, error: UiText?) {
+        val state = _uiState.value
+        val selected = when (state.mode) {
             HubModes.TV -> {
-                val list = buildDedicatedBouquets(
-                    painted.tv,
-                    app.resources.getStringArray(R.array.servicelist_dedicated),
-                    app.resources.getStringArray(R.array.servicerefstv)
-                )
-                val (idx, ref) = resolveBouquetSelection(
-                    list,
-                    currentTv,
-                    ProfileRepository.get().requireCurrent().defaultBouquetTv
-                )
-                selectedRow = idx
+                val (index, ref) =
+                    resolveBouquetSelection(tvTabs(tv), currentTv, defaultTvBouquet())
                 currentTv = ref
+                index
             }
 
             HubModes.RADIO -> {
-                val list = buildDedicatedBouquets(
-                    painted.radio,
-                    app.resources.getStringArray(R.array.servicelist_dedicated),
-                    app.resources.getStringArray(R.array.servicerefsradio)
-                )
-                val (idx, ref) = resolveBouquetSelection(list, currentRadio, null)
-                selectedRow = idx
+                val (index, ref) = resolveBouquetSelection(radioTabs(radio), currentRadio, null)
                 currentRadio = ref
+                index
             }
 
-            HubModes.MOVIES -> {
-                if (locationsReady) {
-                    selectedRow = indexOfLocation(movieLocations, currentMovie)
-                }
+            HubModes.MOVIES -> if (state.locationsReady) {
+                indexOfLocation(state.movieLocations, currentMovie)
+            } else {
+                state.selectedRow
             }
 
-            else -> selectedRow = 0
+            else -> 0
         }
-        persist()
+        update {
+            it.copy(
+                tvBouquets = tv.toList(),
+                radioBouquets = radio.toList(),
+                bouquetsLoaded = true,
+                bouquetError = error,
+                selectedRow = selected
+            )
+        }
     }
 
-    private fun persist() {
+    /**
+     * The TV tabs as the UI lists them. Only the references matter here; the UI names the
+     * dedicated roots.
+     */
+    private fun tvTabs(loaded: List<Service> = _uiState.value.tvBouquets): List<Service> =
+        tabs(loaded, services.tvRoots)
+
+    private fun radioTabs(loaded: List<Service> = _uiState.value.radioBouquets): List<Service> =
+        tabs(loaded, services.radioRoots)
+
+    private fun tabs(loaded: List<Service>, roots: List<String>): List<Service> {
+        val refs = roots.toTypedArray()
+        return buildDedicatedBouquets(loaded, refs, refs)
+    }
+
+    private fun defaultTvBouquet(): String? = profiles.current.value?.defaultBouquetTv
+
+    /** Applies [transform] and saves the shell state. */
+    private fun update(transform: (HubUiState) -> HubUiState) {
+        val state = _uiState.updateAndGet(transform)
         HubShellSaved(
-            mode = mode,
+            mode = state.mode,
             currentTv = currentTv,
             currentRadio = currentRadio,
             currentMovie = currentMovie,
-            selectedRow = selectedRow,
-            timerRemountEpoch = timerRemountEpoch,
-            nowPlayingReloadEpoch = nowPlayingReloadEpoch
+            selectedRow = state.selectedRow,
+            timerRemountEpoch = state.timerRemountEpoch,
+            nowPlayingReloadEpoch = state.nowPlayingReloadEpoch
         ).writeTo(savedStateHandle)
     }
 }

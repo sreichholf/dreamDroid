@@ -67,7 +67,7 @@ class CurrentServiceScreenTest {
                 descriptionExtended = "Der Wetterbericht."
             )
         )
-        val state = CurrentServiceUiState().apply { apply(current) }
+        val state = CurrentServiceUiState(current = current, ready = true)
         composeRule.setContent {
             DreamDroidTheme {
                 CurrentServiceScreen(
@@ -106,7 +106,7 @@ class CurrentServiceScreenTest {
                 descriptionExtended = "Der Wetterbericht."
             )
         )
-        val state = CurrentServiceUiState().apply { apply(current) }
+        val state = CurrentServiceUiState(current = current, ready = true)
         var streamClicks = 0
         composeRule.setContent {
             DreamDroidTheme {
@@ -137,7 +137,7 @@ class CurrentServiceScreenTest {
 
     @Test
     fun failedWithoutRefShowsUnavailableWithoutStream() {
-        val state = CurrentServiceUiState().apply { apply(null) }
+        val state = CurrentServiceUiState(ready = true)
         composeRule.setContent {
             DreamDroidTheme {
                 CurrentServiceScreen(

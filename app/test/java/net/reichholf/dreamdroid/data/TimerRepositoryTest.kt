@@ -241,7 +241,10 @@ class TimerRepositoryTest {
         val first = repository.locationsAndTags()
         val second = repository.locationsAndTags()
 
-        assertEquals(TimerChoices(listOf("/media/hdd/"), listOf("News", "Sport")), first)
+        assertEquals(
+            TimerChoices(listOf("/media/hdd/"), listOf("News", "Sport"), true),
+            first
+        )
         assertEquals(first, second)
         assertEquals(1, receiver.requestsTo(LOCATIONS).size)
         assertEquals(1, receiver.requestsTo(TAGS).size)
@@ -252,7 +255,10 @@ class TimerRepositoryTest {
         receiver.fail(LOCATIONS)
         receiver.fail(TAGS)
 
-        assertEquals(TimerChoices(listOf("/hdd/movie"), emptyList()), repository.locationsAndTags())
+        assertEquals(
+            TimerChoices(listOf("/hdd/movie"), emptyList(), false),
+            repository.locationsAndTags()
+        )
     }
 
     @Test

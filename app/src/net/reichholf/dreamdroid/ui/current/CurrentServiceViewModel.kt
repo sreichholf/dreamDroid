@@ -1,281 +1,136 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.app.Application
-import android.content.SharedPreferences
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.preference.PreferenceManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.loadCurrentService
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * Load, saved snapshot, and timer-add for [CurrentServiceDestination].
- * The EPG sheet open flag stays in the composable.
+ * The Current service screen. [current] is the last `/web/getcurrent` that named a service
+ * for the active profile. Until the first answer, [ready] is false and the fields say
+ * Loading; a failure without a last-good service shows the screen empty.
  */
-class CurrentServiceViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
-    val uiState: CurrentServiceUiState = CurrentServiceUiState()
+data class CurrentServiceUiState(
+    val current: CurrentService? = null,
+    val ready: Boolean = false,
+    val refreshing: Boolean = false,
+    val piconsEnabled: Boolean = false,
+    val streamBlocked: Boolean = false,
+    val userMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(if (refreshing) R.string.loading else R.string.current_service)
 
-    var refreshing by mutableStateOf(false)
-        private set
+    val canStream: Boolean
+        get() = currentServiceCanStream(current)
+}
 
-    var toolbarTitle by mutableStateOf("")
-        private set
-
-    var errorText by mutableStateOf<String?>(null)
-        private set
-
-    var progress by mutableStateOf<IndeterminateProgressState?>(null)
-        private set
-
-    var current by mutableStateOf<CurrentService?>(null)
-        private set
-
-    var currentItem by mutableStateOf<Event?>(null)
-        private set
-
-    var ready by mutableStateOf(false)
-        private set
-
-    private val gate = CurrentServiceLoadGate()
-    private var saved = CurrentServiceSaved()
-    private var activeProfileId: Int = -1
-    private var started = false
+/**
+ * Loads `/web/getcurrent` and keeps the last-good answer of the active profile, also in the
+ * [SavedStateHandle]. A profile switch drops what belonged to the other profile and loads
+ * again. The EPG sheet of the now and next event is the destination's
+ * [net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel].
+ */
+@HiltViewModel
+class CurrentServiceViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val receiver: ReceiverRepository,
+    private val profiles: ProfileRepository,
+    sessions: SessionConnectionHolder,
+    settings: SettingsRepository
+) : ViewModel() {
+    private var activeProfileId = currentProfileId()
+    private var lastGood: CurrentService? = null
+    private var lastGoodProfileId: Int? = null
     private var loadJob: Job? = null
-    private var setTimerJob: Job? = null
-    private val prefsListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-        if (key == DreamDroid.CURRENT_PROFILE) {
-            onCurrentProfileChanged()
-        }
-    }
+
+    private val _uiState: MutableStateFlow<CurrentServiceUiState>
+    val uiState: StateFlow<CurrentServiceUiState>
 
     init {
-        activeProfileId = currentProfileId()
-        saved = adoptSaved(activeProfileId)
-        paint(saved)
-        toolbarTitle = baseTitle()
-        PreferenceManager.getDefaultSharedPreferences(application)
-            .registerOnSharedPreferenceChangeListener(prefsListener)
-    }
-
-    fun start() {
-        if (started) {
-            return
+        val saved = readCurrentServiceSaved(savedStateHandle, activeProfileId).current
+            ?.takeUnless { it.isEmpty() }
+        if (saved != null) {
+            lastGood = saved
+            lastGoodProfileId = activeProfileId
         }
-        started = true
-        if (loadJob?.isActive == true) {
-            return
+        _uiState = MutableStateFlow(CurrentServiceUiState(current = saved, ready = saved != null))
+        uiState = _uiState.asStateFlow()
+        viewModelScope.launch {
+            sessions.status.collect { status ->
+                _uiState.update { it.copy(streamBlocked = status.blocksMutations) }
+            }
         }
-        val profileId = currentProfileId()
-        activeProfileId = profileId
-        saved = adoptSaved(profileId)
-        paint(saved)
-        val shown = gate.visible(profileId)
-        if (shown != null) {
-            current = shown
-            ready = true
-            uiState.apply(shown)
-            persist(profileId)
-            toolbarTitle = baseTitle()
-            return
+        viewModelScope.launch {
+            settings.settings.map { it.picons }.distinctUntilChanged().collect { picons ->
+                _uiState.update { it.copy(piconsEnabled = picons) }
+            }
         }
-        val restored = current
-        if (restored == null || restored.isEmpty()) {
-            ready = false
-            uiState.clear()
+        viewModelScope.launch {
+            profiles.current.map { it?.id ?: -1 }.distinctUntilChanged().collect(::onProfile)
+        }
+        if (saved == null) {
             reload()
-        } else {
-            ready = true
-            uiState.apply(restored)
-            persist(profileId)
-            toolbarTitle = baseTitle()
         }
     }
 
     fun reload() {
-        val app = getApplication<Application>()
-        refreshing = true
-        toolbarTitle = app.getString(R.string.loading)
-        val generation = gate.beginLoad()
-        val loadProfileId = currentProfileId()
+        val profileId = activeProfileId
+        _uiState.update { it.copy(refreshing = true) }
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val result = loadCurrentService(app)
-            if (!gate.isCurrent(generation)) {
-                return@launch
+            val next = receiver.currentService().value
+            if (next != null && !next.isEmpty()) {
+                lastGood = next
+                lastGoodProfileId = profileId
+                CurrentServiceSaved(next, profileId).writeTo(savedStateHandle)
             }
-            refreshing = false
-            toolbarTitle = baseTitle()
-            applyCurrent(
-                generation,
-                loadProfileId,
-                if (result.success) result.current else null
-            )
+            _uiState.update { it.copy(current = visible(), ready = true, refreshing = false) }
         }
     }
 
-    fun consumeError() {
-        errorText = null
+    /** No app could play the stream. */
+    fun onStreamFailed() {
+        _uiState.update { it.copy(userMessage = UiText.Resource(R.string.missing_stream_player)) }
     }
 
-    fun rememberCurrentItem(event: Event) {
-        currentItem = event
-        persist()
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
-    fun addTimer() {
-        if (progress != null) {
+    private fun onProfile(profileId: Int) {
+        if (profileId == activeProfileId) {
             return
         }
-        val event = currentItem ?: return
-        val app = getApplication<Application>()
-        progress = IndeterminateProgressState(message = app.getString(R.string.saving))
-        setTimerJob?.cancel()
-        setTimerJob = viewModelScope.launch {
-            val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(event))
-            if (!isActive) {
-                return@launch
-            }
-            progress = null
-            errorText = timerResultMessage(response.value ?: SimpleResult(), response.error)
-        }
-    }
-
-    override fun onCleared() {
-        PreferenceManager.getDefaultSharedPreferences(getApplication())
-            .unregisterOnSharedPreferenceChangeListener(prefsListener)
-    }
-
-    private fun onCurrentProfileChanged() {
-        val nextId = currentProfileId()
-        gate.beginLoad()
-        if (!started) {
-            activeProfileId = nextId
-            return
-        }
-        if (nextId == activeProfileId) {
-            return
-        }
-        activeProfileId = nextId
+        activeProfileId = profileId
         loadJob?.cancel()
-        // rememberSaveable(profileId) dropped the other profile's current service.
-        current = null
-        val shown = gate.visible(nextId)
-        if (shown != null) {
-            current = shown
-            ready = true
-            uiState.apply(shown)
-            persist(nextId)
-            refreshing = false
-            toolbarTitle = baseTitle()
-            return
-        }
-        ready = false
-        uiState.clear()
-        saved = CurrentServiceSaved(
-            current = null,
-            item = currentItem,
-            ready = false,
-            profileId = nextId
-        )
-        saved.writeTo(savedStateHandle)
-        reload()
-    }
-
-    private fun adoptSaved(profileId: Int): CurrentServiceSaved {
-        val savedProfileId = savedStateHandle.get<Int>(CurrentServiceSavedKeys.PROFILE_ID)
-        if (!shouldRestoreCurrentService(savedProfileId, profileId)) {
-            if (savedProfileId != null) {
-                CurrentServiceSaved(profileId = profileId).writeTo(savedStateHandle)
-            }
-            return CurrentServiceSaved()
-        }
-        return readCurrentServiceSaved(savedStateHandle, profileId)
-    }
-
-    private fun paint(snapshot: CurrentServiceSaved) {
-        current = snapshot.current
-        currentItem = snapshot.item
-        val shown = current
-        if (shown != null && !shown.isEmpty()) {
-            ready = true
-            uiState.apply(shown)
-        } else {
-            ready = snapshot.ready
+        val shown = visible()
+        CurrentServiceSaved(shown, profileId.takeIf { shown != null })
+            .writeTo(savedStateHandle)
+        _uiState.update { it.copy(current = shown, ready = shown != null, refreshing = false) }
+        if (shown == null) {
+            reload()
         }
     }
 
-    private fun applyCurrent(generation: Int, loadProfileId: Int, content: CurrentService?) {
-        if (content != null && !content.isEmpty()) {
-            if (!gate.applySuccess(generation, loadProfileId, content)) {
-                return
-            }
-        } else if (!gate.isCurrent(generation)) {
-            return
-        }
-        publishVisible(generation)
-    }
+    private fun visible(): CurrentService? =
+        lastGood.takeIf { lastGoodProfileId == activeProfileId }
 
-    private fun publishVisible(generation: Int) {
-        if (!gate.isCurrent(generation)) {
-            return
-        }
-        val profileId = currentProfileId()
-        val shown = gate.visible(profileId)
-        if (shown != null) {
-            current = shown
-            ready = true
-            uiState.apply(shown)
-            persist(profileId)
-            return
-        }
-        // No last-good: the screen shows empty-but-ready. The saved ready flag stays
-        // false when this was the first load, so a later restore fetches again.
-        uiState.apply(null)
-    }
-
-    private fun persist(profileId: Int = currentProfileId()) {
-        saved = CurrentServiceSaved(
-            current = current,
-            item = currentItem,
-            ready = ready,
-            profileId = profileId
-        )
-        saved.writeTo(savedStateHandle)
-    }
-
-    private fun timerResultMessage(result: SimpleResult, error: EnigmaHttpError?): String {
-        val app = getApplication<Application>()
-        val stateText = result.stateText
-        if (!stateText.isNullOrEmpty()) {
-            return stateText
-        }
-        if (error != null) {
-            return error.resolve(app).orEmpty()
-        }
-        return app.getString(R.string.get_content_error)
-    }
-
-    private fun currentProfileId(): Int = ProfileRepository.get().requireCurrent().id ?: -1
-
-    private fun baseTitle(): String =
-        getApplication<Application>().getString(R.string.current_service)
+    private fun currentProfileId(): Int = profiles.current.value?.id ?: -1
 }
