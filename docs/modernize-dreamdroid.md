@@ -26,7 +26,7 @@ One PR per item. Do not fold these into unrelated work.
 
 ### Opportunistic (when a feature or bug touches the screen)
 
-- [ ] **B1 — Hilt** (KSP): `@HiltAndroidApp` on `DreamDroid`, `@AndroidEntryPoint` activities, `@Singleton` modules for `AppDatabase`, OkHttp, `EnigmaClient`, `SessionConnectionHolder`, `MultiEpgSync`. The `object` holders delegate to injected instances until callers move. Land together with the first C2 ViewModel, not alone. Proof: one Hilt test replaces a binding with a fake.
+- [ ] **B1 — Hilt** (KSP), in progress as a PR series with C2 and B4: [`hilt-migration.md`](hilt-migration.md) has the order, the decisions (factory instead of a singleton `EnigmaClient`, Hilt wraps the static holders until their last caller moves, no Hilt instrumented test as proof), and progress.
 - [ ] **C2 — ViewModel shape**, per screen group: take repositories + `SavedStateHandle` via `hiltViewModel()`, drop `AndroidViewModel`, expose `StateFlow<*UiState>` (including user messages and the destination title, which today follows `Activity.title`), fold or delete the `*Session` class, resolve strings in the UI (`@StringRes` / `UiText`). Proof: JVM ViewModel test with fake repositories; `*Screen` test updated. Fixes: ~29 `AndroidViewModel`s and ~81 files of `mutableStateOf` session state.
 - [ ] **B4 — repositories**, only when a C2 group needs one: `ServiceRepository` (`UseDrivenCache`, `UserBouquetCache`), `EpgRepository` (`MultiEpgSync`, `ListEpgCache`), `TimerRepository` (`TimerSnapshotStore`), `MovieRepository` (`MovieSnapshotStore`), `ReceiverRepository` (zap, power, remote keys, volume, …). Each owns its offline rules. Proof: JVM tests with a fake `EnigmaClient` and `AppDatabase.inMemory`.
 
