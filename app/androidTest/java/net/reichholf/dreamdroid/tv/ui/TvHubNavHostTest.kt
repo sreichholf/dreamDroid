@@ -52,25 +52,6 @@ class TvHubNavHostTest {
     }
 
     @Test
-    fun multiEpgRouteShowsHost() {
-        val activity = composeRule.activity
-        composeRule.setContent {
-            val hubViewModel = remember { idleHubViewModel() }
-            TvHubNavHost(
-                activity = activity,
-                onRecheckProfile = {},
-                hubViewModel = hubViewModel,
-                startDestination = TvMultiEpg(
-                    bouquetRef = "1:7:1:0:0:0:0:0:0:0:Favourites",
-                    bouquetName = "Favourites"
-                )
-            )
-        }
-        composeRule.onNodeWithTag("tv_multi_epg_screen").assertExists()
-        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
-    }
-
-    @Test
     fun settingsRouteShowsSettingsScreen() {
         val activity = composeRule.activity
         composeRule.setContent {

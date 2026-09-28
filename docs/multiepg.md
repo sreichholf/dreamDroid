@@ -111,7 +111,7 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 ### Parameter semantics (Phase 0 confirmed)
 
 - `time` is a **unix timestamp** (start of window). `endTime` is **minutes of duration**, not a unix end (same 4th eEPGCache tuple arg GraphMultiEPG uses). Sending a unix end (~1.7e9) overflows `startTimeQuery` → **0 events**.
-- Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**. `MultiEpgSync.httpFetch` converts the unix window to minutes.
+- Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**. `EpgRepository.fetchEpgMulti` converts the unix window to minutes.
 
 OpenWebif’s wiki note that `epgmulti` is “not in Enigma2 WebInterface API” is **incorrect** for this Dreambox tree. dreamDroid will not rely on OpenWebif-only endpoints (`epgmultigz`, `/api/…`, etc.).
 
@@ -186,7 +186,7 @@ Hub top bar action or list EPG Timeline
        └── At this time → list EPG (pop if nested on EPG)
 ```
 
-Today `MultiEpgViewModel` is an `AndroidViewModel` wrapping `MultiEpgSession` and reads `MultiEpgSyncHolder.shared`; the hub and list EPG open it through a toolbar `MenuProvider` and a string route. Those are remediation P2–P6, not MultiEPG design.
+`MultiEpgViewModel` and `TvMultiEpgViewModel` are `@HiltViewModel`s over `EpgRepository` and `TimerRepository`. Each owns a `MultiEpgGrid` (the sliding-window loader, `StateFlow<MultiEpgGridState>`) and exposes it inside its `StateFlow` UI state. `EpgRepository` builds the one `MultiEpgSync` per process; `MultiEpgSyncHolder.shared` looks that instance up for the hub service list and the TV hub browse until they move to injected repositories.
 
 ### Code map
 
@@ -201,7 +201,7 @@ Today `MultiEpgViewModel` is an `AndroidViewModel` wrapping `MultiEpgSession` an
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
 | Detail / timer | Reuse `EpgEventDetailViewModel` + `EpgEventDetailHost` (`ui/epg/EpgEventDetailSheet.kt`) from bouquet/service EPG |
 | Room | `room/AppDatabase.kt` holds profiles plus the EPG event / chunk entities and the offline roster / snapshot tables |
-| Sync | `multiepg/MultiEpgSync.kt` (one shared instance), `MultiEpgTimerClocks.kt` for record clocks |
+| Sync | `multiepg/MultiEpgSync.kt` (one instance, owned by `data/EpgRepository.kt`), `MultiEpgGrid.kt` (grid loader), `MultiEpgTimerClocks.kt` for record clocks |
 | Proof | `bash .cursor/cloud/connected-test.sh …` (not emulator tap loops); see `AGENTS.md` |
 
 ### Room sketch (Phase 1 — illustrative)
@@ -329,7 +329,7 @@ This **planning** goal is complete when all of the following are true:
 | Risk | Mitigation |
 | --- | --- |
 | Large bouquets + 24 h still heavy on weak boxes | Always bound window; single-flight; TTL; optional later “visible channels first” if spike shows pain |
-| `endTime` units differ from OpenWebif docs | Confirmed: Dreambox webif `endTime` = **minutes** (eEPGCache); app converts unix window → minutes in `MultiEpgSync.httpFetch` |
+| `endTime` units differ from OpenWebif docs | Confirmed: Dreambox webif `endTime` = **minutes** (eEPGCache); app converts unix window → minutes in `EpgRepository.fetchEpgMulti` |
 | Very old WebIf without `epgmulti` | Spike records it; only then enable throttled `epgservice` fallback |
 | Orphan `DatabaseHelper.events` confusion | New cache is Room-only; do not revive old writers |
 | Grid jank with hundreds of bars | Virtualize rows; recycle bar composables; paint from Room off main thread |
@@ -353,7 +353,7 @@ Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. Phone Grap
 | --- | --- |
 | **Entry** | Compose TV hub **drawer** destination (`HEADER_MULTIEPG_ID`, label `R.string.multiepg`) alongside bouquets and movie locations. Focus/OK selects a **bouquet card grid** (`bouquetRows`). OK on a card navigates to `TvMultiEpg` for that bouquet (`bouquetRef` / `bouquetName`). A clock action on the bouquet **service grid** title row (`hub_bouquet_multiepg`) opens the same route for the selected bouquet. The graph starts on the chosen bouquet; in-graph `TvMultiEpgBouquetPicker` can still switch later. |
 | **Grid** | GraphMultiEPG channel rows × time bars; one D-pad cursor (`selectedServiceRef` + `selectedStartSec`); chrome (Now / ±day / zoom / bouquet) is a separate TV Surface row |
-| **Session** | Same `MultiEpgSession` + `MultiEpgSyncHolder.shared` Room `/web/epgmulti` cache as phone. No second sync. TV reads `SessionConnectionHolder` for `shouldSkipReceiverHttp` / Offline (same as phone `MultiEpgDestination`); peek Room first (stale-while-revalidate). Do not invent a second MultiEPG store. |
+| **Session** | Same `MultiEpgGrid` + `EpgRepository.multiEpgSync` Room `/web/epgmulti` cache as phone. No second sync. TV reads `SessionConnectionHolder` for `shouldSkipReceiverHttp` / Offline (same as phone `MultiEpgDestination`); peek Room first (stale-while-revalidate). Do not invent a second MultiEPG store. |
 | **Persist** | `MultiEpgPersistGate` (shared with phone). TV `knownTabRefs` comes from `UserBouquetCache.userBouquetTabs(loadServiceList(BOUQUETS_TV), excluded)` — never `{ true }`, never the phone tab strip. Fail-closed for empty known tabs, excluded refs, and FROM PROVIDERS. |
 | **Detail** | Full-screen `Box` + `EpgDetailBody` / `EpgDetailScreen(showActions=false)`. Stream is hidden unless `ConnectionStatus.allowsStreaming()` (Online). Set timer is a write (`blocksMutations` explains / skips) — still add-by-event-id. Edit timer opens shared `TvTimerEditorHost` prefilled via `Timer.createByEvent`. IMDb stays (not box HTTP). No Similar; no `EpgEventDetailViewModel`. Overlay takes D-pad focus; grid/chrome keys are disabled while it is open. |
 | **Proof** | `TvMultiEpgScreenTest` + hub JVM/chrome tests; Cloud Agent uses `.cursor/cloud/connected-test.sh` |

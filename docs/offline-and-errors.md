@@ -176,7 +176,7 @@ Kinds (names flexible):
 - `Cancelled` — never shown
 - `Unknown`
 
-One `userMessage(context)` for copy. Log the extra detail. MultiEPG `error("epgmulti request failed")` / `t.javaClass.simpleName` (`MultiEpgSync.httpFetch`, `applyBouquetRoster`) maps to this type.
+One `userMessage(context)` for copy. Log the extra detail. MultiEPG `error("epgmulti request failed")` / `t.javaClass.simpleName` (`EpgRepository.fetchEpgMulti`, `applyBouquetRoster`) maps to this type.
 
 **Timeout vs cancel:** on Android `SocketTimeoutException` extends `InterruptedIOException`. Map **timeout → `Unreachable` first**. Do not treat every `InterruptedIOException` as `Cancelled`.
 

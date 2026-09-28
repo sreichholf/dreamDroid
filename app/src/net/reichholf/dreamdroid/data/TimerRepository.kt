@@ -101,6 +101,9 @@ class TimerRepository @Inject constructor(
         return TimerChoices(profiles.locations().toList(), profiles.tags().toList())
     }
 
+    /** The last timer list the receiver sent for the active profile, or null if none. */
+    suspend fun snapshot(): List<Timer>? = snapshot(profiles.requireCurrent().id)
+
     private suspend fun snapshot(profileId: Int?): List<Timer>? = profileId?.let { id ->
         database.timerDao().snapshot(id)?.map { it.toTimer() }
     }

@@ -27,8 +27,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -45,12 +45,12 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
-import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.video.startLiveServiceStream
@@ -60,11 +60,11 @@ fun TvMultiEpgHost(
     activity: ComponentActivity,
     bouquetRef: String = "",
     bouquetName: String = "",
-    viewModel: TvMultiEpgViewModel = viewModel()
+    viewModel: TvMultiEpgViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val session = viewModel.session
-    val connection by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val grid = uiState.grid
     val prefs = remember(context) {
         PreferenceManager.getDefaultSharedPreferences(context)
     }
@@ -73,12 +73,9 @@ fun TvMultiEpgHost(
             prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
         )
     }
-    val shownBouquetRef = viewModel.bouquetRef
-    val visibleMinutes = viewModel.visibleMinutes
-    val detailEvent = viewModel.detailEvent
-    val editTimerEvent = viewModel.editTimerEvent
-    val pickingBouquet = viewModel.pickingBouquet
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
+
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
     LaunchedEffect(viewModel) {
         viewModel.start(
@@ -88,100 +85,82 @@ fun TvMultiEpgHost(
     }
 
     // Restarting on a bouquet change repaints "now" as the new grid loads.
-    LaunchedEffect(shownBouquetRef) {
+    LaunchedEffect(uiState.bouquetRef) {
         while (isActive) {
             nowSec = MultiEpgNowClock.sec()
             delay(MultiEpgNowClock.TICK_MS)
         }
     }
 
-    LaunchedEffect(session.channels, viewModel.selectedServiceRef, viewModel.selectedStartSec) {
+    LaunchedEffect(grid.channels, uiState.selectedServiceRef, uiState.selectedStartSec) {
         viewModel.reconcileSelection()
     }
 
-    val zoomSeconds = visibleMinutes * 60L
-    val onVisibleWindow = remember(session, zoomSeconds) {
-        { start: Long, end: Long -> session.onVisibleWindow(start, end) }
-    }
+    val zoomSeconds = uiState.visibleMinutes * 60L
 
     DreamDroidTvTheme {
         Box(modifier = Modifier.fillMaxSize()) {
             TvMultiEpgScreen(
-                bouquetName = viewModel.bouquetName.ifBlank { stringResource(R.string.multiepg) },
-                channels = session.channels,
-                timelineStartSec = session.timelineStartSec,
-                timelineEndSec = session.timelineEndSec,
+                bouquetName = uiState.title.asString(),
+                channels = grid.channels,
+                timelineStartSec = grid.timelineStartSec,
+                timelineEndSec = grid.timelineEndSec,
                 nowSec = nowSec,
-                originFloorSec = session.originFloorSec,
-                loading = session.syncing,
-                errorMessage = session.errorMessage,
-                selectedServiceRef = viewModel.selectedServiceRef,
-                selectedStartSec = viewModel.selectedStartSec,
+                originFloorSec = grid.originFloorSec,
+                loading = grid.syncing,
+                errorMessage = grid.errorMessage?.asString(),
+                selectedServiceRef = uiState.selectedServiceRef,
+                selectedStartSec = uiState.selectedStartSec,
                 onSelectedChange = viewModel::select,
                 onJumpToNow = {
                     val now = MultiEpgNowClock.sec()
                     nowSec = now
                     viewModel.jumpToNow(now)
                 },
-                onPrevDay = {
-                    val target = maxOf(
-                        session.originFloorSec,
-                        session.anchorSec - MultiEpgWindows.CHUNK_SECONDS
-                    )
-                    session.focusAt(target)
-                    session.onVisibleWindow(target, target + zoomSeconds)
-                },
-                onNextDay = {
-                    val target = session.anchorSec + MultiEpgWindows.CHUNK_SECONDS
-                    session.focusAt(target)
-                    session.onVisibleWindow(target, target + zoomSeconds)
-                },
-                onRefresh = {
-                    session.load(session.anchorSec, forceRefresh = true, isPull = false)
-                },
-                onVisibleWindow = onVisibleWindow,
+                onPrevDay = { viewModel.previousDay(zoomSeconds) },
+                onNextDay = { viewModel.nextDay(zoomSeconds) },
+                onRefresh = viewModel::refresh,
+                onVisibleWindow = viewModel::onVisibleWindow,
                 onEventClick = viewModel::showDetail,
                 onBouquetClick = viewModel::showBouquetPicker,
-                visibleMinutes = visibleMinutes,
+                visibleMinutes = uiState.visibleMinutes,
                 onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
                 textSize = textSize,
-                timerClocks = session.timerClocks,
-                keysEnabled = detailEvent == null && editTimerEvent == null && !pickingBouquet
+                timerClocks = grid.timerClocks,
+                keysEnabled = uiState.gridKeysEnabled
             )
-            val event = detailEvent
+            val event = uiState.detailEvent
             if (event != null) {
                 TvMultiEpgEventDetail(
                     event = event,
-                    bouquetRef = shownBouquetRef,
+                    bouquetRef = uiState.bouquetRef,
                     activity = activity,
-                    progress = viewModel.setTimerProgress,
+                    progress = if (uiState.settingTimer) {
+                        IndeterminateProgressState(message = stringResource(R.string.saving))
+                    } else {
+                        null
+                    },
                     onDismiss = viewModel::dismissDetail,
                     onSetTimer = { viewModel.setTimer(event) },
-                    onEditTimer = {
-                        viewModel.dismissDetail()
-                        viewModel.showTimerEditor(event)
-                    },
-                    streamingEnabled = connection.allowsStreaming(),
-                    mutationsBlocked = connection.blocksMutations
+                    onEditTimer = { viewModel.editTimer(event) },
+                    streamingEnabled = uiState.streamingEnabled,
+                    mutationsBlocked = uiState.mutationsBlocked
                 )
             }
-            if (pickingBouquet) {
+            if (uiState.pickingBouquet) {
                 TvMultiEpgBouquetPicker(
-                    bouquets = viewModel.bouquets,
+                    bouquets = uiState.bouquets,
                     onPick = viewModel::pickBouquet,
                     onDismiss = viewModel::dismissBouquetPicker
                 )
             }
-            val editingEvent = editTimerEvent
+            val editingEvent = uiState.editTimerEvent
             if (editingEvent != null) {
                 TvTimerEditorHost(
                     timer = Timer.createByEvent(editingEvent),
                     isCreate = true,
                     onDismiss = viewModel::dismissTimerEditor,
-                    onSaved = {
-                        viewModel.dismissTimerEditor()
-                        session.load(session.anchorSec, forceRefresh = true, isPull = false)
-                    }
+                    onSaved = viewModel::onTimerSaved
                 )
             }
         }

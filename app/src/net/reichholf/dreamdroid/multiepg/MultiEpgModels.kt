@@ -3,7 +3,9 @@ package net.reichholf.dreamdroid.multiepg
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
+import net.reichholf.dreamdroid.enigma.toEnigmaDisplayText
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaServiceFlags
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /** One programme bar in the MultiEPG grid (precomputed unix bounds). */
 data class MultiEpgBar(val event: Event, val startSec: Long, val endSec: Long)
@@ -48,13 +50,7 @@ data class MultiEpgRosterFetch(
  * Keep the last-good playable roster when getservices fails. A successful empty
  * list still replaces the roster (the bouquet really has no playable rows).
  */
-fun applyBouquetRoster(
-    previous: List<Service>,
-    fetch: MultiEpgRosterFetch,
-    formatError: (Throwable) -> String = { error ->
-        error.message ?: error.javaClass.simpleName
-    }
-): AppliedBouquetRoster {
+fun applyBouquetRoster(previous: List<Service>, fetch: MultiEpgRosterFetch): AppliedBouquetRoster {
     val error = fetch.error
     if (error != null) {
         return AppliedBouquetRoster(
@@ -62,7 +58,7 @@ fun applyBouquetRoster(
             errorMessage = if (error.isUnreachableEnigmaFailure()) {
                 null
             } else {
-                formatError(error)
+                error.toEnigmaDisplayText()
             }
         )
     }
@@ -72,7 +68,7 @@ fun applyBouquetRoster(
     )
 }
 
-data class AppliedBouquetRoster(val roster: List<Service>, val errorMessage: String?)
+data class AppliedBouquetRoster(val roster: List<Service>, val errorMessage: UiText?)
 
 /**
  * Build channel rows from a flat event list. Keeps work off composition —
