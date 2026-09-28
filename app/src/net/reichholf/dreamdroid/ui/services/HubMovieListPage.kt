@@ -1,538 +1,207 @@
 package net.reichholf.dreamdroid.ui.services
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
-import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.preference.PreferenceManager
 import java.io.File
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.Movie
-import net.reichholf.dreamdroid.enigma.MovieListLoadResult
-import net.reichholf.dreamdroid.enigma.loadMovieList
-import net.reichholf.dreamdroid.enigma.userMessage
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
-import net.reichholf.dreamdroid.helpers.EnigmaUrls
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
-import net.reichholf.dreamdroid.helpers.enigma2.Tag
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.intents.IntentFactory
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.MovieDao
-import net.reichholf.dreamdroid.room.MovieSnapshotStore
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
-import net.reichholf.dreamdroid.ui.movies.MovieDetailContent
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
-import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
- *
- * Tag filter uses an in-composition [MultiChoiceAlertDialog] (Phase 2.1g-ii-e).
- * [HubMovieListViewModel] owns [HubMovieListSession] for this location so a tab
- * change keeps the loaded list and selected tags. Dialog flags stay in composition.
- *
- * Options menu (tags) and delete-confirm dialog actions are registered here while this
- * page stays in composition.
+ * One Movies hub location. The ViewModel is keyed by [location] on the hub back-stack
+ * entry, so a tab change keeps the loaded list and the tag filter. Online-only taps go
+ * through [runOnlineOnly], which explains a blocked tap.
  */
 @Composable
 fun HubMovieListPage(
     handle: PhoneNavHandle,
     location: String,
-    locationIndex: Int,
     modifier: Modifier = Modifier,
-    viewModel: HubMovieListViewModel = viewModel(key = "hub-movie:$location")
+    viewModel: HubMovieListViewModel =
+        hiltViewModel<HubMovieListViewModel, HubMovieListViewModel.Factory>(
+            key = "hub-movie:$location"
+        ) { factory -> factory.create(location) }
 ) {
     val context = LocalContext.current
-    val session = viewModel.session
-    var detailContent by remember { mutableStateOf<MovieDetailContent?>(null) }
-    var showTagPicker by remember { mutableStateOf(false) }
-    var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
-    var rowMenu by remember { mutableStateOf<RowMenuState<MovieRowAction>?>(null) }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
-    session.handle = handle
-    session.context = context
-    session.onShowMenu = { rowMenu = it }
-    session.onShowDetail = { detailContent = it }
-    session.onRequestTagPicker = { showTagPicker = true }
-    session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
-    session.profileId = ProfileRepository.get().requireCurrent().id
-    session.movieDao = AppDatabase.movie(context)
+    val tagsLabel = stringResource(R.string.tags)
+    BindShellTopBarActions(
+        remember(viewModel, tagsLabel) {
+            listOf(
+                ShellTopBarAction(
+                    id = Statics.ITEM_TAGS,
+                    label = tagsLabel,
+                    iconRes = R.drawable.ic_action_tags,
+                    onClick = viewModel::onPickTags
+                )
+            )
+        }
+    )
 
-    BindShellTopBarActions(session.topBarActions(stringResource(R.string.tags)))
-    DisposableEffect(handle, session) {
-        session.chromeAttached = true
-        session.setToolbarTitle(session.finishedTitle())
-        onDispose {
-            session.chromeAttached = false
-            session.onShowMenu = null
-            session.onShowDetail = null
-            session.onRequestTagPicker = null
-            session.onRequestDeleteConfirm = null
+    val open = uiState.open
+    LaunchedEffect(open) {
+        if (open == null) {
+            return@LaunchedEffect
+        }
+        try {
+            context.startActivity(open.intent(context))
+            viewModel.onOpened()
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onOpenFailed()
         }
     }
 
-    LaunchedEffect(viewModel, location, locationIndex) {
-        viewModel.bindLocation(location, locationIndex)
-        viewModel.ensureLoaded()
-    }
+    HubMovieListScreen(
+        state = uiState,
+        onRefresh = viewModel::reload,
+        onItemClick = { item, isLong ->
+            val instantZap = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
+            if (instantZap != isLong) {
+                handle.runOnlineOnly { viewModel.zap(item.index) }
+            } else {
+                viewModel.onItemMenu(item.index)
+            }
+        },
+        onMenuAction = { action ->
+            if (action.onlineOnly) {
+                handle.runOnlineOnly { viewModel.onMenuAction(action) }
+            } else {
+                viewModel.onMenuAction(action)
+            }
+        },
+        onMenuDismiss = viewModel::onMenuDismiss,
+        onDetailDismiss = viewModel::onDetailDismissed,
+        onTagsPicked = viewModel::onTagsPicked,
+        onTagPickerDismiss = viewModel::onTagPickerDismissed,
+        onDeleteConfirm = {
+            handle.runOnlineOnly(viewModel::onDeleteConfirmed)
+            viewModel.onDeleteDismissed()
+        },
+        onDeleteDismiss = viewModel::onDeleteDismissed,
+        modifier = modifier
+    )
+}
 
-    val listState = checkNotNull(session.listState)
-    val refresh = checkNotNull(session.refresh)
+/** [HubMovieListPage] without its ViewModel: the list, its row menu, and its dialogs. */
+@Composable
+fun HubMovieListScreen(
+    state: HubMovieListUiState,
+    onRefresh: () -> Unit,
+    onItemClick: (item: MovieListItem, isLong: Boolean) -> Unit,
+    onMenuAction: (MovieRowAction) -> Unit,
+    onMenuDismiss: () -> Unit,
+    onDetailDismiss: () -> Unit,
+    onTagsPicked: (indices: List<Int>) -> Unit,
+    onTagPickerDismiss: () -> Unit,
+    onDeleteConfirm: () -> Unit,
+    onDeleteDismiss: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload() },
-        enabled = refresh.enabled,
+        refreshing = state.refreshing,
+        onRefresh = onRefresh,
         modifier = modifier
     ) {
-        if (listState.items.isEmpty()) {
+        if (state.items.isEmpty()) {
             ListEmptyState(
-                loading = refresh.isRefreshing,
-                message = viewModel.emptyMessage,
-                onRetry = { session.reload() }
+                loading = state.refreshing,
+                message = state.emptyMessage?.asString(),
+                onRetry = onRefresh
             )
         } else {
             MovieListScreen(
-                items = listState.items,
-                onItemClick = { session.onItemClick(it, isLong = false) },
-                onItemLongClick = { session.onItemClick(it, isLong = true) },
-                menu = rowMenu,
-                onMenuAction = session::onMovieAction,
-                onMenuDismiss = { rowMenu = null }
+                items = state.items,
+                onItemClick = { onItemClick(it, false) },
+                onItemLongClick = { onItemClick(it, true) },
+                menu = state.menu,
+                onMenuAction = onMenuAction,
+                onMenuDismiss = onMenuDismiss
             )
         }
     }
 
-    detailContent?.let { content ->
-        MovieDetailModalSheet(
-            content = content,
-            onDismiss = { detailContent = null }
-        )
+    state.detail?.let { content ->
+        MovieDetailModalSheet(content = content, onDismiss = onDetailDismiss)
     }
 
-    if (showTagPicker) {
-        val tags = ProfileRepository.get().tags()
-        val checked = BooleanArray(tags.size) { i ->
-            viewModel.selectedTags.contains(ProfileRepository.get().tags()[i])
+    state.tagPicker?.let { tags ->
+        val checked = remember(tags, state.selectedTags) {
+            BooleanArray(tags.size) { i -> tags[i] in state.selectedTags }
         }
         MultiChoiceAlertDialog(
             title = stringResource(R.string.choose_tags),
             items = tags,
             initialChecked = checked,
-            onDismiss = { showTagPicker = false },
-            onConfirm = { indices ->
-                session.applyTagSelection(indices)
-                showTagPicker = false
-            }
+            onDismiss = onTagPickerDismiss,
+            onConfirm = onTagsPicked
         )
     }
 
-    showDeleteConfirm?.let { title ->
+    state.deleteConfirm?.let { title ->
         ConfirmAlertDialog(
             title = title,
             message = stringResource(R.string.delete_confirm),
-            onDismiss = { showDeleteConfirm = null },
-            onConfirm = {
-                session.deleteMovie()
-                showDeleteConfirm = null
-            },
+            onDismiss = onDeleteDismiss,
+            onConfirm = onDeleteConfirm,
             confirmLabel = stringResource(R.string.delete),
             destructive = true
         )
     }
 
-    IndeterminateProgressHost(session.progress)
+    IndeterminateProgressHost(state.progress?.let { IndeterminateProgressState(it.asString()) })
 }
 
-/**
- * Mutable movie-list working copy for one hub Movies page.
- *
- * Tag filter is requested via [onRequestTagPicker]; the page hosts [MultiChoiceAlertDialog].
- */
-class HubMovieListSession {
-
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var onShowMenu: ((RowMenuState<MovieRowAction>?) -> Unit)? = null
-    var location: String = ""
-    var locationIndex: Int = -1
-    var listState: MovieListState? = null
-    var refresh: ComposeRefreshState? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var selectedTags: ArrayList<String> = ArrayList()
-    var onSelectedTags: ((List<String>) -> Unit)? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    var onZapJob: ((Job?) -> Unit)? = null
-    var onDeleteJob: ((Job?) -> Unit)? = null
-    var onShowDetail: ((MovieDetailContent) -> Unit)? = null
-    var onRequestTagPicker: (() -> Unit)? = null
-    var onRequestDeleteConfirm: ((String) -> Unit)? = null
-    var profileId: Int? = null
-    var movieDao: MovieDao? = null
-    var chromeAttached: Boolean = false
-    var loadMovies: suspend (
-        android.content.Context,
-        List<NameValuePair>
-    ) -> MovieListLoadResult = { context, params ->
-        loadMovieList(context, params)
-    }
-
-    private val movies = ArrayList<Movie>()
-    private var selectedMovie: Movie? = null
-    private var tagsChanged = false
-    private var reloadOnSimpleResult = false
-    private var loadGeneration = 0
-    var progress by mutableStateOf<IndeterminateProgressState?>(null)
-    private var loadJob: Job? = null
-    private var zapJob: Job? = null
-    private var deleteJob: Job? = null
-
-    fun beginLoad(): Int = ++loadGeneration
-
-    fun applyLoadResult(generation: Int, success: Boolean, next: List<Movie>, errorText: String?) {
-        if (generation != loadGeneration) {
-            return
-        }
-        // Rows may change under an open menu; its row and action would be stale.
-        onShowMenu?.invoke(null)
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        refreshState.setRefreshing(false)
-        setToolbarTitle(finishedTitle())
-        movies.clear()
-        if (!success) {
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(errorText)
-            return
-        }
-        if (next.isEmpty()) {
-            state.replaceAll(emptyList())
-            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-        } else {
-            onEmptyMessage?.invoke(null)
-            movies.addAll(next)
-            state.replaceAll(movieListItemsFromMovies(movies))
-        }
-    }
-
-    fun dismissProgress() {
-        progress = null
-    }
-
-    fun cancelInFlight() {
-        loadJob?.cancel()
-        loadJob = null
-        zapJob?.cancel()
-        zapJob = null
-        deleteJob?.cancel()
-        deleteJob = null
-    }
-
-    fun setToolbarTitle(title: String) {
-        if (!chromeAttached) {
-            return
-        }
-        (context as? AppCompatActivity)?.title = title
-    }
-
-    fun finishedTitle(): String {
-        val ctx = context ?: return ""
-        return location.takeIf { it.isNotEmpty() } ?: ctx.getString(R.string.movies)
-    }
-
-    fun toast(message: CharSequence) {
-        ShellMessages.post(message)
-    }
-
-    fun httpParams(): ArrayList<NameValuePair> {
-        val params = ArrayList<NameValuePair>()
-        if (location.isNotEmpty()) {
-            params.add(NameValuePair("dirname", location))
-        }
-        if (selectedTags.isNotEmpty()) {
-            params.add(NameValuePair("tag", Tag.implodeTags(selectedTags)))
-        }
-        return params
-    }
-
-    fun reload() {
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (state.items.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        val generation = beginLoad()
-        loadJob?.cancel()
-        loadJob = coroutineScope.launch {
-            loadAndApply(generation)
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    suspend fun loadAndApply(generation: Int) {
-        val ctx = context ?: return
-        val result = loadMovies(ctx.applicationContext, httpParams())
-        if (generation != loadGeneration) {
-            return
-        }
-        if (result.success) {
-            persistMovies(result.movies)
-            applyLoadResult(generation, true, result.movies, null)
-            return
-        }
-        if (selectedTags.isNotEmpty()) {
-            applyLoadResult(generation, false, emptyList(), result.errorText)
-            return
-        }
-        val dao = movieDao
-        val pid = profileId
-        val cached = if (dao != null && pid != null) {
-            MovieSnapshotStore.loadMovies(dao, pid, location)
-        } else {
-            null
-        }
-        if (cached != null) {
-            applyLoadResult(generation, true, cached, null)
-        } else {
-            applyLoadResult(generation, false, emptyList(), result.errorText)
-        }
-    }
-
-    private suspend fun persistMovies(loaded: List<Movie>) {
-        if (selectedTags.isNotEmpty()) {
-            return
-        }
-        val dao = movieDao ?: return
-        val pid = profileId ?: return
-        MovieSnapshotStore.replaceMovies(dao, pid, location, loaded)
-    }
-
-    fun onItemClick(item: MovieListItem, isLong: Boolean) {
-        val index = item.index
-        if (index < 0 || index >= movies.size) {
-            return
-        }
-        val typed = movies[index]
-        selectedMovie = typed
-        val ctx = context ?: return
-        val instantZap = PreferenceManager.getDefaultSharedPreferences(ctx)
-            .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
-        if ((instantZap && !isLong) || (!instantZap && isLong)) {
-            zapTo(typed.reference)
-        } else {
-            onShowMenu?.invoke(RowMenuState(item.index, MovieRowAction.entries))
-        }
-    }
-
-    fun pickTags() {
-        tagsChanged = false
-        onRequestTagPicker?.invoke()
-    }
-
-    fun applyTagSelection(indices: List<Int>) {
-        val tags = ProfileRepository.get().tags()
-        val next = ArrayList<String>()
-        for (which in indices) {
-            if (which in tags.indices) {
-                next.add(tags[which])
-            }
-        }
-        tagsChanged = next != selectedTags
-        selectedTags = next
-        onSelectedTags?.invoke(next.toList())
-        if (tagsChanged) {
-            reload()
-        }
-    }
-
-    fun zapTo(ref: String) {
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            zapJob?.cancel()
-            zapJob = host.lifecycleOwner.lifecycleScope.launch {
-                val response = EnigmaClient().zap(listOf(NameValuePair("sRef", ref)))
-                toast(response.userMessage(ctx))
-            }
-            onZapJob?.invoke(zapJob)
-        }
-    }
-
-    fun deleteMovie() {
-        if (progress != null) {
-            return
-        }
-        val host = handle ?: return
-        val ctx = context ?: return
-        val movie = selectedMovie ?: return
-        host.runOnlineOnly {
-            progress = IndeterminateProgressState(message = ctx.getString(R.string.deleting))
-            reloadOnSimpleResult = true
-            deleteJob?.cancel()
-            deleteJob = host.lifecycleOwner.lifecycleScope.launch {
-                val response = EnigmaClient().deleteMovie(MovieKeys.getDeleteParams(movie))
-                dismissProgress()
-                toast(response.userMessage(ctx))
-                if (reloadOnSimpleResult && Python.TRUE == response.value?.state) {
-                    reloadOnSimpleResult = false
-                    reload()
-                }
-            }
-            onDeleteJob?.invoke(deleteJob)
-        }
-    }
-
-    fun onMovieAction(action: MovieRowAction) {
-        val ctx = context ?: return
-        val movie = selectedMovie
-        when (action) {
-            MovieRowAction.Info -> {
-                if (movie == null || movie.descriptionExtended.isEmpty()) {
-                    toast(ctx.getString(R.string.no_epg_available))
-                    return
-                }
-                onShowDetail?.invoke(movie.toMovieDetailContent())
-            }
-
-            MovieRowAction.Zap -> {
-                val ref = movie?.reference.orEmpty()
-                if (ref.isNotEmpty()) {
-                    zapTo(ref)
-                }
-            }
-
-            MovieRowAction.Delete -> onRequestDeleteConfirm?.invoke(movie?.title.orEmpty())
-
-            MovieRowAction.Download -> downloadSelectedMovie()
-
-            MovieRowAction.Stream -> {
-                val host = handle ?: return
-                host.runOnlineOnly {
-                    try {
-                        val activity = ctx as AppCompatActivity
-                        activity.startActivity(
-                            IntentFactory.getStreamFileIntent(
-                                activity,
-                                movie?.reference.orEmpty(),
-                                movie?.fileName,
-                                movie?.title,
-                                movie
-                            )
-                        )
-                    } catch (_: ActivityNotFoundException) {
-                        toast(ctx.getText(R.string.missing_stream_player))
-                    }
-                }
-            }
-        }
-    }
-
-    private fun downloadSelectedMovie() {
-        val ctx = context ?: return
-        val remotePath = selectedMovie?.fileName.orEmpty()
-        if (remotePath.isEmpty()) {
-            return
-        }
-        val profile = ProfileRepository.get().current.value ?: return
-        val params = arrayListOf(NameValuePair("file", remotePath))
-        if (!profile.login) {
-            val url = EnigmaUrls.page(profile, URIStore.FILE, params)
-            ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
-            return
-        }
-        val host = handle ?: return
-        val coroutineScope = scope ?: return
-        host.runOnlineOnly {
-            if (progress != null) {
-                return@runOnlineOnly
-            }
-            progress = IndeterminateProgressState(message = ctx.getString(R.string.loading))
-            coroutineScope.launch {
-                try {
-                    val outcome = withContext(Dispatchers.IO) {
-                        downloadMovieFile(ctx, profile, remotePath)
-                    }
-                    when (outcome) {
-                        is MovieFileDownload.HttpFailed -> {
-                            toastMovieDownloadFailure(outcome.result)
-                        }
-
-                        is MovieFileDownload.Ready -> openCachedMovie(outcome.file)
-                    }
-                } finally {
-                    dismissProgress()
-                }
-            }
-        }
-    }
-
-    private fun toastMovieDownloadFailure(result: EnigmaHttpResult.Failure) {
-        val ctx = context ?: return
-        var toastText = ctx.getText(R.string.get_content_error).toString()
-        val resolved = result.error.resolve(ctx)
-        if (!resolved.isNullOrEmpty()) {
-            toastText = resolved
-        }
-        toast(toastText)
-    }
-
-    private fun openCachedMovie(file: File) {
-        val ctx = context ?: return
-        try {
-            ctx.startActivity(movieViewIntent(ctx, file))
-        } catch (_: ActivityNotFoundException) {
-            toast(ctx.getText(R.string.missing_stream_player))
-        }
-    }
-
-    fun topBarActions(tagsLabel: String): List<ShellTopBarAction> = listOf(
-        ShellTopBarAction(
-            id = Statics.ITEM_TAGS,
-            label = tagsLabel,
-            iconRes = R.drawable.ic_action_tags,
-            onClick = { pickTags() }
-        )
+private fun MovieOpen.intent(context: Context): Intent = when (this) {
+    is MovieOpen.Stream -> IntentFactory.getStreamFileIntent(
+        context,
+        movie.reference,
+        movie.fileName,
+        movie.title,
+        movie
     )
+
+    is MovieOpen.Link -> Intent(Intent.ACTION_VIEW, url.toUri())
+
+    is MovieOpen.CachedFile -> cachedFileIntent(context, file)
+}
+
+private fun cachedFileIntent(context: Context, file: File): Intent {
+    val appContext = context.applicationContext
+    val uri = FileProvider.getUriForFile(appContext, appContext.packageName + ".provider", file)
+    return Intent(Intent.ACTION_VIEW).apply {
+        setDataAndType(uri, "video/*")
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
 }
