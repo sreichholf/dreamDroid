@@ -150,7 +150,10 @@ class VideoPlaybackViewModelTest {
 
     private fun viewModel(): VideoPlaybackViewModel = VideoPlaybackViewModel(
         receiver.services,
-        ReceiverRepository(EnigmaClientFactory(receiver.profiles.repository)),
+        ReceiverRepository(
+            EnigmaClientFactory(receiver.profiles.repository),
+            receiver.profiles.repository
+        ),
         receiver.profiles.repository,
         receiver.sessions
     ).also { viewModels += it }

@@ -144,7 +144,7 @@ class ShareViewModelTest {
     }
 
     private fun viewModel(): ShareViewModel =
-        ShareViewModel(profiles, ReceiverRepository(EnigmaClientFactory(profiles)))
+        ShareViewModel(profiles, ReceiverRepository(EnigmaClientFactory(profiles), profiles))
             .also { viewModels += it }
 
     private companion object {
