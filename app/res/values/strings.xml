@@ -243,6 +243,7 @@
     <string name="error_parsing">An error occurred on parsing the data!</string>
     <string name="enabled">Enabled</string>
     <string name="signal_meter">Signal Meter</string>
+    <string name="title_with_status" translatable="false">%1$s - %2$s</string>
     <string name="accoustic_feedback">Acoustic Feedback</string>
     <string name="leave_confirm">Really leave?</string>
     <string name="leave_confirm_long">Do you really want to leave dreamDroid?</string>

@@ -79,8 +79,7 @@ class OnlineOnlyExplainTest {
             DreamDroidTheme {
                 var showExplain by remember { mutableStateOf(false) }
                 ScreenshotScreen(
-                    state = ScreenshotUiState().apply { actionsEnabled = true },
-                    grabBlocked = true,
+                    state = ScreenshotUiState(blocked = true),
                     onReload = { showExplain = true },
                     onShare = {},
                     onSave = {}
@@ -107,8 +106,7 @@ class OnlineOnlyExplainTest {
             DreamDroidTheme {
                 var showExplain by remember { mutableStateOf(false) }
                 SignalScreen(
-                    state = SignalUiState(),
-                    meterBlocked = true,
+                    state = SignalUiState(blocked = true),
                     onEnabledChange = {
                         enableClicks += 1
                         showExplain = true

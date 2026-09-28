@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PR 1 in review. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PR 1 merged; wave A (PRs 2, 3) in review. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -144,9 +144,9 @@ Only once a UI test needs a faked binding (decision 8). A custom runner that swa
 
 One line per PR: state, then PR link once opened.
 
-- [ ] 1 Hilt + Device info — in review, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
-- [ ] 2 Signal + Screenshot
-- [ ] 3 Profiles + setup
+- [x] 1 Hilt + Device info — merged, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
+- [ ] 2 Signal + Screenshot — in review, [#527](https://github.com/sreichholf/dreamDroid/pull/527)
+- [ ] 3 Profiles + setup — in progress
 - [ ] 4 Settings + backup
 - [ ] 5 Timers
 - [ ] 6 Movies

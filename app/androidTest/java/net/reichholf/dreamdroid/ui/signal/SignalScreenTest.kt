@@ -8,6 +8,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -32,15 +33,13 @@ class SignalScreenTest {
 
     @Test
     fun showsControlsAndMetrics() {
-        val state = SignalUiState()
-        state.apply(
-            Signal(
+        val state = SignalUiState(
+            signal = Signal(
                 snrDbRaw = "12.50 dB",
                 snrRaw = "63 %",
                 berRaw = "0",
                 agcRaw = "73 %"
-            ),
-            minSnrDb = 5.0
+            )
         )
         composeRule.setContent {
             DreamDroidTheme {
@@ -60,6 +59,27 @@ class SignalScreenTest {
         composeRule.onNodeWithText("AGC").assertIsDisplayed()
         composeRule.onNodeWithText("73 %").assertIsDisplayed()
         composeRule.onNodeWithText("Acoustic Feedback").assertIsDisplayed()
+    }
+
+    @Test
+    fun togglesReportNewValueAndLeaveStateToCaller() {
+        var enabled: Boolean? = null
+        var acoustic: Boolean? = null
+        composeRule.setContent {
+            DreamDroidTheme {
+                SignalScreen(
+                    state = SignalUiState(),
+                    onEnabledChange = { enabled = it },
+                    onAcousticChange = { acoustic = it }
+                )
+            }
+        }
+        composeRule.onNodeWithText("Enable").performClick()
+        composeRule.onNodeWithText("Acoustic Feedback").performClick()
+        composeRule.runOnIdle {
+            assertEquals(false, enabled)
+            assertEquals(true, acoustic)
+        }
     }
 
     @Test

@@ -14,11 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,63 +21,20 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
-
-class SignalUiState {
-    var enabled by mutableStateOf(true)
-    var acousticFeedback by mutableStateOf(false)
-    var snrPercent by mutableIntStateOf(0)
-        private set
-    var snrDbRaw by mutableStateOf("-")
-        private set
-    var berRaw by mutableStateOf("-")
-        private set
-    var agcRaw by mutableStateOf("-")
-        private set
-    var snrDb by mutableDoubleStateOf(Signal.MIN_SNR_DB)
-        private set
-
-    fun apply(signal: Signal, minSnrDb: Double) {
-        snrPercent = signal.snrPercent
-        snrDbRaw = displayOrDash(signal.snrDbRaw)
-        berRaw = displayOrDash(signal.berRaw)
-        agcRaw = displayOrDash(signal.agcRaw)
-        var db = signal.snrDb
-        if (db < minSnrDb) {
-            db = minSnrDb
-        }
-        snrDb = db
-    }
-
-    fun clearMeter() {
-        snrPercent = 0
-        snrDbRaw = "-"
-        berRaw = "-"
-        agcRaw = "-"
-        snrDb = Signal.MIN_SNR_DB
-    }
-
-    private fun displayOrDash(raw: String?): String {
-        if (raw.isNullOrBlank()) {
-            return "-"
-        }
-        return raw.trim()
-    }
-}
 
 @Composable
 fun SignalScreen(
     state: SignalUiState,
     onEnabledChange: (Boolean) -> Unit,
     onAcousticChange: (Boolean) -> Unit,
-    modifier: Modifier = Modifier,
-    meterBlocked: Boolean = false
+    modifier: Modifier = Modifier
 ) {
+    val signal = state.signal
     Column(
         modifier = modifier
             .fillMaxSize()
-            .onlineOnlyLook(meterBlocked)
+            .onlineOnlyLook(state.blocked)
             .verticalScroll(rememberScrollState())
             .padding(20.dp)
     ) {
@@ -91,14 +43,7 @@ fun SignalScreen(
                 .fillMaxWidth()
                 .toggleable(
                     value = state.enabled,
-                    onValueChange = {
-                        if (meterBlocked) {
-                            onEnabledChange(it)
-                            return@toggleable
-                        }
-                        state.enabled = it
-                        onEnabledChange(it)
-                    },
+                    onValueChange = onEnabledChange,
                     role = Role.Switch
                 )
                 .padding(bottom = 8.dp),
@@ -117,15 +62,15 @@ fun SignalScreen(
         }
 
         SignalGauge(
-            percent = state.snrPercent,
+            percent = signal?.snrPercent ?: 0,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(300.dp)
         )
 
-        MetricRow(label = "SNRdb", value = state.snrDbRaw)
-        MetricRow(label = "BER", value = state.berRaw)
-        MetricRow(label = "AGC", value = state.agcRaw)
+        MetricRow(label = "SNRdb", value = displayOrDash(signal?.snrDbRaw))
+        MetricRow(label = "BER", value = displayOrDash(signal?.berRaw))
+        MetricRow(label = "AGC", value = displayOrDash(signal?.agcRaw))
 
         Row(
             modifier = Modifier
@@ -133,10 +78,7 @@ fun SignalScreen(
                 .padding(top = 30.dp)
                 .toggleable(
                     value = state.acousticFeedback,
-                    onValueChange = {
-                        state.acousticFeedback = it
-                        onAcousticChange(it)
-                    },
+                    onValueChange = onAcousticChange,
                     role = Role.Checkbox
                 ),
             verticalAlignment = Alignment.CenterVertically
@@ -177,3 +119,5 @@ private fun MetricRow(label: String, value: String) {
         )
     }
 }
+
+private fun displayOrDash(raw: String?): String = raw?.trim()?.takeIf { it.isNotEmpty() } ?: "-"
