@@ -34,7 +34,7 @@ fun TvZapList(
     if (!streamingEnabled) {
         return
     }
-    DreamDroidTvTheme(fillBackground = false) {
+    DreamDroidTvTheme(fillBackground = false, forceDark = true) {
         Box(
             modifier = modifier
                 .fillMaxWidth()

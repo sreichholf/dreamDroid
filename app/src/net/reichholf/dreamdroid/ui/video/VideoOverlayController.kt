@@ -5,7 +5,6 @@ import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioManager
-import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -851,7 +850,7 @@ class VideoOverlayController(
     }
 
     fun showOverlays() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && activity.isInPictureInPictureMode) {
+        if (activity.isInPictureInPictureMode) {
             hideOverlays()
             return
         }

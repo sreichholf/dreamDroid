@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertCountEquals
@@ -19,7 +22,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -57,8 +62,8 @@ class ServiceListScreenTest {
                             progress = 3
                         )
                     ),
-                    onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> }
+                    onItemClick = {},
+                    onItemLongClick = {}
                 )
             }
         }
@@ -91,8 +96,8 @@ class ServiceListScreenTest {
                             kind = ServiceRowKind.CHANNEL
                         )
                     ),
-                    onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> }
+                    onItemClick = {},
+                    onItemLongClick = {}
                 )
             }
         }
@@ -104,47 +109,51 @@ class ServiceListScreenTest {
     }
 
     @Test
-    fun channelTapReportsWindowPositionOfRowNotOrigin() {
-        var tapX = -1
-        var tapY = -1
+    fun rowMenuOpensOnItsRowAndReportsThePickedAction() {
+        val ard = ServiceListItem(
+            index = 0,
+            reference = "1:0:1:1:1:1:1:0:0:0:",
+            name = "ARD",
+            kind = ServiceRowKind.CHANNEL
+        )
+        val zdf = ServiceListItem(
+            index = 1,
+            reference = "1:0:1:2:1:1:1:0:0:0:",
+            name = "ZDF",
+            kind = ServiceRowKind.CHANNEL
+        )
+        var menu by mutableStateOf<RowMenuState<ServiceRowAction>?>(null)
+        var picked: ServiceRowAction? = null
         composeRule.setContent {
             DreamDroidTheme {
                 ServiceListScreen(
-                    items = listOf(
-                        ServiceListItem(
-                            index = 0,
-                            reference = "1:0:1:1:1:1:1:0:0:0:",
-                            name = "ARD",
-                            kind = ServiceRowKind.CHANNEL
-                        ),
-                        ServiceListItem(
-                            index = 1,
-                            reference = "1:0:1:2:1:1:1:0:0:0:",
-                            name = "ZDF",
-                            kind = ServiceRowKind.CHANNEL
+                    items = listOf(ard, zdf),
+                    onItemClick = { item ->
+                        menu = RowMenuState(
+                            serviceRowKey(item),
+                            listOf(ServiceRowAction.BrowseEpg, ServiceRowAction.Zap)
                         )
-                    ),
-                    onItemClick = { _, x, y ->
-                        tapX = x
-                        tapY = y
                     },
-                    onItemLongClick = { _, _, _ -> }
+                    onItemLongClick = {},
+                    menu = menu,
+                    onMenuAction = { picked = it },
+                    onMenuDismiss = { menu = null }
                 )
             }
         }
         composeRule.onNodeWithText("ZDF").performClick()
+        // The menu is its own popup window, so compare on-screen positions.
+        val zdfTop = composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
+            .fetchSemanticsNode().positionOnScreen.y
+        val zap = composeRule.onNodeWithText("Zap").assertIsDisplayed()
+        composeRule.onNodeWithText("Browse EPG").assertIsDisplayed()
+        val menuTop = composeRule.onNodeWithText("Browse EPG")
+            .fetchSemanticsNode().positionOnScreen.y
+        assertTrue("expected the menu below the tapped row's title", menuTop > zdfTop)
+        zap.performClick()
         composeRule.waitForIdle()
-        // The tap reports window coordinates; the compose root can sit below the status bar.
-        val ard = composeRule.onNodeWithText("ARD", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInWindow
-        val zdf = composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
-            .fetchSemanticsNode().boundsInWindow
-        assertTrue("expected tapX > 0 (not origin), got $tapX", tapX > 0)
-        assertTrue(
-            "expected the ZDF row top between the ARD and ZDF titles, tapY=$tapY " +
-                "ard=$ard zdf=$zdf",
-            tapY >= ard.bottom && tapY <= zdf.top
-        )
+        assertEquals(ServiceRowAction.Zap, picked)
+        composeRule.onNodeWithText("Browse EPG").assertDoesNotExist()
     }
 
     @Test
@@ -166,8 +175,8 @@ class ServiceListScreenTest {
                             kind = ServiceRowKind.CHANNEL
                         )
                     ),
-                    onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> }
+                    onItemClick = {},
+                    onItemLongClick = {}
                 )
             }
         }
@@ -202,8 +211,8 @@ class ServiceListScreenTest {
                             progress = 4
                         )
                     ),
-                    onItemClick = { _, _, _ -> },
-                    onItemLongClick = { _, _, _ -> }
+                    onItemClick = {},
+                    onItemLongClick = {}
                 )
             }
         }

@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.services
 
 import android.content.ActivityNotFoundException
 import android.content.Context
-import android.view.ViewGroup
 import androidx.activity.compose.BackHandler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
@@ -11,11 +10,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,6 +46,7 @@ import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
@@ -57,7 +57,6 @@ import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.video.startLiveServiceStream
-import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
  * Phase 2.7h: one TV/Radio hub bouquet page as Compose
@@ -77,7 +76,6 @@ fun HubServiceListPage(
     viewModel: HubServiceListViewModel = viewModel(key = "hub-service:$bouquetRef")
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
     val session = viewModel.session
     val listState = checkNotNull(session.listState)
     val refresh = checkNotNull(session.refresh)
@@ -85,12 +83,13 @@ fun HubServiceListPage(
     val historyDepth = viewModel.historyDepth
 
     val dialogSession = remember { EpgEventDialogSession() }
+    var rowMenu by remember { mutableStateOf<RowMenuState<ServiceRowAction>?>(null) }
     dialogSession.handle = handle
     dialogSession.context = context
 
     session.handle = handle
     session.context = context
-    session.popupRoot = AnchorPopup.overlayRoot(view)
+    session.onShowMenu = { rowMenu = it }
     session.dialogSession = dialogSession
     session.onZapped = onZapped
     session.profileId = ProfileRepository.get().requireCurrent().id
@@ -122,7 +121,7 @@ fun HubServiceListPage(
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             session.chromeAttached = false
-            session.popupRoot = null
+            session.onShowMenu = null
             dialogSession.dismissProgress()
         }
     }
@@ -149,8 +148,11 @@ fun HubServiceListPage(
         } else {
             ServiceListScreen(
                 items = listState.items,
-                onItemClick = { item, x, y -> session.onItemClick(item, isLong = false, x, y) },
-                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) }
+                onItemClick = { session.onItemClick(it, isLong = false) },
+                onItemLongClick = { session.onItemClick(it, isLong = true) },
+                menu = rowMenu,
+                onMenuAction = session::onRowAction,
+                onMenuDismiss = { rowMenu = null }
             )
         }
     }
@@ -165,7 +167,8 @@ class HubServiceListSession {
 
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
-    var popupRoot: ViewGroup? = null
+    var onShowMenu: ((RowMenuState<ServiceRowAction>?) -> Unit)? = null
+    private var menuRow: ServiceNowNext? = null
     var currentRef: String = ""
     var currentName: String = ""
     var rootRef: String = ""
@@ -218,6 +221,8 @@ class HubServiceListSession {
         if (generation != loadGeneration) {
             return
         }
+        // Rows may change under an open menu; its row and action would be stale.
+        onShowMenu?.invoke(null)
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -376,7 +381,7 @@ class HubServiceListSession {
         return true
     }
 
-    fun onItemClick(item: ServiceListItem, isLong: Boolean, windowX: Int, windowY: Int) {
+    fun onItemClick(item: ServiceListItem, isLong: Boolean) {
         val index = item.index
         val rowList = rows ?: return
         if (index < 0 || index >= rowList.size) {
@@ -405,7 +410,8 @@ class HubServiceListSession {
         if ((instantZap && !isLong) || (!instantZap && isLong)) {
             zapTo(ref)
         } else {
-            showPopupMenu(windowX, windowY, row)
+            menuRow = row
+            onShowMenu?.invoke(RowMenuState(serviceRowKey(item), rowActions(row)))
         }
     }
 
@@ -423,62 +429,44 @@ class HubServiceListSession {
         }
     }
 
-    fun showPopupMenu(windowX: Int, windowY: Int, row: ServiceNowNext) {
-        val root = popupRoot ?: return
+    fun rowActions(row: ServiceNowNext): List<ServiceRowAction> = ServiceRowAction.entries.filter {
+        it != ServiceRowAction.NextEvent || (DreamDroid.featureNowNext() && row.next != null)
+    }
+
+    fun onRowAction(action: ServiceRowAction) {
+        val row = menuRow ?: return
         val ctx = context ?: return
         val host = handle ?: return
         val dialogs = dialogSession ?: return
-        AnchorPopup.showAtWindow(root, windowX, windowY) { menu ->
-            menu.menuInflater.inflate(R.menu.popup_servicelist, menu.menu)
-            menu.menu.findItem(R.id.menu_next_event).isVisible =
-                DreamDroid.featureNowNext() && row.next != null
-            menu.setOnMenuItemClickListener { menuItem ->
-                val ref = row.serviceReference
-                val name = row.serviceName
-                when (menuItem.itemId) {
-                    R.id.menu_next_event -> {
-                        row.next?.let { dialogs.showDetail(it) }
-                        true
-                    }
+        val ref = row.serviceReference
+        val name = row.serviceName
+        when (action) {
+            ServiceRowAction.NextEvent -> row.next?.let { dialogs.showDetail(it) }
 
-                    R.id.menu_current_event -> {
-                        row.now?.let { dialogs.showDetail(it) }
-                        true
-                    }
+            ServiceRowAction.CurrentEvent -> row.now?.let { dialogs.showDetail(it) }
 
-                    R.id.menu_browse_epg -> {
-                        host.navigateToServiceEpg(ref, name)
-                        true
-                    }
+            ServiceRowAction.BrowseEpg -> host.navigateToServiceEpg(ref, name)
 
-                    R.id.menu_zap -> {
-                        zapTo(ref)
-                        true
-                    }
+            ServiceRowAction.Zap -> zapTo(ref)
 
-                    R.id.menu_stream -> {
-                        host.runOnlineOnly {
-                            host.lifecycleOwner.startLiveServiceStream(ctx, ref) {
-                                try {
-                                    val activity = ctx as AppCompatActivity
-                                    activity.startActivity(
-                                        IntentFactory.getStreamServiceIntent(
-                                            activity,
-                                            ref,
-                                            name,
-                                            currentRef,
-                                            row
-                                        )
-                                    )
-                                } catch (_: ActivityNotFoundException) {
-                                    toast(ctx.getText(R.string.missing_stream_player))
-                                }
-                            }
+            ServiceRowAction.Stream -> {
+                host.runOnlineOnly {
+                    host.lifecycleOwner.startLiveServiceStream(ctx, ref) {
+                        try {
+                            val activity = ctx as AppCompatActivity
+                            activity.startActivity(
+                                IntentFactory.getStreamServiceIntent(
+                                    activity,
+                                    ref,
+                                    name,
+                                    currentRef,
+                                    row
+                                )
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            toast(ctx.getText(R.string.missing_stream_player))
                         }
-                        true
                     }
-
-                    else -> false
                 }
             }
         }

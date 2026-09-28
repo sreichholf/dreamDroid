@@ -32,6 +32,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -112,6 +113,43 @@ class TvZapListTest {
             corner.luminance() < 0.4f
         )
         assertTrue(corner.toArgb() != Color.White.toArgb())
+    }
+
+    @After
+    fun restoreAlwaysNight() {
+        forceAlwaysNight()
+    }
+
+    @Test
+    fun zapListCardStaysDarkWithLightAppTheme() {
+        PreferenceManager.getDefaultSharedPreferences(
+            InstrumentationRegistry.getInstrumentation().targetContext
+        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "0").commit()
+        val service = demoService("ZDF HD", "1:0:1:9:9:9:9:0:0:0:")
+        composeRule.setContent {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+            ) {
+                TvZapList(
+                    services = listOf(service),
+                    currentRef = service.serviceReference,
+                    onServiceClick = {}
+                )
+            }
+        }
+        val bitmap = composeRule.onNodeWithTag("hub_service_card")
+            .assertIsDisplayed()
+            .captureToImage()
+            .asAndroidBitmap()
+        val x = (bitmap.width * 0.92f).toInt().coerceIn(0, bitmap.width - 1)
+        val y = (bitmap.height * 0.92f).toInt().coerceIn(0, bitmap.height - 1)
+        val corner = Color(bitmap.getPixel(x, y))
+        assertTrue(
+            "player overlay forces dark; argb=#${Integer.toHexString(corner.toArgb())}",
+            corner.luminance() < 0.4f
+        )
     }
 
     @Test

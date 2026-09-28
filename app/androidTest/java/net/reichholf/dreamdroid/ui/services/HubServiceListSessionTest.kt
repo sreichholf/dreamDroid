@@ -2,14 +2,14 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -70,11 +70,29 @@ class HubServiceListSessionTest {
             actionIds(session)
         )
 
-        val popupAnchor = android.widget.TextView(ctx)
-        val popupMenu = androidx.appcompat.widget.PopupMenu(ctx, popupAnchor).menu
-        android.view.MenuInflater(ctx).inflate(R.menu.popup_servicelist, popupMenu)
-        assertNotNull(popupMenu.findItem(R.id.menu_browse_epg))
-        assertNull(popupMenu.findItem(R.id.menu_multiepg))
+        assertEquals(
+            listOf(
+                ServiceRowAction.CurrentEvent,
+                ServiceRowAction.BrowseEpg,
+                ServiceRowAction.Zap,
+                ServiceRowAction.Stream
+            ),
+            session.rowActions(ServiceNowNext(serviceReference = "1:0:1:1:1:1:1:0:0:0:"))
+        )
+
+        DreamDroid.enableNowNext()
+        assertTrue(
+            ServiceRowAction.NextEvent in session.rowActions(
+                ServiceNowNext(serviceReference = "1:0:1:1:1:1:1:0:0:0:", next = Event())
+            )
+        )
+        DreamDroid.disableNowNext()
+        assertFalse(
+            ServiceRowAction.NextEvent in session.rowActions(
+                ServiceNowNext(serviceReference = "1:0:1:1:1:1:1:0:0:0:", next = Event())
+            )
+        )
+        DreamDroid.enableNowNext()
     }
 
     @Test

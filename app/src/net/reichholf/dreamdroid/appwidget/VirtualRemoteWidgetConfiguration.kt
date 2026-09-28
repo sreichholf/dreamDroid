@@ -4,7 +4,6 @@ import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,7 +14,6 @@ import androidx.compose.runtime.setValue
 import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -40,12 +38,6 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
         val profiles = AppDatabase.profilesBlocking(this).getProfiles()
-        if (profiles.isEmpty()) {
-            Toast.makeText(this, R.string.no_profile_available, Toast.LENGTH_LONG).show()
-            finish()
-            return
-        }
-
         val items = profiles.map { profile ->
             ProfileListItem(
                 id = profile.id ?: 0,
@@ -63,10 +55,16 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
                     profiles = items,
                     isFull = isFull,
                     onStyleFullChange = { isFull = it },
-                    onProfileClick = { profile -> finishWithProfile(profile.id, isFull) }
+                    onProfileClick = { profile -> finishWithProfile(profile.id, isFull) },
+                    onOpenApp = ::openApp
                 )
             }
         }
+    }
+
+    private fun openApp() {
+        packageManager.getLaunchIntentForPackage(packageName)?.let(::startActivity)
+        finish()
     }
 
     private fun finishWithProfile(profileId: Int, isFull: Boolean) {

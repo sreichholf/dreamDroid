@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <bool name="requireTranslucentStatusbar">true</bool>
-    <bool name="preventCardCornerOverlap">false</bool>
-</resources>

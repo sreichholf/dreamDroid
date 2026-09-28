@@ -8,7 +8,6 @@ object Statics {
     const val ACTION_IMDB: Int = 0xc003
     const val ACTION_FIND_SIMILAR: Int = 0xc004
     const val ACTION_DELETE: Int = 0xc009
-    const val ACTION_DELETE_CONFIRMED: Int = 0xc011
     const val ACTION_EDIT: Int = 0xc012
     const val ACTION_LEAVE_CONFIRMED: Int = 0xc015
     const val ACTION_LOCATION_RATIONALE_DONE: Int = 0xc23

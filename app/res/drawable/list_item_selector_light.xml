@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+        android:color="?android:attr/colorControlHighlight">
+    <item>
+        <selector xmlns:android="http://schemas.android.com/apk/res/android">
+            <item
+                android:drawable="@drawable/list_background_selected_light"
+                android:state_selected="true"/>
+            <item
+                android:drawable="@drawable/list_background_checked_light"
+                android:state_checked="true"/>
+            <item
+                android:drawable="@drawable/list_background_activated_light"
+                android:state_activated="true"/>
+            <item android:drawable="@drawable/list_background_neutral"/>
 
-    <item android:drawable="@drawable/list_background_selected_light" android:state_pressed="true"/>
-    <item android:drawable="@drawable/list_background_selected_light" android:state_selected="true"/>
-    <item android:drawable="@drawable/list_background_checked_light" android:state_checked="true"/>
-    <item android:drawable="@drawable/list_background_activated_light" android:state_activated="true"/>
-    <item android:drawable="@drawable/list_background_neutral"/>
-
-</selector>
+        </selector>
+    </item>
+</ripple>

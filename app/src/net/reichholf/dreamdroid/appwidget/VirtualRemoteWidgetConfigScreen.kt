@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.appwidget
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,6 +11,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.Button
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
@@ -19,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
@@ -32,8 +35,13 @@ fun VirtualRemoteWidgetConfigScreen(
     isFull: Boolean,
     onStyleFullChange: (Boolean) -> Unit,
     onProfileClick: (ProfileListItem) -> Unit,
+    onOpenApp: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    if (profiles.isEmpty()) {
+        NoProfiles(onOpenApp, modifier)
+        return
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -96,6 +104,26 @@ fun VirtualRemoteWidgetConfigScreen(
                     )
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun NoProfiles(onOpenApp: () -> Unit, modifier: Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = stringResource(R.string.no_profile_available),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+        Button(onClick = onOpenApp, modifier = Modifier.padding(top = 16.dp)) {
+            Text(stringResource(R.string.open_dreamdroid))
         }
     }
 }

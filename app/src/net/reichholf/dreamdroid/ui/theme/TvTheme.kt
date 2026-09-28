@@ -27,11 +27,15 @@ import androidx.tv.material3.lightColorScheme
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun DreamDroidTvTheme(fillBackground: Boolean = true, content: @Composable () -> Unit) {
-    DreamDroidTheme {
+fun DreamDroidTvTheme(
+    fillBackground: Boolean = true,
+    forceDark: Boolean? = null,
+    content: @Composable () -> Unit
+) {
+    DreamDroidTheme(forceDark = forceDark) {
         val phoneScheme = PhoneMaterialTheme.colorScheme
         val phoneShapes = PhoneMaterialTheme.shapes
-        val dark = isDreamDroidDark(LocalContext.current)
+        val dark = forceDark ?: isDreamDroidDark(LocalContext.current)
         val tvScheme = phoneScheme.toTvColorScheme(dark)
         val tvShapes = TvShapes(
             extraSmall = phoneShapes.extraSmall,

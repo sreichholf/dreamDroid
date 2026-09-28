@@ -53,13 +53,13 @@ fun PhoneZapList(
         items(items, key = { "${it.index}:${it.reference}" }) { item ->
             ServiceRow(
                 item = item,
-                onClick = { _, _ ->
+                onClick = {
                     val row = services.getOrNull(item.index) ?: return@ServiceRow
                     if (item.kind == ServiceRowKind.CHANNEL) {
                         onServiceClick(row)
                     }
                 },
-                onLongClick = { _, _ -> }
+                onLongClick = {}
             )
         }
     }
@@ -72,7 +72,7 @@ fun ComposeView.bindPhoneZapList(
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     setContent {
-        DreamDroidTheme {
+        DreamDroidTheme(forceDark = true) {
             PhoneZapList(
                 services = state.zapServices,
                 currentRef = state.zapCurrentRef,

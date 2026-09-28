@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -25,14 +27,24 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
-import net.reichholf.dreamdroid.ui.compose.listRowAnchoredClickable
+import net.reichholf.dreamdroid.ui.compose.RowMenu
+import net.reichholf.dreamdroid.ui.compose.RowMenuAction
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
-/** Window-space top-left of the tapped row — used to anchor View PopupMenus. */
-typealias ServiceListTap = (item: ServiceListItem, windowX: Int, windowY: Int) -> Unit
+enum class ServiceRowAction(override val label: Int) : RowMenuAction {
+    CurrentEvent(R.string.current_event),
+    NextEvent(R.string.next_event),
+    BrowseEpg(R.string.browse_epg),
+    Zap(R.string.zap),
+    Stream(R.string.stream)
+}
+
+fun serviceRowKey(item: ServiceListItem): String = "${item.index}:${item.reference}"
 
 private val EventStartColumnWidth = 45.dp
 private val EventEndColumnWidth = 50.dp
@@ -45,27 +57,29 @@ const val SERVICE_LIST_PROGRESS_TAG = "service_list_progress"
 @Composable
 fun ServiceListScreen(
     items: List<ServiceListItem>,
-    onItemClick: ServiceListTap,
-    onItemLongClick: ServiceListTap,
-    modifier: Modifier = Modifier
+    onItemClick: (ServiceListItem) -> Unit,
+    onItemLongClick: (ServiceListItem) -> Unit,
+    modifier: Modifier = Modifier,
+    menu: RowMenuState<ServiceRowAction>? = null,
+    onMenuAction: (ServiceRowAction) -> Unit = {},
+    onMenuDismiss: () -> Unit = {}
 ) {
     LazyColumn(modifier.fillMaxSize()) {
-        items(items, key = { "${it.index}:${it.reference}" }) { item ->
-            ServiceRow(
-                item = item,
-                onClick = { x, y -> onItemClick(item, x, y) },
-                onLongClick = { x, y -> onItemLongClick(item, x, y) }
-            )
+        items(items, key = ::serviceRowKey) { item ->
+            Box {
+                ServiceRow(
+                    item = item,
+                    onClick = { onItemClick(item) },
+                    onLongClick = { onItemLongClick(item) }
+                )
+                RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
+            }
         }
     }
 }
 
 @Composable
-internal fun ServiceRow(
-    item: ServiceListItem,
-    onClick: (windowX: Int, windowY: Int) -> Unit,
-    onLongClick: (windowX: Int, windowY: Int) -> Unit
-) {
+internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
     if (item.kind == ServiceRowKind.MARKER) {
         Text(
             text = item.name,
@@ -82,7 +96,7 @@ internal fun ServiceRow(
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
     ListRowSurface(
-        modifier = Modifier.listRowAnchoredClickable(onClick = onClick, onLongClick = onLongClick)
+        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
     ) {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
