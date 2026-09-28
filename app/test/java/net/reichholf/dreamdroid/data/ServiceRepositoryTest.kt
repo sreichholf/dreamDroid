@@ -148,7 +148,7 @@ class ServiceRepositoryTest {
     }
 
     @Test
-    fun bouquetServicesComeFromGetservicesAndFailuresThrow() = runBlocking {
+    fun bouquetServicesComeFromGetservicesAndFailuresThrow() = runBlocking<Unit> {
         val bouquet = services.bouquetServices(FAVOURITES)
 
         assertTrue(bouquet.any { it.name == "Das Erste HD" })
