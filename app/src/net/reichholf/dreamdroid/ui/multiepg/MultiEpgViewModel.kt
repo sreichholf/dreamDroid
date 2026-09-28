@@ -18,8 +18,8 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.TimerSnapshotStore
 import net.reichholf.dreamdroid.room.UserBouquetCache
+import net.reichholf.dreamdroid.room.toTimer
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -115,7 +115,7 @@ internal fun newMultiEpgSession(
         UserBouquetCache.loadRosterServices(AppDatabase.roster(app), profileId, ref)
     },
     loadCachedTimers = { profileId ->
-        TimerSnapshotStore.load(AppDatabase.timer(app), profileId)
+        AppDatabase.timer(app).snapshot(profileId)?.map { it.toTimer() }
     }
 )
 

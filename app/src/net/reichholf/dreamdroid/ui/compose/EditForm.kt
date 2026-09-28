@@ -274,6 +274,7 @@ fun EditOutlinedTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     password: Boolean = false,
+    singleLine: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
     contentDescription: String = label
@@ -312,7 +313,11 @@ fun EditOutlinedTextField(
         OutlinedTextField(
             state = state,
             label = { Text(label) },
-            lineLimits = TextFieldLineLimits.SingleLine,
+            lineLimits = if (singleLine) {
+                TextFieldLineLimits.SingleLine
+            } else {
+                TextFieldLineLimits.MultiLine()
+            },
             isError = isError,
             supportingText = supporting,
             keyboardOptions = keyboardOptions,

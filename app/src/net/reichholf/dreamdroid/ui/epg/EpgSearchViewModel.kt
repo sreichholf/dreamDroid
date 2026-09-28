@@ -1,150 +1,117 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.ui.text.SavedTextField
+import net.reichholf.dreamdroid.ui.text.UiText
 
-private const val EPG_SEARCH_DRAFT_KEY = "epg_search_draft"
-
-/**
- * Search-field draft for [EpgSearchDestination].
- *
- * Matches `rememberSaveable(query, remountEpoch)`: a new route query or remount epoch
- * replaces the draft with [query]. The same query and epoch keep [draft].
- */
-fun epgSearchDraftForRoute(
-    draft: String,
-    previousQuery: String,
-    previousEpoch: Int,
-    query: String,
-    remountEpoch: Int
-): String {
-    if (previousQuery != query || previousEpoch != remountEpoch) {
-        return query
-    }
-    return draft
+/** EPG search results for the route's [query]. */
+data class EpgSearchUiState(
+    val query: String = "",
+    val events: List<Event> = emptyList(),
+    val refreshing: Boolean = false,
+    val emptyMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(if (refreshing) R.string.loading else R.string.epg_search)
 }
 
 /**
- * EPG search list, in-progress draft, and load job for [EpgSearchDestination].
- * The search bar expanded flag stays in the composable.
+ * EPG search list, the search field, and the load for [EpgSearchDestination]. The field's
+ * draft survives process death. The search bar's expanded flag stays in the composable.
  */
-class EpgSearchViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    var listState by mutableStateOf(EpgBouquetListState())
-        private set
+@HiltViewModel
+class EpgSearchViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val epg: EpgRepository
+) : ViewModel() {
+    private val hasSavedDraft = KEY_DRAFT in savedStateHandle
+    private val searchField = SavedTextField(viewModelScope, savedStateHandle, KEY_DRAFT)
 
-    var draftQuery by mutableStateOf("")
-        private set
+    /** The search field; the user edits it directly. */
+    val queryState: TextFieldState
+        get() = searchField.state
 
-    var emptyMessage by mutableStateOf<String?>(null)
-        private set
+    private val _uiState = MutableStateFlow(EpgSearchUiState())
+    val uiState: StateFlow<EpgSearchUiState> = _uiState.asStateFlow()
 
-    var refreshing by mutableStateOf(false)
-        private set
-
-    private var boundQuery: String? = null
     private var boundEpoch: Int? = null
-    private var hasSavedDraft: Boolean = false
-    private var loadToken: Int = 0
     private var loadJob: Job? = null
 
-    init {
-        val saved = savedStateHandle.get<String>(EPG_SEARCH_DRAFT_KEY)
-        hasSavedDraft = saved != null
-        if (saved != null) {
-            draftQuery = saved
-        }
-    }
-
     /**
-     * Applies the route [query] and [remountEpoch]. The first call keeps a restored draft.
-     * A later change of either value resets the draft to [query] and reloads.
+     * Applies the route [query] and [remountEpoch] and searches. The first call keeps a
+     * restored draft. A later change of either resets the draft to [query]; the same
+     * values again change nothing.
      */
     fun syncRoute(query: String, remountEpoch: Int) {
-        val previousQuery = boundQuery
         val previousEpoch = boundEpoch
-        if (previousQuery == null || previousEpoch == null) {
-            if (!hasSavedDraft) {
-                onDraftQueryChange(query)
-            }
-            boundQuery = query
-            boundEpoch = remountEpoch
-            reload()
+        if (previousEpoch != null && query == _uiState.value.query &&
+            remountEpoch == previousEpoch
+        ) {
             return
         }
-        if (previousQuery == query && previousEpoch == remountEpoch) {
-            return
+        if (previousEpoch != null || !hasSavedDraft) {
+            searchField.set(query)
         }
-        val nextDraft = epgSearchDraftForRoute(
-            draft = draftQuery,
-            previousQuery = previousQuery,
-            previousEpoch = previousEpoch,
-            query = query,
-            remountEpoch = remountEpoch
-        )
-        boundQuery = query
         boundEpoch = remountEpoch
-        onDraftQueryChange(nextDraft)
-        listState = EpgBouquetListState()
-        emptyMessage = null
+        _uiState.update { EpgSearchUiState(query = query) }
         reload()
     }
 
-    fun onDraftQueryChange(value: String) {
-        draftQuery = value
-        savedStateHandle[EPG_SEARCH_DRAFT_KEY] = value
-    }
-
     fun reload() {
-        val query = boundQuery.orEmpty()
-        val token = ++loadToken
+        val query = _uiState.value.query
+        loadJob?.cancel()
+        loadJob = null
         if (query.isEmpty()) {
-            loadJob?.cancel()
-            loadJob = null
-            refreshing = false
+            _uiState.update { it.copy(refreshing = false) }
             return
         }
-        val app = getApplication<Application>()
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
-        }
-        refreshing = true
-        loadJob?.cancel()
-        loadJob = viewModelScope.launch {
-            val result = loadEventList(
-                app,
-                listOf(NameValuePair("search", query)),
-                URIStore.EPG_SEARCH
+        _uiState.update {
+            it.copy(
+                refreshing = true,
+                emptyMessage = if (it.events.isEmpty()) UiText.Resource(R.string.loading) else null
             )
-            if (token != loadToken) {
-                return@launch
-            }
-            refreshing = false
-            if (!result.success) {
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
-                return@launch
-            }
-            if (result.events.isEmpty()) {
-                listState.replaceAll(emptyList())
-                emptyMessage = app.getString(R.string.no_list_item)
-            } else {
-                emptyMessage = null
-                listState.replaceAll(result.events)
+        }
+        loadJob = viewModelScope.launch {
+            val response = epg.search(query)
+            val events = response.value
+            _uiState.update {
+                when {
+                    events == null -> it.copy(
+                        refreshing = false,
+                        events = emptyList(),
+                        emptyMessage = response.error.contentErrorText()
+                    )
+
+                    else -> it.copy(
+                        refreshing = false,
+                        events = events,
+                        emptyMessage = if (events.isEmpty()) {
+                            UiText.Resource(R.string.no_list_item)
+                        } else {
+                            null
+                        }
+                    )
+                }
             }
         }
+    }
+
+    private companion object {
+        const val KEY_DRAFT = "epg_search_draft"
     }
 }

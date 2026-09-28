@@ -4,9 +4,12 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +25,7 @@ import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
+import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
@@ -60,15 +64,18 @@ fun TvHubNavHost(
     startDestination: Any = TvHub,
     settingsViewModel: @Composable () -> SettingsViewModel = { hiltViewModel() }
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
-        TvHubNavGraph(
-            activity = activity,
-            onRecheckProfile = onRecheckProfile,
-            hubViewModel = hubViewModel,
-            navController = navController,
-            startDestination = startDestination,
-            settingsViewModel = settingsViewModel
-        )
+        CompositionLocalProvider(LocalShellSnackbarHostState provides snackbarHostState) {
+            TvHubNavGraph(
+                activity = activity,
+                onRecheckProfile = onRecheckProfile,
+                hubViewModel = hubViewModel,
+                navController = navController,
+                startDestination = startDestination,
+                settingsViewModel = settingsViewModel
+            )
+        }
         // TV Material is not Material 3. The snackbar uses the phone theme.
         Box(
             modifier = Modifier
@@ -76,7 +83,7 @@ fun TvHubNavHost(
                 .fillMaxWidth()
         ) {
             DreamDroidTheme {
-                ShellSnackbarHost()
+                ShellSnackbarHost(hostState = snackbarHostState)
             }
         }
     }

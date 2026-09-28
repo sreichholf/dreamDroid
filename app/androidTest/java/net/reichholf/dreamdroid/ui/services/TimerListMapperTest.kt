@@ -33,7 +33,7 @@ class TimerListMapperTest {
         assertEquals("0", timer.repeated)
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val items = timerListItemsFrom(context, timers)
+        val items = timerListItemsFrom(context.resources, timers)
         assertEquals(2, items.size)
         assertEquals("Navy CIS: L.A.", items[0].name)
         assertEquals("SAT.1 HD", items[0].serviceName)

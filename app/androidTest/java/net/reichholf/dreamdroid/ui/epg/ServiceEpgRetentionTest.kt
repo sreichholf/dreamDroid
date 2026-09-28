@@ -4,9 +4,11 @@ import android.app.Application
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -14,18 +16,25 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import java.util.concurrent.atomic.AtomicInteger
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.EventListLoadResult
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.TimerRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.nav.EpgSearch
 import net.reichholf.dreamdroid.ui.nav.Hub
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.ServiceEpg
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.MockWebServer
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Before
@@ -36,6 +45,28 @@ class ServiceEpgRetentionTest {
     @get:Rule
     val composeRule = createComposeRule()
 
+    private val server = MockWebServer().apply {
+        enqueue(MockResponse().setBody(loadWebFixture("epgservice.xml")))
+        start()
+    }
+    private val profiles = memoryProfiles().apply {
+        setCurrent(
+            Profile().apply {
+                id = 1
+                name = "test"
+                host = server.hostName
+                port = server.port
+            }
+        )
+    }
+    private val database = AppDatabase.inMemory(
+        InstrumentationRegistry.getInstrumentation().targetContext
+    )
+    private val clients = EnigmaClientFactory(profiles)
+    private val sessions = SessionConnectionHolder().apply { onSuccess() }
+    private val repository = EpgRepository(clients, profiles, database, sessions)
+    private val timers = TimerRepository(clients, profiles, database)
+
     @Before
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
@@ -43,22 +74,17 @@ class ServiceEpgRetentionTest {
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
+    @After
+    fun tearDown() {
+        server.shutdown()
+        database.close()
+    }
+
     @Test
     fun popBackFromEventDetailKeepsListWithoutReload() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
         val handle = PhoneNavHostState(app, SavedStateHandle())
-        val loads = AtomicInteger(0)
-        var loadParams: List<NameValuePair> = emptyList()
-        val hooks = ServiceEpgLoadHooks(
-            profileId = { null },
-            shouldSkipReceiverHttp = { false },
-            loadEvents = { _, params ->
-                loads.incrementAndGet()
-                loadParams = params
-                EventListLoadResult(true, listOf(tagesschau()), null)
-            }
-        )
         val viewModels = mutableListOf<ServiceEpgViewModel>()
         lateinit var navController: NavHostController
         composeRule.setContent {
@@ -67,10 +93,18 @@ class ServiceEpgRetentionTest {
                 NavHost(navController = navController, startDestination = Hub) {
                     composable<Hub> { Text("Hub") }
                     composable<ServiceEpg> {
-                        val viewModel: ServiceEpgViewModel = viewModel()
-                        viewModel.loadHooks = hooks
+                        val viewModel = viewModel {
+                            ServiceEpgViewModel(createSavedStateHandle(), repository, sessions)
+                        }
+                        val detail = viewModel {
+                            EpgEventDetailViewModel(createSavedStateHandle(), timers)
+                        }
                         viewModels += viewModel
-                        ServiceEpgDestination(handle = handle, viewModel = viewModel)
+                        ServiceEpgDestination(
+                            handle = handle,
+                            viewModel = viewModel,
+                            detailViewModel = detail
+                        )
                     }
                     composable<EpgSearch> {
                         Text("Search")
@@ -82,6 +116,9 @@ class ServiceEpgRetentionTest {
             handle.attachNavController(navController)
             navController.navigateToServiceEpg(SERVICE_REF, "Das Erste HD")
         }
+        composeRule.waitUntil(10_000) {
+            composeRule.onAllNodesWithText("Tagesschau").fetchSemanticsNodes().isNotEmpty()
+        }
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed().performClick()
         composeRule.onNodeWithText(app.getString(R.string.similar)).performClick()
         composeRule.onNodeWithText("Search").assertIsDisplayed()
@@ -90,22 +127,13 @@ class ServiceEpgRetentionTest {
 
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.runOnIdle {
-            assertEquals("pop back must not start a fresh load", 1, loads.get())
-            assertEquals(
-                listOf("sRef" to SERVICE_REF),
-                loadParams.map { it.key() to it.value() }
-            )
+            assertEquals("pop back must not start a fresh load", 1, server.requestCount)
             assertSame(viewModels.first(), viewModels.last())
         }
+        val url = server.takeRequest().requestUrl!!
+        assertEquals("/web/epgservice", url.encodedPath)
+        assertEquals(SERVICE_REF, url.queryParameter("sRef"))
     }
-
-    private fun tagesschau() = Event(
-        eventId = "100",
-        title = "Tagesschau",
-        startReadable = "20:00",
-        durationReadable = "15",
-        descriptionExtended = "Die Nachrichten."
-    )
 
     private companion object {
         const val SERVICE_REF = "1:0:19:283D:3FB:1:C00000:0:0:0:"

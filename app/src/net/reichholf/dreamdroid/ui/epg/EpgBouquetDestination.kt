@@ -1,40 +1,43 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import android.app.Activity
 import android.content.Context
-import android.content.Intent
 import android.text.format.DateFormat
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import java.util.Calendar
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.Epg
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Phase 2.7f: bouquet EPG as a direct Compose NavHost destination.
- * Time jump is date/time chips + Now/Prime; each chip opens a stock Material picker.
- * Bouquet identity, the list, and the load job live on [EpgBouquetViewModel].
- * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
+ * Bouquet list EPG as a NavHost destination. Time jump is date/time chips + Now/Prime;
+ * each chip opens a stock Material picker. Bouquet identity, the list, and the load live
+ * on [EpgBouquetViewModel]. Bouquet pick results arrive via
+ * [PhoneNavHandle.composeActivityResultListener].
  */
 @Composable
 fun EpgBouquetDestination(
@@ -42,116 +45,94 @@ fun EpgBouquetDestination(
     route: Epg,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
-    viewModel: EpgBouquetViewModel = viewModel()
+    viewModel: EpgBouquetViewModel = hiltViewModel(),
+    detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val activity = context as AppCompatActivity
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var showDatePicker by rememberSaveable { mutableStateOf(false) }
     var showTimePicker by rememberSaveable { mutableStateOf(false) }
-    val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.handle = handle
-    dialogSession.context = context
+    val listState = rememberLazyListState()
+    ShellTitle(uiState.title)
+    val nowSec = { (System.currentTimeMillis() / 1000L).toInt() }
+    val openMultiEpg = { atSec: Long ->
+        openBouquetMultiEpg(context, handle, uiState.bouquetRef, uiState.bouquetName, atSec)
+    }
     BindShellTopBarActions(
         epgBouquetTopBarActions(
-            bouquetRef = viewModel.bouquetRef,
+            bouquetRef = uiState.bouquetRef,
             multiEpgLabel = stringResource(R.string.multiepg),
             pickBouquetLabel = stringResource(R.string.bouquet_overview),
-            onOpenMultiEpg = {
-                val atSec = viewModel.timeSec?.toLong()
-                    ?: Calendar.getInstance().timeInMillis / 1000L
-                openBouquetMultiEpg(
-                    context,
-                    handle,
-                    viewModel.bouquetRef,
-                    viewModel.bouquetName,
-                    atSec
-                )
-            },
-            onPickBouquet = { viewModel.pickBouquet() }
+            onOpenMultiEpg = { openMultiEpg((uiState.timeSec ?: nowSec()).toLong()) },
+            onPickBouquet = viewModel::pickBouquet
         )
     )
-    val pickerListener = remember(viewModel) { EpgBouquetPickerForwarder(viewModel) }
 
-    DisposableEffect(handle, pickerListener, dialogSession) {
+    DisposableEffect(handle, viewModel) {
+        val pickerListener = PhoneNavHandle.ActivityResultListener { request, result, data ->
+            val bouquet = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET)
+            if (result == Activity.RESULT_OK &&
+                request == Statics.REQUEST_PICK_BOUQUET &&
+                bouquet != null
+            ) {
+                viewModel.onBouquetPicked(bouquet.reference, bouquet.name)
+            }
+        }
         handle.composeActivityResultListener = pickerListener
         handle.dispatchPendingComposeActivityResult()
         onDispose {
             if (handle.composeActivityResultListener === pickerListener) {
                 handle.composeActivityResultListener = null
             }
-            dialogSession.dismissProgress()
         }
     }
 
-    LaunchedEffect(viewModel, handle) {
-        viewModel.pickBouquetRequests.collect { requestCode ->
-            handle.navigateToPickBouquet(requestCode)
+    LaunchedEffect(uiState.openPicker) {
+        if (uiState.openPicker) {
+            viewModel.onPickerOpened()
+            handle.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
         }
+    }
+    LaunchedEffect(uiState.scrollToTop) {
+        if (uiState.scrollToTop) {
+            listState.scrollToItem(0)
+            viewModel.onScrolledToTop()
+        }
+    }
+    LaunchedEffect(remountEpoch, route) {
+        viewModel.onShown(route, remountEpoch, nowSec())
     }
 
     val labelLocale =
         if (DreamDroid.DATE_LOCALE_WO) Locale.US else LocalLocale.current.platformLocale
     val is24Hour = DateFormat.is24HourFormat(context)
-    val timeSec = viewModel.timeSec
-        ?: (Calendar.getInstance().timeInMillis / 1000L).toInt()
+    val timeSec = uiState.timeSec ?: nowSec()
     val timeJump = EpgTimeJumpUi(
         dateLabel = EpgInstant.formatDateLabel(timeSec, labelLocale),
         timeLabel = EpgInstant.formatTimeLabel(timeSec, is24Hour, labelLocale),
         onPickDate = { showDatePicker = true },
         onPickTime = { showTimePicker = true },
-        onNow = {
-            viewModel.onInstantSet((Calendar.getInstance().timeInMillis / 1000).toInt())
-        },
+        onNow = { viewModel.onInstantSet(nowSec()) },
         onPrime = { viewModel.onInstantSet(EpgInstant.primeTimeSec()) },
-        onTimeline = {
-            openBouquetMultiEpg(
-                context,
-                handle,
-                viewModel.bouquetRef,
-                viewModel.bouquetName,
-                viewModel.timeSec?.toLong() ?: timeSec.toLong()
-            )
-        }
+        onTimeline = { openMultiEpg(timeSec.toLong()) }
     )
 
-    val connectionSession =
-        SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(remountEpoch, connectionSession, viewModel, handle, route) {
-        val leafRef = route.serviceRef
-        val leafName = route.serviceName
-        val leafTime = route.timeOrNull()
-        val nowSec = (Calendar.getInstance().timeInMillis / 1000).toInt()
-        viewModel.ensureEpoch(remountEpoch, leafRef, leafName, leafTime, nowSec)
-        viewModel.applyLeaf(leafRef, leafName)
-        viewModel.reload()
-    }
-
-    val toolbarTitle = if (viewModel.refresh.isRefreshing) {
-        stringResource(R.string.loading)
-    } else {
-        viewModel.bouquetName.takeIf { it.isNotEmpty() } ?: stringResource(R.string.epg)
-    }
-    LaunchedEffect(toolbarTitle) {
-        activity.title = toolbarTitle
-    }
-
     DreamDroidPullRefresh(
-        refreshing = viewModel.refresh.isRefreshing,
+        refreshing = uiState.refreshing,
         onRefresh = { viewModel.reload(forceRefresh = true) },
-        enabled = viewModel.refresh.enabled,
+        enabled = true,
         modifier = modifier
     ) {
         EpgBouquetScreen(
-            items = viewModel.listState.items,
-            listState = viewModel.listState.listState,
-            scrollEpoch = viewModel.listState.scrollEpoch,
-            emptyMessage = viewModel.emptyMessage,
+            items = uiState.events,
+            listState = listState,
+            emptyMessage = uiState.emptyMessage?.asString(),
             bouquetPick = EpgBouquetPickUi(
-                bouquetName = viewModel.bouquetName,
-                onPickBouquet = { viewModel.pickBouquet() }
+                bouquetName = uiState.bouquetName,
+                onPickBouquet = viewModel::pickBouquet
             ),
             timeJump = timeJump,
-            onItemClick = { dialogSession.showDetail(it) }
+            onItemClick = detailViewModel::showDetail
         )
     }
 
@@ -161,9 +142,7 @@ fun EpgBouquetDestination(
             onDismiss = { showDatePicker = false },
             onConfirm = { utcDateMillis ->
                 showDatePicker = false
-                viewModel.onInstantSet(
-                    EpgInstant.applyDate(viewModel.timeSec ?: timeSec, utcDateMillis)
-                )
+                viewModel.onInstantSet(EpgInstant.applyDate(timeSec, utcDateMillis))
             }
         )
     }
@@ -174,14 +153,12 @@ fun EpgBouquetDestination(
             onDismiss = { showTimePicker = false },
             onConfirm = { hour, minute ->
                 showTimePicker = false
-                viewModel.onInstantSet(
-                    EpgInstant.applyTime(viewModel.timeSec ?: timeSec, hour, minute)
-                )
+                viewModel.onInstantSet(EpgInstant.applyTime(timeSec, hour, minute))
             }
         )
     }
 
-    EpgEventDetailSheetHost(dialogSession)
+    EpgEventDetailHost(handle, detailViewModel)
 }
 
 internal fun openBouquetMultiEpg(
@@ -224,11 +201,4 @@ internal fun epgBouquetTopBarActions(
             onClick = onPickBouquet
         )
     )
-}
-
-private class EpgBouquetPickerForwarder(private val viewModel: EpgBouquetViewModel) :
-    PhoneNavHandle.ActivityResultListener {
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        viewModel.onPickerResult(requestCode, resultCode, data)
-    }
 }

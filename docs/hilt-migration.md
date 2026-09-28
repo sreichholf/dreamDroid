@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–2 merged; PR 3 in review. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–3 merged; wave B in progress. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -146,11 +146,11 @@ One line per PR: state, then PR link once opened.
 
 - [x] 1 Hilt + Device info — merged, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
 - [x] 2 Signal + Screenshot — merged, [#527](https://github.com/sreichholf/dreamDroid/pull/527)
-- [ ] 3 Profiles + setup — in review, [#528](https://github.com/sreichholf/dreamDroid/pull/528)
-- [ ] 4 Settings + backup
-- [ ] 5 Timers
-- [ ] 6 Movies
-- [ ] 7 List EPG
+- [x] 3 Profiles + setup — merged, [#528](https://github.com/sreichholf/dreamDroid/pull/528)
+- [ ] 4 Settings + backup — in progress
+- [ ] 5 Timers — in review, [#530](https://github.com/sreichholf/dreamDroid/pull/530)
+- [ ] 6 Movies — in progress
+- [x] 7 List EPG — merged, [#529](https://github.com/sreichholf/dreamDroid/pull/529)
 - [ ] 8 MultiEPG
 - [ ] 9 Service lists + pickers
 - [ ] 10 Hub, now playing, zap

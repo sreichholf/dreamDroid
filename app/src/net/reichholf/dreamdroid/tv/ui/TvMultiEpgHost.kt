@@ -181,8 +181,7 @@ fun TvMultiEpgHost(
                     onSaved = {
                         viewModel.dismissTimerEditor()
                         session.load(session.anchorSec, forceRefresh = true, isPull = false)
-                    },
-                    mutationsBlocked = connection.blocksMutations
+                    }
                 )
             }
         }

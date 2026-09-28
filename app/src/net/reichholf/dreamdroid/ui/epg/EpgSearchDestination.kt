@@ -1,26 +1,24 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import net.reichholf.dreamdroid.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * EPG search results as a Compose NavHost destination with Material 3 SearchBar.
- * Remount/reload is driven by [query] + host remount epoch for same-query resubmits.
- * List, draft, and the load job live on [EpgSearchViewModel]. The expanded flag stays here.
+ * EPG search results as a NavHost destination with a Material 3 SearchBar. The route
+ * [query] and the host's remount epoch (for same-query resubmits) drive the search. The
+ * list, the search field, and the load live on [EpgSearchViewModel]; the expanded flag
+ * stays here.
  */
 @Composable
 fun EpgSearchDestination(
@@ -28,44 +26,26 @@ fun EpgSearchDestination(
     query: String,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
-    viewModel: EpgSearchViewModel = viewModel()
+    viewModel: EpgSearchViewModel = hiltViewModel(),
+    detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var expanded by rememberSaveable(query, remountEpoch) {
         mutableStateOf(query.isEmpty())
     }
-    val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.handle = handle
-    dialogSession.context = context
+    ShellTitle(uiState.title)
     LaunchedEffect(query, remountEpoch) {
         viewModel.syncRoute(query, remountEpoch)
     }
 
-    val toolbarTitle = if (viewModel.refreshing) {
-        stringResource(R.string.loading)
-    } else {
-        stringResource(R.string.epg_search)
-    }
-
-    DisposableEffect(handle, dialogSession) {
-        onDispose {
-            dialogSession.dismissProgress()
-        }
-    }
-
-    LaunchedEffect(toolbarTitle) {
-        (context as? AppCompatActivity)?.title = toolbarTitle
-    }
-
     DreamDroidPullRefresh(
-        refreshing = viewModel.refreshing,
-        onRefresh = { viewModel.reload() },
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::reload,
         enabled = query.isNotEmpty() && !expanded,
         modifier = modifier
     ) {
         EpgSearchScreen(
-            query = viewModel.draftQuery,
-            onQueryChange = viewModel::onDraftQueryChange,
+            queryState = viewModel.queryState,
             onSearch = { submitted ->
                 val q = submitted.trim()
                 if (q.isEmpty()) {
@@ -76,13 +56,11 @@ fun EpgSearchDestination(
             },
             expanded = expanded,
             onExpandedChange = { expanded = it },
-            items = viewModel.listState.items,
-            listState = viewModel.listState.listState,
-            scrollEpoch = viewModel.listState.scrollEpoch,
-            emptyMessage = viewModel.emptyMessage,
-            onItemClick = { dialogSession.showDetail(it) }
+            items = uiState.events,
+            emptyMessage = uiState.emptyMessage?.asString(),
+            onItemClick = detailViewModel::showDetail
         )
     }
 
-    EpgEventDetailSheetHost(dialogSession)
+    EpgEventDetailHost(handle, detailViewModel)
 }
