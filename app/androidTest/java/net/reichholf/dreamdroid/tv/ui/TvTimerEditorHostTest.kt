@@ -1,129 +1,114 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
-import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
-import org.junit.After
+import net.reichholf.dreamdroid.ui.timers.TimerEditUiState
+import net.reichholf.dreamdroid.ui.timers.TimerFormActions
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * Shared TV add/edit host. Catalogs are prefilled so [TvTimerEditorHost] reloads
- * the form without a receiver round-trip. A profile is still installed because a
- * missing catalog falls through to HTTP, and that path calls
- * [net.reichholf.dreamdroid.data.ProfileRepository.requireCurrent].
+ * The TV add/edit editor, stateless. [TvTimerEditViewModel] behavior (keeping edits across
+ * a configuration change, starting over after release) is in its JVM test.
  */
 @OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHostTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
-    private var previousProfile: Profile? = null
-    private var seededLocation = false
-    private var seededTag = false
-
-    @Before
-    fun seedProfileAndCatalogs() {
-        previousProfile = ProfileRepository.get().current.value
-        ProfileRepository.get().setCurrent(
-            Profile().apply {
-                host = "127.0.0.1"
-                port = 80
-                streamPort = 8001
-            }
-        )
-        if (ProfileRepository.get().locations().isEmpty()) {
-            ProfileRepository.get().locations().add("/hdd/movie/")
-            seededLocation = true
-        }
-        if (ProfileRepository.get().tags().isEmpty()) {
-            ProfileRepository.get().tags().add("News")
-            seededTag = true
-        }
-    }
-
-    @After
-    fun restoreProfileAndCatalogs() {
-        if (seededLocation) {
-            ProfileRepository.get().locations().remove("/hdd/movie/")
-            seededLocation = false
-        }
-        if (seededTag) {
-            ProfileRepository.get().tags().remove("News")
-            seededTag = false
-        }
-        val previous = previousProfile
-        if (previous != null) {
-            ProfileRepository.get().setCurrent(previous)
-        } else {
-            ProfileRepository.get().loadCurrent()
-        }
-    }
-
     @Test
     fun createModeShowsTimerNameAndSaveFab() {
-        val timer = sampleTimer(name = "Sample")
         composeRule.setContent {
-            EditorHost(timer = timer, isCreate = true)
+            Editor(state(isCreate = true), name = "Sample")
         }
-        waitForName(timer.name)
+
+        composeRule.onNodeWithText("Sample").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
         composeRule.onNodeWithContentDescription(saveLabel()).assertIsDisplayed()
     }
 
     @Test
-    fun blockedSaveShowsNeedsReceiverAndDoesNotSaveOrDismiss() {
-        var saved = false
-        var dismissed = false
-        val timer = sampleTimer(name = "Blocked save")
+    fun saveFabSaves() {
+        var saves = 0
         composeRule.setContent {
-            EditorHost(
-                timer = timer,
-                isCreate = true,
-                mutationsBlocked = true,
-                onDismiss = { dismissed = true },
-                onSaved = { saved = true }
+            Editor(state(isCreate = true), name = "Sample", onSave = { saves++ })
+        }
+
+        composeRule.onNodeWithContentDescription(saveLabel()).performClick()
+
+        assertEquals(1, saves)
+    }
+
+    @Test
+    fun blockedSaveShowsNeedsReceiverAndDoesNotSaveOrDismiss() {
+        var saves = 0
+        var dismissed = false
+        composeRule.setContent {
+            Editor(
+                state(isCreate = true).copy(mutationsBlocked = true),
+                name = "Blocked save",
+                onSave = { saves++ },
+                onDismiss = { dismissed = true }
             )
         }
-        waitForName(timer.name)
+
         composeRule.onNodeWithContentDescription(saveLabel()).performClick()
         composeRule.waitForIdle()
-        assertFalse(saved)
+        assertEquals(0, saves)
         assertFalse(dismissed)
         composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
         dismissNeedsReceiver()
         composeRule.onNodeWithTag("hub_stream_unavailable").assertDoesNotExist()
-        assertFalse(saved)
+        assertEquals(0, saves)
         assertFalse(dismissed)
+    }
+
+    @Test
+    fun editModeShowsExistingTimerName() {
+        composeRule.setContent {
+            Editor(state(isCreate = false), name = "Tagesschau")
+        }
+
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
+    }
+
+    @Test
+    fun backDismisses() {
+        var dismissed = false
+        composeRule.setContent {
+            Editor(state(isCreate = false), name = "Tagesschau", onDismiss = { dismissed = true })
+        }
+
+        composeRule.runOnUiThread {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+
+        composeRule.runOnIdle { assertEquals(true, dismissed) }
     }
 
     /**
@@ -146,92 +131,40 @@ class TvTimerEditorHostTest {
         }
     }
 
-    @Test
-    fun editModeShowsExistingTimerName() {
-        val timer = sampleTimer(name = "Tagesschau")
-        composeRule.setContent {
-            EditorHost(timer = timer, isCreate = false)
-        }
-        waitForName(timer.name)
-        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
-    }
-
-    @Test
-    fun editedTitleSurvivesActivityRecreation() {
-        val timer = sampleTimer(name = "Before recreate")
-        setActivityContent { EditorHost(timer = timer, isCreate = false) }
-        waitForName(timer.name)
-        composeRule.onNodeWithContentDescription("Title")
-            .performTextReplacement("After recreate")
-
-        composeRule.activityRule.scenario.recreate()
-        setActivityContent { EditorHost(timer = timer, isCreate = false) }
-
-        waitForName("After recreate")
-        composeRule.onNodeWithText(timer.name).assertDoesNotExist()
-    }
-
-    @Test
-    fun reopenAfterLeavingCompositionStartsFromLaunchTimer() {
-        val timer = sampleTimer(name = "Launch name")
-        var shown by mutableStateOf(true)
-        composeRule.setContent {
-            if (shown) {
-                EditorHost(timer = timer, isCreate = false)
-            }
-        }
-        waitForName(timer.name)
-        composeRule.onNodeWithContentDescription("Title")
-            .performTextReplacement("Discarded edit")
-        composeRule.onNodeWithText("Discarded edit").assertIsDisplayed()
-
-        shown = false
-        composeRule.waitForIdle()
-        shown = true
-
-        waitForName(timer.name)
-        composeRule.onNodeWithText("Discarded edit").assertDoesNotExist()
-    }
-
-    /** The rule's own setContent can only run once, on the activity recreate() replaces. */
-    private fun setActivityContent(content: @Composable () -> Unit) {
-        composeRule.runOnUiThread { composeRule.activity.setContent(content = content) }
-    }
-
     @Composable
-    private fun EditorHost(
-        timer: Timer,
-        isCreate: Boolean,
-        mutationsBlocked: Boolean = false,
-        onDismiss: () -> Unit = {},
-        onSaved: () -> Unit = {}
+    private fun Editor(
+        state: TimerEditUiState,
+        name: String,
+        onSave: () -> Unit = {},
+        onDismiss: () -> Unit = {}
     ) {
         DreamDroidTvTheme {
             Box(modifier = Modifier.fillMaxSize()) {
-                TvTimerEditorHost(
-                    timer = timer,
-                    isCreate = isCreate,
-                    onDismiss = onDismiss,
-                    onSaved = onSaved,
-                    mutationsBlocked = mutationsBlocked
+                TvTimerEditorContent(
+                    uiState = state,
+                    name = remember { TextFieldState(name) },
+                    description = remember { TextFieldState("Desc") },
+                    actions = object : TimerFormActions {},
+                    onServicePicked = {},
+                    onSave = onSave,
+                    onDismiss = onDismiss
                 )
             }
         }
     }
 
-    private fun waitForName(name: String) {
-        composeRule.waitUntil(timeoutMillis = 5_000) {
-            composeRule.onAllNodesWithText(name).fetchSemanticsNodes().isNotEmpty()
-        }
-        composeRule.onNodeWithText(name).assertIsDisplayed()
-    }
+    private fun state(isCreate: Boolean) = TimerEditUiState(
+        timer = sampleTimer(),
+        isCreate = isCreate,
+        locations = listOf("/hdd/movie/"),
+        tags = listOf("News")
+    )
 
-    private fun saveLabel(): String = targetContext().getString(R.string.save)
+    private fun saveLabel(): String =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.save)
 
-    private fun targetContext() = InstrumentationRegistry.getInstrumentation().targetContext
-
-    private fun sampleTimer(name: String): Timer = TimerHelper.getInitialTimer().copy(
-        name = name,
+    private fun sampleTimer(): Timer = TimerHelper.getInitialTimer().copy(
+        name = "Launch name",
         description = "Desc",
         serviceName = "Das Erste HD",
         reference = "1:0:1:6DCA:44D:1:C00000:0:0:0:",

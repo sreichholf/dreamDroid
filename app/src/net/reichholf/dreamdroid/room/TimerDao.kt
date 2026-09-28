@@ -47,6 +47,18 @@ interface TimerDao {
     )
     suspend fun snapshotCount(profileId: Int): Int
 
+    /**
+     * The snapshot rows of [profileId], or null if none was ever written. An empty list
+     * means the receiver had no timers when the snapshot was written.
+     */
+    @Transaction
+    suspend fun snapshot(profileId: Int): List<TimerListEntity>? {
+        if (snapshotCount(profileId) == 0) {
+            return null
+        }
+        return getTimerList(profileId)
+    }
+
     @Transaction
     suspend fun deleteAllForProfile(profileId: Int) {
         deleteTimerRows(profileId)

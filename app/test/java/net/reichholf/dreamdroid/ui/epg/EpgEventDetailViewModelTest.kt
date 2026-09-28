@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -130,9 +131,14 @@ class EpgEventDetailViewModelTest {
         "<e2simplexmlresult><e2state>$state</e2state><e2statetext>$text</e2statetext>" +
             "</e2simplexmlresult>"
 
-    private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        EpgEventDetailViewModel(handle, EnigmaClientFactory(receiver.profiles.repository))
-            .also { viewModels += it }
+    private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = EpgEventDetailViewModel(
+        handle,
+        TimerRepository(
+            EnigmaClientFactory(receiver.profiles.repository),
+            receiver.profiles.repository,
+            receiver.profiles.database
+        )
+    ).also { viewModels += it }
 
     private companion object {
         val EVENT = Event(

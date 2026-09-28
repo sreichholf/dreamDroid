@@ -1,10 +1,10 @@
 package net.reichholf.dreamdroid.ui.timers
 
-import android.app.Activity
-import android.content.Intent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
@@ -23,21 +23,14 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
-import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
-import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -55,30 +48,10 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun createModeShowsKeyLabelsAndSaveFab() {
-        val state = TimerEditState().also {
-            it.loadFrom(
-                sampleTimer(),
-                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
-                locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None"
-            )
-        }
+    fun createModeShowsKeyLabelsWithoutSaveFab() {
         composeRule.setContent {
             DreamDroidTheme {
-                TimerEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    onPickBeginDate = {},
-                    onPickBeginTime = {},
-                    onPickEndDate = {},
-                    onPickEndTime = {},
-                    onPickRepeated = {},
-                    onPickService = {},
-                    onPickTags = {},
-                    showSaveFab = false
-                )
+                Form(form(sampleTimer()), showSaveFab = false)
             }
         }
 
@@ -87,6 +60,7 @@ class TimerEditScreenTest {
         composeRule.onNodeWithText("Zap").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Description").assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(saveLabel()).assertDoesNotExist()
 
         val enabled = composeRule.onNode(hasText("Enabled") and isToggleable()).getBoundsInRoot()
         val zap = composeRule.onNode(hasText("Zap") and isToggleable()).getBoundsInRoot()
@@ -111,53 +85,28 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun tagsFieldScrollsIntoViewAndOpensPickerWithoutScaffoldFab() {
-        val state = TimerEditState().also {
-            it.loadFrom(
-                sampleTimer().copy(tags = "News"),
-                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
-                locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None"
-            )
-        }
-        var tagPicks = 0
+    fun tagsFieldScrollsIntoViewAndReportsItsPick() {
+        val picks = mutableListOf<TimerEditPick>()
         composeRule.setContent {
             DreamDroidTheme {
-                TimerEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    onPickBeginDate = {},
-                    onPickBeginTime = {},
-                    onPickEndDate = {},
-                    onPickEndTime = {},
-                    onPickRepeated = {},
-                    onPickService = {},
-                    onPickTags = { tagPicks++ },
-                    showSaveFab = false
+                Form(
+                    form(sampleTimer().copy(tags = "News")),
+                    showSaveFab = false,
+                    onPick = { picks += it }
                 )
             }
         }
 
-        composeRule.onNodeWithContentDescription("Save").assertDoesNotExist()
         composeRule.onNodeWithText("News").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Tags")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
-        assertEquals(1, tagPicks)
+        assertEquals(listOf(TimerEditPick.Tags), picks)
     }
 
     @Test
     fun tagsFieldClearsHostBottomInsetWithoutScaffoldFab() {
-        val state = TimerEditState().also {
-            it.loadFrom(
-                sampleTimer().copy(tags = "News"),
-                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
-                locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None"
-            )
-        }
         composeRule.setContent {
             DreamDroidTheme {
                 Box(Modifier.fillMaxSize().testTag("host")) {
@@ -169,19 +118,7 @@ class TimerEditScreenTest {
                                 bottomInset = 48.dp
                             )
                     ) {
-                        TimerEditScreen(
-                            state = state,
-                            saveLabel = "Save",
-                            onSave = {},
-                            onPickBeginDate = {},
-                            onPickBeginTime = {},
-                            onPickEndDate = {},
-                            onPickEndTime = {},
-                            onPickRepeated = {},
-                            onPickService = {},
-                            onPickTags = {},
-                            showSaveFab = false
-                        )
+                        Form(form(sampleTimer().copy(tags = "News")), showSaveFab = false)
                     }
                 }
             }
@@ -198,124 +135,56 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun editModeSeedsFieldsAndToggles() {
-        val timer = sampleTimer().copy(
-            name = "Tagesschau",
-            disabled = "1",
-            justPlay = "1"
-        )
-        val state = TimerEditState().also {
-            it.loadFrom(
-                timer,
-                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
-                locations = listOf("/hdd/movie/"),
-                repeatedLabel = "Mo, Tu"
-            )
+    fun editModeShowsTheTimerAndReportsToggles() {
+        val timer = sampleTimer().copy(disabled = "1", justPlay = "1", repeated = "3")
+        val enabledChanges = mutableListOf<Boolean>()
+        val actions = object : TimerFormActions {
+            override fun onEnabledChange(enabled: Boolean) {
+                enabledChanges += enabled
+            }
         }
+        val name = TextFieldState("Tagesschau")
         composeRule.setContent {
             DreamDroidTheme {
-                TimerEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    onPickBeginDate = {},
-                    onPickBeginTime = {},
-                    onPickEndDate = {},
-                    onPickEndTime = {},
-                    onPickRepeated = {},
-                    onPickService = {},
-                    onPickTags = {}
-                )
+                Form(form(timer), name = name, actions = actions)
             }
         }
 
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
-        composeRule.onNodeWithText("Mo, Tu").performScrollTo().assertIsDisplayed()
-        assertTrue(!state.enabled)
-        assertTrue(state.zap)
+        composeRule.onNodeWithText(repeatedLabel(3)).performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Enabled").performClick()
-        assertTrue(state.enabled)
+        assertEquals(listOf(true), enabledChanges)
     }
 
     @Test
-    fun applyToWritesTimerFields() {
-        val timer = sampleTimer()
-        val state = TimerEditState().also {
-            it.loadFrom(
-                timer,
-                afterEvents = listOf("Nothing", "Standby", "Deep standby", "Auto"),
-                locations = listOf("/hdd/movie/", "/media/hdd/"),
-                repeatedLabel = "None"
-            )
-        }
-        state.name = "Edited"
-        state.description = "Desc"
-        state.enabled = false
-        state.zap = true
-        state.afterEventIndex = 1
-        state.locationIndex = 1
-        val updated = state.applyTo(timer)
-        assertEquals("Edited", updated.name)
-        assertEquals("Desc", updated.description)
-        assertEquals("1", updated.disabled)
-        assertEquals("1", updated.justPlay)
-        assertEquals("1", updated.afterEvent)
-        assertEquals("/media/hdd/", updated.location)
-    }
-
-    @Test
-    fun servicePickReloadKeepsTypedTitleDescriptionAndToggles() {
-        val session = sessionFrom(sampleTimer())
-        session.reload()
-        session.editState.name = "Keep This Title"
-        session.editState.description = "Keep This Description"
-        session.editState.enabled = false
-        session.editState.zap = true
-
-        val picked = Service("1:0:1:6DCB:44D:1:C00000:0:0:0:", "ZDF HD")
-        session.onActivityResult(
-            Statics.REQUEST_PICK_SERVICE,
-            Activity.RESULT_OK,
-            Intent().putExtra(NavExtras.DATA, picked)
-        )
-        session.reload()
-
-        assertEquals("Keep This Title", session.editState.name)
-        assertEquals("Keep This Description", session.editState.description)
-        assertEquals("ZDF HD", session.editState.serviceName)
-        assertTrue(!session.editState.enabled)
-        assertTrue(session.editState.zap)
-    }
-
-    @Test
-    fun failedSaveShowsBoxErrorAfterSpinnerClears() {
-        val session = sessionFrom(sampleTimer())
-        session.reload()
-        session.progress = IndeterminateProgressState(message = "Saving")
+    fun saveErrorShowsAboveTheForm() {
         composeRule.setContent {
             DreamDroidTheme {
-                timerEditForm(session.editState)
+                Form(form(sampleTimer()), saveError = "Conflicting timer exists")
             }
         }
 
-        session.onSaveResult(
-            SimpleResult(state = Python.FALSE, stateText = "Conflicting timer exists")
-        )
-        composeRule.waitForIdle()
-
-        assertNull(session.progress)
         composeRule.onNodeWithText("Conflicting timer exists").assertIsDisplayed()
     }
 
     @Test
     fun savingProgressShowsInContentWithoutDialog() {
-        val session = sessionFrom(sampleTimer())
-        session.reload()
-        session.progress = IndeterminateProgressState(message = "Saving")
+        val state = TimerEditUiState(
+            timer = sampleTimer(),
+            locations = LOCATIONS,
+            progress = UiText.Raw("Saving")
+        )
+        val name = TextFieldState("Sample")
+        val description = TextFieldState()
         composeRule.setContent {
             DreamDroidTheme {
-                timerEditForm(session.editState)
-                IndeterminateProgressHost(session.progress)
+                TimerEditContent(
+                    uiState = state,
+                    name = name,
+                    description = description,
+                    actions = object : TimerFormActions {},
+                    onPickService = {}
+                )
             }
         }
         composeRule.waitForIdle()
@@ -326,82 +195,88 @@ class TimerEditScreenTest {
     }
 
     @Test
+    fun repeatedPickerReportsTheCheckedDays() {
+        val picked = mutableListOf<List<Int>>()
+        val actions = object : TimerFormActions {
+            override fun onRepeatedChange(days: List<Int>) {
+                picked += days
+            }
+        }
+        val name = TextFieldState("Sample")
+        val description = TextFieldState()
+        composeRule.setContent {
+            DreamDroidTheme {
+                TimerEditContent(
+                    uiState = TimerEditUiState(timer = sampleTimer(), locations = LOCATIONS),
+                    name = name,
+                    description = description,
+                    actions = actions,
+                    onPickService = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.repeatings))
+            .performScrollTo()
+            .performClick()
+        composeRule.onNode(isDialog()).assertIsDisplayed()
+        val monday = InstrumentationRegistry.getInstrumentation().targetContext
+            .resources.getStringArray(R.array.weekdays)[0]
+        composeRule.onNodeWithText(monday).performClick()
+        composeRule.onNodeWithText(string(R.string.ok)).performClick()
+
+        assertEquals(listOf(listOf(0)), picked)
+    }
+
+    @Test
     fun createTopBarOmitsDeleteAndEditTopBarIncludesIt() {
-        val create = actionsFrom(sessionFrom(sampleTimer(), isCreate = true))
+        val create = actions(canDelete = false)
         assertEquals(listOf(R.id.menu_save), create.map { it.id })
 
-        val edit = actionsFrom(sessionFrom(sampleTimer(), isCreate = false))
+        val edit = actions(canDelete = true)
         assertEquals(listOf(R.id.menu_save, R.id.menu_delete), edit.map { it.id })
         assertTrue(edit.all { it.enabled })
     }
 
-    @Test
-    fun requestDeleteAsksForConfirmOnlyWhenEditing() {
-        val creating = sessionFrom(sampleTimer(), isCreate = true)
-        var createRequested = false
-        creating.onRequestDeleteConfirm = { createRequested = true }
-        creating.requestDelete()
-        assertFalse(createRequested)
-
-        val editing = sessionFrom(sampleTimer(), isCreate = false)
-        var editRequested = false
-        editing.onRequestDeleteConfirm = { editRequested = true }
-        editing.requestDelete()
-        assertTrue(editRequested)
-    }
-
-    @Test
-    fun failedDeleteShowsBoxErrorAfterSpinnerClears() {
-        val session = sessionFrom(sampleTimer(), isCreate = false)
-        session.reload()
-        session.progress = IndeterminateProgressState(message = "Deleting")
-        composeRule.setContent {
-            DreamDroidTheme {
-                timerEditForm(session.editState)
-            }
-        }
-
-        session.onSaveResult(
-            SimpleResult(state = Python.FALSE, stateText = "Timer is currently recording")
-        )
-        composeRule.waitForIdle()
-
-        assertNull(session.progress)
-        composeRule.onNodeWithText("Timer is currently recording").assertIsDisplayed()
-    }
-
-    private fun sessionFrom(timer: Timer, isCreate: Boolean = true): TimerEditSession {
-        val session = TimerEditSession(
-            routeTag = "timer_edit:new:1893456000",
-            remountEpoch = 0,
-            timer = timer,
-            timerOld = if (isCreate) null else timer.copy(),
-            isCreate = isCreate,
-            selectedTags = ArrayList(),
-            checkedDays = BooleanArray(7)
-        )
-        session.context = InstrumentationRegistry.getInstrumentation().targetContext
-        return session
-    }
-
-    private fun actionsFrom(session: TimerEditSession) =
-        session.topBarActions(saveLabel = "Save", deleteLabel = "Delete")
+    private fun actions(canDelete: Boolean) = saveAndDeleteActions(
+        saveLabel = "Save",
+        deleteLabel = "Delete",
+        canDelete = canDelete,
+        onSave = {},
+        onDelete = {}
+    )
 
     @Composable
-    private fun timerEditForm(state: TimerEditState) {
+    private fun Form(
+        form: TimerEditForm,
+        name: TextFieldState = remember { TextFieldState("Sample") },
+        actions: TimerFormActions = object : TimerFormActions {},
+        showSaveFab: Boolean = true,
+        saveError: String? = null,
+        onPick: (TimerEditPick) -> Unit = {}
+    ) {
         TimerEditScreen(
-            state = state,
-            saveLabel = "Save",
-            onSave = {},
-            onPickBeginDate = {},
-            onPickBeginTime = {},
-            onPickEndDate = {},
-            onPickEndTime = {},
-            onPickRepeated = {},
-            onPickService = {},
-            onPickTags = {}
+            form = form,
+            name = name,
+            description = remember { TextFieldState("Desc") },
+            actions = actions,
+            onPick = onPick,
+            saveError = saveError,
+            showSaveFab = showSaveFab
         )
     }
+
+    private fun form(timer: Timer) = TimerEditForm.from(timer, LOCATIONS)
+
+    private fun repeatedLabel(repeated: Int) = timerRepeatedLabel(
+        InstrumentationRegistry.getInstrumentation().targetContext.resources,
+        repeated
+    )
+
+    private fun string(id: Int) = InstrumentationRegistry.getInstrumentation().targetContext
+        .getString(id)
+
+    private fun saveLabel() = string(R.string.save)
 
     private fun sampleTimer(): Timer = TimerHelper.getInitialTimer().copy(
         name = "Sample",
@@ -417,4 +292,8 @@ class TimerEditScreenTest {
         repeated = "0",
         tags = ""
     )
+
+    private companion object {
+        val LOCATIONS = listOf("/hdd/movie/", "/media/hdd/")
+    }
 }

@@ -5,7 +5,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,6 +24,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
+import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.settings.SettingsState
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
@@ -58,14 +61,17 @@ fun TvHubNavHost(
     navController: NavHostController = rememberNavController(),
     startDestination: Any = TvHub
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
-        TvHubNavGraph(
-            activity = activity,
-            onRecheckProfile = onRecheckProfile,
-            hubViewModel = hubViewModel,
-            navController = navController,
-            startDestination = startDestination
-        )
+        CompositionLocalProvider(LocalShellSnackbarHostState provides snackbarHostState) {
+            TvHubNavGraph(
+                activity = activity,
+                onRecheckProfile = onRecheckProfile,
+                hubViewModel = hubViewModel,
+                navController = navController,
+                startDestination = startDestination
+            )
+        }
         // TV Material is not Material 3. The snackbar uses the phone theme.
         Box(
             modifier = Modifier
@@ -73,7 +79,7 @@ fun TvHubNavHost(
                 .fillMaxWidth()
         ) {
             DreamDroidTheme {
-                ShellSnackbarHost()
+                ShellSnackbarHost(hostState = snackbarHostState)
             }
         }
     }

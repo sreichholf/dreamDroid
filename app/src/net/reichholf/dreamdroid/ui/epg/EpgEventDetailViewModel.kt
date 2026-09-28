@@ -10,11 +10,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.enigma.withReadableTimes
-import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** The EPG detail sheet: the [event] shown, a timer being [saving], and its result. */
@@ -32,8 +31,7 @@ data class EpgEventDetailUiState(
 @HiltViewModel
 class EpgEventDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    // Transitional: the timer call moves to TimerRepository (docs/hilt-migration.md, PR 5).
-    private val clients: EnigmaClientFactory
+    private val timers: TimerRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         EpgEventDetailUiState(event = savedStateHandle.get<Event>(KEY_EVENT))
@@ -58,7 +56,7 @@ class EpgEventDetailViewModel @Inject constructor(
         }
         _uiState.update { it.copy(saving = true) }
         viewModelScope.launch {
-            val response = clients.current().addTimerByEventId(Timer.getEventIdParams(event))
+            val response = timers.addByEvent(event)
             _uiState.update { it.copy(saving = false, userMessage = response.userMessageText()) }
         }
     }

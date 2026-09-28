@@ -72,7 +72,7 @@ class UseDrivenCacheTest {
                 WINDOW_END
             ).isEmpty()
         )
-        assertNull(TimerSnapshotStore.load(db.timerDao(), PROFILE))
+        assertNull(db.timerDao().snapshot(PROFILE))
         assertEquals(0, db.movieDao().locationMetaCount(PROFILE))
         assertEquals(0, db.movieDao().movieListMetaCount(PROFILE, HDD))
 
@@ -103,7 +103,7 @@ class UseDrivenCacheTest {
         )
         assertEquals(
             listOf("News"),
-            TimerSnapshotStore.load(db.timerDao(), OTHER)?.map { it.name }
+            db.timerDao().snapshot(OTHER)?.map { it.name }
         )
         assertEquals(listOf(HDD), db.movieDao().getLocationStrip(OTHER).map { it.dirname })
         assertEquals(listOf("News"), db.movieDao().getMovieList(OTHER, HDD).map { it.title })
@@ -134,7 +134,7 @@ class UseDrivenCacheTest {
             UserBouquetCache.loadRosterNowNext(db.rosterDao(), OTHER, favourites.reference)
         )
         assertNull(db.epgDao().getChunk(OTHER, favourites.reference, WINDOW_START))
-        assertNull(TimerSnapshotStore.load(db.timerDao(), OTHER))
+        assertNull(db.timerDao().snapshot(OTHER))
         assertEquals(0, db.movieDao().locationMetaCount(OTHER))
         assertEquals(0, db.movieDao().movieListMetaCount(OTHER, HDD))
     }
@@ -180,8 +180,7 @@ class UseDrivenCacheTest {
                 )
             )
         )
-        TimerSnapshotStore.replace(
-            db.timerDao(),
+        db.timerDao().replaceSnapshot(
             profileId,
             listOf(
                 Timer(
@@ -191,7 +190,7 @@ class UseDrivenCacheTest {
                     name = "News",
                     begin = "1476644933",
                     end = "1476649083"
-                )
+                ).toListEntity(profileId, 0)
             )
         )
         db.movieDao().replaceLocations(
