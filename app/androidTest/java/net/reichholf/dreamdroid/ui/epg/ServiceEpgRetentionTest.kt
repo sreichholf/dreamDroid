@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -97,7 +98,16 @@ class ServiceEpgRetentionTest {
     fun popBackFromEventDetailKeepsListWithoutReload() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
-        val handle = PhoneNavHostState(app, SavedStateHandle())
+        val handle = PhoneNavHostState(
+            SavedStateHandle(),
+            profiles,
+            sessions,
+            SettingsRepository(
+                PreferenceManager.getDefaultSharedPreferences(
+                    InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        )
         val viewModels = mutableListOf<ServiceEpgViewModel>()
         lateinit var navController: NavHostController
         composeRule.setContent {
