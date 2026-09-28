@@ -26,7 +26,6 @@
     <string name="send_message">Stuur bericht</string>
     <string name="save">Opslaan</string>
     <string name="cancel">Annuleren</string>
-    <string name="fetching_data">Data ophalen&#8230;</string>
     <string name="get_content_error">Fout in ophalen inhoud!</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Bekijk gids (EPG)</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Maandag tot vrijdag</string>
     <string name="daily">Dagelijks</string>
     <string name="new_timer">Nieuwe timer</string>
-    <string name="locations">Lokaties</string>
     <string name="gui_version">Grafische versie</string>
     <string name="image_version">Image versie</string>
     <string name="interface_version">Interface versie</string>

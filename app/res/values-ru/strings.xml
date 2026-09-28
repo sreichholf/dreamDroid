@@ -26,7 +26,6 @@
     <string name="send_message">Отправить сообщение</string>
     <string name="save">Сохранить</string>
     <string name="cancel">Отмена</string>
-    <string name="fetching_data">Запрос данных....</string>
     <string name="get_content_error">Ошибка приема данных!</string>
     <string name="zap">Переход</string>
     <string name="browse_epg">Просмотр Телегида</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Рабочие дни</string>
     <string name="daily">Ежедневно</string>
     <string name="new_timer">Новый таймер</string>
-    <string name="locations">Положение</string>
     <string name="gui_version">Версия оболочки</string>
     <string name="image_version">Версия имиджа</string>
     <string name="interface_version">Версия интерфейса</string>

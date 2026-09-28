@@ -26,7 +26,6 @@
     <string name="send_message">Dërgo Mesazh</string>
     <string name="save">Ruaj</string>
     <string name="cancel">Anullo</string>
-    <string name="fetching_data">Duke marrë të dhënat&#8230;</string>
     <string name="get_content_error">Error në marrjen e të dhënave</string>
     <string name="zap">Nderro Kanal</string>
     <string name="browse_epg">Shfleto EPG</string>

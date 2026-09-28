@@ -22,7 +22,6 @@
 
     <string name="save">запази</string>
     <string name="cancel">отказ</string>
-    <string name="fetching_data">извличане на данни</string>
     <string name="get_content_error">грешка при получаване на информация</string>
     <string name="browse_epg">разлисавне</string>
     <string name="edit">редакция</string>
@@ -64,7 +63,6 @@
     <string name="mo_to_fr">От Понеделник до Петък</string>
     <string name="daily">ежедневно</string>
     <string name="new_timer">Нов час</string>
-    <string name="locations">Местоположение</string>
     <string name="gui_version">Версия на софт</string>
     <string name="image_version">Версия на имиджа</string>
     <string name="interface_version">Версия на интерфейса</string>

@@ -16,7 +16,6 @@
 
     <string name="save">จัดเก็บ</string>
     <string name="cancel">ยกเลิก</string>
-    <string name="fetching_data">กำลังเรียกข้อมูล...</string>
     <string name="get_content_error">เกิดข้อผิดพลาดของเนื้อหา</string>
     <string name="edit">แก้ไข</string>
     <string name="delete">ลบ</string>
@@ -53,7 +52,6 @@
     <string name="mo_to_fr">จันทร์ ถึง ศุกร์</string>
     <string name="daily">ทุกวัน</string>
     <string name="new_timer">เวลาใหม่</string>
-    <string name="locations">สถานที่</string>
     <string name="device_name">ชื่ออุปกรณ์</string>
     <string name="timeout">หมดเวลา</string>
     <string name="message_text_hint">ใส่ข้อความของคุณ</string>

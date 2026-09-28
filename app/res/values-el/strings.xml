@@ -26,7 +26,6 @@
     <string name="send_message">Αποστολή Μηνύματος</string>
     <string name="save">Αποθήκευση</string>
     <string name="cancel">Ακύρωση</string>
-    <string name="fetching_data">Ανάκτηση Δεδομένων&#8230;</string>
     <string name="get_content_error">Σφάλμα κατά τη λήψη περιεχομένου!</string>
     <string name="zap">Ζap</string>
     <string name="browse_epg">Περιήγηση EPG</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Δευτέρα έως Παρασκευή</string>
     <string name="daily">Ημερήσια</string>
     <string name="new_timer">Καινoύργιος χρονοδιακόπτης</string>
-    <string name="locations">Τοποθεσίες</string>
     <string name="gui_version">GUI Έκδοση</string>
     <string name="image_version">Image Έκδοση</string>
     <string name="interface_version">Interface Έκδοση</string>

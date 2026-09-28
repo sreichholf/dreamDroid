@@ -26,7 +26,6 @@
     <string name="send_message">Send Melding</string>
     <string name="save">Lagre</string>
     <string name="cancel">Avbryt</string>
-    <string name="fetching_data">Henter data...</string>
     <string name="get_content_error">Feil ved henting av innhold!</string>
     <string name="zap">Velge / bytte kanal</string>
     <string name="browse_epg">Bla i EPG</string>
@@ -72,7 +71,6 @@
     <string name="mo_to_fr">Mandag til Fredag</string>
     <string name="daily">Daglig</string>
     <string name="new_timer">Ny Hendelse / Timer</string>
-    <string name="locations">Plasseringer</string>
     <string name="gui_version">GUI versjon</string>
     <string name="image_version">Image versjon</string>
     <string name="interface_version">Grensesnitt versjon</string>

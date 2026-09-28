@@ -26,7 +26,6 @@
 <string name="send_message">Saada teade</string>
 <string name="save">Salvesta</string>
 <string name="cancel">Tühista</string>
-<string name="fetching_data">Andmete hankimine…</string>
 <string name="get_content_error">Viga sisu hankimisel!</string>
 <string name="zap">Kanalivahetus</string>
 <string name="browse_epg">Kanali EPG</string>
@@ -75,7 +74,6 @@
 <string name="mo_to_fr">Esmaspäevast reedeni</string>
 <string name="daily">Igapäevaselt</string>
 <string name="new_timer">Uus taimer</string>
-<string name="locations">Asukohad</string>
 <string name="gui_version">GUI versioon</string>
 <string name="image_version">Image versioon</string>
 <string name="interface_version">Veebiliidese versioon</string>

@@ -34,7 +34,6 @@
     <string name="send_message">Send Message</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
-    <string name="fetching_data">Fetching data&#8230;</string>
     <string name="get_content_error">Error getting content!</string>
     <string name="content_error_detail" translatable="false">%1$s\n%2$s</string>
     <string name="named_message" translatable="false">%1$s \'%2$s\'</string>
@@ -107,7 +106,6 @@
     <string name="mo_to_fr">Monday to Friday</string>
     <string name="daily">Daily</string>
     <string name="new_timer">New Timer</string>
-    <string name="locations">Locations</string>
     <string name="gui_version">GUI version</string>
     <string name="image_version">Image version</string>
     <string name="interface_version">Interface version</string>

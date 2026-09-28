@@ -26,7 +26,6 @@
     <string name="send_message">Skicka meddelande</string>
     <string name="save">Spara</string>
     <string name="cancel">Ångra</string>
-    <string name="fetching_data">Hämtar data</string>
     <string name="get_content_error">Fel kunde inte hämta innehåll</string>
     <string name="zap">Skifta Kanal</string>
     <string name="browse_epg">Bläddra EPG</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Måndag till Fredag</string>
     <string name="daily">Dagligen</string>
     <string name="new_timer">Ny timer</string>
-    <string name="locations">Platser</string>
     <string name="gui_version">GUI-version</string>
     <string name="image_version">Imageversion</string>
     <string name="interface_version">Interfaceversion</string>

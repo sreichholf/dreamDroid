@@ -26,7 +26,6 @@
     <string name="send_message">Mesaj gönder</string>
     <string name="save">Kaydet</string>
     <string name="cancel">iptal</string>
-    <string name="fetching_data">Veri alınıyor&#8230;</string>
     <string name="get_content_error">İçerik alma hatası!</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">EPG ara</string>
@@ -75,7 +74,6 @@
     <string name="mo_to_fr">Pazartesi\'den Cuma\'ya</string>
     <string name="daily">Günlük</string>
     <string name="new_timer">Yeni Zamanlayıcı</string>
-    <string name="locations">Konumlar</string>
     <string name="gui_version">GUI sürümü</string>
     <string name="image_version">Image sürümü</string>
     <string name="interface_version">Arayüz sürümü</string>
