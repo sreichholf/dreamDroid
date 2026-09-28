@@ -33,7 +33,7 @@ import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
  * Owns one [ZapListState], the saved bouquet, and the load/zap jobs.
  * Jobs stay on [viewModelScope] so leaving the destination does not cancel them.
  */
-class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle) :
+class ZapViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
     val listState: ZapListState = ZapListState()
     val refresh: ComposeRefreshState = ComposeRefreshState()
@@ -52,7 +52,6 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
     val pickBouquetRequests: Flow<Int> = pickBouquetChannel.receiveAsFlow()
     val streamRequests: Flow<Service> = streamChannel.receiveAsFlow()
 
-    private val savedAccess = HandleZapNavSavedAccess(savedStateHandle)
     private var saved: ZapNavSaved
     private var started = false
     private var loadJob: Job? = null
@@ -61,7 +60,7 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
     init {
         val profile = ProfileRepository.get().requireCurrent()
         saved = readZapNavSaved(
-            savedAccess,
+            savedStateHandle,
             defaultBouquetRef = profile.defaultBouquetTv.orEmpty(),
             defaultBouquetName = profile.defaultBouquetTvName.orEmpty()
         )
@@ -206,27 +205,6 @@ class ZapViewModel(application: Application, savedStateHandle: SavedStateHandle)
 
     private fun persist(next: ZapNavSaved) {
         saved = next
-        next.writeTo(savedAccess)
-    }
-}
-
-private class HandleZapNavSavedAccess(private val handle: SavedStateHandle) : ZapNavSavedAccess {
-    override fun getBouquetRef(): String? = handle.get<String>(ZapNavSavedKeys.BOUQUET_REF)
-
-    override fun setBouquetRef(bouquetRef: String) {
-        handle[ZapNavSavedKeys.BOUQUET_REF] = bouquetRef
-    }
-
-    override fun getBouquetName(): String? = handle.get<String>(ZapNavSavedKeys.BOUQUET_NAME)
-
-    override fun setBouquetName(bouquetName: String) {
-        handle[ZapNavSavedKeys.BOUQUET_NAME] = bouquetName
-    }
-
-    override fun getWaitingForPicker(): Boolean? =
-        handle.get<Boolean>(ZapNavSavedKeys.WAITING_FOR_PICKER)
-
-    override fun setWaitingForPicker(waitingForPicker: Boolean) {
-        handle[ZapNavSavedKeys.WAITING_FOR_PICKER] = waitingForPicker
+        next.writeTo(savedStateHandle)
     }
 }

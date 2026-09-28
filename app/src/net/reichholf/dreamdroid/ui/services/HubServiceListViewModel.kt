@@ -16,9 +16,10 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
  * change keeps the loaded list and the directory drill-down.
  * [HubServiceListSession] stays the list model and the menu provider.
  */
-class HubServiceListViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    private val savedAccess = HandleHubServiceListSavedAccess(savedStateHandle)
+class HubServiceListViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
     val session: HubServiceListSession = HubServiceListSession()
 
     var emptyMessage by mutableStateOf<String?>(null)
@@ -39,8 +40,9 @@ class HubServiceListViewModel(application: Application, savedStateHandle: SavedS
         session.scope = viewModelScope
         session.onEmptyMessage = { emptyMessage = it }
         session.onHistoryDepth = { historyDepth = it }
-        session.onCurrentRef = { ref -> savedAccess.setCurrentRef(rootRef, ref) }
-        session.onCurrentName = { name -> savedAccess.setCurrentName(rootRef, name) }
+        session.onCurrentRef = { ref -> savedStateHandle[hubServiceCurrentRefKey(rootRef)] = ref }
+        session.onCurrentName =
+            { name -> savedStateHandle[hubServiceCurrentNameKey(rootRef)] = name }
     }
 
     fun bindRoot(bouquetRef: String, bouquetName: String) {
@@ -51,7 +53,7 @@ class HubServiceListViewModel(application: Application, savedStateHandle: SavedS
         rootRef = bouquetRef
         session.rootRef = bouquetRef
         session.rootName = bouquetName
-        val saved = readHubServiceListSaved(savedAccess, bouquetRef)
+        val saved = readHubServiceListSaved(savedStateHandle, bouquetRef)
         val restored = restoreHubServiceDrillDown(
             bouquetRef,
             bouquetName,
@@ -76,22 +78,5 @@ class HubServiceListViewModel(application: Application, savedStateHandle: SavedS
 
     override fun onCleared() {
         session.cancelInFlight()
-    }
-}
-
-private class HandleHubServiceListSavedAccess(private val handle: SavedStateHandle) :
-    HubServiceListSavedAccess {
-    override fun getCurrentRef(rootRef: String): String? =
-        handle.get<String>(hubServiceCurrentRefKey(rootRef))
-
-    override fun setCurrentRef(rootRef: String, currentRef: String) {
-        handle[hubServiceCurrentRefKey(rootRef)] = currentRef
-    }
-
-    override fun getCurrentName(rootRef: String): String? =
-        handle.get<String>(hubServiceCurrentNameKey(rootRef))
-
-    override fun setCurrentName(rootRef: String, currentName: String) {
-        handle[hubServiceCurrentNameKey(rootRef)] = currentName
     }
 }

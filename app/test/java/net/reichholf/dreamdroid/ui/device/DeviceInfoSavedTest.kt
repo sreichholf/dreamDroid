@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.device
 
+import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.enigma.DeviceFrontend
 import net.reichholf.dreamdroid.enigma.DeviceHdd
 import net.reichholf.dreamdroid.enigma.DeviceInfo
@@ -13,7 +14,7 @@ import org.junit.jupiter.api.Test
 class DeviceInfoSavedTest {
     @Test
     fun emptyAccessReadsNullInfoAndNotReady() {
-        val saved = readDeviceInfoSaved(MapDeviceInfoSavedAccess())
+        val saved = readDeviceInfoSaved(SavedStateHandle())
         assertNull(saved.info)
         assertFalse(saved.ready)
         assertTrue(shouldLoadDeviceInfo(saved.info))
@@ -30,9 +31,9 @@ class DeviceInfoSavedTest {
             ),
             hdds = listOf(DeviceHdd(model = "ATA", capacity = "1.82 TB", free = "1.00 TB"))
         )
-        val access = MapDeviceInfoSavedAccess()
-        DeviceInfoSaved(info = info, ready = true).writeTo(access)
-        val saved = readDeviceInfoSaved(access)
+        val handle = SavedStateHandle()
+        DeviceInfoSaved(info = info, ready = true).writeTo(handle)
+        val saved = readDeviceInfoSaved(handle)
         assertEquals(info, saved.info)
         assertTrue(saved.ready)
         assertFalse(shouldLoadDeviceInfo(saved.info))
@@ -40,16 +41,17 @@ class DeviceInfoSavedTest {
 
     @Test
     fun nullInfoRemovesKeyAndStoresFalseReady() {
-        val values = mutableMapOf<String, Any>(
-            DeviceInfoSavedKeys.INFO to DeviceInfo(deviceName = "Solo4K"),
-            DeviceInfoSavedKeys.READY to true
+        val handle = SavedStateHandle(
+            mapOf(
+                DeviceInfoSavedKeys.INFO to DeviceInfo(deviceName = "Solo4K"),
+                DeviceInfoSavedKeys.READY to true
+            )
         )
-        val access = MapDeviceInfoSavedAccess(values)
-        DeviceInfoSaved(info = null, ready = false).writeTo(access)
-        assertFalse(values.containsKey(DeviceInfoSavedKeys.INFO))
-        assertTrue(values.containsKey(DeviceInfoSavedKeys.READY))
-        assertEquals(false, values[DeviceInfoSavedKeys.READY])
-        val saved = readDeviceInfoSaved(access)
+        DeviceInfoSaved(info = null, ready = false).writeTo(handle)
+        assertFalse(handle.contains(DeviceInfoSavedKeys.INFO))
+        assertTrue(handle.contains(DeviceInfoSavedKeys.READY))
+        assertEquals(false, handle.get<Any>(DeviceInfoSavedKeys.READY))
+        val saved = readDeviceInfoSaved(handle)
         assertNull(saved.info)
         assertFalse(saved.ready)
         assertTrue(shouldLoadDeviceInfo(saved.info))

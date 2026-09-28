@@ -39,8 +39,10 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
  * A missing saved time stays null until the first bind. Date and time picker visibility
  * and navigation stay in [EpgBouquetDestination].
  */
-class EpgBouquetViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class EpgBouquetViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
     val listState: EpgBouquetListState = EpgBouquetListState()
     val refresh: ComposeRefreshState = ComposeRefreshState()
 
@@ -63,9 +65,7 @@ class EpgBouquetViewModel(application: Application, savedStateHandle: SavedState
 
     private val pickBouquetChannel = Channel<Int>(Channel.CONFLATED)
     val pickBouquetRequests: Flow<Int> = pickBouquetChannel.receiveAsFlow()
-
-    private val savedAccess = HandleEpgBouquetNavSavedAccess(savedStateHandle)
-    private var saved = readEpgBouquetNavSaved(savedAccess)
+    private var saved = readEpgBouquetNavSaved(savedStateHandle)
     private var seenEpoch: Int? = null
     internal var loadJob: Job? = null
         private set
@@ -181,8 +181,8 @@ class EpgBouquetViewModel(application: Application, savedStateHandle: SavedState
     }
 
     private fun seedIfAbsent(leafRef: String, leafName: String, leafTimeSec: Long?, nowSec: Int) {
-        val refAbsent = savedAccess.getBouquetRef() == null
-        val timeAbsent = savedAccess.getTimeSec() == null
+        val refAbsent = EpgBouquetNavSavedKeys.BOUQUET_REF !in savedStateHandle
+        val timeAbsent = EpgBouquetNavSavedKeys.TIME_SEC !in savedStateHandle
         if (!refAbsent && !timeAbsent) {
             return
         }
@@ -280,7 +280,7 @@ class EpgBouquetViewModel(application: Application, savedStateHandle: SavedState
 
     private fun persist(next: EpgBouquetNavSaved) {
         saved = next
-        next.writeTo(savedAccess)
+        next.writeTo(savedStateHandle)
         bouquetRef = next.bouquetRef
         bouquetName = next.bouquetName
         waitingForPicker = next.waitingForPicker
@@ -301,35 +301,3 @@ internal class EpgBouquetLoadHooks(
         loadEventList(context, params, URIStore.EPG_BOUQUET)
     }
 )
-
-private class HandleEpgBouquetNavSavedAccess(private val handle: SavedStateHandle) :
-    EpgBouquetNavSavedAccess {
-    override fun getBouquetRef(): String? = handle.get<String>(EpgBouquetNavSavedKeys.BOUQUET_REF)
-
-    override fun setBouquetRef(bouquetRef: String) {
-        handle[EpgBouquetNavSavedKeys.BOUQUET_REF] = bouquetRef
-    }
-
-    override fun getBouquetName(): String? = handle.get<String>(EpgBouquetNavSavedKeys.BOUQUET_NAME)
-
-    override fun setBouquetName(bouquetName: String) {
-        handle[EpgBouquetNavSavedKeys.BOUQUET_NAME] = bouquetName
-    }
-
-    override fun getTimeSec(): Long? = handle.get<Long>(EpgBouquetNavSavedKeys.TIME_SEC)
-
-    override fun setTimeSec(timeSec: Long?) {
-        if (timeSec == null) {
-            handle.remove<Long>(EpgBouquetNavSavedKeys.TIME_SEC)
-        } else {
-            handle[EpgBouquetNavSavedKeys.TIME_SEC] = timeSec
-        }
-    }
-
-    override fun getWaitingForPicker(): Boolean? =
-        handle.get<Boolean>(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER)
-
-    override fun setWaitingForPicker(waitingForPicker: Boolean) {
-        handle[EpgBouquetNavSavedKeys.WAITING_FOR_PICKER] = waitingForPicker
-    }
-}

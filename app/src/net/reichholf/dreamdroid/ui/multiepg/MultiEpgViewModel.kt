@@ -30,11 +30,10 @@ const val MULTI_EPG_VISIBLE_MINUTES_KEY: String = "multi_epg_visible_minutes"
  * Load work uses [viewModelScope], so leaving the destination does not cancel it.
  * This class is not a menu provider and does not hold a navigation handle.
  */
-class MultiEpgViewModel(application: Application, savedStateHandle: SavedStateHandle) :
+class MultiEpgViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
-    private val savedAccess = HandleMultiEpgVisibleMinutesAccess(savedStateHandle)
 
-    var visibleMinutes by mutableIntStateOf(readMultiEpgVisibleMinutes(savedAccess))
+    var visibleMinutes by mutableIntStateOf(readMultiEpgVisibleMinutes(savedStateHandle))
         private set
 
     private val persistGate = MultiEpgPersistGate(
@@ -78,7 +77,7 @@ class MultiEpgViewModel(application: Application, savedStateHandle: SavedStateHa
 
     fun onVisibleMinutesChange(minutes: Int) {
         visibleMinutes = minutes
-        writeMultiEpgVisibleMinutes(savedAccess, minutes)
+        writeMultiEpgVisibleMinutes(savedStateHandle, minutes)
     }
 
     override fun onCleared() {
@@ -120,35 +119,10 @@ internal fun newMultiEpgSession(
     }
 )
 
-interface MultiEpgVisibleMinutesAccess {
-    fun getVisibleMinutes(): Int?
-
-    fun setVisibleMinutes(minutes: Int)
-}
-
-class MapMultiEpgVisibleMinutesAccess(
-    private val values: MutableMap<String, Any> = mutableMapOf()
-) : MultiEpgVisibleMinutesAccess {
-    override fun getVisibleMinutes(): Int? = values[MULTI_EPG_VISIBLE_MINUTES_KEY] as? Int
-
-    override fun setVisibleMinutes(minutes: Int) {
-        values[MULTI_EPG_VISIBLE_MINUTES_KEY] = minutes
-    }
-}
-
-internal class HandleMultiEpgVisibleMinutesAccess(private val handle: SavedStateHandle) :
-    MultiEpgVisibleMinutesAccess {
-    override fun getVisibleMinutes(): Int? = handle.get<Int>(MULTI_EPG_VISIBLE_MINUTES_KEY)
-
-    override fun setVisibleMinutes(minutes: Int) {
-        handle[MULTI_EPG_VISIBLE_MINUTES_KEY] = minutes
-    }
-}
-
 /** Absent key reads as [MULTI_EPG_VISIBLE_MINUTES] and is not written back. */
-fun readMultiEpgVisibleMinutes(access: MultiEpgVisibleMinutesAccess): Int =
-    access.getVisibleMinutes() ?: MULTI_EPG_VISIBLE_MINUTES
+fun readMultiEpgVisibleMinutes(handle: SavedStateHandle): Int =
+    handle.get<Int>(MULTI_EPG_VISIBLE_MINUTES_KEY) ?: MULTI_EPG_VISIBLE_MINUTES
 
-fun writeMultiEpgVisibleMinutes(access: MultiEpgVisibleMinutesAccess, minutes: Int) {
-    access.setVisibleMinutes(minutes)
+fun writeMultiEpgVisibleMinutes(handle: SavedStateHandle, minutes: Int) {
+    handle[MULTI_EPG_VISIBLE_MINUTES_KEY] = minutes
 }

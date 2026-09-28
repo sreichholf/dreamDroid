@@ -41,15 +41,13 @@ private class DeviceSetupBackend(private val context: Context) : SetupAssistantB
  */
 class SetupAssistantViewModel(
     application: Application,
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val backend: SetupAssistantBackend
 ) : AndroidViewModel(application) {
     constructor(application: Application, savedStateHandle: SavedStateHandle) :
         this(application, savedStateHandle, DeviceSetupBackend(application))
 
-    private val savedAccess = HandleSetupAssistantSavedAccess(savedStateHandle)
-
-    var draft by mutableStateOf(readSetupDraft(savedAccess))
+    var draft by mutableStateOf(readSetupDraft(savedStateHandle))
         private set
 
     var devices by mutableStateOf<List<SetupReceiver>>(emptyList())
@@ -237,15 +235,6 @@ class SetupAssistantViewModel(
 
     private fun update(transform: (SetupDraft) -> SetupDraft) {
         draft = transform(draft)
-        draft.writeTo(savedAccess)
-    }
-}
-
-private class HandleSetupAssistantSavedAccess(private val handle: SavedStateHandle) :
-    SetupAssistantSavedAccess {
-    override fun get(key: String): Any? = handle.get<Any>(key)
-
-    override fun set(key: String, value: Any) {
-        handle[key] = value
+        draft.writeTo(savedStateHandle)
     }
 }

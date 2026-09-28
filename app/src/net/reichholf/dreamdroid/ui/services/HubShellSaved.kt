@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.lifecycle.SavedStateHandle
+import net.reichholf.dreamdroid.helpers.setOrRemove
+
 object HubShellSavedKeys {
     const val MODE = "hub_mode"
     const val CURRENT_TV = "hub_current_tv"
@@ -20,97 +23,25 @@ data class HubShellSaved(
     val nowPlayingReloadEpoch: Int = 0
 )
 
-interface HubShellSavedAccess {
-    fun getMode(): String?
-    fun setMode(mode: String)
-    fun getCurrentTv(): String?
-    fun setCurrentTv(currentTv: String?)
-    fun getCurrentRadio(): String?
-    fun setCurrentRadio(currentRadio: String?)
-    fun getCurrentMovie(): String?
-    fun setCurrentMovie(currentMovie: String?)
-    fun getSelectedRow(): Int?
-    fun setSelectedRow(selectedRow: Int)
-    fun getTimerRemountEpoch(): Int?
-    fun setTimerRemountEpoch(epoch: Int)
-    fun getNowPlayingReloadEpoch(): Int?
-    fun setNowPlayingReloadEpoch(epoch: Int)
-}
-
-class MapHubShellSavedAccess(private val values: MutableMap<String, Any> = mutableMapOf()) :
-    HubShellSavedAccess {
-    override fun getMode(): String? = values[HubShellSavedKeys.MODE] as? String
-
-    override fun setMode(mode: String) {
-        values[HubShellSavedKeys.MODE] = mode
-    }
-
-    override fun getCurrentTv(): String? = values[HubShellSavedKeys.CURRENT_TV] as? String
-
-    override fun setCurrentTv(currentTv: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_TV, currentTv)
-    }
-
-    override fun getCurrentRadio(): String? = values[HubShellSavedKeys.CURRENT_RADIO] as? String
-
-    override fun setCurrentRadio(currentRadio: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_RADIO, currentRadio)
-    }
-
-    override fun getCurrentMovie(): String? = values[HubShellSavedKeys.CURRENT_MOVIE] as? String
-
-    override fun setCurrentMovie(currentMovie: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_MOVIE, currentMovie)
-    }
-
-    override fun getSelectedRow(): Int? = values[HubShellSavedKeys.SELECTED_ROW] as? Int
-
-    override fun setSelectedRow(selectedRow: Int) {
-        values[HubShellSavedKeys.SELECTED_ROW] = selectedRow
-    }
-
-    override fun getTimerRemountEpoch(): Int? =
-        values[HubShellSavedKeys.TIMER_REMOUNT_EPOCH] as? Int
-
-    override fun setTimerRemountEpoch(epoch: Int) {
-        values[HubShellSavedKeys.TIMER_REMOUNT_EPOCH] = epoch
-    }
-
-    override fun getNowPlayingReloadEpoch(): Int? =
-        values[HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH] as? Int
-
-    override fun setNowPlayingReloadEpoch(epoch: Int) {
-        values[HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH] = epoch
-    }
-
-    private fun putOrRemove(key: String, value: String?) {
-        if (value == null) {
-            values.remove(key)
-        } else {
-            values[key] = value
-        }
-    }
-}
-
 /** Absent mode reads as TV. Absent row and epochs read as 0. Reading does not write. */
-fun readHubShellSaved(access: HubShellSavedAccess): HubShellSaved = HubShellSaved(
-    mode = access.getMode() ?: HubModes.TV,
-    currentTv = access.getCurrentTv(),
-    currentRadio = access.getCurrentRadio(),
-    currentMovie = access.getCurrentMovie(),
-    selectedRow = access.getSelectedRow() ?: 0,
-    timerRemountEpoch = access.getTimerRemountEpoch() ?: 0,
-    nowPlayingReloadEpoch = access.getNowPlayingReloadEpoch() ?: 0
+fun readHubShellSaved(handle: SavedStateHandle): HubShellSaved = HubShellSaved(
+    mode = handle.get<String>(HubShellSavedKeys.MODE) ?: HubModes.TV,
+    currentTv = handle.get<String>(HubShellSavedKeys.CURRENT_TV),
+    currentRadio = handle.get<String>(HubShellSavedKeys.CURRENT_RADIO),
+    currentMovie = handle.get<String>(HubShellSavedKeys.CURRENT_MOVIE),
+    selectedRow = handle.get<Int>(HubShellSavedKeys.SELECTED_ROW) ?: 0,
+    timerRemountEpoch = handle.get<Int>(HubShellSavedKeys.TIMER_REMOUNT_EPOCH) ?: 0,
+    nowPlayingReloadEpoch = handle.get<Int>(HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH) ?: 0
 )
 
-fun HubShellSaved.writeTo(access: HubShellSavedAccess) {
-    access.setMode(mode)
-    access.setCurrentTv(currentTv)
-    access.setCurrentRadio(currentRadio)
-    access.setCurrentMovie(currentMovie)
-    access.setSelectedRow(selectedRow)
-    access.setTimerRemountEpoch(timerRemountEpoch)
-    access.setNowPlayingReloadEpoch(nowPlayingReloadEpoch)
+fun HubShellSaved.writeTo(handle: SavedStateHandle) {
+    handle[HubShellSavedKeys.MODE] = mode
+    handle.setOrRemove(HubShellSavedKeys.CURRENT_TV, currentTv)
+    handle.setOrRemove(HubShellSavedKeys.CURRENT_RADIO, currentRadio)
+    handle.setOrRemove(HubShellSavedKeys.CURRENT_MOVIE, currentMovie)
+    handle[HubShellSavedKeys.SELECTED_ROW] = selectedRow
+    handle[HubShellSavedKeys.TIMER_REMOUNT_EPOCH] = timerRemountEpoch
+    handle[HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH] = nowPlayingReloadEpoch
 }
 
 object HubModes {

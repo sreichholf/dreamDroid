@@ -42,7 +42,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     private var navController: NavHostController? = null
     internal var shellDestinationBarController: ShellDestinationBarController? = null
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val plainAccess = SavedStatePlainAccess(savedStateHandle)
     private var attachedLifecycleOwner: LifecycleOwner? = null
     private var highlighter: DrawerRouteHighlighter? = null
     private var startRouteSaved: Boolean = false
@@ -115,7 +114,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     }
 
     init {
-        val bag = readPhoneNavStateBag(plainAccess)
+        val bag = readPhoneNavStateBag(savedStateHandle)
         startRouteSaved = bag.hasSavedStartRoute()
         startRouteValue = bag.startRoute ?: PhoneNavRoutes.DEVICE_INFO
         bag.pickRequestCodes.forEach { resultRequestCodes.addLast(it) }
@@ -141,7 +140,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         PhoneNavStateBag(
             startRoute = if (startRouteSaved) startRouteValue else null,
             pickRequestCodes = resultRequestCodes.toList()
-        ).writePlain(plainAccess)
+        ).writePlain(savedStateHandle)
     }
 
     override fun startRoute(): String = startRouteValue
@@ -658,33 +657,5 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         pendingComposeActivityResult = null
         pendingComposeActivityData = null
         composeActivityResultListener?.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private class SavedStatePlainAccess(private val handle: SavedStateHandle) :
-        PhoneNavPlainAccess {
-        override fun contains(key: String): Boolean = handle.contains(key)
-
-        override fun getString(key: String): String? = handle.get<String>(key)
-
-        override fun putString(key: String, value: String?) {
-            if (value == null) {
-                handle.remove<String>(key)
-            } else {
-                handle[key] = value
-            }
-        }
-
-        override fun getIntList(key: String): List<Int>? {
-            val stored = handle.get<IntArray>(key) ?: return null
-            return stored.toList()
-        }
-
-        override fun putIntList(key: String, value: List<Int>?) {
-            if (value == null) {
-                handle.remove<IntArray>(key)
-            } else {
-                handle[key] = value.toIntArray()
-            }
-        }
     }
 }
