@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.video
 
+import android.content.Context
 import android.net.Uri
 import android.view.SurfaceView
 import kotlin.math.max
@@ -10,7 +11,7 @@ import org.videolan.libvlc.interfaces.IVLCVout
 /**
  * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
  */
-class VLCPlayer {
+class VLCPlayer(private val context: Context) {
     private var currentMedia: Media? = null
 
     fun deinit() {
@@ -24,7 +25,7 @@ class VLCPlayer {
         surfaceView: SurfaceView?,
         subtitleSurfaceView: SurfaceView?
     ) {
-        val vlcVout = getMediaPlayer()?.vlcVout ?: return
+        val vlcVout = getMediaPlayer(context)?.vlcVout ?: return
         if (vlcVout.areViewsAttached()) {
             vlcVout.detachViews()
         }
@@ -44,17 +45,17 @@ class VLCPlayer {
     }
 
     fun setWindowSize(width: Int, height: Int) {
-        getMediaPlayer()!!.vlcVout.setWindowSize(width, height)
+        getMediaPlayer(context)!!.vlcVout.setWindowSize(width, height)
     }
 
     fun playUri(uri: Uri, flags: Int) {
         val previous = currentMedia
-        val media = Media(VLCInstance.get(), uri)
+        val media = Media(VLCInstance.get(context), uri)
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
         media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
         currentMedia = media
-        val mp = getMediaPlayer() ?: return
+        val mp = getMediaPlayer(context) ?: return
         if (previous != null && previous !== media) {
             previous.setEventListener(null)
             previous.release()
@@ -66,7 +67,7 @@ class VLCPlayer {
 
     fun play() {
         val media = currentMedia ?: return
-        val mp = getMediaPlayer()!!
+        val mp = getMediaPlayer(context)!!
         val sameMedia = media == mp.media
         if (!sameMedia) {
             mp.media = media
@@ -79,26 +80,26 @@ class VLCPlayer {
         mp.rate = 1.0f
     }
 
-    fun getLength(): Long = getMediaPlayer()!!.length
+    fun getLength(): Long = getMediaPlayer(context)!!.length
 
-    fun getTime(): Long = getMediaPlayer()!!.time
+    fun getTime(): Long = getMediaPlayer(context)!!.time
 
-    fun getPosition(): Float = getMediaPlayer()!!.position
+    fun getPosition(): Float = getMediaPlayer(context)!!.position
 
     fun setPosition(position: Float) {
-        getMediaPlayer()!!.position = position
+        getMediaPlayer(context)!!.position = position
     }
 
-    fun isSeekable(): Boolean = getMediaPlayer()!!.isSeekable
+    fun isSeekable(): Boolean = getMediaPlayer(context)!!.isSeekable
 
     fun slower(): Boolean {
-        if (!isSeekable() || !getMediaPlayer()!!.isPlaying) return false
-        var rate = getMediaPlayer()!!.rate
+        if (!isSeekable() || !getMediaPlayer(context)!!.isPlaying) return false
+        var rate = getMediaPlayer(context)!!.rate
         if (rate == 1.0f) {
             rate = -1.0f
         }
         rate = max(rate * 2, -64f)
-        getMediaPlayer()!!.rate = rate
+        getMediaPlayer(context)!!.rate = rate
         return true
     }
 
@@ -112,17 +113,17 @@ class VLCPlayer {
         }
     }
 
-    fun getAudioTracksCount(): Int = getMediaPlayer()!!.audioTracksCount
+    fun getAudioTracksCount(): Int = getMediaPlayer(context)!!.audioTracksCount
 
-    fun getSubtitleTracksCount(): Int = getMediaPlayer()!!.spuTracksCount
+    fun getSubtitleTracksCount(): Int = getMediaPlayer(context)!!.spuTracksCount
 
     fun getVideoWidth(): Int {
-        val track = getMediaPlayer()!!.currentVideoTrack ?: return 0
+        val track = getMediaPlayer(context)!!.currentVideoTrack ?: return 0
         return track.width
     }
 
     fun getVideoHeight(): Int {
-        val track = getMediaPlayer()!!.currentVideoTrack ?: return 0
+        val track = getMediaPlayer(context)!!.currentVideoTrack ?: return 0
         return track.height
     }
 
@@ -142,15 +143,15 @@ class VLCPlayer {
             player = null
         }
 
-        fun get(): VLCPlayer? {
+        fun get(context: Context): VLCPlayer? {
             if (player == null) {
-                player = VLCPlayer()
+                player = VLCPlayer(context.applicationContext)
             }
             return player
         }
 
-        private fun init() {
-            val mp = MediaPlayer(VLCInstance.get())
+        private fun init(context: Context) {
+            val mp = MediaPlayer(VLCInstance.get(context))
             mp.setAspectRatio(null)
             mp.setScale(0f)
             mp.setVideoTrackEnabled(true)
@@ -158,9 +159,9 @@ class VLCPlayer {
             vlcMediaPlayer = mp
         }
 
-        fun getMediaPlayer(): MediaPlayer? {
+        fun getMediaPlayer(context: Context): MediaPlayer? {
             if (vlcMediaPlayer == null) {
-                init()
+                init(context)
             }
             return vlcMediaPlayer
         }

@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.enigma
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 
 /**
@@ -13,4 +14,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 class EnigmaClientFactory @Inject constructor(private val profiles: ProfileRepository) {
     /** A client for the active profile. */
     fun current(): EnigmaClient = EnigmaClient(profiles.requireCurrent())
+
+    /** A client for [profile], which need not be the active one. */
+    fun forProfile(profile: Profile): EnigmaClient = EnigmaClient(profile)
 }

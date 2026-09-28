@@ -4,6 +4,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
@@ -57,4 +58,8 @@ class ReceiverRepository @Inject constructor(
         const val PROFILE_CHECK_WAIT_MS = 20_000L
         const val PROFILE_CHECK_POLL_MS = 100L
     }
+
+    /** Plays [reference], a media player service ref, on the receiver of [profile]. */
+    suspend fun playMedia(profile: Profile, reference: String): EnigmaResponse<SimpleResult> =
+        clients.forProfile(profile).playMedia(listOf(NameValuePair("file", reference)))
 }

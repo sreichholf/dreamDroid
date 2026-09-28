@@ -20,39 +20,17 @@ package net.reichholf.dreamdroid.video
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston MA 02110-1301, USA.
  *****************************************************************************/
 
-import net.reichholf.dreamdroid.DreamDroid
+import android.content.Context
 import org.videolan.libvlc.LibVLC
 
-/**
- * Thin Kotlin port of the LibVLC singleton holder (Phase 2.5e).
- * Behavior matches the former Java [VLCInstance].
- */
+/** The process-wide [LibVLC], created on first use from the caller's application context. */
 object VLCInstance {
-    const val TAG = "VLC/UiTools/VLCInstance"
-
     @Volatile
     private var libVLC: LibVLC? = null
 
     @Synchronized
-    fun get(): LibVLC {
-        var instance = libVLC
-        if (instance == null) {
-            val context = DreamDroid.getAppContext()
-            val options = ArrayList<String>()
-            options.add("--http-reconnect")
-            instance = LibVLC(context, options)
-            libVLC = instance
+    fun get(context: Context): LibVLC = libVLC
+        ?: LibVLC(context.applicationContext, arrayListOf("--http-reconnect")).also {
+            libVLC = it
         }
-        return instance
-    }
-
-    @Synchronized
-    fun restart() {
-        val instance = libVLC
-        if (instance != null) {
-            instance.release()
-            libVLC = null
-            get()
-        }
-    }
 }

@@ -90,8 +90,8 @@ class VideoPlaybackRetentionTest {
             scenario.onActivity { activity ->
                 before = ViewModelProvider(activity)[VideoPlaybackViewModel::class.java]
             }
-            composeRule.waitUntil(10_000) { before.session.value.services.size == 3 }
-            assertEquals(1, before.session.value.currentIndex)
+            composeRule.waitUntil(10_000) { before.uiState.value.services.size == 3 }
+            assertEquals(1, before.uiState.value.currentIndex)
 
             scenario.recreate()
 
@@ -99,7 +99,7 @@ class VideoPlaybackRetentionTest {
             scenario.onActivity { activity ->
                 val after = ViewModelProvider(activity)[VideoPlaybackViewModel::class.java]
                 assertSame(before, after)
-                val session = after.session.value
+                val session = after.uiState.value
                 assertEquals(listOf("A", "B", "C"), session.services.map { it.serviceName })
                 assertEquals("1:0:1:b", session.serviceRef)
                 assertEquals(1, session.currentIndex)

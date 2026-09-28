@@ -4,6 +4,7 @@ import java.io.Serializable
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.video.VideoPlayback
 
 /** What the player shows info for: a live service with now/next, a recording, or nothing. */
@@ -17,15 +18,18 @@ sealed interface VideoPlaying {
 
 /**
  * Zap list and playing item behind the player overlay. [services] is the now/next list
- * of [bouquetRef]; [serviceRef] is the zap position in it.
+ * of [bouquetRef]; [serviceRef] is the zap position in it. [streamRef] is a zapped-to
+ * service that may stream now: the overlay plays it and reports that back.
  */
-data class VideoPlaybackSession(
+data class VideoPlaybackUiState(
     val title: String? = null,
     val serviceRef: String? = null,
     val bouquetRef: String? = null,
     val playing: VideoPlaying = VideoPlaying.Unknown,
     val services: List<ServiceNowNext> = emptyList(),
-    val bouquets: List<Service> = emptyList()
+    val bouquets: List<Service> = emptyList(),
+    val streamRef: String? = null,
+    val userMessage: UiText? = null
 ) {
     val movie: Movie? get() = (playing as? VideoPlaying.Recording)?.movie
 
@@ -39,7 +43,7 @@ data class VideoPlaybackSession(
         serviceRef: String?,
         bouquetRef: String?,
         info: Serializable?
-    ): VideoPlaybackSession {
+    ): VideoPlaybackUiState {
         val refsChanged = serviceRef != this.serviceRef || bouquetRef != this.bouquetRef
         val playing = when (info) {
             is Movie -> VideoPlaying.Recording(info)
@@ -56,7 +60,7 @@ data class VideoPlaybackSession(
     }
 
     /** A fresh now/next list. The row at [serviceRef] becomes the playing service. */
-    fun withServices(rows: List<ServiceNowNext>): VideoPlaybackSession {
+    fun withServices(rows: List<ServiceNowNext>): VideoPlaybackUiState {
         val current = rows.lastOrNull { it.serviceReference == serviceRef }
         return copy(
             services = rows,
@@ -64,7 +68,7 @@ data class VideoPlaybackSession(
         )
     }
 
-    fun zappedTo(row: ServiceNowNext): VideoPlaybackSession = copy(
+    fun zappedTo(row: ServiceNowNext): VideoPlaybackUiState = copy(
         serviceRef = row.serviceReference,
         title = row.serviceName,
         playing = VideoPlaying.Live(row)

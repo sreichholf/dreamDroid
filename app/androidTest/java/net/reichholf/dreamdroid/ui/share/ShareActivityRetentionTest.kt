@@ -17,7 +17,6 @@ import okhttp3.mockwebserver.MockWebServer
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -79,7 +78,10 @@ class ShareActivityRetentionTest {
             lateinit var before: ShareViewModel
             scenario.onActivity { activity ->
                 before = ViewModelProvider(activity)[ShareViewModel::class.java]
-                val item = before.listState.profiles.first { it.name == "share-vm-a" }
+            }
+            waitUntil { before.uiState.value.profiles.any { it.name == "share-vm-a" } }
+            scenario.onActivity {
+                val item = before.uiState.value.profiles.first { it.name == "share-vm-a" }
                 before.onProfileClick(item)
             }
             waitUntil { plays.get() == 1 }
@@ -89,11 +91,12 @@ class ShareActivityRetentionTest {
             scenario.onActivity { activity ->
                 val after = ViewModelProvider(activity)[ShareViewModel::class.java]
                 assertSame(before, after)
-                assertTrue(after.listState.profiles.any { it.name == "share-vm-b" })
-                assertNotNull("send still in flight", after.listState.progress)
+                val state = after.uiState.value
+                assertTrue(state.profiles.any { it.name == "share-vm-b" })
+                assertTrue("send still in flight", state.sending)
             }
             release.countDown()
-            waitUntil { before.finished }
+            waitUntil { before.uiState.value.finished }
             assertEquals(1, plays.get())
         }
     }

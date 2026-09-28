@@ -1,11 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import android.content.Context
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -242,6 +238,15 @@ class ServiceRepository @Inject constructor(
     }
 
     /**
+     * `/web/epgnownext` of [bouquetRef] without the roster: one row per service the receiver
+     * lists events for, so no markers or folders. The player zaps through these rows.
+     */
+    suspend fun bouquetNowNext(bouquetRef: String): EnigmaResponse<List<ServiceNowNext>> {
+        val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
+        return clients.current().getEpgNowNext(listOf(NameValuePair("bRef", bouquetRef)), uri)
+    }
+
+    /**
      * The Room roster of [ref] with now/next from the Room EPG chunk at [nowSec], or null
      * when that roster was never written.
      */
@@ -394,18 +399,3 @@ fun userBouquetTabs(loaded: List<Service>, excludedTabRefs: Collection<String>):
         val ref = service.reference
         ref.isNotEmpty() && ref !in excludedTabRefs && !ref.contains("FROM PROVIDERS")
     }
-
-/**
- * Transitional lookup for the player (`VideoPlaybackViewModel`), which is not Hilt-injected
- * yet. It runs after `DreamDroid` was injected. Delete with the last caller (PR 13 in
- * docs/hilt-migration.md).
- */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface ServiceRepositoryEntryPoint {
-    fun serviceRepository(): ServiceRepository
-}
-
-fun serviceRepository(context: Context): ServiceRepository = EntryPointAccessors
-    .fromApplication(context.applicationContext, ServiceRepositoryEntryPoint::class.java)
-    .serviceRepository()

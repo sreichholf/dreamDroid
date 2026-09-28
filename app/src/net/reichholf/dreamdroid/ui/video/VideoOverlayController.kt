@@ -42,11 +42,10 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.video.VLCPlayer
 import net.reichholf.dreamdroid.video.VideoPlayback
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 import org.videolan.libvlc.MediaPlayer
 
 /**
@@ -55,7 +54,8 @@ import org.videolan.libvlc.MediaPlayer
  */
 class VideoOverlayController(
     private val activity: VideoActivity,
-    private val playback: VideoPlaybackViewModel
+    private val playback: VideoPlaybackViewModel,
+    private val sessions: SessionConnectionHolder
 ) : MediaPlayer.EventListener,
     DialogActionListener {
 
@@ -66,7 +66,7 @@ class VideoOverlayController(
     private var surfaceHeight: Int = 0
     private var surfaceWidth: Int = 0
 
-    private val session: VideoPlaybackSession get() = playback.session.value
+    private val session: VideoPlaybackUiState get() = playback.uiState.value
     private val movie: EnigmaMovie? get() = session.movie
     private val currentService: ServiceNowNext? get() = session.currentService
 
@@ -90,7 +90,6 @@ class VideoOverlayController(
     private var volume: Float = 0f
     private var servicesViewVisible: Boolean = false
 
-    private var zapBeforeStreamJob: Job? = null
     private var playbackJob: Job? = null
     private var renderedEventKey: String? = null
     private var tvSessionJob: Job? = null
@@ -175,7 +174,7 @@ class VideoOverlayController(
             tvSessionJob =
                 activity.lifecycleScope.launch {
                     activity.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                        SessionConnectionHolder.shared.status.collect { status ->
+                        sessions.status.collect { status ->
                             setTvStreamingChromeEnabled(status.allowsStreaming())
                         }
                     }
@@ -185,11 +184,7 @@ class VideoOverlayController(
         renderedEventKey = eventKey(session)
         renderZapState()
         playbackJob = activity.lifecycleScope.launch {
-            launch { playback.session.collect { onSessionChanged(it) } }
-            playback.errors.collect { message ->
-                Log.e(LOG_TAG, message)
-                ShellMessages.post(message)
-            }
+            playback.uiState.collect { onSessionChanged(it) }
         }
         autohide()
     }
@@ -225,8 +220,6 @@ class VideoOverlayController(
         backCallback = null
         tvSessionJob?.cancel()
         tvSessionJob = null
-        zapBeforeStreamJob?.cancel()
-        zapBeforeStreamJob = null
         playbackJob?.cancel()
         playbackJob = null
         playback.cancelReload()
@@ -265,7 +258,7 @@ class VideoOverlayController(
         if (!tvOverlay) {
             return true
         }
-        return SessionConnectionHolder.shared.status.value.allowsStreaming()
+        return sessions.status.value.allowsStreaming()
     }
 
     private fun bindTvZapListIfAllowed() {
@@ -410,30 +403,30 @@ class VideoOverlayController(
     }
 
     private fun onRewind() {
-        val p = VLCPlayer.get()!!
+        val p = VLCPlayer.get(activity)!!
         p.setPosition(max(0.0f, p.getPosition() - seekStepSize))
         autohide()
     }
 
     private fun onForward() {
-        val p = VLCPlayer.get()!!
+        val p = VLCPlayer.get(activity)!!
         p.setPosition(max(0.0f, p.getPosition() + seekStepSize))
         autohide()
     }
 
     private fun onPlay() {
-        VLCPlayer.get()!!.play()
+        VLCPlayer.get(activity)!!.play()
         autohide()
     }
 
     fun onUpdateButtons() {
-        val player = VLCPlayer.get() ?: return
+        val player = VLCPlayer.get(activity) ?: return
         overlayUiState.showAudioButton = player.getAudioTracksCount() > 0
         overlayUiState.showSubtitleButton = player.getSubtitleTracksCount() > 0
     }
 
     private fun onSelectAudioTrack() {
-        val player = VLCPlayer.getMediaPlayer()!!
+        val player = VLCPlayer.getMediaPlayer(activity)!!
         showTrackSelection(
             activity.getString(R.string.audio_tracks),
             player.audioTracks,
@@ -442,7 +435,7 @@ class VideoOverlayController(
     }
 
     private fun onSelectSubtitleTrack() {
-        val player = VLCPlayer.getMediaPlayer()!!
+        val player = VLCPlayer.getMediaPlayer(activity)!!
         showTrackSelection(
             activity.getString(R.string.subtitles),
             player.spuTracks,
@@ -498,7 +491,7 @@ class VideoOverlayController(
         dialogTag: String
     ) {
         if (descriptions == null || descriptions.isEmpty()) {
-            ShellMessages.post(activity.getString(R.string.no_tracks))
+            playback.showMessage(UiText.Resource(R.string.no_tracks))
             return
         }
         val labels = descriptions.map { it.name }
@@ -552,8 +545,12 @@ class VideoOverlayController(
     }
 
     /** Paints load results the view model publishes after the fact. */
-    private fun onSessionChanged(session: VideoPlaybackSession) {
+    private fun onSessionChanged(session: VideoPlaybackUiState) {
         if (!attached) return
+        if (session.streamRef != null) {
+            playback.onStreamStarted()
+            playZappedService()
+        }
         renderZapState()
         val key = eventKey(session)
         if (key != renderedEventKey) {
@@ -562,7 +559,7 @@ class VideoOverlayController(
         }
     }
 
-    private fun eventKey(session: VideoPlaybackSession): String? =
+    private fun eventKey(session: VideoPlaybackUiState): String? =
         session.currentService?.let { "${it.serviceReference}#${it.now?.eventId}" }
 
     private fun renderZapState() {
@@ -608,10 +605,7 @@ class VideoOverlayController(
         if (!allowsTvStreaming()) return
         val ref = session.serviceRef ?: return
         if (Service.isMarker(ref)) return
-        zapBeforeStreamJob?.cancel()
-        zapBeforeStreamJob = activity.startLiveServiceStream(activity, ref) {
-            playZappedService()
-        }
+        playback.streamCurrent()
     }
 
     private fun playZappedService() {
@@ -707,7 +701,7 @@ class VideoOverlayController(
     }
 
     private fun seek(pos: Int) {
-        val player = VLCPlayer.get() ?: return
+        val player = VLCPlayer.get(activity) ?: return
         val fpos = pos.toFloat()
         var length = player.getLength()
         length = if (length > 0) length / 1000 else FAKE_LENGTH.toLong()
@@ -716,7 +710,7 @@ class VideoOverlayController(
 
     private fun isRecording(): Boolean {
         val isDreamboxRecording = movie != null
-        return VLCPlayer.get()!!.isSeekable() || isDreamboxRecording
+        return VLCPlayer.get(activity)!!.isSeekable() || isDreamboxRecording
     }
 
     private fun updateViews() {
@@ -724,7 +718,7 @@ class VideoOverlayController(
 
         val title = session.title
         overlayUiState.title = title ?: ""
-        val player = VLCPlayer.get()
+        val player = VLCPlayer.get(activity)
         overlayUiState.showPvrControls = player != null && player.isSeekable()
 
         if (movie != null || currentService != null) {
@@ -765,7 +759,7 @@ class VideoOverlayController(
     @SuppressLint("ClickableViewAccessibility")
     private fun updateProgress() {
         if (rootView == null) return
-        val player = VLCPlayer.get()
+        val player = VLCPlayer.get(activity)
         val isSeekable = player != null && player.isSeekable()
         overlayUiState.seekable = isSeekable
         var len = -1L
@@ -961,7 +955,7 @@ class VideoOverlayController(
             MediaPlayer.Event.PositionChanged -> updateProgress()
 
             MediaPlayer.Event.EncounteredError ->
-                ShellMessages.post(activity.getString(R.string.playback_failed))
+                playback.showMessage(UiText.Resource(R.string.playback_failed))
         }
     }
 
@@ -974,7 +968,7 @@ class VideoOverlayController(
     }
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        val player = VLCPlayer.getMediaPlayer()!!
+        val player = VLCPlayer.getMediaPlayer(activity)!!
         when (dialogTag) {
             DIALOG_TAG_AUDIO_TRACK -> player.setAudioTrack(action)
             DIALOG_TAG_SUBTITLE_TRACK -> player.setSpuTrack(action)
@@ -984,7 +978,7 @@ class VideoOverlayController(
     fun onKeyDown(keyCode: Int): Boolean {
         var ret = false
         autohide()
-        val player = VLCPlayer.get()!!
+        val player = VLCPlayer.get(activity)!!
         when (keyCode) {
             KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B -> {
                 if (isOverlaysVisible()) {
