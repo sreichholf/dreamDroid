@@ -1,9 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -42,8 +40,7 @@ class EpgSearchScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 EpgSearchScreen(
-                    query = "",
-                    onQueryChange = {},
+                    queryState = TextFieldState(),
                     onSearch = {},
                     expanded = true,
                     onExpandedChange = {},
@@ -61,11 +58,9 @@ class EpgSearchScreenTest {
     fun imeSearchSubmitsQuery() {
         var submitted: String? = null
         composeRule.setContent {
-            var query by remember { mutableStateOf("") }
             DreamDroidTheme {
                 EpgSearchScreen(
-                    query = query,
-                    onQueryChange = { query = it },
+                    queryState = rememberTextFieldState(),
                     onSearch = { submitted = it },
                     expanded = true,
                     onExpandedChange = {},
@@ -81,12 +76,11 @@ class EpgSearchScreenTest {
 
     @Test
     fun clearTrailingIconClearsQuery() {
-        var query = "Tagesschau"
+        val query = TextFieldState("Tagesschau")
         composeRule.setContent {
             DreamDroidTheme {
                 EpgSearchScreen(
-                    query = query,
-                    onQueryChange = { query = it },
+                    queryState = query,
                     onSearch = {},
                     expanded = true,
                     onExpandedChange = {},
@@ -96,7 +90,7 @@ class EpgSearchScreenTest {
             }
         }
         composeRule.onNodeWithContentDescription("Close").assertIsDisplayed().performClick()
-        assertEquals("", query)
+        composeRule.runOnIdle { assertEquals("", query.text.toString()) }
     }
 
     @Test
@@ -123,8 +117,7 @@ class EpgSearchScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 EpgSearchScreen(
-                    query = "news",
-                    onQueryChange = {},
+                    queryState = TextFieldState("news"),
                     onSearch = {},
                     expanded = false,
                     onExpandedChange = {},
@@ -145,8 +138,7 @@ class EpgSearchScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 EpgSearchScreen(
-                    query = "none",
-                    onQueryChange = {},
+                    queryState = TextFieldState("none"),
                     onSearch = {},
                     expanded = false,
                     onExpandedChange = {},

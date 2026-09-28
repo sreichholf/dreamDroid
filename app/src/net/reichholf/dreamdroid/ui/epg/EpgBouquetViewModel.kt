@@ -1,183 +1,198 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.app.Activity
-import android.app.Application
-import android.content.Context
-import android.content.Intent
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlin.coroutines.coroutineContext
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.EventListLoad
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.EventListLoadResult
-import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.ui.nav.Epg
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * Owns bouquet identity, time, [EpgBouquetListState], refresh, and the list load.
- * The load stays on [viewModelScope] so leaving the destination does not cancel it.
- * A missing saved time stays null until the first bind. Date and time picker visibility
- * and navigation stay in [EpgBouquetDestination].
+ * Bouquet list EPG. [timeSec] is null until the first bind seeds it. [scrollToTop] and
+ * [openPicker] are requests the destination carries out and then reports back.
  */
-class EpgBouquetViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
-    val listState: EpgBouquetListState = EpgBouquetListState()
-    val refresh: ComposeRefreshState = ComposeRefreshState()
+data class EpgBouquetUiState(
+    val bouquetRef: String = "",
+    val bouquetName: String = "",
+    val timeSec: Int? = null,
+    val waitingForPicker: Boolean = false,
+    val events: List<Event> = emptyList(),
+    val refreshing: Boolean = false,
+    val emptyMessage: UiText? = null,
+    val scrollToTop: Boolean = false,
+    val openPicker: Boolean = false
+) {
+    val title: UiText
+        get() = when {
+            refreshing -> UiText.Resource(R.string.loading)
+            bouquetName.isNotEmpty() -> UiText.Raw(bouquetName)
+            else -> UiText.Resource(R.string.epg)
+        }
+}
 
-    var emptyMessage by mutableStateOf<String?>(null)
-        private set
+/**
+ * Owns bouquet identity, time, and the list load of the list EPG destination. Identity and
+ * time live in the [SavedStateHandle]. The load runs on [viewModelScope], so leaving the
+ * destination does not cancel it. A session change reloads once the destination has bound.
+ */
+@HiltViewModel
+class EpgBouquetViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val epg: EpgRepository,
+    sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(
+        readEpgBouquetNavSaved(savedStateHandle).let { saved ->
+            EpgBouquetUiState(
+                bouquetRef = saved.bouquetRef,
+                bouquetName = saved.bouquetName,
+                timeSec = saved.timeSec?.toInt(),
+                waitingForPicker = saved.waitingForPicker
+            )
+        }
+    )
+    val uiState: StateFlow<EpgBouquetUiState> = _uiState.asStateFlow()
 
-    var bouquetRef by mutableStateOf("")
-        private set
-
-    var bouquetName by mutableStateOf("")
-        private set
-
-    var timeSec by mutableStateOf<Int?>(null)
-        private set
-
-    var waitingForPicker by mutableStateOf(false)
-        private set
-
-    internal var loadHooks: EpgBouquetLoadHooks = EpgBouquetLoadHooks()
-
-    private val pickBouquetChannel = Channel<Int>(Channel.CONFLATED)
-    val pickBouquetRequests: Flow<Int> = pickBouquetChannel.receiveAsFlow()
-    private var saved = readEpgBouquetNavSaved(savedStateHandle)
     private var seenEpoch: Int? = null
-    internal var loadJob: Job? = null
-        private set
+    private var loadJob: Job? = null
 
     init {
-        bouquetRef = saved.bouquetRef
-        bouquetName = saved.bouquetName
-        waitingForPicker = saved.waitingForPicker
-        timeSec = saved.timeSec?.toInt()
+        viewModelScope.launch {
+            sessions.status.map { it.session }.distinctUntilChanged().drop(1).collect {
+                if (seenEpoch != null) {
+                    reload()
+                }
+            }
+        }
     }
 
     /**
-     * First bind keeps a restored snapshot. A later [epoch] resets bouquet ref, name, and
-     * time the way `rememberSaveable(remountEpoch)` did. Waiting for the picker is not reset.
-     * A missing time key stays null until this seeds it from [leafTimeSec] or [nowSec].
+     * The destination is shown for [route]: bind it and reload. The first bind keeps a
+     * restored snapshot and seeds what is missing from the route, or [nowSec]. A later
+     * [remountEpoch] resets bouquet and time to the route's; waiting for the picker is
+     * kept. A picked bouquet stays active over the route's until then.
      */
-    fun ensureEpoch(
+    fun onShown(route: Epg, remountEpoch: Int, nowSec: Int) {
+        ensureEpoch(remountEpoch, route.serviceRef, route.serviceName, route.timeOrNull(), nowSec)
+        applyLeaf(route.serviceRef, route.serviceName)
+        reload()
+    }
+
+    fun reload(forceRefresh: Boolean = false) {
+        val state = _uiState.value
+        if (state.bouquetRef.isEmpty()) {
+            if (!state.waitingForPicker) {
+                pickBouquet()
+            }
+            return
+        }
+        val atSec = state.timeSec ?: return
+        _uiState.update {
+            it.copy(
+                refreshing = true,
+                emptyMessage = if (it.events.isEmpty()) UiText.Resource(R.string.loading) else null
+            )
+        }
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            epg.bouquetEvents(state.bouquetRef, atSec.toLong(), forceRefresh).collect(::apply)
+        }
+    }
+
+    fun onInstantSet(newTimeSec: Int) {
+        if (newTimeSec == _uiState.value.timeSec) {
+            return
+        }
+        persist { it.copy(timeSec = newTimeSec.toLong()) }
+        reload()
+    }
+
+    fun pickBouquet() {
+        persist { it.copy(waitingForPicker = true) }
+        _uiState.update { it.copy(openPicker = true) }
+    }
+
+    fun onPickerOpened() {
+        _uiState.update { it.copy(openPicker = false) }
+    }
+
+    fun onBouquetPicked(reference: String, name: String) {
+        if (reference != _uiState.value.bouquetRef) {
+            persist {
+                it.copy(bouquetRef = reference, bouquetName = name, waitingForPicker = false)
+            }
+            _uiState.update { it.copy(scrollToTop = true) }
+        } else {
+            persist { it.copy(waitingForPicker = false) }
+        }
+        reload()
+    }
+
+    fun onScrolledToTop() {
+        _uiState.update { it.copy(scrollToTop = false) }
+    }
+
+    private fun ensureEpoch(
         epoch: Int,
         leafRef: String,
         leafName: String,
         leafTimeSec: Long?,
         nowSec: Int
     ) {
-        if (seenEpoch == null) {
+        val seen = seenEpoch
+        seenEpoch = epoch
+        if (seen == null) {
             seedIfAbsent(leafRef, leafName, leafTimeSec, nowSec)
-            seenEpoch = epoch
             return
         }
-        if (seenEpoch == epoch) {
+        if (seen == epoch) {
             return
         }
         loadJob?.cancel()
         loadJob = null
-        persist(
-            saved.copy(
+        persist {
+            it.copy(
                 bouquetRef = leafRef,
                 bouquetName = leafName,
-                timeSec = resolvedTimeSec(leafTimeSec, nowSec)
+                timeSec = (leafTimeSec ?: nowSec.toLong())
             )
-        )
-        listState.replaceAll(emptyList())
-        listState.scrollToTop()
-        emptyMessage = null
-        refresh.setRefreshing(false)
-        seenEpoch = epoch
-    }
-
-    fun applyLeaf(leafRef: String, leafName: String) {
-        val resolvedRef = EpgBouquetRestore.resolveRef(leafRef, bouquetRef)
-        val resolvedName = EpgBouquetRestore.resolveName(leafName, bouquetName, bouquetRef)
-        if (resolvedRef != bouquetRef) {
-            persist(saved.copy(bouquetRef = resolvedRef, bouquetName = resolvedName))
-            listState.scrollToTop()
         }
-    }
-
-    fun reload(forceRefresh: Boolean = false) {
-        if (bouquetRef.isEmpty() && !waitingForPicker) {
-            pickBouquet()
-            return
-        }
-        if (bouquetRef.isEmpty()) {
-            return
-        }
-        val atSec = timeSec ?: return
-        val app = getApplication<Application>()
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
-        }
-        refresh.setRefreshing(true)
-        loadJob?.cancel()
-        val ref = bouquetRef
-        val profileId = loadHooks.profileId()
-        loadJob = viewModelScope.launch {
-            loadAndApply(app, ref, atSec, profileId, forceRefresh)
-        }
-    }
-
-    fun onInstantSet(newTimeSec: Int) {
-        if (newTimeSec == timeSec) {
-            return
-        }
-        persist(saved.copy(timeSec = newTimeSec.toLong()))
-        reload()
-    }
-
-    fun pickBouquet() {
-        persist(saved.copy(waitingForPicker = true))
-        pickBouquetChannel.trySend(Statics.REQUEST_PICK_BOUQUET)
-    }
-
-    fun onPickerResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode != Activity.RESULT_OK || requestCode != Statics.REQUEST_PICK_BOUQUET) {
-            return
-        }
-        val service = data?.getSerializableExtraCompat<Service>(KEY_BOUQUET) ?: return
-        val reference = service.reference
-        if (reference != bouquetRef) {
-            persist(
-                saved.copy(
-                    bouquetRef = reference,
-                    bouquetName = service.name,
-                    waitingForPicker = false
-                )
+        _uiState.update {
+            it.copy(
+                events = emptyList(),
+                emptyMessage = null,
+                refreshing = false,
+                scrollToTop = true
             )
-            listState.scrollToTop()
-        } else {
-            persist(saved.copy(waitingForPicker = false))
         }
-        reload()
+    }
+
+    private fun applyLeaf(leafRef: String, leafName: String) {
+        val state = _uiState.value
+        val resolvedRef = EpgBouquetRestore.resolveRef(leafRef, state.bouquetRef)
+        if (resolvedRef == state.bouquetRef) {
+            return
+        }
+        val resolvedName =
+            EpgBouquetRestore.resolveName(leafName, state.bouquetName, state.bouquetRef)
+        persist { it.copy(bouquetRef = resolvedRef, bouquetName = resolvedName) }
+        _uiState.update { it.copy(scrollToTop = true) }
     }
 
     private fun seedIfAbsent(leafRef: String, leafName: String, leafTimeSec: Long?, nowSec: Int) {
@@ -186,118 +201,47 @@ class EpgBouquetViewModel(
         if (!refAbsent && !timeAbsent) {
             return
         }
-        persist(
+        persist { saved ->
             saved.copy(
                 bouquetRef = if (refAbsent) leafRef else saved.bouquetRef,
                 bouquetName = if (refAbsent) leafName else saved.bouquetName,
-                timeSec = if (timeAbsent) {
-                    resolvedTimeSec(leafTimeSec, nowSec)
-                } else {
-                    saved.timeSec
-                }
+                timeSec = if (timeAbsent) leafTimeSec ?: nowSec.toLong() else saved.timeSec
             )
-        )
-    }
-
-    private fun resolvedTimeSec(leafTimeSec: Long?, nowSec: Int): Long =
-        (leafTimeSec?.toInt() ?: nowSec).toLong()
-
-    private suspend fun loadAndApply(
-        app: Application,
-        ref: String,
-        atSec: Int,
-        profileId: Int?,
-        forceRefresh: Boolean
-    ) {
-        val hadCache = if (!forceRefresh) {
-            applyCachedEvents(app, ref, atSec, profileId)
-        } else {
-            false
-        }
-        if (!coroutineContext.isActive) {
-            return
-        }
-        if (!forceRefresh && loadHooks.shouldSkipReceiverHttp(hadCache)) {
-            return
-        }
-        val result = loadHooks.loadEvents(
-            app,
-            listOf(
-                NameValuePair("bRef", ref),
-                NameValuePair("time", atSec.toString())
-            )
-        )
-        if (!coroutineContext.isActive) {
-            return
-        }
-        if (result.success) {
-            applyEvents(app, result.events)
-            return
-        }
-        if (applyCachedEvents(app, ref, atSec, profileId)) {
-            return
-        }
-        if (!coroutineContext.isActive) {
-            return
-        }
-        refresh.setRefreshing(false)
-        listState.replaceAll(emptyList())
-        emptyMessage = result.errorText
-    }
-
-    private suspend fun applyCachedEvents(
-        app: Application,
-        ref: String,
-        atSec: Int,
-        profileId: Int?
-    ): Boolean {
-        if (profileId == null) {
-            return false
-        }
-        val cached = ListEpgCache.loadBouquetEvents(
-            loadHooks.epgDao(app),
-            profileId,
-            ref,
-            atSec.toLong()
-        ) ?: return false
-        if (!coroutineContext.isActive) {
-            return false
-        }
-        applyEvents(app, cached)
-        return true
-    }
-
-    private fun applyEvents(app: Application, events: List<Event>) {
-        refresh.setRefreshing(false)
-        if (events.isEmpty()) {
-            listState.replaceAll(emptyList())
-            emptyMessage = app.getString(R.string.no_list_item)
-        } else {
-            emptyMessage = null
-            listState.replaceAll(events)
         }
     }
 
-    private fun persist(next: EpgBouquetNavSaved) {
-        saved = next
+    private fun apply(load: EventListLoad) {
+        _uiState.update {
+            when (load) {
+                is EventListLoad.Events -> it.copy(
+                    refreshing = false,
+                    events = load.events,
+                    emptyMessage = if (load.events.isEmpty()) {
+                        UiText.Resource(R.string.no_list_item)
+                    } else {
+                        null
+                    }
+                )
+
+                is EventListLoad.Failed -> it.copy(
+                    refreshing = false,
+                    events = emptyList(),
+                    emptyMessage = load.error.contentErrorText()
+                )
+            }
+        }
+    }
+
+    private fun persist(change: (EpgBouquetNavSaved) -> EpgBouquetNavSaved) {
+        val next = change(readEpgBouquetNavSaved(savedStateHandle))
         next.writeTo(savedStateHandle)
-        bouquetRef = next.bouquetRef
-        bouquetName = next.bouquetName
-        waitingForPicker = next.waitingForPicker
-        timeSec = next.timeSec?.toInt()
+        _uiState.update {
+            it.copy(
+                bouquetRef = next.bouquetRef,
+                bouquetName = next.bouquetName,
+                timeSec = next.timeSec?.toInt(),
+                waitingForPicker = next.waitingForPicker
+            )
+        }
     }
 }
-
-internal class EpgBouquetLoadHooks(
-    val profileId: () -> Int? = { ProfileRepository.get().requireCurrent().id },
-    val epgDao: (Context) -> EpgDao = { context -> AppDatabase.epg(context) },
-    val shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
-        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-    },
-    val loadEvents: suspend (
-        Context,
-        List<NameValuePair>
-    ) -> EventListLoadResult = { context, params ->
-        loadEventList(context, params, URIStore.EPG_BOUQUET)
-    }
-)
