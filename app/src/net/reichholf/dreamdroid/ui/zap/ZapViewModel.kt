@@ -17,15 +17,15 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ServiceListLoad
+import net.reichholf.dreamdroid.data.serviceRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadServiceList
+import net.reichholf.dreamdroid.enigma.contentError
 import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 
@@ -94,36 +94,20 @@ class ZapViewModel(application: Application, private val savedStateHandle: Saved
         loadJob?.cancel()
         val bouquetRef = saved.bouquetRef
         loadJob = viewModelScope.launch {
-            val params = listOf(NameValuePair("sRef", bouquetRef))
-            val result = loadServiceList(app, params)
+            val load = serviceRepository(app).services(bouquetRef)
             if (!isActive) {
                 return@launch
             }
             refresh.setRefreshing(false)
             toolbarTitle = finishedTitle()
-            if (!result.success) {
-                val profileId = ProfileRepository.get().requireCurrent().id
-                val cached = if (profileId != null) {
-                    UserBouquetCache.loadRosterServices(
-                        AppDatabase.roster(app),
-                        profileId,
-                        bouquetRef
-                    )
-                } else {
-                    null
+            when (load) {
+                is ServiceListLoad.Services -> publishRows(ZapListMapper.rowsFrom(load.services))
+
+                is ServiceListLoad.Failed -> {
+                    listState.replaceAll(emptyList())
+                    emptyMessage = load.error.contentError(app)
                 }
-                if (!isActive) {
-                    return@launch
-                }
-                if (cached != null) {
-                    publishRows(ZapListMapper.rowsFrom(cached))
-                    return@launch
-                }
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
-                return@launch
             }
-            publishRows(ZapListMapper.rowsFrom(result.services))
         }
     }
 

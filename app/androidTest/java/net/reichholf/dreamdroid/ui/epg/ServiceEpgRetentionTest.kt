@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -69,7 +70,13 @@ class ServiceEpgRetentionTest {
         profiles,
         database,
         sessions,
-        InstrumentationRegistry.getInstrumentation().targetContext
+        ServiceRepository(
+            InstrumentationRegistry.getInstrumentation().targetContext,
+            clients,
+            profiles,
+            database,
+            sessions
+        )
     )
     private val timers = TimerRepository(clients, profiles, database)
 

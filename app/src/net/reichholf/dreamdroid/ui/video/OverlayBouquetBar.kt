@@ -22,8 +22,8 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.userBouquetTabs
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 const val OVERLAY_BOUQUET_BAR_TAG = "overlay_bouquet_bar"
@@ -33,8 +33,8 @@ const val OVERLAY_BOUQUET_BAR_TAG = "overlay_bouquet_bar"
  * Provider roots and the aggregate index are dropped.
  */
 fun overlayBouquets(tv: List<Service>, radio: List<Service>, excluded: Set<String>): List<Service> {
-    val tvTabs = UserBouquetCache.userBouquetTabs(tv, excluded)
-    val radioTabs = UserBouquetCache.userBouquetTabs(radio, excluded)
+    val tvTabs = userBouquetTabs(tv, excluded)
+    val radioTabs = userBouquetTabs(radio, excluded)
     return (tvTabs + radioTabs).distinctBy { it.reference }
 }
 

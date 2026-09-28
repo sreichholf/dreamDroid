@@ -6,7 +6,9 @@ import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
+import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.room.EpgEventEntity
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -17,18 +19,20 @@ import okhttp3.mockwebserver.RecordedRequest
 
 /**
  * A [MockWebServer] receiver as the active profile, an in-memory database, and the real
- * [EpgRepository] over both. The session starts Online.
+ * [EpgRepository] and [net.reichholf.dreamdroid.data.ServiceRepository] over both. The
+ * session starts Online.
  */
 class EpgTestReceiver {
     val server = MockWebServer()
     val profiles = TestProfiles()
-    val sessions = SessionConnectionHolder()
+    val sessions: SessionConnectionHolder = profiles.sessions
+    val services = profiles.services
     val repository = EpgRepository(
         EnigmaClientFactory(profiles.repository),
         profiles.repository,
         profiles.database,
         sessions,
-        profiles.context
+        services
     )
 
     /** Answer for every request. Defaults to the two-event `epgservice.xml`. */
@@ -42,6 +46,10 @@ class EpgTestReceiver {
     /** Requests so far, oldest first. */
     val requests: List<RecordedRequest>
         get() = synchronized(recorded) { recorded.toList() }
+
+    /** The requests to [path]. */
+    fun requestsTo(path: String): List<RecordedRequest> =
+        requests.filter { it.requestUrl?.encodedPath == path }
 
     fun start() {
         server.dispatcher = object : Dispatcher() {
@@ -75,6 +83,17 @@ class EpgTestReceiver {
         profiles.database.epgDao().replaceChunk(
             EpgChunkMetaEntity(PROFILE_ID, bouquetRef, chunk.startSec, chunk.endSec, 1L),
             events
+        )
+    }
+
+    /** Writes [tabs] as the TV tab strip, as the hub does when it loaded the bouquets. */
+    suspend fun writeTabStrip(vararg tabs: Service) {
+        profiles.database.rosterDao().replaceTabStrip(
+            PROFILE_ID,
+            "TV",
+            tabs.mapIndexed { index, tab ->
+                BouquetTabEntity(PROFILE_ID, "TV", index, tab.reference, tab.name)
+            }
         )
     }
 

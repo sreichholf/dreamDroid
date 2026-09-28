@@ -14,15 +14,13 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.BouquetListLoad
+import net.reichholf.dreamdroid.data.serviceRepository
+import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadBouquetList
 import net.reichholf.dreamdroid.enigma.loadEpgNowNext
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.services.bouquetsAfterHttpOrCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
@@ -110,59 +108,21 @@ class VideoPlaybackViewModel(application: Application) : AndroidViewModel(applic
             return
         }
         bouquetJob = viewModelScope.launch {
-            val ctx = getApplication<Application>()
-            val profileId = ProfileRepository.get().requireCurrent().id
-            val dao = if (profileId != null) AppDatabase.roster(ctx) else null
-            val excluded = UserBouquetCache.excludedHubTabRefs(ctx)
-            val cachedTv = if (dao != null && profileId != null) {
-                UserBouquetCache.loadTabStripServices(dao, profileId, UserBouquetCache.KIND_TV)
-            } else {
-                emptyList()
-            }
-            val cachedRadio = if (dao != null && profileId != null) {
-                UserBouquetCache.loadTabStripServices(
-                    dao,
-                    profileId,
-                    UserBouquetCache.KIND_RADIO
-                )
-            } else {
-                emptyList()
-            }
-            val hasStrip = cachedTv.isNotEmpty() || cachedRadio.isNotEmpty()
+            val services = serviceRepository(getApplication<Application>())
+            val excluded = services.excludedTabRefs
+            val cached = services.cachedBouquets()
+            val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
             if (hasStrip) {
-                publishBouquets(overlayBouquets(cachedTv, cachedRadio, excluded))
+                publishBouquets(overlayBouquets(cached.tv, cached.radio, excluded))
             }
             val status = SessionConnectionHolder.shared.status.value
             if (status.shouldSkipReceiverHttp(hasStrip)) {
                 return@launch
             }
-            val result = loadBouquetList(ctx)
-            if (dao != null && profileId != null) {
-                if (result.tvLoaded) {
-                    UserBouquetCache.replaceTabStrip(
-                        dao,
-                        profileId,
-                        UserBouquetCache.KIND_TV,
-                        result.bouquets.tv,
-                        excluded
-                    )
-                }
-                if (result.radioLoaded) {
-                    UserBouquetCache.replaceTabStrip(
-                        dao,
-                        profileId,
-                        UserBouquetCache.KIND_RADIO,
-                        result.bouquets.radio,
-                        excluded
-                    )
-                }
+            val painted = when (val load = services.bouquets()) {
+                is BouquetListLoad.Loaded -> load.bouquets
+                is BouquetListLoad.Failed -> Bouquets()
             }
-            val painted = bouquetsAfterHttpOrCache(
-                result.success,
-                result.bouquets,
-                cachedTv,
-                cachedRadio
-            ).first
             publishBouquets(overlayBouquets(painted.tv, painted.radio, excluded))
         }
     }

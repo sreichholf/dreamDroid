@@ -6,24 +6,18 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.movieRepository
+import net.reichholf.dreamdroid.data.serviceRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
+import net.reichholf.dreamdroid.enigma.contentError
 import net.reichholf.dreamdroid.enigma.loadMovieList
-import net.reichholf.dreamdroid.enigma.loadServiceList
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
 import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
-import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
-import net.reichholf.dreamdroid.multiepg.overlayNowNext
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.room.RosterDao
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 
@@ -48,20 +42,9 @@ data class TvHubMoviesResult(
 suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     val app = context.applicationContext
     val profileId = ProfileRepository.get().requireCurrent().id
-    val excluded = UserBouquetCache.excludedHubTabRefs(app)
-    val db = AppDatabase.database(app)
-    val rosterDao = db.rosterDao()
-    val epgDao = db.epgDao()
+    val services = serviceRepository(app)
     val movies = movieRepository(app)
-    val cachedTabs = if (profileId != null) {
-        UserBouquetCache.loadTabStripServices(
-            rosterDao,
-            profileId,
-            UserBouquetCache.KIND_TV
-        )
-    } else {
-        emptyList()
-    }
+    val cachedTabs = services.cachedTvBouquetTabs()
     val cachedMovies = movies.cachedLocations()
     val hasCache = hasUseDrivenCache(
         cachedTabs.map { it.reference },
@@ -70,9 +53,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     val status = SessionConnectionHolder.shared.status.value
     if (shouldSkipTvHubHttp(status, hasCache)) {
         return paintTvHubFromCache(
-            rosterDao = rosterDao,
-            epgDao = epgDao,
-            profileId = profileId,
+            services = services,
             tabs = cachedTabs,
             locations = movieHeadersForTvHub(
                 locationsFromReceiver = false,
@@ -84,16 +65,12 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     withContext(Dispatchers.IO) {
         prefetchTvLocationsAndTags()
     }
-    val bouquetResult = loadServiceList(
-        app,
-        listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV))
-    )
-    if (!bouquetResult.success) {
+    val bouquetResult = services.tvBouquetTabs()
+    val bouquets = bouquetResult.value
+    if (bouquets == null) {
         if (hasCache) {
             return paintTvHubFromCache(
-                rosterDao = rosterDao,
-                epgDao = epgDao,
-                profileId = profileId,
+                services = services,
                 tabs = cachedTabs,
                 locations = movieHeadersForTvHub(
                     locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
@@ -109,51 +86,27 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
                 liveLocations = ProfileRepository.get().locations().toList(),
                 cachedLocations = cachedMovies
             ),
-            errorText = bouquetResult.errorText,
+            errorText = bouquetResult.error.contentError(app),
             usedCache = false
-        )
-    }
-    if (profileId != null) {
-        UserBouquetCache.replaceTabStrip(
-            rosterDao,
-            profileId,
-            UserBouquetCache.KIND_TV,
-            bouquetResult.services,
-            excluded
         )
     }
     val rows = ArrayList<HubBouquetRow>()
     var lastError: String? = null
     val nowSec = System.currentTimeMillis() / 1000L
     val sync = MultiEpgSyncHolder.shared(app)
-    for (bouquet in bouquetResult.services) {
+    for (bouquet in bouquets) {
         val ref = bouquet.reference
         if (ref.isBlank()) {
             continue
         }
-        val loaded = loadBouquetServiceNowNext(app, listOf(NameValuePair("bRef", ref)))
-        if (loaded.success) {
-            val services = withoutBouquetSpacers(loaded.rows)
-            rows.add(HubBouquetRow(bouquet = bouquet, services = services))
-            if (profileId != null) {
-                UserBouquetCache.persistRosterIfCacheable(
-                    dao = rosterDao,
-                    profileId = profileId,
-                    ref = ref,
-                    tabRootRef = ref,
-                    rows = services,
-                    excludedTabRefs = excluded
-                )
+        val loaded = services.receiverNowNext(ref)
+        val loadedRows = loaded.value
+        if (loadedRows != null) {
+            val serviceRows = withoutBouquetSpacers(loadedRows)
+            rows.add(HubBouquetRow(bouquet = bouquet, services = serviceRows))
+            if (profileId != null && services.persistRoster(ref, ref, serviceRows)) {
                 try {
-                    UserBouquetEpgFill.ensureNowChunk(
-                        sync = sync,
-                        rosterDao = rosterDao,
-                        profileId = profileId,
-                        containerRef = ref,
-                        tabRootRef = ref,
-                        excludedTabRefs = excluded,
-                        unixSec = nowSec
-                    )
+                    sync.ensureChunk(profileId, ref, nowSec, persist = true)
                 } catch (t: Throwable) {
                     if (t is kotlinx.coroutines.CancellationException) {
                         throw t
@@ -163,14 +116,8 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
             }
             continue
         }
-        lastError = loaded.errorText
-        val cached = paintBouquetFromCache(
-            rosterDao = rosterDao,
-            epgDao = epgDao,
-            profileId = profileId,
-            bouquet = bouquet,
-            nowSec = nowSec
-        )
+        lastError = loaded.error.contentError(app)
+        val cached = paintBouquetFromCache(services, bouquet, nowSec)
         if (cached != null) {
             rows.add(cached)
         }
@@ -242,22 +189,12 @@ internal fun prefetchTvLocationsAndTags() {
 }
 
 private suspend fun paintTvHubFromCache(
-    rosterDao: RosterDao,
-    epgDao: EpgDao,
-    profileId: Int?,
+    services: ServiceRepository,
     tabs: List<Service>,
     locations: List<String>
 ): TvHubBrowseResult {
     val nowSec = System.currentTimeMillis() / 1000L
-    val rows = tabs.mapNotNull { bouquet ->
-        paintBouquetFromCache(
-            rosterDao = rosterDao,
-            epgDao = epgDao,
-            profileId = profileId,
-            bouquet = bouquet,
-            nowSec = nowSec
-        )
-    }
+    val rows = tabs.mapNotNull { bouquet -> paintBouquetFromCache(services, bouquet, nowSec) }
     return TvHubBrowseResult(
         rows = rows,
         locations = locations,
@@ -267,24 +204,16 @@ private suspend fun paintTvHubFromCache(
 }
 
 private suspend fun paintBouquetFromCache(
-    rosterDao: RosterDao,
-    epgDao: EpgDao,
-    profileId: Int?,
+    services: ServiceRepository,
     bouquet: Service,
     nowSec: Long
 ): HubBouquetRow? {
-    val pid = profileId ?: return null
     val ref = bouquet.reference
     if (ref.isBlank()) {
         return null
     }
-    val cached = UserBouquetCache.loadRosterNowNext(rosterDao, pid, ref) ?: return null
-    val chunk = MultiEpgWindows.chunkContaining(nowSec)
-    val events = epgDao.eventsOverlapping(pid, ref, chunk.startSec, chunk.endSec)
-    return HubBouquetRow(
-        bouquet = bouquet,
-        services = withoutBouquetSpacers(overlayNowNext(cached, events, nowSec))
-    )
+    val cached = services.cachedNowNext(ref, nowSec) ?: return null
+    return HubBouquetRow(bouquet = bouquet, services = withoutBouquetSpacers(cached))
 }
 
 /** Drop Enigma2 bouquet spacers (`1:832:`) from a TV hub row. `1:64:` markers stay. */

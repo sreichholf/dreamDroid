@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -71,7 +72,8 @@ data class TvMultiEpgUiState(
 @HiltViewModel
 class TvMultiEpgViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val epg: EpgRepository,
+    epg: EpgRepository,
+    private val services: ServiceRepository,
     private val timers: TimerRepository,
     private val profiles: ProfileRepository,
     sessions: SessionConnectionHolder
@@ -80,6 +82,7 @@ class TvMultiEpgViewModel @Inject constructor(
     private val grid = newMultiEpgGrid(
         viewModelScope,
         epg,
+        services,
         timers,
         profiles,
         sessions,
@@ -108,9 +111,9 @@ class TvMultiEpgViewModel @Inject constructor(
             return
         }
         startJob = viewModelScope.launch {
-            val services = epg.tvBouquets()
-            persistGate.knownTabRefs = epg.userBouquetTabRefs(services)
-            val bouquets = services.filter { it.reference.isNotBlank() }
+            val tvBouquets = services.tvBouquets()
+            persistGate.knownTabRefs = services.userBouquetTabs(tvBouquets).map { it.reference }
+            val bouquets = tvBouquets.filter { it.reference.isNotBlank() }
             val profile = profiles.requireCurrent()
             val launch = resolveTvMultiEpgLaunchBouquet(
                 extraRef = extraRef,

@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.data
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +10,6 @@ import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -24,8 +21,6 @@ import net.reichholf.dreamdroid.multiepg.nowNextForService
 import net.reichholf.dreamdroid.multiepg.toEvent
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgEventEntity
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /** One step of a list EPG load. */
@@ -48,7 +43,7 @@ class EpgRepository @Inject constructor(
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
     private val sessions: SessionConnectionHolder,
-    @param:ApplicationContext private val context: Context
+    private val services: ServiceRepository
 ) {
     private val epgMultiRequest = Mutex()
 
@@ -59,11 +54,6 @@ class EpgRepository @Inject constructor(
      */
     val multiEpgSync: MultiEpgSync by lazy {
         MultiEpgSync(dao = database.epgDao(), fetch = ::fetchEpgMulti)
-    }
-
-    /** The TV and radio "all bouquets" roots. MultiEPG never persists them. */
-    private val excludedTabRefs: Set<String> by lazy {
-        UserBouquetCache.excludedHubTabRefs(context)
     }
 
     /**
@@ -101,47 +91,29 @@ class EpgRepository @Inject constructor(
     suspend fun search(query: String): EnigmaResponse<List<Event>> =
         clients.current().getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
 
-    /** A MultiEPG persist gate that knows no user bouquet yet, so it persists nothing. */
-    fun multiEpgPersistGate(): MultiEpgPersistGate = MultiEpgPersistGate(excludedTabRefs)
-
-    /** The phone hub's user bouquet tabs in Room, the bouquets phone MultiEPG persists. */
-    suspend fun hubTabStripRefs(): List<String> {
-        val profileId = profiles.requireCurrent().id ?: return emptyList()
-        return database.rosterDao().getTabStripRefs(profileId)
-    }
-
-    /** The user bouquet tabs among [bouquets], the bouquets TV MultiEPG persists. */
-    fun userBouquetTabRefs(bouquets: List<Service>): List<String> =
-        UserBouquetCache.userBouquetTabs(bouquets, excludedTabRefs).map { it.reference }
+    /**
+     * A MultiEPG persist gate that knows no user bouquet yet, so it persists nothing. Callers
+     * set its known tabs from [ServiceRepository].
+     */
+    fun multiEpgPersistGate(): MultiEpgPersistGate = MultiEpgPersistGate(services.excludedTabRefs)
 
     /**
-     * TV bouquets for the TV MultiEPG picker. Room's TV tab strip answers while the session
-     * skips the receiver, and when the receiver fails.
+     * Use-driven EPG fill: `/web/epgmulti` for the chunk at [nowSec] into Room when the user
+     * opened [containerRef] under the hub tab [tabRootRef] and that container is cacheable
+     * (docs/offline-and-errors.md). Provider, All Services, and the bouquet index never
+     * fetch. Failures throw.
      */
-    suspend fun tvBouquets(): List<Service> {
-        val profileId = profiles.requireCurrent().id
-        val cached = profileId?.let {
-            UserBouquetCache.loadTabStripServices(
-                database.rosterDao(),
-                it,
-                UserBouquetCache.KIND_TV
-            )
-        }.orEmpty()
-        if (sessions.status.value.shouldSkipReceiverHttp(cached.isNotEmpty())) {
-            return cached
+    suspend fun fillNowChunk(
+        containerRef: String,
+        tabRootRef: String,
+        nowSec: Long = System.currentTimeMillis() / 1000L
+    ): List<Event> {
+        val profileId = profiles.requireCurrent().id ?: return emptyList()
+        if (!services.isCacheableContainer(containerRef, tabRootRef)) {
+            return emptyList()
         }
-        return clients.current()
-            .getServices(listOf(NameValuePair("bRef", TvComposeHubHost.BOUQUETS_TV)))
-            .value ?: cached
+        return multiEpgSync.ensureChunk(profileId, containerRef, nowSec, persist = true)
     }
-
-    /** Members of [bouquetRef] from `/web/getservices`, the MultiEPG rows. Failures throw. */
-    suspend fun bouquetServices(bouquetRef: String): List<Service> =
-        clients.current().getServices(listOf(NameValuePair("sRef", bouquetRef))).valueOrThrow()
-
-    /** The roster of [bouquetRef] in Room, or null when it was never written. */
-    suspend fun cachedBouquetServices(profileId: Int, bouquetRef: String): List<Service>? =
-        UserBouquetCache.loadRosterServices(database.rosterDao(), profileId, bouquetRef)
 
     /** Drops MultiEPG events and chunks that ended two days before [nowSec] or earlier. */
     suspend fun pruneExpiredMultiEpgCache(nowSec: Long = System.currentTimeMillis() / 1000L) {

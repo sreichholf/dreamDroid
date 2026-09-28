@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
+import dagger.Lazy
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
@@ -28,7 +29,6 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.ProfileDaoBlocking
-import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
@@ -363,10 +363,15 @@ interface ProfileStore {
     fun legacyProfile(): Profile
 }
 
-/** Profiles in Room; the active id and legacy settings in the default preferences. */
+/**
+ * Profiles in Room; the active id and legacy settings in the default preferences. Deleting
+ * a profile drops its use-driven cache through [ServiceRepository], which depends on
+ * [ProfileRepository] and so is [Lazy] here.
+ */
 class RoomProfileStore @Inject constructor(
     private val database: AppDatabase,
-    @param:ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context,
+    private val services: Lazy<ServiceRepository>
 ) : ProfileStore {
     private val dao: ProfileDaoBlocking
         get() = ProfileDaoBlocking(database.profileDao())
@@ -387,7 +392,7 @@ class RoomProfileStore @Inject constructor(
     override fun delete(profile: Profile) {
         dao.deleteProfile(profile)
         val id = profile.id ?: return
-        runBlocking(Dispatchers.IO) { UseDrivenCache.clearForProfile(database, id) }
+        runBlocking(Dispatchers.IO) { services.get().clearCacheOfDeletedProfile(id) }
     }
 
     override fun activeId(): Int = preferences.getInt(DreamDroid.CURRENT_PROFILE, -1)

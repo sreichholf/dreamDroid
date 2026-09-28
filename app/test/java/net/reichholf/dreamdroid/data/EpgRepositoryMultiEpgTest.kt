@@ -10,11 +10,11 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
+import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -154,55 +154,72 @@ class EpgRepositoryMultiEpgTest {
     }
 
     @Test
-    fun bouquetServicesComeFromGetservices() = runBlocking {
-        val services = repository.bouquetServices(BOUQUET)
-
-        assertTrue(services.any { it.name == "Das Erste HD" })
-        val url = receiver.server.takeRequest().requestUrl!!
-        assertEquals("/web/getservices", url.encodedPath)
-        assertEquals(BOUQUET, url.queryParameter("sRef"))
-    }
-
-    @Test
     fun persistGateKnowsOnlyTheHubTabStrip() = runBlocking {
         val gate = repository.multiEpgPersistGate()
         assertEquals(false, gate.persist(BOUQUET))
 
-        UserBouquetCache.replaceTabStrip(
-            receiver.profiles.database.rosterDao(),
-            PROFILE_ID,
-            UserBouquetCache.KIND_TV,
-            listOf(Service(BOUQUET, "Favourites")),
-            emptySet()
-        )
-        gate.knownTabRefs = repository.hubTabStripRefs()
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        gate.knownTabRefs = receiver.services.hubTabStripRefs()
 
         assertEquals(true, gate.persist(BOUQUET))
         assertEquals(false, gate.persist(OTHER_BOUQUET))
     }
 
     @Test
-    fun tvBouquetsComeFromTheReceiver() = runBlocking {
-        val bouquets = repository.tvBouquets()
+    fun fillOfAHubTabWritesItsChunk() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
 
-        assertTrue(bouquets.isNotEmpty())
-        assertEquals("/web/getservices", receiver.server.takeRequest().requestUrl!!.encodedPath)
+        val events = repository.fillNowChunk(BOUQUET, BOUQUET, NOW)
+
+        assertEquals(2, events.size)
+        val stored = receiver.profiles.database.epgDao()
+            .eventsOverlapping(PROFILE_ID, BOUQUET, chunk.startSec, chunk.endSec)
+        assertEquals(setOf("Tagesschau", "heute"), stored.map { it.title }.toSet())
+        assertEquals(BOUQUET, receiver.requestsTo("/web/epgmulti").single().bRef())
     }
 
     @Test
-    fun offlineTvBouquetsComeFromTheTabStrip() = runBlocking {
-        UserBouquetCache.replaceTabStrip(
-            receiver.profiles.database.rosterDao(),
-            PROFILE_ID,
-            UserBouquetCache.KIND_TV,
-            listOf(Service(BOUQUET, "Favourites")),
-            emptySet()
-        )
-        receiver.goOffline()
+    fun fillOfAFolderUnderAHubTabKeysEventsByTheFolder() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
 
-        val bouquets = repository.tvBouquets()
+        repository.fillNowChunk(FOLDER, BOUQUET, NOW)
 
-        assertEquals(listOf("Favourites"), bouquets.map { it.name })
+        val stored = receiver.profiles.database.epgDao()
+            .eventsOverlapping(PROFILE_ID, FOLDER, chunk.startSec, chunk.endSec)
+        assertEquals(2, stored.size)
+        assertTrue(stored.all { it.bouquetRef == FOLDER && it.serviceRef != FOLDER })
+        assertEquals(FOLDER, receiver.requestsTo("/web/epgmulti").single().bRef())
+    }
+
+    @Test
+    fun fillNeverStoresAFolderAsAService() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        receiver.answer = {
+            MockResponse().setBody(
+                loadWebFixture("epgmulti.xml")
+                    .replace("1:0:1:6DCA:44D:1:C00000:0:0:0:", FOLDER)
+                    .replace("1:0:1:6DCB:44D:1:C00000:0:0:0:", FOLDER)
+            )
+        }
+
+        repository.fillNowChunk(BOUQUET, BOUQUET, NOW)
+
+        val stored = receiver.profiles.database.epgDao()
+            .eventsOverlapping(PROFILE_ID, BOUQUET, chunk.startSec, chunk.endSec)
+        assertTrue(stored.isEmpty())
+    }
+
+    @Test
+    fun fillOfDedicatedRootsAndUnknownTabsNeverFetches() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+
+        for (root in TV_ROOTS) {
+            assertTrue(repository.fillNowChunk(root, root, NOW).isEmpty())
+            assertNull(sync.peekChunk(PROFILE_ID, root, NOW))
+        }
+        assertTrue(repository.fillNowChunk(FOLDER, TV_ROOTS[2], NOW).isEmpty())
+        assertTrue(repository.fillNowChunk(OTHER_BOUQUET, OTHER_BOUQUET, NOW).isEmpty())
+
         assertEquals(0, receiver.server.requestCount)
     }
 
@@ -218,5 +235,8 @@ class EpgRepositoryMultiEpgTest {
         const val NOW = 1_893_456_000L + 600L
         const val OTHER_BOUQUET =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.other.tv\" ORDER BY bouquet"
+        const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
+
+        private fun RecordedRequest.bRef(): String? = requestUrl?.queryParameter("bRef")
     }
 }

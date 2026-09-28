@@ -6,14 +6,18 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import java.io.File
 import java.nio.file.Files
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
+import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
- * A JVM stand-in for the application context: default preferences live in memory, string
- * arrays are empty, the cache directory is a fresh temporary directory, everything else
- * is the android.jar stub.
+ * A JVM stand-in for the application context: default preferences live in memory, the
+ * dedicated TV and radio bouquet roots are the app's, other string arrays are empty, the
+ * cache directory is a fresh temporary directory, everything else is the android.jar stub.
  */
 class TestContext : ContextWrapper(null) {
     private val preferences = HashMap<String, MemorySharedPreferences>()
@@ -23,7 +27,11 @@ class TestContext : ContextWrapper(null) {
 
     @Suppress("DEPRECATION")
     private val resources = object : Resources(null, null, null) {
-        override fun getStringArray(id: Int): Array<String> = emptyArray()
+        override fun getStringArray(id: Int): Array<String> = when (id) {
+            R.array.servicerefstv -> TV_ROOTS.toTypedArray()
+            R.array.servicerefsradio -> RADIO_ROOTS.toTypedArray()
+            else -> emptyArray()
+        }
     }
 
     override fun getApplicationContext(): Context = this
@@ -39,12 +47,17 @@ class TestContext : ContextWrapper(null) {
 }
 
 /**
- * The app's profile stack over an in-memory [AppDatabase]. Tests leave it open: a
- * ViewModel job may still be finishing a blocking read when the test body returns.
+ * The app's profile stack and [ServiceRepository] over an in-memory [AppDatabase]. Tests
+ * leave it open: a ViewModel job may still be finishing a blocking read when the test body
+ * returns.
  */
 class TestProfiles(val context: TestContext = TestContext()) {
     val database: AppDatabase = AppDatabase.inMemory(context)
-    val repository = ProfileRepository(RoomProfileStore(database, context))
+    val sessions = SessionConnectionHolder()
+    val repository = ProfileRepository(RoomProfileStore(database, context) { services })
+    val services: ServiceRepository by lazy {
+        ServiceRepository(context, EnigmaClientFactory(repository), repository, database, sessions)
+    }
 }
 
 /** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
@@ -132,3 +145,20 @@ class MemorySharedPreferences : SharedPreferences {
         }
     }
 }
+
+/** `R.array.servicerefstv`: the aggregate bouquet index, Provider, All Services. */
+val TV_ROOTS = listOf(
+    "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) " +
+        "FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet",
+    "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) " +
+        "FROM PROVIDERS ORDER BY name",
+    "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || (type == 25) " +
+        "ORDER BY name"
+)
+
+/** `R.array.servicerefsradio`. */
+val RADIO_ROOTS = listOf(
+    "1:7:2:0:0:0:0:0:0:0:(type == 2) FROM BOUQUET \"bouquets.radio\" ORDER BY bouquet",
+    "1:7:2:0:0:0:0:0:0:0:(type == 2) FROM PROVIDERS ORDER BY name",
+    "1:7:2:0:0:0:0:0:0:0:(type == 2) ORDER BY name"
+)

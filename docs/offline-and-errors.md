@@ -126,7 +126,7 @@ Not cached as blobs: device info live page, signal, screenshot, `/web/getcurrent
 
 **List EPG** (drawer `/web/epgbouquet`): v1 Offline reads shared `epgmulti` Room chunks for that user bouquet, or Unavailable if never filled. Do not persist `epgbouquet` separately.
 
-**Phone hub Online path:** roster from `loadServiceList` / `getservices`, now/next overlaid from `loadEpgNowNext` / `epgnownext` (`HubServiceListPage` via `loadBouquetServiceNowNext`). A failed service list stays an error. Room roster + `epgmulti` remain Offline writers, not a replacement for Online now/next.
+**Phone hub Online path:** roster from `getservices`, now/next overlaid from `epgnownext` (`ServiceRepository.receiverNowNext`, which `HubServiceListViewModel` and the TV hub use). A failed service list stays an error. Room roster + `epgmulti` remain Offline writers, not a replacement for Online now/next.
 
 ### 4.5 Hard excludes
 

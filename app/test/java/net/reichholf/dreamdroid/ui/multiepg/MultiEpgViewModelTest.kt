@@ -15,7 +15,6 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
@@ -81,13 +80,7 @@ class MultiEpgViewModelTest {
 
     @Test
     fun hubTabBouquetIsStoredInRoom() = runBlocking {
-        UserBouquetCache.replaceTabStrip(
-            receiver.profiles.database.rosterDao(),
-            PROFILE_ID,
-            UserBouquetCache.KIND_TV,
-            listOf(Service(BOUQUET, "Favourites")),
-            emptySet()
-        )
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
         val viewModel = viewModel()
 
         viewModel.ensureLoaded(0, BOUQUET, "Favourites", NOW)
@@ -230,6 +223,7 @@ class MultiEpgViewModelTest {
         MultiEpgViewModel(
             handle,
             receiver.repository,
+            receiver.services,
             timerRepository(),
             receiver.profiles.repository,
             receiver.sessions
