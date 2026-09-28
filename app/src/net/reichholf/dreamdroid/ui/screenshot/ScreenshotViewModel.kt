@@ -1,108 +1,93 @@
 package net.reichholf.dreamdroid.ui.screenshot
 
-import android.app.Application
-import android.graphics.BitmapFactory
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import java.util.GregorianCalendar
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.loadScreenshot
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * Owns [ScreenshotUiState] and the raw screenshot bytes used for share and save.
- *
- * The bitmap stays while this ViewModel remains on the NavBackStackEntry.
+ * Screenshot of the receiver. [image] holds the JPEG bytes that the screen decodes and that
+ * share and save write out. [blocked] mirrors the session's `blocksMutations`, which blocks
+ * grabs.
  */
-class ScreenshotViewModel(application: Application) : AndroidViewModel(application) {
-    val uiState: ScreenshotUiState = ScreenshotUiState()
+data class ScreenshotUiState(
+    val image: ByteArray? = null,
+    val loading: Boolean = false,
+    val blocked: Boolean = false,
+    val userMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(R.string.screenshot)
+}
 
-    var rawImage: ByteArray = ByteArray(0)
-        private set
-
-    var errorText by mutableStateOf<String?>(null)
-        private set
+/**
+ * Grabs a screenshot when created and on [refresh]. The bytes stay in memory for the life
+ * of this ViewModel; they are too large for `SavedStateHandle`.
+ */
+@HiltViewModel
+class ScreenshotViewModel @Inject constructor(
+    private val receiver: ReceiverRepository,
+    private val sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(
+        ScreenshotUiState(blocked = sessions.status.value.blocksMutations)
+    )
+    val uiState: StateFlow<ScreenshotUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
 
-    fun start(type: Int, format: Int, size: Int) {
-        if (!shouldGrabScreenshot(rawImage.size)) {
-            if (uiState.bitmap == null) {
-                onAvailable(rawImage)
+    init {
+        viewModelScope.launch {
+            sessions.status.collect { status ->
+                _uiState.update { it.copy(blocked = status.blocksMutations) }
             }
-            return
         }
-        if (loadJob?.isActive == true) {
-            return
-        }
-        reload(type, format, size)
+        refresh()
     }
 
-    fun reload(type: Int, format: Int, size: Int) {
-        if (SessionConnectionHolder.shared.status.value.blocksMutations) {
+    /** Grabs a new screenshot; does nothing while blocked. */
+    fun refresh() {
+        if (sessions.status.value.blocksMutations) {
             return
         }
-        val app = getApplication<Application>()
-        uiState.loading = true
         loadJob?.cancel()
+        _uiState.update { it.copy(loading = true) }
         loadJob = viewModelScope.launch {
-            val result = loadScreenshot(app, buildParams(type, format, size))
-            uiState.loading = false
-            val bytes = result.bytes
-            if (result.success && bytes != null) {
-                withContext(Dispatchers.Main.immediate) {
-                    onAvailable(bytes)
-                }
-            } else {
-                errorText = result.errorText?.takeIf { it.isNotEmpty() }
-                    ?: app.getString(R.string.error)
+            val response = receiver.screenshot()
+            val image = response.value
+            if (image == null) {
+                val failure = response.error?.failure?.userMessageText()
+                val message = failure?.takeUnless { it == UiText.Raw("") }
+                    ?: UiText.Resource(R.string.error)
+                _uiState.update { it.copy(loading = false, userMessage = message) }
+                return@launch
             }
+            _uiState.update { it.copy(image = image, loading = false) }
         }
     }
 
-    fun consumeError() {
-        errorText = null
+    fun onSaved(fileName: String) {
+        _uiState.update {
+            it.copy(userMessage = UiText.Resource(R.string.screenshot_saved, listOf(fileName)))
+        }
     }
 
-    private fun onAvailable(bytes: ByteArray) {
-        rawImage = bytes
-        uiState.bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-        uiState.loading = false
+    /** Writing the image for save or share failed. */
+    fun onFileFailed() {
+        _uiState.update { it.copy(userMessage = UiText.Resource(R.string.error)) }
     }
 
-    private fun buildParams(type: Int, format: Int, size: Int): ArrayList<NameValuePair> {
-        val params = ArrayList<NameValuePair>()
-        when (type) {
-            ScreenshotParams.TYPE_OSD -> {
-                params.add(NameValuePair("o", " "))
-                params.add(NameValuePair("n", " "))
-            }
-
-            ScreenshotParams.TYPE_VIDEO -> params.add(NameValuePair("v", " "))
-
-            ScreenshotParams.TYPE_ALL -> Unit
-        }
-        when (format) {
-            ScreenshotParams.FORMAT_JPG -> params.add(NameValuePair("format", "jpg"))
-            ScreenshotParams.FORMAT_PNG -> params.add(NameValuePair("format", "png"))
-        }
-        if (size > 0) {
-            params.add(NameValuePair("r", size.toString()))
-        }
-        val ts = GregorianCalendar().timeInMillis / 1000
-        val shotFilename = "/tmp/dreamDroid-$ts"
-        params.add(NameValuePair("filename", shotFilename))
-        return params
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 }
-
-/** Empty image bytes are the only case that grabs on start. */
-fun shouldGrabScreenshot(byteCount: Int): Boolean = byteCount == 0

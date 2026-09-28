@@ -68,6 +68,17 @@ class EnigmaClient(private val http: EnigmaHttp = EnigmaHttp()) {
         }
     }
 
+    /** Image bytes of `/grab`; a body that is not a JPEG or PNG reads as no value. */
+    suspend fun getScreenshot(params: List<NameValuePair>): EnigmaResponse<ByteArray> =
+        withContext(Dispatchers.IO) {
+            when (val result = http.fetch(URIStore.SCREENSHOT, ArrayList(params))) {
+                is EnigmaHttpResult.Success ->
+                    EnigmaResponse(result.bytes.takeIf(::looksLikeScreenshotImage))
+
+                is EnigmaHttpResult.Failure -> EnigmaResponse(null, result.error)
+            }
+        }
+
     suspend fun getTimers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
         http.fetch(URIStore.TIMER_LIST).mapParsed { xml ->
             TimerParser.parse(xml)

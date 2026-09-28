@@ -1,93 +1,45 @@
 package net.reichholf.dreamdroid.ui.signal
 
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import net.reichholf.dreamdroid.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-
-internal class SignalPollGate {
-    var generation: Int = 0
-        private set
-    var active: Boolean = false
-        private set
-
-    fun start() {
-        active = true
-    }
-
-    fun stop() {
-        active = false
-        generation++
-    }
-
-    fun nextLoadGeneration(): Int {
-        generation++
-        return generation
-    }
-
-    fun isCurrent(generation: Int): Boolean = active && generation == this.generation
-}
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
 /**
- * Phase 2.7c: Signal meter as a direct Compose NavHost destination (no nested Fragment).
- * The poll loop and acoustic tone live on [SignalViewModel].
+ * Signal meter as a NavHost destination (also a Tools hub tab). The meter polls and keeps
+ * the screen on while this destination is composed and started.
  */
 @Composable
 fun SignalDestination(
-    handle: PhoneNavHandle? = null,
     modifier: Modifier = Modifier,
-    viewModel: SignalViewModel = viewModel()
+    handle: PhoneNavHandle? = null,
+    viewModel: SignalViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val status by SessionConnectionHolder.shared.status.collectAsState()
-    val blocked = status.blocksMutations
-    val title = viewModel.toolbarTitle
-    val error = viewModel.errorText
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
-    LaunchedEffect(title) {
-        (context as? AppCompatActivity)?.title = title
-    }
-    LaunchedEffect(error) {
-        if (!error.isNullOrEmpty()) {
-            ShellMessages.post(error)
-            viewModel.consumeError()
-        }
-    }
-
-    val signalMeterTitle = stringResource(R.string.signal_meter)
-    DisposableEffect(blocked) {
-        val activity = context as? AppCompatActivity
-        activity?.title = signalMeterTitle
-        activity?.window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-        if (blocked) {
-            viewModel.stopPolling(clearMeter = true)
-        } else {
-            viewModel.startPolling()
-        }
-        activity?.title = viewModel.toolbarTitle
-        onDispose {
-            viewModel.stopPolling(clearMeter = false)
-            activity?.title = viewModel.toolbarTitle
-            activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    val window = LocalActivity.current?.window
+    LifecycleStartEffect(viewModel, window) {
+        window?.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        viewModel.onShown()
+        onStopOrDispose {
+            viewModel.onHidden()
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         }
     }
 
     SignalScreen(
-        state = viewModel.uiState,
-        meterBlocked = blocked,
+        state = uiState,
         onEnabledChange = { enabled ->
-            if (blocked) {
+            if (uiState.blocked) {
                 handle?.requestNeedsReceiver()
             }
             viewModel.onEnabledChange(enabled)
