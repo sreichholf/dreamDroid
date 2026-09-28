@@ -112,7 +112,11 @@
     <issue id="UnknownIdInLayout" severity="ignore" />
     <issue id="UnlocalizedSms" severity="ignore" />
     <issue id="UnusedNamespace" severity="ignore" />
-    <issue id="UnusedResources" severity="ignore" />
+    <issue id="UnusedResources" severity="error">
+        <!-- Referenced from resValue in build.gradle.kts, which lint does not see. -->
+        <ignore regexp="R\.string\.app_name_(debug|release)`" />
+    </issue>
+    <issue id="UnusedIds" severity="error" />
     <issue id="UseCompoundDrawables" severity="ignore" />
     <issue id="UseSparseArrays" severity="ignore" />
     <issue id="UseValueOf" severity="ignore" />

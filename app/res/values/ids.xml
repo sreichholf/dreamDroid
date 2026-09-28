@@ -18,10 +18,6 @@
     <item name="menu_navigation_about" type="id"/>
     <item name="menu_navigation_backup" type="id"/>
     <item name="menu_navigation_changelog" type="id"/>
-    <item name="menu_navigation_signal" type="id"/>
-    <item name="menu_navigation_device_info" type="id"/>
-    <item name="menu_navigation_screenshot" type="id"/>
-    <item name="menu_cancel" type="id"/>
     <item name="action_search" type="id"/>
     <item name="menu_multiepg" type="id"/>
     <item name="menu_epg_list" type="id"/>
@@ -32,6 +28,4 @@
     <item name="menu_detect_devices" type="id"/>
     <item name="menu_save" type="id"/>
     <item name="menu_delete" type="id"/>
-    <item name="phone_nav_compose" type="id"/>
-
 </resources>

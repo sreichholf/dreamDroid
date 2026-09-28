@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="keyline1">24dip</dimen>
-    <dimen name="keyline2">80dip</dimen>
     <dimen name="zap_grid_item_height">90dp</dimen>
     <dimen name="content_margin_horizontal">80dp</dimen>
 </resources>

@@ -2,16 +2,7 @@
 <resources>
     <string name="description">Beschreibung</string>
     <string name="title">Titel</string>
-    <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Provider (TV)</item>
-        <item>Alle Kanäle (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Provider (Radio)</item>
-        <item>Alle Kanäle (Radio)</item>
-    </string-array>
     <string name="timer">Timer</string>
     <string name="service">Kanal</string>
     <string name="afterevent">Anschlussereignis</string>
@@ -32,7 +23,6 @@
     <string name="save">Speichern</string>
     <string name="cancel">Abbrechen</string>
     <string name="fetching_data">Abruf von Daten…</string>
-    <string name="parsing">Lese Daten…</string>
     <string name="get_content_error">Fehler beim Abrufen der Daten!</string>
     <string name="zap">Umschalten</string>
     <string name="browse_epg">EPG ansehen</string>
@@ -49,22 +39,14 @@
     <string name="settings">Einstellungen</string>
     <string name="changelog">Änderungen</string>
     <string name="host_long">Hostname oder IP</string>
-    <string name="port_long">Listening Port</string>
     <string name="close">Schließen</string>
     <string name="minutes_short">min.</string>
     <string name="user">Benutzer</string>
-    <string name="user_long">Benutzername für die Anmeldung</string>
     <string name="pass">Passwort</string>
-    <string name="pass_long">Passwort für die Anmeldung</string>
     <string name="saving">Speichern. Bitte warten…</string>
     <string name="deleting">Lösche. Bitte warten…</string>
     <string name="delete_confirm">Wirklich löschen?</string>
     <string name="set_timer">Timer festlegen</string>
-    <string name="home">Startseite</string>
-    <string name="pick_action">Aktion auswählen</string>
-    <string name="set_time_begin">Startdatum und -zeit</string>
-    <string name="set_time_end">Enddatum und -zeit</string>
-    <string name="apply">Übernehmen</string>
     <string name="reload">Neu laden</string>
     <string-array name="weekdays_short">
         <item>Mo</item>
@@ -99,11 +81,9 @@
     <string name="nics">Netzwerkschnittstellen</string>
     <string name="hdds">Festplatten</string>
     <string name="hdd_capacity">%1$s (%2$s frei)</string>
-    <string name="not_implemented">Funktion ist noch nicht implementiert!</string>
     <string name="current_event">Aktuelle Sendung</string>
     <string name="timeout">Anzeigedauer</string>
     <string name="seconds">Sekunden</string>
-    <string name="message">Nachricht</string>
     <string name="message_text_hint">Nachricht eingeben</string>
     <string name="send">Senden</string>
     <string name="type">Typ</string>
@@ -116,7 +96,6 @@
     <string name="virtual_remote">Virt. Fernbedienung</string>
     <string name="login">Login</string>
     <string name="login_enabled">Login aktivieren</string>
-    <string name="wait_request_finished">Bitte warten, bis die aktuelle Abfrage abgeschlossen wurde!</string>
     <string name="current_service">Es läuft</string>
     <string name="provider">Provider</string>
     <string name="now">Jetzt</string>
@@ -132,7 +111,6 @@
     <string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>
     <string name="profile_activated">Profil aktiviert</string>
     <string name="profile_not_activated">Fehler beim Aktivieren des Profils</string>
-    <string name="profile_not_deleted">Fehler beim Löschen des Profils</string>
     <string name="profile_deleted">Profil gelöscht</string>
     <string name="profile">Profil</string>
     <string name="auto_switch_profile_wifi_based">Automatischer Profilwechsel</string>
@@ -146,21 +124,16 @@
     <string name="profile_updated">Profil aktualisiert</string>
     <string name="profile_added">Profil hinzugefügt</string>
     <string name="profile_add">Profil hinzufügen</string>
-    <string name="profile_not_added">Profil konnte nicht hinzugefügt werden</string>
-    <string name="profile_not_updated">Profil konnte nicht aktualisiert werden</string>
     <string name="no_list_item">Es wurden keine Listeneinträge gefunden…</string>
-    <string name="locations_default_fallback">Fehler beim Laden von Orten, benutzt wird stattdessen der Standardwert :</string>
     <string name="tags">Tags</string>
     <string name="screenshot">Screenshot</string>
     <string name="host_empty">Der Hostname darf nicht leer sein!</string>
     <string name="standby">Standby</string>
-    <string name="powerup">Einschalten</string>
     <string name="restart_gui">GUI-Neustart</string>
     <string name="reboot">Neustarten</string>
     <string name="shutdown">Herunterfahren</string>
     <string name="powercontrol">Power Control</string>
     <string name="choose_tags">Tags wählen</string>
-    <string name="choose_location">Ort wählen</string>
     <string name="bouquet_overview">Bouquet-Übersicht</string>
     <string name="set_default">Als Standard festlegen</string>
     <string name="default_bouquet_set_to">Das Standard-Bouquet ist nun: </string>
@@ -169,9 +142,7 @@
     <string name="about">Über</string>
     <string name="license_gplv3">Lizenz:\nDreamdroid ist freie Software!\nLizensiert unter GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.de.html</string>
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Aktives Profil</string>
     <string name="connection">Verbindung</string>
-    <string name="connection_state">Verbindungsstatus</string>
     <string name="not_available">Nicht verfügbar</string>
     <string name="checking">prüfe…</string>
     <string name="session_online">Online</string>
@@ -180,7 +151,6 @@
     <string name="session_needs_receiver">Empfänger erforderlich</string>
     <string name="session_needs_receiver_long">Diese Funktion benötigt eine Verbindung zur Box</string>
     <string name="error">FEHLER!</string>
-    <string name="check_connectivity">Verbindung prüfen</string>
     <string name="version_too_low">Version &lt; 1.6</string>
     <string name="connection_error">Verbindungsfehler</string>
     <string name="port_out_of_range">Port nicht zwischen 1 und 65535</string>
@@ -191,7 +161,6 @@
     <string name="in_standby">Gerät ist jetzt im Standby-Modus</string>
     <string name="is_running">Gerät läuft jetzt</string>
     <string name="stream">Streamen</string>
-    <string name="stream_host">Streaming Hostname/IP</string>
     <string name="stream_host_long">Host/IP für Streaming (optional)</string>
     <string name="stream_current">Streame laufendes Programm</string>
     <string name="similar">Ähnliche</string>
@@ -207,27 +176,19 @@
         <item>umschalten</item>
     </string-array>
     <string name="sleeptimer">Abschalttimer</string>
-    <string name="current_volume">Lautstärke ist nun %s</string>
-    <string name="muted">Stumm</string>
     <string name="enable_volume_control">Lautstärkeregelung aktivieren</string>
     <string name="enable_volume_control_long">Lautstärke direkt über Hardwaretasten ändern</string>
     <string name="download">Herunterladen</string>
-    <string name="extras">Extras</string>
-    <string name="main_menu">Main</string>
     <string name="profiles">Profile</string>
-    <string name="profiles_long">Profile für Verbindungen konfigurieren</string>
     <string name="enable_instant_zap">Direkt umschalten</string>
     <string name="enable_instant_zap_long">Beim Antippen eines Kanals direkt umschalten</string>
     <string name="show_now_playing_strip">Es-läuft-Leiste</string>
     <string name="show_now_playing_strip_long">Aktuelle Sendung als Leiste auf TV &amp; Movies anzeigen</string>
-    <string name="wrong_activity">Falsche Aktion aufgerufen. Bitte erstellen Sie die Verknüpfungen zu dreamDroid neu!</string>
     <string name="simple_remote">Einfache Fernbedienung</string>
     <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
     <string name="edit_profile">Profil bearbeiten</string>
-    <string name="force_tablet_layout_long">Tablet-optimiertes Layout erzwingen</string>
-    <string name="force_tablet_layout">Tablet Layout erzwingen</string>
     <string name="mobile_imdb">Mobile Version von www.imdb.com benutzen</string>
     <string name="mobile_imdb_long">Benutze m.imdb.com statt www.imdb.com</string>
     <string name="searching">Suche…</string>
@@ -239,8 +200,6 @@
     <string name="enabled">Ein</string>
     <string name="signal_meter">Signal Meter</string>
     <string name="accoustic_feedback">Akustische Rückmeldung</string>
-    <string name="use_light_theme_long">Statt des dunklen ein helles Motiv nutzen</string>
-    <string name="use_light_theme">Helles Motiv nutzen</string>
     <string name="leave_confirm">Wirklich verlassen?</string>
     <string name="leave_confirm_long">Wollen Sie dreamDroid wirklich verlassen?</string>
     <string name="sent_as">Gesendet als %s</string>
@@ -249,9 +208,6 @@
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
     <string name="confirm_app_close">Verlassen der App bestätigen</string>
     <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch Drücken von (OK) zurück beendet wird.</string>
-    <string name="login_movies">Login (Filme)</string>
-    <string name="ssl_movies">https (Filme)</string>
-    <string name="login_live">Login (Live)</string>
     <string name="appearance">Erscheinungsbild</string>
     <string name="usability">Useability</string>
     <string name="start_screen">Startbildschirm</string>
@@ -264,11 +220,9 @@
     <string name="sync_picons_path_long">Pfad, in dem die Picons auf der Dreambox abgelegt wurden</string>
     <string name="connecting">Verbinde</string>
     <string name="connected">Verbunden</string>
-    <string name="logged_in">Anmeldung erfolgreich</string>
     <string name="getting_list_of_files">Hole Liste von Dateien</string>
     <string name="picon_sync_finished">%s Picons wurden erfolgreich heruntergeladen</string>
     <string name="drawer_open">Navigationsmenü öffnen</string>
-    <string name="drawer_close">Navigationsmenü schließen</string>
     <string name="enable_animations_long">Zusätzliche Animationen für diverse Aktionen aktivieren</string>
     <string name="enable_animations">Animationen aktivieren</string>
     <string name="use_name_as_picon_filename_long">Kanalnamen als Dateinamen für Picons verwenden</string>
@@ -278,21 +232,13 @@
     <string name="reset_default">Standard zurücksetzen</string>
     <string name="enable">Aktivieren</string>
     <string name="epg_sync">Synchronisiere EPG</string>
-    <string name="epg_sync_finished">EPG wurde synchronisiert</string>
     <string name="max_grid_cols">Max. Spalten in Kanalliste</string>
     <string name="max_grid_cols_long">Maximale Anzahl an Spalten in der Kanalliste</string>
-    <string name="disable">Deaktivieren</string>
     <string name="developer_settings">Entwickler Einstellungen</string>
     <string name="default_to_full_vrm">Einfache Fernbedienung als Standard</string>
     <string name="default_to_full_vrm_long">Die virtuelle Fernbedienung nutzt beim Öffnen das einfache Layout</string>
     <string name="dump_xml">XML Inhalte ablegen</string>
-    <string name="donate">Spenden</string>
-    <string name="donate_sum">Spende %s</string>
-    <string name="donation_error">Spende fehlgeschlagen! Tut uns leid! (%s)</string>
-    <string name="donation_thanks">Vielen Dank für ihre Spende!</string>
     <string name="share">Teilen</string>
-    <string name="restart">Neustart?</string>
-    <string name="theme_change_restart">Um das geänderte Motiv anzuwenden ist ein Neustart nötig. dreamDroid jetzt neu starten?</string>
     <string name="host_not_found">Host nicht gefunden</string>
     <string name="auth_error">Anmelden fehlgeschlagen (Benutzer/Passwort prüfen)</string>
     <string name="host_unreach">Host nicht erreichbar</string>
@@ -303,9 +249,7 @@
     <string name="developer_settings_enable">Entwicklereinstellungen aktivieren</string>
     <string name="picon_sync_running">Es läuft bereits eine Synchronisation von Picons!</string>
     <string name="picon_sync_started">Picon Synchronisation gestartet. Mehr Details im Benachrichtungsbereich.</string>
-    <string name="settings_and_about"><![CDATA[Einstellungen & Über]]></string>
     <string name="tools">Werkzeuge</string>
-    <string name="control">Steuerung</string>
     <string name="encoder_path">Stream Pfad</string>
     <string name="encoder_port">Stream Port</string>
     <string name="use_encoder">Encoder zum Streamen nutzen</string>
@@ -313,9 +257,7 @@
     <string name="audio_bitrate">Audio Bitrate</string>
     <string name="integrated_video_player">Integrierter Videoplayer</string>
     <string name="integrated_video_player_long">Zum Abspielen von Streams den integrierten Videoplayer benutzen</string>
-    <string name="next_lower">nächster</string>
     <string name="playback_failed">Wiedergabe fehlgeschlagen!</string>
-    <string name="previous_lower">vorheriger</string>
     <string-array name="theme_option_entries">
         <item>Tag</item>
         <item>Nacht</item>
@@ -332,25 +274,19 @@
     <string name="use_hw_accel">Bechleunigtes dekodieren</string>
     <string name="use_hw_accel_long">Hardware-Beschleunigung zum Dekodieren von Videos verwenden (%s)</string>
     <string name="video_player">Video Player</string>
-    <string name="location_rationale_title">Standort wird benötigt</string>
-    <string name="location_rationale">DreamDroid benötigt den ungefähren Standort für die automatische Tag/Nacht Schaltung des Themas.\nDie Standortdaten werden ausschließlich zur Wahl des richtigen Themas benutzt und nicht aufgezeichnet oder weitergeleitet!</string>
     <string name="video_enable_gestures_long">Gesten zur Steuerung von Lautstärke und Helligkeit aktivieren</string>
     <string name="video_enable_gestures">Gesten aktivieren</string>
     <string name="online_picons">Online Picons</string>
     <string name="online_picons_long">Picons über das Netzwerk beziehen statt snychronisierte zu nutzen. Erhöht den Traffic ggf. merklich!</string>
-    <string name="audio_track">Tonspur</string>
     <string name="audio_tracks">Tonspuren</string>
     <string name="streaming">Streaming</string>
     <string name="zap_and_stream">Zappen und streamen</string>
     <string name="zap_and_stream_summary">Vor der Wiedergabe auf diesen Sender umschalten. Ein Einzel-Tuner kann nur einen Dienst auf dem aktuellen Transponder streamen, und der Sender am Fernseher wechselt dabei mit.</string>
-    <string name="subtitle">Untertitel</string>
     <string name="subtitles">Untertitel</string>
-    <string name="license">Lizenze</string>
     <string name="backup">Backup</string>
     <string name="backup_current_profile">aktiv</string>
     <string name="backup_export">Export</string>
     <string name="backup_export_missing_permission">Bitte Berechtigung für Datenspeicher erteilen</string>
-    <string name="backup_export_profiles">Profile exportieren</string>
     <string name="backup_export_settings">Einstellungen exportieren</string>
     <string name="backup_export_successful">Export erfolgreich</string>
     <string name="backup_import">Import</string>
@@ -360,12 +296,9 @@
     <string name="licenses">Lizenzen</string>
     <string name="no_tracks">Keine Tonspuren verfügbar!</string>
     <string name="preferences">Einstellungen</string>
-    <string name="encoder">Encoder</string>
-    <string name="direct_streaming">Direktes Streaming</string>
     <string name="backup_import_error">Backup-Import fehlgeschlagen!</string>
     <string name="ssid">WLAN Name</string>
     <string name="live_movie"><![CDATA[TV & Filme]]></string>
-    <string name="detail">Detail</string>
     <string name="begin_date">Startdatum</string>
     <string name="end_date">Enddatum</string>
     <string name="encoder_user">Encoder Benuzer</string>
@@ -379,7 +312,6 @@
     <string name="radio">Radio</string>
     <string name="dynamic_theme_colors_long">Dynamisches Farbschema nutzen\nEine Änderung dieser Einstellung führt zum NEUSTART der App!\n</string>
     <string name="dynamic_theme_colors">Dynamisches Farbschema</string>
-    <string name="app_name_tv_release">dreamDroidTV</string>
     <string name="trust_all_certs">Alle Zertifikate</string>
     <string name="trust_all_certs_confirm_title">Allen Zertifikaten vertrauen?</string>
     <string name="trust_all_certs_confirm">dreamDroid prüft das HTTPS-Zertifikat dieses Profils nicht. Verwenden Sie dies nur für selbst signierte Zertifikate auf Ihrem eigenen Receiver. Das kann gefährlich sein.</string>

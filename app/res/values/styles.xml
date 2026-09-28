@@ -1,25 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="CardText">
-        <item name="android:textSize">14sp</item>
-        <item name="android:ellipsize">end</item>
-        <item name="android:maxLines">1</item>
-        <item name="android:singleLine">true</item>
-        <item name="android:textColor">?attr/text_color</item>
-        <item name="android:fontFamily">sans-serif-light</item>
-    </style>
-
-    <style name="CardTitle" parent="@style/CardText">
-        <item name="android:textSize">20sp</item>
-        <item name="android:textColor">?attr/title_color</item>
-    </style>
-
-    <style name="CardTextSmall" parent="@style/CardText">
-        <item name="android:textSize">12sp</item>
-        <item name="android:textColor">?attr/text_color</item>
-    </style>
-
     <style name="CardListView">
         <item name="android:divider">@null</item>
         <item name="android:dividerHeight">6dp</item>
@@ -30,26 +11,6 @@
     </style>
 
     <style name="CardListView.Light" parent="CardListView" />
-
-    <style name="SimpleHeaderSmall" parent="@style/TextAppearance.Material3.TitleSmall">
-        <item name="android:paddingStart">6dp</item>
-        <item name="android:paddingEnd">3dp</item>
-        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
-    </style>
-
-    <style name="SimpleHeaderMedium" parent="@style/TextAppearance.Material3.TitleMedium">
-        <item name="android:paddingStart">6dp</item>
-        <item name="android:paddingEnd">3dp</item>
-        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
-    </style>
-
-    <style name="ButtonPanel" />
-
-    <style name="NavButtonBar" parent="@style/Widget.AppCompat.ButtonBar" />
-
-    <style name="NavButtonBarButton">
-        <item name="android:background">?attr/listItemBackground</item>
-    </style>
 
     <style name="RemoteButton" parent="Widget.AppCompat.Button.Borderless">
         <item name="android:textColor">@android:color/white</item>
@@ -64,44 +25,16 @@
         <item name="android:layout_margin">5dp</item>
     </style>
 
-
     <style name="RemoteButton.Medium" parent="RemoteButton">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
     </style>
 
-    <style name="NavigationView">
-        <item name="android:background">?android:windowBackground</item>
-        <item name="itemShapeFillColor">@color/mtrl_navigation_item_background_color</item>
-    </style>
-
-    <style name="MediumHeader" parent="SimpleHeaderSmall">
-        <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
-        <item name="android:textStyle">bold</item>
-    </style>
-
-    <style name="SelectableItem">
-        <item name="android:background">?attr/selectableItemBackground</item>
-    </style>
-
-    <style name="mdtp_ActionButton" parent="Widget.Material3.Button.TextButton.Dialog.Flush" />
-
-    <style name="Button" parent="Widget.Material3.Button" />
-
     <style name="FloatingActionButton.Primary" parent="Widget.Material3.FloatingActionButton.Primary" />
 
     <style name="ExtendedFloatingActionButton.Primary"
         parent="Widget.Material3.ExtendedFloatingActionButton.Primary" />
-
-    <style name="Drawer" parent="Widget.Material3.FloatingActionButton.Primary" />
-
-    <style name="Preference_TextAppearanceMaterialBody2">
-        <item name="android:textSize">14sp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:textColor">?android:attr/textColorPrimary</item>
-    </style>
 
     <style name="ShapeAppearance.DreamDroid.SmallComponent" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>

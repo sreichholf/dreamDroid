@@ -2,16 +2,7 @@
 <resources>
     <string name="description">Description</string>
     <string name="title">Titre</string>
-    <string name="mo">Mega</string>
     <string name="app_name_release">DreamDroid</string>
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Fournisseurs (TV)</item>
-        <item>Tous les Services (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Fournisseurs (Radio)</item>
-        <item>Tous (Radio)</item>
-    </string-array>
     <string name="timer">Programmation</string>
     <string name="service">Service</string>
     <string name="afterevent">Après l\'évènement</string>
@@ -32,7 +23,6 @@
     <string name="save">Enregistrer</string>
     <string name="cancel">Annuler</string>
     <string name="fetching_data">Recherche d\'information…</string>
-    <string name="parsing">Analyse en cour…</string>
     <string name="get_content_error">Erreur de réception du contenu !</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Parcourir EPG</string>
@@ -47,22 +37,14 @@
     <string name="port_stream_file">Port (Film)</string>
     <string name="settings">Réglages</string>
     <string name="host_long">Nom Hôte ou IP</string>
-    <string name="port_long">Port écroute</string>
     <string name="close">Fermer</string>
     <string name="minutes_short">min.</string>
     <string name="user">Utilisateur</string>
-    <string name="user_long">Nom d\'utilisateur</string>
     <string name="pass">Mot de passe</string>
-    <string name="pass_long">Mot de passe pour nom d\'utilisateur</string>
     <string name="saving">Enregistrement. Patientez svp…</string>
     <string name="deleting">Suppression. Patientez svp…</string>
     <string name="delete_confirm">Confirmer la suppression \?</string>
     <string name="set_timer">Configurer enregistrement</string>
-    <string name="home">Accueil</string>
-    <string name="pick_action">Selectionner une action</string>
-    <string name="set_time_begin">Date et Heure de début</string>
-    <string name="set_time_end">Date et heure de fin</string>
-    <string name="apply">Appliquer</string>
     <string name="reload">Rechargement</string>
     <string-array name="weekdays_short">
         <item>Lu</item>
@@ -97,11 +79,9 @@
     <string name="nics">Interfaces Réseau</string>
     <string name="hdds">Disques Durs</string>
     <string name="hdd_capacity">%1$s (%2$s libres)</string>
-    <string name="not_implemented">Cette fonction n\'est pas encore développée !</string>
     <string name="current_event">Evènement Courant</string>
     <string name="timeout">Interruption</string>
     <string name="seconds">secondes</string>
-    <string name="message">Message</string>
     <string name="message_text_hint">Entrez votre message</string>
     <string name="send">Envoi</string>
     <string name="type">Type</string>
@@ -114,7 +94,6 @@
     <string name="virtual_remote">Télécommande</string>
     <string name="login">Nom d\'utilisateur</string>
     <string name="login_enabled">Connexion par nom d\'utilisateur et mot de passe</string>
-    <string name="wait_request_finished">Merci de patienter jusqu\'a ce que la requête soit terminé !</string>
     <string name="current_service">Actuellement</string>
     <string name="provider">Fournisseur</string>
     <string name="now">Maintenant</string>
@@ -129,43 +108,33 @@
     <string name="confirm_delete_profile">Confirmez vous la suppression du profil \?</string>
     <string name="profile_activated">Profil activé</string>
     <string name="profile_not_activated">Erreur d\'activation du profil</string>
-    <string name="profile_not_deleted">Erreur de suppression du profil</string>
     <string name="profile_deleted">Profil supprimé</string>
     <string name="profile">Profil</string>
     <string name="profile_name">Nom Profil</string>
     <string name="profile_updated">Profil mis à jour</string>
     <string name="profile_added">Profil ajouté</string>
     <string name="profile_add">Ajout Profil</string>
-    <string name="profile_not_added">Ajout impossible du profil</string>
-    <string name="profile_not_updated">Mise à jour impossible du profil</string>
     <string name="no_list_item">Pas de données à afficher…</string>
-    <string name="locations_default_fallback">Erreur de chargement du répertoire, retour par défaut :</string>
     <string name="tags">Tags</string>
     <string name="screenshot">Copie écran</string>
     <string name="host_empty">Le nom de la machine ne peut être vide !</string>
     <string name="standby">Veille</string>
-    <string name="powerup">Démarrer</string>
     <string name="restart_gui">Redémarrage GUI</string>
     <string name="reboot">Redémarrer</string>
     <string name="shutdown">Arrêt</string>
     <string name="powercontrol">Alimentation</string>
     <string name="choose_tags">Choix de tags</string>
-    <string name="choose_location">Choix du répertoire</string>
     <string name="bouquet_overview">Vue d\'ensemble des bouquets</string>
     <string name="set_default">Définir par défaut</string>
     <string name="default_bouquet_set_to">Bouquet par défaut positionné à :</string>
     <string name="default_bouquet_not_set">Bouquet par défaut ne peut pas être réglé !</string>
     <string name="loading">Chargement…</string>
     <string name="about">A propos</string>
-    <string name="license">Licence</string>
     <string name="source_code_link">Code source disponible : http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Profil actif</string>
     <string name="connection">Connexion</string>
-    <string name="connection_state">Etat de connexion</string>
     <string name="not_available">Non disponible</string>
     <string name="checking">Vérification…</string>
     <string name="error">ERREUR !</string>
-    <string name="check_connectivity">Test de la connexion</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>
     <string name="connection_error">Erreur de connexion</string>
     <string name="port_out_of_range">Port non compris entre 1 et 65535</string>
@@ -176,7 +145,6 @@
     <string name="in_standby">Appareil actuellement en veille</string>
     <string name="is_running">Appareil actuellement en service</string>
     <string name="stream">Diffusion</string>
-    <string name="stream_host">Nom/IP de streaming</string>
     <string name="stream_host_long">Nom/IP pour diffuser en continu (optionel)</string>
     <string name="stream_current">Diffusion courante</string>
     <string name="similar">Evènements similaires</string>
@@ -192,25 +160,17 @@
         <item>zap</item>
     </string-array>
     <string name="sleeptimer">mise en veille</string>
-    <string name="current_volume">Volume actuel %s</string>
-    <string name="muted">Muet</string>
     <string name="enable_volume_control">Activer le contrôle du volume</string>
     <string name="enable_volume_control_long">Activer le contrôle du volume avec les boutons physiques</string>
     <string name="download">Téléchargement</string>
-    <string name="extras">Extras</string>
-    <string name="main_menu">Menu principal</string>
     <string name="profiles">Profils</string>
-    <string name="profiles_long">Configurer les profils de connexion</string>
     <string name="enable_instant_zap">Zap maintenant</string>
     <string name="enable_instant_zap_long">Zapper instantanément quand appuis court sur service</string>
-    <string name="wrong_activity">Mauvaise activité lancée ! Recrée tous les raccourcis que vous avez créer pour la dreamDroid !</string>
     <string name="simple_remote">Affichage télécomande simple</string>
     <string name="screenshot_saved">Capture d\'écran sauvé sous \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Pas de programme installé sur cet appareil pour jouer les flux vidéos !</string>
     <string name="edit_profile">Modifier le profil</string>
-    <string name="force_tablet_layout_long">Forcer le mode Tablette optimisé</string>
-    <string name="force_tablet_layout">Forcer le mode Tablette</string>
     <string name="mobile_imdb">Utiliser la version portable de imdb.com</string>
     <string name="mobile_imdb_long">Utiliser m.imdb.com au lieu de www.imdb.com</string>
     <string name="searching">Recherche en cours…</string>
@@ -221,17 +181,9 @@
     <string name="enabled">Activé</string>
     <string name="connecting">Connexion en cours</string>
     <string name="connected">Connecté</string>
-    <string name="logged_in">Identifié</string>
     <string name="picons">Picons</string>
     <string name="enable">Activer</string>
-    <string name="disable">Désactiver</string>
-    <string name="donate_sum">Don de %s</string>
-    <string name="donate">Donation</string>
-    <string name="donation_thanks">Merci beaucoup pour votre don !</string>
-    <string name="donation_error">Votre don a échoué ! Désolé ! (%s)</string>
-    <string name="app_name_tv_release">dreamDroidTV</string>
     <string name="app_name_debug">dreamDroid DBG</string>
-    <string name="app_name_tv_debug">dreamDroidTV DBG</string>
     <string name="ssid">Nom Wi-Fi</string>
     <string name="defaultOnNoWifi">Le profil par défaut est-il sans Wifi</string>
     <string name="remote_widget_config_title_style">Sélectionnez le style de la télécommande</string>
@@ -242,6 +194,4 @@
     <string name="error_parsing">Une erreur s\'est produite lors de l\'analyse des données !</string>
     <string name="signal_meter">Mesure du champs</string>
     <string name="accoustic_feedback">Retour acoustique</string>
-    <string name="use_light_theme_long">Utiliser un thème clair au lieu du thème sombre par défaut</string>
-    <string name="use_light_theme">Utiliser un thème clair</string>
 </resources>

@@ -2,16 +2,7 @@
 <resources>
     <string name="description">opis</string>
     <string name="title">natpis</string>
-    <string name="mo">mo</string>
     <string name="app_name_release">DreamDroid</string>
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Provider (TV)</item>
-        <item>All Services (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Provider (Radio)</item>
-        <item>All (Radio)</item>
-    </string-array>
     <string name="timer">tajmer</string>
     <string name="service">servis</string>
     <string name="afterevent">Afterevent</string>
@@ -33,7 +24,6 @@
     <string name="save">sacuvati</string>
     <string name="cancel">obustaviti</string>
     <string name="fetching_data">Fetching data...</string>
-    <string name="parsing">raščlanjavanje...</string>
     <string name="get_content_error">greska pri dobijanja sadrzaja</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">pregledanje EPG</string>
@@ -45,19 +35,10 @@
     <string name="port">Port</string>
     <string name="settings">podesavanja</string>
     <string name="host_long">Hostname or IP</string>
-<string name="port_long">Listening Port
-</string>
     <string name="close">zatvoriti</string>
     <string name="minutes_short">minimum</string>
     <string name="user">korisnik</string>
-    <string name="user_long">korisnicko ime kod prijave</string>
     <string name="pass">lozinka</string>
-    <string name="pass_long">lozinka kod prijave</string>
-    <string name="home">kuci</string>
-    <string name="pick_action">izaberi akciju</string>
-    <string name="set_time_begin">pocetak dan i vreme</string>
-    <string name="set_time_end">kraj dan i vreme</string>
-    <string name="apply">prihvati</string>
     <string name="reload">opet učitati</string>
     <string-array name="weekdays_short">
         <item>po</item>
@@ -84,7 +65,6 @@
     <string name="locations">lokacija</string>
     <string name="gui_version">GUI verzija</string>
     <string name="nics">Network Interfaces</string>
-    <string name="message">poruka</string>
     <string name="message_text_hint">uneti tekst poruke</string>
     <string name="send">slati</string>
     <string-array name="message_types">
