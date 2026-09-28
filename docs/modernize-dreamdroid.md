@@ -1,176 +1,76 @@
 # Modernize dreamDroid
 
-**Premise:** dreamDroid 2.0 is a modern Android app that follows current platform best practices. Phone users get a **Compose Material 3** Enigma2 remote. TV gets a **Compose** hub (`androidx.tv`), not Leanback browse. New types are **Kotlin** + coroutines. Proof is **instrumented Compose tests** for UI and **JVM tests** for ViewModels and data code, not tap loops. Rewrite trunk is **`main`** (`master` is last 1.15 — do not merge them).
-
-No permanent keepers. A rule in this doc or in [`AGENTS.md`](../AGENTS.md) that protects a legacy pattern is a sequencing note, not a freeze. When a leftover surface is touched, move it to the [target architecture](#target-architecture). The only long-lived deviations are listed under [Deliberate exceptions](#deliberate-exceptions), each with its reason. If a rule here contradicts the target architecture, the target architecture wins and the rule gets fixed.
-
-Floor: minSdk 26, compileSdk / targetSdk 37, JDK 25 (bytecode Java 17), debug package `net.reichholf.dreamdroid.debug`. Agent rules and how to run tests: [`AGENTS.md`](../AGENTS.md). MultiEPG product design: [`docs/multiepg.md`](multiepg.md). Offline cache + unified errors: [`docs/offline-and-errors.md`](offline-and-errors.md).
-
-## Target architecture
-
-This is what "current best practice" means for this app. It follows Google's [guide to app architecture](https://developer.android.com/topic/architecture) and the Compose / Material 3 defaults. New code is written this way; the [remediation plan](#remediation-plan) moves existing code here.
-
-| Area | Target |
-| --- | --- |
-| Layers | UI (Compose screens + `ViewModel`) → data (repositories that own Enigma HTTP, Room, and settings). Repositories are the single source of truth; screens never call `EnigmaClient`, DAOs, or `SharedPreferences` directly. An optional domain layer is added only when logic is shared by several ViewModels. |
-| Dependency injection | Hilt (KSP). `@HiltAndroidApp` on `DreamDroid`, `@AndroidEntryPoint` activities, `hiltViewModel()` in NavHost routes. No service-locator `object`s holding mutable state, no static `getAppContext()`. |
-| ViewModel | Scoped to its `NavBackStackEntry` (or the activity for shell / host state). Constructor takes repositories and `SavedStateHandle`. No `Application`, `Context`, `View`, `Menu`, or activity. Exposes one immutable `StateFlow<*UiState>`; the UI collects it with `collectAsStateWithLifecycle()`. Work runs in `viewModelScope`. |
-| UI events | User messages (mutation results, errors) are part of UI state, shown by the screen through a `SnackbarHostState`, then cleared by the screen calling back into the ViewModel. No `Toast` in the app UI. |
-| Screens | Stateless `*Screen(state, onAction…)` composables. Top bar, actions, overflow, and search are Material 3 `TopAppBar` / `SearchBar` driven by screen state. No View `Toolbar`, `setSupportActionBar`, options menu, or `MenuProvider`. |
-| Navigation | Single activity per form factor (phone, TV). Navigation Compose with **type-safe routes** (`@Serializable` route classes; arguments live in the route, not in a shared holder). `dreamdroid://` is a widget broadcast and an activity VIEW, not a NavHost deep link; search is the `EpgSearch` route, opened from the top-bar search action. Navigation 3 is evaluated only after type-safe routes land (route classes carry over as keys). |
-| Adaptive layout | Layout decisions use `currentWindowAdaptiveInfoV2()` / window size classes, not `Configuration.smallestScreenWidthDp`, so multi-window, foldables, and desktop windowing work. Bar versus rail follows that info on the custom shell chrome: a rail unless the width or height size class is Compact, or the posture is tabletop. `NavigationSuiteScaffold` is not used; the FAB dodges a measured now-playing strip and destination bar, which that scaffold cannot host. |
-| Settings | Preferences DataStore behind a settings repository, exposed as `Flow`. One `SharedPreferencesMigration` imports old values. |
-| Networking | One HTTP stack: typed `EnigmaClient` over OkHttp with sealed `EnigmaFailure`. No parallel request-handler hierarchy. |
-| Persistence | Room (`room3`) with exported schemas and migration tests. |
-| Background work | WorkManager for deferrable work (picon sync already is). No idle sync (by design, see offline doc). |
-| Accessibility | Every interactive element has a role, a label, and a correct enabled/state description. 48 dp touch targets. Tests assert semantics, not only text. |
-| Edge-to-edge / back | `enableEdgeToEdge()` on every activity; predictive back enabled (`enableOnBackInvokedCallback`); Compose `BackHandler`/`PredictiveBackHandler` rather than overriding activity back. |
-| Build | Gradle version catalog (`gradle/libs.versions.toml`), Kotlin DSL build scripts, Compose BOM, R8 on release, Baseline Profile for startup and the hub / MultiEPG scroll paths. |
-| Testing | JVM tests (JUnit 5, `kotlinx-coroutines-test`, fakes for repositories) for ViewModels, repositories, parsers, and mappers. Instrumented Compose tests for screens and navigation. Room migration tests. |
+dreamDroid 2.0 is a Compose Material 3 Enigma2 remote for phone and a Compose (`androidx.tv`) hub for TV, written in Kotlin with coroutines. UI is proven by instrumented Compose tests, ViewModels and data code by JVM tests. Rewrite trunk is `main` (`master` is 1.15; do not merge them). Floor: minSdk 26, compileSdk / targetSdk 37, JDK 25 (bytecode Java 17). Agent rules: [`AGENTS.md`](../AGENTS.md). Related: [`multiepg.md`](multiepg.md), [`offline-and-errors.md`](offline-and-errors.md).
 
 ## Done
 
-Phone screens are Kotlin Compose **NavHost destinations** (drawer, hub, EPG, forms, remote). Dialogs and detail sheets are Compose `AlertDialog` / `ModalBottomSheet` / Navigation `dialog`s — no DialogFragment chassis. HTTP is coroutines + typed `EnigmaClient` over OkHttp; AsyncTask/Loaders are gone. Profiles live in Room (`dreambox`); legacy SQLite is migrate/restore only. Widgets are Glance with `AndroidRemoteViews` only for the dense RCU grid. Player stays **libVLC** with Compose overlay chrome via `VideoOverlayController` (no Fragment). TV hub is Compose; Leanback browse and the overlay zap `HorizontalGridView` are gone (`uses-feature android.software.leanback` stays for the Android TV launcher). Material 3 P0–P2 UX is [#430](https://github.com/sreichholf/dreamDroid/pull/430). Phone **offline cache + unified errors** (slices 1–7 of the offline plan) and **phone operator usertest** are verified (2026-09-19). **Tablet** and **TV / box** operator usertests are verified (2026-09-21) except newly added TV timer surfaces. TV hub session, Room cache, and Online-only streaming have shipped; widget offline still follows the phone shell. Mutation progress is an in-content `LinearProgressIndicator` (`IndeterminateProgressHost`), not a blocking dialog. Tablet hub destinations use a start-side `NavigationRail` inside the Compose `PhoneShell` when the window size class says so; phone keeps the bottom `NavigationBar` and FAB dodge. The player channel list is Compose on phone and TV. Every screen and host has a `ViewModel` (see [ViewModel history](#viewmodel-history)); those ViewModels do not yet match the target shape (remediation C2). The phone top bar is a Compose Material 3 `TopAppBar`; there is no options menu or `MenuProvider`. In-app results show in a snackbar (shell, TV hub, player), and receiver calls go through typed `EnigmaClient` functions. Edge-to-edge and predictive back are on for every activity. Build scripts are Kotlin DSL with versions in `gradle/libs.versions.toml`.
+- **UI:** every phone screen is a Compose NavHost destination with type-safe `@Serializable` routes (D1). Dialogs and sheets are Compose `AlertDialog` / `ModalBottomSheet` / Navigation `dialog`s. `PhoneShell` draws a Material 3 `TopAppBar` with no options menu or `MenuProvider` (C3), and picks rail vs bar from `currentWindowAdaptiveInfoV2()` (A3). TV is one Compose `NavHost` (hub, MultiEPG, settings, profiles); Leanback browse is gone (D2). Phone and TV activities own their launcher categories; the trampoline activity is deleted. Navigation 3 was evaluated and rejected (D3).
+- **Messages:** in-app results show in a snackbar via `ShellMessages` (shell, TV hub, player) (A2, C1, C2 message part). Power, sleep timer, and send message run on `ShellViewModel`.
+- **Data:** one HTTP stack, typed `EnigmaClient` over OkHttp with sealed `EnigmaFailure`; the request-handler hierarchy is gone (C4). Profiles in Room with `ProfileRepository` exposing the current profile as `StateFlow` (B3). Offline cache and unified errors shipped.
+- **ViewModels:** every screen and host has a `ViewModel` scoped to its back-stack entry or activity; state and load jobs no longer live in `remember`. They do not yet match the target shape (see B1 + C2).
+- **Platform:** edge-to-edge and predictive back on every activity. Online-only controls have accessibility semantics (A1). Glance widget. libVLC player with Compose overlay chrome.
+- **Cleanups:** list-row action menus are a Compose `DropdownMenu` anchored to the row (`RowMenu`); `AnchorPopup` and the popup menu XML are gone. The player overlay forces dark through the Compose theme instead of `AppCompatDelegate.localNightMode`. Widget configuration without profiles shows an explanation and an "Open dreamDroid" button instead of a `Toast`.
+- **Build:** Kotlin DSL, version catalog (A4). Migration tests for Room v1→8 and the 1.15 SQLite import; a real 1.15 → 2.0 in-place upgrade passes on the emulator (`upgrade_from_115`, 2026-09-27).
+- **Usertests:** phone (2026-09-19), tablet and TV / box (2026-09-21) verified, except the newly added TV timer surfaces.
 
 ## Still to do
 
-One PR per item unless asked otherwise. Do not fold these into unrelated chrome work.
+One PR per item. Do not fold these into unrelated work.
 
-| Item | Notes |
+### 2.0 blockers
+
+- [ ] **TV timer box pass** (operator): hub Timers list add/edit/delete (`TvTimerHost`), bouquet service INFO/MENU overlay (stream / set / edit), MultiEPG detail set/edit (`TvTimerEditorHost`). File bugs; no drive-by refactors.
+- [ ] **`2.0-bug` fixes**, one PR per fix. #77 closed (won't fix: plugins grabbing the Linux input devices). #120 (TV live streaming) did not reproduce on Google TV; close or get details. Do not treat `feature` issues as blockers.
+- [ ] **E2 release checks** (operator, at first 2.0 release): minified `googleRelease` smoke including the release-signed Play upgrade; `ACCESS_LOCAL_NETWORK` grant and deny pass on an API 37 device.
+- [ ] Re-run the phone usertest pass (shell messages and top bar changed since it was verified).
+
+### Opportunistic (when a feature or bug touches the screen)
+
+- [ ] **B1 — Hilt** (KSP): `@HiltAndroidApp` on `DreamDroid`, `@AndroidEntryPoint` activities, `@Singleton` modules for `AppDatabase`, OkHttp, `EnigmaClient`, `SessionConnectionHolder`, `MultiEpgSync`. The `object` holders delegate to injected instances until callers move. Land together with the first C2 ViewModel, not alone. Proof: one Hilt test replaces a binding with a fake.
+- [ ] **C2 — ViewModel shape**, per screen group: take repositories + `SavedStateHandle` via `hiltViewModel()`, drop `AndroidViewModel`, expose `StateFlow<*UiState>` (including user messages and the destination title, which today follows `Activity.title`), fold or delete the `*Session` class, resolve strings in the UI (`@StringRes` / `UiText`). Proof: JVM ViewModel test with fake repositories; `*Screen` test updated. Fixes: ~29 `AndroidViewModel`s and ~81 files of `mutableStateOf` session state.
+- [ ] **B4 — repositories**, only when a C2 group needs one: `ServiceRepository` (`UseDrivenCache`, `UserBouquetCache`), `EpgRepository` (`MultiEpgSync`, `ListEpgCache`), `TimerRepository` (`TimerSnapshotStore`), `MovieRepository` (`MovieSnapshotStore`), `ReceiverRepository` (zap, power, remote keys, volume, …). Each owns its offline rules. Proof: JVM tests with a fake `EnigmaClient` and `AppDatabase.inMemory`.
+
+- [ ] **`VideoActivity` off AppCompat**: it forces dark through the Compose theme and `SystemBarStyle.dark`; check whether anything else still needs `AppCompatActivity` (Material Components View theme, dialogs) and move it to `ComponentActivity` if not.
+
+### Deferred (after 2.0)
+
+- [ ] **B2 — DataStore**: `SettingsRepository` over Preferences DataStore with `SharedPreferencesMigration` (34 files use `SharedPreferences`). Risks backup and startup regressions; if a ViewModel needs testable settings first, put a `SettingsRepository` over `SharedPreferences`. Needs operator sign-off.
+- [ ] **E1 — Baseline Profile** (cold start → hub, hub scroll, MultiEPG pan). Only if jank is reported.
+
+When an item lands, its PR moves it into **Done** here.
+
+## Target architecture
+
+New and touched code follows this ([guide to app architecture](https://developer.android.com/topic/architecture)).
+
+| Area | Target |
 | --- | --- |
-| Remediation | The [remediation plan](#remediation-plan) below. It replaces the old "leave as they are" list. |
-| Operator usertests | **Phone verified** (2026-09-19). **Tablet verified** (2026-09-21). **TV / box verified** (2026-09-21) except newly added timer surfaces. Phone drawer EPG and the bouquet service list remember list vs MultiEPG. Remaining box pass: hub **Timers** list add/edit/delete (`TvTimerHost`); bouquet service INFO/MENU overlay (stream / set / edit); MultiEPG detail set/edit (`TvTimerEditorHost`). File bugs; no drive-by refactors. Then a bugfix pass, one PR per fix. In-tree timer gate: `TvTimerHostTest` / `TvTimerListScreenTest` / `TvServiceTimerOverlayTest`. Re-run the phone pass after C2 and C3 land; they change shell messages and the top bar. |
-| 2.0 bugs | GitHub label `2.0-bug`. One PR per fix. Do not treat `feature` issues as ship blockers. Do not close more tickets unless asked. |
-| Pre-release | Not GitHub-issue work; tracked as E2. Migration tests exist (`AppDatabaseMigrationTest` for Room v1→8, `DatabaseHelperMigrateTest` for the 1.15 SQLite import); a real `v1.15.460` install upgraded in place runs on the emulator via `workflow_dispatch` on `android-ci.yml` with `upgrade_from_115` (`.github/upgrade-from-115/run.sh`, `Upgrade115Test`: 1.15's Room v1 profiles, and a pre-1.15 `dreamdroid`-only install). Both passed on API 30 (2026-09-27, [run 36342967629](https://github.com/sreichholf/dreamDroid/actions/runs/36342967629)); the release-signed Play upgrade stays with the R8 smoke. Minified `googleRelease` smoke (CI builds only debug). `ACCESS_LOCAL_NETWORK` is declared and requested (`LocalNetworkPermissionRequest` in the phone, TV, share, and video activities); still missing is a grant and deny pass on an API 37 device. |
+| Layers | Compose screens + `ViewModel` → repositories owning Enigma HTTP, Room, and settings. Screens never call `EnigmaClient`, DAOs, or `SharedPreferences` directly. |
+| DI | Hilt (KSP). No mutable service-locator `object`s, no static `getAppContext()`. |
+| ViewModel | Takes repositories and `SavedStateHandle`; no `Application`, `Context`, `View`, or activity. One immutable `StateFlow<*UiState>` collected with `collectAsStateWithLifecycle()`. Work in `viewModelScope`. |
+| UI events | User messages are UI state, shown in a `SnackbarHostState` and cleared via the ViewModel. No `Toast`. |
+| Screens | Stateless `*Screen(state, onAction…)`. Material 3 `TopAppBar` / `SearchBar`; no View toolbar or options menu. |
+| Navigation | One activity per form factor, Navigation Compose with type-safe routes. |
+| Layout | Window size classes via `currentWindowAdaptiveInfoV2()`, not `smallestScreenWidthDp`. |
+| Settings | DataStore behind a settings repository (deferred, see B2). |
+| Persistence / work | Room with exported schemas and migration tests; WorkManager for deferrable work. |
+| Accessibility | Role, label, and state on every interactive element; 48 dp targets; tests assert semantics. |
+| Testing | JVM tests with fake repositories for ViewModels, repositories, parsers; instrumented Compose tests for screens. |
 
 ## Deliberate exceptions
 
-These deviate from a platform default on purpose. Each needs its reason to stay true; revisit when it stops being true. Everything else that looks legacy is in the remediation plan.
+Do not "fix" these. Each states when to revisit it.
 
 | Exception | Reason | Revisit when |
 | --- | --- | --- |
-| Service-row / now-playing progress is a transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)) | Product design choice for dense rows. Do not "restore" a Material track. | Design changes. |
-| Widget is Glance + `AndroidRemoteViews` for the dense RCU grid | Glance cannot lay out the grid at that density; a Glance-only rewrite does not pay for itself. | Glance gains an equivalent layout. |
-| `DatabaseHelper` stays as a read-only importer of leftover `dreamdroid` SQLite rows | 1.15 already moves profiles into Room v1 (`dreambox`) on first start, but installs that skipped 1.15 and old cloud backups still carry the file. It never creates `dreamdroid`. | One release after 2.0 ships on Play, with migration telemetry or a support window agreed. |
-| libVLC, not Media3 | Enigma2 streams (MPEG-TS, varied codecs, some transcoded) need libVLC coverage. `VideoOverlayController` stays the `View` + libVLC binder; its chrome is Compose. | Media3 covers the receiver formats. |
-| Phone and TV are separate activities | Different input model (touch vs D-pad), theme (`androidx.tv` Material), and launcher category. Within each form factor there is one activity (D2). | — |
-| `uses-feature android.software.leanback` (required = false) | Needed for the Android TV launcher. Leanback **libraries** are gone. | — |
-| `usesCleartextTraffic` | Enigma2 WebInterface on a LAN is plain HTTP by default; users enter arbitrary hosts. HTTPS profiles keep working. | Never for arbitrary LAN hosts. |
-| `Toast` in the widget and in a share flow that finishes its activity | No Scaffold or window survives to host a Snackbar. | — |
-
-## Remediation plan
-
-Earlier rules in this doc protected legacy patterns ("`MenuProvider` stays", "`NavigationHelper` stays on the activity", "ViewModels take `Application`", "no DI framework or repository layer", "the existing state class stays the model"). Those rules are withdrawn. This section lists what they left behind and the order to fix it.
-
-### Locked decisions (operator, 2026-09-25)
-
-| Decision | Settlement |
-| --- | --- |
-| Dependency injection | **Hilt** with KSP. No hand-rolled container, no Koin. |
-| Navigation | **Type-safe Navigation Compose first** (D1). Navigation 3 only afterwards, and only if it removes code (D3). |
-| Launcher trampoline | **Done in D2.** Phone and TV activities own their launcher categories. A search found no shortcut XML, widget component, or `activity-alias` targeting `TabbedNavigationActivity`, so it was deleted with no alias. |
-| Problem table | Counts and file lists in "What is wrong today" are a snapshot. Each step's PR deletes the rows it fixes; there is no separate recount. |
-
-One PR per numbered step unless the step says otherwise. Each PR leaves the app shippable, adds or updates tests for what it moves, and runs `spotlessCheck`, `:app:testGoogleDebugUnitTest`, and the touched instrumented classes via `bash .cursor/cloud/connected-test.sh`. **2.0 blocker** marks what must land before release (see [Priority](#priority)); the rest can land before or after 2.0.
-
-### Priority
-
-Re-rated 2026-09-27 against the size of the app (a single-maintainer remote: about 365 Kotlin files, about 30 `AndroidViewModel`s, 16 request handlers). The rule is payoff for users or for the next change, not purity. Work top to bottom.
-
-| Rank | Item | Why this rank |
-| --- | --- | --- |
-| 1. **2.0 blocker** | TV timer box pass, then `2.0-bug` fixes | Real user-facing surfaces nobody has verified on a box. |
-| 2. **2.0 blocker** | E2 release checks | The missing pieces are small: one R8 `googleRelease` smoke, one grant/deny pass for `ACCESS_LOCAL_NETWORK` on API 37. The tests and the permission request already exist. |
-| 3. **Done** | C4: one HTTP stack | Deletes a parallel stack (16 handlers, 14 `launchSimpleResultLoad` callers) and needs no Hilt or repositories: move the calls onto `EnigmaClient` directly. |
-| 4. **Done** | C2 message part: remaining `Toast`s → shell snackbar | About 20 files. `ShellMessages` already exists, so this needs no Hilt either. Can land per destination. |
-| 5. **Done** | C3: Material 3 `TopAppBar` | 9 `MenuProvider` destinations and hand-tinted icons; visible consistency win. `BaseActivity` still needs AppCompat for night mode and the row `PopupMenu`. |
-| 6. Opportunistic | B1 + C2 ViewModel shape (+ B4 repositories) | Converting about 30 ViewModels and 81 `mutableStateOf` files is a campaign with no user-visible payoff. Land B1 together with the first ViewModel that needs it, not as a standalone PR. Convert a screen group when a feature or bug touches it. Add a B4 repository only when a converted ViewModel needs it; no speculative repositories. |
-| 7. Defer | B2: DataStore | 34 `SharedPreferences` files, synchronous theme reads at startup, and a working key/value backup. Migrating risks backup and startup regressions for no user gain. If a ViewModel needs testable settings, add a `SettingsRepository` over `SharedPreferences` first; revisit DataStore after 2.0 (needs operator sign-off to change the target row). |
-| 8. Defer | E1: Baseline Profile | A macrobenchmark module plus a slow emulator is real upkeep. Do it only if startup or MultiEPG jank is reported. |
-
-### What is wrong today
-
-| # | Problem | Where | Caused by |
-| --- | --- | --- | --- |
-| P3 | 29 ViewModels extend `AndroidViewModel` and pull strings, preferences, and `DreamDroid` globals through `Application`. They cannot be JVM-tested without Android. | every `*ViewModel.kt` | "A `ViewModel` takes `Application`" |
-| P4 | Screen state is mutable Compose-state `*Session` / `*State` classes owned by the ViewModel, not an immutable `StateFlow` UI state. Loads live in the session, not in a data layer. | 81 files with `mutableStateOf`, 4 with `StateFlow` | "The existing state class stays the model" |
-| P5 | No DI. Process-wide holders: `DreamDroid.getAppContext()`, `ProfileRepository.get()` (a class since B3, still a companion singleton until B1 injects it), `SessionConnectionHolder.shared`, `MultiEpgSyncHolder`, `UseDrivenCache`, `UserBouquetCache`, `TimerSnapshotStore`, `MovieSnapshotStore`, `ListEpgCache`, `PiconSync`. | `DreamDroid.kt`, `data/ProfileRepository.kt`, `room/*Store.kt`, `room/*Cache.kt`, `multiepg/`, `ui/session/ConnectionStatus.kt` | "A new DI framework, repository layer … leave as they are" |
-| P12 | Settings are raw `SharedPreferences` in 34 files, read synchronously, with `MainActivity` implementing `OnSharedPreferenceChangeListener`. | `SettingsState`, `DreamDroid`, `MainActivity`, widget, backup agent, … | Not covered by any rule |
-| P13 | No Baseline Profile for startup, hub scroll, or MultiEPG pan. | — | Not covered by any rule |
-
-### Steps
-
-**Phase A — independent fixes (no architecture dependency)**
-
-| Step | Fixes | Change | Proof |
-| --- | --- | --- | --- |
-| A1 **Done** | — | `onlineOnlyLook` sets `stateDescription` to "Needs the receiver" and an `onClick` label of the long explanation when the control is blocked. The click stays. | `OnlineOnlySemanticsTest` on a greyed zap, power, and set-timer action while Offline. |
-| A2 **Done** | P8 (shell part) | `PhoneShell`'s `Scaffold` and the TV hub host a `SnackbarHostState` (`ShellMessages`). The dead View `Snackbar` in `MainActivity` is gone. Hub-page and `NavigationHelper` mutation results, plus TV timer and MultiEPG set-timer results, post there. | `ShellSnackbarTest`: a `BoxRejected` `statetext` is the snackbar text. |
-| A3 **Done** | P11 | `PhoneShell` chooses the rail from `currentWindowAdaptiveInfoV2()` (`material3-adaptive`): rail unless the width or height size class is Compact, or the posture is tabletop. `NavigationSuiteScaffold` stays out. Destination chrome is a measured overlay (now-playing strip and bar) and the FAB dodges that height. | `ShellWindowSizeClassTest`: a forced Expanded window shows the rail; a forced Compact window shows the bar. |
-| A4 **Done** | P13 (catalog, Kotlin DSL, Settings sync test) | Versions live in `gradle/libs.versions.toml`. `build.gradle` and `settings.gradle` are Kotlin DSL. The Settings MultiEPG sync test is gone; `MultiEpgSyncTest` covers that sync. Dependency versions are unchanged. | CI green. |
-
-**Phase B — data layer foundation**
-
-| Step | Fixes | Change | Proof |
-| --- | --- | --- | --- |
-| B1 | P5 | Add Hilt (KSP). `@HiltAndroidApp` on `DreamDroid`, `@AndroidEntryPoint` on activities, modules providing `AppDatabase`, the OkHttp client, `EnigmaClient`, `SessionConnectionHolder`, and `MultiEpgSync` as `@Singleton`s. No behavior change; the `object` holders delegate to the injected instances until their callers move. | App starts; existing tests pass; one Hilt test replaces a binding with a fake. |
-| B2 | P5, P12 | `SettingsRepository` over Preferences DataStore with `SharedPreferencesMigration`. `SettingsState`, theme, picon, and video settings read from it. Backup: `DreamDroidBackupAgent` / `BackupService` back up the DataStore file (key/value prefs backup no longer sees the values). Widget reads through the repository. | JVM test: migration keeps every key in `DreamDroid.PREFS_KEY_*`. Backup restore test on device. |
-| B3 **Done** | P5 (profile, listener, location/tag lists, device-info cache) | `ProfileRepository`: Room profiles + current profile as `StateFlow<Profile?>`. `switches` emits once on a real change and clears locations, tags, and device-info XML. `ProfileChangedListener` and `Profile.cachedDeviceInfo` are gone. Phone `MainActivity` no longer listens; `ShellViewModel` collects `switches`. TV collects the same flow on its activity. | `ProfileRepositoryTest`: switching profile emits once and clears per-profile caches. |
-| B4 | P5 | Domain repositories, one PR each, added when a C2 screen group needs one, absorbing the singletons: `ServiceRepository` (bouquets, service lists, `UseDrivenCache`, `UserBouquetCache`), `EpgRepository` (`MultiEpgSync`, `ListEpgCache`, now/next), `TimerRepository` (`TimerSnapshotStore`), `MovieRepository` (`MovieSnapshotStore`), `ReceiverRepository` (zap, power, sleep timer, message, remote keys, volume, screenshot, signal). Each repository owns the offline rules from the offline plan (`isCacheableUserBouquetContainer`, `hasCache`). | JVM tests with a fake `EnigmaClient` and `AppDatabase.inMemory`; the offline-plan guard tests move with the code. |
-
-**Phase C — ViewModels and screens (after the repository they need)**
-
-| Step | Fixes | Change | Proof |
-| --- | --- | --- | --- |
-| C1 **Done** | — | Power, sleep timer, and send message run in an activity-scoped `ShellViewModel` (`viewModelScope`) through the existing client. Results post to the shell snackbar. A sleep-timer read that should open the dialog waits for the current activity. `NavigationHelper` only navigates and dispatches those ids. | `ShellPowerSurvivalTest`: a power toggle started before `recreate()` still shows the standby snackbar. |
-| C2 | P3, P4 | Per screen group, in the ViewModel history order: the ViewModel takes repositories + `SavedStateHandle` (`hiltViewModel()`), drops `AndroidViewModel`, exposes `StateFlow<*UiState>`, and moves its user messages (already snackbar text via `ShellMessages`) into that state. Destination titles move from `Activity.title` into that state too. The `*Session` class goes away or becomes a plain state holder inside the ViewModel. Strings resolve in the UI (`@StringRes` / `UiText`), not in the ViewModel. | Each PR adds a JVM ViewModel test with fake repositories; the `*Screen` Compose test updates to the new state type. |
-| C3 **Done** | — | `PhoneShell` draws a Material 3 `TopAppBar`. Destinations bind actions with `BindShellTopBarActions` (epoch-gated like the FAB); the title still follows `Activity.title` through `MainActivity.onTitleChanged` until C2. Search is a trailing top-bar action that opens the `EpgSearch` route. `setSupportActionBar`, `onCreateOptionsMenu`, the nine `MenuProvider`s, `ToolbarMenuIcons`, the toolbar menu XML, `default_searchable`, and the `ACTION_SEARCH` filter are gone. `BaseActivity` stays on `AppCompatActivity`: `AppCompatDelegate` night mode, the row `PopupMenu`, and `VideoActivity` still need it. | `ShellTopBarTest` clicks actions by content description; per-destination action lists in `HubServiceListSessionTest`, `MultiEpgTopBarTest`, `EpgBouquetTopBarTest`, `TimerEditScreenTest`, `EditSaveActionsTest`. |
-| C4 **Done** | — | Mutations (zap, remote key, message, media play, movie delete, timer add/change/delete/cleanup) and volume, power, and sleep timer are `EnigmaClient` functions returning `EnigmaResponse` (a rejected mutation has a value and a `BoxRejected` error). `helpers/enigma2/requesthandler/`, `SimpleRequestInterface`, `Request`, and `launchSimpleResultLoad` are gone. No repository yet; B4 adds one when a C2 group needs it. | `EnigmaClientMutationTest` (mock receiver), `EnigmaFailureMappingTest`, `SimpleXmlParsersTest`; `BoxRejected` mapping preserved. |
-
-**Phase D — navigation**
-
-| Step | Fixes | Change | Proof |
-| --- | --- | --- | --- |
-| D1 **Done** | — | Type-safe routes: `@Serializable` route classes replace string patterns. Profile edit, timer edit, EPG, MultiEPG, service EPG, search, and sleep timer carry their arguments on the route. `PhoneNavHostState` keeps the start route and pick-request codes. Drawer items map to route objects. A saved back stack from the old string routes starts at the start destination. `dreamdroid://` is not a graph deep link. (C3 later dropped `ACTION_SEARCH`; search opens from the top bar.) | `EpgSearchRouteTest`, `PhoneRouteRestoreTest`, `ServiceEpgRetentionTest`, `ProfileEditCreateRouteTest`, `SleepTimerDialogHostTest`. |
-| D2 **Done** | — | One TV `NavHost` in `tv.activities.MainActivity` hosts `TvHub`, `TvMultiEpg`, `TvSettings`, and `TvProfiles`. Phone `MainActivity` has `MAIN` / `LAUNCHER` / `MULTIWINDOW_LAUNCHER` and the `dreamdroid` `VIEW` filter. TV `MainActivity` has `MAIN` / `LEANBACK_LAUNCHER`. No alias: nothing in the repo targeted `TabbedNavigationActivity`. | `TvHubNavHostTest`, `LauncherIntentTest`, `TvComposeHubHostTest`. |
-| D3 **Done** | — | **No.** Navigation 3 stays out. `navigation3-runtime` and `navigation3-ui` would turn the 20 `composable` calls and 5 `dialog` calls in `PhoneNavHost.kt` into about 25 `entry` calls, plus `DialogSceneStrategy`, plus a hand-rolled copy of drawer `saveState` and `restoreState`. Those `NavOptions` are not in Navigation 3. `PhoneShell` switches `NavigationRail` and `NavigationBar` for the same hub items. That is not list-detail, so `ListDetailSceneStrategy` deletes nothing. Adopt Navigation 3 only when a later change makes the phone graph smaller with it than with `navigation-compose` 2.10.1. | Decision recorded. |
-
-**Phase E — performance and release**
-
-| Step | Fixes | Change | Proof |
-| --- | --- | --- | --- |
-| E1 | P13 | Baseline Profile module (macrobenchmark) covering cold start → hub, hub scroll, MultiEPG pan. Ship `profileinstaller`. | Benchmark numbers in the PR. |
-| E2 **2.0 blocker** | — | Release checks: R8 `googleRelease` smoke, 1.15→2.0 upgrade (emulator job `upgrade_from_115`), `ACCESS_LOCAL_NETWORK` flow on SDK 37. | Pre-release row above. |
-
-When a step lands, its PR marks the step done here and deletes the rows it fixed from "What is wrong today".
-
-## ViewModel history
-
-Status (2026-09-23): every screen and host has a `ViewModel`; row 22 closed as a no-op (reopened by C1). Phone NavHost destinations get their state from an entry-scoped `ViewModel`, `PhoneNavHostState` is activity-scoped on a `SavedStateHandle`, the hub pages share the hub entry's scope, and the TV, share, setup, and player hosts use activity-scoped ViewModels.
-
-That pass moved **ownership**: state and load jobs left `remember` / `rememberSaveable` and survive rotation and back-stack pops. It deliberately kept the old `*Session` state classes, `Application` constructors, `MenuProvider`s, and activity-held receiver actions so each PR stayed small. Those leftovers that remain are P3–P5 and C2. Current ViewModel rules are the [target architecture](#target-architecture) row.
-
-Rules from that pass that still hold:
-
-- `viewModel()` / `hiltViewModel()` is called from the NavHost route (or `*Destination`). `*Screen` takes state and callbacks, so Compose tests call the screen directly. Tests construct a `ViewModelStore` only when the test is about retention.
-- Saved fields live in `SavedStateHandle`.
-- Dialog open/closed flags and pure UI toggles (key-repeat timing on the virtual remote, FAB / destination-bar controllers for the life of `PhoneShell`) stay in composition.
-- Hub children (`HubServiceListPage`, `HubTimerListPage`, `HubMovieListPage`) are not their own routes. Their ViewModels are scoped to the hub back-stack entry so a tab change keeps the loaded list.
-- Retention is tested: opening a detail and popping back shows the same loaded list.
-- A TV host that copies a phone screen changes in its own PR after that phone screen.
-- `VideoOverlayController` stays the `View` and libVLC binder; zap-list and playback session state live in `VideoPlaybackViewModel`, which the controller observes.
-
-| # | Screen / host | Status |
-| --- | --- | --- |
-| 1 | Device info (template) | Done |
-| 2 | Phone nav host (`PhoneNavHostState`) | Done |
-| 3–19 | Screenshot, Signal, Zap, Backup, Current service, Settings, Profiles, Profile edit, Timer edit, Service pick, EPG bouquet, EPG search, MultiEPG, Hub shell, Hub service list, Hub timers, Hub movies | Done |
-| 19a–19b | Service EPG, Hub now playing | Done |
-| 20 | TV hosts (`TvComposeHubHost`, `TvTimerHost`, `TvTimerEditor`, `TvTimerServicePick`, `TvMultiEpgHost`) | Done |
-| 21 | Share and setup | Done |
-| 22 | Dialog routes (`SleepTimer`, `SendMessage`, `Power`) | Done in C1. The routes stay; the requests run on `ShellViewModel`. |
-| 23 | Player | Done |
+| Service-row progress: transparent track, `StrokeCap.Butt`, no stop indicator ([#421](https://github.com/sreichholf/dreamDroid/pull/421)) | Design choice for dense rows. Keep a progress semantics description for TalkBack. | Design changes. |
+| Widget uses `AndroidRemoteViews` for the RCU grid | A Glance-only grid at that density is awkward and does not pay for itself. | Glance gains an equivalent layout. |
+| `DatabaseHelper` as read-only importer of old `dreamdroid` SQLite | Installs that skipped 1.15 and old backups still carry the file. | One release after 2.0 ships on Play. |
+| libVLC, not Media3 | Receiver streams (MPEG-TS with MPEG-2, AC3, varied codecs) need decoding that does not depend on device hardware. Cost: `libvlc-all` dominates APK size (~196 MB universal debug APK) and is a native dependency to keep current. | Media3 covers the receiver formats on target devices. |
+| `usesCleartextTraffic` | Users enter arbitrary LAN hosts over plain HTTP; a network security config cannot scope cleartext to private networks. | Never for arbitrary LAN hosts. |
+| `Toast` in `WidgetRemoteRequest` and `ShareActivity` | Broadcast with no UI, and a share flow that finishes its activity; no window survives to host a Snackbar. | — |
+| `BaseActivity`, `ShareActivity`, and the widget configuration on `AppCompatActivity` | `AppCompatDelegate.setDefaultNightMode` for the in-app theme setting; the platform `UiModeManager.setApplicationNightMode` needs API 31. `VideoActivity` no longer needs AppCompat for night mode (see todo). | minSdk reaches 31. |
 
 ## Out of scope until asked
 
-Enigma2 **server** / webif patches, VLC **codec / stream protocol**, Media3/ExoPlayer swap (see exceptions), deleting the home-screen widget, merging `master` into `main`.
+Enigma2 server / webif patches, VLC codec or stream protocol, Media3 swap, deleting the widget, merging `master` into `main`.
