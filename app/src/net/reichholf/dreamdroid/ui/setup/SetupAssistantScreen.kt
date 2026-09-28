@@ -46,14 +46,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -62,10 +63,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.text.asString
 
 private const val INTRO_HOLD_MS: Int = 700
 
@@ -76,14 +78,23 @@ fun SetupAssistantScreen(
     viewModel: SetupAssistantViewModel,
     localNetworkGranted: Boolean,
     onRequestLocalNetwork: () -> Unit,
-    onSave: (Profile) -> Unit,
+    onFinished: () -> Unit,
     onLeave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val draft = viewModel.draft
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val draft = state.draft
     val step = draft.step
-    val checking = viewModel.checking
-    val checkResult = viewModel.checkResult
+    val checking = state.checking
+    val checkResult = state.checkResult
+    val currentOnFinished by rememberUpdatedState(onFinished)
+
+    LaunchedEffect(state.finished) {
+        if (state.finished) {
+            viewModel.onFinishHandled()
+            currentOnFinished()
+        }
+    }
 
     BackHandler {
         if (!viewModel.back()) {
@@ -223,7 +234,7 @@ fun SetupAssistantScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Button(
-                                        onClick = { viewModel.advance() },
+                                        onClick = viewModel::advance,
                                         enabled = progress >= 1f,
                                         modifier = Modifier
                                             .focusRequester(startFocus)
@@ -236,9 +247,9 @@ fun SetupAssistantScreen(
                                 SetupStep.Find -> FindStep(
                                     host = draft.host,
                                     onHostChange = viewModel::onFindHostChange,
-                                    devices = viewModel.devices,
-                                    searching = viewModel.searching,
-                                    searched = viewModel.searched,
+                                    devices = state.devices,
+                                    searching = state.searching,
+                                    searched = state.searched,
                                     localNetworkGranted = localNetworkGranted,
                                     portText = draft.portText,
                                     onPick = viewModel::onPick
@@ -295,7 +306,7 @@ fun SetupAssistantScreen(
                         }
                     }
                     Button(
-                        onClick = { viewModel.advance()?.let(onSave) },
+                        onClick = viewModel::advance,
                         enabled = actionEnabled
                     ) {
                         Text(stringResource(actionLabel))
@@ -543,7 +554,6 @@ private fun ConnectionCheck(
     trustAllCerts: Boolean,
     onTrustAllChange: (Boolean) -> Unit
 ) {
-    val context = LocalContext.current
     Text(
         text = stringResource(R.string.setup_test_body),
         style = MaterialTheme.typography.bodyLarge
@@ -565,7 +575,7 @@ private fun ConnectionCheck(
         )
     } else if (outcome != null && outcome.hasError) {
         Text(
-            text = outcome.setupMessage(context),
+            text = outcome.setupMessage()?.asString().orEmpty(),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error
         )

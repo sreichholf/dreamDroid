@@ -1,134 +1,180 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.preference.PreferenceManager
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.ui.profiles.ProfileEditState
+import net.reichholf.dreamdroid.ui.profiles.ProfileForm
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * List, add, and edit for [TvProfilesHost]. The activity-scoped ViewModel keeps
- * [page] and the open [ProfileEditState] across configuration changes. Process death
- * still drops the draft. Rows load on [viewModelScope] through the suspend profile DAO.
+ * [page] and, on Add or Edit, the open [form]. [event] is the last activation, save,
+ * or delete, until the host has applied its result policy.
  */
-class TvProfilesHostViewModel(application: Application) : AndroidViewModel(application) {
-    internal var page by mutableStateOf<TvProfilesPage>(TvProfilesPage.List)
-        private set
+data class TvProfilesUiState(
+    val page: TvProfilesPage = TvProfilesPage.List,
+    val profiles: List<ProfileListItem> = emptyList(),
+    val form: ProfileForm? = null,
+    val hostError: UiText? = null,
+    val event: TvProfilesEvent? = null
+)
 
-    var profiles by mutableStateOf<List<ProfileListItem>>(emptyList())
-        private set
+/**
+ * List, add, edit, and delete for [TvProfilesHost]. The open draft lives here, so it
+ * outlives the host's composition; process death drops it.
+ */
+@HiltViewModel
+class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileRepository) :
+    ViewModel() {
+    private val _uiState = MutableStateFlow(TvProfilesUiState())
+    val uiState: StateFlow<TvProfilesUiState> = _uiState.asStateFlow()
 
-    var editState by mutableStateOf<ProfileEditState?>(null)
-        private set
-
-    var editingProfile by mutableStateOf<Profile?>(null)
-        private set
-
-    private var loadedProfiles: List<Profile> = emptyList()
+    private var loaded: List<Profile> = emptyList()
+    private var editing: Profile? = null
     private var loadJob: Job? = null
     private var editJob: Job? = null
-    private var editorRequest: Int = 0
 
     init {
         reload()
     }
 
     fun reload() {
-        val app = getApplication<Application>()
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val loaded = AppDatabase.profiles(app).getProfiles()
-            if (!isActive) {
-                return@launch
+            val (rows, activeId) = withContext(Dispatchers.IO) {
+                profiles.profiles() to profiles.activeProfileId()
             }
-            publish(loaded)
+            loaded = rows
+            _uiState.update { it.copy(profiles = tvProfileRows(rows, activeId)) }
         }
     }
 
     fun showList() {
-        editorRequest++
         editJob?.cancel()
         editJob = null
-        page = TvProfilesPage.List
-        editState = null
-        editingProfile = null
+        editing = null
+        _uiState.update { it.copy(page = TvProfilesPage.List, form = null, hostError = null) }
         reload()
     }
 
-    /** Opens add with [Profile.getDefault]. Reuses the draft when add is already open. */
+    /** Opens add with [Profile.getDefault]. Keeps the draft when add is already open. */
     fun showAdd() {
-        if (page is TvProfilesPage.Add && editState != null && editingProfile != null) {
+        if (_uiState.value.page is TvProfilesPage.Add && editing != null) {
             return
         }
-        editorRequest++
         editJob?.cancel()
         editJob = null
-        val created = Profile.getDefault()
-        editingProfile = created
-        editState = ProfileEditState.fromProfile(created)
-        page = TvProfilesPage.Add
+        open(Profile.getDefault(), TvProfilesPage.Add)
+    }
+
+    /** Loads [profileId] for editing. Keeps the draft when that edit is already open. */
+    fun showEdit(profileId: Int) {
+        val page = _uiState.value.page
+        if (page is TvProfilesPage.Edit && page.profileId == profileId && editing != null) {
+            return
+        }
+        editJob?.cancel()
+        editJob = viewModelScope.launch {
+            val profile = withContext(Dispatchers.IO) { profiles.profile(profileId) }
+            if (profile == null) {
+                showList()
+            } else {
+                open(profile, TvProfilesPage.Edit(profileId))
+            }
+        }
+    }
+
+    fun onFormChange(form: ProfileForm) {
+        _uiState.update {
+            val hostError = if (form.host == it.form?.host) it.hostError else null
+            it.copy(form = form, hostError = hostError)
+        }
+    }
+
+    fun activate(id: Int) {
+        viewModelScope.launch {
+            val success = withContext(Dispatchers.IO) { profiles.setCurrent(id, forceEvent = true) }
+            _uiState.update { it.copy(event = TvProfilesEvent.Activate(success)) }
+        }
     }
 
     /**
-     * Loads [profileId] on [viewModelScope]. Reuses the draft when that edit is already open.
+     * Saves the open draft. Saving the active profile reloads it with a switch event,
+     * so the hub reconnects with the new settings.
      */
-    fun showEdit(profileId: Int) {
-        val current = page
-        if (current is TvProfilesPage.Edit &&
-            current.profileId == profileId &&
-            editState != null &&
-            editingProfile != null
-        ) {
+    fun save() {
+        val profile = editing ?: return
+        val form = _uiState.value.form ?: return
+        if (form.host.isBlank()) {
+            _uiState.update {
+                it.copy(
+                    hostError = UiText.Resource(R.string.host_empty),
+                    event = TvProfilesEvent.Save(saved = false, currentProfile = false)
+                )
+            }
             return
         }
-        val request = ++editorRequest
-        editJob?.cancel()
-        val app = getApplication<Application>()
-        editJob = viewModelScope.launch {
-            val profile = AppDatabase.profiles(app).getProfile(profileId)
-            if (!isActive || request != editorRequest) {
-                return@launch
+        form.applyTo(profile)
+        if (profile.streamHost == null) {
+            profile.streamHost = ""
+        }
+        viewModelScope.launch {
+            val isCurrent = withContext(Dispatchers.IO) {
+                profiles.save(profile)
+                val current = profile.id != null && profile.id == profiles.current.value?.id
+                if (current) {
+                    profiles.reloadCurrent()
+                }
+                current
             }
-            if (profile == null) {
-                showList()
-                return@launch
+            _uiState.update {
+                it.copy(event = TvProfilesEvent.Save(saved = true, currentProfile = isCurrent))
             }
-            editingProfile = profile
-            editState = ProfileEditState.fromProfile(profile)
-            page = TvProfilesPage.Edit(profileId)
+            showList()
         }
     }
 
-    fun loadedProfile(id: Int): Profile? = loadedProfiles.firstOrNull { (it.id ?: 0) == id }
+    fun delete(id: Int) {
+        val profile = loaded.firstOrNull { (it.id ?: 0) == id } ?: return
+        viewModelScope.launch {
+            val deletingCurrent = withContext(Dispatchers.IO) {
+                val current = profile.id != null && profile.id == profiles.current.value?.id
+                profiles.delete(profile)
+                current
+            }
+            _uiState.update { it.copy(event = TvProfilesEvent.Delete(deletingCurrent)) }
+            if (!deletingCurrent) {
+                reload()
+            }
+        }
+    }
 
-    private fun publish(loaded: List<Profile>) {
-        val app = getApplication<Application>()
-        val prefId = PreferenceManager.getDefaultSharedPreferences(app)
-            .getInt(DreamDroid.CURRENT_PROFILE, -1)
-        val liveId = ProfileRepository.get().current.value?.id ?: -1
-        loadedProfiles = loaded.toList()
-        profiles = tvProfileRows(loadedProfiles, prefId, liveId)
+    fun onEventHandled() {
+        _uiState.update { it.copy(event = null) }
+    }
+
+    private fun open(profile: Profile, page: TvProfilesPage) {
+        editing = profile
+        _uiState.update {
+            it.copy(page = page, form = ProfileForm.from(profile), hostError = null)
+        }
     }
 }
 
-private fun tvProfileRows(
-    profiles: List<Profile>,
-    prefId: Int,
-    liveId: Int
-): List<ProfileListItem> {
-    val activeId = if (prefId > -1) prefId else liveId
-    return profiles.map { profile ->
+private fun tvProfileRows(profiles: List<Profile>, activeId: Int?): List<ProfileListItem> =
+    profiles.map { profile ->
         val id = profile.id ?: 0
         ProfileListItem(
             id = id,
@@ -137,4 +183,3 @@ private fun tvProfileRows(
             active = id > 0 && id == activeId
         )
     }
-}

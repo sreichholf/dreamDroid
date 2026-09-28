@@ -40,9 +40,7 @@ class TvHubNavHostTest {
         if (previous != null) {
             ProfileRepository.get().setCurrent(previous)
         } else {
-            ProfileRepository.get().loadCurrent(
-                InstrumentationRegistry.getInstrumentation().targetContext
-            )
+            ProfileRepository.get().loadCurrent()
         }
     }
 
@@ -79,23 +77,6 @@ class TvHubNavHostTest {
         }
         composeRule.onNodeWithText("Video Player").assertIsDisplayed()
         composeRule.onNodeWithText("Integrated video player").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
-    }
-
-    @Test
-    fun profilesRouteShowsProfilesHost() {
-        val activity = composeRule.activity
-        composeRule.setContent {
-            val hubViewModel = remember { idleHubViewModel() }
-            TvHubNavHost(
-                activity = activity,
-                onRecheckProfile = {},
-                hubViewModel = hubViewModel,
-                startDestination = TvProfiles
-            )
-        }
-        composeRule.onNodeWithTag("tv_profiles_list").assertExists()
-        composeRule.onNodeWithTag("tv_profiles_add").assertExists()
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
     }
 

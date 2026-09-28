@@ -21,14 +21,16 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
-import androidx.test.core.app.ApplicationProvider
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CompletableDeferred
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileCheckRepository
+import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -57,7 +59,7 @@ class SetupAssistantScreenTest {
                     viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSave = {},
+                    onFinished = {},
                     onLeave = {}
                 )
             }
@@ -97,7 +99,7 @@ class SetupAssistantScreenTest {
 
     @Test
     fun findSaysNoneFoundOnlyAfterSearchFinishes() {
-        val gate = CompletableDeferred<List<SetupReceiver>>()
+        val gate = CompletableDeferred<List<Profile>>()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val searching = context.getString(R.string.setup_searching)
         val noneFound = context.getString(R.string.setup_none_found)
@@ -108,7 +110,7 @@ class SetupAssistantScreenTest {
                     viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSave = {},
+                    onFinished = {},
                     onLeave = {}
                 )
             }
@@ -127,7 +129,7 @@ class SetupAssistantScreenTest {
     @Test
     fun failedCertificateCheckShowsWarningAndStillSaves() {
         var checks = 0
-        var saved: Profile? = null
+        var finished = false
         val viewModel = model(
             onCheck = { profile ->
                 checks += 1
@@ -144,7 +146,7 @@ class SetupAssistantScreenTest {
                     viewModel = viewModel,
                     localNetworkGranted = true,
                     onRequestLocalNetwork = {},
-                    onSave = { saved = it },
+                    onFinished = { finished = true },
                     onLeave = {}
                 )
             }
@@ -173,7 +175,9 @@ class SetupAssistantScreenTest {
         assertTrue(savedTrust)
         composeRule.onNodeWithText("Next").performClick()
         composeRule.onNodeWithText("Save").performClick()
-        val profile = saved
+        composeRule.waitUntil(timeoutMillis = 5_000) { finished }
+        val profile = profiles.profiles().singleOrNull()
+        assertEquals(profile?.id, profiles.requireCurrent().id)
         assertEquals("192.168.1.2", profile?.host)
         assertEquals("192.168.1.2", profile?.name)
         assertEquals("root", profile?.user)
@@ -208,7 +212,7 @@ class SetupAssistantScreenTest {
                         viewModel = viewModel,
                         localNetworkGranted = true,
                         onRequestLocalNetwork = {},
-                        onSave = {},
+                        onFinished = {},
                         onLeave = {}
                     )
                 }
@@ -228,9 +232,10 @@ class SetupAssistantScreenTest {
         shown = true
         composeRule.waitForIdle()
 
-        assertEquals(SetupStep.SignIn, viewModel.draft.step)
-        assertEquals("192.168.1.2", viewModel.draft.host)
-        assertTrue(viewModel.checking)
+        val state = viewModel.uiState.value
+        assertEquals(SetupStep.SignIn, state.draft.step)
+        assertEquals("192.168.1.2", state.draft.host)
+        assertTrue(state.checking)
         gate.complete(ProfileCheckResult())
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Next").assertIsEnabled()
@@ -238,17 +243,18 @@ class SetupAssistantScreenTest {
         assertEquals(1, checks)
     }
 
+    private val profiles = memoryProfiles()
+
     private fun model(
-        onSearch: suspend () -> List<SetupReceiver> = { emptyList() },
+        onSearch: suspend () -> List<Profile> = { emptyList() },
         onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() }
     ): SetupAssistantViewModel = SetupAssistantViewModel(
-        ApplicationProvider.getApplicationContext(),
         SavedStateHandle(),
-        object : SetupAssistantBackend {
-            override suspend fun search(): List<SetupReceiver> = onSearch()
-
+        profiles,
+        object : ProfileCheckRepository {
             override suspend fun check(profile: Profile): ProfileCheckResult = onCheck(profile)
-        }
+        },
+        ReceiverDiscovery { onSearch() }
     )
 
     private var savedTrust: Boolean = false

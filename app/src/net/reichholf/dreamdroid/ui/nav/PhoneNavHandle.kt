@@ -31,10 +31,8 @@ interface PhoneNavHandle {
     var composeDialogActionListener: DialogActionListener?
     var composeActivityResultListener: ActivityResultListener?
 
-    val profileEditRemountEpoch: Int
     val timerEditRemountEpoch: Int
 
-    fun profileEditRemountFlow(): StateFlow<Int>
     fun timerEditRemountFlow(): StateFlow<Int>
     fun epgRemountFlow(): StateFlow<Int>
     fun epgSearchRemountFlow(): StateFlow<Int>

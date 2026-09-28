@@ -27,6 +27,7 @@ import dagger.hilt.android.HiltAndroidApp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.GregorianCalendar
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -46,13 +47,14 @@ class DreamDroid : Application() {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see android.app.Application#onCreate()
-     */
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     override fun onCreate() {
+        // Hilt injects here, before the pre-Room import below. Building ProfileRepository
+        // does not read the database; loadCurrent() further down is the first read.
         super.onCreate()
+        ProfileRepository.install(profiles)
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean(PREFS_KEY_DYNAMIC_THEME_COLORS, false)
         if (dynamicColors) {
@@ -79,8 +81,7 @@ class DreamDroid : Application() {
         DatabaseHelper.migrateIntoRoomIfNeeded(appContext)
 
         initChannels()
-        ProfileRepository.install(this)
-        ProfileRepository.get().loadCurrent(this)
+        profiles.loadCurrent()
 
         handleProfileSwitch(this)
         PiconImageLoader.install(this)
@@ -101,7 +102,6 @@ class DreamDroid : Application() {
     }
 
     private fun handleProfileSwitch(context: Context) {
-        val profiles = ProfileRepository.get()
         val currentProfile = profiles.current.value ?: return
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED,
@@ -112,7 +112,7 @@ class DreamDroid : Application() {
 
             Log.i(LOG_TAG, "currentWifiName = $currentWifiName")
             Log.i(LOG_TAG, "currentProfileSsid = ${currentProfile.ssid}")
-            val rows = profilesStore(context)
+            val rows = profiles.profiles()
             if (currentWifiName == null) {
                 Log.i(LOG_TAG, "not connected to wifi, will search for default profile")
                 // not connected to wifi, search for default profile
@@ -122,7 +122,7 @@ class DreamDroid : Application() {
                     val noWifiDefault = rows.firstOrNull { it.isDefaultProfileOnNoWifi }
                     if (noWifiDefault != null) {
                         Log.i(LOG_TAG, "found profile for default ")
-                        profiles.setCurrent(context, noWifiDefault.id ?: -1)
+                        profiles.setCurrent(noWifiDefault.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no default profile on no wifi found in all profiles.")
                     }
@@ -151,7 +151,7 @@ class DreamDroid : Application() {
                     }
                     if (wifiProfile != null) {
                         Log.i(LOG_TAG, "found profile with configured ssid ")
-                        profiles.setCurrent(context, wifiProfile.id ?: -1)
+                        profiles.setCurrent(wifiProfile.id ?: -1)
                     } else {
                         Log.w(LOG_TAG, "no profile found with ssid configured for $wifiProfile")
                     }
@@ -159,9 +159,6 @@ class DreamDroid : Application() {
             }
         }
     }
-
-    private fun profilesStore(context: Context) =
-        AppDatabase.profilesBlocking(context).getProfiles()
 
     private fun getWifiName(context: Context): String? {
         val appContext = context.applicationContext

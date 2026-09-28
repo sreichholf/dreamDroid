@@ -14,7 +14,7 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 - A binding, repository method, or module lands in the PR with its first consumer. No bindings "for later".
 - Migrated screens use a `@HiltViewModel` taking repositories plus `SavedStateHandle`, obtained with `hiltViewModel()`. Their title and user message are UI state (`UiText`), reported with `ShellTitle` and `ShowShellUserMessage`, not `Activity.title` or `ShellMessages`.
-- While a static holder (`ProfileRepository.get()` and friends) still has callers, a Hilt `@Provides` returns that static instance. Delete the provider and the static with the last caller.
+- While a static holder (`SessionConnectionHolder.shared` and friends) still has callers, a Hilt `@Provides` returns that static instance. Delete the provider and the static with the last caller. `ProfileRepository` is already flipped: it has an `@Inject` constructor, and `ProfileRepository.get()` returns the Hilt instance.
 - Hilt injects during `super.onCreate()` of `DreamDroid`, before the Room import runs. Constructors of bound classes must not touch the database.
 
 Modernization plan: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). UI look helper: [`.cursor/skills/verify-dreamdroid/SKILL.md`](.cursor/skills/verify-dreamdroid/SKILL.md).

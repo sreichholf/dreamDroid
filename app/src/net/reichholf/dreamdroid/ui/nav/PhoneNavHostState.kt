@@ -90,18 +90,12 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     )
     private val leaveConfirmRequestedState = MutableStateFlow(false)
     private val needsReceiverRequestedState = MutableStateFlow(false)
-    private val profileEditRemountState = MutableStateFlow(0)
     private val timerEditRemountState = MutableStateFlow(0)
     private val epgRemountState = MutableStateFlow(0)
     private val epgSearchRemountState = MutableStateFlow(0)
 
-    override val profileEditRemountEpoch: Int
-        get() = profileEditRemountState.value
-
     override val timerEditRemountEpoch: Int
         get() = timerEditRemountState.value
-
-    override fun profileEditRemountFlow(): StateFlow<Int> = profileEditRemountState.asStateFlow()
 
     override fun timerEditRemountFlow(): StateFlow<Int> = timerEditRemountState.asStateFlow()
 
@@ -538,7 +532,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
         val route = profile.toProfileEditRoute()
         if (routeKey(controller.currentDestination?.route) == PhoneNavRoutes.PROFILE_EDIT) {
             controller.replaceRoute(route)
-            profileEditRemountState.value = profileEditRemountState.value + 1
             return true
         }
         controller.navigate(route)

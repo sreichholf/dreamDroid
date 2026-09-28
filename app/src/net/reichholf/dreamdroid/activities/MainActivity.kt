@@ -20,10 +20,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -46,7 +46,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.shouldConsumeVolumeKey
 import net.reichholf.dreamdroid.helpers.enigma2.volumeCommandForKey
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -265,7 +264,7 @@ class MainActivity :
         if (showingSetup || !phoneShellReady) {
             return
         }
-        if (!ProfileRepository.get().ensureCurrent(this)) {
+        if (!ProfileRepository.get().ensureCurrent()) {
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetupAssistant()
@@ -278,13 +277,10 @@ class MainActivity :
         setContent {
             DreamDroidTheme {
                 SetupAssistantScreen(
-                    viewModel = viewModel(),
+                    viewModel = hiltViewModel(),
                     localNetworkGranted = lanGranted,
                     onRequestLocalNetwork = { ensureLocalNetworkPermission() },
-                    onSave = { profile ->
-                        val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
-                        profile.id = id
-                        ProfileRepository.get().setCurrent(this, id, true)
+                    onFinished = {
                         PreferenceManager.getDefaultSharedPreferences(this).edit()
                             .putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false)
                             .apply()
