@@ -11,9 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -51,7 +49,6 @@ import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.services.HubDestination
 import net.reichholf.dreamdroid.ui.settings.SettingsDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.timers.TimerEditDestination
 import net.reichholf.dreamdroid.ui.tools.ToolsHubDestination
 import net.reichholf.dreamdroid.ui.zap.ZapDestination
@@ -397,14 +394,5 @@ fun NavHostController.navigateDrawerSettings() {
     navigateDrawerRoot(Settings)
     if (routeKey(currentDestination?.route) == PhoneNavRoutes.BACKUP) {
         popBackStack<Settings>(inclusive = false)
-    }
-}
-
-fun ComposeView.bindPhoneNavHost(handle: PhoneNavHandle) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            PhoneNavHost(handle = handle)
-        }
     }
 }

@@ -3,10 +3,7 @@ package net.reichholf.dreamdroid.ui.profiles
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class ProfileEditState {
     var name by mutableStateOf("")
@@ -104,22 +101,5 @@ class ProfileEditState {
     companion object {
         fun fromProfile(profile: Profile): ProfileEditState =
             ProfileEditState().also { it.loadFrom(profile) }
-    }
-}
-
-fun ComposeView.bindProfileEditScreen(
-    state: ProfileEditState,
-    saveLabel: String,
-    onSave: () -> Unit
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            ProfileEditScreen(
-                state = state,
-                saveLabel = saveLabel,
-                onSave = onSave
-            )
-        }
     }
 }

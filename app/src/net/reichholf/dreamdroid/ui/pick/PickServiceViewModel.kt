@@ -5,12 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
@@ -22,12 +20,9 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 /**
  * Bouquet list for [PickServiceDestination]. [PickServiceListState] stays the list model.
  *
- * [savedStateHandle] is accepted so the default factory can construct this ViewModel.
- * This screen has no rememberSaveable fields, so no keys are written.
  * The load job stays on [viewModelScope] and is not cancelled when the composable leaves.
  */
-class PickServiceViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class PickServiceViewModel(application: Application) : AndroidViewModel(application) {
     val listState: PickServiceListState = PickServiceListState()
     val refresh: ComposeRefreshState = ComposeRefreshState()
 

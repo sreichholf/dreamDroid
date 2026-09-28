@@ -42,7 +42,6 @@ import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.enigma.launchVolumeSetLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.shouldConsumeVolumeKey
 import net.reichholf.dreamdroid.helpers.enigma2.volumeCommandForKey
@@ -644,7 +643,7 @@ class MainActivity :
     }
 
     fun onDrawerPowerChoice(action: Int) {
-        navigationHelper?.onDialogAction(action, null, null)
+        navigationHelper?.onDialogAction(action)
     }
 
     fun onSendMessage(text: String, type: String, timeout: String) {

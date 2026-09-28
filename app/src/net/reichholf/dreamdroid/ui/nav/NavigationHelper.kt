@@ -11,17 +11,17 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerListState
  * Drawer click → phone [PhoneNavHandle] bridge. Power, sleep timer, and send
  * message run on [ShellViewModel]; this type only navigates and dispatches.
  */
-open class NavigationHelper(activity: MainActivity, protected val drawerState: DrawerListState) {
+class NavigationHelper(activity: MainActivity, private val drawerState: DrawerListState) {
     var activity: MainActivity = activity
 
-    protected var selectedItemId: Int = drawerState.selectedItemId
+    private var selectedItemId: Int = drawerState.selectedItemId
 
-    protected fun getMainActivity(): MainActivity = activity
+    private fun getMainActivity(): MainActivity = activity
 
     /**
      * Open a migrated phone NavHost leaf via the activity-owned [PhoneNavHandle].
      */
-    protected fun navigatePhoneNavRoot(route: Any) {
+    private fun navigatePhoneNavRoot(route: Any) {
         getMainActivity().phoneNav.navigateToRoute(route)
     }
 
@@ -29,7 +29,7 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         getMainActivity().phoneNav.onActiveProfileChanged()
     }
 
-    protected fun setSelectedItem(itemId: Int) {
+    private fun setSelectedItem(itemId: Int) {
         if (isDialogItem(itemId)) return
         if (itemId == R.id.menu_navigation_profiles) {
             drawerState.clearSelection()
@@ -43,14 +43,14 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         onNavigationItemClick(itemId)
     }
 
-    protected fun isDialogItem(itemId: Int): Boolean {
+    private fun isDialogItem(itemId: Int): Boolean {
         for (id in dialogItemIds) {
             if (id == itemId) return true
         }
         return false
     }
 
-    protected fun onNavigationItemClick(itemId: Int): Boolean {
+    private fun onNavigationItemClick(itemId: Int): Boolean {
         setSelectedItem(itemId)
 
         val navRoot = navRootRoutes.get(itemId)
@@ -108,7 +108,7 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
     /**
      * Drawer EPG opens the last list/MultiEPG mode and seeds default bouquet extras.
      */
-    protected fun navigateToEpg() {
+    private fun navigateToEpg() {
         getMainActivity().phoneNav.navigateToDrawerEpg()
     }
 
@@ -116,12 +116,12 @@ open class NavigationHelper(activity: MainActivity, protected val drawerState: D
         drawerState.sleepTimerAvailable = DreamDroid.featureSleepTimer()
     }
 
-    fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
+    fun onDialogAction(action: Int) {
         onNavigationItemClick(action)
     }
 
     companion object {
-        protected val dialogItemIds: IntArray = intArrayOf(
+        private val dialogItemIds: IntArray = intArrayOf(
             R.id.menu_navigation_sleeptimer,
             R.id.menu_navigation_message,
             R.id.menu_navigation_power,

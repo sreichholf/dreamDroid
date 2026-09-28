@@ -129,11 +129,6 @@
         <item name="materialCardViewStyle">@style/Widget.Material3.CardView.Elevated</item>
     </style>
 
-    <style name="Theme.DreamDroid.NoTitle" parent="Theme.DreamDroid">
-        <item name="windowActionBar">false</item>
-        <item name="android:windowNoTitle">true</item>
-    </style>
-
     <style name="Theme.DreamDroid.Player" parent="Theme.DreamDroid.Night">
         <item name="windowActionBar">false</item>
         <item name="android:windowActionBar">false</item>
@@ -145,9 +140,6 @@
         <item name="windowActionBarOverlay">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
     </style>
-
-
-    <style name="VideoPlayerButton" parent="Base.Widget.AppCompat.Button.Borderless" />
 
     <!-- NIGHT STYLES -->
     <style name="Theme.DreamDroid.Night" parent="Theme.Material3.Dark.NoActionBar">

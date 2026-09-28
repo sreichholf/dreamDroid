@@ -10,6 +10,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
@@ -516,6 +517,30 @@ class ComposeTvHubChromeTest {
         }
         composeRule.onAllNodesWithTag("hub_error", useUnmergedTree = true).assertCountEquals(0)
         composeRule.onNodeWithTag("hub_timers_host", useUnmergedTree = true).assertExists()
+    }
+
+    @Test
+    fun chromeShowsHeadersAndSettingsRow() {
+        composeRule.setContent {
+            val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
+                kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
+            }
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
+                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
+                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                ),
+                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                onHeaderSelected = {},
+                settingsItems = settingsItems,
+                onSettingsClick = {}
+            )
+        }
+        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
+        composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_header_icon_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 }
 

@@ -54,8 +54,6 @@ class ChangelogMarkdownTest {
             ),
             blocks
         )
-        assertEquals("\u2022 NEW: MultiEPG", blocks[0].displayText())
-        assertEquals("\u2022 FIX: screenshots", blocks[1].displayText())
     }
 
     @Test

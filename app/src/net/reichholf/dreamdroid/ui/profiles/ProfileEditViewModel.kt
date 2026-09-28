@@ -43,14 +43,6 @@ internal fun profileEditBind(
     return ProfileEditBind.LoadLaunch
 }
 
-/** Same choice the destination used to make from the launch bundle. */
-internal fun initialProfileForEdit(action: String?, profile: Profile?): Profile {
-    if (Intent.ACTION_EDIT == action && profile != null) {
-        return profile
-    }
-    return Profile.getDefault()
-}
-
 /**
  * Working [Profile] and [ProfileEditState] for [ProfileEditDestination].
  * Delete confirmation stays in the composable.

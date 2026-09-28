@@ -3,17 +3,7 @@
 
     <string name="description">Tanım</string>
     <string name="title">Başlık</string>
-    <string name="mo">Pazartesi</string>
     <string name="app_name_release">DreamDroid</string>
-
-    <string-array name="servicelist">
-        <item>Buketler (TV)</item>
-        <item>Sağlayıcı (TV)</item>
-        <item>Tüm Kanallar (TV)</item>
-        <item>Buketler (Radyo)</item>
-        <item>Sağlayıcı (Radyo)</item>
-        <item>Tüm Kanallar (Radyo)</item>
-    </string-array>
 
     <string name="timer">Zamanlayıcı</string>
     <string name="service">Servisler</string>
@@ -37,7 +27,6 @@
     <string name="save">Kaydet</string>
     <string name="cancel">iptal</string>
     <string name="fetching_data">Veri alınıyor&#8230;</string>
-    <string name="parsing">Veri okunuyor&#8230;</string>
     <string name="get_content_error">İçerik alma hatası!</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">EPG ara</string>
@@ -55,18 +44,11 @@
     <string name="close">Kapat</string>
     <string name="minutes_short">dk.</string>
     <string name="user">Kullanıcı</string>
-    <string name="user_long">Giriş için kullanıcı ismi</string>
     <string name="pass">Şifre</string>
-    <string name="pass_long">Giriş için şifre</string>
     <string name="saving">Kaydediliyor. Lütfen bekleyin&#8230;</string>
     <string name="deleting">Siliniyor. Lütfen bekleyin&#8230;</string>
     <string name="delete_confirm">Gerçekten silinsin mi?</string>
     <string name="set_timer">Zamanı ayarla</string>
-    <string name="home">Ev</string>
-    <string name="pick_action">Eylem seçiniz</string>
-    <string name="set_time_begin">Başlama tarihi ve zamanı</string>
-    <string name="set_time_end">Bitiş tarihi ve zamanı</string>
-    <string name="apply">Uygula</string>
     <string name="reload">Tekrar yükle</string>
 
     <string-array name="weekdays_short">
@@ -102,11 +84,9 @@
     <string name="frontends">Önyüzler</string>
     <string name="nics">Ağ Arayüzleri</string>
     <string name="hdds">Sabit diskler</string>
-    <string name="not_implemented">Bu fonksiyon henüz tamamlanmadı!</string>
     <string name="current_event">Güncel olay</string>
     <string name="timeout">Zamanaşımı</string>
     <string name="seconds">Saniye</string>
-    <string name="message">Mesaj</string>
     <string name="message_text_hint">Mesajınızı giriniz</string>
     <string name="send">Gönder</string>
     <string name="type">Tür</string>
@@ -121,7 +101,6 @@
     <string name="virtual_remote">Sanal Kumanda</string>
     <string name="login">Giriş</string>
     <string name="login_enabled">Giriş Aktif</string>
-    <string name="wait_request_finished">Lütfen çalışan işlem tamamlanana kadar bekleyin!</string>
     <string name="current_service">Geçerli</string>
     <string name="provider">Sağlayıcı</string>
     <string name="now">Şimdi</string>
@@ -136,28 +115,22 @@
     <string name="confirm_delete_profile">Bu profili gerçekten silmek istiyor musun?</string>
     <string name="profile_activated">Etkinleştirilen profil</string>
     <string name="profile_not_activated">Profil etkinleştirme hatası</string>
-    <string name="profile_not_deleted">Profil silme hatası</string>
     <string name="profile_deleted">Profili sil</string>
     <string name="profile">Profil</string>
     <string name="profile_name">Profil adı</string>
     <string name="profile_updated">Güncellenen profil</string>
     <string name="profile_added">Eklenen profil</string>
     <string name="profile_add">Profil ekle</string>
-    <string name="profile_not_added">Profil eklenemedi</string>
-    <string name="profile_not_updated">Profil güncellenemedi</string>
     <string name="no_list_item">Gösterilecek öge yok&#8230;</string>
-    <string name="locations_default_fallback">Konum yükleme hatası, varsayılana geri dönülüyor:</string>
     <string name="tags">Etiketler</string>
     <string name="screenshot">Ekran görüntüsü</string>
     <string name="host_empty">Host adı boş olamaz!</string>
     <string name="standby">Bekleme</string>
-    <string name="powerup">Güç Açık</string>
     <string name="restart_gui">GUI yeniden başlat</string>
     <string name="reboot">Yeniden başlat</string>
     <string name="shutdown">Kapat</string>
     <string name="powercontrol">Güç kontrolü</string>
     <string name="choose_tags">Etiket seçimi</string>
-    <string name="choose_location">Yer seçimi</string>
     <string name="bouquet_overview">Buket Görünümü</string>
     <string name="set_default">Varsayılan olarak kaydet</string>
     <string name="default_bouquet_set_to">Varsayılan buket olarak ayarlandı: </string>
@@ -165,15 +138,11 @@
     <string name="loading">Yükleniyor&#8230;</string>
     <string name="about">Hakkında</string>
     <string name="changelog">Sürüm notları</string>
-    <string name="license">Lisans</string>
     <string name="source_code_link">Kaynak kodu mevcut: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Profili etkinleştir</string>
     <string name="connection">Bağlantı</string>
-    <string name="connection_state">Bağlantı durumu</string>
     <string name="not_available">Mevcut değil</string>
     <string name="checking">kontrol ediliyor&#8230;</string>
     <string name="error">HATA!</string>
-    <string name="check_connectivity">Bağlantıyı kontrol et</string>
     <string name="version_too_low">Sürüm &lt; 1.6.5</string>
     <string name="connection_error">Bağlantı hatası</string>
     <string name="port_out_of_range">Port 1 ile 65535 arasında değil</string>
@@ -184,7 +153,6 @@
     <string name="in_standby">Cihaz şimdi bekleme modunda</string>
     <string name="is_running">Cihaz şimdi çalışıyor</string>
     <string name="stream">Akış</string>
-    <string name="stream_host">Akış Host Adı / IP</string>
     <string name="stream_host_long">Akış için Host Adı / IP (opsiyonel)</string>
     <string name="stream_current">Şuanki Akış</string>
     <string name="similar">Benzer</string>
@@ -202,18 +170,12 @@
     </string-array>
 
     <string name="sleeptimer">Kapanma Zamanı</string>
-    <string name="current_volume">Ses şuan %s</string>
-    <string name="muted">Sessiz</string>
     <string name="enable_volume_control">Ses Kontrolünü Etkinleştir</string>
     <string name="enable_volume_control_long">H/W-Düğmelerini kullanarak doğrudan ses kontrolünü etkinleştir</string>
     <string name="download">İndir</string>
-    <string name="extras">Ekstralar</string>
-    <string name="main_menu">Ana</string>
     <string name="profiles">Profiller</string>
-    <string name="profiles_long">Bağlantı profillerini yapılandır</string>
     <string name="enable_instant_zap">Anlık zap</string>
     <string name="enable_instant_zap_long">Bir kanala kısa dokunulduğunda kanal değiştir</string>
-    <string name="wrong_activity">Yanlış Kısayol </string>
     <string name="simple_remote">Klasik Uzaktan Kumanda </string>
     <string name="screenshot_saved">Ekran görüntüsü kaydedildi \'%s\'</string>
     <string name="imdb">imdb</string>

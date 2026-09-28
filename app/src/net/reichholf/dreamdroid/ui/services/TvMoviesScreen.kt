@@ -18,30 +18,6 @@ import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
 import net.reichholf.dreamdroid.ui.nav.DestinationRail
 
 @Composable
-fun TvMoviesScreen(
-    selected: TvMoviesDestination,
-    rows: List<String>,
-    selectedRow: Int,
-    error: String?,
-    onDestinationSelected: (TvMoviesDestination) -> Unit,
-    onRowSelected: (Int) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier.fillMaxWidth()) {
-        TvMoviesHeader(
-            rows = rows,
-            selectedRow = selectedRow,
-            error = error,
-            onRowSelected = onRowSelected
-        )
-        TvMoviesDestinationBar(
-            selected = selected,
-            onDestinationSelected = onDestinationSelected
-        )
-    }
-}
-
-@Composable
 fun TvMoviesHeader(
     rows: List<String>,
     selectedRow: Int,

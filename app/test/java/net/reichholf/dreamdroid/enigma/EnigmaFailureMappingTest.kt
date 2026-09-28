@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.enigma
 import java.io.IOException
 import java.io.InterruptedIOException
 import java.net.ConnectException
-import java.net.MalformedURLException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.security.cert.CertificateException
@@ -124,7 +123,7 @@ class EnigmaFailureMappingTest {
             }
         assertNotNull(outcome.value)
         assertEquals(Python.FALSE, outcome.value!!.state)
-        assertEquals("Timer conflict", outcome.value!!.stateText)
+        assertEquals("Timer conflict", outcome.value.stateText)
         assertEquals(
             EnigmaFailure.BoxRejected("Timer conflict"),
             outcome.error!!.failure

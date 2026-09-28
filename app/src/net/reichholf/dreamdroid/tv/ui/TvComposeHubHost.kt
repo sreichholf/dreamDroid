@@ -71,7 +71,6 @@ import androidx.tv.material3.Text
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -120,12 +119,6 @@ object TvComposeHubHost {
         headerId.takeIf { it.startsWith(HEADER_MOVIE_PREFIX) }
             ?.removePrefix(HEADER_MOVIE_PREFIX)
             ?.takeIf { it.isNotEmpty() }
-
-    fun destinationForKind(kind: BrowseItem.Kind): Any? = when (kind) {
-        BrowseItem.Kind.Preferences -> TvSettings
-        BrowseItem.Kind.Profile -> TvProfiles
-        BrowseItem.Kind.Reload -> null
-    }
 
     /** Blank ref or name is omitted, matching a launch that used to send no extras. */
     fun tvMultiEpgRoute(bouquetRef: String? = null, bouquetName: String? = null): TvMultiEpg =
@@ -644,7 +637,6 @@ fun ComposeTvHubChrome(
                                 )
                             } else {
                                 HubMovieGrid(
-                                    dirname = movieDir,
                                     movies = moviesByLocation[movieDir].orEmpty(),
                                     onMovieClick = gatedMovieClick
                                 )
@@ -1119,34 +1111,9 @@ private fun HubServiceCard(
     }
 }
 
-/** One location's movie cards (Phase 3.1c-iv-e). Public for Compose tests. */
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun HubMovieRow(
-    dirname: String,
-    movies: List<Movie>,
-    onMovieClick: (Movie) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = modifier
-            .fillMaxWidth()
-            .testTag("hub_movie_row")
-    ) {
-        items(movies, key = { it.reference + "|" + it.fileName }) { movie ->
-            HubMovieCard(
-                movie = movie,
-                onClick = { onMovieClick(movie) }
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun HubMovieGrid(
-    dirname: String,
     movies: List<Movie>,
     onMovieClick: (Movie) -> Unit,
     modifier: Modifier = Modifier
@@ -1249,23 +1216,4 @@ private fun HubPlaceholderRow() {
             }
         }
     }
-}
-
-/** Kept for iv-b smoke tests / previews. */
-@Composable
-fun ComposeTvHubStub() {
-    val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
-        kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
-    }
-    ComposeTvHubChrome(
-        headers = listOf(
-            HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-            HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-            HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-        ),
-        selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
-        onHeaderSelected = {},
-        settingsItems = settingsItems,
-        onSettingsClick = {}
-    )
 }

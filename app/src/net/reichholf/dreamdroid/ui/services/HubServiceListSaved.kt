@@ -1,52 +1,25 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.lifecycle.SavedStateHandle
+
 fun hubServiceCurrentRefKey(rootRef: String): String = "hub_service_current_ref:$rootRef"
 
 fun hubServiceCurrentNameKey(rootRef: String): String = "hub_service_current_name:$rootRef"
 
 data class HubServiceListSaved(val currentRef: String? = null, val currentName: String? = null)
 
-interface HubServiceListSavedAccess {
-    fun getCurrentRef(rootRef: String): String?
+fun readHubServiceListSaved(handle: SavedStateHandle, rootRef: String): HubServiceListSaved =
+    HubServiceListSaved(
+        currentRef = handle.get<String>(hubServiceCurrentRefKey(rootRef)),
+        currentName = handle.get<String>(hubServiceCurrentNameKey(rootRef))
+    )
 
-    fun setCurrentRef(rootRef: String, currentRef: String)
-
-    fun getCurrentName(rootRef: String): String?
-
-    fun setCurrentName(rootRef: String, currentName: String)
-}
-
-class MapHubServiceListSavedAccess(private val values: MutableMap<String, Any> = mutableMapOf()) :
-    HubServiceListSavedAccess {
-    override fun getCurrentRef(rootRef: String): String? =
-        values[hubServiceCurrentRefKey(rootRef)] as? String
-
-    override fun setCurrentRef(rootRef: String, currentRef: String) {
-        values[hubServiceCurrentRefKey(rootRef)] = currentRef
-    }
-
-    override fun getCurrentName(rootRef: String): String? =
-        values[hubServiceCurrentNameKey(rootRef)] as? String
-
-    override fun setCurrentName(rootRef: String, currentName: String) {
-        values[hubServiceCurrentNameKey(rootRef)] = currentName
-    }
-}
-
-fun readHubServiceListSaved(
-    access: HubServiceListSavedAccess,
-    rootRef: String
-): HubServiceListSaved = HubServiceListSaved(
-    currentRef = access.getCurrentRef(rootRef),
-    currentName = access.getCurrentName(rootRef)
-)
-
-fun HubServiceListSaved.writeTo(access: HubServiceListSavedAccess, rootRef: String) {
+fun HubServiceListSaved.writeTo(handle: SavedStateHandle, rootRef: String) {
     if (currentRef != null) {
-        access.setCurrentRef(rootRef, currentRef)
+        handle[hubServiceCurrentRefKey(rootRef)] = currentRef
     }
     if (currentName != null) {
-        access.setCurrentName(rootRef, currentName)
+        handle[hubServiceCurrentNameKey(rootRef)] = currentName
     }
 }
 

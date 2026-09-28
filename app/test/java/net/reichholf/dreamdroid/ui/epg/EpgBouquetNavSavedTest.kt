@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.lifecycle.SavedStateHandle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -17,59 +18,58 @@ class EpgBouquetNavSavedTest {
 
     @Test
     fun absentSnapshotReadsDefaultsWithoutStoring() {
-        val values = mutableMapOf<String, Any>()
-        val access = MapEpgBouquetNavSavedAccess(values)
-        val saved = readEpgBouquetNavSaved(access)
+        val handle = SavedStateHandle()
+        val saved = readEpgBouquetNavSaved(handle)
         assertEquals("", saved.bouquetRef)
         assertEquals("", saved.bouquetName)
         assertNull(saved.timeSec)
         assertFalse(saved.waitingForPicker)
-        assertTrue(values.isEmpty())
-        assertFalse(values.containsKey(EpgBouquetNavSavedKeys.BOUQUET_REF))
-        assertFalse(values.containsKey(EpgBouquetNavSavedKeys.BOUQUET_NAME))
-        assertFalse(values.containsKey(EpgBouquetNavSavedKeys.TIME_SEC))
-        assertFalse(values.containsKey(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
+        assertTrue(handle.keys().isEmpty())
+        assertFalse(handle.contains(EpgBouquetNavSavedKeys.BOUQUET_REF))
+        assertFalse(handle.contains(EpgBouquetNavSavedKeys.BOUQUET_NAME))
+        assertFalse(handle.contains(EpgBouquetNavSavedKeys.TIME_SEC))
+        assertFalse(handle.contains(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
     }
 
     @Test
     fun roundTripKeepsTimeSecZero() {
-        val values = mutableMapOf<String, Any>()
-        val access = MapEpgBouquetNavSavedAccess(values)
+        val handle = SavedStateHandle()
         EpgBouquetNavSaved(
             bouquetRef = "1:7:1:B",
             bouquetName = "Favourites",
             timeSec = 0L,
             waitingForPicker = true
-        ).writeTo(access)
-        val saved = readEpgBouquetNavSaved(access)
+        ).writeTo(handle)
+        val saved = readEpgBouquetNavSaved(handle)
         assertEquals("1:7:1:B", saved.bouquetRef)
         assertEquals("Favourites", saved.bouquetName)
         assertEquals(0L, saved.timeSec)
         assertTrue(saved.waitingForPicker)
-        assertEquals("1:7:1:B", values[EpgBouquetNavSavedKeys.BOUQUET_REF])
-        assertEquals("Favourites", values[EpgBouquetNavSavedKeys.BOUQUET_NAME])
-        assertTrue(values.containsKey(EpgBouquetNavSavedKeys.TIME_SEC))
-        assertEquals(0L, values[EpgBouquetNavSavedKeys.TIME_SEC])
-        assertEquals(true, values[EpgBouquetNavSavedKeys.WAITING_FOR_PICKER])
+        assertEquals("1:7:1:B", handle.get<Any>(EpgBouquetNavSavedKeys.BOUQUET_REF))
+        assertEquals("Favourites", handle.get<Any>(EpgBouquetNavSavedKeys.BOUQUET_NAME))
+        assertTrue(handle.contains(EpgBouquetNavSavedKeys.TIME_SEC))
+        assertEquals(0L, handle.get<Any>(EpgBouquetNavSavedKeys.TIME_SEC))
+        assertEquals(true, handle.get<Any>(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
     }
 
     @Test
     fun nullTimeRemovesKeyAndStoresWaitingFalse() {
-        val values = mutableMapOf<String, Any>(
-            EpgBouquetNavSavedKeys.TIME_SEC to 1_700_000_000L,
-            EpgBouquetNavSavedKeys.WAITING_FOR_PICKER to true
+        val handle = SavedStateHandle(
+            mapOf(
+                EpgBouquetNavSavedKeys.TIME_SEC to 1_700_000_000L,
+                EpgBouquetNavSavedKeys.WAITING_FOR_PICKER to true
+            )
         )
-        val access = MapEpgBouquetNavSavedAccess(values)
         EpgBouquetNavSaved(
             bouquetRef = "1:7:1:B",
             bouquetName = "Favourites",
             timeSec = null,
             waitingForPicker = false
-        ).writeTo(access)
-        assertFalse(values.containsKey(EpgBouquetNavSavedKeys.TIME_SEC))
-        assertTrue(values.containsKey(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
-        assertEquals(false, values[EpgBouquetNavSavedKeys.WAITING_FOR_PICKER])
-        val saved = readEpgBouquetNavSaved(access)
+        ).writeTo(handle)
+        assertFalse(handle.contains(EpgBouquetNavSavedKeys.TIME_SEC))
+        assertTrue(handle.contains(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
+        assertEquals(false, handle.get<Any>(EpgBouquetNavSavedKeys.WAITING_FOR_PICKER))
+        val saved = readEpgBouquetNavSaved(handle)
         assertNull(saved.timeSec)
         assertFalse(saved.waitingForPicker)
         assertEquals("1:7:1:B", saved.bouquetRef)

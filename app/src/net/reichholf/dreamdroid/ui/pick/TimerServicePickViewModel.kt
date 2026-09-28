@@ -11,7 +11,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
@@ -30,7 +29,6 @@ import net.reichholf.dreamdroid.ui.zap.ZapListMapper
  */
 class TimerServicePickViewModel(application: Application, savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
-    private val savedAccess = HandleTimerServicePickSavedAccess(savedStateHandle)
     val session: TimerServicePickSession
 
     private var started = false
@@ -39,8 +37,8 @@ class TimerServicePickViewModel(application: Application, savedStateHandle: Save
         session = TimerServicePickSession(
             app = application,
             scope = viewModelScope,
-            initial = readTimerServicePickSaved(savedAccess),
-            persist = { next -> next.writeTo(savedAccess) }
+            initial = readTimerServicePickSaved(savedStateHandle),
+            persist = { next -> next.writeTo(savedStateHandle) }
         )
     }
 
@@ -262,22 +260,5 @@ class TimerServicePickSession(
         bouquetRef = next.bouquetRef
         bouquetName = next.bouquetName
         persist(next)
-    }
-}
-
-private class HandleTimerServicePickSavedAccess(private val handle: SavedStateHandle) :
-    TimerServicePickSavedAccess {
-    override fun getBouquetRef(): String? =
-        handle.get<String>(TimerServicePickSavedKeys.BOUQUET_REF)
-
-    override fun setBouquetRef(bouquetRef: String) {
-        handle[TimerServicePickSavedKeys.BOUQUET_REF] = bouquetRef
-    }
-
-    override fun getBouquetName(): String? =
-        handle.get<String>(TimerServicePickSavedKeys.BOUQUET_NAME)
-
-    override fun setBouquetName(bouquetName: String) {
-        handle[TimerServicePickSavedKeys.BOUQUET_NAME] = bouquetName
     }
 }

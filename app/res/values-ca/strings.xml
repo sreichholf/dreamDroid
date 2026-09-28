@@ -5,15 +5,6 @@
     <string name="title">Títol</string>
     <string name="app_name_release">DreamDroid</string>
 
-    <string-array name="servicelist">
-        <item>Bouquets(TV)</item>
-        <item>Proveïdor(TV)</item>
-        <item>Tots els serveis(TV)</item>
-        <item>Bouquets(Ràdio)</item>
-        <item>Proveïdor(Ràdio)</item>
-        <item>Tots els serveis(Ràdio)</item>
-    </string-array>
-
     <string name="timer">Temporitzador</string>
     <string name="service">Serveis</string>
     <string name="location">Localització</string>
@@ -35,7 +26,6 @@
     <string name="save">Guarda</string>
     <string name="cancel">Cancel·la</string>
     <string name="fetching_data">Agafant dades...</string>
-    <string name="parsing">Analitzant...</string>
     <string name="get_content_error">S\'ha produit un error rebent el contingut!</string>
     <string name="zap">Canvia</string>
     <string name="browse_epg">Veure EPG</string>
@@ -50,22 +40,14 @@
     <string name="port_stream_file">Port (pel·lícules)</string>
     <string name="settings">Configuració</string>
     <string name="host_long">Nom del host o IP</string>
-    <string name="port_long">Port d\'escolta</string>
     <string name="close">Tanca</string>
     <string name="minutes_short">min.</string>
     <string name="user">Usuari</string>
-    <string name="user_long">Usuari per accedir</string>
     <string name="pass">Contrasenya</string>
-    <string name="pass_long">Contrasenya per accedir</string>
     <string name="saving">Guardant. Espereu&#8230;</string>
     <string name="deleting">Eliminant. Espereu&#8230;</string>
     <string name="delete_confirm">Segur que ho voleu eliminar?</string>
     <string name="set_timer">Defineix temporitzador</string>
-    <string name="home">Inici</string>
-    <string name="pick_action">Selecciona una acció</string>
-    <string name="set_time_begin">Data i hora d\'inici</string>
-    <string name="set_time_end">Data i hora final</string>
-    <string name="apply">Aplica</string>
     <string name="reload">Actualitza</string>
 
     <string-array name="weekdays_short">
@@ -102,11 +84,9 @@
     <string name="nics">Adaptadors de xarxa</string>
     <string name="hdds">Discs durs</string>
     <string name="hdd_capacity">%1$s (%2$s lliure)</string>
-    <string name="not_implemented">Aquesta funció encara no esta implementada</string>
     <string name="current_event">Esdeveniment actual</string>
     <string name="timeout">S\'ha exhaurit el temps d\'espera</string>
     <string name="seconds">segons</string>
-    <string name="message">Missatge</string>
     <string name="message_text_hint">Introdueix el teu missatge de text</string>
     <string name="send">Envia</string>
     <string name="type">Tipus</string>
@@ -121,7 +101,6 @@
     <string name="virtual_remote">Control remot virtual</string>
     <string name="login">Inici de sessió</string>
     <string name="login_enabled">Habilitar inici de sessió</string>
-    <string name="wait_request_finished">Espereu que finalitzi la petició en curs!</string>
     <string name="current_service">Actual</string>
     <string name="provider">Proveïdor</string>
     <string name="now">Ara</string>
@@ -136,28 +115,22 @@
     <string name="confirm_delete_profile">Segur que voleu eliminar aquest perfil ?</string>
     <string name="profile_activated">Perfil activat</string>
     <string name="profile_not_activated">Error activant el perfil</string>
-    <string name="profile_not_deleted">Error eliminant el perfil</string>
     <string name="profile_deleted">Perfil eliminat</string>
     <string name="profile">Perfil</string>
     <string name="profile_name">Nom del perfil</string>
     <string name="profile_updated">Perfil actualizat</string>
     <string name="profile_added">Perfil afegit</string>
     <string name="profile_add">Afegeix perfil</string>
-    <string name="profile_not_added">No s\'ha pogut afegir el perfil</string>
-    <string name="profile_not_updated">No s\'ha pogut actualizar el perfil</string>
     <string name="no_list_item">No hi ha elements per mostrar&#8230;</string>
-    <string name="locations_default_fallback">Error carregant localizacions, tornant a inici:</string>
     <string name="tags">Etiquetes</string>
     <string name="screenshot">Captura de pantalla</string>
     <string name="host_empty">El nom del host no pot estar buit!</string>
     <string name="standby">En espera</string>
-    <string name="powerup">Engegar</string>
     <string name="restart_gui">Reinicia GUI</string>
     <string name="reboot">Reinicia</string>
     <string name="shutdown">Apaga</string>
     <string name="powercontrol">Tauler de control</string>
     <string name="choose_tags">Escull etiquetes</string>
-    <string name="choose_location">Escull localització</string>
     <string name="bouquet_overview">Veure de bouquets</string>
     <string name="set_default">Defineix per defecte</string>
     <string name="default_bouquet_set_to">El bouquet per defecte ara és:</string>
@@ -166,13 +139,10 @@
     <string name="about">Quant a</string>
     <string name="changelog">Canvis</string>
     <string name="source_code_link">Codi font disponible a: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Perfil</string>
     <string name="connection">Connexió</string>
-    <string name="connection_state">Estat</string>
     <string name="not_available">No disponible</string>
     <string name="checking">Comprovant&#8230;</string>
     <string name="error">ERROR!</string>
-    <string name="check_connectivity">Comprova connectivitat</string>
     <string name="version_too_low">Versió &lt; 1.6.5</string>
     <string name="connection_error">Error de connexió</string>
     <string name="port_out_of_range">El port ha de ser entre 1 i 65535</string>
@@ -197,24 +167,16 @@
     </string-array>
 
     <string name="sleeptimer">Temporitzador d\'apagat</string>
-    <string name="current_volume">Volum al %s</string>
-    <string name="muted">Silenciat</string>
     <string name="enable_volume_control">Activa control de volum</string>
     <string name="enable_volume_control_long">Activa control directe de volum utilitzant botons físics</string>
     <string name="download">Descarrega</string>
-    <string name="extras">Extres</string>
-    <string name="main_menu">Principal</string>
     <string name="profiles">Perfils</string>
-    <string name="profiles_long">Configura els perfils de connexió</string>
     <string name="enable_instant_zap">Canvi ràpid</string>
     <string name="enable_instant_zap_long">Canvi ràpid al prèmer un servei</string>
-    <string name="wrong_activity">Crida errònia! Refeu els accessos directes creats per dreamDroid</string>
     <string name="simple_remote">Vista simple de comandament</string>
     <string name="screenshot_saved">Captura de pantalla guardada a \'%s\'</string>
     <string name="missing_stream_player">No hi ha cap reproductor per streams de vídeo instal·lat al dispositiu!</string>
     <string name="edit_profile">Edita el perfil</string>
-    <string name="force_tablet_layout_long">Força vista optimitzada per tauletes</string>
-    <string name="force_tablet_layout">Força vista per tauletes</string>
     <string name="mobile_imdb">Utilitza la versió per mòbils de imdb.com</string>
     <string name="mobile_imdb_long">Utilitza m.imdb.com en comptes de www.imdb.com</string>
     <string name="searching">Cercant&#8230;</string>
@@ -225,8 +187,6 @@
     <string name="enabled">Actiu</string>
     <string name="signal_meter">Mesurador de senyal</string>
     <string name="accoustic_feedback">Senyal acústic</string>
-    <string name="use_light_theme_long">Utilitza un tema clar en compte del tema fosc per defecte</string>
-    <string name="use_light_theme">Utilitza un tema clar</string>
     <string name="leave_confirm">Sortir?</string>
     <string name="leave_confirm_long">Segur que voleu tancar dreamDroid?</string>
     <string name="sent_as">Enviat com a %s</string>
@@ -235,9 +195,6 @@
     <string name="no_profile_available">No s\'ha trobat cap perfil de connexió! Configureu com a mínim un perfil des de l\'aplicació principal.</string>
     <string name="confirm_app_close">Demana confirmació abans de tancar l\'app</string>
     <string name="confirm_app_close_long">Demana confirmació abans de tancar l\'app quan s\'apreti &quot;enrera&quot;</string>
-    <string name="login_movies">Entrada (Pel·lícules)</string>
-    <string name="ssl_movies">https (Pel·lícules)</string>
-    <string name="login_live">Entrada (Directe)</string>
     <string name="appearance">Aparença</string>
     <string name="usability">Usabilitat</string>
     <string name="use_picons">Utilitza Picons</string>
@@ -246,11 +203,9 @@
     <string name="sync_picons_path_long">Directori on hi ha els Picons a la Dreambox</string>
     <string name="connecting">Connectant</string>
     <string name="connected">Connectat</string>
-    <string name="logged_in">Sessió iniciada</string>
     <string name="getting_list_of_files">Rebent llista de fitxers</string>
     <string name="picon_sync_finished">S\'han descarregat %s picons</string>
     <string name="drawer_open">Obre el calaix de navegació</string>
-    <string name="drawer_close">Tanca el calaix de navegació</string>
     <string name="enable_animations_long">Activa animacions de vista adicionals</string>
     <string name="enable_animations">Activa animacions</string>
     <string name="use_name_as_picon_filename_long">Utilitza el nom del servei com a nom de fitxer per als picons</string>
@@ -260,11 +215,6 @@
     <string name="dump_xml">Guarda el contingut xml</string>
     <string name="dump_xml_long">Guarda el contingut xml a la memòria externa</string>
     <string name="enable">Activa</string>
-    <string name="disable">Desactiva</string>
     <string name="epg_sync">Sincronitzant EPG</string>
-    <string name="epg_sync_finished">l\'EPG s\'ha sincronitzat</string>
     <string name="reset_default">Reiniciar valors per defecte</string>
-    <string name="donate_sum">Donar %s</string>
-    <string name="donate">Fer una donació </string>
-    <string name="donation_thanks">Gràcies per la donació! </string>
 </resources>

@@ -36,7 +36,6 @@ object Remote {
     const val KEY_BLUE: Int = 401
     const val KEY_REWIND: Int = 165
     const val KEY_PLAY: Int = 207
-    const val KEY_PAUSE: Int = 119
     const val KEY_PLAYPAUSE: Int = 164
     const val KEY_STOP: Int = 128
     const val KEY_FORWARD: Int = 163

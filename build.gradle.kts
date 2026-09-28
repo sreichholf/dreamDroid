@@ -21,6 +21,8 @@ spotless {
         // when KSP writes there earlier in the same build, even with the files excluded.
         target("app/src/**/*.kt", "app/test/**/*.kt", "app/androidTest/**/*.kt")
         ktlint(libs.versions.ktlint.get())
+            // Off by default in ktlint 1.x; dead imports otherwise pile up.
+            .editorConfigOverride(mapOf("ktlint_standard_no-unused-imports" to "enabled"))
         trimTrailingWhitespace()
         endWithNewline()
     }

@@ -53,7 +53,6 @@ compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
-glance-material3 = { module = "androidx.glance:glance-material3", version.ref = "glance" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 jmdns = { module = "org.jmdns:jmdns", version.ref = "jmdns" }
 junit-bom = { module = "org.junit:junit-bom", version.ref = "junitBom" }

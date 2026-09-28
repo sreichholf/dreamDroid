@@ -3,20 +3,8 @@
 
     <string name="description">Description</string>
     <string name="title">Title</string>
-    <string name="mo">Mo</string>
     <string name="app_name_release">DreamDroid</string>
-    <string name="app_name_tv_release">dreamDroidTV</string>
     <string name="app_name_debug">dreamDroid DBG</string>
-    <string name="app_name_tv_debug">dreamDroidTV DBG</string>
-
-    <string-array name="servicelist">
-        <item>Bouquets (TV)</item>
-        <item>Provider (TV)</item>
-        <item>All Services (TV)</item>
-        <item>Bouquets (Radio)</item>
-        <item>Provider (Radio)</item>
-        <item>All (Radio)</item>
-    </string-array>
 
     <string-array name="servicelist_dedicated">
         <item>Bouquets</item>
@@ -47,7 +35,6 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="fetching_data">Fetching data&#8230;</string>
-    <string name="parsing">Parsing&#8230;</string>
     <string name="get_content_error">Error getting content!</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Browse EPG</string>
@@ -60,8 +47,6 @@
     <string name="epg_at_this_time">At this time</string>
     <string name="multiepg">MultiEPG</string>
     <string name="multiepg_now">Now</string>
-    <string name="multiepg_prev_day">−1d</string>
-    <string name="multiepg_next_day">+1d</string>
     <string name="previous_day">Previous day</string>
     <string name="next_day">Next day</string>
     <string name="multiepg_today">Today</string>
@@ -83,24 +68,16 @@
     <string name="port_stream_file">Port (Movies)</string>
     <string name="settings">Settings</string>
     <string name="host_long">Hostname or IP</string>
-    <string name="port_long">Listening Port</string>
     <string name="close">Close</string>
     <string name="minutes_short">min.</string>
     <string name="user">User</string>
-    <string name="user_long">Username for login</string>
     <string name="pass">Password</string>
-    <string name="pass_long">Password for the login</string>
     <string name="show_password">Show password</string>
     <string name="hide_password">Hide password</string>
     <string name="saving">Saving. Please wait&#8230;</string>
     <string name="deleting">Deleting. Please wait&#8230;</string>
     <string name="delete_confirm">Really delete?</string>
     <string name="set_timer">Set Timer</string>
-    <string name="home">Home</string>
-    <string name="pick_action">Pick an action</string>
-    <string name="set_time_begin">Start date and time</string>
-    <string name="set_time_end">End date and time</string>
-    <string name="apply">Apply</string>
     <string name="reload">Reload</string>
     <string name="recheck">Recheck</string>
 
@@ -138,11 +115,9 @@
     <string name="nics">Network Interfaces</string>
     <string name="hdds">Hard disks</string>
     <string name="hdd_capacity">%1$s (%2$s free)</string>
-    <string name="not_implemented">This function is not implemented yet!</string>
     <string name="current_event">Current event</string>
     <string name="timeout">Timeout</string>
     <string name="seconds">seconds</string>
-    <string name="message">Message</string>
     <string name="message_text_hint">Enter your message text</string>
     <string name="send">Send</string>
     <string name="type">Type</string>
@@ -158,7 +133,6 @@
     <string name="login">Login</string>
     <string name="defaultOnNoWifi">Is default profile on no Wifi</string>
     <string name="login_enabled">Enable Login</string>
-    <string name="wait_request_finished">Please wait until the running request has finished!</string>
     <string name="current_service">Now</string>
     <string name="provider">Provider</string>
     <string name="now">Now</string>
@@ -175,7 +149,6 @@
     <string name="confirm_delete_profile">Do you really want to delete this profile?</string>
     <string name="profile_activated">Activated profile</string>
     <string name="profile_not_activated">Error activating profile</string>
-    <string name="profile_not_deleted">Error deleting profile</string>
     <string name="profile_deleted">Deleted profile</string>
     <string name="profile">Profile</string>
     <string name="auto_switch_profile_wifi_based">Auto Profile switch</string>
@@ -189,21 +162,16 @@
     <string name="profile_updated">Updated profile</string>
     <string name="profile_added">Added profile</string>
     <string name="profile_add">Add Profile</string>
-    <string name="profile_not_added">Could not add profile</string>
-    <string name="profile_not_updated">Could not update profile</string>
     <string name="no_list_item">No items to display&#8230;</string>
-    <string name="locations_default_fallback">Error loading locations, falling back to default:</string>
     <string name="tags">Tags</string>
     <string name="screenshot">Screenshot</string>
     <string name="host_empty">The host name cannot be empty!</string>
     <string name="standby">Standby</string>
-    <string name="powerup">Power Up</string>
     <string name="restart_gui">Restart GUI</string>
     <string name="reboot">Reboot</string>
     <string name="shutdown">Shutdown</string>
     <string name="powercontrol">Power Control</string>
     <string name="choose_tags">Choose tags</string>
-    <string name="choose_location">Choose location</string>
     <string name="bouquet_overview">Bouquet overview</string>
     <string name="set_default">Set as default</string>
     <string name="default_bouquet_set_to">Default bouquet has been set to: </string>
@@ -213,9 +181,7 @@
     <string name="changelog">Changelog</string>
     <string name="license_gplv3">LICENSE:\nDreamDroid is free Software!\nLicensed under the GNU General Public License 3 https://www.gnu.org/licenses/gpl-3.0.html</string>
     <string name="source_code_link">Source code available at: http://github.com/sreichholf/dreamDroid</string>
-    <string name="active_profile">Profile</string>
     <string name="connection">Connection</string>
-    <string name="connection_state">State</string>
     <string name="not_available">Not available</string>
     <string name="checking">checking&#8230;</string>
     <string name="checking_connection">Checking connection&#8230;</string>
@@ -225,7 +191,6 @@
     <string name="session_needs_receiver">Needs the receiver</string>
     <string name="session_needs_receiver_long">Connect to the receiver to use this.</string>
     <string name="error">ERROR!</string>
-    <string name="check_connectivity">Check connectivity</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>
     <string name="connection_error">Connection error</string>
     <string name="port_out_of_range">Port not between 1 and 65535</string>
@@ -236,7 +201,6 @@
     <string name="in_standby">Device is now in Standby-Mode</string>
     <string name="is_running">Device is now running</string>
     <string name="stream">Stream</string>
-    <string name="stream_host">Streaming Hostname/IP</string>
     <string name="stream_host_long">Host/IP for streaming (optional)</string>
     <string name="stream_current">Stream current</string>
     <string name="similar">Similar</string>
@@ -254,27 +218,19 @@
     </string-array>
 
     <string name="sleeptimer">Sleep Timer</string>
-    <string name="current_volume">Volume is now %s</string>
-    <string name="muted">Muted</string>
     <string name="enable_volume_control">Enable Volume Control</string>
     <string name="enable_volume_control_long">Enable direct Volume Control using H/W-Buttons</string>
     <string name="download">Download</string>
-    <string name="extras">Extras</string>
-    <string name="main_menu">Main</string>
     <string name="profiles">Profiles</string>
-    <string name="profiles_long">Configure connection profiles</string>
     <string name="enable_instant_zap">Instant zap</string>
     <string name="enable_instant_zap_long">Instant zap when short-tapping a service</string>
     <string name="show_now_playing_strip">Now-playing strip</string>
     <string name="show_now_playing_strip_long">Show what\'s currently on the box on TV &amp; Movies</string>
-    <string name="wrong_activity">Wrong Activity called! Please recreate any shortcuts you created for dreamDroid!</string>
     <string name="simple_remote">Simple remote layout</string>
     <string name="screenshot_saved">Screenshot saved to \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
     <string name="edit_profile">Edit Profile</string>
-    <string name="force_tablet_layout_long">Force Tablet-Optimized Layout</string>
-    <string name="force_tablet_layout">Force Tablet Layout</string>
     <string name="mobile_imdb">Use mobile version of imdb.com</string>
     <string name="mobile_imdb_long">Use m.imdb.com instead of www.imdb.com</string>
     <string name="searching">Searching&#8230;</string>
@@ -286,8 +242,6 @@
     <string name="enabled">Enabled</string>
     <string name="signal_meter">Signal Meter</string>
     <string name="accoustic_feedback">Acoustic Feedback</string>
-    <string name="use_light_theme_long">Use a light theme instead of the dark default theme</string>
-    <string name="use_light_theme">Use a light theme</string>
     <string name="leave_confirm">Really leave?</string>
     <string name="leave_confirm_long">Do you really want to leave dreamDroid?</string>
     <string name="sent_as">Sent as %s</string>
@@ -299,9 +253,6 @@
     <string name="confirm_app_close_long">Ask for confirmation before the app is being closed when pressing &quot;back&quot;</string>
     <string name="play_button_as_play_pause">Use Play button as Play/Pause button</string>
     <string name="play_button_as_play_pause_long">Use Play button as Play/Pause button in widget and in app remote</string>
-    <string name="login_movies">Login (Movies)</string>
-    <string name="ssl_movies">https (Movies)</string>
-    <string name="login_live">Login (live)</string>
     <string name="appearance">Appearance</string>
     <string name="usability">Useability</string>
     <string name="start_screen">Start screen</string>
@@ -314,11 +265,9 @@
     <string name="sync_picons_path_long">Path where the Picons on your dreambox reside</string>
     <string name="connecting">Connecting</string>
     <string name="connected">Connected</string>
-    <string name="logged_in">Logged in</string>
     <string name="getting_list_of_files">Getting list of files</string>
     <string name="picon_sync_finished">Successfully downloaded %s picons</string>
     <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
     <string name="enable_animations_long">Enable additional view animations</string>
     <string name="enable_animations">Enable animations</string>
     <string name="use_name_as_picon_filename_long">Use service name as file name for picons</string>
@@ -328,22 +277,14 @@
     <string name="dump_xml">Dump xml content</string>
     <string name="dump_xml_long">Dump xml content to the app cache</string>
     <string name="enable">Enable</string>
-    <string name="disable">Disable</string>
     <string name="epg_sync">Synchronizing EPG</string>
-    <string name="epg_sync_finished">EPG has been synchronized</string>
 
     <string name="reset_default">Reset default</string>
     <string name="max_grid_cols">Max. servicelist columns</string>
     <string name="max_grid_cols_long">Maximum number of columns in servicelist</string>
     <string name="default_to_full_vrm_long">Use the simple virtual remote layout as default</string>
     <string name="default_to_full_vrm">Simple remote as default</string>
-    <string name="donate_sum">Donate %s</string>
-    <string name="donate">Donate</string>
-    <string name="donation_thanks">Thank you very much for your donation!</string>
-    <string name="donation_error">Your donation failed! Sorry for that! (%s)</string>
     <string name="share">Share</string>
-    <string name="restart">Restart?</string>
-    <string name="theme_change_restart">To apply the changed theme a restart is required. Restart dreamDroid now?</string>
     <string name="host_not_found">Host not found</string>
     <string name="auth_error">Authorization failed (Check user/password?)</string>
     <string name="developer_settings_enable">Enable developer settings</string>
@@ -359,17 +300,13 @@
     <string name="audio_bitrate">Audio Bitrate</string>
     <string name="video_bitrate">Video Bitrate</string>
     <string name="encoder_port">Stream port</string>
-    <string name="settings_and_about"><![CDATA[Settings & About]]></string>
     <string name="tools">Tools</string>
-    <string name="control">Control</string>
     <string name="picon_sync_started">Picon synchronization started. See notifaction area for details.</string>
     <string name="picon_sync_running">There is still another picon synchronization running!</string>
     <string name="streaming">Streaming</string>
     <string name="integrated_video_player">Integrated video player</string>
     <string name="integrated_video_player_long">Use integrated videoplayer when playing streams</string>
     <string name="playback_failed">Playback failed!</string>
-    <string name="previous_lower">previous</string>
-    <string name="next_lower">next</string>
     <string-array name="theme_option_entries">
         <item>Day</item>
         <item>Night</item>
@@ -386,14 +323,10 @@
     <string name="use_hw_accel">Accelerated decoding</string>
     <string name="use_hw_accel_long">Use Hardware acceleration for video decoding (%s)</string>
     <string name="video_player">Video Player</string>
-    <string name="location_rationale_title">Location required</string>
-    <string name="location_rationale">DreamDroid requires the coarse location for automatic day/night Theme switching.\nThe location is not part of any logging, nor will it be used for anything else but theme switching!</string>
     <string name="video_enable_gestures_long">Enable gestures for volume and brightness control</string>
     <string name="video_enable_gestures">Enable gestures</string>
     <string name="online_picons">Use "online" picons</string>
     <string name="online_picons_long">Don\'t use synced picons but load them directly via http(s). May cause consinderable traffic!</string>
-    <string name="audio_track">Audio Track</string>
-    <string name="subtitle">Subtitle</string>
     <string name="audio_tracks">Audio Tracks</string>
     <string name="subtitles">Subtitles</string>
     <string name="no_tracks">No tracks available!</string>
@@ -413,19 +346,14 @@
     <string name="backup_include_passwords">Include receiver passwords</string>
     <string name="backup_passwords_confirm_title">Backup contains passwords</string>
     <string name="backup_passwords_confirm">This file contains receiver passwords. Anyone who can open it can sign in to your receiver.</string>
-    <string name="backup_export_profiles">Export profiles</string>
     <string name="backup_export_successful">Export successful</string>
     <string name="backup_import_successful">Import successful</string>
     <string name="backup_export_missing_permission">Please grant "Storage" permission to use this feature!</string>
     <string name="licenses">Licenses</string>
-    <string name="license">Lizenz</string>
-    <string name="encoder">Encoder</string>
-    <string name="direct_streaming">Direct Streaming</string>
     <string name="backup_import_error">Backup import failed!</string>
     <string name="tv">TV</string>
     <string name="radio">Radio</string>
     <string name="live_movie"><![CDATA[TV & Movies]]></string>
-    <string name="detail">Detail</string>
     <string name="begin_date">Begin date</string>
     <string name="end_date">End date</string>
     <string name="encoder_user">Encoder user</string>

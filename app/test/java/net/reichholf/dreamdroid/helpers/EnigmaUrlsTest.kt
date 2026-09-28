@@ -35,18 +35,6 @@ class EnigmaUrlsTest {
     }
 
     @Test
-    fun authed_embedsUserInfoWhenLoginEnabled() {
-        val url = EnigmaUrls.authed(httpProfile(login = true), "/web/about")
-        assertEquals("http://root:secret@box.local:80/web/about?", url)
-    }
-
-    @Test
-    fun authed_omitsUserInfoWhenLoginDisabled() {
-        val url = EnigmaUrls.authed(httpProfile(login = false), "/web/about")
-        assertEquals("http://box.local:80/web/about?", url)
-    }
-
-    @Test
     fun stream_usesTheProfileHost() {
         val profile = streamProfile(streamHost = "dreamdroid.org")
         val url = EnigmaUrls.serviceStream(profile, "1:0:1")

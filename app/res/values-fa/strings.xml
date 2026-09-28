@@ -3,17 +3,7 @@
 
     <string name="description">توضیحات</string>
     <string name="title">عنوان</string>
-    <string name="mo">Mo</string>
     <string name="app_name_release">PEDroid</string>
-
-    <string-array name="servicelist">
-        <item>لیست (تلوزیون)</item>
-        <item>ارائه دهنده (تلوزیون)</item>
-        <item>همه کانال ها (تلوزیون)</item>
-        <item>لیست (رادیو)</item>
-        <item>ارائه دهنده (رادیو)</item>
-        <item>همه (رادیو)</item>
-    </string-array>
 
     <string name="timer">زمان</string>
     <string name="service">کانال</string>
@@ -37,7 +27,6 @@
     <string name="save">ذخیره</string>
     <string name="cancel">لغو</string>
     <string name="fetching_data">در حال گرفتن اطلاعات &#8230;</string>
-    <string name="parsing">در حال تجزیه و تحلیل &#8230;</string>
     <string name="get_content_error">خطا در هنگام گرفتن محتوا !</string>
     <string name="zap">تعویض</string>
     <string name="browse_epg">مرور EPG</string>
@@ -54,18 +43,11 @@
     <string name="close">بستن</string>
     <string name="minutes_short">دقیقه</string>
     <string name="user">کاربر</string>
-    <string name="user_long">نام کاربری برای ورود</string>
     <string name="pass">رمز عبور</string>
-    <string name="pass_long">رمز عبور برای ورود</string>
     <string name="saving">در حال ذخیره کردن - لطفا صبر کنید &#8230;</string>
     <string name="deleting">در حال حذف کردن - لطفا صبر کنید &#8230;</string>
     <string name="delete_confirm">واقعا حذف شود ؟</string>
     <string name="set_timer">تنطیم کردن زمان</string>
-    <string name="home">خانه</string>
-    <string name="pick_action">انتخاب یک اقدام</string>
-    <string name="set_time_begin">شروع تاریخ و زمان</string>
-    <string name="set_time_end">پایان تاریخ و زمان</string>
-    <string name="apply">بکار گرفتن</string>
     <string name="reload">بازنگری</string>
 
     <string-array name="weekdays_short">
@@ -101,10 +83,8 @@
     <string name="frontends">تیونر</string>
     <string name="nics">رابط شبکه</string>
     <string name="hdds">هارد</string>
-    <string name="not_implemented">این قابلیت هنور اضافه نشده است !</string>
     <string name="current_event">رخداد فعلی</string>
     <string name="timeout">وقفه</string>
-    <string name="message">پیام</string>
     <string name="message_text_hint">پیام خود را بنویسید</string>
     <string name="send">ارسال</string>
     <string name="type">نوع</string>
@@ -118,7 +98,6 @@
 
     <string name="virtual_remote">ریموت کنترل مجازی</string>
     <string name="login_enabled">فعال سازی ورود به سیستم</string>
-    <string name="wait_request_finished">لطفا تا زمانی که درخواست  ارسالی در حال اجرا است صبر کنید !</string>
     <string name="current_service">کنونی</string>
     <string name="provider">تهیه کننده</string>
     <string name="now">اکنون</string>
@@ -133,41 +112,31 @@
     <string name="confirm_delete_profile">آیا واقعا می خواهید نمایه را حذف کنید ؟</string>
     <string name="profile_activated">نمایه فعال شد</string>
     <string name="profile_not_activated">خطا در فعال سازی نمایه</string>
-    <string name="profile_not_deleted">خطا در حذف نمایه</string>
     <string name="profile_deleted">نمایه حذف شد</string>
     <string name="profile">نمایه</string>
     <string name="profile_updated">نمایه به روز رسانی شد</string>
     <string name="profile_added">نمایه اضافه شد</string>
     <string name="profile_add">افزودن نمایه</string>
-    <string name="profile_not_added">نمایه افزوده نشد</string>
-    <string name="profile_not_updated">نمایه قابل به روز رسانی نیست</string>
     <string name="no_list_item">هیج جیزی برای نمایش وجود ندارد &#8230;</string>
-    <string name="locations_default_fallback">خطا در بارگذاری مکان ، برگشت به حالت پیش فرض :</string>
     <string name="tags">برچسب</string>
     <string name="screenshot">تصویر</string>
     <string name="host_empty">نام هاست نمی تواند خالی باشد !</string>
     <string name="standby">خاموشی موقت</string>
-    <string name="powerup">روشن کردن</string>
     <string name="restart_gui">راه اندازی مجدد GUI</string>
     <string name="reboot">راه اندازی مجدد</string>
     <string name="shutdown">خاموشی کامل</string>
     <string name="powercontrol">کنترل برق</string>
     <string name="choose_tags">انتخاب برچسب</string>
-    <string name="choose_location">انتخاب مکان</string>
     <string name="bouquet_overview">مرور لیست</string>
     <string name="set_default">انتخاب به عنوان پیش فرض :</string>
     <string name="default_bouquet_set_to">لیست پیش فرض تنظیم شد به :</string>
     <string name="default_bouquet_not_set">لیست پیش فرض قابل تنظیم نیست !</string>
     <string name="loading">در حال بارگذاری &#8230;</string>
     <string name="about">درباره</string>
-    <string name="license">LICENSE:\nLicensed under the Create-Commons Attribution-Noncommercial-Share Alike 3.0 Unported http://creativecommons.org/licenses/by-nc-sa/3.0</string>
     <string name="source_code_link"> http://github.com/sreichholf/dreamDroid سورس کد در این آدرس موجود است : </string>
-    <string name="active_profile">نمایه</string>
-    <string name="connection_state">حالت</string>
     <string name="not_available">در دسترس نیست</string>
     <string name="checking">در حال بررسی &#8230;</string>
     <string name="error">خطا !</string>
-    <string name="check_connectivity">بررسی اتصال</string>
     <string name="version_too_low">نسخه 1.6.5</string>
     <string name="connection_error">خطای ارتباط</string>
     <string name="port_out_of_range">پورت بین ۱ تا ۶۵۵۳۵ نیست</string>
@@ -178,7 +147,6 @@
     <string name="in_standby">دستگاه در حالت خاموشی موقت است</string>
     <string name="is_running">دستگاه در حال کار است</string>
     <string name="stream">جریان</string>
-    <string name="stream_host">هاست/آیپی جریان</string>
     <string name="stream_host_long">هاست/آیپی برای جریان (اختیاری)</string>
     <string name="stream_current">جریان کنونی</string>
     <string name="similar">مشابه</string>
@@ -196,24 +164,17 @@
     </string-array>
 
     <string name="sleeptimer">زمان خواب</string>
-    <string name="current_volume">حجم صدا اکنون %s است</string>
-    <string name="muted">بی صدا</string>
     <string name="enable_volume_control">فعال کردن کنترل صدا</string>
     <string name="enable_volume_control_long">فعال کردن کنترل مستقیم صدا توسط دکمه های سخت افزاری</string>
     <string name="download">دانلود</string>
-    <string name="extras">افزودنی ها</string>
-    <string name="main_menu">اصلی</string>
     <string name="profiles">نمایه</string>
     <string name="enable_instant_zap">تعویض فوری</string>
     <string name="enable_instant_zap_long">تعویض فوری هنگام ضربه زدن کوتاه یک کانال</string>
-    <string name="wrong_activity">فعالیت غلط فراخوانی شد ! لطفا هر میانبری برای PEDroid ساخته اید را دوباره ایجاد کنید !</string>
     <string name="simple_remote">طرح بندی ساده ریموت کنترل</string>
     <string name="screenshot_saved">تصویر در \'%s\' ذخیره شد</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">هیچ پخش کننده ای برای نمایش جریان های تصویری روی دستگاه نصب نشده است</string>
     <string name="edit_profile">ویرایش نمایه</string>
-    <string name="force_tablet_layout_long">اجبار برای نمایش طرح بندی تبلت بهینه شده</string>
-    <string name="force_tablet_layout">اجبار برای نمایش طرح بندی تبلت </string>
     <string name="mobile_imdb">استفاده از حالت موبایل سایت imdb.com</string>
     <string name="mobile_imdb_long">استفاده از m.imdb.com بجای www.imdb.com</string>
     <string name="searching">در حال جستجوی &#8230;</string>
@@ -225,8 +186,6 @@
     <string name="enabled">فعال شد</string>
     <string name="signal_meter">اندازه گیری سیگنال</string>
     <string name="accoustic_feedback">بازخورد صوتی</string>
-    <string name="use_light_theme_long">استفاده از ظاهر روشن بجای ظاهر تاریک پیش فرض</string>
-    <string name="use_light_theme">استفاده از ظاهر روشن</string>
     <string name="leave_confirm">خروج ؟</string>
     <string name="leave_confirm_long">آیا واقعا میخواهید از PEDroid خارج شوید ؟</string>
     <string name="sent_as">ارسال شده به عنوان %s</string>
@@ -235,9 +194,6 @@
     <string name="no_profile_available">هیچ نمایه ای برای اتصال یافت نشد ! لطفا حداقل یک نمایه توسط صفحه اصلی برنامه پیکربندی کنید</string>
     <string name="confirm_app_close">پرسش برای تایید قبل از خروج از برنامه</string>
     <string name="confirm_app_close_long">پرسش برای تایید قبل از بسته شدن برنامه هنگام فشار دادن &quot;back&quot;</string>
-    <string name="login_movies">ورود (فیلم)</string>
-    <string name="ssl_movies">https (فیلم)</string>
-    <string name="login_live">ورود (زنده)</string>
     <string name="appearance">ظاهر</string>
     <string name="usability">قابلیت استفاده</string>
     <string name="use_picons">استفاده از پیکون ها</string>
@@ -248,7 +204,6 @@
     <string name="sync_picons_path_long">مسیر نگهداری پیکون ها در دستگاه شما</string>
     <string name="connecting">در حال اتصال</string>
     <string name="connected">متصل شده</string>
-    <string name="logged_in">وارد شده</string>
     <string name="getting_list_of_files">در حال دریافت لیست فایل ها</string>
     <string name="picon_sync_finished">پیکون های %s با موفقیت دانلود شد</string>
     <string name="enable_animations_long">فعال کردن تصاویر متحرک اضافه</string>

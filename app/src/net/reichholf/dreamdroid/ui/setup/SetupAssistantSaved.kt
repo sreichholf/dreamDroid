@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import androidx.lifecycle.SavedStateHandle
+
 object SetupAssistantSavedKeys {
     const val STEP = "setup_step"
     const val HOST = "setup_host"
@@ -45,26 +47,12 @@ data class SetupDraft(
     )
 }
 
-interface SetupAssistantSavedAccess {
-    operator fun get(key: String): Any?
-    operator fun set(key: String, value: Any)
-}
-
-class MapSetupAssistantSavedAccess(private val values: MutableMap<String, Any> = mutableMapOf()) :
-    SetupAssistantSavedAccess {
-    override fun get(key: String): Any? = values[key]
-
-    override fun set(key: String, value: Any) {
-        values[key] = value
-    }
-}
-
 /** Absent or unknown keys read as the fresh-wizard default. Reading does not write. */
-fun readSetupDraft(access: SetupAssistantSavedAccess): SetupDraft {
+fun readSetupDraft(handle: SavedStateHandle): SetupDraft {
     val defaults = SetupDraft()
-    fun string(key: String, default: String) = access[key] as? String ?: default
-    fun flag(key: String, default: Boolean) = access[key] as? Boolean ?: default
-    val stepName = access[SetupAssistantSavedKeys.STEP] as? String
+    fun string(key: String, default: String) = handle.get<Any>(key) as? String ?: default
+    fun flag(key: String, default: Boolean) = handle.get<Any>(key) as? Boolean ?: default
+    val stepName = handle.get<Any>(SetupAssistantSavedKeys.STEP) as? String
     return SetupDraft(
         step = SetupStep.entries.firstOrNull { it.name == stepName } ?: defaults.step,
         host = string(SetupAssistantSavedKeys.HOST, defaults.host),
@@ -81,17 +69,17 @@ fun readSetupDraft(access: SetupAssistantSavedAccess): SetupDraft {
     )
 }
 
-fun SetupDraft.writeTo(access: SetupAssistantSavedAccess) {
-    access[SetupAssistantSavedKeys.STEP] = step.name
-    access[SetupAssistantSavedKeys.HOST] = host
-    access[SetupAssistantSavedKeys.USE_HTTPS] = useHttps
-    access[SetupAssistantSavedKeys.PORT_TEXT] = portText
-    access[SetupAssistantSavedKeys.LOGIN] = login
-    access[SetupAssistantSavedKeys.USER] = user
-    access[SetupAssistantSavedKeys.PASS] = pass
-    access[SetupAssistantSavedKeys.PROFILE_NAME] = profileName
-    access[SetupAssistantSavedKeys.NAME_EDITED] = nameEdited
-    access[SetupAssistantSavedKeys.TRUST_ALL_CERTS] = trustAllCerts
-    access[SetupAssistantSavedKeys.SUGGESTED_NAME] = suggestedName
-    access[SetupAssistantSavedKeys.ASKED_FOR_NETWORK] = askedForNetwork
+fun SetupDraft.writeTo(handle: SavedStateHandle) {
+    handle[SetupAssistantSavedKeys.STEP] = step.name
+    handle[SetupAssistantSavedKeys.HOST] = host
+    handle[SetupAssistantSavedKeys.USE_HTTPS] = useHttps
+    handle[SetupAssistantSavedKeys.PORT_TEXT] = portText
+    handle[SetupAssistantSavedKeys.LOGIN] = login
+    handle[SetupAssistantSavedKeys.USER] = user
+    handle[SetupAssistantSavedKeys.PASS] = pass
+    handle[SetupAssistantSavedKeys.PROFILE_NAME] = profileName
+    handle[SetupAssistantSavedKeys.NAME_EDITED] = nameEdited
+    handle[SetupAssistantSavedKeys.TRUST_ALL_CERTS] = trustAllCerts
+    handle[SetupAssistantSavedKeys.SUGGESTED_NAME] = suggestedName
+    handle[SetupAssistantSavedKeys.ASKED_FOR_NETWORK] = askedForNetwork
 }

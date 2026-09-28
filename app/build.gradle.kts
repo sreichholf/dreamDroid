@@ -62,7 +62,6 @@ dependencies {
     implementation(libs.navigation.compose)
     // Phase 2.6e: Glance chassis for Virtual Remote (dense RCU stays RemoteViews via AndroidRemoteViews).
     implementation(libs.glance.appwidget)
-    implementation(libs.glance.material3)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
     androidTestImplementation(libs.compose.ui.test.junit4)
@@ -176,7 +175,6 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             resValue("string", "app_name", "@string/app_name_debug")
-            resValue("string", "app_name_tv", "@string/app_name_tv_debug")
         }
         getByName("release") {
             isMinifyEnabled = true
@@ -188,7 +186,6 @@ android {
             isDebuggable = false
             buildConfigField("long", "BUILD_TIME", "${System.currentTimeMillis()}L")
             resValue("string", "app_name", "@string/app_name_release")
-            resValue("string", "app_name_tv", "@string/app_name_tv_release")
         }
     }
     compileOptions {

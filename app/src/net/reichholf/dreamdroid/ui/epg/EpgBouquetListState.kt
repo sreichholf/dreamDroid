@@ -6,12 +6,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class EpgBouquetListState(initial: List<Event> = emptyList()) {
     val items: SnapshotStateList<Event> = initial.toMutableStateList()
@@ -26,30 +21,5 @@ class EpgBouquetListState(initial: List<Event> = emptyList()) {
 
     fun scrollToTop() {
         scrollEpoch++
-    }
-}
-
-fun ComposeView.bindEpgBouquetScreen(
-    state: EpgBouquetListState,
-    refresh: ComposeRefreshState,
-    onRefresh: () -> Unit,
-    onItemClick: (Event) -> Unit
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            DreamDroidPullRefresh(
-                refreshing = refresh.isRefreshing,
-                onRefresh = onRefresh,
-                enabled = refresh.enabled
-            ) {
-                EpgBouquetScreen(
-                    items = state.items,
-                    listState = state.listState,
-                    scrollEpoch = state.scrollEpoch,
-                    onItemClick = onItemClick
-                )
-            }
-        }
     }
 }

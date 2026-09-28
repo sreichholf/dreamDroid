@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import androidx.lifecycle.SavedStateHandle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -8,8 +9,8 @@ import org.junit.jupiter.api.Test
 
 class PhoneNavStateBagTest {
     @Test
-    fun emptyAccessReadsUnsetStartRouteAndDefaults() {
-        val bag = readPhoneNavStateBag(MapPhoneNavPlainAccess())
+    fun emptyHandleReadsUnsetStartRouteAndDefaults() {
+        val bag = readPhoneNavStateBag(SavedStateHandle())
 
         assertNull(bag.startRoute)
         assertFalse(bag.hasSavedStartRoute())
@@ -17,39 +18,42 @@ class PhoneNavStateBagTest {
     }
 
     @Test
-    fun filledBagRoundTripsThroughPlainAccess() {
+    fun filledBagRoundTripsThroughHandle() {
         val original = PhoneNavStateBag(
             startRoute = PhoneNavRoutes.EPG,
             pickRequestCodes = listOf(7, 1, 7)
         )
-        val access = MapPhoneNavPlainAccess()
+        val handle = SavedStateHandle()
 
-        original.writePlain(access)
+        original.writePlain(handle)
 
-        assertEquals(original, readPhoneNavStateBag(access))
+        assertEquals(original, readPhoneNavStateBag(handle))
     }
 
     @Test
     fun nullStartRouteLeavesTheKeyAbsent() {
-        val access = MapPhoneNavPlainAccess()
-        access.putString("unrelated", "kept")
+        val handle = SavedStateHandle()
+        handle["unrelated"] = "kept"
 
-        PhoneNavStateBag().writePlain(access)
+        PhoneNavStateBag().writePlain(handle)
 
-        assertFalse(access.contains(PhoneNavSavedKeys.START_ROUTE))
-        assertEquals(emptyList<Int>(), access.getIntList(PhoneNavSavedKeys.PICK_REQUEST_CODES))
-        assertEquals("kept", access.getString("unrelated"))
+        assertFalse(handle.contains(PhoneNavSavedKeys.START_ROUTE))
+        assertEquals(
+            emptyList<Int>(),
+            handle.get<IntArray>(PhoneNavSavedKeys.PICK_REQUEST_CODES)?.toList()
+        )
+        assertEquals("kept", handle.get<String>("unrelated"))
     }
 
     @Test
     fun laterNullStartRouteClearsSavedStart() {
-        val access = MapPhoneNavPlainAccess()
-        PhoneNavStateBag(startRoute = PhoneNavRoutes.REMOTE).writePlain(access)
-        assertTrue(access.contains(PhoneNavSavedKeys.START_ROUTE))
+        val handle = SavedStateHandle()
+        PhoneNavStateBag(startRoute = PhoneNavRoutes.REMOTE).writePlain(handle)
+        assertTrue(handle.contains(PhoneNavSavedKeys.START_ROUTE))
 
-        PhoneNavStateBag(startRoute = null).writePlain(access)
+        PhoneNavStateBag(startRoute = null).writePlain(handle)
 
-        assertFalse(access.contains(PhoneNavSavedKeys.START_ROUTE))
-        assertFalse(readPhoneNavStateBag(access).hasSavedStartRoute())
+        assertFalse(handle.contains(PhoneNavSavedKeys.START_ROUTE))
+        assertFalse(readPhoneNavStateBag(handle).hasSavedStartRoute())
     }
 }

@@ -7,16 +7,10 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.content.Context
-import android.view.View
-import android.widget.ImageView
 import androidx.preference.PreferenceManager
-import coil3.load
-import coil3.request.error
-import coil3.size.Scale
 import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -25,11 +19,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
  * @author sre
  */
 object Picon {
-    interface Callback {
-        fun onSuccess()
-
-        fun onError(error: Exception?)
-    }
 
     fun getBasepath(context: Context): String {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
@@ -78,38 +67,6 @@ object Picon {
         }
         fileName = String.format("%s%s.png", root, fileName)
         return fileName
-    }
-
-    @Suppress("UNUSED_PARAMETER")
-    fun setPiconForView(
-        context: Context,
-        piconView: ImageView?,
-        reference: String?,
-        name: String?,
-        tag: String,
-        callback: Callback?
-    ) {
-        if (piconView == null) return
-        val uri = resolveLoadUri(context, reference, name)
-        if (uri == null) {
-            piconView.visibility = View.GONE
-            return
-        }
-        if (piconView.visibility != View.VISIBLE) {
-            piconView.visibility = View.VISIBLE
-        }
-        piconView.scaleType = ImageView.ScaleType.FIT_CENTER
-        PiconImageLoader.install(context)
-        piconView.load(uri) {
-            scale(Scale.FIT)
-            error(R.drawable.dreamdroid_logo_simple)
-            listener(
-                onSuccess = { _, _ -> callback?.onSuccess() },
-                onError = { _, result ->
-                    callback?.onError(result.throwable as? Exception)
-                }
-            )
-        }
     }
 
     fun resolveLoadUri(context: Context, reference: String?, name: String?): String? {

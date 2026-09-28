@@ -12,7 +12,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -32,9 +31,8 @@ import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
  * destination and popping back keeps the strip. Child lists use their own
  * ViewModels on this same back-stack entry.
  */
-class HubViewModel(application: Application, savedStateHandle: SavedStateHandle) :
+class HubViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
     AndroidViewModel(application) {
-    private val savedAccess = HandleHubShellSavedAccess(savedStateHandle)
 
     var mode by mutableStateOf(HubModes.TV)
         private set
@@ -75,7 +73,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
     private var lastLocationsHttpSuccess: Boolean? = null
 
     init {
-        val saved = readHubShellSaved(savedAccess)
+        val saved = readHubShellSaved(savedStateHandle)
         mode = saved.mode
         currentTv = saved.currentTv
         currentRadio = saved.currentRadio
@@ -211,7 +209,6 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
     override fun onCleared() {
         bouquetJob?.cancel()
         locationsJob?.cancel()
-        super.onCleared()
     }
 
     private suspend fun loadBouquets() {
@@ -342,62 +339,7 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
             selectedRow = selectedRow,
             timerRemountEpoch = timerRemountEpoch,
             nowPlayingReloadEpoch = nowPlayingReloadEpoch
-        ).writeTo(savedAccess)
-    }
-}
-
-private class HandleHubShellSavedAccess(private val handle: SavedStateHandle) :
-    HubShellSavedAccess {
-    override fun getMode(): String? = handle.get<String>(HubShellSavedKeys.MODE)
-
-    override fun setMode(mode: String) {
-        handle[HubShellSavedKeys.MODE] = mode
-    }
-
-    override fun getCurrentTv(): String? = handle.get<String>(HubShellSavedKeys.CURRENT_TV)
-
-    override fun setCurrentTv(currentTv: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_TV, currentTv)
-    }
-
-    override fun getCurrentRadio(): String? = handle.get<String>(HubShellSavedKeys.CURRENT_RADIO)
-
-    override fun setCurrentRadio(currentRadio: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_RADIO, currentRadio)
-    }
-
-    override fun getCurrentMovie(): String? = handle.get<String>(HubShellSavedKeys.CURRENT_MOVIE)
-
-    override fun setCurrentMovie(currentMovie: String?) {
-        putOrRemove(HubShellSavedKeys.CURRENT_MOVIE, currentMovie)
-    }
-
-    override fun getSelectedRow(): Int? = handle.get<Int>(HubShellSavedKeys.SELECTED_ROW)
-
-    override fun setSelectedRow(selectedRow: Int) {
-        handle[HubShellSavedKeys.SELECTED_ROW] = selectedRow
-    }
-
-    override fun getTimerRemountEpoch(): Int? =
-        handle.get<Int>(HubShellSavedKeys.TIMER_REMOUNT_EPOCH)
-
-    override fun setTimerRemountEpoch(epoch: Int) {
-        handle[HubShellSavedKeys.TIMER_REMOUNT_EPOCH] = epoch
-    }
-
-    override fun getNowPlayingReloadEpoch(): Int? =
-        handle.get<Int>(HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH)
-
-    override fun setNowPlayingReloadEpoch(epoch: Int) {
-        handle[HubShellSavedKeys.NOW_PLAYING_RELOAD_EPOCH] = epoch
-    }
-
-    private fun putOrRemove(key: String, value: String?) {
-        if (value == null) {
-            handle.remove<String>(key)
-        } else {
-            handle[key] = value
-        }
+        ).writeTo(savedStateHandle)
     }
 }
 

@@ -19,19 +19,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
  * Timer XML field names, after-event enums, and request helpers. UI uses [TypedTimer].
  */
 class Timer {
-    enum class TimerStates(private val value: Int) {
-        WAITING(0),
-        PREPARED(1),
-        RUNNING(2),
-        ENDED(3);
-
-        override fun toString(): String = value.toString()
-
-        fun intValue(): Int = value
-
-        fun getText(ac: Activity): String =
-            ac.resources.getTextArray(R.array.afterevents)[value] as String
-    }
 
     enum class Afterevents(private val value: Int) {
         NOTHING(0),
@@ -52,32 +39,12 @@ class Timer {
 
         const val KEY_REFERENCE: String = "reference"
         const val KEY_SERVICE_NAME: String = "servicename"
-        const val KEY_EIT: String = "eit"
         const val KEY_NAME: String = "name"
         const val KEY_DESCRIPTION: String = "description"
         const val KEY_DESCRIPTION_EXTENDED: String = "descriptionex"
-        const val KEY_DISABLED: String = "disabled"
-        const val KEY_BEGIN: String = "begin"
-        const val KEY_BEGIN_READEABLE: String = "begin_readable"
-        const val KEY_END: String = "end"
-        const val KEY_END_READABLE: String = "end_readable"
-        const val KEY_DURATION: String = "duration"
-        const val KEY_DURATION_READABLE: String = "duration_readable"
-        const val KEY_START_PREPARE: String = "startprepare"
-        const val KEY_JUST_PLAY: String = "justplay"
-        const val KEY_AFTER_EVENT: String = "afterevent"
-        const val KEY_LOCATION: String = "location"
         const val KEY_TAGS: String = "tags"
-        const val KEY_LOG_ENTRIES: String = "logentries"
         const val KEY_FILE_NAME: String = "filename"
-        const val KEY_BACK_OFF: String = "backoff"
-        const val KEY_NEXT_ACTIVATION: String = "nextactivation"
-        const val KEY_FIRST_TRY_PREPARE: String = "firsttryprepare"
         const val KEY_STATE: String = "state"
-        const val KEY_REPEATED: String = "repeated"
-        const val KEY_DONT_SAVE: String = "dontsave"
-        const val KEY_CANCELED: String = "canceled"
-        const val KEY_TOGGLE_DISABLED: String = "toggledisabled"
 
         fun getInitialTimer(): TypedTimer {
             val cal = GregorianCalendar.getInstance()

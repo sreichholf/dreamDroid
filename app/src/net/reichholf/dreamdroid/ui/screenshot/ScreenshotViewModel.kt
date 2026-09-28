@@ -6,7 +6,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import java.util.GregorianCalendar
 import kotlinx.coroutines.Dispatchers
@@ -21,11 +20,9 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 /**
  * Owns [ScreenshotUiState] and the raw screenshot bytes used for share and save.
  *
- * [savedStateHandle] lets viewModel() construct this class. Screenshot stores no keys.
  * The bitmap stays while this ViewModel remains on the NavBackStackEntry.
  */
-class ScreenshotViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class ScreenshotViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: ScreenshotUiState = ScreenshotUiState()
 
     var rawImage: ByteArray = ByteArray(0)

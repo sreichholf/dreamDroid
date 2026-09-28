@@ -262,7 +262,7 @@ class VideoActivity :
         if (tvStreamingRejected) {
             return super.onKeyDown(keyCode, event)
         }
-        return overlay?.onKeyDown(keyCode, event) == true ||
+        return overlay?.onKeyDown(keyCode) == true ||
             super.onKeyDown(keyCode, event)
     }
 
@@ -305,7 +305,7 @@ class VideoActivity :
         VLCPlayer.getMediaPlayer()!!.setEventListener(null)
     }
 
-    protected fun onMediaPlaying() {
+    private fun onMediaPlaying() {
         if (videoWidth * videoHeight == 0) {
             videoHeight = player!!.getVideoHeight()
             videoWidth = player!!.getVideoWidth()
@@ -315,7 +315,7 @@ class VideoActivity :
         setPictureInPictureParams(getPipParams())
     }
 
-    protected fun changeSurfaceLayout() {
+    private fun changeSurfaceLayout() {
         if (player == null) return
         var sw: Int
         var sh: Int
@@ -418,7 +418,7 @@ class VideoActivity :
         subtitlesSurface.invalidate()
     }
 
-    protected fun getPipParams(): PictureInPictureParams {
+    private fun getPipParams(): PictureInPictureParams {
         val sourceRectHint = Rect()
         surfaceView!!.getGlobalVisibleRect(sourceRectHint)
         val ar = Rational(videoWidth, videoHeight)
@@ -432,7 +432,7 @@ class VideoActivity :
         return builder.build()
     }
 
-    protected fun doEnterPip(): Boolean {
+    private fun doEnterPip(): Boolean {
         val params = getPipParams()
         try {
             enterPictureInPictureMode(params)
@@ -491,7 +491,7 @@ class VideoActivity :
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
         changeSurfaceLayout()
-        overlay?.onPictureInPictureModeChanged(isInPictureInPictureMode)
+        overlay?.onPictureInPictureModeChanged()
     }
 
     override fun onSurfacesDestroyed(vlcVout: IVLCVout) {}

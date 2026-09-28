@@ -2,8 +2,6 @@ package net.reichholf.dreamdroid.ui.backup
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.backup.BackupData
@@ -11,10 +9,8 @@ import net.reichholf.dreamdroid.helpers.backup.BackupService
 
 /**
  * Owns [BackupUiState], the in-memory backup, and the export JSON staged for the document picker.
- * [savedStateHandle] is accepted by the default factory. Backup has no saved keys.
  */
-class BackupViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class BackupViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: BackupUiState = BackupUiState()
 
     /** JSON waiting for the destination's create-document callback. Memory only. */

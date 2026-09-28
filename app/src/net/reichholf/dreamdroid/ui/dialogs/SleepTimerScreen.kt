@@ -17,8 +17,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -29,7 +27,6 @@ import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.ui.compose.EditForm
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 internal const val SLEEP_TIMER_MINUTES_TAG = "sleep_timer_minutes"
 internal const val SLEEP_TIMER_MINUTES_DEC_TAG = "sleep_timer_minutes_dec"
@@ -116,15 +113,6 @@ private fun SleepTimerActionRow(state: SleepTimerUiState) {
             ) {
                 Text(label)
             }
-        }
-    }
-}
-
-fun ComposeView.bindSleepTimerScreen(state: SleepTimerUiState) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            SleepTimerScreen(state = state)
         }
     }
 }

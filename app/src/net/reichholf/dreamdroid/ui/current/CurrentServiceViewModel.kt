@@ -28,8 +28,10 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
  * Load, saved snapshot, and timer-add for [CurrentServiceDestination].
  * The EPG sheet open flag stays in the composable.
  */
-class CurrentServiceViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class CurrentServiceViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
     val uiState: CurrentServiceUiState = CurrentServiceUiState()
 
     var refreshing by mutableStateOf(false)
@@ -54,7 +56,6 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
         private set
 
     private val gate = CurrentServiceLoadGate()
-    private val savedAccess = HandleCurrentServiceSavedAccess(savedStateHandle)
     private var saved = CurrentServiceSaved()
     private var activeProfileId: Int = -1
     private var started = false
@@ -161,7 +162,6 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
     override fun onCleared() {
         PreferenceManager.getDefaultSharedPreferences(getApplication())
             .unregisterOnSharedPreferenceChangeListener(prefsListener)
-        super.onCleared()
     }
 
     private fun onCurrentProfileChanged() {
@@ -196,19 +196,19 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
             ready = false,
             profileId = nextId
         )
-        saved.writeTo(savedAccess)
+        saved.writeTo(savedStateHandle)
         reload()
     }
 
     private fun adoptSaved(profileId: Int): CurrentServiceSaved {
-        val savedProfileId = savedAccess.getProfileId()
+        val savedProfileId = savedStateHandle.get<Int>(CurrentServiceSavedKeys.PROFILE_ID)
         if (!shouldRestoreCurrentService(savedProfileId, profileId)) {
             if (savedProfileId != null) {
-                CurrentServiceSaved(profileId = profileId).writeTo(savedAccess)
+                CurrentServiceSaved(profileId = profileId).writeTo(savedStateHandle)
             }
             return CurrentServiceSaved()
         }
-        return readCurrentServiceSaved(savedAccess, profileId)
+        return readCurrentServiceSaved(savedStateHandle, profileId)
     }
 
     private fun paint(snapshot: CurrentServiceSaved) {
@@ -259,7 +259,7 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
             ready = ready,
             profileId = profileId
         )
-        saved.writeTo(savedAccess)
+        saved.writeTo(savedStateHandle)
     }
 
     private fun timerResultMessage(result: SimpleResult, error: EnigmaHttpError?): String {
@@ -278,44 +278,4 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
 
     private fun baseTitle(): String =
         getApplication<Application>().getString(R.string.current_service)
-}
-
-private class HandleCurrentServiceSavedAccess(private val handle: SavedStateHandle) :
-    CurrentServiceSavedAccess {
-    override fun getCurrent(): CurrentService? =
-        handle.get<CurrentService>(CurrentServiceSavedKeys.CURRENT)
-
-    override fun setCurrent(current: CurrentService?) {
-        if (current == null) {
-            handle.remove<CurrentService>(CurrentServiceSavedKeys.CURRENT)
-        } else {
-            handle[CurrentServiceSavedKeys.CURRENT] = current
-        }
-    }
-
-    override fun getItem(): Event? = handle.get<Event>(CurrentServiceSavedKeys.ITEM)
-
-    override fun setItem(item: Event?) {
-        if (item == null) {
-            handle.remove<Event>(CurrentServiceSavedKeys.ITEM)
-        } else {
-            handle[CurrentServiceSavedKeys.ITEM] = item
-        }
-    }
-
-    override fun getReady(): Boolean = handle.get<Boolean>(CurrentServiceSavedKeys.READY) ?: false
-
-    override fun setReady(ready: Boolean) {
-        handle[CurrentServiceSavedKeys.READY] = ready
-    }
-
-    override fun getProfileId(): Int? = handle.get<Int>(CurrentServiceSavedKeys.PROFILE_ID)
-
-    override fun setProfileId(profileId: Int?) {
-        if (profileId == null) {
-            handle.remove<Int>(CurrentServiceSavedKeys.PROFILE_ID)
-        } else {
-            handle[CurrentServiceSavedKeys.PROFILE_ID] = profileId
-        }
-    }
 }

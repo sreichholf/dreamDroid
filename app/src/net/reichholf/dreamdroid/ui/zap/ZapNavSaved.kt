@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.zap
 
+import androidx.lifecycle.SavedStateHandle
+
 object ZapNavSavedKeys {
     const val BOUQUET_REF = "zap_bouquet_ref"
     const val BOUQUET_NAME = "zap_bouquet_name"
@@ -12,53 +14,22 @@ data class ZapNavSaved(
     val waitingForPicker: Boolean
 )
 
-interface ZapNavSavedAccess {
-    fun getBouquetRef(): String?
-    fun setBouquetRef(bouquetRef: String)
-    fun getBouquetName(): String?
-    fun setBouquetName(bouquetName: String)
-    fun getWaitingForPicker(): Boolean?
-    fun setWaitingForPicker(waitingForPicker: Boolean)
-}
-
-class MapZapNavSavedAccess(private val values: MutableMap<String, Any> = mutableMapOf()) :
-    ZapNavSavedAccess {
-    override fun getBouquetRef(): String? = values[ZapNavSavedKeys.BOUQUET_REF] as? String
-
-    override fun setBouquetRef(bouquetRef: String) {
-        values[ZapNavSavedKeys.BOUQUET_REF] = bouquetRef
-    }
-
-    override fun getBouquetName(): String? = values[ZapNavSavedKeys.BOUQUET_NAME] as? String
-
-    override fun setBouquetName(bouquetName: String) {
-        values[ZapNavSavedKeys.BOUQUET_NAME] = bouquetName
-    }
-
-    override fun getWaitingForPicker(): Boolean? =
-        values[ZapNavSavedKeys.WAITING_FOR_PICKER] as? Boolean
-
-    override fun setWaitingForPicker(waitingForPicker: Boolean) {
-        values[ZapNavSavedKeys.WAITING_FOR_PICKER] = waitingForPicker
-    }
-}
-
 /**
  * Absent strings resolve to the profile defaults. Absent waiting reads as false.
  * Reading does not write those defaults back.
  */
 fun readZapNavSaved(
-    access: ZapNavSavedAccess,
+    handle: SavedStateHandle,
     defaultBouquetRef: String,
     defaultBouquetName: String
 ): ZapNavSaved = ZapNavSaved(
-    bouquetRef = access.getBouquetRef() ?: defaultBouquetRef,
-    bouquetName = access.getBouquetName() ?: defaultBouquetName,
-    waitingForPicker = access.getWaitingForPicker() ?: false
+    bouquetRef = handle.get<String>(ZapNavSavedKeys.BOUQUET_REF) ?: defaultBouquetRef,
+    bouquetName = handle.get<String>(ZapNavSavedKeys.BOUQUET_NAME) ?: defaultBouquetName,
+    waitingForPicker = handle.get<Boolean>(ZapNavSavedKeys.WAITING_FOR_PICKER) ?: false
 )
 
-fun ZapNavSaved.writeTo(access: ZapNavSavedAccess) {
-    access.setBouquetRef(bouquetRef)
-    access.setBouquetName(bouquetName)
-    access.setWaitingForPicker(waitingForPicker)
+fun ZapNavSaved.writeTo(handle: SavedStateHandle) {
+    handle[ZapNavSavedKeys.BOUQUET_REF] = bouquetRef
+    handle[ZapNavSavedKeys.BOUQUET_NAME] = bouquetName
+    handle[ZapNavSavedKeys.WAITING_FOR_PICKER] = waitingForPicker
 }

@@ -3,14 +3,6 @@
     <string name="description">الوصف</string>
     <string name="title">العنوان</string>
     <string name="app_name_release">دريم درويد</string>
-    <string-array name="servicelist">
-        <item>قائمة الخدمات</item>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-        <item/>
-    </string-array>
     <string name="timer">المؤقت</string>
     <string name="service">الخدمة</string>
     <string name="afterevent">بعد الحدث</string>
@@ -31,7 +23,6 @@
     <string name="save">حفظ</string>
     <string name="cancel">الغاء</string>
     <string name="fetching_data">جاري قراءة البيانات</string>
-    <string name="parsing">جاري القراءة</string>
     <string name="get_content_error">خطأ في قراءة البيانات</string>
     <string name="zap">تغيير</string>
     <string name="browse_epg">تصفح البرامج</string>
@@ -47,18 +38,11 @@
     <string name="close">اغلاق</string>
     <string name="minutes_short">دقيقة</string>
     <string name="user">المستخدم</string>
-    <string name="user_long">اسم المستخدم للدخول</string>
     <string name="pass">كلمة السر</string>
-    <string name="pass_long">كلمة السر للدخول </string>
     <string name="saving">يتم الحفظ..</string>
     <string name="deleting">يتم المسح..</string>
     <string name="delete_confirm">تاكيد المسح؟</string>
     <string name="set_timer">تحديد المؤقت</string>
-    <string name="home">البداية</string>
-    <string name="pick_action">اختر العملية</string>
-    <string name="set_time_begin">تاريخ ووقت البدء</string>
-    <string name="set_time_end">تاريخ ووقت النهاية</string>
-    <string name="apply">تنفيذ</string>
     <string name="reload">اعادة تحميل</string>
     <string-array name="weekdays_short">
         <item>الاثن</item>
@@ -92,11 +76,9 @@
     <string name="frontends">النهايات الامامية</string>
     <string name="nics">واجهة الشبكة</string>
     <string name="hdds">الاقراص الصلبة</string>
-    <string name="not_implemented">هذه العملية غير متوفرة حاليا!</string>
     <string name="current_event">الحدث الحالي</string>
     <string name="timeout">انتهى الوقت</string>
     <string name="seconds">ثواني</string>
-    <string name="message">رسالة</string>
     <string name="message_text_hint">أدخل الرسالة</string>
     <string name="send">ارسال</string>
     <string name="type">اكتب</string>
@@ -109,7 +91,6 @@
     <string name="virtual_remote">الريموت الوهمي</string>
     <string name="login">دخول</string>
     <string name="login_enabled">مكن من الدخول بكلمة السر</string>
-    <string name="wait_request_finished">انتظر حتى تنتهي العملية الحالية</string>
     <string name="current_service">الحالي</string>
     <string name="provider">المزود</string>
     <string name="now">الآن</string>
@@ -122,28 +103,22 @@
     <string name="confirm_delete_profile">هل تريد فعلا مسح العنوان</string>
     <string name="profile_activated">فعل العنوان</string>
     <string name="profile_not_activated">خطأ في تفعيل العنوان</string>
-    <string name="profile_not_deleted">خطأ في مسح العنوان</string>
     <string name="profile_deleted">مسح العنوان</string>
     <string name="profile">العنوان</string>
     <string name="profile_name">اسم الملف الشخصي</string>
     <string name="profile_updated">تحديث العنوان</string>
     <string name="profile_added">اضافة عنوان</string>
     <string name="profile_add">اضافة عنوان</string>
-    <string name="profile_not_added">ربما لاتستطيع اضافة العنوان</string>
-    <string name="profile_not_updated">ربما لا تستطيع تحديث العنوان</string>
     <string name="no_list_item">لا يوجد شيء</string>
-    <string name="locations_default_fallback">خطأ في تحميل المواقع</string>
     <string name="tags">الكلمات</string>
     <string name="screenshot">صورة الشاشة</string>
     <string name="host_empty">اسم الجهاز لا يمكن ان يكون فارغا!</string>
     <string name="standby">مطفي</string>
-    <string name="powerup">تشغيل</string>
     <string name="restart_gui">اعادة تشغيل الواجهة</string>
     <string name="reboot">اعادة تشغيل</string>
     <string name="shutdown">اطفاء</string>
     <string name="powercontrol">زر التشغيل</string>
     <string name="choose_tags">tagsاختر </string>
-    <string name="choose_location">اختر الموقع</string>
     <string name="bouquet_overview">معلومات الباقة</string>
     <string name="set_default">اختر كوضع افتراضي</string>
     <string name="default_bouquet_set_to">باقة الوضع الافتراضي هي:</string>
@@ -151,14 +126,10 @@
     <string name="loading">جاري التحميل..</string>
     <string name="about">عن البرنامج</string>
     <string name="changelog">سجل التغير</string>
-    <string name="license">رخصة</string>
-    <string name="active_profile">العنوان الفعال</string>
     <string name="connection">اتصال</string>
-    <string name="connection_state">وضع الاتصال</string>
     <string name="not_available">غير متوفر</string>
     <string name="checking">جاري التاكد</string>
     <string name="error">خطأ!</string>
-    <string name="check_connectivity">تأكد من الاتصال</string>
     <string name="version_too_low">نسخة قديمة</string>
     <string name="connection_error">خطا بالاتصال</string>
     <string name="port_out_of_range">المنفذ ليس ضمن 1 - 65535</string>
@@ -177,16 +148,11 @@
         <item/>
     </string-array>
     <string name="sleeptimer">مؤقت النوم</string>
-    <string name="current_volume">درجة الصوت %s</string>
-    <string name="muted">كتم الصوت</string>
     <string name="enable_volume_control">تفعيل التحكم بالصوت</string>
     <string name="enable_volume_control_long">التحكم بالصوت عن طريق الأزرار الجانبية</string>
     <string name="download">تحميل</string>
-    <string name="extras">أخرى</string>
-    <string name="main_menu">الرئيسي</string>
     <string name="enable_instant_zap">التغيير مباشرة</string>
     <string name="enable_instant_zap_long">التغيير مباشرة بعض الضغط على الخدمة</string>
-    <string name="wrong_activity">خطأ في التشغيل! أعد تكوين الأيقونة للبرنامج</string>
     <string name="simple_remote">ريموت مبسط</string>
     <string name="screenshot_saved">تم حفظ صورة الشاشة الى \'%s\'</string>
     <string name="imdb">موقع IMDb</string>
@@ -199,16 +165,8 @@
     <string name="watch_on_dream">مشاهدة على الدريم بوكس</string>
     <string name="connecting">جاري الاتصال</string>
     <string name="connected">متصل</string>
-    <string name="logged_in">دخول</string>
     <string name="enable">تفعيل</string>
-    <string name="disable">تعطيل</string>
     <string name="epg_sync">مزامنة البرامج</string>
-    <string name="epg_sync_finished">تم مزامنة البرامج</string>
     <string name="reset_default">اعادة الافتراضي</string>
-    <string name="donate">تبرع</string>
-    <string name="donation_thanks">شكرا جزيلا على تبرعك</string>
-    <string name="donation_error">نأسف - لقد فشلت عملية التبرع</string>
     <string name="share">مشاركة</string>
-    <string name="restart">إعادة؟</string>
-    <string name="app_name_tv_release">دريم درويد تي في</string>
 </resources>

@@ -2,11 +2,6 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
-import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class TimerListState(initial: List<TimerListItem> = emptyList()) {
     val items: SnapshotStateList<TimerListItem> = initial.toMutableStateList()
@@ -14,28 +9,5 @@ class TimerListState(initial: List<TimerListItem> = emptyList()) {
     fun replaceAll(next: List<TimerListItem>) {
         items.clear()
         items.addAll(next)
-    }
-}
-
-fun ComposeView.bindTimerListScreen(
-    state: TimerListState,
-    refresh: ComposeRefreshState,
-    onRefresh: () -> Unit,
-    onItemClick: (TimerListItem) -> Unit
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            DreamDroidPullRefresh(
-                refreshing = refresh.isRefreshing,
-                onRefresh = onRefresh,
-                enabled = refresh.enabled
-            ) {
-                TimerListScreen(
-                    items = state.items,
-                    onItemClick = onItemClick
-                )
-            }
-        }
     }
 }

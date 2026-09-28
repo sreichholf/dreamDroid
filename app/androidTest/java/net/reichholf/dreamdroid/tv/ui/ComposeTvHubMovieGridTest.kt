@@ -28,12 +28,12 @@ import org.junit.Rule
 import org.junit.Test
 
 @OptIn(ExperimentalTestApi::class)
-class ComposeTvHubMovieRowTest {
+class ComposeTvHubMovieGridTest {
     @get:Rule
     val composeRule = createComposeRule()
 
     @Test
-    fun movieRowClickInvokesCallback() {
+    fun movieCardClickInvokesCallback() {
         var clicked: Movie? = null
         val movie = Movie(
             reference = "1:0:0:0:0:0:0:0:0:0:",
@@ -49,8 +49,7 @@ class ComposeTvHubMovieRowTest {
                         .fillMaxWidth()
                         .height(200.dp)
                 ) {
-                    HubMovieRow(
-                        dirname = "/hdd/movie",
+                    HubMovieGrid(
                         movies = listOf(movie),
                         onMovieClick = { clicked = it }
                     )
@@ -99,8 +98,8 @@ class ComposeTvHubMovieRowTest {
         composeRule.setContent {
             DreamDroidTvTheme {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    HubMovieRow(
-                        dirname = "/hdd/one",
+                    HubMovieGrid(
+                        modifier = Modifier.height(300.dp),
                         movies = listOf(
                             Movie(
                                 reference = "1:0:0:0:0:0:0:0:0:3:",
@@ -111,8 +110,8 @@ class ComposeTvHubMovieRowTest {
                         ),
                         onMovieClick = {}
                     )
-                    HubMovieRow(
-                        dirname = "/hdd/two",
+                    HubMovieGrid(
+                        modifier = Modifier.height(300.dp),
                         movies = listOf(
                             Movie(
                                 reference = "1:0:0:0:0:0:0:0:0:4:",
@@ -147,7 +146,7 @@ class ComposeTvHubMovieRowTest {
     @Test
     fun longTitleStaysOnCardAndBodyUsesFittedLines() {
         val title = List(20) { "Freiheitsbooster" }.joinToString(" ")
-        setMovieRow(
+        setMovieGrid(
             Movie(
                 reference = "1:0:0:0:0:0:0:0:0:2:",
                 title = title,
@@ -162,7 +161,7 @@ class ComposeTvHubMovieRowTest {
         assertTrue("fitted body lines=$lines", lines >= 1)
     }
 
-    private fun setMovieRow(movie: Movie) {
+    private fun setMovieGrid(movie: Movie) {
         composeRule.setContent {
             DreamDroidTvTheme {
                 Box(
@@ -170,8 +169,7 @@ class ComposeTvHubMovieRowTest {
                         .fillMaxWidth()
                         .height(200.dp)
                 ) {
-                    HubMovieRow(
-                        dirname = "/hdd/movie",
+                    HubMovieGrid(
                         movies = listOf(movie),
                         onMovieClick = {}
                     )

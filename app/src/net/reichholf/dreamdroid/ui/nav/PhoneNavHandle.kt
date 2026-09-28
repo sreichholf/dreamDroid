@@ -3,24 +3,14 @@ package net.reichholf.dreamdroid.ui.nav
 import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
-import net.reichholf.dreamdroid.enigma.loadMovieList
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
@@ -159,27 +149,3 @@ fun PhoneNavHandle.launchLocationsAndTagsLoad(
 
 fun PhoneNavHandle.launchDetectDevicesLoad(onResult: (profiles: ArrayList<Profile>) -> Unit): Job =
     lifecycleOwner.launchDetectDevicesLoad(onResult)
-
-fun PhoneNavHandle.launchMovieListLoad(
-    params: List<NameValuePair>,
-    onResult: (success: Boolean, movies: List<Movie>, errorText: String?) -> Unit
-): Job {
-    val context = lifecycleOwner as Context
-    return lifecycleOwner.lifecycleScope.launch {
-        val http = EnigmaHttp()
-        withContext(Dispatchers.IO) {
-            if (ProfileRepository.get().locations().size <= 1) {
-                if (!ProfileRepository.get().loadLocations(http)) {
-                    android.util.Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")
-                }
-            }
-            if (ProfileRepository.get().tags().size <= 1) {
-                if (!ProfileRepository.get().loadTags(http)) {
-                    android.util.Log.e(DreamDroid.LOG_TAG, "ERROR loading tags")
-                }
-            }
-        }
-        val result = loadMovieList(context, params)
-        onResult(result.success, result.movies, result.errorText)
-    }
-}

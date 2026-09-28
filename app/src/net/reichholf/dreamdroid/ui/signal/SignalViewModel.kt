@@ -9,7 +9,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlin.coroutines.coroutineContext
 import kotlin.math.ceil
@@ -33,12 +32,8 @@ private const val MIN_DELAY = 150
 
 /**
  * Signal meter poll and acoustic tone. [SignalUiState] stays the model [SignalScreen] renders.
- *
- * [savedStateHandle] is accepted so the default factory can construct this ViewModel.
- * This screen has no rememberSaveable fields, so no keys are written.
  */
-class SignalViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class SignalViewModel(application: Application) : AndroidViewModel(application) {
     val uiState: SignalUiState = SignalUiState()
 
     var toolbarTitle by mutableStateOf("")
@@ -113,7 +108,6 @@ class SignalViewModel(application: Application, savedStateHandle: SavedStateHand
 
     override fun onCleared() {
         stopPolling(clearMeter = false)
-        super.onCleared()
     }
 
     private fun reload() {

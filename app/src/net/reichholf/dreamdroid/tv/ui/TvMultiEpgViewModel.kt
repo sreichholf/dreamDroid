@@ -11,7 +11,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -28,7 +27,6 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgSession
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
-import net.reichholf.dreamdroid.ui.multiepg.HandleMultiEpgVisibleMinutesAccess
 import net.reichholf.dreamdroid.ui.multiepg.newMultiEpgSession
 import net.reichholf.dreamdroid.ui.multiepg.readMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.multiepg.writeMultiEpgVisibleMinutes
@@ -40,11 +38,12 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
  * focused cell, the saved visible-minute span, the open detail, timer editor, and
  * bouquet picker, and the add-timer request.
  */
-class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    private val savedAccess = HandleMultiEpgVisibleMinutesAccess(savedStateHandle)
+class TvMultiEpgViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
 
-    var visibleMinutes by mutableIntStateOf(readMultiEpgVisibleMinutes(savedAccess))
+    var visibleMinutes by mutableIntStateOf(readMultiEpgVisibleMinutes(savedStateHandle))
         private set
 
     private val persistGate = MultiEpgPersistGate(
@@ -155,7 +154,7 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
 
     fun onVisibleMinutesChange(minutes: Int) {
         visibleMinutes = minutes
-        writeMultiEpgVisibleMinutes(savedAccess, minutes)
+        writeMultiEpgVisibleMinutes(savedStateHandle, minutes)
     }
 
     fun setTimer(event: Event) {
@@ -176,7 +175,6 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
         startJob?.cancel()
         setTimerJob?.cancel()
         session.cancel()
-        super.onCleared()
     }
 
     private suspend fun loadBouquets(): List<Service> {

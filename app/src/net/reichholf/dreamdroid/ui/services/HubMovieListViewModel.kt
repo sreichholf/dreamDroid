@@ -14,9 +14,10 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
  * Key this ViewModel by location on the hub back-stack entry so a tab change
  * keeps the loaded list. [HubMovieListSession] stays the list model and the menu provider.
  */
-class HubMovieListViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    private val savedAccess = HandleHubMovieListSavedAccess(savedStateHandle)
+class HubMovieListViewModel(
+    application: Application,
+    private val savedStateHandle: SavedStateHandle
+) : AndroidViewModel(application) {
     val session: HubMovieListSession = HubMovieListSession()
 
     var emptyMessage by mutableStateOf<String?>(null)
@@ -37,7 +38,7 @@ class HubMovieListViewModel(application: Application, savedStateHandle: SavedSta
         session.onSelectedTags = { next ->
             selectedTags = next
             if (locationKey.isNotEmpty()) {
-                writeHubMovieSelectedTags(savedAccess, locationKey, next)
+                writeHubMovieSelectedTags(savedStateHandle, locationKey, next)
             }
         }
     }
@@ -50,7 +51,7 @@ class HubMovieListViewModel(application: Application, savedStateHandle: SavedSta
         locationKey = location
         session.location = location
         session.locationIndex = locationIndex
-        selectedTags = readHubMovieSelectedTags(savedAccess, location)
+        selectedTags = readHubMovieSelectedTags(savedStateHandle, location)
         session.selectedTags = ArrayList(selectedTags)
     }
 
@@ -64,18 +65,5 @@ class HubMovieListViewModel(application: Application, savedStateHandle: SavedSta
 
     override fun onCleared() {
         session.cancelInFlight()
-        super.onCleared()
-    }
-}
-
-private class HandleHubMovieListSavedAccess(private val handle: SavedStateHandle) :
-    HubMovieListSavedAccess {
-    override fun getSelectedTags(location: String): List<String>? {
-        val stored = handle.get<ArrayList<String>>(hubMovieSelectedTagsKey(location))
-        return stored?.toList()
-    }
-
-    override fun setSelectedTags(location: String, tags: List<String>) {
-        handle[hubMovieSelectedTagsKey(location)] = ArrayList(tags)
     }
 }

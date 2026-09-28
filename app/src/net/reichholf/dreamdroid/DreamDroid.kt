@@ -207,7 +207,6 @@ class DreamDroid : Application() {
         private var instance: DreamDroid? = null
 
         const val INITIAL_SERVICELIST_PANE: Int = 1
-        const val INITIAL_VIRTUAL_REMOTE: Int = 2
         const val PREFS_KEY_HWACCEL: String = "video_hardware_acceleration"
         const val PREFS_KEY_PICONS_ONLINE: String = "picons_online"
 
@@ -221,11 +220,9 @@ class DreamDroid : Application() {
         const val PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE: String = "play_button_as_play_pause"
         const val PREFS_KEY_ENABLE_ANIMATIONS: String = "enable_animations"
         const val PREFS_KEY_FIRST_START: String = "first_start"
-        const val PREFS_KEY_SYNC_PICONS: String = "sync_picons"
         const val PREFS_KEY_SYNC_PICONS_PATH: String = "sync_picons_path"
         const val PREFS_KEY_PICONS_ENABLED: String = "picons"
         const val PREFS_KEY_PICONS_USE_NAME: String = "use_name_as_picon_filename"
-        const val PREFS_KEY_INITIALBITS: String = "initial_bits"
         const val PREFS_KEY_GRID_MAX_COLS: String = "grid_max_cols"
         const val PREFS_KEY_MULTIEPG_TEXT_SIZE: String = "multiepg_text_size"
         const val PREFS_KEY_DRAWER_EPG_MODE: String = "drawer_epg_mode"
@@ -344,24 +341,6 @@ class DreamDroid : Application() {
 
         fun dumpXml(): Boolean = ProfileRepository.get().dumpXml()
 
-        @Suppress("rawtypes", "unchecked", "UNCHECKED_CAST")
-        fun scheduleBackup(context: Context) {
-            Log.d(LOG_TAG, "Scheduling backup")
-            try {
-                val managerClass = Class.forName("android.app.backup.BackupManager")
-                val managerConstructor = managerClass.getConstructor(Context::class.java)
-                val manager = managerConstructor.newInstance(context)
-                val m = managerClass.getMethod("dataChanged")
-                m.invoke(manager)
-                Log.d(LOG_TAG, "Backup requested")
-            } catch (e: ClassNotFoundException) {
-                Log.d(LOG_TAG, "No backup manager found")
-            } catch (t: Throwable) {
-                Log.d(LOG_TAG, "Scheduling backup failed $t")
-                t.printStackTrace()
-            }
-        }
-
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val type = Integer.parseInt(sp.getString("theme_type", "1") ?: "1")
@@ -386,23 +365,6 @@ class DreamDroid : Application() {
             val mainIntent = Intent.makeRestartActivityTask(componentName)
             context.startActivity(mainIntent)
             Runtime.getRuntime().exit(0)
-        }
-
-        fun checkInitial(context: Context, which: Int): Boolean {
-            val sp = PreferenceManager.getDefaultSharedPreferences(context)
-            val mask = sp.getInt(PREFS_KEY_INITIALBITS, 0)
-
-            return (mask and which) != which
-        }
-
-        fun setNotInitial(context: Context, which: Int) {
-            val sp = PreferenceManager.getDefaultSharedPreferences(context)
-            var mask = sp.getInt(PREFS_KEY_INITIALBITS, 0)
-            mask = mask or which
-
-            val editor = sp.edit()
-            editor.putInt(PREFS_KEY_INITIALBITS, mask)
-            editor.apply()
         }
 
         fun isTV(context: Context): Boolean = context.resources.getBoolean(R.bool.is_television)

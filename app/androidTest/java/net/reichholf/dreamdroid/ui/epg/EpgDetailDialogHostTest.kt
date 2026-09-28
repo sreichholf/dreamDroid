@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.layout.Column
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color

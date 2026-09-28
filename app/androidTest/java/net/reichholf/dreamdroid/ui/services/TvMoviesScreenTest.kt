@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -30,14 +31,18 @@ class TvMoviesScreenTest {
     fun showsDestinationsAndFakeBouquets() {
         composeRule.setContent {
             DreamDroidTheme {
-                TvMoviesScreen(
-                    selected = TvMoviesDestination.TV,
-                    rows = listOf("Favourites (TV)", "All Services"),
-                    selectedRow = 0,
-                    error = null,
-                    onDestinationSelected = {},
-                    onRowSelected = {}
-                )
+                Column {
+                    TvMoviesHeader(
+                        rows = listOf("Favourites (TV)", "All Services"),
+                        selectedRow = 0,
+                        error = null,
+                        onRowSelected = {}
+                    )
+                    TvMoviesDestinationBar(
+                        selected = TvMoviesDestination.TV,
+                        onDestinationSelected = {}
+                    )
+                }
             }
         }
         composeRule.onNodeWithText("TV").assertIsDisplayed()

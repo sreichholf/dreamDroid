@@ -5,12 +5,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -20,11 +18,9 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 /**
  * Owns [SettingsState] for the settings destination.
  *
- * Preference values stay in SharedPreferences. [savedStateHandle] is required by the
- * default factory and is not a second copy of those values.
+ * Preference values stay in SharedPreferences.
  */
-class SettingsViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
     val state: SettingsState = SettingsState.create(getApplication<Application>())
 
     var message by mutableStateOf<String?>(null)

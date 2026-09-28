@@ -9,7 +9,6 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.data.ProfileRepository
 
 class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :

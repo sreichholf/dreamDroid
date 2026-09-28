@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.lifecycle.SavedStateHandle
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -8,33 +9,31 @@ import org.junit.jupiter.api.Test
 class HubServiceListSavedTest {
     @Test
     fun absentSnapshotReadsNullWithoutWriting() {
-        val values = mutableMapOf<String, Any>()
-        val access = MapHubServiceListSavedAccess(values)
-        val saved = readHubServiceListSaved(access, "1:7:1:root")
+        val handle = SavedStateHandle()
+        val saved = readHubServiceListSaved(handle, "1:7:1:root")
         assertNull(saved.currentRef)
         assertNull(saved.currentName)
-        assertFalse(values.containsKey(hubServiceCurrentRefKey("1:7:1:root")))
+        assertFalse(handle.contains(hubServiceCurrentRefKey("1:7:1:root")))
     }
 
     @Test
     fun keysAreNamespacedPerBouquetRoot() {
-        val values = mutableMapOf<String, Any>()
-        val access = MapHubServiceListSavedAccess(values)
+        val handle = SavedStateHandle()
         HubServiceListSaved(currentRef = "1:0:1:tv", currentName = "ARD").writeTo(
-            access,
+            handle,
             "1:7:1:tv"
         )
         HubServiceListSaved(currentRef = "1:0:2:radio", currentName = "WDR").writeTo(
-            access,
+            handle,
             "1:7:2:radio"
         )
         assertEquals(
             "1:0:1:tv",
-            readHubServiceListSaved(access, "1:7:1:tv").currentRef
+            readHubServiceListSaved(handle, "1:7:1:tv").currentRef
         )
         assertEquals(
             "1:0:2:radio",
-            readHubServiceListSaved(access, "1:7:2:radio").currentRef
+            readHubServiceListSaved(handle, "1:7:2:radio").currentRef
         )
     }
 
