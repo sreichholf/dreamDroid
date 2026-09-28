@@ -93,6 +93,7 @@ Claude Code running locally on a machine with JDK 25, the SDK, and a device or e
 ## Other traps
 
 - `main` is the rewrite. Do not merge rewrite work into `master`.
+- Keep feature and implementation branches current by rebasing them onto `origin/main`, not by merging `main` into them; then force-push with `--force-with-lease`. A branch merged back into `main` should not carry merges of `main`.
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
 - Lint fails on `UnusedResources` and `UnusedIds`, and spotless fails on unused imports. Delete what they flag. A resource only reached by name at runtime (like `resValue` in `app/build.gradle.kts`) goes in the `UnusedResources` ignore list in `app/lint.xml`.
