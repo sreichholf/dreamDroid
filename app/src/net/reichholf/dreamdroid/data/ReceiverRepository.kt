@@ -6,6 +6,7 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Signal
+import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /** Receiver state and commands of the active profile. */
@@ -25,4 +26,8 @@ class ReceiverRepository @Inject constructor(private val clients: EnigmaClientFa
             NameValuePair("filename", "/tmp/dreamDroid-${System.currentTimeMillis() / 1000}")
         )
     )
+
+    /** Zaps the receiver to [reference], a service or a recording. */
+    suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
+        clients.current().zap(listOf(NameValuePair("sRef", reference)))
 }

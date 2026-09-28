@@ -340,8 +340,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun timer(context: Context): TimerDao = database(context).timerDao()
 
-        fun movie(context: Context): MovieDao = database(context).movieDao()
-
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =
             setDriver(BundledSQLiteDriver())

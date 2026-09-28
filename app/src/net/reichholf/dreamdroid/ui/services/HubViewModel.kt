@@ -14,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.movieRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.loadBouquetList
@@ -189,11 +190,9 @@ class HubViewModel(application: Application, private val savedStateHandle: Saved
             onLocationsResult = { success ->
                 lastLocationsHttpSuccess = success
                 viewModelScope.launch {
-                    val painted = movieLocationsAfterHttpOrCache(
-                        AppDatabase.movie(app),
-                        ProfileRepository.get().requireCurrent().id,
-                        success,
-                        ProfileRepository.get().locations().toList()
+                    val painted = movieRepository(app).locationsOrCached(
+                        receiverAnswered = success,
+                        live = ProfileRepository.get().locations().toList()
                     )
                     movieLocations = painted
                     locationsReady = true
