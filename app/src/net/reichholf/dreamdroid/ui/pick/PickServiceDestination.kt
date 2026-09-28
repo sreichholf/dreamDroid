@@ -2,45 +2,38 @@ package net.reichholf.dreamdroid.ui.pick
 
 import android.app.Activity
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Phase 2.7f: bouquet/service picker as a direct Compose NavHost destination.
- * Result Intent carries typed [net.reichholf.dreamdroid.enigma.Service] as [KEY_BOUQUET].
- * The list and load job live on [PickServiceViewModel].
+ * Bouquet picker as a Compose NavHost destination. The result Intent carries the picked
+ * [net.reichholf.dreamdroid.enigma.Service] as [KEY_BOUQUET].
  */
 @Composable
 fun PickServiceDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: PickServiceViewModel = viewModel()
+    viewModel: PickServiceViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val title = viewModel.toolbarTitle
-
-    LaunchedEffect(title) {
-        (context as? AppCompatActivity)?.title = title
-    }
-    LaunchedEffect(viewModel) {
-        viewModel.start()
-    }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
 
     DreamDroidPullRefresh(
-        refreshing = viewModel.refresh.isRefreshing,
-        onRefresh = { viewModel.reload() },
-        enabled = viewModel.refresh.enabled,
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::reload,
         modifier = modifier
     ) {
         PickServiceScreen(
-            items = viewModel.listState.items,
-            emptyMessage = viewModel.emptyMessage,
+            items = uiState.items,
+            loading = uiState.refreshing,
+            emptyMessage = uiState.emptyMessage?.asString(),
             onItemClick = { service ->
                 val data = Intent().apply {
                     putExtra(KEY_BOUQUET, service)

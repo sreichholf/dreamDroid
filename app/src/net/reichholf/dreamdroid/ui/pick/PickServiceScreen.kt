@@ -10,8 +10,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
@@ -22,12 +20,12 @@ fun PickServiceScreen(
     items: List<Service>,
     onItemClick: (Service) -> Unit,
     modifier: Modifier = Modifier,
+    loading: Boolean = false,
     emptyMessage: String? = null
 ) {
-    val loadingLabel = stringResource(R.string.loading)
     if (items.isEmpty()) {
         ListEmptyState(
-            loading = emptyMessage == loadingLabel,
+            loading = loading,
             message = emptyMessage,
             modifier = modifier
         )

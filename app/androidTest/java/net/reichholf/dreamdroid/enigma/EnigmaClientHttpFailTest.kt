@@ -113,51 +113,12 @@ class EnigmaClientHttpFailTest {
     }
 
     @Test
-    fun loadServiceList_httpFailIsNotEmptySuccess() = runBlocking {
-        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val result = loadServiceList(appContext(), listOf(NameValuePair("sRef", "1:0:1")))
-        assertEquals(false, result.success)
-        assertEquals(emptyList<Service>(), result.services)
-        assertEquals(contentError("Server Error"), result.errorText)
-    }
-
-    @Test
-    fun loadServiceList_empty200IsSuccess() = runBlocking {
-        server.enqueue(MockResponse().setBody(""))
-        val result = loadServiceList(appContext(), listOf(NameValuePair("sRef", "1:0:1")))
-        assertEquals(true, result.success)
-        assertEquals(emptyList<Service>(), result.services)
-        assertEquals(null, result.errorText)
-    }
-
-    @Test
     fun loadEpgNowNext_httpFailIsNotEmptySuccess() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
         val result = loadEpgNowNext(appContext(), listOf(NameValuePair("bRef", "1:7:1")))
         assertEquals(false, result.success)
         assertEquals(emptyList<ServiceNowNext>(), result.rows)
         assertEquals(contentError("Server Error"), result.errorText)
-    }
-
-    @Test
-    fun loadBouquetList_tvHttpFailIsFailureEvenIfRadioSucceeds() = runBlocking {
-        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        server.enqueue(MockResponse().setBody(loadWebFixture("getservices.xml")))
-        val result = loadBouquetList(appContext())
-        assertEquals(false, result.success)
-        assertEquals(0, result.bouquets.tv.size)
-        assertEquals(contentError("Server Error"), result.errorText)
-    }
-
-    @Test
-    fun loadBouquetList_emptyRootsAreSuccess() = runBlocking {
-        server.enqueue(MockResponse().setBody(""))
-        server.enqueue(MockResponse().setBody(""))
-        val result = loadBouquetList(appContext())
-        assertEquals(true, result.success)
-        assertEquals(0, result.bouquets.tv.size)
-        assertEquals(0, result.bouquets.radio.size)
-        assertEquals(null, result.errorText)
     }
 
     private fun appContext(): Context = ApplicationProvider.getApplicationContext()

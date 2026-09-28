@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,7 +22,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -31,7 +33,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
+import net.reichholf.dreamdroid.ui.pick.TimerServicePickUiState
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickViewModel
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
 /**
@@ -51,36 +55,40 @@ fun TvTimerServicePick(
     onPicked: (Service) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TimerServicePickViewModel = viewModel(key = tvTimerServicePickKey())
+    viewModel: TimerServicePickViewModel = hiltViewModel(key = tvTimerServicePickKey())
 ) {
-    val session = viewModel.session
-    val items = session.listState.items
-    val rows = if (session.bouquetRef.isEmpty()) items.withoutMarkers() else items.toList()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     BackHandler {
-        if (session.bouquetRef.isNotEmpty()) {
-            session.showBouquetList()
-        } else {
+        if (uiState.showsBouquets) {
             onDismiss()
+        } else {
+            viewModel.showBouquetList()
         }
     }
 
     LaunchedEffect(viewModel) {
         // The activity-scoped list outlives a failed load; retry it on every open.
-        if (session.listState.items.isEmpty()) {
-            session.reload()
-        }
+        viewModel.onShown()
     }
 
     TvTimerServicePickScreen(
-        rows = rows,
-        emptyMessage = session.emptyMessage,
+        rows = tvTimerServicePickRows(uiState),
+        emptyMessage = uiState.emptyMessage?.asString(),
         onRowClick = { service ->
-            session.onRowClick(service)?.let(onPicked)
+            viewModel.onRowClick(service)?.let(onPicked)
         },
         modifier = modifier
     )
 }
+
+/** The rows the TV picker shows: bouquets without section markers, or every channel row. */
+internal fun tvTimerServicePickRows(state: TimerServicePickUiState): List<Service> =
+    if (state.showsBouquets) {
+        state.items.filter { !ServiceKeys.isMarker(it.reference) }
+    } else {
+        state.items
+    }
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
@@ -153,8 +161,4 @@ fun TvTimerServicePickScreen(
             }
         }
     }
-}
-
-private fun List<Service>.withoutMarkers(): List<Service> = filter { service ->
-    !ServiceKeys.isMarker(service.reference)
 }
