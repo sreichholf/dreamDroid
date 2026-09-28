@@ -183,9 +183,6 @@ class DreamDroid : Application() {
     }
 
     private fun initChannels() {
-        if (Build.VERSION.SDK_INT < 26) {
-            return
-        }
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         var channel = NotificationChannel(

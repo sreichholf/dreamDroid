@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.ui.services
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
-import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -14,7 +13,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -47,6 +45,7 @@ import net.reichholf.dreamdroid.room.MovieSnapshotStore
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
@@ -59,7 +58,6 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellMessages
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.widget.AnchorPopup
 
 /**
  * Phase 2.7h: one Movies hub location page as Compose (parity with former MovieListFragment).
@@ -80,15 +78,15 @@ fun HubMovieListPage(
     viewModel: HubMovieListViewModel = viewModel(key = "hub-movie:$location")
 ) {
     val context = LocalContext.current
-    val view = LocalView.current
     val session = viewModel.session
     var detailContent by remember { mutableStateOf<MovieDetailContent?>(null) }
     var showTagPicker by remember { mutableStateOf(false) }
     var showDeleteConfirm by remember { mutableStateOf<String?>(null) }
+    var rowMenu by remember { mutableStateOf<RowMenuState<MovieRowAction>?>(null) }
 
     session.handle = handle
     session.context = context
-    session.popupRoot = AnchorPopup.overlayRoot(view)
+    session.onShowMenu = { rowMenu = it }
     session.onShowDetail = { detailContent = it }
     session.onRequestTagPicker = { showTagPicker = true }
     session.onRequestDeleteConfirm = { title -> showDeleteConfirm = title }
@@ -101,7 +99,7 @@ fun HubMovieListPage(
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             session.chromeAttached = false
-            session.popupRoot = null
+            session.onShowMenu = null
             session.onShowDetail = null
             session.onRequestTagPicker = null
             session.onRequestDeleteConfirm = null
@@ -130,8 +128,11 @@ fun HubMovieListPage(
         } else {
             MovieListScreen(
                 items = listState.items,
-                onItemClick = { item, x, y -> session.onItemClick(item, isLong = false, x, y) },
-                onItemLongClick = { item, x, y -> session.onItemClick(item, isLong = true, x, y) }
+                onItemClick = { session.onItemClick(it, isLong = false) },
+                onItemLongClick = { session.onItemClick(it, isLong = true) },
+                menu = rowMenu,
+                onMenuAction = session::onMovieAction,
+                onMenuDismiss = { rowMenu = null }
             )
         }
     }
@@ -186,7 +187,7 @@ class HubMovieListSession {
 
     var handle: PhoneNavHandle? = null
     var context: android.content.Context? = null
-    var popupRoot: ViewGroup? = null
+    var onShowMenu: ((RowMenuState<MovieRowAction>?) -> Unit)? = null
     var location: String = ""
     var locationIndex: Int = -1
     var listState: MovieListState? = null
@@ -227,6 +228,8 @@ class HubMovieListSession {
         if (generation != loadGeneration) {
             return
         }
+        // Rows may change under an open menu; its row and action would be stale.
+        onShowMenu?.invoke(null)
         val ctx = context ?: return
         val state = listState ?: return
         val refreshState = refresh ?: return
@@ -346,7 +349,7 @@ class HubMovieListSession {
         MovieSnapshotStore.replaceMovies(dao, pid, location, loaded)
     }
 
-    fun onItemClick(item: MovieListItem, isLong: Boolean, windowX: Int, windowY: Int) {
+    fun onItemClick(item: MovieListItem, isLong: Boolean) {
         val index = item.index
         if (index < 0 || index >= movies.size) {
             return
@@ -359,17 +362,7 @@ class HubMovieListSession {
         if ((instantZap && !isLong) || (!instantZap && isLong)) {
             zapTo(typed.reference)
         } else {
-            showPopupMenu(windowX, windowY)
-        }
-    }
-
-    fun showPopupMenu(windowX: Int, windowY: Int) {
-        val root = popupRoot ?: return
-        AnchorPopup.showAtWindow(root, windowX, windowY) { menu ->
-            menu.menuInflater.inflate(R.menu.popup_movielist, menu.menu)
-            menu.setOnMenuItemClickListener { menuItem ->
-                onMovieAction(menuItem.itemId)
-            }
+            onShowMenu?.invoke(RowMenuState(item.index, MovieRowAction.entries))
         }
     }
 
@@ -431,35 +424,31 @@ class HubMovieListSession {
         }
     }
 
-    fun onMovieAction(action: Int): Boolean {
-        val ctx = context ?: return false
+    fun onMovieAction(action: MovieRowAction) {
+        val ctx = context ?: return
         val movie = selectedMovie
         when (action) {
-            R.id.menu_info -> {
+            MovieRowAction.Info -> {
                 if (movie == null || movie.descriptionExtended.isEmpty()) {
                     toast(ctx.getString(R.string.no_epg_available))
-                    return true
+                    return
                 }
                 onShowDetail?.invoke(movie.toMovieDetailContent())
             }
 
-            R.id.menu_zap -> {
+            MovieRowAction.Zap -> {
                 val ref = movie?.reference.orEmpty()
                 if (ref.isNotEmpty()) {
                     zapTo(ref)
                 }
             }
 
-            R.id.menu_delete -> {
-                onRequestDeleteConfirm?.invoke(movie?.title.orEmpty())
-            }
+            MovieRowAction.Delete -> onRequestDeleteConfirm?.invoke(movie?.title.orEmpty())
 
-            Statics.ACTION_DELETE_CONFIRMED -> deleteMovie()
+            MovieRowAction.Download -> downloadSelectedMovie()
 
-            R.id.menu_download -> downloadSelectedMovie()
-
-            R.id.menu_stream -> {
-                val host = handle ?: return false
+            MovieRowAction.Stream -> {
+                val host = handle ?: return
                 host.runOnlineOnly {
                     try {
                         val activity = ctx as AppCompatActivity
@@ -477,10 +466,7 @@ class HubMovieListSession {
                     }
                 }
             }
-
-            else -> return false
         }
-        return true
     }
 
     private fun downloadSelectedMovie() {

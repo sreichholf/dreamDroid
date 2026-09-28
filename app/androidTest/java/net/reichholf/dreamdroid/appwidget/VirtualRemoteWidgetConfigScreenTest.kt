@@ -55,7 +55,8 @@ class VirtualRemoteWidgetConfigScreenTest {
                     onProfileClick = { profile ->
                         lastFullAtClick = isFull
                         clicked = profile
-                    }
+                    },
+                    onOpenApp = {}
                 )
             }
         }
@@ -73,5 +74,26 @@ class VirtualRemoteWidgetConfigScreenTest {
         composeRule.onNodeWithText("Living Room").performClick()
         assertEquals(first, clicked)
         assertFalse(lastFullAtClick == true)
+    }
+
+    @Test
+    fun withoutProfilesExplainsAndOffersToOpenTheApp() {
+        var opened = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                VirtualRemoteWidgetConfigScreen(
+                    profiles = emptyList(),
+                    isFull = false,
+                    onStyleFullChange = {},
+                    onProfileClick = {},
+                    onOpenApp = { opened = true }
+                )
+            }
+        }
+        composeRule.onNodeWithText("No connection profile found", substring = true)
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("QuickZap", substring = true).assertDoesNotExist()
+        composeRule.onNodeWithText("Open dreamDroid").performClick()
+        assertTrue(opened)
     }
 }

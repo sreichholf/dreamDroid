@@ -4,6 +4,7 @@ import android.annotation.TargetApi
 import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build
@@ -18,10 +19,10 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
+import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -83,8 +84,11 @@ class VideoActivity :
     private var tvStreamingRejected: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        delegate.localNightMode = AppCompatDelegate.MODE_NIGHT_YES
-        enableEdgeToEdge()
+        // Bars sit over video; keep them dark whatever the app theme.
+        enableEdgeToEdge(
+            statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT),
+            navigationBarStyle = SystemBarStyle.dark(Color.TRANSPARENT)
+        )
         setFullScreen()
         super.onCreate(savedInstanceState)
         val isTelevision = isTelevisionDevice()
@@ -308,9 +312,7 @@ class VideoActivity :
             videoVisibleWidth = videoWidth
             videoVisibleHeight = videoHeight
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            setPictureInPictureParams(getPipParams())
-        }
+        setPictureInPictureParams(getPipParams())
     }
 
     protected fun changeSurfaceLayout() {
@@ -430,7 +432,6 @@ class VideoActivity :
         return builder.build()
     }
 
-    @TargetApi(Build.VERSION_CODES.O)
     protected fun doEnterPip(): Boolean {
         val params = getPipParams()
         try {
@@ -444,7 +445,6 @@ class VideoActivity :
     @TargetApi(Build.VERSION_CODES.R)
     override fun onPictureInPictureRequested(): Boolean = doEnterPip()
 
-    @TargetApi(Build.VERSION_CODES.O)
     override fun onUserLeaveHint() {
         super.onUserLeaveHint()
         if (!isInPictureInPictureMode) doEnterPip()
@@ -484,9 +484,6 @@ class VideoActivity :
         mediaPlayer.setScale(0f)
         mediaPlayer.setVideoTrackEnabled(true)
     }
-
-    override fun isInPictureInPictureMode(): Boolean =
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && super.isInPictureInPictureMode()
 
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
