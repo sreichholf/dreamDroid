@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.ui.screenshot
 
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -19,6 +17,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -40,15 +39,14 @@ class ScreenshotViewModelTest {
     private val server = MockWebServer()
     private val sessions = SessionConnectionHolder()
     private val viewModels = mutableListOf<ScreenshotViewModel>()
-    private lateinit var profiles: ProfileRepository
+    private val profiles: ProfileRepository = TestProfiles().repository
 
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         server.start()
-        // Same instance as the app's transitional Hilt binding: EnigmaHttp still reads
-        // ProfileRepository.get() for the XML dump flag.
-        profiles = ProfileRepository.install(TestContext())
+        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
+        ProfileRepository.install(profiles)
         profiles.setCurrent(
             Profile().apply {
                 id = 1
@@ -180,8 +178,4 @@ class ScreenshotViewModelTest {
         val JPEG = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte())
         val PNG = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00)
     }
-}
-
-private class TestContext : ContextWrapper(null) {
-    override fun getApplicationContext(): Context = this
 }

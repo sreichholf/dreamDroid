@@ -8,10 +8,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +29,6 @@ import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
@@ -45,6 +45,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
  * Owns CheckProfile + the 30s reachability probe so the hub can show Online /
  * Offline / Checking from [SessionConnectionHolder].
  */
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
@@ -79,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         if (showingSetup) {
             return
         }
-        if (!ProfileRepository.get().ensureCurrent(this)) {
+        if (!ProfileRepository.get().ensureCurrent()) {
             checkProfileJob?.cancel()
             checkProfileJob = null
             showSetup()
@@ -92,15 +93,10 @@ class MainActivity : AppCompatActivity() {
         setContent {
             DreamDroidTvTheme {
                 SetupAssistantScreen(
-                    viewModel = viewModel(),
+                    viewModel = hiltViewModel(),
                     localNetworkGranted = lanGranted,
                     onRequestLocalNetwork = { localNetworkPermissionRequest.ensure(this) },
-                    onSave = { profile ->
-                        val id = AppDatabase.profilesBlocking(this).addProfile(profile).toInt()
-                        profile.id = id
-                        ProfileRepository.get().setCurrent(this, id, true)
-                        startHub()
-                    },
+                    onFinished = { startHub() },
                     onLeave = { finish() }
                 )
             }

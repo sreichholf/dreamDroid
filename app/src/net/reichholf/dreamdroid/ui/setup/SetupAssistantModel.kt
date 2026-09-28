@@ -1,9 +1,9 @@
 package net.reichholf.dreamdroid.ui.setup
 
-import android.content.Context
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.text.UiText
 
 enum class SetupStep {
     Welcome,
@@ -26,18 +26,19 @@ fun ProfileCheckResult.isCertificateFailure(): Boolean {
     return unreachable.reason == EnigmaFailure.UnreachableReason.Ssl
 }
 
-fun ProfileCheckResult.setupMessage(context: Context): String {
+/** The receiver's own error text, else the failure's, else the check step's; null if none. */
+fun ProfileCheckResult.setupMessage(): UiText? {
     if (errorTextExt.isNotBlank()) {
-        return errorTextExt
+        return UiText.Raw(errorTextExt)
     }
-    val fromFailure = failure?.userMessage(context).orEmpty()
-    if (fromFailure.isNotBlank()) {
+    val fromFailure = failure?.userMessageText()
+    if (fromFailure != null && !(fromFailure is UiText.Raw && fromFailure.text.isBlank())) {
         return fromFailure
     }
     if (errorTextId > 0) {
-        return context.getString(errorTextId)
+        return UiText.Resource(errorTextId)
     }
-    return ""
+    return null
 }
 
 fun wizardProfile(

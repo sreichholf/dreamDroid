@@ -1,24 +1,30 @@
 package net.reichholf.dreamdroid.di
 
-import android.content.Context
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.MdnsReceiverDiscovery
+import net.reichholf.dreamdroid.data.ProfileCheckRepository
+import net.reichholf.dreamdroid.data.ProfileStore
+import net.reichholf.dreamdroid.data.ReceiverDiscovery
+import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
+import net.reichholf.dreamdroid.data.RoomProfileStore
 
 @Module
 @InstallIn(SingletonComponent::class)
-object ProfileModule {
-    /**
-     * Transitional: returns the static instance so Hilt and `ProfileRepository.get()`
-     * share one object. Delete this with the last `ProfileRepository.get()` caller,
-     * when `ProfileRepository` gets an `@Inject` constructor (docs/hilt-migration.md).
-     */
-    @Provides
-    @Singleton
-    fun profileRepository(@ApplicationContext context: Context): ProfileRepository =
-        ProfileRepository.install(context)
+abstract class ProfileModule {
+    @Binds
+    abstract fun profileStore(store: RoomProfileStore): ProfileStore
+
+    @Binds
+    abstract fun profileCheckRepository(
+        repository: ReceiverProfileCheckRepository
+    ): ProfileCheckRepository
+
+    companion object {
+        @Provides
+        fun receiverDiscovery(): ReceiverDiscovery = MdnsReceiverDiscovery
+    }
 }

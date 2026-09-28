@@ -25,9 +25,7 @@ class PhoneRouteRestoreTest {
     }
 
     @Test
-    fun profileAndTimerTagsKeepTheirShape() {
-        assertEquals("profile_edit:new", ProfileEdit().tag())
-        assertEquals("profile_edit:4", ProfileEdit(profileId = 4).tag())
+    fun timerTagsKeepTheirShape() {
         assertEquals("timer_edit:new:100", TimerEdit(create = true, begin = "100").tag())
         assertEquals(
             "timer_edit:1:0:1:100",

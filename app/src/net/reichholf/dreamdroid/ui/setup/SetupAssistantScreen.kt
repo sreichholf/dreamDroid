@@ -34,38 +34,42 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.text.asString
 
 private const val INTRO_HOLD_MS: Int = 700
 
@@ -76,14 +80,23 @@ fun SetupAssistantScreen(
     viewModel: SetupAssistantViewModel,
     localNetworkGranted: Boolean,
     onRequestLocalNetwork: () -> Unit,
-    onSave: (Profile) -> Unit,
+    onFinished: () -> Unit,
     onLeave: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val draft = viewModel.draft
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val draft = state.draft
     val step = draft.step
-    val checking = viewModel.checking
-    val checkResult = viewModel.checkResult
+    val checking = state.checking
+    val checkResult = state.checkResult
+    val currentOnFinished by rememberUpdatedState(onFinished)
+
+    LaunchedEffect(state.finished) {
+        if (state.finished) {
+            viewModel.onFinishHandled()
+            currentOnFinished()
+        }
+    }
 
     BackHandler {
         if (!viewModel.back()) {
@@ -114,15 +127,17 @@ fun SetupAssistantScreen(
         runCatching { startFocus.requestFocus() }
     }
     val progress = intro.value
-    val signInReady = !draft.login || draft.user.isNotBlank()
+    val hostText = viewModel.host.state.text
+    val portText = viewModel.port.state.text.toString()
+    val signInReady = !draft.login || viewModel.user.state.text.isNotBlank()
     val signInChecked = checkResult != null && !checking
     val failed = checkResult?.hasError == true
     val actionEnabled = when (step) {
-        SetupStep.Find -> draft.host.isNotBlank()
+        SetupStep.Find -> hostText.isNotBlank()
 
         SetupStep.Connection -> {
-            val port = draft.portText.toIntOrNull()
-            draft.host.isNotBlank() && port != null && port in 1..65535
+            val port = portText.toIntOrNull()
+            hostText.isNotBlank() && port != null && port in 1..65535
         }
 
         SetupStep.SignIn -> signInReady && (signInChecked || !checking)
@@ -223,7 +238,7 @@ fun SetupAssistantScreen(
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Button(
-                                        onClick = { viewModel.advance() },
+                                        onClick = viewModel::advance,
                                         enabled = progress >= 1f,
                                         modifier = Modifier
                                             .focusRequester(startFocus)
@@ -234,32 +249,27 @@ fun SetupAssistantScreen(
                                 }
 
                                 SetupStep.Find -> FindStep(
-                                    host = draft.host,
-                                    onHostChange = viewModel::onFindHostChange,
-                                    devices = viewModel.devices,
-                                    searching = viewModel.searching,
-                                    searched = viewModel.searched,
+                                    host = viewModel.host.state,
+                                    devices = state.devices,
+                                    searching = state.searching,
+                                    searched = state.searched,
                                     localNetworkGranted = localNetworkGranted,
-                                    portText = draft.portText,
+                                    portText = portText,
                                     onPick = viewModel::onPick
                                 )
 
                                 SetupStep.Connection -> ConnectionStep(
-                                    host = draft.host,
-                                    onHostChange = viewModel::onHostChange,
+                                    host = viewModel.host.state,
                                     useHttps = draft.useHttps,
                                     onHttpsChange = viewModel::onHttpsChange,
-                                    portText = draft.portText,
-                                    onPortChange = viewModel::onPortChange
+                                    port = viewModel.port.state
                                 )
 
                                 SetupStep.SignIn -> SignInStep(
                                     login = draft.login,
                                     onLoginChange = viewModel::onLoginChange,
-                                    user = draft.user,
-                                    onUserChange = viewModel::onUserChange,
-                                    pass = draft.pass,
-                                    onPassChange = viewModel::onPassChange,
+                                    user = viewModel.user.state,
+                                    pass = viewModel.pass.state,
                                     checking = checking,
                                     result = checkResult,
                                     trustAllCerts = draft.trustAllCerts,
@@ -268,8 +278,7 @@ fun SetupAssistantScreen(
                                 )
 
                                 SetupStep.Name -> NameStep(
-                                    profileName = draft.profileName,
-                                    onNameChange = viewModel::onNameChange
+                                    profileName = viewModel.profileName.state
                                 )
                             }
                         }
@@ -295,7 +304,7 @@ fun SetupAssistantScreen(
                         }
                     }
                     Button(
-                        onClick = { viewModel.advance()?.let(onSave) },
+                        onClick = viewModel::advance,
                         enabled = actionEnabled
                     ) {
                         Text(stringResource(actionLabel))
@@ -332,8 +341,7 @@ private fun SetupTitle(step: SetupStep, progress: Float) {
 
 @Composable
 private fun FindStep(
-    host: String,
-    onHostChange: (String) -> Unit,
+    host: TextFieldState,
     devices: List<SetupReceiver>,
     searching: Boolean,
     searched: Boolean,
@@ -351,10 +359,9 @@ private fun FindStep(
     )
     Spacer(Modifier.height(16.dp))
     OutlinedTextField(
-        value = host,
-        onValueChange = onHostChange,
+        state = host,
         label = { Text(stringResource(R.string.setup_address)) },
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(addressFocus)
@@ -388,7 +395,8 @@ private fun FindStep(
     }
     LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
         items(devices, key = { "${it.host}:${it.port}" }) { receiver ->
-            val selected = host == receiver.host && portText == receiver.port.toString()
+            val selected =
+                host.text.toString() == receiver.host && portText == receiver.port.toString()
             ListItem(
                 headlineContent = { Text(receiver.name) },
                 supportingContent = { Text(receiver.host) },
@@ -409,12 +417,10 @@ private fun FindStep(
 
 @Composable
 private fun ConnectionStep(
-    host: String,
-    onHostChange: (String) -> Unit,
+    host: TextFieldState,
     useHttps: Boolean,
     onHttpsChange: (Boolean) -> Unit,
-    portText: String,
-    onPortChange: (String) -> Unit
+    port: TextFieldState
 ) {
     val hostFocus = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -426,10 +432,9 @@ private fun ConnectionStep(
     )
     Spacer(Modifier.height(16.dp))
     OutlinedTextField(
-        value = host,
-        onValueChange = onHostChange,
+        state = host,
         label = { Text(stringResource(R.string.host_long)) },
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
             .focusRequester(hostFocus)
@@ -450,10 +455,9 @@ private fun ConnectionStep(
     }
     Spacer(Modifier.height(12.dp))
     OutlinedTextField(
-        value = portText,
-        onValueChange = onPortChange,
+        state = port,
         label = { Text(stringResource(R.string.port)) },
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
@@ -465,10 +469,8 @@ private fun ConnectionStep(
 private fun SignInStep(
     login: Boolean,
     onLoginChange: (Boolean) -> Unit,
-    user: String,
-    onUserChange: (String) -> Unit,
-    pass: String,
-    onPassChange: (String) -> Unit,
+    user: TextFieldState,
+    pass: TextFieldState,
     checking: Boolean,
     result: ProfileCheckResult?,
     trustAllCerts: Boolean,
@@ -492,19 +494,15 @@ private fun SignInStep(
         if (login) {
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
-                value = user,
-                onValueChange = onUserChange,
+                state = user,
                 label = { Text(stringResource(R.string.user)) },
-                singleLine = true,
+                lineLimits = TextFieldLineLimits.SingleLine,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(12.dp))
-            OutlinedTextField(
-                value = pass,
-                onValueChange = onPassChange,
+            OutlinedSecureTextField(
+                state = pass,
                 label = { Text(stringResource(R.string.pass)) },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -521,17 +519,16 @@ private fun SignInStep(
 }
 
 @Composable
-private fun NameStep(profileName: String, onNameChange: (String) -> Unit) {
+private fun NameStep(profileName: TextFieldState) {
     Text(
         text = stringResource(R.string.setup_name_body),
         style = MaterialTheme.typography.bodyLarge
     )
     Spacer(Modifier.height(16.dp))
     OutlinedTextField(
-        value = profileName,
-        onValueChange = onNameChange,
+        state = profileName,
         label = { Text(stringResource(R.string.profile_name)) },
-        singleLine = true,
+        lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier.fillMaxWidth()
     )
 }
@@ -543,7 +540,6 @@ private fun ConnectionCheck(
     trustAllCerts: Boolean,
     onTrustAllChange: (Boolean) -> Unit
 ) {
-    val context = LocalContext.current
     Text(
         text = stringResource(R.string.setup_test_body),
         style = MaterialTheme.typography.bodyLarge
@@ -565,7 +561,7 @@ private fun ConnectionCheck(
         )
     } else if (outcome != null && outcome.hasError) {
         Text(
-            text = outcome.setupMessage(context),
+            text = outcome.setupMessage()?.asString().orEmpty(),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.error
         )

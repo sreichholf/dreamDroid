@@ -85,7 +85,7 @@ class TvTimerEditorHostTest {
         if (previous != null) {
             ProfileRepository.get().setCurrent(previous)
         } else {
-            ProfileRepository.get().loadCurrent(targetContext())
+            ProfileRepository.get().loadCurrent()
         }
     }
 

@@ -18,13 +18,8 @@ class SetupAssistantSavedTest {
         val handle = SavedStateHandle()
         val draft = SetupDraft(
             step = SetupStep.SignIn,
-            host = "192.168.1.2",
             useHttps = true,
-            portText = "8443",
             login = false,
-            user = "admin",
-            pass = "secret",
-            profileName = "Living room",
             nameEdited = true,
             trustAllCerts = true,
             suggestedName = "dm920",

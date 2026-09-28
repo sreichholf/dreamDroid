@@ -13,14 +13,9 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -35,21 +30,6 @@ class ProfilesScreenTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-    }
-
-    @After
-    fun deleteF05Profiles() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profilesBlocking(ctx)
-        val keep = dao.getProfiles().firstOrNull {
-            it.name?.startsWith("f05-") != true && it.id != null
-        }
-        dao.getProfiles()
-            .filter { it.name?.startsWith("f05-") == true }
-            .forEach { dao.deleteProfile(it) }
-        if (keep?.id != null) {
-            ProfileRepository.get().setCurrent(ctx, keep.id!!, true)
-        }
     }
 
     @Test
@@ -139,34 +119,5 @@ class ProfilesScreenTest {
         tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
         val gap = tiles[1].getBoundsInRoot().top - tiles[0].getBoundsInRoot().bottom
         assertTrue("expected a gutter between tiles, gap=$gap", gap >= 3.dp)
-    }
-
-    @Test
-    fun deletingActiveProfileDoesNotKeepGoneId() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profilesBlocking(context)
-        val keep = Profile.getDefault().apply {
-            name = "f05-keep"
-            host = "10.0.0.2"
-        }
-        val gone = Profile.getDefault().apply {
-            name = "f05-gone"
-            host = "10.0.0.1"
-        }
-        keep.id = dao.addProfile(keep).toInt()
-        gone.id = dao.addProfile(gone).toInt()
-        ProfileRepository.get().setCurrent(context, gone.id!!, true)
-
-        val message = deleteConfirmedProfile(context, gone)
-
-        assertEquals("Deleted profile 'f05-gone'", message)
-        assertFalse(dao.getProfiles().any { it.id == gone.id })
-        val currentId = ProfileRepository.get().requireCurrent().id
-        assertTrue(currentId != gone.id)
-        assertTrue(dao.getProfiles().any { it.id == currentId })
-        val prefId = PreferenceManager.getDefaultSharedPreferences(context)
-            .getInt(DreamDroid.CURRENT_PROFILE, -1)
-        assertTrue(prefId != gone.id)
-        assertEquals(currentId, prefId)
     }
 }

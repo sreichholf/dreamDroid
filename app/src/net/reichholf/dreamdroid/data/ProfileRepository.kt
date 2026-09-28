@@ -4,6 +4,14 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -11,6 +19,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.StringListParser
@@ -18,6 +27,8 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.ProfileDaoBlocking
+import net.reichholf.dreamdroid.room.UseDrivenCache
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
@@ -26,8 +37,12 @@ import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
  * [switches] emits once when the active profile actually changes (settings differ
  * or the caller forces the event). Location lists, tag lists, and device-info XML
  * live here and are cleared on that change.
+ *
+ * The constructor must not read [store]: Hilt builds this during `DreamDroid`'s
+ * `super.onCreate()`, before the pre-Room profile import runs.
  */
-class ProfileRepository(private val store: ProfileStore) {
+@Singleton
+class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     private val _current = MutableStateFlow<Profile?>(null)
     val current: StateFlow<Profile?> = _current.asStateFlow()
 
@@ -103,14 +118,15 @@ class ProfileRepository(private val store: ProfileStore) {
         _current.value = profile
     }
 
-    fun setCurrent(context: Context, id: Int, forceEvent: Boolean = false): Boolean {
-        xmlDump = PreferenceManager.getDefaultSharedPreferences(context)
-            .getBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, false)
+    /**
+     * Activates the saved profile [id] and remembers it as the active profile.
+     * False when there is no such row.
+     */
+    fun setCurrent(id: Int, forceEvent: Boolean = false): Boolean {
+        xmlDump = store.xmlDebug()
         val activated = activate(id, forceEvent)
         if (activated) {
-            PreferenceManager.getDefaultSharedPreferences(context).edit()
-                .putInt(DreamDroid.CURRENT_PROFILE, id)
-                .apply()
+            store.setActiveId(id)
         }
         return activated
     }
@@ -146,7 +162,51 @@ class ProfileRepository(private val store: ProfileStore) {
         _current.value = null
     }
 
-    fun ensureCurrent(context: Context): Boolean {
+    /** All saved profiles. */
+    fun profiles(): List<Profile> = store.profiles()
+
+    fun profile(id: Int): Profile? = store.profile(id)
+
+    /** The remembered active profile id, else the live one. Null when neither is set. */
+    fun activeProfileId(): Int? = store.activeId().takeIf { it > 0 } ?: current.value?.id
+
+    /**
+     * Inserts [profile] and sets its id, or updates it when it already has one. An
+     * updated active profile replaces [current] without a switch event (the edit path).
+     */
+    fun save(profile: Profile) {
+        val id = profile.id ?: 0
+        if (id > 0) {
+            store.update(profile)
+            if (id == current.value?.id) {
+                setCurrent(profile)
+            }
+        } else {
+            profile.id = store.add(profile).toInt()
+        }
+    }
+
+    /**
+     * Deletes [profile] and its offline cache. Deleting the active profile activates
+     * the first remaining one, or forgets the active profile when none is left.
+     */
+    fun delete(profile: Profile) {
+        val deletedId = profile.id
+        val wasCurrent = deletedId != null && deletedId == current.value?.id
+        store.delete(profile)
+        if (!wasCurrent) {
+            return
+        }
+        val next = store.profiles().firstOrNull { it.id != null && it.id != deletedId }
+        if (next != null) {
+            setCurrent(next.id!!, forceEvent = true)
+        } else {
+            store.clearActiveId()
+            setCurrent(Profile.getDefault())
+        }
+    }
+
+    fun ensureCurrent(): Boolean {
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
         val profiles = store.profiles()
         if (profiles.isEmpty()) {
@@ -158,38 +218,37 @@ class ProfileRepository(private val store: ProfileStore) {
             return true
         }
         val first = profiles.first().id ?: return false
-        return setCurrent(context, first, forceEvent = true)
+        return setCurrent(first, forceEvent = true)
     }
 
-    fun loadCurrent(context: Context) {
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        val profileId = sp.getInt(DreamDroid.CURRENT_PROFILE, -1)
+    fun loadCurrent() {
+        val profileId = store.activeId()
         val active = current.value
         if (active != null && profileId > 0 && active.id == profileId) {
             return
         }
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
         if (store.profiles().isEmpty()) {
-            val candidate = legacyPreferenceProfile(sp)
+            val candidate = store.legacyProfile()
             if (!candidate.matchesSeededDemo()) {
                 val newId = store.add(candidate).toInt()
-                setCurrent(context, newId, forceEvent = true)
+                setCurrent(newId, forceEvent = true)
                 return
             }
         }
-        if (profileId > 0 && setCurrent(context, profileId)) {
+        if (profileId > 0 && setCurrent(profileId)) {
             return
         }
         val first = store.profiles().firstOrNull()?.id
-        if (first != null && setCurrent(context, first)) {
+        if (first != null && setCurrent(first)) {
             return
         }
         clearCurrent()
     }
 
-    fun reloadCurrent(context: Context): Boolean {
+    fun reloadCurrent(): Boolean {
         val id = current.value?.id ?: return false
-        return setCurrent(context, id, forceEvent = true)
+        return setCurrent(id, forceEvent = true)
     }
 
     @Synchronized
@@ -236,7 +295,115 @@ class ProfileRepository(private val store: ProfileStore) {
         deviceInfo.clear()
     }
 
-    private fun legacyPreferenceProfile(sp: SharedPreferences): Profile {
+    companion object {
+        @Volatile
+        private var instance: ProfileRepository? = null
+
+        /**
+         * Registers the process instance for static callers. `DreamDroid` passes the
+         * instance Hilt injected into it; JVM tests pass their own (decision 10 in
+         * docs/hilt-migration.md). Goes away with the last [get] caller.
+         */
+        fun install(repository: ProfileRepository) {
+            instance = repository
+        }
+
+        /**
+         * The Hilt-owned instance. A caller that runs before `DreamDroid` installed it
+         * asks the singleton component directly, which builds the same instance that
+         * injection hands out, never a second one. A process whose Application is not
+         * `DreamDroid` (a restricted backup restore) has no component and fails here.
+         */
+        fun get(): ProfileRepository {
+            instance?.let { return it }
+            val app = DreamDroid.getAppContext()
+                ?: error("ProfileRepository used before Application")
+            return EntryPointAccessors
+                .fromApplication(app, ProfileRepositoryEntryPoint::class.java)
+                .profileRepository()
+                .also { instance = it }
+        }
+    }
+}
+
+/** Static lookup for [ProfileRepository.get] before `DreamDroid` has installed it. */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface ProfileRepositoryEntryPoint {
+    fun profileRepository(): ProfileRepository
+}
+
+/**
+ * Where profiles and the active-profile choice persist: Room and the default
+ * preferences in the app, memory in tests.
+ */
+interface ProfileStore {
+    fun profiles(): List<Profile>
+
+    fun profile(id: Int): Profile?
+
+    fun add(profile: Profile): Long
+
+    fun update(profile: Profile)
+
+    /** Deletes the row and the offline cache kept for it. */
+    fun delete(profile: Profile)
+
+    /** The remembered active profile id, or -1. */
+    fun activeId(): Int
+
+    fun setActiveId(id: Int)
+
+    fun clearActiveId()
+
+    /** The debug setting that logs receiver XML. */
+    fun xmlDebug(): Boolean
+
+    /** The single-receiver settings of dreamDroid 1.x, as an unsaved profile. */
+    fun legacyProfile(): Profile
+}
+
+/** Profiles in Room; the active id and legacy settings in the default preferences. */
+class RoomProfileStore @Inject constructor(
+    private val database: AppDatabase,
+    @param:ApplicationContext private val context: Context
+) : ProfileStore {
+    private val dao: ProfileDaoBlocking
+        get() = ProfileDaoBlocking(database.profileDao())
+
+    private val preferences: SharedPreferences
+        get() = PreferenceManager.getDefaultSharedPreferences(context)
+
+    override fun profiles(): List<Profile> = dao.getProfiles()
+
+    override fun profile(id: Int): Profile? = dao.getProfile(id)
+
+    override fun add(profile: Profile): Long = dao.addProfile(profile)
+
+    override fun update(profile: Profile) {
+        dao.updateProfile(profile)
+    }
+
+    override fun delete(profile: Profile) {
+        dao.deleteProfile(profile)
+        val id = profile.id ?: return
+        runBlocking(Dispatchers.IO) { UseDrivenCache.clearForProfile(database, id) }
+    }
+
+    override fun activeId(): Int = preferences.getInt(DreamDroid.CURRENT_PROFILE, -1)
+
+    override fun setActiveId(id: Int) {
+        preferences.edit().putInt(DreamDroid.CURRENT_PROFILE, id).apply()
+    }
+
+    override fun clearActiveId() {
+        preferences.edit().remove(DreamDroid.CURRENT_PROFILE).apply()
+    }
+
+    override fun xmlDebug(): Boolean = preferences.getBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, false)
+
+    override fun legacyProfile(): Profile {
+        val sp = preferences
         val host = sp.getString("host", "dreamdroid.org")
         val streamHost = sp.getString("host", "")
         val port = Integer.valueOf(sp.getString("port", "443") ?: "443")
@@ -265,51 +432,6 @@ class ProfileRepository(private val store: ProfileStore) {
             "",
             ""
         )
-    }
-
-    companion object {
-        @Volatile
-        private var instance: ProfileRepository? = null
-
-        fun install(context: Context): ProfileRepository {
-            instance?.let { return it }
-            return synchronized(this) {
-                instance ?: ProfileRepository(
-                    RoomProfileStore(context.applicationContext)
-                ).also { instance = it }
-            }
-        }
-
-        fun get(): ProfileRepository {
-            instance?.let { return it }
-            val context = DreamDroid.getAppContext()
-                ?: error("ProfileRepository used before Application")
-            return install(context)
-        }
-    }
-}
-
-/** Profile rows the repository reads and writes. Room in the app, memory in JVM tests. */
-interface ProfileStore {
-    fun profiles(): List<Profile>
-
-    fun profile(id: Int): Profile?
-
-    fun add(profile: Profile): Long
-
-    fun delete(profile: Profile)
-}
-
-class RoomProfileStore(private val context: Context) : ProfileStore {
-    override fun profiles(): List<Profile> = AppDatabase.profilesBlocking(context).getProfiles()
-
-    override fun profile(id: Int): Profile? = AppDatabase.profilesBlocking(context).getProfile(id)
-
-    override fun add(profile: Profile): Long =
-        AppDatabase.profilesBlocking(context).addProfile(profile)
-
-    override fun delete(profile: Profile) {
-        AppDatabase.profilesBlocking(context).deleteProfile(profile)
     }
 }
 

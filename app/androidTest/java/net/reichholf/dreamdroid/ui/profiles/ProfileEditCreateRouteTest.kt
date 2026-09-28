@@ -1,30 +1,24 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import android.app.Application
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.lifecycle.SavedStateHandle
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.nav.Hub
+import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
-import net.reichholf.dreamdroid.ui.nav.ProfileEdit
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * A [ProfileEdit] with no saved id is the create form. The profile is not loaded
- * from Room.
+ * A [net.reichholf.dreamdroid.ui.nav.ProfileEdit] route with no saved id is the create
+ * form; nothing is loaded from Room.
  */
 class ProfileEditCreateRouteTest {
     @get:Rule
@@ -38,25 +32,14 @@ class ProfileEditCreateRouteTest {
     }
 
     @Test
-    fun nullProfileIdShowsTheCreateForm() {
+    fun routeWithoutIdShowsTheCreateForm() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
         val handle = PhoneNavHostState(app, SavedStateHandle())
+        val viewModel = ProfileEditViewModel(SavedStateHandle(), memoryProfiles())
         composeRule.setContent {
             DreamDroidTheme {
-                val navController = rememberNavController()
-                NavHost(navController = navController, startDestination = Hub) {
-                    composable<Hub> { }
-                    composable<ProfileEdit> { entry ->
-                        ProfileEditDestination(
-                            handle = handle,
-                            route = entry.toRoute()
-                        )
-                    }
-                }
-                LaunchedEffect(Unit) {
-                    navController.navigate(ProfileEdit())
-                }
+                ProfileEditDestination(handle = handle, viewModel = viewModel)
             }
         }
         val profileName = app.getString(R.string.profile_name)

@@ -103,6 +103,80 @@ class ProfileRepositoryTest {
         }
         assertEquals(3, switchedIds.last())
     }
+
+    @Test
+    fun setCurrentRemembersTheActiveProfile() {
+        val store = MemoryProfileStore(listOf(profile(1, "a"), profile(2, "b")))
+        val repo = ProfileRepository(store)
+
+        assertTrue(repo.setCurrent(2))
+        assertFalse(repo.setCurrent(9))
+
+        assertEquals(2, store.remembered)
+        assertEquals(2, repo.activeProfileId())
+        val restarted = ProfileRepository(store)
+        restarted.loadCurrent()
+        assertEquals(2, restarted.requireCurrent().id)
+    }
+
+    @Test
+    fun savingActiveProfileReplacesCurrentWithoutSwitch() {
+        val store = MemoryProfileStore(listOf(profile(1, "living-room")))
+        val repo = ProfileRepository(store)
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+        val switchedIds = mutableListOf<Int>()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        scope.launch { repo.switches.collect { switchedIds.add(it.id!!) } }
+
+        repo.save(profile(1, "living-room").apply { name = "Living Room" })
+        val added = profile(0, "bedroom").apply { id = null }
+        repo.save(added)
+
+        assertEquals("Living Room", repo.requireCurrent().name)
+        assertEquals("Living Room", store.profile(1)?.name)
+        assertEquals(2, added.id)
+        assertEquals(1, repo.requireCurrent().id)
+        assertTrue(switchedIds.isEmpty())
+        scope.cancel()
+    }
+
+    @Test
+    fun deletingActiveProfileActivatesAnother() {
+        val store = MemoryProfileStore(listOf(profile(1, "keep"), profile(2, "gone")))
+        val repo = ProfileRepository(store)
+        assertTrue(repo.setCurrent(2, forceEvent = true))
+
+        repo.delete(store.profile(2)!!)
+
+        assertEquals(listOf(2), store.deletedIds)
+        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, store.remembered)
+    }
+
+    @Test
+    fun deletingLastProfileForgetsTheActiveOne() {
+        val store = MemoryProfileStore(listOf(profile(1, "only")))
+        val repo = ProfileRepository(store)
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+
+        repo.delete(store.profile(1)!!)
+
+        assertEquals(-1, store.remembered)
+        assertNull(repo.requireCurrent().id)
+        assertNull(repo.activeProfileId())
+    }
+
+    @Test
+    fun deletingAnotherProfileKeepsTheActiveOne() {
+        val store = MemoryProfileStore(listOf(profile(1, "active"), profile(2, "other")))
+        val repo = ProfileRepository(store)
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+
+        repo.delete(store.profile(2)!!)
+
+        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, store.remembered)
+    }
 }
 
 private fun profile(id: Int, host: String): Profile = Profile().apply {
@@ -113,6 +187,8 @@ private fun profile(id: Int, host: String): Profile = Profile().apply {
 
 private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
     private val rows = rows.toMutableList()
+    var remembered: Int = -1
+    val deletedIds = mutableListOf<Int>()
 
     override fun profiles(): List<Profile> = rows.toList()
 
@@ -125,7 +201,26 @@ private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
         return nextId.toLong()
     }
 
+    override fun update(profile: Profile) {
+        rows.replaceAll { if (it.id == profile.id) profile else it }
+    }
+
     override fun delete(profile: Profile) {
         rows.removeAll { it.id == profile.id }
+        profile.id?.let { deletedIds.add(it) }
     }
+
+    override fun activeId(): Int = remembered
+
+    override fun setActiveId(id: Int) {
+        remembered = id
+    }
+
+    override fun clearActiveId() {
+        remembered = -1
+    }
+
+    override fun xmlDebug(): Boolean = false
+
+    override fun legacyProfile(): Profile = Profile.getDefault()
 }

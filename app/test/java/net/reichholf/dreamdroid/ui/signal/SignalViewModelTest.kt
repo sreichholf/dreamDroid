@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.ui.signal
 
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +20,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -43,7 +42,7 @@ class SignalViewModelTest {
     private val server = MockWebServer()
     private val sessions = SessionConnectionHolder()
     private val viewModels = mutableListOf<SignalViewModel>()
-    private lateinit var profiles: ProfileRepository
+    private val profiles: ProfileRepository = TestProfiles().repository
 
     /** Answer for every `/web/signal` request: the meter polls back to back. */
     @Volatile
@@ -58,9 +57,8 @@ class SignalViewModelTest {
             override fun dispatch(request: RecordedRequest): MockResponse = answer()
         }
         server.start()
-        // Same instance as the app's transitional Hilt binding: EnigmaHttp still reads
-        // ProfileRepository.get() for the XML dump flag.
-        profiles = ProfileRepository.install(TestContext())
+        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
+        ProfileRepository.install(profiles)
         profiles.setCurrent(
             Profile().apply {
                 id = 1
@@ -221,8 +219,4 @@ class SignalViewModelTest {
         sessions: SessionConnectionHolder = this.sessions
     ) = SignalViewModel(handle, ReceiverRepository(EnigmaClientFactory(profiles)), sessions)
         .also { viewModels += it }
-}
-
-private class TestContext : ContextWrapper(null) {
-    override fun getApplicationContext(): Context = this
 }

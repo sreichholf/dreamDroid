@@ -75,7 +75,7 @@ class VideoPlaybackRetentionTest {
         if (previous != null) {
             ProfileRepository.get().setCurrent(previous)
         } else {
-            ProfileRepository.get().loadCurrent(context)
+            ProfileRepository.get().loadCurrent()
         }
     }
 

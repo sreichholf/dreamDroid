@@ -2,6 +2,10 @@ package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
@@ -19,13 +23,15 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
@@ -47,27 +53,14 @@ class ProfileEditScreenTest {
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
-    @After
-    fun deleteF05Profiles() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profilesBlocking(ctx)
-        dao.getProfiles()
-            .filter { it.name?.startsWith("f05-") == true }
-            .forEach { dao.deleteProfile(it) }
-    }
-
     @Test
     fun addModeShowsDefaultsKeyLabelsAndTvSaveFab() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 // Default showSaveFab=true is the TV profiles destination.
                 // Phone ProfileEditDestination passes showSaveFab=false (toolbar Save).
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -88,16 +81,11 @@ class ProfileEditScreenTest {
 
     @Test
     fun lastFieldsScrollIntoViewWithoutScaffoldFab() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 // Phone destination composition: toolbar Save, no in-content FAB.
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    showSaveFab = false
-                )
+                EditableScreen(showSaveFab = false)
             }
         }
 
@@ -110,7 +98,7 @@ class ProfileEditScreenTest {
 
     @Test
     fun lastMoviesSwitchClearsHostBottomInsetWithoutScaffoldFab() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
                 Box(Modifier.fillMaxSize().testTag("host")) {
@@ -122,12 +110,7 @@ class ProfileEditScreenTest {
                                 bottomInset = 48.dp
                             )
                     ) {
-                        ProfileEditScreen(
-                            state = state,
-                            saveLabel = "Save",
-                            onSave = {},
-                            showSaveFab = false
-                        )
+                        EditableScreen(showSaveFab = false)
                     }
                 }
             }
@@ -147,15 +130,10 @@ class ProfileEditScreenTest {
 
     @Test
     fun liveAndMoviesStackFullWidthSwitchRows() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    showSaveFab = false
-                )
+                EditableScreen(showSaveFab = false)
             }
         }
 
@@ -203,14 +181,10 @@ class ProfileEditScreenTest {
 
     @Test
     fun togglingLoginAndEncoderShowsAndHidesSections() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -241,14 +215,10 @@ class ProfileEditScreenTest {
         profile.setPort("8080", false, false)
         profile.login = true
         profile.user = "admin"
-        val state = ProfileEditState.fromProfile(profile)
+        show(profile)
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -261,53 +231,37 @@ class ProfileEditScreenTest {
     }
 
     @Test
-    fun emptyHostSaveDoesNotAddProfile() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
-        state.name = "f05-empty-host"
-        state.host = ""
-        var outcome: ProfilePersistOutcome? = null
+    fun typingGoesIntoTheOwnedTextFieldState() {
+        show(Profile.getDefault().apply { host = "" })
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {
-                        val profile = Profile.getDefault()
-                        state.applyTo(profile)
-                        val persisted = persistEditedProfile(context, profile)
-                        outcome = persisted
-                        if (!persisted.saved) {
-                            state.hostError = context.getString(
-                                net.reichholf.dreamdroid.R.string.host_empty
-                            )
-                        }
-                    }
-                )
+                EditableScreen()
             }
         }
 
-        composeRule.onNodeWithContentDescription("Save").performClick()
-        composeRule.waitForIdle()
-        val result = requireNotNull(outcome)
-        assertEquals("The host name cannot be empty!", result.message)
-        assertFalse(result.saved)
+        composeRule.onNodeWithContentDescription("Hostname or IP").performTextInput("10.0.0.5")
+
+        composeRule.runOnIdle { assertEquals("10.0.0.5", fields.host.text) }
+    }
+
+    @Test
+    fun hostErrorShowsUnderTheHostField() {
+        show(Profile.getDefault().apply { host = "" })
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(hostError = "The host name cannot be empty!")
+            }
+        }
+
         composeRule.onNodeWithText("The host name cannot be empty!").assertIsDisplayed()
-        val saved = AppDatabase.profilesBlocking(context).getProfiles()
-            .any { it.name == "f05-empty-host" }
-        assertFalse(saved)
     }
 
     @Test
     fun enablingAllCertificatesShowsWarningAndCancelLeavesOff() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -322,19 +276,15 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Cancel").performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
         composeRule.onNodeWithText("All certificates").assertIsOff()
-        assertFalse(state.trustAllCerts)
+        assertFalse(form.trustAllCerts)
     }
 
     @Test
     fun enablingAllCertificatesConfirmTurnsSwitchOn() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -342,20 +292,15 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Enable").performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
         composeRule.onNodeWithText("All certificates").assertIsOn()
-        assertTrue(state.trustAllCerts)
+        assertTrue(form.trustAllCerts)
     }
 
     @Test
     fun zapAndStreamStartsOffAndRoundTripsThroughTheProfile() {
-        val state = ProfileEditState.fromProfile(Profile.getDefault())
+        show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {},
-                    showSaveFab = false
-                )
+                EditableScreen(showSaveFab = false)
             }
         }
 
@@ -368,12 +313,12 @@ class ProfileEditScreenTest {
         ).performScrollTo().assertIsDisplayed()
         toggle.performClick()
         composeRule.onNodeWithText("Zap and stream").assertIsOn()
-        assertTrue(state.zapAndStream)
+        assertTrue(form.zapAndStream)
 
         val profile = Profile.getDefault()
-        state.applyTo(profile)
+        fields.applyTo(profile, form)
         assertTrue(profile.zapAndStream)
-        val reloaded = ProfileEditState.fromProfile(profile)
+        val reloaded = ProfileForm.from(profile)
         assertTrue(reloaded.zapAndStream)
     }
 
@@ -381,14 +326,10 @@ class ProfileEditScreenTest {
     fun disablingAllCertificatesDoesNotShowWarning() {
         val profile = Profile.getDefault()
         profile.allCertsTrusted = true
-        val state = ProfileEditState.fromProfile(profile)
+        show(profile)
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditScreen(
-                    state = state,
-                    saveLabel = "Save",
-                    onSave = {}
-                )
+                EditableScreen()
             }
         }
 
@@ -397,6 +338,38 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("All certificates").performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
         composeRule.onNodeWithText("All certificates").assertIsOff()
-        assertFalse(state.trustAllCerts)
+        assertFalse(form.trustAllCerts)
+    }
+
+    private val scope = MainScope()
+    private val fields = ProfileTextFields(scope)
+    private var form by mutableStateOf(ProfileForm())
+
+    @After
+    fun cancelFields() {
+        scope.cancel()
+    }
+
+    private fun show(profile: Profile) {
+        form = ProfileForm.from(profile)
+        fields.fill(profile)
+    }
+
+    /** The screen with its state hoisted here, as a ViewModel would hold it. */
+    @Composable
+    private fun EditableScreen(showSaveFab: Boolean = true, hostError: String? = null) {
+        ProfileEditScreen(
+            form = form,
+            fields = fields,
+            hostError = hostError,
+            onFormChange = { form = it },
+            onSslChange = {
+                form = form.copy(ssl = it)
+                fields.onSslChanged(it)
+            },
+            saveLabel = "Save",
+            onSave = {},
+            showSaveFab = showSaveFab
+        )
     }
 }

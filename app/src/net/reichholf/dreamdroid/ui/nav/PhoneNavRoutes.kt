@@ -273,12 +273,6 @@ data class ProfileEdit(
     val user: String = "",
     val simpleRemote: Boolean = false
 ) {
-    fun tag(): String = if (profileId > 0) {
-        "profile_edit:$profileId"
-    } else {
-        "profile_edit:new"
-    }
-
     /** Unsaved discovery prefill. A blank route is a pure create. */
     fun launchProfile(): Profile? {
         if (profileId > 0 || (host.isEmpty() && name.isEmpty())) {

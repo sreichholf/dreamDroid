@@ -15,6 +15,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.TextObfuscationMode
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenuItem
@@ -26,6 +29,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
@@ -210,20 +214,7 @@ fun EditOutlinedTextField(
     var passwordVisible by remember { mutableStateOf(false) }
     val resolvedTrailingIcon: @Composable (() -> Unit)? = if (password) {
         {
-            val show = stringResource(R.string.show_password)
-            val hide = stringResource(R.string.hide_password)
-            IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                Icon(
-                    painter = painterResource(
-                        if (passwordVisible) {
-                            R.drawable.ic_visibility_off
-                        } else {
-                            R.drawable.ic_visibility
-                        }
-                    ),
-                    contentDescription = if (passwordVisible) hide else show
-                )
-            }
+            PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
         }
     } else {
         trailingIcon
@@ -269,6 +260,83 @@ fun EditOutlinedTextField(
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
     )
+}
+
+/**
+ * [EditOutlinedTextField] over a [TextFieldState] the caller owns, typically a
+ * ViewModel. Typing edits [state] directly, with no value/onValueChange round trip.
+ */
+@Composable
+fun EditOutlinedTextField(
+    state: TextFieldState,
+    label: String,
+    modifier: Modifier = Modifier,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    imeAction: ImeAction = ImeAction.Next,
+    password: Boolean = false,
+    isError: Boolean = false,
+    supportingText: String? = null,
+    contentDescription: String = label
+) {
+    val keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
+    val textStyle = MaterialTheme.typography.bodyLarge.copy(
+        color = MaterialTheme.colorScheme.onSurface
+    )
+    val colors = OutlinedTextFieldDefaults.colors(
+        unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+    )
+    val supporting: @Composable (() -> Unit)? = supportingText?.let { message ->
+        { Text(message) }
+    }
+    if (password) {
+        var passwordVisible by remember { mutableStateOf(false) }
+        OutlinedSecureTextField(
+            state = state,
+            label = { Text(label) },
+            isError = isError,
+            supportingText = supporting,
+            trailingIcon = {
+                PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
+            },
+            textObfuscationMode = if (passwordVisible) {
+                TextObfuscationMode.Visible
+            } else {
+                TextObfuscationMode.RevealLastTyped
+            },
+            keyboardOptions = keyboardOptions,
+            textStyle = textStyle,
+            colors = colors,
+            modifier = modifier.fillMaxWidth()
+        )
+    } else {
+        OutlinedTextField(
+            state = state,
+            label = { Text(label) },
+            lineLimits = TextFieldLineLimits.SingleLine,
+            isError = isError,
+            supportingText = supporting,
+            keyboardOptions = keyboardOptions,
+            textStyle = textStyle,
+            colors = colors,
+            modifier = modifier
+                .fillMaxWidth()
+                .semantics { this.contentDescription = contentDescription }
+        )
+    }
+}
+
+@Composable
+private fun PasswordVisibilityToggle(visible: Boolean, onToggle: () -> Unit) {
+    IconButton(onClick = onToggle) {
+        Icon(
+            painter = painterResource(
+                if (visible) R.drawable.ic_visibility_off else R.drawable.ic_visibility
+            ),
+            contentDescription = stringResource(
+                if (visible) R.string.hide_password else R.string.show_password
+            )
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

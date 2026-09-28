@@ -38,7 +38,7 @@ class EnigmaClientHttpFailTest {
         if (previous != null) {
             ProfileRepository.get().setCurrent(previous)
         } else {
-            ProfileRepository.get().loadCurrent(appContext())
+            ProfileRepository.get().loadCurrent()
         }
         server.shutdown()
     }

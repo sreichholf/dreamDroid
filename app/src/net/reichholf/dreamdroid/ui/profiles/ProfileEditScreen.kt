@@ -30,7 +30,11 @@ import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 
 @Composable
 fun ProfileEditScreen(
-    state: ProfileEditState,
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    hostError: String?,
+    onFormChange: (ProfileForm) -> Unit,
+    onSslChange: (Boolean) -> Unit,
     saveLabel: String,
     onSave: () -> Unit,
     showSaveFab: Boolean = true,
@@ -65,13 +69,12 @@ fun ProfileEditScreen(
         ) {
             EditFormSection(title = stringResource(R.string.profile)) {
                 EditOutlinedTextField(
-                    value = state.name,
-                    onValueChange = { state.name = it },
+                    state = fields.name.state,
                     label = stringResource(R.string.profile_name)
                 )
                 EditSwitchRow(
-                    checked = state.simpleRemote,
-                    onCheckedChange = { state.simpleRemote = it },
+                    checked = form.simpleRemote,
+                    onCheckedChange = { onFormChange(form.copy(simpleRemote = it)) },
                     label = stringResource(R.string.simple_remote)
                 )
             }
@@ -79,58 +82,51 @@ fun ProfileEditScreen(
             EditFormSection(title = stringResource(R.string.connection)) {
                 EditPairedRow {
                     EditOutlinedTextField(
-                        value = state.host,
-                        onValueChange = {
-                            state.host = it
-                            state.hostError = null
-                        },
+                        state = fields.host.state,
                         label = stringResource(R.string.host_long),
-                        isError = state.hostError != null,
-                        supportingText = state.hostError,
+                        isError = hostError != null,
+                        supportingText = hostError,
                         modifier = Modifier.weight(1f)
                     )
                     EditOutlinedTextField(
-                        value = state.port,
-                        onValueChange = { state.port = it },
+                        state = fields.port.state,
                         label = stringResource(R.string.port),
                         keyboardType = KeyboardType.Number,
                         modifier = Modifier.weight(0.45f)
                     )
                 }
                 EditSwitchRow(
-                    checked = state.ssl,
-                    onCheckedChange = { state.onSslChanged(it, keepPort = false) },
+                    checked = form.ssl,
+                    onCheckedChange = { onSslChange(it) },
                     label = stringResource(R.string.ssl_enabled)
                 )
-                if (state.ssl) {
+                if (form.ssl) {
                     EditSwitchRow(
-                        checked = state.trustAllCerts,
+                        checked = form.trustAllCerts,
                         onCheckedChange = { checked ->
                             if (checked) {
                                 showTrustAllCertsWarning = true
                             } else {
-                                state.trustAllCerts = false
+                                onFormChange(form.copy(trustAllCerts = false))
                             }
                         },
                         label = stringResource(R.string.trust_all_certs)
                     )
                 }
                 EditSwitchRow(
-                    checked = state.login,
-                    onCheckedChange = { state.login = it },
+                    checked = form.login,
+                    onCheckedChange = { onFormChange(form.copy(login = it)) },
                     label = stringResource(R.string.login_enabled)
                 )
-                if (state.login) {
+                if (form.login) {
                     EditPairedRow {
                         EditOutlinedTextField(
-                            value = state.user,
-                            onValueChange = { state.user = it },
+                            state = fields.user.state,
                             label = stringResource(R.string.user),
                             modifier = Modifier.weight(1f)
                         )
                         EditOutlinedTextField(
-                            value = state.pass,
-                            onValueChange = { state.pass = it },
+                            state = fields.pass.state,
                             label = stringResource(R.string.pass),
                             keyboardType = KeyboardType.Password,
                             password = true,
@@ -142,38 +138,36 @@ fun ProfileEditScreen(
 
             EditFormSection(title = stringResource(R.string.auto_switch_profile_wifi_based_long)) {
                 EditOutlinedTextField(
-                    value = state.ssid,
-                    onValueChange = { state.ssid = it },
+                    state = fields.ssid.state,
                     label = stringResource(R.string.ssid)
                 )
                 EditSwitchRow(
-                    checked = state.defaultOnNoWifi,
-                    onCheckedChange = { state.defaultOnNoWifi = it },
+                    checked = form.defaultOnNoWifi,
+                    onCheckedChange = { onFormChange(form.copy(defaultOnNoWifi = it)) },
                     label = stringResource(R.string.defaultOnNoWifi)
                 )
             }
 
             EditFormSection(title = stringResource(R.string.streaming)) {
                 EditOutlinedTextField(
-                    value = state.streamHost,
-                    onValueChange = { state.streamHost = it },
+                    state = fields.streamHost.state,
                     label = stringResource(R.string.stream_host_long)
                 )
                 EditSwitchRow(
-                    checked = state.zapAndStream,
-                    onCheckedChange = { state.zapAndStream = it },
+                    checked = form.zapAndStream,
+                    onCheckedChange = { onFormChange(form.copy(zapAndStream = it)) },
                     label = stringResource(R.string.zap_and_stream),
                     summary = stringResource(R.string.zap_and_stream_summary)
                 )
                 EditSwitchRow(
-                    checked = state.encoderStream,
-                    onCheckedChange = { state.encoderStream = it },
+                    checked = form.encoderStream,
+                    onCheckedChange = { onFormChange(form.copy(encoderStream = it)) },
                     label = stringResource(R.string.use_encoder)
                 )
-                if (state.encoderStream) {
-                    EncoderSection(state)
+                if (form.encoderStream) {
+                    EncoderSection(form, fields, onFormChange)
                 } else {
-                    StreamPortsSection(state)
+                    StreamPortsSection(form, fields, onFormChange)
                 }
             }
 
@@ -187,45 +181,45 @@ fun ProfileEditScreen(
             title = stringResource(R.string.trust_all_certs_confirm_title),
             message = stringResource(R.string.trust_all_certs_confirm),
             onDismiss = { showTrustAllCertsWarning = false },
-            onConfirm = { state.trustAllCerts = true },
+            onConfirm = { onFormChange(form.copy(trustAllCerts = true)) },
             confirmLabel = stringResource(R.string.enable)
         )
     }
 }
 
 @Composable
-private fun EncoderSection(state: ProfileEditState) {
+private fun EncoderSection(
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    onFormChange: (ProfileForm) -> Unit
+) {
     EditPairedRow {
         EditOutlinedTextField(
-            value = state.encoderPath,
-            onValueChange = { state.encoderPath = it },
+            state = fields.encoderPath.state,
             label = stringResource(R.string.encoder_path),
             modifier = Modifier.weight(1f)
         )
         EditOutlinedTextField(
-            value = state.encoderPort,
-            onValueChange = { state.encoderPort = it },
+            state = fields.encoderPort.state,
             label = stringResource(R.string.encoder_port),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
         )
     }
     EditSwitchRow(
-        checked = state.encoderLogin,
-        onCheckedChange = { state.encoderLogin = it },
+        checked = form.encoderLogin,
+        onCheckedChange = { onFormChange(form.copy(encoderLogin = it)) },
         label = stringResource(R.string.login_enabled)
     )
-    if (state.encoderLogin) {
+    if (form.encoderLogin) {
         EditPairedRow {
             EditOutlinedTextField(
-                value = state.encoderUser,
-                onValueChange = { state.encoderUser = it },
+                state = fields.encoderUser.state,
                 label = stringResource(R.string.encoder_user),
                 modifier = Modifier.weight(1f)
             )
             EditOutlinedTextField(
-                value = state.encoderPass,
-                onValueChange = { state.encoderPass = it },
+                state = fields.encoderPass.state,
                 label = stringResource(R.string.encoder_pass),
                 keyboardType = KeyboardType.Password,
                 password = true,
@@ -235,15 +229,13 @@ private fun EncoderSection(state: ProfileEditState) {
     }
     EditPairedRow {
         EditOutlinedTextField(
-            value = state.encoderVideoBitrate,
-            onValueChange = { state.encoderVideoBitrate = it },
+            state = fields.encoderVideoBitrate.state,
             label = stringResource(R.string.video_bitrate),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
         )
         EditOutlinedTextField(
-            value = state.encoderAudioBitrate,
-            onValueChange = { state.encoderAudioBitrate = it },
+            state = fields.encoderAudioBitrate.state,
             label = stringResource(R.string.audio_bitrate),
             keyboardType = KeyboardType.Number,
             modifier = Modifier.weight(1f)
@@ -252,35 +244,37 @@ private fun EncoderSection(state: ProfileEditState) {
 }
 
 @Composable
-private fun StreamPortsSection(state: ProfileEditState) {
+private fun StreamPortsSection(
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    onFormChange: (ProfileForm) -> Unit
+) {
     EditFormSubsection(title = stringResource(R.string.live)) {
         EditOutlinedTextField(
-            value = state.streamPort,
-            onValueChange = { state.streamPort = it },
+            state = fields.streamPort.state,
             label = stringResource(R.string.port_stream_live),
             keyboardType = KeyboardType.Number
         )
         EditSwitchRow(
-            checked = state.streamLogin,
-            onCheckedChange = { state.streamLogin = it },
+            checked = form.streamLogin,
+            onCheckedChange = { onFormChange(form.copy(streamLogin = it)) },
             label = stringResource(R.string.login)
         )
     }
     EditFormSubsection(title = stringResource(R.string.movies)) {
         EditOutlinedTextField(
-            value = state.filePort,
-            onValueChange = { state.filePort = it },
+            state = fields.filePort.state,
             label = stringResource(R.string.port_stream_file),
             keyboardType = KeyboardType.Number
         )
         EditSwitchRow(
-            checked = state.fileLogin,
-            onCheckedChange = { state.fileLogin = it },
+            checked = form.fileLogin,
+            onCheckedChange = { onFormChange(form.copy(fileLogin = it)) },
             label = stringResource(R.string.login)
         )
         EditSwitchRow(
-            checked = state.fileSsl,
-            onCheckedChange = { state.fileSsl = it },
+            checked = form.fileSsl,
+            onCheckedChange = { onFormChange(form.copy(fileSsl = it)) },
             label = stringResource(R.string.ssl_enabled)
         )
     }
