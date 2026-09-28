@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** plan, not started. Open questions are at the end; PR 1 is blocked on questions 1–4.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PR 1 in progress. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -52,7 +52,7 @@ fun profileRepository(@ApplicationContext context: Context): ProfileRepository =
 
 This changes no behavior: the existing lazy init, the early `getAppContext()` path, and any caller that runs before Hilt injects all still work. There is one instance. When a class gets an `@Inject constructor` (at the latest when its static is deleted), the `@Provides` goes away with the static.
 
-The alternative, where statics delegate to Hilt through an `EntryPoint`, is what B1 currently describes. It fails for callers that run before `super.onCreate()` of the Application finishes injection, or in a process where the Application is not `DreamDroid`. Question 2 asks about switching.
+The alternative, where statics delegate to Hilt through an `EntryPoint`, is what B1 currently describes. It fails for callers that run before `super.onCreate()` of the Application finishes injection, or in a process where the Application is not `DreamDroid`. Decision 2 settles the direction.
 
 ## PR sequence
 
@@ -63,7 +63,7 @@ Screen groups are ordered so that each PR's repository exists before a later gro
 | 1 | Hilt + Device info | `DeviceInfoViewModel` | Hilt, `EnigmaClientFactory`, `ReceiverRepository` (device info), `UiText`, screen message/title pattern | `loadDeviceInfo` |
 | 2 | Signal + Screenshot | `SignalViewModel`, `ScreenshotViewModel` | `SessionConnectionHolder` binding | `loadSignal`, `loadScreenshot` |
 | 3 | Profiles + setup | `ProfilesViewModel`, `ProfileEditViewModel`, `SetupAssistantViewModel`, `TvProfilesHostViewModel` | `AppDatabase` binding, `@Inject` `ProfileRepository`/`RoomProfileStore`, `ProfileCheckRepository` | — (TV `MainActivity` gets `@AndroidEntryPoint`) |
-| 4 | Settings + backup | `SettingsViewModel`, `BackupViewModel` | `SettingsRepository` over `SharedPreferences` (see Q5) | — |
+| 4 | Settings + backup | `SettingsViewModel`, `BackupViewModel` | `SettingsRepository` over `SharedPreferences` (decision 5) | — |
 | 5 | Timers | `HubTimerListViewModel`, `TimerEditViewModel`, `TvTimerHostViewModel`, `TvTimerEditViewModel` | `TimerRepository` | `TimerSnapshotStore`, `loadTimerList` |
 | 6 | Movies | `HubMovieListViewModel` | `MovieRepository` (incl. file download) | `MovieSnapshotStore` |
 | 7 | List EPG | `EpgBouquetViewModel`, `ServiceEpgViewModel`, `EpgSearchViewModel`, EPG detail dialog session | `EpgRepository` (list) | `ListEpgCache`, `loadEventList` |
@@ -82,15 +82,15 @@ The **Deletes** column names what is certain. Several `enigma/*Load.kt` helpers 
 
 The smallest screen that exercises every part of the pattern: one read-only Enigma call, `SavedStateHandle` restore, a title, an error message, and existing tests (`DeviceInfoScreenTest`, `DeviceInfoSavedTest`, `DeviceInfoUiStateRestoreTest`).
 
-- Build: Dagger/Hilt through KSP (`com.google.dagger:hilt-android` + `hilt-compiler`, plugin `com.google.dagger.hilt.android`) and `androidx.hilt:hilt-lifecycle-viewmodel-compose` for `hiltViewModel()`. The plugin must work with AGP 9.4 (built-in Kotlin) and KSP 2.3; check that first (Q4).
+- Build: Dagger/Hilt through KSP (`com.google.dagger:hilt-android` + `hilt-compiler`, plugin `com.google.dagger.hilt.android`) and `androidx.hilt:hilt-lifecycle-viewmodel-compose` for `hiltViewModel()`. The plugin must work with AGP 9.4 (built-in Kotlin) and KSP 2.3; check that first (decision 4).
 - `@HiltAndroidApp` on `DreamDroid`. `@AndroidEntryPoint` on phone `MainActivity` only; the other activities get it when their first Hilt ViewModel or injection lands.
-- `EnigmaClientFactory` (`@Singleton`, `@Inject`): `current()` builds an `EnigmaClient` for `ProfileRepository.requireCurrent()`, and `forProfile(profile)` builds one for a given profile. It takes `ProfileRepository` through the transitional `@Provides`. See Q1 for why this is a factory and not a singleton `EnigmaClient`.
+- `EnigmaClientFactory` (`@Singleton`, `@Inject`): `current()` builds an `EnigmaClient` for `ProfileRepository.requireCurrent()`, and `forProfile(profile)` builds one for a given profile. It takes `ProfileRepository` through the transitional `@Provides`. See decision 1 for why this is a factory and not a singleton `EnigmaClient`.
 - `ReceiverRepository` (`@Singleton`) with `deviceInfo(): EnigmaResponse<DeviceInfo>`. It grows in PRs 2, 10, and 11.
-- `DeviceInfoViewModel`: `@HiltViewModel`, `(SavedStateHandle, ReceiverRepository)`, `StateFlow<DeviceInfoUiState>` with `title: UiText`, `refreshing`, `userMessage: UiText?`, and the device info. `DeviceInfoScreen` stays stateless. `DeviceInfoDestination` collects with `collectAsStateWithLifecycle()` and shows `userMessage` through the shell snackbar, then calls `onMessageShown()` (Q3).
+- `DeviceInfoViewModel`: `@HiltViewModel`, `(SavedStateHandle, ReceiverRepository)`, `StateFlow<DeviceInfoUiState>` with `title: UiText`, `refreshing`, `userMessage: UiText?`, and the device info. `DeviceInfoScreen` stays stateless. `DeviceInfoDestination` collects with `collectAsStateWithLifecycle()` and shows `userMessage` through the shell snackbar, then calls `onMessageShown()` (decision 3).
 - `UiText` (`Resource(@StringRes id, args)` / `Raw(String)`). `Raw` is needed because box error texts arrive as server strings. `EnigmaFailure` gets a `UiText` mapping next to the existing `userMessage(context)`; the old mapping is deleted when its last caller moves.
 - Delete `loadDeviceInfo`.
-- Tests: JVM `DeviceInfoViewModelTest` (load, failure message, restore from `SavedStateHandle`) against a fake at the boundary chosen in Q6. Update `DeviceInfoScreenTest` for the new state type.
-- Docs: set this doc's status to in progress, update B1 in `modernize-dreamdroid.md`, and add the Hilt rules in short form to `AGENTS.md`.
+- Tests: JVM `DeviceInfoViewModelTest` (load, failure message, restore from `SavedStateHandle`) against a fake at the boundary chosen in decision 6. Update `DeviceInfoScreenTest` for the new state type.
+- Docs: add the Hilt rules in short form to `AGENTS.md` (bindings land with their first consumer, `hiltViewModel()` for migrated screens, Hilt wraps statics until their last caller moves). The coordinator keeps this doc's progress and `modernize-dreamdroid.md` current.
 
 Proof beyond the PR job: emulator job (the Application class changed, so every instrumented test starts the new app). A `googleRelease` build that opens Device info on a device.
 
@@ -109,11 +109,11 @@ Two more tool screens on the same pattern. They add the `SessionConnectionHolder
 
 ### PR 4 — Settings and backup
 
-`SettingsViewModel` reads and writes many preferences and clears caches. That needs testable settings, which is the case B2 allows for: a `SettingsRepository` over `SharedPreferences`, shaped so a later DataStore swap does not change callers (Q5). Cache clearing goes through a small `CacheRepository` method or through `ServiceRepository` if PR 9 has already landed. Decide by order at the time; do not add both.
+`SettingsViewModel` reads and writes many preferences and clears caches. That needs testable settings, which is the case B2 allows for: a `SettingsRepository` over `SharedPreferences`, shaped so a later DataStore swap does not change callers (decision 5). Cache clearing goes through a small `CacheRepository` method or through `ServiceRepository` if PR 9 has already landed. Decide by order at the time; do not add both.
 
 ### PRs 5–9 — data groups (B4)
 
-Each repository owns its offline rules. It absorbs the matching `*SnapshotStore` / `*Cache` object, which gets deleted, and takes `AppDatabase` DAOs plus `EnigmaClientFactory`. Proof per repository: JVM test with the Q6 HTTP fake and `AppDatabase.inMemory`.
+Each repository owns its offline rules. It absorbs the matching `*SnapshotStore` / `*Cache` object, which gets deleted, and takes `AppDatabase` DAOs plus `EnigmaClientFactory`. Proof per repository: JVM test with the decision 6 HTTP fixture and `AppDatabase.inMemory`.
 
 - **5 Timers:** phone hub timer list, timer editor, and TV timer host/editor share `TimerRepository`. `TimerEditDestination` currently builds `EnigmaHttp()` inline; that moves into the repository.
 - **6 Movies:** `MovieFileDownload` moves into `MovieRepository`.
@@ -124,52 +124,55 @@ Each repository owns its offline rules. It absorbs the matching `*SnapshotStore`
 ### PRs 10–13 — hosts
 
 - **10** Hub, now-playing strip, current service, zap: `ReceiverRepository` gains zap and current service.
-- **11** Phone shell: `ShellViewModel` loses its factory. The startup profile check, volume, and device detection move out of `MainActivity` / `PhoneNavHandle` into `ShellViewModel`. Power, sleep timer, send message, and virtual-remote keys move to `ReceiverRepository`. Shell messages from migrated screens are already UI state (Q3); `ShellMessages.post` callers left in the phone shell move here.
+- **11** Phone shell: `ShellViewModel` loses its factory. The startup profile check, volume, and device detection move out of `MainActivity` / `PhoneNavHandle` into `ShellViewModel`. Power, sleep timer, send message, and virtual-remote keys move to `ReceiverRepository`. Shell messages from migrated screens are already UI state (decision 3); `ShellMessages.post` callers left in the phone shell move here.
 - **12** TV hub: `TvHubViewModel` loses its factory, the TV startup profile check moves out of TV `MainActivity`, and TV hub browse stops using `MultiEpgSyncHolder`, so the holder is deleted. `ShellMessages` gets deleted here if nothing else posts to it by then; otherwise in 13.
 - **13** Player and share: `VideoActivity` and `ShareActivity` become `@AndroidEntryPoint`. `ShareActivity` keeps its `Toast` (deliberate exception). `VLCInstance` stops using `getAppContext()` and takes the context from its caller.
 
 ### PR 14 — Non-UI entry points and locator removal
 
 - Widget: `VirtualRemoteWidgetProvider` and `VirtualRemoteWidgetConfiguration` become `@AndroidEntryPoint`. `VirtualRemoteWidget` (Glance, not an Android component) and `WidgetRemoteRequest` get dependencies through an `@EntryPoint`. `WidgetRemoteRequest` keeps its `Toast` (deliberate exception).
-- `PiconSyncWorker`: see Q7.
+- `PiconSyncWorker`: see decision 7.
 - `EnigmaOkHttp` becomes an injected `@Singleton` that takes `@ApplicationContext` for `DreamDroidTrustManager`. `EnigmaHttp` requires a profile, and `EnigmaClient` requires its `EnigmaHttp`.
 - Delete everything in **End state** that is still there. At this point the compiler lists any caller that is left.
 - `DreamDroidBackupAgent` needs nothing: it only names files. It must stay free of injection, because a restore can run the agent in a process whose Application is not `DreamDroid`.
 
 ### PR 15 (optional) — Hilt in instrumented tests
 
-Only once a UI test needs a faked binding (Q8). A custom runner that swaps the Application for `HiltTestApplication` applies to **all** 142 instrumented test files. Before PR 14 it would break the 59 static references and everything `DreamDroid.onCreate` sets up. Also update `.cursor/cloud/connected-test.sh` and the `am instrument` line in `AGENTS.md` for the new runner class.
+Only once a UI test needs a faked binding (decision 8). A custom runner that swaps the Application for `HiltTestApplication` applies to **all** 142 instrumented test files. Before PR 14 it would break the 59 static references and everything `DreamDroid.onCreate` sets up. Also update `.cursor/cloud/connected-test.sh` and the `am instrument` line in `AGENTS.md` for the new runner class.
 
-## Questions to discuss
+## Progress
 
-Each question has a recommendation. Q1–Q4 decide what PR 1 looks like.
+One line per PR: state, then PR link once opened.
 
-1. **`EnigmaClient` is not a singleton.** B1 lists `@Singleton` `EnigmaClient`, but that does not fit the code. `EnigmaClient` wraps one `EnigmaHttp`, which is bound to one profile, and `EnigmaHttp` cancels its in-flight call when a second `fetch` starts ("do not share this type across concurrent fetches"). A process-wide client would serialize every screen's requests and freeze the profile at first injection.
-   **Recommendation:** inject a `@Singleton EnigmaClientFactory` (`current()`, `forProfile()`), and have repositories create a client per operation, as call sites do today. Making `EnigmaHttp` stateless is possible later but changes cancel semantics; not part of this wave.
+- [ ] 1 Hilt + Device info — in progress
+- [ ] 2 Signal + Screenshot
+- [ ] 3 Profiles + setup
+- [ ] 4 Settings + backup
+- [ ] 5 Timers
+- [ ] 6 Movies
+- [ ] 7 List EPG
+- [ ] 8 MultiEPG
+- [ ] 9 Service lists + pickers
+- [ ] 10 Hub, now playing, zap
+- [ ] 11 Phone shell
+- [ ] 12 TV hub
+- [ ] 13 Player + share
+- [ ] 14 Non-UI entry points + locator removal
+- [ ] 15 *(optional)* Hilt instrumented tests
 
-2. **Transitional direction.** B1 says "the `object` holders delegate to injected instances until callers move". This plan does the opposite at first: Hilt `@Provides` returns the existing static instance. It flips once the class gets an `@Inject` constructor (PR 3 for `ProfileRepository`, PR 8 for `MultiEpgSync`).
-   **Recommendation:** accept, and update the B1 wording in PR 1. It keeps the early PRs behavior-neutral and avoids an `EntryPoint` lookup from code that can run before injection.
+## Decisions
 
-3. **Where user messages go.** C2 wants messages in `UiState`, but the `SnackbarHost` lives in the shell (`ShellSnackbarHost`), not in each screen.
-   **Recommendation:** the shell provides its `SnackbarHostState` through a `CompositionLocal`. A destination shows `uiState.userMessage` with it and then calls `viewModel.onMessageShown()`. The title works the same way: destinations report `uiState.title`, and `PhoneShell` reads it instead of `Activity.title`. The pattern gets set in PR 1 and reused. Alternative: an injected `@Singleton` message bus, which keeps `ShellMessages` under a new name and is not what C2 asks for.
+Accepted by the operator 2026-09-28. Change one only with a note here saying why.
 
-4. **Hilt with AGP 9.4.** The Hilt Gradle plugin rewrites bytecode for `@AndroidEntryPoint`/`@HiltAndroidApp`. Current Dagger is 2.60.1 and `androidx.hilt` is 1.4.0; this plan has not verified that they work with AGP 9.4 built-in Kotlin and KSP 2.3.12.
-   **Recommendation:** check that first in PR 1. If the plugin does not work, use Hilt without it (`@HiltAndroidApp(Application::class) class DreamDroid : Hilt_DreamDroid()`, and likewise for activities). That works without the plugin, but it is less idiomatic and has to be undone later. Do not downgrade AGP.
-
-5. **Settings before B2.** PR 4, and parts of 8, 10, and 11, read preferences in ViewModels. B2 (DataStore) is deferred and needs operator sign-off.
-   **Recommendation:** add `SettingsRepository` over `SharedPreferences` in the first PR that needs it (PR 4). Give it typed properties and `Flow` reads, so B2 later swaps only its internals. Alternatively, pull B2 forward to PR 4. Not recommended: that adds backup and startup risk to a DI wave.
-
-6. **What JVM ViewModel tests fake.** The target architecture says "fake repositories". That means an interface plus an implementation for each repository, where most interfaces have exactly one production class.
-   **Recommendation:** keep repositories concrete. Test them and their ViewModels through the real boundary: a `MockWebServer`-backed profile (the test suite already uses `okhttp-mockwebserver`) and `AppDatabase.inMemory`. Add an interface only when a test fake is clearly simpler than the server fixture, for example to simulate slow or concurrent calls. This tests behavior, not call mirroring.
-
-7. **WorkManager and Hilt.** `@HiltWorker` needs `androidx.hilt:hilt-work`, a custom `Configuration.Provider` on `DreamDroid`, and removal of the default WorkManager initializer from the manifest. That is more startup surface for one worker.
-   **Recommendation:** `PiconSyncWorker` gets its dependencies through an `@EntryPoint` in PR 14. Switch to `@HiltWorker` if a second worker shows up.
-
-8. **Proof for "one Hilt test replaces a binding with a fake".** B1 asks for this proof. Dagger already checks the graph at compile time. Launching `MainActivity` in the existing instrumented tests covers injection at runtime, and JVM tests cover behavior with fakes. A Hilt instrumented test needs the runner swap described in PR 15.
-   **Recommendation:** drop that proof from B1 and PR 1. Use compile-time validation, the emulator job, and JVM tests. Do PR 15 only once a UI test actually needs a fake binding.
-
-9. **Keep this a single wave?** C2 and B4 are listed as "opportunistic (when a feature or bug touches the screen)". This plan runs them as a planned series instead. Leaving the wave half done means two ways to get a dependency for as long as it stays half done.
-   **Recommendation:** run PRs 1–14 as a series, but let 2.0 blocker fixes go first. Every PR leaves the app shippable, so the series can pause between any two PRs.
+1. **`EnigmaClient` is not a singleton.** `EnigmaClient` wraps one `EnigmaHttp`, which is bound to one profile and cancels its in-flight call when a second `fetch` starts. A process-wide client would serialize every screen's requests and freeze the profile at first injection. Inject a `@Singleton EnigmaClientFactory` (`current()`, `forProfile(profile)`); repositories create a client per operation. Making `EnigmaHttp` stateless is out of scope.
+2. **Transitional direction: Hilt wraps the static.** While a static accessor has callers, a Hilt `@Provides` returns the existing static instance. It flips once the class gets an `@Inject` constructor (PR 3 for `ProfileRepository`, PR 8 for `MultiEpgSync`); the static is deleted with its last caller. This avoids an `EntryPoint` lookup from code that can run before injection.
+3. **User messages and titles are screen state.** The shell provides its `SnackbarHostState` through a `CompositionLocal`. A destination shows `uiState.userMessage` with it and then calls `viewModel.onMessageShown()`. Destinations report `uiState.title` to the shell, which stops reading `Activity.title` for migrated destinations. PR 1 sets the pattern. No injected message bus.
+4. **Hilt Gradle plugin, with a fallback.** PR 1 first checks that the Hilt Gradle plugin (Dagger 2.60.1, `androidx.hilt` 1.4.0) builds with AGP 9.4 built-in Kotlin and KSP 2.3.12. If it does not, use Hilt without the plugin (`@HiltAndroidApp(Application::class) class DreamDroid : Hilt_DreamDroid()`, likewise for activities) and record that here. Do not downgrade AGP.
+5. **`SettingsRepository` over `SharedPreferences`** in the first PR that needs it (PR 4), with typed properties and `Flow` reads so B2 later swaps only its internals. DataStore stays deferred.
+6. **Repositories are concrete classes.** Tests go through the real boundary: a `MockWebServer`-backed profile and `AppDatabase.inMemory`. Add an interface only when a fake is clearly simpler than the server fixture.
+7. **`PiconSyncWorker` uses an `@EntryPoint`** in PR 14. Switch to `@HiltWorker` if a second worker shows up.
+8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding.
+9. **Planned series.** PRs 1–14 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
 
 ## Not in this plan
 
