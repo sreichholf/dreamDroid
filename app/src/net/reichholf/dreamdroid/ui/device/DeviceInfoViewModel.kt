@@ -1,88 +1,79 @@
 package net.reichholf.dreamdroid.ui.device
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.loadDeviceInfo
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.ui.text.UiText
 
-class DeviceInfoViewModel(
-    application: Application,
-    private val savedStateHandle: SavedStateHandle
-) : AndroidViewModel(application) {
-    val uiState: DeviceInfoUiState = DeviceInfoUiState()
+/**
+ * Device info of the active receiver. [DeviceInfoUiState.loading] is true until the first
+ * load finishes; a failed refresh keeps the info already shown.
+ */
+data class DeviceInfoUiState(
+    val info: DeviceInfo? = null,
+    val loading: Boolean = true,
+    val refreshing: Boolean = false,
+    val userMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(if (refreshing) R.string.loading else R.string.device_info)
+}
 
-    var refreshing by mutableStateOf(false)
-        private set
+@HiltViewModel
+class DeviceInfoViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val receiver: ReceiverRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(DeviceInfoUiState())
+    val uiState: StateFlow<DeviceInfoUiState> = _uiState.asStateFlow()
 
-    var toolbarTitle by mutableStateOf("")
-        private set
-
-    var errorText by mutableStateOf<String?>(null)
-        private set
-    private var saved = DeviceInfoSaved()
-    private var started = false
     private var loadJob: Job? = null
 
-    private val hddCapacityFormat: (capacity: String, free: String) -> String = { capacity, free ->
-        val app = getApplication<Application>()
-        String.format(app.getString(R.string.hdd_capacity), capacity, free)
-    }
-
     init {
-        saved = readDeviceInfoSaved(savedStateHandle)
-        restoreDeviceInfoUiState(uiState, saved.info, saved.ready, hddCapacityFormat)
-        toolbarTitle = getApplication<Application>().getString(R.string.device_info)
+        val saved = savedStateHandle.get<DeviceInfo>(KEY_INFO)
+        if (saved != null && !saved.isEmpty()) {
+            _uiState.value = DeviceInfoUiState(info = saved, loading = false)
+        } else {
+            refresh()
+        }
     }
 
-    fun start() {
-        if (started) {
-            return
-        }
-        started = true
-        if (shouldLoadDeviceInfo(saved.info)) {
-            reload()
-            return
-        }
-        saved = DeviceInfoSaved(info = saved.info, ready = true)
-        saved.writeTo(savedStateHandle)
-        uiState.apply(saved.info, hddCapacityFormat)
-        toolbarTitle = getApplication<Application>().getString(R.string.device_info)
-    }
-
-    fun reload() {
-        val app = getApplication<Application>()
-        if (!saved.ready) {
-            uiState.beginLoading()
-        }
-        refreshing = true
-        toolbarTitle = app.getString(R.string.loading)
+    fun refresh() {
         loadJob?.cancel()
+        _uiState.update { it.copy(loading = it.info == null, refreshing = true) }
         loadJob = viewModelScope.launch {
-            val result = loadDeviceInfo(app)
-            refreshing = false
-            toolbarTitle = app.getString(R.string.device_info)
-            if (!result.success || result.info == null) {
-                if (!saved.ready) {
-                    uiState.apply(null, hddCapacityFormat)
+            val response = receiver.deviceInfo()
+            val info = response.value?.takeUnless { it.isEmpty() }
+            if (info == null) {
+                val message = response.error?.contentErrorText()
+                    ?: UiText.Resource(R.string.error_parsing)
+                _uiState.update {
+                    it.copy(loading = false, refreshing = false, userMessage = message)
                 }
-                errorText = result.errorText?.takeIf { it.isNotEmpty() }
-                    ?: app.getString(R.string.not_available)
                 return@launch
             }
-            saved = DeviceInfoSaved(info = result.info, ready = true)
-            saved.writeTo(savedStateHandle)
-            uiState.apply(result.info, hddCapacityFormat)
+            savedStateHandle[KEY_INFO] = info
+            _uiState.update { it.copy(info = info, loading = false, refreshing = false) }
         }
     }
 
-    fun consumeError() {
-        errorText = null
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
+    }
+
+    private companion object {
+        const val KEY_INFO = "device_info"
     }
 }

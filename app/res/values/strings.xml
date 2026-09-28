@@ -36,6 +36,7 @@
     <string name="cancel">Cancel</string>
     <string name="fetching_data">Fetching data&#8230;</string>
     <string name="get_content_error">Error getting content!</string>
+    <string name="content_error_detail" translatable="false">%1$s\n%2$s</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Browse EPG</string>
     <string name="edit">Edit</string>

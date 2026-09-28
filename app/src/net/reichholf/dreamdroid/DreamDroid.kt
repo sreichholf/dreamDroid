@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.preference.PreferenceManager
 import com.google.android.material.color.DynamicColors
+import dagger.hilt.android.HiltAndroidApp
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.GregorianCalendar
@@ -40,6 +41,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 /**
  * @author sre
  */
+@HiltAndroidApp
 class DreamDroid : Application() {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

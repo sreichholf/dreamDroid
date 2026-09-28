@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 // Room writes versioned schema JSON when AppDatabase.exportSchema is true.
@@ -29,6 +30,10 @@ dependencies {
     implementation(libs.room.runtime)
     ksp(libs.room.compiler)
     implementation(libs.sqlite.bundled)
+
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.lifecycle.viewmodel.compose)
 
     implementation(libs.preference)
     implementation(libs.recyclerview)
@@ -72,6 +77,8 @@ dependencies {
     androidTestImplementation(libs.okhttp.mockwebserver)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.coroutines.test)
     testRuntimeOnly(libs.junit.platform.launcher)
     // JVM unit tests need the desktop native library. The Android AAR only
     // ships bionic libsqliteJni.so, which the host JVM cannot load.
@@ -193,6 +200,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
+        // android.util.Log and friends return defaults on the JVM, so tests can drive
+        // EnigmaHttp error paths (docs/hilt-migration.md, decision 10).
+        unitTests.isReturnDefaultValues = true
         unitTests.all {
             it.useJUnitPlatform()
         }

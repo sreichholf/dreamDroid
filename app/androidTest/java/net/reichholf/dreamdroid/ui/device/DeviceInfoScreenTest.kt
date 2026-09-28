@@ -34,9 +34,8 @@ class DeviceInfoScreenTest {
 
     @Test
     fun showsScalarsAndSections() {
-        val state = DeviceInfoUiState()
-        state.apply(
-            DeviceInfo(
+        val state = DeviceInfoUiState(
+            info = DeviceInfo(
                 guiVersion = "2016-07-28",
                 imageVersion = "9.0.3.",
                 interfaceVersion = "1.7.4",
@@ -54,8 +53,9 @@ class DeviceInfoScreenTest {
                     )
                 ),
                 hdds = listOf(DeviceHdd("ATA Disk", "1.82 TB", "1405 GB"))
-            )
-        ) { capacity, free -> "$capacity ($free free)" }
+            ),
+            loading = false
+        )
 
         composeRule.setContent {
             DreamDroidTheme {
@@ -91,29 +91,17 @@ class DeviceInfoScreenTest {
     }
 
     @Test
-    fun restoreFromSavedInfoSkipsLoadingPlaceholders() {
-        val state = DeviceInfoUiState()
-        restoreDeviceInfoUiState(
-            state,
-            DeviceInfo(
-                guiVersion = "2016-07-28",
-                imageVersion = "9.0.3.",
-                interfaceVersion = "1.7.4",
-                frontProcessorVersion = "0",
-                deviceName = "Solo4K"
-            ),
-            deviceInfoReady = true
-        ) { capacity, free -> "$capacity ($free free)" }
-
+    fun failedFirstLoadShowsEmptySectionsNotLoading() {
         composeRule.setContent {
             DreamDroidTheme {
-                DeviceInfoScreen(state = state)
+                DeviceInfoScreen(state = DeviceInfoUiState(loading = false))
             }
         }
-
-        composeRule.onNodeWithText("Solo4K").assertIsDisplayed()
         composeRule.onAllNodesWithText("Loading", substring = true).fetchSemanticsNodes().let {
-            assertTrue("did not expect Loading after restore", it.isEmpty())
+            assertTrue("did not expect Loading after a failed load", it.isEmpty())
+        }
+        composeRule.onAllNodesWithText("—").fetchSemanticsNodes().let {
+            assertTrue("expected an empty marker per section", it.size == 3)
         }
     }
 }

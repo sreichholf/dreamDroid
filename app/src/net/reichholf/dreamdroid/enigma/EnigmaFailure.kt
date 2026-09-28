@@ -10,6 +10,8 @@ import java.net.UnknownHostException
 import java.security.cert.CertificateException
 import javax.net.ssl.SSLException
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * Typed Enigma2 failure. HTTP mapping lives in [fromThrowable] / [fromHttpStatus];
@@ -39,9 +41,11 @@ sealed class EnigmaFailure {
 
     data class Unknown(val detail: String? = null) : EnigmaFailure()
 
-    fun userMessage(context: Context): String = when (this) {
+    fun userMessage(context: Context): String = userMessageText().asString(context.resources)
+
+    fun userMessageText(): UiText = when (this) {
         is Unreachable ->
-            context.getString(
+            UiText.Resource(
                 when (reason) {
                     UnreachableReason.Dns -> R.string.host_not_found
 
@@ -53,17 +57,17 @@ sealed class EnigmaFailure {
                 }
             )
 
-        is Auth -> context.getString(R.string.auth_error)
+        is Auth -> UiText.Resource(R.string.auth_error)
 
-        is Http -> message.orEmpty()
+        is Http -> UiText.Raw(message.orEmpty())
 
-        is Parse -> context.getString(R.string.error_parsing)
+        is Parse -> UiText.Resource(R.string.error_parsing)
 
-        is BoxRejected -> stateText
+        is BoxRejected -> UiText.Raw(stateText)
 
-        is Cancelled -> ""
+        is Cancelled -> UiText.Raw("")
 
-        is Unknown -> detail.orEmpty()
+        is Unknown -> UiText.Raw(detail.orEmpty())
     }
 
     companion object {

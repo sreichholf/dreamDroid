@@ -4,13 +4,18 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * One-shot user messages for the phone shell, the TV hub, and the player. In-app
@@ -31,9 +36,17 @@ object ShellMessages {
     }
 }
 
+/**
+ * The shell's [SnackbarHostState]. Destinations whose ViewModel keeps its user message in
+ * UI state show it here with [ShowShellUserMessage]. Null outside a shell.
+ */
+val LocalShellSnackbarHostState = staticCompositionLocalOf<SnackbarHostState?> { null }
+
 @Composable
-fun ShellSnackbarHost(modifier: Modifier = Modifier) {
-    val hostState = remember { SnackbarHostState() }
+fun ShellSnackbarHost(
+    modifier: Modifier = Modifier,
+    hostState: SnackbarHostState = remember { SnackbarHostState() }
+) {
     val lifecycleOwner = LocalLifecycleOwner.current
     // Only a started host collects: a stopped shell under the player must not queue
     // (and later replay) the player's messages.
@@ -43,4 +56,24 @@ fun ShellSnackbarHost(modifier: Modifier = Modifier) {
             .collect { text -> hostState.showSnackbar(text) }
     }
     SnackbarHost(hostState = hostState, modifier = modifier)
+}
+
+/**
+ * Shows [message] in the shell snackbar, then calls [onShown] so the ViewModel clears it.
+ * A message still in state when the destination leaves composition shows again on return.
+ */
+@Composable
+fun ShowShellUserMessage(message: UiText?, onShown: () -> Unit) {
+    val hostState = LocalShellSnackbarHostState.current ?: return
+    val text = message?.asString()?.trim().orEmpty()
+    val currentOnShown by rememberUpdatedState(onShown)
+    LaunchedEffect(hostState, message) {
+        if (message == null) {
+            return@LaunchedEffect
+        }
+        if (text.isNotEmpty()) {
+            hostState.showSnackbar(text)
+        }
+        currentOnShown()
+    }
 }
