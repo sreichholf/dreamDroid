@@ -186,7 +186,7 @@ Hub top bar action or list EPG Timeline
        └── At this time → list EPG (pop if nested on EPG)
 ```
 
-`MultiEpgViewModel` and `TvMultiEpgViewModel` are `@HiltViewModel`s over `EpgRepository` and `TimerRepository`. Each owns a `MultiEpgGrid` (the sliding-window loader, `StateFlow<MultiEpgGridState>`) and exposes it inside its `StateFlow` UI state. `EpgRepository` builds the one `MultiEpgSync` per process; `MultiEpgSyncHolder.shared` looks that instance up for the hub service list and the TV hub browse until they move to injected repositories.
+`MultiEpgViewModel` and `TvMultiEpgViewModel` are `@HiltViewModel`s over `EpgRepository` and `TimerRepository`. Each owns a `MultiEpgGrid` (the sliding-window loader, `StateFlow<MultiEpgGridState>`) and exposes it inside its `StateFlow` UI state. `EpgRepository` builds the one `MultiEpgSync` per process; the hub service list and the TV hub browse fill it through `EpgRepository.fillNowChunk`.
 
 ### Code map
 

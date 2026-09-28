@@ -371,6 +371,31 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun hasCacheCountsTabStripsMovieLocationsAndTimerSnapshots() = runBlocking {
+        assertFalse(services.hasCache(PROFILE_ID))
+        database.epgDao().replaceChunk(
+            EpgChunkMetaEntity(PROFILE_ID, FAVOURITES, chunk.startSec, chunk.endSec, 1L),
+            listOf(event("News", NOW, service = CHANNEL, bouquetRef = FAVOURITES))
+        )
+        assertFalse(services.hasCache(PROFILE_ID))
+
+        writeStrip("RADIO", RADIO to "Radio")
+        assertTrue(services.hasCache(PROFILE_ID))
+
+        database.movieDao().replaceLocations(
+            OTHER_PROFILE,
+            listOf(MovieLocationStripEntity(OTHER_PROFILE, 0, HDD))
+        )
+        assertTrue(services.hasCache(OTHER_PROFILE))
+
+        database.timerDao().replaceSnapshot(
+            OTHER_PROFILE + 1,
+            listOf(Timer(reference = CHANNEL, name = "News").toListEntity(OTHER_PROFILE + 1, 0))
+        )
+        assertTrue(services.hasCache(OTHER_PROFILE + 1))
+    }
+
+    @Test
     fun clearingTheActiveProfileKeepsOtherProfiles() = runBlocking {
         seed(PROFILE_ID)
         seed(OTHER_PROFILE)
@@ -378,8 +403,8 @@ class ServiceRepositoryTest {
 
         services.clearUseDrivenCache(allProfiles = false)
 
-        assertFalse(hasCache(PROFILE_ID))
-        assertTrue(hasCache(OTHER_PROFILE))
+        assertFalse(services.hasCache(PROFILE_ID))
+        assertTrue(services.hasCache(OTHER_PROFILE))
         assertEquals(0, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
         assertEquals(1, rosterDao.rosterContainerCount(OTHER_PROFILE, FAVOURITES))
         assertNull(database.epgDao().getChunk(PROFILE_ID, FAVOURITES, chunk.startSec))
@@ -397,8 +422,8 @@ class ServiceRepositoryTest {
 
         services.clearUseDrivenCache(allProfiles = true)
 
-        assertFalse(hasCache(PROFILE_ID))
-        assertFalse(hasCache(OTHER_PROFILE))
+        assertFalse(services.hasCache(PROFILE_ID))
+        assertFalse(services.hasCache(OTHER_PROFILE))
         assertEquals(0, rosterDao.rosterContainerCount(OTHER_PROFILE, FAVOURITES))
         assertNull(database.epgDao().getChunk(OTHER_PROFILE, FAVOURITES, chunk.startSec))
         assertNull(database.timerDao().snapshot(OTHER_PROFILE))
@@ -419,8 +444,8 @@ class ServiceRepositoryTest {
 
         profiles.delete(other)
 
-        assertFalse(hasCache(other.id!!))
-        assertTrue(hasCache(PROFILE_ID))
+        assertFalse(services.hasCache(other.id!!))
+        assertTrue(services.hasCache(PROFILE_ID))
     }
 
     private val chunk = MultiEpgWindows.chunkContaining(NOW)
@@ -488,12 +513,6 @@ class ServiceRepositoryTest {
             )
         )
     }
-
-    private suspend fun hasCache(profileId: Int): Boolean = hasUseDrivenCache(
-        rosterDao.getTabStripRefs(profileId),
-        database.movieDao().locationMetaCount(profileId) > 0,
-        database.timerDao().snapshotCount(profileId) > 0
-    )
 
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {

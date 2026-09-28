@@ -1,219 +1,174 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.content.Context
 import android.util.Log
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.MovieListLoad
+import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
-import net.reichholf.dreamdroid.data.movieRepository
-import net.reichholf.dreamdroid.data.serviceRepository
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.contentError
-import net.reichholf.dreamdroid.enigma.loadMovieList
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
-import net.reichholf.dreamdroid.multiepg.MultiEpgSyncHolder
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.text.UiText
 
 data class TvHubBrowseResult(
     val rows: List<HubBouquetRow>,
     val locations: List<String>,
-    val errorText: String?,
+    val errorText: UiText?,
     val usedCache: Boolean
 )
 
 data class TvHubMoviesResult(
     val movies: List<Movie>?,
-    val errorText: String?,
+    val errorText: UiText?,
     val usedCache: Boolean
 )
 
 /**
- * TV hub bouquet + movie-location load. Online writes the use-driven Room
- * cache; Offline paints from it. The `/hdd/movie` location fallback is never
- * a drawer header.
+ * TV hub bouquet rows and movie locations of the active profile. Online writes the
+ * use-driven Room cache; Offline paints from it. The `/hdd/movie` location fallback is
+ * never a drawer header.
  */
-suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
-    val app = context.applicationContext
-    val profileId = ProfileRepository.get().requireCurrent().id
-    val services = serviceRepository(app)
-    val movies = movieRepository(app)
-    val cachedTabs = services.cachedTvBouquetTabs()
-    val cachedMovies = movies.cachedLocations()
-    val hasCache = hasUseDrivenCache(
-        cachedTabs.map { it.reference },
-        hasMovieLocationStrip = cachedMovies != null
-    )
-    val status = SessionConnectionHolder.shared.status.value
-    if (shouldSkipTvHubHttp(status, hasCache)) {
-        return paintTvHubFromCache(
-            services = services,
-            tabs = cachedTabs,
-            locations = movieHeadersForTvHub(
-                locationsFromReceiver = false,
-                liveLocations = emptyList(),
-                cachedLocations = cachedMovies
-            )
-        )
-    }
-    withContext(Dispatchers.IO) {
-        prefetchTvLocationsAndTags()
-    }
-    val bouquetResult = services.tvBouquetTabs()
-    val bouquets = bouquetResult.value
-    if (bouquets == null) {
-        if (hasCache) {
-            return paintTvHubFromCache(
-                services = services,
+class TvHubBrowse @Inject constructor(
+    private val services: ServiceRepository,
+    private val epg: EpgRepository,
+    private val movies: MovieRepository,
+    private val timers: TimerRepository,
+    private val profiles: ProfileRepository,
+    private val sessions: SessionConnectionHolder
+) {
+    /**
+     * Each TV bouquet with now/next. A bouquet the receiver answered replaces its Room
+     * roster and fills the MultiEPG chunk at now; one it failed paints from Room.
+     */
+    suspend fun browse(): TvHubBrowseResult {
+        val cachedTabs = services.cachedTvBouquetTabs()
+        val cachedLocations = movies.cachedLocations()
+        val hasCache = cachedTabs.isNotEmpty() || cachedLocations != null
+        if (shouldSkipTvHubHttp(sessions.status.value, hasCache)) {
+            return paintFromCache(
                 tabs = cachedTabs,
                 locations = movieHeadersForTvHub(
-                    locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
-                    liveLocations = ProfileRepository.get().locations().toList(),
-                    cachedLocations = cachedMovies
+                    locationsFromReceiver = false,
+                    liveLocations = emptyList(),
+                    cachedLocations = cachedLocations
                 )
             )
         }
+        timers.locationsAndTags()
+        val bouquetResult = services.tvBouquetTabs()
+        val bouquets = bouquetResult.value
+        if (bouquets == null) {
+            val locations = liveMovieHeaders(cachedLocations)
+            if (hasCache) {
+                return paintFromCache(cachedTabs, locations)
+            }
+            return TvHubBrowseResult(
+                rows = emptyList(),
+                locations = locations,
+                errorText = bouquetResult.error.contentErrorText(),
+                usedCache = false
+            )
+        }
+        val rows = ArrayList<HubBouquetRow>()
+        var lastError: UiText? = null
+        val nowSec = System.currentTimeMillis() / 1000L
+        for (bouquet in bouquets) {
+            val ref = bouquet.reference
+            if (ref.isBlank()) {
+                continue
+            }
+            val response = services.receiverNowNext(ref)
+            val loaded = response.value
+            if (loaded != null) {
+                val serviceRows = withoutBouquetSpacers(loaded)
+                rows.add(HubBouquetRow(bouquet = bouquet, services = serviceRows))
+                if (services.persistRoster(ref, ref, serviceRows)) {
+                    fillNowChunk(ref, nowSec)
+                }
+                continue
+            }
+            lastError = response.error.contentErrorText()
+            paintBouquetFromCache(bouquet, nowSec)?.let { rows.add(it) }
+        }
+        if (profiles.locationsLoadedFromReceiver()) {
+            movies.saveLocations(profiles.locations().toList())
+        }
         return TvHubBrowseResult(
-            rows = emptyList(),
-            locations = movieHeadersForTvHub(
-                locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
-                liveLocations = ProfileRepository.get().locations().toList(),
-                cachedLocations = cachedMovies
-            ),
-            errorText = bouquetResult.error.contentError(app),
+            rows = rows,
+            locations = liveMovieHeaders(cachedLocations),
+            errorText = if (rows.isEmpty()) lastError else null,
             usedCache = false
         )
     }
-    val rows = ArrayList<HubBouquetRow>()
-    var lastError: String? = null
-    val nowSec = System.currentTimeMillis() / 1000L
-    val sync = MultiEpgSyncHolder.shared(app)
-    for (bouquet in bouquets) {
+
+    /**
+     * Recordings in [dirname]. Room answers without asking the receiver while the session
+     * is not Online and Room has that location, and when the receiver fails.
+     */
+    suspend fun movies(dirname: String): TvHubMoviesResult {
+        val cached = movies.cachedMovies(dirname)
+        if (shouldSkipTvHubHttp(sessions.status.value, cached != null)) {
+            return TvHubMoviesResult(movies = cached.orEmpty(), errorText = null, usedCache = true)
+        }
+        return when (val load = movies.movies(dirname, emptyList())) {
+            is MovieListLoad.Movies ->
+                TvHubMoviesResult(movies = load.movies, errorText = null, usedCache = load.cached)
+
+            is MovieListLoad.Failed ->
+                TvHubMoviesResult(
+                    movies = null,
+                    errorText = load.error.contentErrorText(),
+                    usedCache = false
+                )
+        }
+    }
+
+    private suspend fun fillNowChunk(ref: String, nowSec: Long) {
+        try {
+            epg.fillNowChunk(ref, ref, nowSec)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            Log.w(DreamDroid.LOG_TAG, "TV hub epgmulti fill failed", t)
+        }
+    }
+
+    private fun liveMovieHeaders(cachedLocations: List<String>?): List<String> =
+        movieHeadersForTvHub(
+            locationsFromReceiver = profiles.locationsLoadedFromReceiver(),
+            liveLocations = profiles.locations().toList(),
+            cachedLocations = cachedLocations
+        )
+
+    private suspend fun paintFromCache(
+        tabs: List<Service>,
+        locations: List<String>
+    ): TvHubBrowseResult {
+        val nowSec = System.currentTimeMillis() / 1000L
+        return TvHubBrowseResult(
+            rows = tabs.mapNotNull { bouquet -> paintBouquetFromCache(bouquet, nowSec) },
+            locations = locations,
+            errorText = null,
+            usedCache = true
+        )
+    }
+
+    private suspend fun paintBouquetFromCache(bouquet: Service, nowSec: Long): HubBouquetRow? {
         val ref = bouquet.reference
         if (ref.isBlank()) {
-            continue
+            return null
         }
-        val loaded = services.receiverNowNext(ref)
-        val loadedRows = loaded.value
-        if (loadedRows != null) {
-            val serviceRows = withoutBouquetSpacers(loadedRows)
-            rows.add(HubBouquetRow(bouquet = bouquet, services = serviceRows))
-            if (profileId != null && services.persistRoster(ref, ref, serviceRows)) {
-                try {
-                    sync.ensureChunk(profileId, ref, nowSec, persist = true)
-                } catch (t: Throwable) {
-                    if (t is kotlinx.coroutines.CancellationException) {
-                        throw t
-                    }
-                    Log.w(DreamDroid.LOG_TAG, "TV hub epgmulti fill failed", t)
-                }
-            }
-            continue
-        }
-        lastError = loaded.error.contentError(app)
-        val cached = paintBouquetFromCache(services, bouquet, nowSec)
-        if (cached != null) {
-            rows.add(cached)
-        }
+        val cached = services.cachedNowNext(ref, nowSec) ?: return null
+        return HubBouquetRow(bouquet = bouquet, services = withoutBouquetSpacers(cached))
     }
-    if (ProfileRepository.get().locationsLoadedFromReceiver()) {
-        movies.saveLocations(ProfileRepository.get().locations().toList())
-    }
-    val locations = movieHeadersForTvHub(
-        locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
-        liveLocations = ProfileRepository.get().locations().toList(),
-        cachedLocations = cachedMovies
-    )
-    return TvHubBrowseResult(
-        rows = rows,
-        locations = locations,
-        errorText = if (rows.isEmpty()) lastError else null,
-        usedCache = false
-    )
-}
-
-suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResult {
-    val app = context.applicationContext
-    val movies = movieRepository(app)
-    val cached = movies.cachedMovies(dirname)
-    val status = SessionConnectionHolder.shared.status.value
-    val hasCache = cached != null
-    if (shouldSkipTvHubHttp(status, hasCache)) {
-        return TvHubMoviesResult(
-            movies = cached.orEmpty(),
-            errorText = null,
-            usedCache = true
-        )
-    }
-    val result = loadMovieList(app, listOf(NameValuePair("dirname", dirname)))
-    if (result.success) {
-        movies.saveMovies(dirname, result.movies)
-        return TvHubMoviesResult(
-            movies = result.movies,
-            errorText = null,
-            usedCache = false
-        )
-    }
-    if (cached != null) {
-        return TvHubMoviesResult(
-            movies = cached,
-            errorText = null,
-            usedCache = true
-        )
-    }
-    return TvHubMoviesResult(
-        movies = null,
-        errorText = result.errorText,
-        usedCache = false
-    )
-}
-
-internal fun prefetchTvLocationsAndTags() {
-    val http = EnigmaHttp()
-    if (ProfileRepository.get().locations().size <= 1) {
-        if (!ProfileRepository.get().loadLocations(http)) {
-            Log.e(DreamDroid.LOG_TAG, "ERROR loading locations")
-        }
-    }
-    if (ProfileRepository.get().tags().size <= 1) {
-        if (!ProfileRepository.get().loadTags(http)) {
-            Log.e(DreamDroid.LOG_TAG, "ERROR loading tags")
-        }
-    }
-}
-
-private suspend fun paintTvHubFromCache(
-    services: ServiceRepository,
-    tabs: List<Service>,
-    locations: List<String>
-): TvHubBrowseResult {
-    val nowSec = System.currentTimeMillis() / 1000L
-    val rows = tabs.mapNotNull { bouquet -> paintBouquetFromCache(services, bouquet, nowSec) }
-    return TvHubBrowseResult(
-        rows = rows,
-        locations = locations,
-        errorText = null,
-        usedCache = true
-    )
-}
-
-private suspend fun paintBouquetFromCache(
-    services: ServiceRepository,
-    bouquet: Service,
-    nowSec: Long
-): HubBouquetRow? {
-    val ref = bouquet.reference
-    if (ref.isBlank()) {
-        return null
-    }
-    val cached = services.cachedNowNext(ref, nowSec) ?: return null
-    return HubBouquetRow(bouquet = bouquet, services = withoutBouquetSpacers(cached))
 }
 
 /** Drop Enigma2 bouquet spacers (`1:832:`) from a TV hub row. `1:64:` markers stay. */
@@ -223,5 +178,5 @@ internal fun withoutBouquetSpacers(services: List<ServiceNowNext>): List<Service
 internal fun unavailableTvHubMessage(
     usedCache: Boolean,
     paintedRows: Boolean,
-    errorText: String?
-): String? = if (!usedCache && !paintedRows) errorText else null
+    errorText: UiText?
+): UiText? = if (!usedCache && !paintedRows) errorText else null

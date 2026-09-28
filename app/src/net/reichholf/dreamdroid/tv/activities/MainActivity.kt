@@ -13,40 +13,33 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
-import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
+import net.reichholf.dreamdroid.tv.ui.TvShellViewModel
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
-import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /**
  * Created by Stephan on 16.10.2016.
  *
- * Kotlin port of the TV browse host activity (Compose hub via [TvComposeHubHost]).
- * Owns CheckProfile + the 30s reachability probe so the hub can show Online /
- * Offline / Checking from [SessionConnectionHolder].
+ * TV browse host activity (Compose hub via [TvComposeHubHost]). [TvShellViewModel] checks
+ * the profile and probes reachability so the hub can show Online / Offline / Checking.
  */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
         if (!showingSetup) {
@@ -56,19 +49,17 @@ class MainActivity : AppCompatActivity() {
             recreate()
         }
     }
-    private val hubViewModel: TvHubViewModel by viewModels { TvHubViewModel.Factory }
-    private var checkProfileJob: Job? = null
-    private var profileChangesJob: Job? = null
+    private val hubViewModel: TvHubViewModel by viewModels()
+    private val shellViewModel: TvShellViewModel by viewModels()
     private var showingSetup: Boolean = false
     private var lanGranted by mutableStateOf(false)
-    private var currentProfile: Profile = Profile.getDefault()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         startSessionReachabilityProbe()
-        if (!ProfileRepository.get().hasCurrent()) {
+        if (!profiles.hasCurrent()) {
             showSetup()
             return
         }
@@ -80,9 +71,8 @@ class MainActivity : AppCompatActivity() {
         if (showingSetup) {
             return
         }
-        if (!ProfileRepository.get().ensureCurrent()) {
-            checkProfileJob?.cancel()
-            checkProfileJob = null
+        if (!profiles.ensureCurrent()) {
+            shellViewModel.cancelCheck()
             showSetup()
         }
     }
@@ -106,13 +96,8 @@ class MainActivity : AppCompatActivity() {
     private fun startHub() {
         showingSetup = false
         localNetworkPermissionRequest.ensure(this)
-        if (profileChangesJob == null) {
-            profileChangesJob = lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                ProfileRepository.get().switches.collect { onProfileChanged(it) }
-            }
-        }
-        onProfileChanged(ProfileRepository.get().requireCurrent())
-        TvComposeHubHost.install(this)
+        shellViewModel.start()
+        TvComposeHubHost.install(this, shellViewModel::recheck)
         try {
             // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
             // Do not flip process-wide HttpsURLConnection follow-redirects.
@@ -122,92 +107,17 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * While resumed, ping the box every 30s (and immediately on resume) so Online
-     * can become Offline and Unreachable Offline can recover without reselecting
-     * the profile. Auth / illegal host are not polled. Does not flash Checking.
-     */
+    /** While resumed, probe the receiver every 30s and right away on resume. */
     private fun startSessionReachabilityProbe() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    val active = ProfileRepository.get().current.value
-                    if (active == null || showingSetup) {
-                        delay(SESSION_REACHABILITY_INTERVAL_MS)
-                        continue
+                    if (!showingSetup) {
+                        shellViewModel.probeReachability()
                     }
-                    probeSessionReachabilityIfNeeded(
-                        holder = SessionConnectionHolder.shared,
-                        hasCache = hasUseDrivenCache(
-                            active,
-                            this@MainActivity
-                        ),
-                        isBusy = { checkProfileJob != null },
-                        check = {
-                            val profile = ProfileRepository.get().current.value ?: active
-                            ProfileRepository.get().setDeviceInfo(profile, null)
-                            withContext(Dispatchers.IO) {
-                                CheckProfile.checkProfile(profile, this@MainActivity)
-                            }
-                        }
-                    )
                     delay(SESSION_REACHABILITY_INTERVAL_MS)
                 }
             }
         }
-    }
-
-    /** Hub / ProfileCheck Recheck. Clears device-info and re-runs CheckProfile. */
-    fun recheckProfile() {
-        val profile = ProfileRepository.get().requireCurrent()
-        ProfileRepository.get().setDeviceInfo(profile, null)
-        SessionConnectionHolder.shared.beginChecking()
-        startCheckProfile(profile)
-    }
-
-    private fun onProfileChanged(p: Profile) {
-        if (p.id != currentProfile.id) {
-            SessionConnectionHolder.shared.resetForProfileChange()
-        }
-        if (ProfileRepository.get().deviceInfo(p) == null) {
-            if (p == currentProfile && checkProfileJob != null) {
-                return
-            }
-            currentProfile = p
-            startCheckProfile(p)
-        } else {
-            currentProfile = p
-            onProfileChecked(CheckProfile.checkProfile(p, this))
-        }
-    }
-
-    private fun startCheckProfile(profile: Profile) {
-        checkProfileJob?.cancel(null)
-        checkProfileJob = null
-        SessionConnectionHolder.shared.beginChecking()
-        checkProfileJob = launchCheckProfileLoad(
-            profile,
-            this,
-            { SessionConnectionHolder.shared.beginChecking() },
-            { result ->
-                checkProfileJob = null
-                if (result != null) {
-                    onProfileChecked(result)
-                }
-            }
-        )
-    }
-
-    private fun onProfileChecked(result: ProfileCheckResult) {
-        SessionConnectionHolder.shared.applyProfileCheckResult(
-            result,
-            hasUseDrivenCache(ProfileRepository.get().requireCurrent(), this)
-        )
-    }
-
-    override fun onDestroy() {
-        profileChangesJob?.cancel()
-        profileChangesJob = null
-        super.onDestroy()
     }
 }

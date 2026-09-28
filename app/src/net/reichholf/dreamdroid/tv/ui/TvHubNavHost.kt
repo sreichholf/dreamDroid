@@ -16,7 +16,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -56,14 +55,11 @@ internal fun consumeTvHubReload(handle: SavedStateHandle): Boolean {
 fun TvHubNavHost(
     activity: ComponentActivity,
     onRecheckProfile: () -> Unit,
-    hubViewModel: TvHubViewModel = viewModel(
-        viewModelStoreOwner = activity,
-        factory = TvHubViewModel.Factory
-    ),
     navController: NavHostController = rememberNavController(),
-    startDestination: Any = TvHub,
-    settingsViewModel: @Composable () -> SettingsViewModel = { hiltViewModel() }
+    startDestination: Any = TvHub
 ) {
+    // Activity-scoped: the hub state outlives the hub route and configuration changes.
+    val hubViewModel: TvHubViewModel = hiltViewModel(viewModelStoreOwner = activity)
     val snackbarHostState = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(LocalShellSnackbarHostState provides snackbarHostState) {
@@ -72,8 +68,7 @@ fun TvHubNavHost(
                 onRecheckProfile = onRecheckProfile,
                 hubViewModel = hubViewModel,
                 navController = navController,
-                startDestination = startDestination,
-                settingsViewModel = settingsViewModel
+                startDestination = startDestination
             )
         }
         // TV Material is not Material 3. The snackbar uses the phone theme.
@@ -95,8 +90,7 @@ private fun TvHubNavGraph(
     onRecheckProfile: () -> Unit,
     hubViewModel: TvHubViewModel,
     navController: NavHostController,
-    startDestination: Any,
-    settingsViewModel: @Composable () -> SettingsViewModel
+    startDestination: Any
 ) {
     NavHost(
         navController = navController,
@@ -133,7 +127,7 @@ private fun TvHubNavGraph(
             )
         }
         composable<TvSettings> {
-            TvSettingsDestination(navController, settingsViewModel())
+            TvSettingsDestination(navController, hiltViewModel())
         }
         composable<TvProfiles> {
             DreamDroidTvTheme {

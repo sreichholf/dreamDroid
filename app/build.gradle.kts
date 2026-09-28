@@ -127,6 +127,12 @@ android {
             replaceDirs(res, "androidTest/res")
             replaceDirs(resources, "androidTest/resources")
         }
+        getByName("debug") {
+            // Debug-only hosts for instrumented tests (a Hilt activity), never in release.
+            manifest.srcFile("debug/AndroidManifest.xml")
+            replaceDirs(java, "debug/java")
+            replaceDirs(kotlin, "debug/java")
+        }
         getByName("test") {
             replaceDirs(java, "test/java")
             replaceDirs(kotlin, "test/java")

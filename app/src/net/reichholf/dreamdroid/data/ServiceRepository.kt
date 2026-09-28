@@ -29,6 +29,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.room.ServiceRosterEntity
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 
 /** Outcome of a TV + radio bouquet list load. */
 sealed interface BouquetListLoad {
@@ -300,6 +301,17 @@ class ServiceRepository @Inject constructor(
         )
         return true
     }
+
+    /**
+     * Whether [profileId] has a use-driven cache that can paint a hub start surface: a TV or
+     * radio tab strip, a movie location strip, or a timer snapshot. MultiEPG chunks alone
+     * do not count.
+     */
+    suspend fun hasCache(profileId: Int): Boolean = hasUseDrivenCache(
+        database.rosterDao().getTabStripRefs(profileId),
+        database.movieDao().locationMetaCount(profileId) > 0,
+        database.timerDao().snapshotCount(profileId) > 0
+    )
 
     /**
      * Drops the active profile's use-driven cache, or every profile's with [allProfiles].

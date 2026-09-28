@@ -143,6 +143,7 @@ fun TvMultiEpgHost(
                     onDismiss = viewModel::dismissDetail,
                     onSetTimer = { viewModel.setTimer(event) },
                     onEditTimer = { viewModel.editTimer(event) },
+                    onMissingStreamPlayer = viewModel::onMissingStreamPlayer,
                     streamingEnabled = uiState.streamingEnabled,
                     mutationsBlocked = uiState.mutationsBlocked
                 )
@@ -179,6 +180,7 @@ internal fun TvMultiEpgEventDetail(
     onSetTimer: (() -> Unit)? = null,
     onEditTimer: (() -> Unit)? = null,
     onImdb: (() -> Unit)? = null,
+    onMissingStreamPlayer: () -> Unit = {},
     streamingEnabled: Boolean = true,
     mutationsBlocked: Boolean = false
 ) {
@@ -240,7 +242,11 @@ internal fun TvMultiEpgEventDetail(
                                     bouquetRef,
                                     null
                                 )
-                                TvComposeHubHost.startStreamIntent(host, intent)
+                                TvComposeHubHost.startStreamIntent(
+                                    host,
+                                    intent,
+                                    onMissingStreamPlayer
+                                )
                             }
                         },
                         focusRequester = firstActionFocus

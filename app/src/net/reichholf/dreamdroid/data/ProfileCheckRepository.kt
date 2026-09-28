@@ -19,6 +19,9 @@ import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
 interface ProfileCheckRepository {
     /** Asks [profile]'s receiver again; a cached device-info answer is dropped first. */
     suspend fun check(profile: Profile): ProfileCheckResult
+
+    /** Like [check], but a device-info answer cached for [profile] stands in for asking. */
+    suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult
 }
 
 /** [ProfileCheckRepository] over [CheckProfile]. */
@@ -29,6 +32,9 @@ class ReceiverProfileCheckRepository @Inject constructor(
 ) : ProfileCheckRepository {
     override suspend fun check(profile: Profile): ProfileCheckResult {
         profiles.setDeviceInfo(profile, null)
-        return withContext(Dispatchers.IO) { CheckProfile.checkProfile(profile, context) }
+        return checkReusingDeviceInfo(profile)
     }
+
+    override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
+        withContext(Dispatchers.IO) { CheckProfile.checkProfile(profile, context) }
 }
