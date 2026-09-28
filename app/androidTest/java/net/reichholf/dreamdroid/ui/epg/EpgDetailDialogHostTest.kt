@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.ui.epg
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
@@ -18,7 +21,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
-import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
 import net.reichholf.dreamdroid.ui.multiepg.MultiEpgScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -118,84 +120,105 @@ class EpgDetailDialogHostTest {
 
     @Test
     fun sheetHostShowsSavingProgress() {
-        val session = EpgEventDialogSession()
-        session.showDetail(
-            Event(
-                title = "Tagesschau",
-                serviceName = "Das Erste HD",
-                description = "News",
-                descriptionExtended = "Die Nachrichten um 20 Uhr.",
-                startReadable = "20:00",
-                durationReadable = "15"
-            )
-        )
-        session.progress = IndeterminateProgressState(message = "Saving")
         composeRule.setContent {
             DreamDroidTheme {
-                EpgEventDetailSheetHost(session)
+                EpgEventDetailSheet(
+                    state = EpgEventDetailUiState(event = tagesschau(), saving = true),
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {}
+                )
             }
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
-        composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.saving))
+            .assertIsDisplayed()
         composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
     }
 
     @Test
     fun savingProgressRemainsAfterSheetDismissWithoutDialog() {
-        val session = EpgEventDialogSession()
-        session.showDetail(
-            Event(
-                title = "Tagesschau",
-                serviceName = "Das Erste HD",
-                description = "News",
-                startReadable = "20:00",
-                durationReadable = "15"
-            )
-        )
-        session.progress = IndeterminateProgressState(message = "Saving")
+        var state by mutableStateOf(EpgEventDetailUiState(event = tagesschau(), saving = true))
         composeRule.setContent {
             DreamDroidTheme {
-                EpgEventDetailSheetHost(session)
+                EpgEventDetailSheet(
+                    state = state,
+                    onDismiss = { state = state.copy(event = null) },
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {}
+                )
             }
         }
         composeRule.waitForIdle()
-        composeRule.runOnIdle { session.dismissDetail() }
+        composeRule.runOnIdle { state = state.copy(event = null) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithText("Saving").assertIsDisplayed()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.saving))
+            .assertIsDisplayed()
         composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
         composeRule.onNode(isDialog()).assertDoesNotExist()
     }
 
     @Test
     fun sheetHostKeepsUnavailableTitleInsteadOfDismissing() {
-        val session = EpgEventDialogSession()
-        session.showDetail(
-            Event(
-                title = "",
-                serviceName = "Das Erste HD",
-                startReadable = "20:00",
-                durationReadable = "15"
-            )
+        val event = Event(
+            title = "",
+            serviceName = "Das Erste HD",
+            startReadable = "20:00",
+            durationReadable = "15"
         )
         composeRule.setContent {
             DreamDroidTheme {
-                EpgEventDetailSheetHost(session)
+                EpgEventDetailSheet(
+                    state = EpgEventDetailUiState(event = event),
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {}
+                )
             }
         }
         composeRule.waitForIdle()
         val unavailable = composeRule.activity.getString(R.string.not_available)
         composeRule.onNodeWithText(unavailable).assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
-        composeRule.runOnIdle {
-            assertEquals("", session.detailEvent?.title.orEmpty())
+    }
+
+    @Test
+    fun sheetActionsReceiveTheShownEventAndDismiss() {
+        var state by mutableStateOf(EpgEventDetailUiState(event = tagesschau()))
+        var similar: Event? = null
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheet(
+                    state = state,
+                    onDismiss = { state = state.copy(event = null) },
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = { similar = it }
+                )
+            }
         }
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.similar))
+            .performClick()
+        composeRule.waitForIdle()
+        composeRule.runOnIdle {
+            assertEquals(tagesschau(), similar)
+            assertEquals(null, state.event)
+        }
+        composeRule.onNodeWithText("Tagesschau").assertDoesNotExist()
     }
 
     @Test
     fun multiEpgBarOpensSharedEpgDetailSheet() {
         val start = 1_700_000_000L
-        val session = EpgEventDialogSession()
+        var state by mutableStateOf(EpgEventDetailUiState())
         val channels = listOf(
             MultiEpgChannel(
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
@@ -229,9 +252,16 @@ class EpgDetailDialogHostTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
-                    onEventClick = { session.showDetail(it) }
+                    onEventClick = { state = EpgEventDetailUiState(event = it) }
                 )
-                EpgEventDetailSheetHost(session)
+                EpgEventDetailSheet(
+                    state = state,
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {}
+                )
             }
         }
         composeRule.onNodeWithText("Tagesschau").performClick()
@@ -239,4 +269,13 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
         composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
     }
+
+    private fun tagesschau() = Event(
+        title = "Tagesschau",
+        serviceName = "Das Erste HD",
+        description = "News",
+        descriptionExtended = "Die Nachrichten um 20 Uhr.",
+        startReadable = "20:00",
+        durationReadable = "15"
+    )
 }

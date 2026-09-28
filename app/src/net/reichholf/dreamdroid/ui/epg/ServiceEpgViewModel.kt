@@ -1,139 +1,105 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import android.app.Application
-import android.content.Context
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.EventListLoad
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.enigma.EventListLoadResult
-import net.reichholf.dreamdroid.enigma.loadEventList
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.nav.ServiceEpg
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
+
+/** The schedule of one service. An empty [serviceRef] means the route had none. */
+data class ServiceEpgUiState(
+    val serviceRef: String = "",
+    val serviceName: String = "",
+    val events: List<Event> = emptyList(),
+    val refreshing: Boolean = false,
+    val emptyMessage: UiText? = null
+) {
+    val title: UiText
+        get() = if (refreshing) {
+            UiText.Resource(R.string.loading)
+        } else {
+            UiText.Resource(
+                R.string.title_with_status,
+                listOf(UiText.Resource(R.string.epg), UiText.Raw(serviceName))
+            )
+        }
+}
 
 /**
- * Owns [ServiceEpgListState], refresh, the empty message, and the list load for one
- * service EPG back-stack entry. The service comes from the route arguments.
- * The load stays on [viewModelScope] so opening an event and popping back keeps the list.
+ * Service EPG of one back-stack entry; the service comes from the [ServiceEpg] route. It
+ * loads when created and when the connection session changes, not when the destination is
+ * shown again, so opening an event and popping back keeps the list.
  */
-class ServiceEpgViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    private val route: ServiceEpg = savedStateHandle.toRoute()
-    val serviceRef: String = route.serviceRef
-    val serviceName: String = route.serviceName
+@HiltViewModel
+class ServiceEpgViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    private val epg: EpgRepository,
+    sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(
+        ServiceEpgUiState(
+            serviceRef = savedStateHandle.get<String>(ServiceEpg::serviceRef.name).orEmpty(),
+            serviceName = savedStateHandle.get<String>(ServiceEpg::serviceName.name).orEmpty()
+        )
+    )
+    val uiState: StateFlow<ServiceEpgUiState> = _uiState.asStateFlow()
 
-    val listState: ServiceEpgListState = ServiceEpgListState()
-    val refresh: ComposeRefreshState = ComposeRefreshState()
-
-    var emptyMessage by mutableStateOf<String?>(null)
-        private set
-
-    internal var loadHooks: ServiceEpgLoadHooks = ServiceEpgLoadHooks()
-
-    private var boundSession: ConnectionStatus.Session? = null
-    private var bound = false
     private var loadJob: Job? = null
 
-    /** Loads on the first bind and when the connection session changes, not on re-entry. */
-    fun bindSession(session: ConnectionStatus.Session?) {
-        if (bound && session == boundSession) {
-            return
+    init {
+        if (_uiState.value.serviceRef.isNotEmpty()) {
+            viewModelScope.launch {
+                sessions.status.map { it.session }.distinctUntilChanged().collect { reload() }
+            }
         }
-        bound = true
-        boundSession = session
-        reload()
     }
 
     fun reload(forceRefresh: Boolean = false) {
+        val serviceRef = _uiState.value.serviceRef
         if (serviceRef.isEmpty()) {
             return
         }
-        val app = getApplication<Application>()
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
+        _uiState.update {
+            it.copy(
+                refreshing = true,
+                emptyMessage = if (it.events.isEmpty()) UiText.Resource(R.string.loading) else null
+            )
         }
-        refresh.setRefreshing(true)
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            loadAndApply(app, forceRefresh)
-        }
-    }
-
-    private suspend fun loadAndApply(app: Application, forceRefresh: Boolean) {
-        val profileId = loadHooks.profileId()
-        val nowSec = System.currentTimeMillis() / 1000L
-        suspend fun paintCache(): Boolean {
-            if (profileId == null) {
-                return false
+            epg.serviceEvents(serviceRef, forceRefresh).collect { load ->
+                _uiState.update { it.applied(load) }
             }
-            val cached = ListEpgCache.loadServiceEvents(
-                loadHooks.epgDao(app),
-                profileId,
-                serviceRef,
-                nowSec
-            ) ?: return false
-            applyEvents(app, cached)
-            return true
-        }
-        val hadCache = if (!forceRefresh) {
-            paintCache()
-        } else {
-            false
-        }
-        if (!forceRefresh && loadHooks.shouldSkipReceiverHttp(hadCache)) {
-            return
-        }
-        val result = loadHooks.loadEvents(app, listOf(NameValuePair("sRef", serviceRef)))
-        if (result.success) {
-            applyEvents(app, result.events)
-            return
-        }
-        if (paintCache()) {
-            return
-        }
-        refresh.setRefreshing(false)
-        listState.replaceAll(emptyList())
-        emptyMessage = result.errorText
-    }
-
-    private fun applyEvents(app: Application, events: List<Event>) {
-        refresh.setRefreshing(false)
-        if (events.isEmpty()) {
-            listState.replaceAll(emptyList())
-            emptyMessage = app.getString(R.string.no_list_item)
-        } else {
-            emptyMessage = null
-            listState.replaceAll(events)
         }
     }
 }
 
-internal class ServiceEpgLoadHooks(
-    val profileId: () -> Int? = { ProfileRepository.get().requireCurrent().id },
-    val epgDao: (Context) -> EpgDao = { context -> AppDatabase.epg(context) },
-    val shouldSkipReceiverHttp: (Boolean) -> Boolean = { hasCache ->
-        SessionConnectionHolder.shared.status.value.shouldSkipReceiverHttp(hasCache)
-    },
-    val loadEvents: suspend (
-        Context,
-        List<NameValuePair>
-    ) -> EventListLoadResult = { context, params ->
-        loadEventList(context, params, URIStore.EPG_SERVICE)
-    }
-)
+private fun ServiceEpgUiState.applied(load: EventListLoad): ServiceEpgUiState = when (load) {
+    is EventListLoad.Events -> copy(
+        refreshing = false,
+        events = load.events,
+        emptyMessage = if (load.events.isEmpty()) UiText.Resource(R.string.no_list_item) else null
+    )
+
+    is EventListLoad.Failed -> copy(
+        refreshing = false,
+        events = emptyList(),
+        emptyMessage = load.error.contentErrorText()
+    )
+}

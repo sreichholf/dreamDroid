@@ -8,7 +8,6 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -129,15 +128,6 @@ class EnigmaClientHttpFailTest {
         assertEquals(true, result.success)
         assertEquals(emptyList<Service>(), result.services)
         assertEquals(null, result.errorText)
-    }
-
-    @Test
-    fun loadEventList_httpFailIsNotEmptySuccess() = runBlocking {
-        server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val result = loadEventList(appContext(), emptyList(), URIStore.EPG_SERVICE)
-        assertEquals(false, result.success)
-        assertEquals(emptyList<Event>(), result.events)
-        assertEquals(contentError("Server Error"), result.errorText)
     }
 
     @Test
