@@ -1,33 +1,26 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import androidx.activity.ComponentActivity
-import androidx.compose.runtime.remember
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
-import androidx.lifecycle.createSavedStateHandle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.flow.emptyFlow
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.data.SettingsRepository
-import net.reichholf.dreamdroid.data.serviceRepository
-import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
-import org.junit.After
+import net.reichholf.dreamdroid.testing.HiltComposeTestActivity
+import net.reichholf.dreamdroid.testutil.CurrentProfileRule
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.RuleChain
 
+/** Each TV route over the app's real Hilt graph, hosted in a debug Hilt activity. */
 class TvHubNavHostTest {
-    @get:Rule
-    val composeRule = createAndroidComposeRule<ComponentActivity>()
+    private val composeRule = createAndroidComposeRule<HiltComposeTestActivity>()
 
-    private var previousProfile: Profile? = null
+    @get:Rule
+    val rules: RuleChain = RuleChain.outerRule(CurrentProfileRule()).around(composeRule)
 
     @Before
     fun prepare() {
@@ -35,63 +28,44 @@ class TvHubNavHostTest {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .commit()
-        previousProfile = ProfileRepository.get().current.value
-        ProfileRepository.get().setCurrent(Profile().apply { host = "127.0.0.1" })
     }
 
-    @After
-    fun restoreProfile() {
-        val previous = previousProfile
-        if (previous != null) {
-            ProfileRepository.get().setCurrent(previous)
-        } else {
-            ProfileRepository.get().loadCurrent()
-        }
+    @Test
+    fun multiEpgRouteShowsHost() {
+        show(
+            TvMultiEpg(
+                bouquetRef = "1:7:1:0:0:0:0:0:0:0:Favourites",
+                bouquetName = "Favourites"
+            )
+        )
+        composeRule.onNodeWithTag("tv_multi_epg_screen").assertExists()
+        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
     }
 
     @Test
     fun settingsRouteShowsSettingsScreen() {
-        val activity = composeRule.activity
-        composeRule.setContent {
-            val hubViewModel = remember { idleHubViewModel() }
-            TvHubNavHost(
-                activity = activity,
-                onRecheckProfile = {},
-                hubViewModel = hubViewModel,
-                startDestination = TvSettings,
-                settingsViewModel = {
-                    viewModel {
-                        SettingsViewModel(
-                            createSavedStateHandle(),
-                            SettingsRepository(
-                                PreferenceManager.getDefaultSharedPreferences(activity)
-                            ),
-                            serviceRepository(activity)
-                        )
-                    }
-                }
-            )
-        }
+        show(TvSettings)
         composeRule.onNodeWithText("Video Player").assertIsDisplayed()
         composeRule.onNodeWithText("Integrated video player").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
     }
 
-    private fun idleHubViewModel(): TvHubViewModel = TvHubViewModel(
-        loader = object : TvHubLoader {
-            override suspend fun browse(): TvHubBrowseResult = TvHubBrowseResult(
-                rows = emptyList(),
-                locations = emptyList(),
-                errorText = null,
-                usedCache = false
-            )
+    @Test
+    fun profilesRouteShowsProfilesHost() {
+        show(TvProfiles)
+        composeRule.onNodeWithTag("tv_profiles_list").assertExists()
+        composeRule.onNodeWithTag("tv_profiles_add").assertExists()
+        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
+    }
 
-            override suspend fun movies(dirname: String): TvHubMoviesResult = TvHubMoviesResult(
-                movies = emptyList(),
-                errorText = null,
-                usedCache = false
+    private fun show(route: Any) {
+        val activity = composeRule.activity
+        composeRule.setContent {
+            TvHubNavHost(
+                activity = activity,
+                onRecheckProfile = {},
+                startDestination = route
             )
-        },
-        sessions = emptyFlow()
-    )
+        }
+    }
 }

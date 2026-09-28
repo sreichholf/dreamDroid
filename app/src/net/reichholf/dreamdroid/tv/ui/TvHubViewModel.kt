@@ -1,75 +1,107 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
 
-interface TvHubLoader {
-    suspend fun browse(): TvHubBrowseResult
+/** The bouquet service whose INFO/MENU overlay is open, and the bouquet it was opened in. */
+data class TvServiceTimerTarget(val service: ServiceNowNext, val bouquetRef: String?)
 
-    suspend fun movies(dirname: String): TvHubMoviesResult
-}
+/**
+ * The TV hub: the selected drawer header, the bouquet rows and movie locations, the movies
+ * loaded per location, the open service overlay or timer editor, and the session.
+ * [hasCache] is null until Room answered for the active profile. [receiverLabel] names the
+ * receiver on the failed ProfileCheck gate.
+ */
+data class TvHubUiState(
+    val selectedHeaderId: String = TvComposeHubHost.HEADER_SETTINGS_ID,
+    val loading: Boolean = true,
+    val errorText: UiText? = null,
+    val bouquetRows: List<HubBouquetRow> = emptyList(),
+    val movieLocations: List<String> = emptyList(),
+    val moviesByLocation: Map<String, List<Movie>> = emptyMap(),
+    val movieLoading: Boolean = false,
+    val movieError: UiText? = null,
+    val serviceTimerTarget: TvServiceTimerTarget? = null,
+    val editTimerEvent: Event? = null,
+    val settingTimer: Boolean = false,
+    val userMessage: UiText? = null,
+    val connection: ConnectionStatus = ConnectionStatus(),
+    val hasCache: Boolean? = null,
+    val receiverLabel: String = ""
+) {
+    val streamingEnabled: Boolean
+        get() = connection.allowsStreaming()
 
-private class ApplicationTvHubLoader(private val app: Application) : TvHubLoader {
-    override suspend fun browse(): TvHubBrowseResult = loadTvHubBrowse(app)
-
-    override suspend fun movies(dirname: String): TvHubMoviesResult = loadTvHubMovies(app, dirname)
+    val browseError: UiText?
+        get() = errorText ?: movieError
 }
 
 /**
- * Selected header, bouquet rows, per-location movies, and the open bouquet
- * Info/Menu overlay or timer editor for [ComposeTvHubApp], scoped to the TV
- * activity. Each new [ConnectionStatus.Session] reloads the browse data;
- * switching headers keeps movies already loaded for a location. Overlay state
- * survives configuration changes with this activity-scoped ViewModel.
+ * State of the TV hub, scoped to the TV activity so it survives configuration changes and
+ * the hub leaving composition. Each new [ConnectionStatus.Session] reloads the browse data;
+ * switching headers keeps movies already loaded for a location.
  */
-class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionStatus.Session?>) :
-    ViewModel() {
-    var selectedHeaderId by mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID)
-        private set
+@OptIn(ExperimentalCoroutinesApi::class)
+@HiltViewModel
+class TvHubViewModel @Inject constructor(
+    private val browse: TvHubBrowse,
+    private val timers: TimerRepository,
+    profiles: ProfileRepository,
+    services: ServiceRepository,
+    sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(TvHubUiState())
 
-    var loading by mutableStateOf(true)
-        private set
+    private val sessionWord = sessions.status.map { it.session }.distinctUntilChanged()
 
-    var errorText by mutableStateOf<String?>(null)
-        private set
+    /**
+     * Whether Room can paint the hub, and for which profile id. Refreshed on each profile or
+     * session change; unknown until Room answered.
+     */
+    private val cache: StateFlow<Pair<Int?, Boolean?>> =
+        combine(profiles.current, sessionWord) { profile, _ -> profile?.id }
+            .mapLatest<Int?, Pair<Int?, Boolean?>> { id ->
+                id to (id?.let { services.hasCache(it) } ?: false)
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, UNKNOWN_CACHE)
 
-    var bouquetRows by mutableStateOf<List<HubBouquetRow>>(emptyList())
-        private set
-
-    var movieLocations by mutableStateOf<List<String>>(emptyList())
-        private set
-
-    var moviesByLocation by mutableStateOf<Map<String, List<Movie>>>(emptyMap())
-        private set
-
-    var movieLoading by mutableStateOf(false)
-        private set
-
-    var movieError by mutableStateOf<String?>(null)
-        private set
-
-    var serviceTimerTarget by mutableStateOf<Pair<ServiceNowNext, String?>?>(null)
-        private set
-
-    var editTimerEvent by mutableStateOf<Event?>(null)
-        private set
+    val uiState: StateFlow<TvHubUiState> = combine(
+        _uiState,
+        sessions.status,
+        profiles.current,
+        cache
+    ) { state, connection, profile, (cacheProfileId, hasCache) ->
+        state.copy(
+            connection = connection,
+            hasCache = hasCache.takeIf { profile?.id == cacheProfileId },
+            receiverLabel = profile?.let { "${it.user}@${it.host}:${it.port}" }.orEmpty()
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var browseJob: Job? = null
     private var movieJob: Job? = null
@@ -77,7 +109,7 @@ class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionS
 
     init {
         viewModelScope.launch {
-            sessions.distinctUntilChanged().collect { reload() }
+            sessionWord.collect { reload() }
         }
     }
 
@@ -85,58 +117,105 @@ class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionS
         browseJob?.cancel()
         movieJob?.cancel()
         movieJobDirname = null
-        loading = true
-        errorText = null
-        movieError = null
-        moviesByLocation = emptyMap()
-        browseJob = viewModelScope.launch {
-            val result = loader.browse()
-            loading = false
-            errorText = unavailableTvHubMessage(
-                result.usedCache,
-                result.rows.isNotEmpty(),
-                result.errorText
+        _uiState.update {
+            it.copy(
+                loading = true,
+                errorText = null,
+                movieError = null,
+                moviesByLocation = emptyMap()
             )
-            bouquetRows = result.rows
-            movieLocations = result.locations
-            val stillValid = TvComposeHubHost.isPersistentHubHeader(selectedHeaderId) ||
-                bouquetRows.any { it.bouquet.reference == selectedHeaderId } ||
-                TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) in movieLocations
-            if (!stillValid) {
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID
+        }
+        browseJob = viewModelScope.launch {
+            val result = browse.browse()
+            _uiState.update { state ->
+                val stillValid = TvComposeHubHost.isPersistentHubHeader(state.selectedHeaderId) ||
+                    result.rows.any { it.bouquet.reference == state.selectedHeaderId } ||
+                    TvComposeHubHost.movieDirnameFromHeader(state.selectedHeaderId) in
+                    result.locations
+                state.copy(
+                    loading = false,
+                    errorText = unavailableTvHubMessage(
+                        result.usedCache,
+                        result.rows.isNotEmpty(),
+                        result.errorText
+                    ),
+                    bouquetRows = result.rows,
+                    movieLocations = result.locations,
+                    selectedHeaderId = if (stillValid) {
+                        state.selectedHeaderId
+                    } else {
+                        TvComposeHubHost.HEADER_SETTINGS_ID
+                    }
+                )
             }
         }
         loadSelectedMovies()
     }
 
     fun selectHeader(headerId: String) {
-        if (headerId == selectedHeaderId) {
+        if (headerId == _uiState.value.selectedHeaderId) {
             return
         }
-        selectedHeaderId = headerId
+        _uiState.update { it.copy(selectedHeaderId = headerId) }
         loadSelectedMovies()
     }
 
     fun showServiceTimer(service: ServiceNowNext, bouquetRef: String?) {
-        serviceTimerTarget = service to bouquetRef
+        _uiState.update { it.copy(serviceTimerTarget = TvServiceTimerTarget(service, bouquetRef)) }
     }
 
     fun dismissServiceTimer() {
-        serviceTimerTarget = null
+        _uiState.update { it.copy(serviceTimerTarget = null) }
     }
 
     fun showEditTimer(event: Event) {
-        editTimerEvent = event
+        _uiState.update { it.copy(editTimerEvent = event) }
     }
 
     fun dismissEditTimer() {
-        editTimerEvent = null
+        _uiState.update { it.copy(editTimerEvent = null) }
+    }
+
+    /** The editor saved a timer: close it and the overlay it was opened from. */
+    fun onTimerSaved() {
+        _uiState.update { it.copy(editTimerEvent = null, serviceTimerTarget = null) }
+    }
+
+    /**
+     * Adds a timer for [event] by its event id, then closes the overlay. The receiver's
+     * answer is the user message.
+     */
+    fun setTimer(event: Event) {
+        if (_uiState.value.settingTimer) {
+            return
+        }
+        _uiState.update { it.copy(settingTimer = true) }
+        viewModelScope.launch {
+            val response = timers.addByEvent(event)
+            _uiState.update {
+                it.copy(
+                    settingTimer = false,
+                    serviceTimerTarget = null,
+                    userMessage = response.userMessageText()
+                )
+            }
+        }
+    }
+
+    /** No app on the device plays the stream. */
+    fun onMissingStreamPlayer() {
+        _uiState.update { it.copy(userMessage = UiText.Resource(R.string.missing_stream_player)) }
+    }
+
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
     // Leanback parity: load movies for a location only when its header is selected.
     private fun loadSelectedMovies() {
-        val dirname = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId) ?: return
-        if (dirname in moviesByLocation) {
+        val state = _uiState.value
+        val dirname = TvComposeHubHost.movieDirnameFromHeader(state.selectedHeaderId) ?: return
+        if (dirname in state.moviesByLocation) {
             return
         }
         if (movieJob?.isActive == true && movieJobDirname == dirname) {
@@ -144,32 +223,28 @@ class TvHubViewModel(private val loader: TvHubLoader, sessions: Flow<ConnectionS
         }
         movieJob?.cancel()
         movieJobDirname = dirname
-        movieLoading = true
-        movieError = null
+        _uiState.update { it.copy(movieLoading = true, movieError = null) }
         movieJob = viewModelScope.launch {
-            val result = loader.movies(dirname)
-            movieLoading = false
-            movieError = unavailableTvHubMessage(
-                result.usedCache,
-                !result.movies.isNullOrEmpty(),
-                result.errorText
-            )
-            if (result.movies != null) {
-                moviesByLocation = moviesByLocation + (dirname to result.movies)
+            val result = browse.movies(dirname)
+            _uiState.update { current ->
+                current.copy(
+                    movieLoading = false,
+                    movieError = unavailableTvHubMessage(
+                        result.usedCache,
+                        !result.movies.isNullOrEmpty(),
+                        result.errorText
+                    ),
+                    moviesByLocation = if (result.movies != null) {
+                        current.moviesByLocation + (dirname to result.movies)
+                    } else {
+                        current.moviesByLocation
+                    }
+                )
             }
         }
     }
 
-    companion object {
-        val Factory: ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val app =
-                    checkNotNull(this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY])
-                TvHubViewModel(
-                    ApplicationTvHubLoader(app),
-                    SessionConnectionHolder.shared.status.map { it.session }
-                )
-            }
-        }
+    private companion object {
+        val UNKNOWN_CACHE: Pair<Int?, Boolean?> = Pair(-1, null)
     }
 }

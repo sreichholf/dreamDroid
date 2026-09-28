@@ -50,7 +50,6 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -58,8 +57,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.LocalContentColor
@@ -68,27 +65,19 @@ import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.NavigationDrawerItem
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.userMessage
+import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
-import net.reichholf.dreamdroid.tv.activities.MainActivity
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
@@ -179,11 +168,12 @@ object TvComposeHubHost {
             movie
         )
 
-    fun startStreamIntent(activity: Activity, intent: Intent) {
+    /** Starts [intent]; calls [onMissingPlayer] when no app on the device can play it. */
+    fun startStreamIntent(activity: Activity, intent: Intent, onMissingPlayer: () -> Unit) {
         try {
             activity.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
-            ShellMessages.post(activity.getString(R.string.missing_stream_player))
+            onMissingPlayer()
         }
     }
 
@@ -199,13 +189,9 @@ object TvComposeHubHost {
         hasPaintedContent
     )
 
-    fun install(activity: ComponentActivity) {
-        val host = activity as? MainActivity
+    fun install(activity: ComponentActivity, onRecheckProfile: () -> Unit) {
         activity.setContent {
-            TvHubNavHost(
-                activity = activity,
-                onRecheckProfile = { host?.recheckProfile() }
-            )
+            TvHubNavHost(activity = activity, onRecheckProfile = onRecheckProfile)
         }
     }
 }
@@ -222,42 +208,33 @@ internal val HubServiceGridCardHeight = 220.dp
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
-    onRecheckProfile: () -> Unit = { (activity as? MainActivity)?.recheckProfile() },
-    viewModel: TvHubViewModel = viewModel(factory = TvHubViewModel.Factory),
+    onRecheckProfile: () -> Unit,
+    viewModel: TvHubViewModel,
     onOpenSettings: () -> Unit = {},
     onOpenProfiles: () -> Unit = {},
     onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> }
 ) {
-    val context = LocalContext.current
-    val status by SessionConnectionHolder.shared.status.collectAsStateWithLifecycle()
-    val profile = ProfileRepository.get().requireCurrent()
-    // One blocking Room read seeds the gate so Checking never flashes ProfileCheck.
-    // Later refreshes run on IO when the profile or session changes.
-    var hasCache by remember(profile.id) {
-        mutableStateOf(hasUseDrivenCache(profile, context))
-    }
-    LaunchedEffect(profile.id, status.session) {
-        hasCache = withContext(Dispatchers.IO) {
-            hasUseDrivenCache(profile, context)
-        }
-    }
-    val streamingEnabled = status.allowsStreaming()
-    val failedMessage = status.lastFailure?.userMessage(context)?.takeIf { it.isNotBlank() }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    // Room answers before the gate is known, so Checking never flashes ProfileCheck.
+    val hasCache = uiState.hasCache ?: return
+    val status = uiState.connection
+    val failedMessage = status.lastFailure?.userMessageText()?.asString()
+        ?.takeIf { it.isNotBlank() }
         ?: stringResource(R.string.connection_error)
     val gate = tvSessionGate(
         status = status,
         hasCache = hasCache,
         checkingMessage = stringResource(R.string.checking_connection),
-        failedTitle = String.format("%s@%s:%s", profile.user, profile.host, profile.port),
+        failedTitle = uiState.receiverLabel,
         failedMessage = failedMessage
     )
     val settingsTitle = stringResource(R.string.preferences)
     val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
-    val bouquetRows = viewModel.bouquetRows
-    val movieLocations = viewModel.movieLocations
-    val selectedHeaderId = viewModel.selectedHeaderId
+    val bouquetRows = uiState.bouquetRows
+    val movieLocations = uiState.movieLocations
 
     val headers = remember(
         settingsTitle,
@@ -292,23 +269,23 @@ fun ComposeTvHubApp(
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
     }
-    val openProfiles = onOpenProfiles
 
     if (gate is TvSessionGate.Checking || gate is TvSessionGate.Failed) {
         DreamDroidTvTheme {
             TvProfileCheckScreen(
                 gate = gate,
                 onRecheck = onRecheckProfile,
-                onProfiles = openProfiles
+                onProfiles = onOpenProfiles
             )
         }
         return
     }
 
+    val streamingEnabled = uiState.streamingEnabled
     Box(modifier = Modifier.fillMaxSize()) {
         ComposeTvHubChrome(
             headers = headers,
-            selectedHeaderId = selectedHeaderId,
+            selectedHeaderId = uiState.selectedHeaderId,
             onHeaderSelected = viewModel::selectHeader,
             settingsItems = settingsItems,
             onSettingsClick = { kind ->
@@ -319,16 +296,20 @@ fun ComposeTvHubApp(
                 }
             },
             bouquetRows = bouquetRows,
-            moviesByLocation = viewModel.moviesByLocation,
-            loading = viewModel.loading,
-            movieLoading = viewModel.movieLoading,
-            errorText = viewModel.errorText ?: viewModel.movieError,
+            moviesByLocation = uiState.moviesByLocation,
+            loading = uiState.loading,
+            movieLoading = uiState.movieLoading,
+            errorText = uiState.browseError?.asString(),
             streamingEnabled = streamingEnabled,
             onServiceClick = { service, bouquetRef ->
-                openServiceStream(activity, service, bouquetRef)
+                openServiceStream(activity, service, bouquetRef, viewModel::onMissingStreamPlayer)
             },
             onMovieClick = { movie ->
-                openMovieStream(activity, movie)
+                TvComposeHubHost.startStreamIntent(
+                    activity,
+                    TvComposeHubHost.streamMovieIntent(activity, movie),
+                    viewModel::onMissingStreamPlayer
+                )
             },
             onOpenMultiEpg = onOpenMultiEpg,
             sessionChipLabel = stringResource(status.chipLabelRes()),
@@ -337,32 +318,27 @@ fun ComposeTvHubApp(
             } else {
                 null
             },
-            onServiceInfo = { service, bouquetRef ->
-                viewModel.showServiceTimer(service, bouquetRef)
-            }
+            onServiceInfo = viewModel::showServiceTimer
         )
-        val overlayTarget = viewModel.serviceTimerTarget
-        val editorEvent = viewModel.editTimerEvent
+        val overlayTarget = uiState.serviceTimerTarget
+        val editorEvent = uiState.editTimerEvent
         // Drop the INFO overlay while the editor is open so D-pad reaches the form
         // (same as MultiEPG dismissing detail before TvTimerEditorHost).
         if (overlayTarget != null && editorEvent == null) {
             DreamDroidTvTheme {
                 TvServiceTimerOverlay(
-                    service = overlayTarget.first,
+                    service = overlayTarget.service,
                     onDismiss = viewModel::dismissServiceTimer,
                     onStream = {
                         openServiceStream(
                             activity,
-                            overlayTarget.first,
-                            overlayTarget.second
+                            overlayTarget.service,
+                            overlayTarget.bouquetRef,
+                            viewModel::onMissingStreamPlayer
                         )
                         viewModel.dismissServiceTimer()
                     },
-                    onSetTimer = { event ->
-                        setTimerFromEvent(activity, event) {
-                            viewModel.dismissServiceTimer()
-                        }
-                    },
+                    onSetTimer = viewModel::setTimer,
                     onEditTimer = viewModel::showEditTimer,
                     streamingEnabled = streamingEnabled,
                     mutationsBlocked = status.blocksMutations
@@ -375,10 +351,7 @@ fun ComposeTvHubApp(
                     timer = Timer.createByEvent(editorEvent),
                     isCreate = true,
                     onDismiss = viewModel::dismissEditTimer,
-                    onSaved = {
-                        viewModel.dismissEditTimer()
-                        viewModel.dismissServiceTimer()
-                    }
+                    onSaved = viewModel::onTimerSaved
                 )
             }
         }
@@ -388,28 +361,15 @@ fun ComposeTvHubApp(
 private fun openServiceStream(
     activity: ComponentActivity,
     service: ServiceNowNext,
-    bouquetRef: String?
+    bouquetRef: String?,
+    onMissingPlayer: () -> Unit
 ) {
     activity.startLiveServiceStream(activity, service.serviceReference) {
         TvComposeHubHost.startStreamIntent(
             activity,
-            TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef)
+            TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef),
+            onMissingPlayer
         )
-    }
-}
-
-private fun openMovieStream(activity: ComponentActivity, movie: Movie) {
-    TvComposeHubHost.startStreamIntent(
-        activity,
-        TvComposeHubHost.streamMovieIntent(activity, movie)
-    )
-}
-
-private fun setTimerFromEvent(activity: ComponentActivity, event: Event, onDone: () -> Unit) {
-    activity.lifecycleScope.launch {
-        val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(event))
-        ShellMessages.post(response.userMessage(activity))
-        onDone()
     }
 }
 

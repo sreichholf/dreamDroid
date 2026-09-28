@@ -234,6 +234,11 @@ class TvMultiEpgViewModel @Inject constructor(
         }
     }
 
+    /** No app on the device plays the stream. */
+    fun onMissingStreamPlayer() {
+        _uiState.update { it.copy(userMessage = UiText.Resource(R.string.missing_stream_player)) }
+    }
+
     fun onMessageShown() {
         _uiState.update { it.copy(userMessage = null) }
     }

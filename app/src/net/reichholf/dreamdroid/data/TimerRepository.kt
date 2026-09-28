@@ -82,15 +82,15 @@ class TimerRepository @Inject constructor(
     suspend fun cleanup(): EnigmaResponse<SimpleResult> = clients.current().cleanupTimers()
 
     /**
-     * Locations and tags, fetched from the receiver when not known yet. Failed locations
-     * read as `/hdd/movie`, failed tags as none. Both are kept until the profile changes;
-     * known ones return without suspending.
+     * Locations and tags, fetched from the receiver until it answered. Failed locations
+     * read as `/hdd/movie`, failed tags as none; both are asked again on the next call.
+     * Answers are kept until the profile changes; known ones return without suspending.
      */
     suspend fun locationsAndTags(): TimerChoices {
-        if (profiles.locations().isEmpty() || profiles.tags().isEmpty()) {
+        if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
             val http = EnigmaHttp(profiles.requireCurrent())
             withContext(Dispatchers.IO) {
-                if (profiles.locations().isEmpty()) {
+                if (!profiles.locationsLoadedFromReceiver()) {
                     profiles.loadLocations(http)
                 }
                 if (profiles.tags().isEmpty()) {

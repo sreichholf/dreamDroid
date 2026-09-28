@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -242,11 +243,11 @@ class TvSessionTest {
     @Test
     fun unavailableMessageOnlyWithoutPaintedRows() {
         assertEquals(
-            "err",
+            UiText.Raw("err"),
             unavailableTvHubMessage(
                 usedCache = false,
                 paintedRows = false,
-                errorText = "err"
+                errorText = UiText.Raw("err")
             )
         )
         assertEquals(
@@ -254,7 +255,7 @@ class TvSessionTest {
             unavailableTvHubMessage(
                 usedCache = true,
                 paintedRows = false,
-                errorText = "err"
+                errorText = UiText.Raw("err")
             )
         )
         assertEquals(
@@ -262,7 +263,7 @@ class TvSessionTest {
             unavailableTvHubMessage(
                 usedCache = false,
                 paintedRows = true,
-                errorText = "err"
+                errorText = UiText.Raw("err")
             )
         )
     }

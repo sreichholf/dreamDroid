@@ -253,6 +253,9 @@ class SetupAssistantScreenTest {
         profiles,
         object : ProfileCheckRepository {
             override suspend fun check(profile: Profile): ProfileCheckResult = onCheck(profile)
+
+            override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
+                onCheck(profile)
         },
         ReceiverDiscovery { onSearch() }
     )

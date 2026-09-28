@@ -255,6 +255,23 @@ class TimerRepositoryTest {
         assertEquals(TimerChoices(listOf("/hdd/movie"), emptyList()), repository.locationsAndTags())
     }
 
+    @Test
+    fun failedLocationsAreAskedAgain() = runTest {
+        receiver.fail(LOCATIONS)
+        receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        repository.locationsAndTags()
+        receiver.respond(
+            LOCATIONS,
+            "<e2locations><e2location>/media/hdd/</e2location></e2locations>"
+        )
+
+        val choices = repository.locationsAndTags()
+
+        assertEquals(TimerChoices(listOf("/media/hdd/"), listOf("News")), choices)
+        assertEquals(2, receiver.requestsTo(LOCATIONS).size)
+        assertEquals(1, receiver.requestsTo(TAGS).size)
+    }
+
     private suspend fun writeSnapshot(timers: List<Timer>) {
         dao.replaceSnapshot(
             PROFILE_ID,
