@@ -19,12 +19,15 @@ import net.reichholf.dreamdroid.ui.compose.RowMenuAction
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
-enum class MovieRowAction(override val label: Int) : RowMenuAction {
-    Info(R.string.epg),
-    Zap(R.string.zap),
-    Delete(R.string.delete),
-    Download(R.string.download),
-    Stream(R.string.stream)
+/** [onlineOnly] actions need the receiver as soon as they are picked. */
+enum class MovieRowAction(override val label: Int, val onlineOnly: Boolean) : RowMenuAction {
+    Info(R.string.epg, onlineOnly = false),
+    Zap(R.string.zap, onlineOnly = true),
+
+    /** Asks first; the confirmed delete needs the receiver. */
+    Delete(R.string.delete, onlineOnly = false),
+    Download(R.string.download, onlineOnly = true),
+    Stream(R.string.stream, onlineOnly = true)
 }
 
 @Composable

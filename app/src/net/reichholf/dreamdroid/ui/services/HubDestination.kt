@@ -25,8 +25,6 @@ import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.room.MovieDao
-import net.reichholf.dreamdroid.room.MovieSnapshotStore
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
@@ -249,11 +247,7 @@ fun HubDestination(
                         val location = movieLocations.getOrNull(locationIndex)
                         if (location != null) {
                             key(location) {
-                                HubMovieListPage(
-                                    handle = handle,
-                                    location = location,
-                                    locationIndex = locationIndex
-                                )
+                                HubMovieListPage(handle = handle, location = location)
                             }
                         }
                     }
@@ -271,28 +265,4 @@ fun HubDestination(
             )
         }
     }
-}
-
-/**
- * HTTP movie locations, or the Room strip when the request failed and a strip
- * exists. Dedicated Provider/All tabs are N/A for movies.
- */
-internal suspend fun movieLocationsAfterHttpOrCache(
-    dao: MovieDao?,
-    profileId: Int?,
-    httpSuccess: Boolean,
-    liveLocations: List<String>
-): List<String> {
-    if (httpSuccess) {
-        if (dao != null && profileId != null) {
-            MovieSnapshotStore.replaceLocations(dao, profileId, liveLocations)
-        }
-        return liveLocations
-    }
-    val cached = if (dao != null && profileId != null) {
-        MovieSnapshotStore.loadLocations(dao, profileId)
-    } else {
-        null
-    }
-    return cached ?: liveLocations
 }
