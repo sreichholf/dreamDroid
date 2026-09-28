@@ -19,8 +19,9 @@ import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * One-shot user messages for the phone shell and the TV hub. In-app results post here
- * instead of using `Toast`; each started host collects them into a [SnackbarHostState]. There is no replay: a message posted while no host is started
- * (for example a mutation that finishes with the app in the background) is dropped.
+ * instead of using `Toast`; each started host collects them into a [SnackbarHostState].
+ * There is no replay: a message posted while no host is started (for example a mutation
+ * that finishes with the app in the background) is dropped.
  */
 object ShellMessages {
     private val pending = MutableSharedFlow<String>(extraBufferCapacity = 16)
