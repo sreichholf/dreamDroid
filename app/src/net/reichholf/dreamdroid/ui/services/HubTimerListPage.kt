@@ -1,39 +1,17 @@
 package net.reichholf.dreamdroid.ui.services
 
-import android.app.Activity
-import android.content.Intent
-import android.util.Log
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EnigmaResponse
-import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.TimerListLoadResult
-import net.reichholf.dreamdroid.enigma.loadTimerList
-import net.reichholf.dreamdroid.enigma.userMessage
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.TimerDao
-import net.reichholf.dreamdroid.room.TimerSnapshotStore
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
@@ -41,286 +19,88 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
-import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Phase 2.7h: hub Timers page as Compose (parity with former TimerListFragment).
- *
- * The list and the reload job live on [HubTimerListViewModel]. The same
- * [remountEpoch] does not load again, so returning to the Timers tab keeps the list.
- * HubDestination bumps [remountEpoch] after a timer edit. It owns
- * [PhoneNavHandle.composeActivityResultListener] for REQUEST_EDIT_TIMER.
+ * The hub Timers tab. The list and its load live on [HubTimerListViewModel]; the same
+ * [remountEpoch] does not load again. HubDestination owns the REQUEST_EDIT_TIMER result
+ * and bumps [remountEpoch] after a timer edit.
  */
 @Composable
 fun HubTimerListPage(
     handle: PhoneNavHandle,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
-    viewModel: HubTimerListViewModel = viewModel()
+    viewModel: HubTimerListViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val activity = context as AppCompatActivity
-    val session = viewModel.session
-    session.handle = handle
-    session.context = context
-    session.activity = activity
-    session.profileId = ProfileRepository.get().requireCurrent().id
-    session.timerDao = AppDatabase.timer(context)
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
-    val title = stringResource(R.string.timer)
-    DisposableEffect(handle, session) {
-        // HubDestination owns REQUEST_EDIT_TIMER → remountEpoch; do not steal
-        // composeActivityResultListener. Session still implements ActivityResultListener
-        // if a host prefers registering it instead of remountEpoch.
-        session.chromeAttached = true
-        session.setToolbarTitle(title)
-        onDispose {
-            session.chromeAttached = false
-        }
+    fun online(action: () -> Unit) {
+        if (uiState.mutationsBlocked) handle.requestNeedsReceiver() else action()
     }
-    BindShellTopBarActions(session.topBarActions(stringResource(R.string.cleanup)))
+
+    BindShellTopBarActions(
+        listOf(
+            ShellTopBarAction(
+                id = Statics.ITEM_CLEANUP,
+                label = stringResource(R.string.cleanup),
+                iconRes = R.drawable.ic_action_clean,
+                enabled = !uiState.cleaning,
+                onClick = { online(viewModel::cleanup) }
+            )
+        )
+    )
 
     val newTimerLabel = stringResource(R.string.new_timer)
-    val timerWritesBlocked =
-        SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
     BindShellFab(
         contentDescription = newTimerLabel,
         iconRes = R.drawable.ic_action_fab_add,
-        onClick = { session.createTimer() },
+        onClick = { online { handle.navigateToTimerEdit(Timer.getInitialTimer(), create = true) } },
         text = newTimerLabel,
-        lookDisabled = timerWritesBlocked
+        lookDisabled = uiState.mutationsBlocked
     )
 
     LaunchedEffect(viewModel, remountEpoch) {
         viewModel.onRemount(remountEpoch)
     }
 
-    val emptyMessage = viewModel.emptyMessage
-    val listState = checkNotNull(session.listState)
-    val refresh = checkNotNull(session.refresh)
+    val resources = LocalResources.current
+    val items = remember(uiState.timers, resources) {
+        timerListItemsFrom(resources, uiState.timers)
+    }
     DreamDroidPullRefresh(
-        refreshing = refresh.isRefreshing,
-        onRefresh = { session.reload() },
-        enabled = refresh.enabled,
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::reload,
         modifier = modifier
     ) {
-        if (listState.items.isEmpty()) {
+        if (items.isEmpty()) {
             ListEmptyState(
-                loading = refresh.isRefreshing,
-                message = emptyMessage,
-                onRetry = { session.reload() }
+                loading = uiState.refreshing,
+                message = uiState.emptyMessage?.asString(),
+                onRetry = viewModel::reload
             )
         } else {
             TimerListScreen(
-                items = listState.items,
-                onItemClick = { session.onItemClick(it) }
+                items = items,
+                onItemClick = { item ->
+                    uiState.timers.getOrNull(item.index)?.let { timer ->
+                        handle.navigateToTimerEdit(timer, create = false)
+                    }
+                }
             )
         }
     }
 
-    IndeterminateProgressHost(session.progress)
-}
-
-/**
- * Owns timer-list load/mutations and activity-result reload for the hub Timers tab.
- * The hub [HubTimerListViewModel] owns this session. HubDestination may assign it to
- * [PhoneNavHandle.composeActivityResultListener] instead of bumping remountEpoch.
- */
-class HubTimerListSession : PhoneNavHandle.ActivityResultListener {
-
-    var handle: PhoneNavHandle? = null
-    var context: android.content.Context? = null
-    var activity: AppCompatActivity? = null
-    var listState: TimerListState? = null
-    var refresh: ComposeRefreshState? = null
-    var scope: kotlinx.coroutines.CoroutineScope? = null
-    var onEmptyMessage: ((String?) -> Unit)? = null
-    var onLoadJob: ((Job?) -> Unit)? = null
-    var onMutateJob: ((Job?) -> Unit)? = null
-    var profileId: Int? = null
-    var timerDao: TimerDao? = null
-    var loadTimers: suspend (android.content.Context) -> TimerListLoadResult =
-        { context -> loadTimerList(context) }
-    var chromeAttached: Boolean = false
-
-    private val timers = ArrayList<TypedTimer>()
-    private var selected: TypedTimer = TypedTimer()
-    private var loadGeneration = 0
-    private var loadJob: Job? = null
-    private var mutateJob: Job? = null
-    var progress by mutableStateOf<IndeterminateProgressState?>(null)
-
-    fun setToolbarTitle(title: String) {
-        if (!chromeAttached) {
-            return
-        }
-        activity?.title = title
-    }
-
-    fun dismissProgress() {
-        progress = null
-    }
-
-    fun cancelInFlight() {
-        loadJob?.cancel()
-        loadJob = null
-        mutateJob?.cancel()
-        mutateJob = null
-    }
-
-    fun toast(message: CharSequence) {
-        ShellMessages.post(message)
-    }
-
-    fun beginLoad(): Int = ++loadGeneration
-
-    fun applyLoadResult(
-        generation: Int,
-        success: Boolean,
-        loaded: List<TypedTimer>,
-        errorText: String?
-    ) {
-        if (generation != loadGeneration) {
-            return
-        }
-        val ctx = context ?: return
-        val state = listState ?: return
-        val refreshState = refresh ?: return
-        refreshState.setRefreshing(false)
-        setToolbarTitle(ctx.getString(R.string.timer))
-        timers.clear()
-        state.replaceAll(emptyList())
-        if (!success) {
-            onEmptyMessage?.invoke(errorText)
-            return
-        }
-        if (loaded.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.no_list_item))
-            return
-        }
-        onEmptyMessage?.invoke(null)
-        timers.addAll(loaded)
-        state.replaceAll(timerListItemsFrom(ctx, timers))
-    }
-
-    fun reload() {
-        val ctx = context ?: return
-        if (listState == null) {
-            return
-        }
-        val refreshState = refresh ?: return
-        val coroutineScope = scope ?: return
-        if (timers.isEmpty()) {
-            onEmptyMessage?.invoke(ctx.getString(R.string.loading))
-        } else {
-            onEmptyMessage?.invoke(null)
-        }
-        refreshState.setRefreshing(true)
-        setToolbarTitle(ctx.getString(R.string.loading))
-        val generation = beginLoad()
-        loadJob?.cancel()
-        loadJob = coroutineScope.launch {
-            loadAndApply(generation)
-        }
-        onLoadJob?.invoke(loadJob)
-    }
-
-    suspend fun loadAndApply(generation: Int) {
-        val ctx = context ?: return
-        val result = loadTimers(ctx.applicationContext)
-        if (generation != loadGeneration) {
-            return
-        }
-        if (result.success) {
-            persistSnapshot(result.timers)
-            applyLoadResult(generation, true, result.timers, null)
-            return
-        }
-        val dao = timerDao
-        val pid = profileId
-        val cached = if (dao != null && pid != null) {
-            TimerSnapshotStore.load(dao, pid)
+    IndeterminateProgressHost(
+        if (uiState.cleaning) {
+            IndeterminateProgressState(message = stringResource(R.string.cleaning_timerlist))
         } else {
             null
         }
-        if (cached != null) {
-            applyLoadResult(generation, true, cached, null)
-        } else {
-            applyLoadResult(generation, false, emptyList(), result.errorText)
-        }
-    }
-
-    private suspend fun persistSnapshot(loaded: List<TypedTimer>) {
-        val dao = timerDao ?: return
-        val pid = profileId ?: return
-        TimerSnapshotStore.replace(dao, pid, loaded)
-    }
-
-    fun createTimer() {
-        val host = handle ?: return
-        host.runOnlineOnly {
-            selected = Timer.getInitialTimer()
-            editTimer(selected, create = true)
-        }
-    }
-
-    fun onItemClick(item: TimerListItem) {
-        if (item.index !in timers.indices) return
-        selected = timers[item.index]
-        editTimer(selected, create = false)
-    }
-
-    private fun editTimer(timer: TypedTimer, create: Boolean) {
-        val host = handle ?: return
-        host.navigateToTimerEdit(timer, create)
-    }
-
-    private fun cleanupTimerList() {
-        if (progress != null) {
-            return
-        }
-        val host = handle ?: return
-        val ctx = context ?: return
-        host.runOnlineOnly {
-            progress = IndeterminateProgressState(
-                message = ctx.getString(R.string.cleaning_timerlist)
-            )
-            mutateJob?.cancel()
-            mutateJob = host.lifecycleOwner.lifecycleScope.launch {
-                onSimpleResult(EnigmaClient().cleanupTimers())
-            }
-            onMutateJob?.invoke(mutateJob)
-        }
-    }
-
-    private fun onSimpleResult(response: EnigmaResponse<SimpleResult>) {
-        dismissProgress()
-        val ctx = context ?: return
-        toast(response.userMessage(ctx))
-        reload()
-    }
-
-    /** Cleanup, disabled while a request runs. */
-    fun topBarActions(cleanupLabel: String): List<ShellTopBarAction> = listOf(
-        ShellTopBarAction(
-            id = Statics.ITEM_CLEANUP,
-            label = cleanupLabel,
-            iconRes = R.drawable.ic_action_clean,
-            enabled = progress == null,
-            onClick = { cleanupTimerList() }
-        )
     )
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode != Statics.REQUEST_EDIT_TIMER) {
-            return
-        }
-        if (resultCode == Activity.RESULT_OK) {
-            Log.w(DreamDroid.LOG_TAG, "TIMER SAVED!")
-            reload()
-        }
-    }
 }

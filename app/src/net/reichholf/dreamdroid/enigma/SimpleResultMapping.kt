@@ -5,6 +5,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
  * Maps a web mutation reply (`e2simplexmlresult`) to an [EnigmaResponse].
@@ -41,6 +42,19 @@ fun EnigmaResponse<SimpleResult>.userMessage(context: Context): String = mutatio
     errorText = error?.resolve(context),
     fallback = context.getString(R.string.get_content_error)
 )
+
+/** [userMessage] as UI text: the box `statetext`, else the failure's text, else the generic error. */
+fun EnigmaResponse<SimpleResult>.userMessageText(): UiText {
+    val stateText = value?.stateText
+    if (!stateText.isNullOrEmpty()) {
+        return UiText.Raw(stateText)
+    }
+    val errorText = error?.failure?.userMessageText()
+    if (errorText != null && errorText != UiText.Raw("")) {
+        return errorText
+    }
+    return UiText.Resource(R.string.get_content_error)
+}
 
 /**
  * Mutation copy: a non-blank box `statetext` wins (including [EnigmaFailure.BoxRejected]),

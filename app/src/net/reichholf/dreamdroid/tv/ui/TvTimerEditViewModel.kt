@@ -1,36 +1,40 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.app.Application
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.timers.TimerFormViewModel
 
 /**
- * Owns the [TvTimerEditWorkingCopy] for [TvTimerEditorHost]. The TV activities have no
- * NavHost, so this is scoped to the activity and outlives a configuration change.
- * The host calls [release] when it leaves composition for any other reason, so the
- * next open starts from the launch timer. No field was saved across process death
- * before this ViewModel, so it keeps no [androidx.lifecycle.SavedStateHandle] keys.
+ * The timer editor behind [TvTimerEditorHost]. It outlives a configuration change and the
+ * in-host service pick; the host calls [release] when it leaves composition for any other
+ * reason, so the next [bind] starts from the launch timer. Nothing is kept across process
+ * death.
  */
-class TvTimerEditViewModel(application: Application) : AndroidViewModel(application) {
-    private var session: TvTimerEditWorkingCopy? = null
+@HiltViewModel
+class TvTimerEditViewModel @Inject constructor(
+    timers: TimerRepository,
+    sessions: SessionConnectionHolder
+) : TimerFormViewModel(timers, sessions, handle = null) {
+    private var launch: Pair<Timer, Boolean>? = null
 
-    internal fun bind(timer: Timer, isCreate: Boolean): TvTimerEditWorkingCopy {
-        val current = session
-        if (current != null && current.launchTimer == timer && current.isCreate == isCreate) {
-            return current
-        }
-        current?.cancelWork()
-        return TvTimerEditWorkingCopy(timer, isCreate, getApplication(), viewModelScope)
-            .also { session = it }
-    }
-
-    /** Ignores a stale host whose session a newer [bind] has already replaced. */
-    internal fun release(owned: TvTimerEditWorkingCopy) {
-        if (session !== owned) {
+    /** Edits [timer], unless that editor is open already. */
+    fun bind(timer: Timer, isCreate: Boolean) {
+        if (launch == timer to isCreate) {
             return
         }
-        owned.cancelWork()
-        session = null
+        launch = timer to isCreate
+        load(timer, isCreate)
+    }
+
+    /** Ignores a stale host whose editor a newer [bind] has already replaced. */
+    fun release(timer: Timer, isCreate: Boolean) {
+        if (launch != timer to isCreate) {
+            return
+        }
+        launch = null
+        close()
     }
 }

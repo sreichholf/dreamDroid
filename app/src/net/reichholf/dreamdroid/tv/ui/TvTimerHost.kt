@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.content.Context
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,204 +12,123 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
-import net.reichholf.dreamdroid.enigma.loadTimerList
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.TimerSnapshotStore
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-
-internal sealed interface TvTimerPage {
-    data object List : TvTimerPage
-    data object Add : TvTimerPage
-    data class Edit(val index: Int) : TvTimerPage
-}
-
-internal data class TvTimerLoadPaint(
-    val timers: List<TypedTimer>,
-    val success: Boolean,
-    val errorText: String?
-)
-
-internal fun tvTimerToggledDisabled(disabled: String): String = if (disabled == "1") "0" else "1"
-
-internal fun tvTimerPaintFromLoad(
-    resultSuccess: Boolean,
-    liveTimers: List<TypedTimer>,
-    snapshot: List<TypedTimer>?,
-    errorText: String?
-): TvTimerLoadPaint {
-    if (resultSuccess) {
-        return TvTimerLoadPaint(liveTimers, true, null)
-    }
-    if (snapshot != null) {
-        return TvTimerLoadPaint(snapshot, true, null)
-    }
-    return TvTimerLoadPaint(emptyList(), false, errorText)
-}
-
-internal suspend fun tvTimerPersistSnapshot(context: Context, timers: List<TypedTimer>) {
-    val pid = ProfileRepository.get().requireCurrent().id ?: return
-    TimerSnapshotStore.replace(AppDatabase.timer(context), pid, timers)
-}
-
-internal suspend fun tvTimerLoadSnapshot(context: Context): List<TypedTimer>? {
-    val pid = ProfileRepository.get().requireCurrent().id ?: return null
-    return TimerSnapshotStore.load(AppDatabase.timer(context), pid)
-}
+import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.services.timerListItemsFrom
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Snapshot first when the box is not Online, otherwise live with the snapshot as the
- * failure fallback. A live success replaces the snapshot.
+ * TV hub Timers content: list / add / edit. The list reloads each time this enters
+ * composition; [TvTimerHostViewModel] keeps what was loaded meanwhile.
  */
-internal suspend fun tvTimerLoadPaint(context: Context): TvTimerLoadPaint {
-    val snapshot = tvTimerLoadSnapshot(context)
-    val skipHttp = shouldSkipTvHubHttp(
-        SessionConnectionHolder.shared.status.value,
-        snapshot != null
-    )
-    if (skipHttp && snapshot != null) {
-        return tvTimerPaintFromLoad(true, snapshot, null, null)
+@Composable
+fun TvTimerHost(modifier: Modifier = Modifier, viewModel: TvTimerHostViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+
+    LaunchedEffect(viewModel) {
+        viewModel.reload()
     }
-    val result = loadTimerList(context.applicationContext)
-    if (result.success) {
-        tvTimerPersistSnapshot(context, result.timers)
+
+    TvTimerHostContent(
+        uiState = uiState,
+        onAdd = viewModel::showAdd,
+        onEdit = viewModel::showEdit,
+        onToggleEnabled = viewModel::toggleEnabled,
+        onDelete = viewModel::deleteTimer,
+        onShowList = viewModel::showList,
+        modifier = modifier
+    ) { timer, isCreate ->
+        TvTimerEditorHost(
+            timer = timer,
+            isCreate = isCreate,
+            onDismiss = viewModel::showList,
+            onSaved = {
+                viewModel.showList()
+                viewModel.reload()
+            },
+            modifier = Modifier.fillMaxSize()
+        )
     }
-    return tvTimerPaintFromLoad(
-        result.success,
-        result.timers,
-        if (result.success) null else snapshot,
-        result.errorText
-    )
 }
 
 /**
- * TV hub Timers content: list / add / edit. [fillMaxSize] LazyColumn lives in
- * [TvTimerListScreen]; this host must not nest another LazyColumn around it.
+ * The timer list of [uiState], or [editor] for its Add or Edit page. The list's
+ * [fillMaxSize] LazyColumn lives in [TvTimerListScreen]; do not nest another around it.
+ * Mutations while [TvTimerHostUiState.mutationsBlocked] show [TvNeedsReceiverOverlay].
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun TvTimerHost(
+fun TvTimerHostContent(
+    uiState: TvTimerHostUiState,
+    onAdd: () -> Unit,
+    onEdit: (Int) -> Unit,
+    onToggleEnabled: (Int) -> Unit,
+    onDelete: (Int) -> Unit,
+    onShowList: () -> Unit,
     modifier: Modifier = Modifier,
-    mutationsBlocked: Boolean = false,
-    viewModel: TvTimerHostViewModel = viewModel()
+    editor: @Composable (timer: Timer, isCreate: Boolean) -> Unit
 ) {
-    val page = viewModel.page
     var showNeedsReceiver by remember { mutableStateOf(false) }
-    val items = viewModel.items
-
-    fun toggleEnabled(index: Int) {
-        if (mutationsBlocked) {
-            showNeedsReceiver = true
-            return
-        }
-        viewModel.toggleEnabled(index)
+    fun online(action: () -> Unit) {
+        if (uiState.mutationsBlocked) showNeedsReceiver = true else action()
     }
 
-    fun deleteTimer(index: Int) {
-        if (mutationsBlocked) {
-            showNeedsReceiver = true
-            return
-        }
-        viewModel.deleteTimer(index)
+    BackHandler(enabled = uiState.page !is TvTimerPage.List) {
+        onShowList()
     }
 
-    fun onEditorDismiss() {
-        viewModel.showList()
+    val resources = LocalResources.current
+    val items = remember(uiState.timers, resources) {
+        timerListItemsFrom(resources, uiState.timers)
     }
-
-    fun onEditorSaved() {
-        viewModel.showList()
-        viewModel.reload()
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.reload()
-    }
-
-    BackHandler(enabled = page !is TvTimerPage.List) {
-        viewModel.showList()
-    }
-
+    val editing = uiState.editorTimer
     Box(
         modifier = modifier
             .fillMaxSize()
             .testTag("tv_timers_host")
     ) {
-        when (val current = page) {
-            TvTimerPage.List -> {
-                Box(Modifier.fillMaxSize()) {
-                    TvTimerListScreen(
-                        items = items,
-                        onAdd = {
-                            if (mutationsBlocked) {
-                                showNeedsReceiver = true
-                            } else {
-                                viewModel.showAdd()
-                            }
-                        },
-                        onToggleEnabled = { toggleEnabled(it) },
-                        onEdit = { index -> viewModel.showEdit(index) },
-                        onDelete = {},
-                        onDeleteConfirmed = { deleteTimer(it) },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                    val message = viewModel.emptyMessage
-                    if (items.isEmpty() && message != null) {
-                        Text(
-                            text = message,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier
-                                .align(Alignment.Center)
-                                .padding(24.dp)
-                        )
-                    }
-                }
-            }
-
-            TvTimerPage.Add -> {
-                val created = viewModel.editorTimer
-                if (created != null) {
-                    TvTimerEditorHost(
-                        timer = created,
-                        isCreate = true,
-                        onDismiss = { onEditorDismiss() },
-                        onSaved = { onEditorSaved() },
-                        modifier = Modifier.fillMaxSize(),
-                        mutationsBlocked = mutationsBlocked
+        if (uiState.page is TvTimerPage.List || editing == null) {
+            Box(Modifier.fillMaxSize()) {
+                TvTimerListScreen(
+                    items = items,
+                    onAdd = { online(onAdd) },
+                    onToggleEnabled = { index -> online { onToggleEnabled(index) } },
+                    onEdit = onEdit,
+                    onDelete = {},
+                    onDeleteConfirmed = { index -> online { onDelete(index) } },
+                    modifier = Modifier.fillMaxSize()
+                )
+                val message = uiState.emptyMessage
+                if (items.isEmpty() && message != null) {
+                    Text(
+                        text = message.asString(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .padding(24.dp)
                     )
                 }
             }
-
-            is TvTimerPage.Edit -> {
-                val editing = viewModel.editorTimer
-                if (editing == null) {
-                    LaunchedEffect(current.index) {
-                        viewModel.showList()
-                    }
-                } else {
-                    TvTimerEditorHost(
-                        timer = editing,
-                        isCreate = false,
-                        onDismiss = { onEditorDismiss() },
-                        onSaved = { onEditorSaved() },
-                        modifier = Modifier.fillMaxSize(),
-                        mutationsBlocked = mutationsBlocked
-                    )
-                }
-            }
+        } else {
+            editor(editing, uiState.page is TvTimerPage.Add)
         }
 
         if (showNeedsReceiver) {
             TvNeedsReceiverOverlay(onDismiss = { showNeedsReceiver = false })
         }
-        IndeterminateProgressHost(viewModel.progress)
+        IndeterminateProgressHost(
+            uiState.progress?.let { IndeterminateProgressState(message = it.asString()) }
+        )
     }
 }

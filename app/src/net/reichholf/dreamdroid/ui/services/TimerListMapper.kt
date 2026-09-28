@@ -1,14 +1,14 @@
 package net.reichholf.dreamdroid.ui.services
 
-import android.content.Context
+import android.content.res.Resources
 import android.util.Log
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Timer
 
-fun timerListItemsFrom(context: Context, timers: List<Timer>): List<TimerListItem> {
-    val states = context.resources.getTextArray(R.array.timer_state)
-    val actions = context.resources.getTextArray(R.array.timer_action)
+fun timerListItemsFrom(resources: Resources, timers: List<Timer>): List<TimerListItem> {
+    val states = resources.getTextArray(R.array.timer_state)
+    val actions = resources.getTextArray(R.array.timer_action)
     return timers.mapIndexed { index, timer ->
         var actionId = 0
         try {

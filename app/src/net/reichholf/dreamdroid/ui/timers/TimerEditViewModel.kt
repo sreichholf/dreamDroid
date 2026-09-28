@@ -1,203 +1,77 @@
 package net.reichholf.dreamdroid.ui.timers
 
-import android.app.Application
-import android.os.Bundle
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
-import androidx.lifecycle.viewModelScope
-import java.util.ArrayList
-import net.reichholf.dreamdroid.enigma.Timer
-import net.reichholf.dreamdroid.helpers.getSerializableCompat
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.ui.nav.TimerEdit
-
-internal enum class TimerEditBind {
-    Keep,
-    RestoreSaved,
-    LoadLaunch
-}
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /**
- * First bind restores a saved session when its route tag matches.
- * A later tag or remount epoch loads the launch timer instead.
- * Epoch mismatch on the first bind still restores: the host epoch restarts at 0.
+ * Create or edit the timer of the [TimerEdit] route. The working copy survives the
+ * service pick and process death in the [SavedStateHandle].
  */
-internal fun timerEditBind(
-    hasBound: Boolean,
-    boundTag: String,
-    boundEpoch: Int,
-    routeTag: String,
-    remountEpoch: Int,
-    savedTag: String?
-): TimerEditBind {
-    if (hasBound && boundTag == routeTag && boundEpoch == remountEpoch) {
-        return TimerEditBind.Keep
-    }
-    if (!hasBound && savedTag == routeTag) {
-        return TimerEditBind.RestoreSaved
-    }
-    return TimerEditBind.LoadLaunch
-}
-
-/**
- * Owns [TimerEditSession] for [TimerEditDestination].
- * Prefetch and save/delete run on [viewModelScope].
- * The snapshot uses [TimerEditSession.writeTo] / [TimerEditSession.fromSavedState] keys.
- * The composable registers the menu and sets [TimerEditSession.context] and
- * [TimerEditSession.handle].
- */
-class TimerEditViewModel(application: Application, private val savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    var session by mutableStateOf<TimerEditSession?>(null)
-        private set
-
-    private var hasBound: Boolean = false
-    private var boundTag: String = ""
-    private var boundEpoch: Int = 0
-
-    fun start(route: TimerEdit, remountEpoch: Int) {
-        val tag = route.tag()
-        val saved = if (hasBound) null else readSession()
-        when (
-            timerEditBind(
-                hasBound = hasBound,
-                boundTag = boundTag,
-                boundEpoch = boundEpoch,
-                routeTag = tag,
-                remountEpoch = remountEpoch,
-                savedTag = saved?.routeTag
-            )
-        ) {
-            TimerEditBind.Keep -> {
-                attachScope()
-                return
-            }
-
-            TimerEditBind.RestoreSaved -> {
-                bindSession(checkNotNull(saved).withRouteEpoch(remountEpoch), tag, remountEpoch)
-            }
-
-            TimerEditBind.LoadLaunch -> {
-                bindSession(
-                    TimerEditSession.fromRoute(route, tag, remountEpoch),
-                    tag,
-                    remountEpoch
-                )
-            }
+@HiltViewModel
+class TimerEditViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
+    timers: TimerRepository,
+    sessions: SessionConnectionHolder
+) : TimerFormViewModel(timers, sessions, savedStateHandle) {
+    init {
+        if (!restore()) {
+            val route = savedStateHandle.timerEditRoute()
+            load(route.toTimer(), route.create)
         }
     }
 
-    /** Copies typed fields into the timer, then writes the session keys. */
-    fun persist() {
-        val current = session
-        if (current == null || !hasBound) {
+    /** Deletes the timer on the receiver. Creating has nothing to delete. */
+    fun delete() {
+        val state = uiState.value
+        val timer = state.timer ?: return
+        if (state.isCreate) {
             return
         }
-        current.flushFormIntoTimer()
-        val bundle = Bundle()
-        current.writeTo(bundle)
-        putOrRemove(TimerEditSession.STATE_TAG, bundle.getString(TimerEditSession.STATE_TAG))
-        putOrRemove(
-            TimerEditSession.STATE_REMOUNT,
-            bundle.getInt(TimerEditSession.STATE_REMOUNT)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TIMER,
-            bundle.getSerializableCompat<Timer>(TimerEditSession.STATE_TIMER)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TIMER_OLD,
-            bundle.getSerializableCompat<Timer>(TimerEditSession.STATE_TIMER_OLD)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_TAGS,
-            bundle.getStringArrayList(TimerEditSession.STATE_TAGS)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_CREATE,
-            bundle.getBoolean(TimerEditSession.STATE_CREATE)
-        )
-        putOrRemove(
-            TimerEditSession.STATE_CHECKED,
-            bundle.getBooleanArray(TimerEditSession.STATE_CHECKED)
-        )
+        val deleted = original ?: timer
+        request(R.string.deleting) { timers.delete(deleted) }
     }
+}
 
-    /**
-     * Pause/dispose flush. Skips when [start] has already moved on to another
-     * tag or epoch, so an older composition cannot overwrite the new snapshot.
-     */
-    fun persistIfBound(tag: String, epoch: Int) {
-        if (hasBound && boundTag == tag && boundEpoch == epoch) {
-            persist()
-        }
-    }
-
-    private fun bindSession(next: TimerEditSession, tag: String, remount: Int) {
-        session?.let { previous ->
-            previous.cancelWork()
-            previous.onWorkingCopyChanged = null
-        }
-        session = next
-        boundTag = tag
-        boundEpoch = remount
-        hasBound = true
-        attachScope()
-        persist()
-    }
-
-    private fun attachScope() {
-        val current = session ?: return
-        current.workScope = viewModelScope
-        current.onWorkingCopyChanged = { persist() }
-    }
-
-    private fun putOrRemove(key: String, value: Any?) {
-        if (value == null) {
-            savedStateHandle.remove<Any>(key)
-        } else {
-            savedStateHandle[key] = value
-        }
-    }
-
-    private fun readSession(): TimerEditSession? {
-        val bundle = Bundle()
-        savedStateHandle.get<String>(TimerEditSession.STATE_TAG)?.let { tag ->
-            bundle.putString(TimerEditSession.STATE_TAG, tag)
-        }
-        if (savedStateHandle.contains(TimerEditSession.STATE_REMOUNT)) {
-            bundle.putInt(
-                TimerEditSession.STATE_REMOUNT,
-                savedStateHandle.get<Int>(TimerEditSession.STATE_REMOUNT) ?: 0
-            )
-        }
-        savedStateHandle.get<Timer>(TimerEditSession.STATE_TIMER)?.let { timer ->
-            bundle.putSerializable(TimerEditSession.STATE_TIMER, timer)
-        }
-        savedStateHandle.get<Timer>(TimerEditSession.STATE_TIMER_OLD)?.let { timer ->
-            bundle.putSerializable(TimerEditSession.STATE_TIMER_OLD, timer)
-        }
-        val tags = savedStateHandle.get<ArrayList<*>>(TimerEditSession.STATE_TAGS)
-        if (tags != null) {
-            val copy = ArrayList<String>(tags.size)
-            for (item in tags) {
-                if (item is String) {
-                    copy.add(item)
-                }
-            }
-            bundle.putStringArrayList(TimerEditSession.STATE_TAGS, copy)
-        }
-        if (savedStateHandle.contains(TimerEditSession.STATE_CREATE)) {
-            bundle.putBoolean(
-                TimerEditSession.STATE_CREATE,
-                savedStateHandle.get<Boolean>(TimerEditSession.STATE_CREATE) == true
-            )
-        }
-        savedStateHandle.get<BooleanArray>(TimerEditSession.STATE_CHECKED)?.let { checked ->
-            bundle.putBooleanArray(TimerEditSession.STATE_CHECKED, checked)
-        }
-        return TimerEditSession.fromSavedState(bundle)
-    }
+/**
+ * The [TimerEdit] arguments, read by name. `toRoute()` decodes through `Bundle`, which
+ * JVM tests only have as a stub.
+ */
+private fun SavedStateHandle.timerEditRoute(): TimerEdit {
+    fun text(key: String): String = get<String>(key).orEmpty()
+    return TimerEdit(
+        create = get<Boolean>("create") ?: false,
+        reference = text("reference"),
+        serviceName = text("serviceName"),
+        eit = text("eit"),
+        name = text("name"),
+        description = text("description"),
+        descriptionExtended = text("descriptionExtended"),
+        disabled = text("disabled"),
+        begin = text("begin"),
+        end = text("end"),
+        duration = text("duration"),
+        beginReadable = text("beginReadable"),
+        endReadable = text("endReadable"),
+        durationReadable = text("durationReadable"),
+        startPrepare = text("startPrepare"),
+        justPlay = text("justPlay"),
+        afterEvent = text("afterEvent"),
+        location = text("location"),
+        tags = text("tags"),
+        logEntries = text("logEntries"),
+        fileName = text("fileName"),
+        backOff = text("backOff"),
+        nextActivation = text("nextActivation"),
+        firstTryPrepare = text("firstTryPrepare"),
+        state = text("state"),
+        repeated = text("repeated"),
+        dontSave = text("dontSave"),
+        canceled = text("canceled"),
+        toggleDisabled = text("toggleDisabled")
+    )
 }

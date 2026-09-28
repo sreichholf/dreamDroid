@@ -345,12 +345,6 @@ data class TimerEdit(
     val canceled: String = "",
     val toggleDisabled: String = ""
 ) {
-    fun tag(): String = if (create) {
-        "timer_edit:new:$begin"
-    } else {
-        "timer_edit:$reference:$begin"
-    }
-
     fun toTimer(): Timer = Timer(
         reference = reference,
         serviceName = serviceName,

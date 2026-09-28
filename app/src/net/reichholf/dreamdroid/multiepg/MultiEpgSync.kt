@@ -205,9 +205,9 @@ class MultiEpgSync(
         }
 
         /**
-         * Live `/web/timerlist` for MultiEPG clocks. Room snapshots live in
-         * [net.reichholf.dreamdroid.room.TimerSnapshotStore] (hub Timer tab);
-         * this fetch stays in-memory for the grid.
+         * Live `/web/timerlist` for MultiEPG clocks. The Room snapshot belongs to
+         * [net.reichholf.dreamdroid.data.TimerRepository] (Timers tab); this fetch stays
+         * in-memory for the grid.
          */
         fun httpFetchTimers(http: EnigmaHttp = EnigmaHttp()): suspend () -> List<Timer> = {
             EnigmaClient(http).getTimers().value ?: emptyList()
