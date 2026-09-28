@@ -1,12 +1,17 @@
 package net.reichholf.dreamdroid.ui.settings
 
 import android.content.res.Configuration
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isSelectable
 import androidx.compose.ui.test.isToggleable
@@ -16,12 +21,14 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -43,14 +50,11 @@ class SettingsScreenTest {
 
     @Test
     fun preferenceTitlesVisible() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = SettingsState.create(context)
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = AppSettings(),
+                    onChange = {},
                     onSyncPicons = {}
                 )
             }
@@ -80,17 +84,14 @@ class SettingsScreenTest {
 
     @Test
     fun footerRowsInvokeCallbacks() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = SettingsState.create(context)
         var about = false
         var changelog = false
         var backup = false
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = AppSettings(),
+                    onChange = {},
                     onSyncPicons = {},
                     onAbout = { about = true },
                     onChangelog = { changelog = true },
@@ -110,15 +111,12 @@ class SettingsScreenTest {
 
     @Test
     fun resetCacheChoiceInvokesCallbackAndCancelDoesNot() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = SettingsState.create(context)
         val resets = mutableListOf<Boolean>()
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = AppSettings(),
+                    onChange = {},
                     onSyncPicons = {},
                     onResetCache = { resets.add(it) }
                 )
@@ -145,18 +143,13 @@ class SettingsScreenTest {
     }
 
     @Test
-    fun multiEpgTextSizeDefaultsToComfortableAndStoresCompact() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .remove(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE)
-            .commit()
-        val state = SettingsState.create(context)
+    fun multiEpgTextSizeDefaultsToComfortableAndChoosesCompact() {
+        var settings by mutableStateOf(AppSettings())
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = settings,
+                    onChange = { settings = it(settings) },
                     onSyncPicons = {}
                 )
             }
@@ -167,28 +160,19 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("MultiEPG text size").performClick()
         composeRule.onNodeWithText("Compact").performClick()
         composeRule.waitForIdle()
-        assertEquals(
-            "compact",
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
-        )
-        assertEquals("compact", state.multiEpgTextSize)
+        assertEquals("compact", settings.multiEpgTextSize)
+        composeRule.onNodeWithText("Compact").performScrollTo().assertIsDisplayed()
     }
 
     @Test
-    fun nowPlayingStripDefaultsOnAndStoresOff() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .remove(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP)
-            .commit()
-        val state = SettingsState.create(context)
-        assertTrue(state.nowPlayingStrip)
+    fun nowPlayingStripDefaultsOnAndTurnsOff() {
+        var settings by mutableStateOf(AppSettings())
+        assertTrue(settings.nowPlayingStrip)
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = settings,
+                    onChange = { settings = it(settings) },
                     onSyncPicons = {}
                 )
             }
@@ -196,12 +180,39 @@ class SettingsScreenTest {
 
         composeRule.onNodeWithText("Now-playing strip").performScrollTo().performClick()
         composeRule.waitForIdle()
-        assertEquals(
-            false,
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true)
-        )
-        assertEquals(false, state.nowPlayingStrip)
+        assertEquals(false, settings.nowPlayingStrip)
+    }
+
+    @Test
+    fun syncPathDialogEditsTheDraftAndConfirms() {
+        val draft = TextFieldState("/usr/share/enigma2/picon")
+        var editing by mutableStateOf(false)
+        var confirmed = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    settings = AppSettings(picons = true),
+                    onChange = {},
+                    onSyncPicons = {},
+                    syncPiconsPathDraft = draft.takeIf { editing },
+                    onEditSyncPiconsPath = { editing = true },
+                    onConfirmSyncPiconsPath = {
+                        confirmed = true
+                        editing = false
+                    },
+                    onDismissSyncPiconsPath = { editing = false }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Picons - remote path").performScrollTo().performClick()
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("/media/hdd/picon")
+        composeRule.onNodeWithText("OK").performClick()
+        composeRule.waitForIdle()
+
+        assertTrue(confirmed)
+        assertEquals("/media/hdd/picon", draft.text.toString())
+        composeRule.onAllNodes(hasSetTextAction()).assertCountEquals(0)
     }
 
     @Test
@@ -216,14 +227,12 @@ class SettingsScreenTest {
             germanContext.getString(R.string.start_screen_long)
         )
 
-        val state = SettingsState.create(context)
         composeRule.setContent {
             CompositionLocalProvider(LocalContext provides germanContext) {
                 DreamDroidTheme {
                     SettingsScreen(
-                        state = state,
-                        onThemeChanged = {},
-                        onDynamicColorsChanged = {},
+                        settings = AppSettings(),
+                        onChange = {},
                         onSyncPicons = {}
                     )
                 }
@@ -235,14 +244,11 @@ class SettingsScreenTest {
 
     @Test
     fun switchRowsMeetMinHeightAndListDialogRadioRowsMeetMinHeight() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = SettingsState.create(context)
         composeRule.setContent {
             DreamDroidTheme {
                 SettingsScreen(
-                    state = state,
-                    onThemeChanged = {},
-                    onDynamicColorsChanged = {},
+                    settings = AppSettings(),
+                    onChange = {},
                     onSyncPicons = {}
                 )
             }

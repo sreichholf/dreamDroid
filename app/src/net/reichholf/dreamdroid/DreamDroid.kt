@@ -239,6 +239,8 @@ class DreamDroid : Application() {
         const val PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED: String =
             "auto_switch_profile_wifi_based"
         const val PREFS_KEY_DYNAMIC_THEME_COLORS: String = "dynamic_theme_colors"
+        const val PREFS_KEY_VOLUME_CONTROL: String = "volume_control"
+        const val PREFS_KEY_MOBILE_IMDB: String = "mobile_imdb"
 
         const val IAB_PUB_KEY: String =
             "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkWyCpE79iRAcqWnC+/I5AuahW/wv" +

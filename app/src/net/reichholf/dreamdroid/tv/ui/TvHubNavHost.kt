@@ -1,18 +1,16 @@
 package net.reichholf.dreamdroid.tv.ui
 
-import android.content.SharedPreferences
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,10 +19,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import androidx.preference.PreferenceManager
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
-import net.reichholf.dreamdroid.ui.settings.SettingsState
+import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
+import net.reichholf.dreamdroid.ui.settings.isDebuggable
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
@@ -56,7 +57,8 @@ fun TvHubNavHost(
         factory = TvHubViewModel.Factory
     ),
     navController: NavHostController = rememberNavController(),
-    startDestination: Any = TvHub
+    startDestination: Any = TvHub,
+    settingsViewModel: @Composable () -> SettingsViewModel = { hiltViewModel() }
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         TvHubNavGraph(
@@ -64,7 +66,8 @@ fun TvHubNavHost(
             onRecheckProfile = onRecheckProfile,
             hubViewModel = hubViewModel,
             navController = navController,
-            startDestination = startDestination
+            startDestination = startDestination,
+            settingsViewModel = settingsViewModel
         )
         // TV Material is not Material 3. The snackbar uses the phone theme.
         Box(
@@ -85,7 +88,8 @@ private fun TvHubNavGraph(
     onRecheckProfile: () -> Unit,
     hubViewModel: TvHubViewModel,
     navController: NavHostController,
-    startDestination: Any
+    startDestination: Any,
+    settingsViewModel: @Composable () -> SettingsViewModel
 ) {
     NavHost(
         navController = navController,
@@ -122,7 +126,7 @@ private fun TvHubNavGraph(
             )
         }
         composable<TvSettings> {
-            TvSettingsDestination(navController)
+            TvSettingsDestination(navController, settingsViewModel())
         }
         composable<TvProfiles> {
             DreamDroidTvTheme {
@@ -139,21 +143,27 @@ private fun TvHubNavGraph(
     }
 }
 
+/** Any settings change marks the hub for a reload. */
 @Composable
-private fun TvSettingsDestination(navController: NavHostController) {
+private fun TvSettingsDestination(navController: NavHostController, viewModel: SettingsViewModel) {
     val context = LocalContext.current
-    val state = remember { SettingsState.create(context) }
-    DisposableEffect(navController) {
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, _ ->
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    LaunchedEffect(viewModel) {
+        viewModel.uiState.map { it.settings }.distinctUntilChanged().drop(1).collect {
             markTvHubReload(navController.previousBackStackEntry?.savedStateHandle)
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose {
-            prefs.unregisterOnSharedPreferenceChangeListener(listener)
         }
     }
     DreamDroidTvTheme {
-        TvSettingsScreen(state = state)
+        TvSettingsScreen(
+            settings = uiState.settings,
+            onChange = viewModel::update,
+            showDeveloperCategory = context.isDebuggable(),
+            syncPiconsPathDraft = viewModel.syncPiconsPath.state.takeIf {
+                uiState.editingSyncPiconsPath
+            },
+            onEditSyncPiconsPath = viewModel::editSyncPiconsPath,
+            onConfirmSyncPiconsPath = viewModel::confirmSyncPiconsPath,
+            onDismissSyncPiconsPath = viewModel::dismissSyncPiconsPath
+        )
     }
 }

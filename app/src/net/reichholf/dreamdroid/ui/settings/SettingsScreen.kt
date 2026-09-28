@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItem
@@ -35,6 +37,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
@@ -42,10 +45,15 @@ import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 
 @Composable
 fun SettingsScreen(
-    state: SettingsState,
-    onThemeChanged: () -> Unit,
-    onDynamicColorsChanged: () -> Unit,
+    settings: AppSettings,
+    onChange: ((AppSettings) -> AppSettings) -> Unit,
     onSyncPicons: () -> Unit,
+    showDeveloperCategory: Boolean = false,
+    showDynamicThemeColors: Boolean = false,
+    syncPiconsPathDraft: TextFieldState? = null,
+    onEditSyncPiconsPath: () -> Unit = {},
+    onConfirmSyncPiconsPath: () -> Unit = {},
+    onDismissSyncPiconsPath: () -> Unit = {},
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
@@ -53,7 +61,6 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
-    var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
     var resetChoice by remember { mutableStateOf(false) }
 
     val themeEntries = stringArrayResource(R.array.theme_option_entries)
@@ -69,7 +76,6 @@ fun SettingsScreen(
     val themeDialogTitle = stringResource(R.string.theme)
     val gridDialogTitle = stringResource(R.string.max_grid_cols)
     val multiEpgTextSizeTitle = stringResource(R.string.multiepg_text_size)
-    val syncPathDialogTitle = stringResource(R.string.sync_picons_path)
 
     Column(
         modifier = modifier
@@ -81,34 +87,34 @@ fun SettingsScreen(
         SwitchPreferenceRow(
             title = stringResource(R.string.integrated_video_player),
             summary = stringResource(R.string.integrated_video_player_long),
-            checked = state.integratedVideoPlayer,
-            onCheckedChange = {
-                state.setBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, it)
+            checked = settings.integratedVideoPlayer,
+            onCheckedChange = { checked ->
+                onChange { it.copy(integratedVideoPlayer = checked) }
             }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.video_enable_gestures),
             summary = stringResource(R.string.video_enable_gestures_long),
-            checked = state.videoEnableGestures,
-            enabled = state.integratedVideoPlayer,
-            onCheckedChange = {
-                state.setBoolean(DreamDroid.PREFS_KEY_VIDEO_ENABLE_GESTURES, it)
+            checked = settings.videoEnableGestures,
+            enabled = settings.integratedVideoPlayer,
+            onCheckedChange = { checked ->
+                onChange { it.copy(videoEnableGestures = checked) }
             }
         )
         ListPreferenceRow(
             title = stringResource(R.string.use_hw_accel),
             summary = stringResource(
                 R.string.use_hw_accel_long,
-                entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration)
+                entryLabel(hwEntries, hwValues, settings.videoHardwareAcceleration)
             ),
-            enabled = state.integratedVideoPlayer,
+            enabled = settings.integratedVideoPlayer,
             onClick = {
                 listDialog = ListDialogSpec(
                     title = hwAccelDialogTitle,
                     entries = hwEntries.toList(),
                     values = hwValues.toList(),
-                    selectedValue = state.videoHardwareAcceleration,
-                    key = DreamDroid.PREFS_KEY_HWACCEL
+                    selectedValue = settings.videoHardwareAcceleration,
+                    set = { copy(videoHardwareAcceleration = it) }
                 )
             }
         )
@@ -119,94 +125,93 @@ fun SettingsScreen(
         val startScreenTitle = stringResource(R.string.start_screen)
         ListPreferenceRow(
             title = startScreenTitle,
-            summary = entryLabel(startEntries, startValues, state.startScreen),
+            summary = entryLabel(startEntries, startValues, settings.startScreen),
             onClick = {
                 listDialog = ListDialogSpec(
                     title = startScreenTitle,
                     entries = startEntries.toList(),
                     values = startValues.toList(),
-                    selectedValue = state.startScreen,
-                    key = DreamDroid.PREFS_KEY_START_SCREEN
+                    selectedValue = settings.startScreen,
+                    set = { copy(startScreen = it) }
                 )
             }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_volume_control),
             summary = stringResource(R.string.enable_volume_control_long),
-            checked = state.volumeControl,
-            onCheckedChange = { state.setBoolean(SettingsState.KEY_VOLUME_CONTROL, it) }
+            checked = settings.volumeControl,
+            onCheckedChange = { checked -> onChange { it.copy(volumeControl = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_instant_zap),
             summary = stringResource(R.string.enable_instant_zap_long),
-            checked = state.instantZap,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, it) }
+            checked = settings.instantZap,
+            onCheckedChange = { checked -> onChange { it.copy(instantZap = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.show_now_playing_strip),
             summary = stringResource(R.string.show_now_playing_strip_long),
-            checked = state.nowPlayingStrip,
-            onCheckedChange = {
-                state.setBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, it)
+            checked = settings.nowPlayingStrip,
+            onCheckedChange = { checked ->
+                onChange { it.copy(nowPlayingStrip = checked) }
             }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.default_to_full_vrm),
             summary = stringResource(R.string.default_to_full_vrm_long),
-            checked = state.simpleVrm,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_SIMPLE_VRM, it) }
+            checked = settings.simpleVrm,
+            onCheckedChange = { checked -> onChange { it.copy(simpleVrm = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.mobile_imdb),
             summary = stringResource(R.string.mobile_imdb_long),
-            checked = state.mobileImdb,
-            onCheckedChange = { state.setBoolean(SettingsState.KEY_MOBILE_IMDB, it) }
+            checked = settings.mobileImdb,
+            onCheckedChange = { checked -> onChange { it.copy(mobileImdb = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.confirm_app_close),
             summary = stringResource(R.string.confirm_app_close_long),
-            checked = state.confirmAppClose,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, it) }
+            checked = settings.confirmAppClose,
+            onCheckedChange = { checked -> onChange { it.copy(confirmAppClose = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.play_button_as_play_pause),
             summary = stringResource(R.string.play_button_as_play_pause_long),
-            checked = state.playButtonAsPlayPause,
-            onCheckedChange = {
-                state.setBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, it)
+            checked = settings.playButtonAsPlayPause,
+            onCheckedChange = { checked ->
+                onChange { it.copy(playButtonAsPlayPause = checked) }
             }
         )
 
         PreferenceCategoryHeader(stringResource(R.string.appearance))
         ListPreferenceRow(
             title = stringResource(R.string.theme_long),
-            summary = entryLabel(themeEntries, themeValues, state.themeType),
+            summary = entryLabel(themeEntries, themeValues, settings.themeType),
             onClick = {
                 listDialog = ListDialogSpec(
                     title = themeDialogTitle,
                     entries = themeEntries.toList(),
                     values = themeValues.toList(),
-                    selectedValue = state.themeType,
-                    key = DreamDroid.PREFS_KEY_THEME_TYPE
+                    selectedValue = settings.themeType,
+                    set = { copy(themeType = it) }
                 )
             }
         )
-        if (state.showDynamicThemeColors) {
+        if (showDynamicThemeColors) {
             SwitchPreferenceRow(
                 title = stringResource(R.string.dynamic_theme_colors),
                 summary = stringResource(R.string.dynamic_theme_colors_long),
-                checked = state.dynamicThemeColors,
-                onCheckedChange = {
-                    state.setBoolean(DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS, it)
-                    onDynamicColorsChanged()
+                checked = settings.dynamicThemeColors,
+                onCheckedChange = { checked ->
+                    onChange { it.copy(dynamicThemeColors = checked) }
                 }
             )
         }
         SwitchPreferenceRow(
             title = stringResource(R.string.enable_animations),
             summary = stringResource(R.string.enable_animations_long),
-            checked = state.enableAnimations,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS, it) }
+            checked = settings.enableAnimations,
+            onCheckedChange = { checked -> onChange { it.copy(enableAnimations = checked) } }
         )
         ListPreferenceRow(
             title = stringResource(R.string.max_grid_cols),
@@ -216,8 +221,8 @@ fun SettingsScreen(
                     title = gridDialogTitle,
                     entries = gridEntries.toList(),
                     values = gridValues.toList(),
-                    selectedValue = state.gridMaxCols,
-                    key = DreamDroid.PREFS_KEY_GRID_MAX_COLS
+                    selectedValue = settings.gridMaxCols,
+                    set = { copy(gridMaxCols = it) }
                 )
             }
         )
@@ -226,15 +231,15 @@ fun SettingsScreen(
             summary = entryLabel(
                 multiEpgTextSizeEntries,
                 multiEpgTextSizeValues,
-                state.multiEpgTextSize
+                settings.multiEpgTextSize
             ),
             onClick = {
                 listDialog = ListDialogSpec(
                     title = multiEpgTextSizeTitle,
                     entries = multiEpgTextSizeEntries.toList(),
                     values = multiEpgTextSizeValues.toList(),
-                    selectedValue = state.multiEpgTextSize,
-                    key = DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE
+                    selectedValue = settings.multiEpgTextSize,
+                    set = { copy(multiEpgTextSize = it) }
                 )
             }
         )
@@ -243,64 +248,58 @@ fun SettingsScreen(
         SwitchPreferenceRow(
             title = stringResource(R.string.use_picons),
             summary = stringResource(R.string.use_picons_long),
-            checked = state.picons,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, it) }
+            checked = settings.picons,
+            onCheckedChange = { checked -> onChange { it.copy(picons = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.online_picons),
             summary = stringResource(R.string.online_picons_long),
-            checked = state.piconsOnline,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, it) }
+            checked = settings.piconsOnline,
+            onCheckedChange = { checked -> onChange { it.copy(piconsOnline = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.use_name_as_picon_filename),
             summary = stringResource(R.string.use_name_as_picon_filename_long),
-            checked = state.useNameAsPiconFilename,
-            enabled = state.picons,
-            onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) }
+            checked = settings.useNameAsPiconFilename,
+            enabled = settings.picons,
+            onCheckedChange = { checked -> onChange { it.copy(useNameAsPiconFilename = checked) } }
         )
         ActionPreferenceRow(
             title = stringResource(R.string.sync_picons),
             summary = stringResource(R.string.sync_picons_long),
-            enabled = state.picons,
+            enabled = settings.picons,
             onClick = onSyncPicons
         )
         ActionPreferenceRow(
             title = stringResource(R.string.sync_picons_path),
             summary = stringResource(R.string.sync_picons_path_long),
-            enabled = state.picons,
-            onClick = {
-                editDialog = EditDialogSpec(
-                    title = syncPathDialogTitle,
-                    value = state.syncPiconsPath,
-                    key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH
-                )
-            }
+            enabled = settings.picons,
+            onClick = onEditSyncPiconsPath
         )
 
-        if (state.showDeveloperCategory) {
+        if (showDeveloperCategory) {
             PreferenceCategoryHeader(stringResource(R.string.developer_settings))
             SwitchPreferenceRow(
                 title = stringResource(R.string.developer_settings_enable),
                 summary = null,
-                checked = state.enableDeveloper,
-                onCheckedChange = {
-                    state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_DEVELOPER_SETTINGS, it)
+                checked = settings.enableDeveloper,
+                onCheckedChange = { checked ->
+                    onChange { it.copy(enableDeveloper = checked) }
                 }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.use_fake_picon),
                 summary = stringResource(R.string.use_fake_picon_long),
-                checked = state.fakePicon,
-                enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) }
+                checked = settings.fakePicon,
+                enabled = settings.enableDeveloper,
+                onCheckedChange = { checked -> onChange { it.copy(fakePicon = checked) } }
             )
             SwitchPreferenceRow(
                 title = stringResource(R.string.dump_xml),
                 summary = stringResource(R.string.dump_xml_long),
-                checked = state.xmlDebug,
-                enabled = state.enableDeveloper,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) }
+                checked = settings.xmlDebug,
+                enabled = settings.enableDeveloper,
+                onCheckedChange = { checked -> onChange { it.copy(xmlDebug = checked) } }
             )
         }
 
@@ -308,9 +307,9 @@ fun SettingsScreen(
         SwitchPreferenceRow(
             title = stringResource(R.string.auto_switch_profile_wifi_based),
             summary = stringResource(R.string.auto_switch_profile_wifi_based_long),
-            checked = state.autoSwitchProfileWifiBased,
-            onCheckedChange = {
-                state.setBoolean(DreamDroid.PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED, it)
+            checked = settings.autoSwitchProfileWifiBased,
+            onCheckedChange = { checked ->
+                onChange { it.copy(autoSwitchProfileWifiBased = checked) }
             }
         )
 
@@ -330,23 +329,18 @@ fun SettingsScreen(
             spec = dialog,
             onDismiss = { listDialog = null },
             onSelect = { value ->
-                state.setString(dialog.key, value)
-                if (dialog.key == DreamDroid.PREFS_KEY_THEME_TYPE) {
-                    onThemeChanged()
-                }
+                onChange { dialog.set(it, value) }
                 listDialog = null
             }
         )
     }
 
-    editDialog?.let { dialog ->
+    if (syncPiconsPathDraft != null) {
         EditTextPreferenceDialog(
-            spec = dialog,
-            onDismiss = { editDialog = null },
-            onConfirm = { value ->
-                state.setString(dialog.key, value)
-                editDialog = null
-            }
+            title = stringResource(R.string.sync_picons_path),
+            state = syncPiconsPathDraft,
+            onDismiss = onDismissSyncPiconsPath,
+            onConfirm = onConfirmSyncPiconsPath
         )
     }
 
@@ -368,10 +362,8 @@ internal data class ListDialogSpec(
     val entries: List<String>,
     val values: List<String>,
     val selectedValue: String,
-    val key: String
+    val set: AppSettings.(String) -> AppSettings
 )
-
-internal data class EditDialogSpec(val title: String, val value: String, val key: String)
 
 internal const val RESET_CACHE_ALL = 1
 
@@ -531,24 +523,23 @@ internal fun ListPreferenceDialog(
 
 @Composable
 internal fun EditTextPreferenceDialog(
-    spec: EditDialogSpec,
+    title: String,
+    state: TextFieldState,
     onDismiss: () -> Unit,
-    onConfirm: (String) -> Unit
+    onConfirm: () -> Unit
 ) {
-    var text by remember(spec.value) { mutableStateOf(spec.value) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(spec.title) },
+        title = { Text(title) },
         text = {
             OutlinedTextField(
-                value = text,
-                onValueChange = { text = it },
+                state = state,
                 modifier = Modifier.fillMaxWidth(),
-                singleLine = true
+                lineLimits = TextFieldLineLimits.SingleLine
             )
         },
         confirmButton = {
-            TextButton(onClick = { onConfirm(text) }) {
+            TextButton(onClick = onConfirm) {
                 Text(stringResource(android.R.string.ok))
             }
         },
