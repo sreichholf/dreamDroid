@@ -10,65 +10,25 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
-
-data class BackupProfileToggle(val id: Int, val label: String, val checked: Boolean = true)
-
-class BackupUiState {
-    var profiles by mutableStateOf<List<BackupProfileToggle>>(emptyList())
-        private set
-
-    /** Matches legacy XML SwitchCompat default (unchecked). */
-    var exportSettings by mutableStateOf(false)
-
-    /** Receiver passwords stay in the file unless the user turns this off. */
-    var includePasswords by mutableStateOf(true)
-
-    fun replaceProfiles(items: List<BackupProfileToggle>) {
-        profiles = items
-    }
-
-    fun setProfilesFromBackup(
-        profiles: List<Profile>,
-        currentProfileId: Int,
-        currentProfileLabel: String
-    ) {
-        replaceProfiles(
-            profiles.map { profile ->
-                val id = profile.id
-                var label = String.format("%s (%s)", profile.name, profile.host)
-                if (id == currentProfileId) {
-                    label += " ($currentProfileLabel)"
-                }
-                BackupProfileToggle(id = id ?: 0, label = label, checked = true)
-            }
-        )
-    }
-
-    fun setProfileChecked(id: Int, checked: Boolean) {
-        profiles = profiles.map { item ->
-            if (item.id == id) item.copy(checked = checked) else item
-        }
-    }
-}
 
 @Composable
 fun BackupScreen(
     state: BackupUiState,
     onImport: () -> Unit,
     onExport: () -> Unit,
+    onProfileCheckedChange: (id: Int, checked: Boolean) -> Unit,
+    onExportSettingsChange: (Boolean) -> Unit,
+    onIncludePasswordsChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currentLabel = stringResource(R.string.backup_current_profile)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -114,8 +74,8 @@ fun BackupScreen(
                 ListRowSurface {
                     EditSwitchRow(
                         checked = profile.checked,
-                        onCheckedChange = { state.setProfileChecked(profile.id, it) },
-                        label = profile.label,
+                        onCheckedChange = { onProfileCheckedChange(profile.id, it) },
+                        label = profile.label(currentLabel),
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
@@ -136,7 +96,7 @@ fun BackupScreen(
             ListRowSurface {
                 EditSwitchRow(
                     checked = state.exportSettings,
-                    onCheckedChange = { state.exportSettings = it },
+                    onCheckedChange = onExportSettingsChange,
                     label = stringResource(R.string.backup_export_settings),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
@@ -145,11 +105,17 @@ fun BackupScreen(
             ListRowSurface {
                 EditSwitchRow(
                     checked = state.includePasswords,
-                    onCheckedChange = { state.includePasswords = it },
+                    onCheckedChange = onIncludePasswordsChange,
                     label = stringResource(R.string.backup_include_passwords),
                     modifier = Modifier.padding(horizontal = 16.dp)
                 )
             }
         }
     }
+}
+
+/** "Living Room (10.0.0.1)", with " ([currentLabel])" for the active profile. */
+private fun BackupProfileToggle.label(currentLabel: String): String {
+    val label = "$name ($host)"
+    return if (current) "$label ($currentLabel)" else label
 }

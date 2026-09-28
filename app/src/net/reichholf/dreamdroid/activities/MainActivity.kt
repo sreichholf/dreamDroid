@@ -69,7 +69,6 @@ import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
-import net.reichholf.dreamdroid.ui.settings.SettingsState
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -606,7 +605,7 @@ class MainActivity :
 
     private fun volumeControlEnabled(): Boolean =
         PreferenceManager.getDefaultSharedPreferences(this)
-            .getBoolean(SettingsState.KEY_VOLUME_CONTROL, false)
+            .getBoolean(DreamDroid.PREFS_KEY_VOLUME_CONTROL, false)
 
     private fun sendReceiverVolume(keyCode: Int) {
         if (volumeSetJob?.isActive == true) {

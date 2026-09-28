@@ -338,8 +338,6 @@ abstract class AppDatabase : RoomDatabase() {
 
         fun roster(context: Context): RosterDao = database(context).rosterDao()
 
-        fun movie(context: Context): MovieDao = database(context).movieDao()
-
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =
             setDriver(BundledSQLiteDriver())

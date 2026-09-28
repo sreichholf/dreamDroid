@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.movieRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -21,7 +22,6 @@ import net.reichholf.dreamdroid.multiepg.UserBouquetEpgFill
 import net.reichholf.dreamdroid.multiepg.overlayNowNext
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgDao
-import net.reichholf.dreamdroid.room.MovieSnapshotStore
 import net.reichholf.dreamdroid.room.RosterDao
 import net.reichholf.dreamdroid.room.UserBouquetCache
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -52,7 +52,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     val db = AppDatabase.database(app)
     val rosterDao = db.rosterDao()
     val epgDao = db.epgDao()
-    val movieDao = db.movieDao()
+    val movies = movieRepository(app)
     val cachedTabs = if (profileId != null) {
         UserBouquetCache.loadTabStripServices(
             rosterDao,
@@ -62,11 +62,7 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
     } else {
         emptyList()
     }
-    val cachedMovies = if (profileId != null) {
-        MovieSnapshotStore.loadLocations(movieDao, profileId)
-    } else {
-        null
-    }
+    val cachedMovies = movies.cachedLocations()
     val hasCache = hasUseDrivenCache(
         cachedTabs.map { it.reference },
         hasMovieLocationStrip = cachedMovies != null
@@ -179,12 +175,8 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
             rows.add(cached)
         }
     }
-    if (profileId != null && ProfileRepository.get().locationsLoadedFromReceiver()) {
-        MovieSnapshotStore.replaceLocations(
-            movieDao,
-            profileId,
-            ProfileRepository.get().locations().toList()
-        )
+    if (ProfileRepository.get().locationsLoadedFromReceiver()) {
+        movies.saveLocations(ProfileRepository.get().locations().toList())
     }
     val locations = movieHeadersForTvHub(
         locationsFromReceiver = ProfileRepository.get().locationsLoadedFromReceiver(),
@@ -201,13 +193,8 @@ suspend fun loadTvHubBrowse(context: Context): TvHubBrowseResult {
 
 suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResult {
     val app = context.applicationContext
-    val profileId = ProfileRepository.get().requireCurrent().id
-    val movieDao = AppDatabase.movie(app)
-    val cached = if (profileId != null) {
-        MovieSnapshotStore.loadMovies(movieDao, profileId, dirname)
-    } else {
-        null
-    }
+    val movies = movieRepository(app)
+    val cached = movies.cachedMovies(dirname)
     val status = SessionConnectionHolder.shared.status.value
     val hasCache = cached != null
     if (shouldSkipTvHubHttp(status, hasCache)) {
@@ -219,9 +206,7 @@ suspend fun loadTvHubMovies(context: Context, dirname: String): TvHubMoviesResul
     }
     val result = loadMovieList(app, listOf(NameValuePair("dirname", dirname)))
     if (result.success) {
-        if (profileId != null) {
-            MovieSnapshotStore.replaceMovies(movieDao, profileId, dirname, result.movies)
-        }
+        movies.saveMovies(dirname, result.movies)
         return TvHubMoviesResult(
             movies = result.movies,
             errorText = null,

@@ -4,16 +4,22 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
 import android.content.res.Resources
+import java.io.File
+import java.nio.file.Files
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * A JVM stand-in for the application context: default preferences live in memory, string
- * arrays are empty, everything else is the android.jar stub.
+ * arrays are empty, the cache directory is a fresh temporary directory, everything else
+ * is the android.jar stub.
  */
 class TestContext : ContextWrapper(null) {
     private val preferences = HashMap<String, MemorySharedPreferences>()
+    private val cacheDirectory by lazy {
+        Files.createTempDirectory("dreamdroid-cache").toFile().apply { deleteOnExit() }
+    }
 
     @Suppress("DEPRECATION")
     private val resources = object : Resources(null, null, null) {
@@ -25,6 +31,8 @@ class TestContext : ContextWrapper(null) {
     override fun getResources(): Resources = resources
 
     override fun getPackageName(): String = "net.reichholf.dreamdroid.test"
+
+    override fun getCacheDir(): File = cacheDirectory
 
     override fun getSharedPreferences(name: String, mode: Int): SharedPreferences =
         preferences.getOrPut(name) { MemorySharedPreferences() }
@@ -39,8 +47,10 @@ class TestProfiles(val context: TestContext = TestContext()) {
     val repository = ProfileRepository(RoomProfileStore(database, context))
 }
 
+/** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
 class MemorySharedPreferences : SharedPreferences {
     private val values = HashMap<String, Any?>()
+    private val listeners = mutableListOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
     override fun getAll(): Map<String, *> = HashMap(values)
 
@@ -66,11 +76,15 @@ class MemorySharedPreferences : SharedPreferences {
 
     override fun registerOnSharedPreferenceChangeListener(
         listener: SharedPreferences.OnSharedPreferenceChangeListener
-    ) = Unit
+    ) {
+        listeners += listener
+    }
 
     override fun unregisterOnSharedPreferenceChangeListener(
         listener: SharedPreferences.OnSharedPreferenceChangeListener
-    ) = Unit
+    ) {
+        listeners -= listener
+    }
 
     private inner class Editor : SharedPreferences.Editor {
         private val changes = HashMap<String, Any?>()
@@ -99,11 +113,18 @@ class MemorySharedPreferences : SharedPreferences {
         }
 
         override fun apply() {
+            val before = HashMap(values)
             if (clear) {
                 values.clear()
             }
             removals.forEach { values.remove(it) }
             values.putAll(changes)
+            val changed = (before.keys + values.keys).filter { before[it] != values[it] }
+            changed.forEach { key ->
+                listeners.toList().forEach {
+                    it.onSharedPreferenceChanged(this@MemorySharedPreferences, key)
+                }
+            }
         }
 
         private fun put(key: String, value: Any?): SharedPreferences.Editor = apply {

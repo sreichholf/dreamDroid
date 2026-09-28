@@ -73,8 +73,8 @@ class UseDrivenCacheTest {
             ).isEmpty()
         )
         assertNull(db.timerDao().snapshot(PROFILE))
-        assertNull(MovieSnapshotStore.loadLocations(db.movieDao(), PROFILE))
-        assertNull(MovieSnapshotStore.loadMovies(db.movieDao(), PROFILE, HDD))
+        assertEquals(0, db.movieDao().locationMetaCount(PROFILE))
+        assertEquals(0, db.movieDao().movieListMetaCount(PROFILE, HDD))
 
         assertTrue(
             hasUseDrivenCache(
@@ -105,11 +105,8 @@ class UseDrivenCacheTest {
             listOf("News"),
             db.timerDao().snapshot(OTHER)?.map { it.name }
         )
-        assertEquals(listOf(HDD), MovieSnapshotStore.loadLocations(db.movieDao(), OTHER))
-        assertEquals(
-            listOf("News"),
-            MovieSnapshotStore.loadMovies(db.movieDao(), OTHER, HDD)?.map { it.title }
-        )
+        assertEquals(listOf(HDD), db.movieDao().getLocationStrip(OTHER).map { it.dirname })
+        assertEquals(listOf("News"), db.movieDao().getMovieList(OTHER, HDD).map { it.title })
     }
 
     @Test
@@ -138,8 +135,8 @@ class UseDrivenCacheTest {
         )
         assertNull(db.epgDao().getChunk(OTHER, favourites.reference, WINDOW_START))
         assertNull(db.timerDao().snapshot(OTHER))
-        assertNull(MovieSnapshotStore.loadLocations(db.movieDao(), OTHER))
-        assertNull(MovieSnapshotStore.loadMovies(db.movieDao(), OTHER, HDD))
+        assertEquals(0, db.movieDao().locationMetaCount(OTHER))
+        assertEquals(0, db.movieDao().movieListMetaCount(OTHER, HDD))
     }
 
     private suspend fun seedProfile(profileId: Int) {
@@ -196,9 +193,11 @@ class UseDrivenCacheTest {
                 ).toListEntity(profileId, 0)
             )
         )
-        MovieSnapshotStore.replaceLocations(db.movieDao(), profileId, listOf(HDD))
-        MovieSnapshotStore.replaceMovies(
-            db.movieDao(),
+        db.movieDao().replaceLocations(
+            profileId,
+            listOf(MovieLocationStripEntity(profileId, 0, HDD))
+        )
+        db.movieDao().replaceMovies(
             profileId,
             HDD,
             listOf(
@@ -206,7 +205,7 @@ class UseDrivenCacheTest {
                     reference = "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/news.ts",
                     title = "News",
                     fileName = "/media/hdd/movie/news.ts"
-                )
+                ).toListEntity(profileId, HDD, 0)
             )
         )
     }

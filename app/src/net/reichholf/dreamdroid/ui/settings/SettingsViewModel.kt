@@ -1,61 +1,123 @@
 package net.reichholf.dreamdroid.ui.settings
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UseDrivenCache
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.CacheRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.ui.text.SavedTextField
+import net.reichholf.dreamdroid.ui.text.UiText
+
+/** What a settings change asks of the activity. The destination runs it, then clears it. */
+enum class SettingsEffect {
+    /** The day/night theme changed. */
+    ApplyTheme,
+
+    /** Dynamic colors changed; they apply on the next start. */
+    Restart
+}
 
 /**
- * Owns [SettingsState] for the settings destination.
- *
- * Preference values stay in SharedPreferences.
+ * [editingSyncPiconsPath] is true while the picon path dialog is open; its text is
+ * [SettingsViewModel.syncPiconsPath].
  */
-class SettingsViewModel(application: Application) : AndroidViewModel(application) {
-    val state: SettingsState = SettingsState.create(getApplication<Application>())
+data class SettingsUiState(
+    val settings: AppSettings,
+    val editingSyncPiconsPath: Boolean = false,
+    val userMessage: UiText? = null,
+    val effect: SettingsEffect? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(R.string.settings)
+}
 
-    var message by mutableStateOf<String?>(null)
-        private set
+/**
+ * Phone and TV settings. Values live in [SettingsRepository]; the open picon path
+ * dialog and its text survive process death in the [SavedStateHandle].
+ */
+@HiltViewModel
+class SettingsViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val settings: SettingsRepository,
+    private val cache: CacheRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(
+        SettingsUiState(
+            settings = settings.current(),
+            editingSyncPiconsPath = savedStateHandle[KEY_EDITING_SYNC_PATH] ?: false
+        )
+    )
+    val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
-    private val pendingMessages = ArrayDeque<String>()
+    val syncPiconsPath = SavedTextField(viewModelScope, savedStateHandle, KEY_SYNC_PATH)
 
-    private fun postMessage(text: String) {
-        if (message == null) {
-            message = text
-        } else {
-            pendingMessages.addLast(text)
-        }
-    }
-
-    fun consumeMessage() {
-        message = pendingMessages.removeFirstOrNull()
-    }
-
-    fun resetUseDrivenCache(allProfiles: Boolean) {
-        val app = getApplication<Application>()
+    init {
         viewModelScope.launch {
-            val db = AppDatabase.database(app)
-            if (allProfiles) {
-                UseDrivenCache.clearAll(db)
-            } else {
-                val profileId = ProfileRepository.get().requireCurrent().id
-                if (profileId != null) {
-                    UseDrivenCache.clearForProfile(db, profileId)
-                }
-            }
-            SessionConnectionHolder.shared.onUseDrivenCacheCleared()
-            withContext(Dispatchers.Main.immediate) {
-                postMessage(app.getString(R.string.reset_cache_done))
+            settings.settings.collect { values ->
+                _uiState.update { it.copy(settings = values) }
             }
         }
+    }
+
+    /** Writes the settings [transform] changes. */
+    fun update(transform: (AppSettings) -> AppSettings) {
+        val (before, after) = settings.update(transform)
+        val effect = when {
+            after.themeType != before.themeType -> SettingsEffect.ApplyTheme
+            after.dynamicThemeColors != before.dynamicThemeColors -> SettingsEffect.Restart
+            else -> null
+        }
+        _uiState.update { state ->
+            state.copy(settings = after, effect = effect ?: state.effect)
+        }
+    }
+
+    fun onEffectHandled() {
+        _uiState.update { it.copy(effect = null) }
+    }
+
+    fun editSyncPiconsPath() {
+        syncPiconsPath.set(_uiState.value.settings.syncPiconsPath)
+        setEditingSyncPiconsPath(true)
+    }
+
+    fun confirmSyncPiconsPath() {
+        val path = syncPiconsPath.text
+        setEditingSyncPiconsPath(false)
+        update { it.copy(syncPiconsPath = path) }
+    }
+
+    fun dismissSyncPiconsPath() {
+        setEditingSyncPiconsPath(false)
+    }
+
+    fun resetCache(allProfiles: Boolean) {
+        viewModelScope.launch {
+            cache.clearUseDrivenCache(allProfiles)
+            _uiState.update { it.copy(userMessage = UiText.Resource(R.string.reset_cache_done)) }
+        }
+    }
+
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
+    }
+
+    private fun setEditingSyncPiconsPath(editing: Boolean) {
+        savedStateHandle[KEY_EDITING_SYNC_PATH] = editing
+        _uiState.update { it.copy(editingSyncPiconsPath = editing) }
+    }
+
+    private companion object {
+        const val KEY_SYNC_PATH = "settings_sync_picons_path"
+        const val KEY_EDITING_SYNC_PATH = "settings_editing_sync_picons_path"
     }
 }

@@ -147,11 +147,11 @@ One line per PR: state, then PR link once opened.
 - [x] 1 Hilt + Device info — merged, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
 - [x] 2 Signal + Screenshot — merged, [#527](https://github.com/sreichholf/dreamDroid/pull/527)
 - [x] 3 Profiles + setup — merged, [#528](https://github.com/sreichholf/dreamDroid/pull/528)
-- [ ] 4 Settings + backup — in progress
-- [ ] 5 Timers — in review, [#530](https://github.com/sreichholf/dreamDroid/pull/530)
-- [ ] 6 Movies — in progress
+- [ ] 4 Settings + backup — in review, [#532](https://github.com/sreichholf/dreamDroid/pull/532)
+- [x] 5 Timers — merged, [#530](https://github.com/sreichholf/dreamDroid/pull/530)
+- [x] 6 Movies — merged, [#531](https://github.com/sreichholf/dreamDroid/pull/531)
 - [x] 7 List EPG — merged, [#529](https://github.com/sreichholf/dreamDroid/pull/529)
-- [ ] 8 MultiEPG
+- [ ] 8 MultiEPG — in review, [#533](https://github.com/sreichholf/dreamDroid/pull/533)
 - [ ] 9 Service lists + pickers
 - [ ] 10 Hub, now playing, zap
 - [ ] 11 Phone shell
@@ -187,6 +187,7 @@ Accepted by the operator 2026-09-28. Change one only with a note here saying why
 8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding.
 9. **Planned series.** PRs 1–14 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
 10. **JVM tests and Android stubs.** `EnigmaHttp` error paths call `android.util.Log`, which throws on the JVM. The app sets `testOptions.unitTests.isReturnDefaultValues = true` (PR 1) so repository and ViewModel tests cover HTTP errors. `DreamDroid.dumpXml()` still reads `ProfileRepository.get()`, so tests install the static repository until PR 14 removes it.
+11. **Transitional lookups and assisted ViewModels** (PR 6). When a class moves behind Hilt and a non-Hilt caller that runs after Application injection still needs it (for example the phone hub before PR 10, the TV hub before PR 12), the caller uses a small `@EntryPoint` lookup such as `movieRepository(context)`, which returns the same singleton. It is deleted with its last caller, like `ProfileRepository.get()`. A ViewModel whose input is not a route argument (a pager page keyed by location) uses `@HiltViewModel(assistedFactory = …)` with `hiltViewModel(key = …) { it.create(…) }`.
 
 ## Not in this plan
 
