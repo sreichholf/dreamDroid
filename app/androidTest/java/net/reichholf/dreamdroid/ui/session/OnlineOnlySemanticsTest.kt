@@ -71,7 +71,8 @@ class OnlineOnlySemanticsTest {
                 ZapScreen(
                     items = listOf(service),
                     onItemClick = { clicked += 1 },
-                    onItemLongClick = {}
+                    onItemLongClick = {},
+                    zapBlocked = true
                 )
             }
         }
