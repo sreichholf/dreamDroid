@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
@@ -60,6 +61,7 @@ import net.reichholf.dreamdroid.ui.nav.ShellFabController
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarController
 import net.reichholf.dreamdroid.ui.nav.ShellViewModel
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
@@ -98,7 +100,7 @@ class MainActivity :
     private val fabController = ShellFabController()
     private val topBarController = ShellTopBarController()
     val phoneNav: PhoneNavHostState by viewModels()
-    val shellActions: ShellViewModel by viewModels { ShellViewModel.Factory }
+    val shellActions: ShellViewModel by viewModels()
 
     private var phoneShellReady: Boolean = false
 
@@ -247,8 +249,19 @@ class MainActivity :
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
-        shellActions.bindSleepTimerOpener(this) { timer ->
-            phoneNav.navigateToSleepTimer(timer)
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                shellActions.uiState.collect { state ->
+                    state.sleepTimerEffect?.let { timer ->
+                        shellActions.onSleepTimerEffectHandled()
+                        phoneNav.navigateToSleepTimer(timer)
+                    }
+                    state.profileSwitchEffect?.let { profile ->
+                        shellActions.onProfileSwitchHandled()
+                        onProfileChanged(profile, false)
+                    }
+                }
+            }
         }
         startSessionReachabilityProbe()
         if (!ProfileRepository.get().hasCurrent()) {
@@ -307,9 +320,6 @@ class MainActivity :
         }
         phoneShellReady = true
         initViews()
-        shellActions.bindProfileChanged(this) { profile ->
-            onProfileChanged(profile, false)
-        }
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.unregisterOnSharedPreferenceChangeListener(this)
         preferences.registerOnSharedPreferenceChangeListener(this)
@@ -425,8 +435,6 @@ class MainActivity :
     }
 
     override fun onDestroy() {
-        shellActions.unbindSleepTimerOpener(this)
-        shellActions.unbindProfileChanged(this)
         navigationHelper = null
         PreferenceManager.getDefaultSharedPreferences(
             this
@@ -517,6 +525,11 @@ class MainActivity :
                         )
                     )
                 ) {
+                    val shellUiState by shellActions.uiState.collectAsStateWithLifecycle()
+                    ShowShellUserMessage(
+                        shellUiState.userMessage,
+                        shellActions::onMessageShown
+                    )
                     PhoneNavHost(handle = phoneNav)
                 }
             }

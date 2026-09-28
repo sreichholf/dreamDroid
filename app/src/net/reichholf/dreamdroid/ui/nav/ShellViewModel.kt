@@ -1,57 +1,57 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.app.Application
-import android.content.Context
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.PowerStateSetOutcome
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.SleepTimer
-import net.reichholf.dreamdroid.enigma.SleepTimerLoadOutcome
-import net.reichholf.dreamdroid.enigma.fetchPowerStateSet
-import net.reichholf.dreamdroid.enigma.fetchSleepTimer
-import net.reichholf.dreamdroid.enigma.userMessage
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.Message
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
+import net.reichholf.dreamdroid.ui.text.UiText
+
+/** Shell-wide results and one-shot effects. Effects stay until the shell handles them. */
+data class ShellUiState(
+    val userMessage: UiText? = null,
+    val sleepTimerEffect: SleepTimer? = null,
+    val profileSwitchEffect: Profile? = null
+)
 
 /**
  * Power, sleep timer, and send message. Activity-scoped so a configuration
- * change does not cancel the request. Results go to [ShellMessages]. A sleep
- * timer read that should open the dialog is handed to the current activity.
+ * change does not cancel the request. Results are [ShellUiState]: messages
+ * show in the shell snackbar, the sleep timer effect opens its dialog, and
+ * the profile switch effect runs the profile check.
  */
-class ShellViewModel(
-    application: Application,
-    private val setPower: suspend (String, Context) -> PowerStateSetOutcome,
-    private val loadSleep: suspend (List<NameValuePair>, Context) -> SleepTimerLoadOutcome
-) : AndroidViewModel(application) {
+@HiltViewModel
+class ShellViewModel @Inject constructor(
+    private val receiver: ReceiverRepository,
+    private val profiles: ProfileRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(ShellUiState())
+    val uiState: StateFlow<ShellUiState> = _uiState.asStateFlow()
+
     private var powerJob: Job? = null
     private var sleepJob: Job? = null
     private var messageJob: Job? = null
 
-    private var sleepTimerOpenerOwner: Any? = null
-    private var sleepTimerOpener: ((SleepTimer) -> Unit)? = null
-    private var pendingSleepTimer: SleepTimer? = null
-
-    private var profileChangedOwner: Any? = null
-    private var profileChanged: ((Profile) -> Unit)? = null
-
     init {
         viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
-            ProfileRepository.get().switches.collect { profile ->
-                profileChanged?.invoke(profile)
+            profiles.switches.collect { profile ->
+                _uiState.update { it.copy(profileSwitchEffect = profile) }
             }
         }
     }
@@ -70,128 +70,78 @@ class ShellViewModel(
     fun setPowerState(state: String) {
         powerJob?.cancel()
         powerJob = viewModelScope.launch {
-            val outcome = setPower(state, getApplication())
-            publishPower(outcome)
+            val response = receiver.setPowerState(state)
+            val error = response.error
+            _uiState.update {
+                it.copy(
+                    userMessage = when {
+                        error != null -> error.contentErrorText()
+
+                        response.value?.isRunning == true ->
+                            UiText.Resource(R.string.is_running)
+
+                        else -> UiText.Resource(R.string.in_standby)
+                    }
+                )
+            }
         }
     }
 
     fun loadSleepTimerForDialog() {
         sleepJob?.cancel()
         sleepJob = viewModelScope.launch {
-            val outcome = loadSleep(emptyList(), getApplication())
-            publishSleep(outcome, openDialog = true)
+            publishSleep(receiver.sleepTimer(), openDialog = true)
         }
     }
 
     fun setSleepTimer(time: String?, action: String?, enabled: Boolean) {
-        val params = listOf(
-            NameValuePair("cmd", SleepTimerKeys.CMD_SET),
-            NameValuePair("time", time),
-            NameValuePair("action", action),
-            NameValuePair("enabled", if (enabled) Python.TRUE else Python.FALSE)
-        )
         sleepJob?.cancel()
         sleepJob = viewModelScope.launch {
-            val outcome = loadSleep(params, getApplication())
-            publishSleep(outcome, openDialog = false)
+            publishSleep(receiver.setSleepTimer(time, action, enabled), openDialog = false)
         }
     }
 
     fun sendMessage(text: String?, type: String?, timeout: String?) {
         messageJob?.cancel()
         messageJob = viewModelScope.launch {
-            val response = EnigmaClient().sendMessage(Message.getParams(text, type, timeout))
+            val response = receiver.sendMessage(text, type, timeout)
             messageJob = null
-            ShellMessages.post(response.userMessage(getApplication()))
+            _uiState.update { it.copy(userMessage = response.userMessageText()) }
         }
+    }
+
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
     }
 
     /**
-     * The current activity receives a fetched sleep timer. A result that arrives
-     * while no activity is bound waits until the next [bindSleepTimerOpener].
-     * [unbindSleepTimerOpener] ignores a call from an activity that is no longer
-     * the owner, so the previous activity's destroy cannot clear the new one.
+     * A message from another destination that outlives its screen, shown in
+     * the shell snackbar.
      */
-    fun bindSleepTimerOpener(owner: Any, opener: (SleepTimer) -> Unit) {
-        sleepTimerOpenerOwner = owner
-        sleepTimerOpener = opener
-        val pending = pendingSleepTimer ?: return
-        pendingSleepTimer = null
-        opener(pending)
+    fun showMessage(message: UiText) {
+        _uiState.update { it.copy(userMessage = message) }
     }
 
-    fun unbindSleepTimerOpener(owner: Any) {
-        if (sleepTimerOpenerOwner !== owner) {
-            return
+    fun onSleepTimerEffectHandled() {
+        _uiState.update { it.copy(sleepTimerEffect = null) }
+    }
+
+    fun onProfileSwitchHandled() {
+        _uiState.update { it.copy(profileSwitchEffect = null) }
+    }
+
+    private fun publishSleep(response: EnigmaResponse<SleepTimer>, openDialog: Boolean) {
+        val timer = response.value
+        val error = response.error
+        when {
+            error != null -> showMessage(error.contentErrorText())
+
+            timer?.enabled == null ->
+                showMessage(UiText.Resource(R.string.get_content_error))
+
+            openDialog -> _uiState.update { it.copy(sleepTimerEffect = timer) }
+
+            else -> timer.text?.let { showMessage(UiText.Raw(it)) }
         }
-        sleepTimerOpenerOwner = null
-        sleepTimerOpener = null
-    }
-
-    /**
-     * The current activity handles a profile switch. [ProfileRepository.switches]
-     * is collected here for the life of the shell, so a configuration change does
-     * not drop the subscription. [unbindProfileChanged] ignores a call from an
-     * activity that is no longer the owner.
-     */
-    fun bindProfileChanged(owner: Any, handler: (Profile) -> Unit) {
-        profileChangedOwner = owner
-        profileChanged = handler
-    }
-
-    fun unbindProfileChanged(owner: Any) {
-        if (profileChangedOwner !== owner) {
-            return
-        }
-        profileChangedOwner = null
-        profileChanged = null
-    }
-
-    private fun publishPower(outcome: PowerStateSetOutcome) {
-        val app = getApplication<Application>()
-        val text = when {
-            !outcome.success -> outcome.errorText
-            outcome.powerState.isRunning == true -> app.getString(R.string.is_running)
-            else -> app.getString(R.string.in_standby)
-        }
-        ShellMessages.post(text)
-    }
-
-    private fun publishSleep(outcome: SleepTimerLoadOutcome, openDialog: Boolean) {
-        if (outcome.success) {
-            if (openDialog) {
-                deliverSleepTimer(outcome.timer)
-            } else {
-                ShellMessages.post(outcome.timer.text)
-            }
-            return
-        }
-        ShellMessages.post(getApplication<Application>().getString(R.string.error))
-    }
-
-    private fun deliverSleepTimer(timer: SleepTimer) {
-        val opener = sleepTimerOpener
-        if (opener != null) {
-            opener(timer)
-        } else {
-            pendingSleepTimer = timer
-        }
-    }
-
-    companion object {
-        fun factory(
-            setPower: suspend (String, Context) -> PowerStateSetOutcome = ::fetchPowerStateSet,
-            loadSleep: suspend (List<NameValuePair>, Context) -> SleepTimerLoadOutcome =
-                ::fetchSleepTimer
-        ): ViewModelProvider.Factory = viewModelFactory {
-            initializer {
-                val app = checkNotNull(
-                    this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]
-                )
-                ShellViewModel(app, setPower, loadSleep)
-            }
-        }
-
-        val Factory: ViewModelProvider.Factory = factory()
     }
 }
