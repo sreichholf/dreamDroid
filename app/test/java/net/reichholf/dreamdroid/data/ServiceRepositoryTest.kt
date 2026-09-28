@@ -97,6 +97,41 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun failedTvIndexFailsEvenWhenRadioWouldAnswer() = runBlocking {
+        receiver.answer = { request ->
+            if (request.sRef() == TV_ROOTS[0]) {
+                MockResponse().setResponseCode(500)
+            } else {
+                routes(request)
+            }
+        }
+
+        assertTrue(services.bouquets() is BouquetListLoad.Failed)
+        assertEquals(listOf(TV_ROOTS[0]), receiver.requestsTo(GET_SERVICES).map { it.sRef() })
+    }
+
+    @Test
+    fun emptyIndexesAreAnEmptySuccess() = runBlocking {
+        lists[TV_ROOTS[0]] = serviceList()
+        lists[RADIO_ROOTS[0]] = serviceList()
+
+        val load = services.bouquets() as BouquetListLoad.Loaded
+
+        assertFalse(load.cached)
+        assertTrue(load.bouquets.tv.isEmpty() && load.bouquets.radio.isEmpty())
+    }
+
+    @Test
+    fun emptyServiceListIsAnEmptySuccess() = runBlocking {
+        lists[FAVOURITES] = serviceList()
+
+        val load = services.services(FAVOURITES) as ServiceListLoad.Services
+
+        assertTrue(load.services.isEmpty())
+        assertFalse(load.cached)
+    }
+
+    @Test
     fun failedRadioIndexKeepsTheRadioStripAndStoresTv() = runBlocking {
         writeStrip("RADIO", RADIO to "Radio")
         lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites")

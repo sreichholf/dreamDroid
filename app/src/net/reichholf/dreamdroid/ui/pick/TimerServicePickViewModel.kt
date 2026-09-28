@@ -1,264 +1,171 @@
 package net.reichholf.dreamdroid.ui.pick
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.BouquetListLoad
+import net.reichholf.dreamdroid.data.ServiceListLoad
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.enigma.loadServiceList
-import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.zap.ZapListMapper
 
 /**
- * Owns one [TimerServicePickSession]. Bouquet ref and name are the only saved fields.
- * Load jobs stay on [viewModelScope] and are not cancelled when the composable leaves.
+ * The timer service picker: the bouquet list while [bouquetRef] is empty, else the channels
+ * of that bouquet. [emptyMessage] is shown instead of the list when [items] is empty.
  */
-class TimerServicePickViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
-    val session: TimerServicePickSession
+data class TimerServicePickUiState(
+    val bouquetRef: String = "",
+    val bouquetName: String = "",
+    val items: List<Service> = emptyList(),
+    val refreshing: Boolean = false,
+    val emptyMessage: UiText? = null
+) {
+    val showsBouquets: Boolean
+        get() = bouquetRef.isEmpty()
 
-    private var started = false
-
-    init {
-        session = TimerServicePickSession(
-            app = application,
-            scope = viewModelScope,
-            initial = readTimerServicePickSaved(savedStateHandle),
-            persist = { next -> next.writeTo(savedStateHandle) }
-        )
-    }
-
-    fun start() {
-        if (started) {
-            return
+    val title: UiText
+        get() = when {
+            refreshing -> UiText.Resource(R.string.loading)
+            showsBouquets || bouquetName.isEmpty() -> UiText.Resource(R.string.service)
+            else -> UiText.Raw(bouquetName)
         }
-        started = true
-        session.reload()
-    }
 }
 
 /**
- * Bouquet then channel list. [PickServiceListState] stays the row model.
- * The composable delivers a picked channel; this helper does not hold the activity.
+ * Bouquet then channel for the phone timer editor and the TV timer overlay. The open bouquet
+ * survives process death. The receiver's lists, or Room's tab strips and rosters when it
+ * fails. Loads when created.
  */
-class TimerServicePickSession(
-    private val app: Application,
-    private val scope: CoroutineScope,
-    initial: TimerServicePickSaved,
-    private val persist: (TimerServicePickSaved) -> Unit
-) {
-    val listState: PickServiceListState = PickServiceListState()
-    val refresh: ComposeRefreshState = ComposeRefreshState()
-
-    var emptyMessage by mutableStateOf<String?>(null)
-        private set
-
-    var toolbarTitle by mutableStateOf("")
-        private set
-
-    var bouquetRef by mutableStateOf(initial.bouquetRef)
-        private set
-
-    var bouquetName by mutableStateOf(initial.bouquetName)
-        private set
+@HiltViewModel
+class TimerServicePickViewModel @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val services: ServiceRepository
+) : ViewModel() {
+    private val _uiState: MutableStateFlow<TimerServicePickUiState>
+    val uiState: StateFlow<TimerServicePickUiState>
 
     private var bouquets: List<Service> = emptyList()
     private var loadJob: Job? = null
-    private var loadGeneration = 0
 
     init {
-        toolbarTitle = finishedTitle()
+        val saved = readTimerServicePickSaved(savedStateHandle)
+        _uiState = MutableStateFlow(
+            TimerServicePickUiState(bouquetRef = saved.bouquetRef, bouquetName = saved.bouquetName)
+        )
+        uiState = _uiState.asStateFlow()
+        reload()
     }
 
     fun reload() {
-        if (bouquetRef.isEmpty()) {
+        if (_uiState.value.showsBouquets) {
             loadBouquets()
         } else {
             loadServices()
         }
     }
 
+    /** The picker is shown again; a list that never loaded loads again. */
+    fun onShown() {
+        val state = _uiState.value
+        if (state.items.isEmpty() && !state.refreshing) {
+            reload()
+        }
+    }
+
+    /** Back from a bouquet's channels to the bouquet list. */
     fun showBouquetList() {
-        updateSaved(TimerServicePickSaved(bouquetRef = "", bouquetName = ""))
-        loadGeneration++
         loadJob?.cancel()
         loadJob = null
-        if (bouquets.isNotEmpty()) {
-            refresh.setRefreshing(false)
-            emptyMessage = null
-            listState.replaceAll(bouquets)
-            toolbarTitle = app.getString(R.string.service)
-        } else {
-            listState.replaceAll(emptyList())
+        open(TimerServicePickSaved())
+        if (bouquets.isEmpty()) {
+            _uiState.update { it.copy(items = emptyList()) }
             loadBouquets()
+        } else {
+            _uiState.update { it.copy(items = bouquets, refreshing = false, emptyMessage = null) }
         }
     }
 
     /**
-     * Bouquet rows open that bouquet. A channel row is returned so the composable can deliver
-     * the activity result. Markers are ignored.
+     * A bouquet row opens that bouquet and returns null; a channel row is the pick. Markers
+     * are ignored.
      */
     fun onRowClick(service: Service): Service? {
         if (ServiceKeys.isMarker(service.reference)) {
             return null
         }
-        if (bouquetRef.isEmpty()) {
-            updateSaved(
-                TimerServicePickSaved(
-                    bouquetRef = service.reference,
-                    bouquetName = service.name
-                )
-            )
-            listState.replaceAll(emptyList())
-            emptyMessage = app.getString(R.string.loading)
-            loadServices()
-            return null
+        if (!_uiState.value.showsBouquets) {
+            return service
         }
-        return service
+        open(TimerServicePickSaved(bouquetRef = service.reference, bouquetName = service.name))
+        _uiState.update { it.copy(items = emptyList()) }
+        loadServices()
+        return null
     }
 
     private fun loadBouquets() {
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
-        }
-        refresh.setRefreshing(true)
-        toolbarTitle = app.getString(R.string.loading)
-        loadJob?.cancel()
-        loadGeneration++
-        val generation = loadGeneration
-        loadJob = scope.launch {
-            val result = loadBouquetList(app)
-            if (!isActive || generation != loadGeneration || bouquetRef.isNotEmpty()) {
-                return@launch
+        startLoading()
+        loadJob = viewModelScope.launch {
+            val load = services.bouquets()
+            when (load) {
+                is BouquetListLoad.Loaded -> {
+                    bouquets = load.bouquets.tv + load.bouquets.radio
+                    show(bouquets)
+                }
+
+                is BouquetListLoad.Failed -> fail(load.error.contentErrorText())
             }
-            refresh.setRefreshing(false)
-            toolbarTitle = app.getString(R.string.service)
-            if (!result.success) {
-                val profileId = ProfileRepository.get().requireCurrent().id
-                val cached = if (profileId != null) {
-                    val dao = AppDatabase.roster(app)
-                    val cachedRows = ArrayList(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_TV
-                        )
-                    )
-                    cachedRows.addAll(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_RADIO
-                        )
-                    )
-                    cachedRows
-                } else {
-                    emptyList()
-                }
-                if (!isActive || generation != loadGeneration || bouquetRef.isNotEmpty()) {
-                    return@launch
-                }
-                if (cached.isNotEmpty()) {
-                    bouquets = cached
-                    emptyMessage = null
-                    listState.replaceAll(cached)
-                    return@launch
-                }
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText ?: app.getString(R.string.no_list_item)
-                return@launch
-            }
-            val rows = ArrayList(result.bouquets.tv)
-            rows.addAll(result.bouquets.radio)
-            bouquets = rows
-            publishRows(rows)
         }
     }
 
     private fun loadServices() {
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
+        startLoading()
+        val ref = _uiState.value.bouquetRef
+        loadJob = viewModelScope.launch {
+            when (val load = services.services(ref)) {
+                is ServiceListLoad.Services -> show(ZapListMapper.rowsFrom(load.services))
+                is ServiceListLoad.Failed -> fail(load.error.contentErrorText())
+            }
         }
-        refresh.setRefreshing(true)
-        toolbarTitle = app.getString(R.string.loading)
+    }
+
+    private fun startLoading() {
         loadJob?.cancel()
-        loadGeneration++
-        val generation = loadGeneration
-        val ref = bouquetRef
-        val title = bouquetName.ifEmpty { app.getString(R.string.service) }
-        loadJob = scope.launch {
-            val result = loadServiceList(
-                app,
-                listOf(NameValuePair("sRef", ref))
+        _uiState.update {
+            it.copy(
+                refreshing = true,
+                emptyMessage = if (it.items.isEmpty()) UiText.Resource(R.string.loading) else null
             )
-            if (!isActive || generation != loadGeneration || bouquetRef.isEmpty()) {
-                return@launch
-            }
-            refresh.setRefreshing(false)
-            toolbarTitle = title
-            if (!result.success) {
-                val profileId = ProfileRepository.get().requireCurrent().id
-                val cached = if (profileId != null) {
-                    UserBouquetCache.loadRosterServices(
-                        AppDatabase.roster(app),
-                        profileId,
-                        ref
-                    )
-                } else {
-                    null
-                }
-                if (!isActive || generation != loadGeneration || bouquetRef.isEmpty()) {
-                    return@launch
-                }
-                if (cached != null) {
-                    publishRows(ZapListMapper.rowsFrom(cached))
-                    return@launch
-                }
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText ?: app.getString(R.string.no_list_item)
-                return@launch
-            }
-            publishRows(ZapListMapper.rowsFrom(result.services))
         }
     }
 
-    private fun publishRows(rows: List<Service>) {
-        if (rows.isEmpty()) {
-            listState.replaceAll(emptyList())
-            emptyMessage = app.getString(R.string.no_list_item)
-        } else {
-            emptyMessage = null
-            listState.replaceAll(rows)
+    private fun show(rows: List<Service>) {
+        _uiState.update {
+            it.copy(
+                items = rows,
+                refreshing = false,
+                emptyMessage = if (rows.isEmpty()) UiText.Resource(R.string.no_list_item) else null
+            )
         }
     }
 
-    private fun finishedTitle(): String = if (bouquetRef.isEmpty()) {
-        app.getString(R.string.service)
-    } else {
-        bouquetName.ifEmpty { app.getString(R.string.service) }
+    private fun fail(message: UiText) {
+        _uiState.update { it.copy(items = emptyList(), refreshing = false, emptyMessage = message) }
     }
 
-    private fun updateSaved(next: TimerServicePickSaved) {
-        bouquetRef = next.bouquetRef
-        bouquetName = next.bouquetName
-        persist(next)
+    private fun open(next: TimerServicePickSaved) {
+        next.writeTo(savedStateHandle)
+        _uiState.update { it.copy(bouquetRef = next.bouquetRef, bouquetName = next.bouquetName) }
     }
 }

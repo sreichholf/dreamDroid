@@ -3,53 +3,46 @@ package net.reichholf.dreamdroid.ui.pick
 import android.app.Activity
 import android.content.Intent
 import androidx.activity.compose.BackHandler
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * Phase 2.7g: timer service picker (bouquet → channel) as a Compose destination.
- * Result Intent carries typed [net.reichholf.dreamdroid.enigma.Service] as [NavExtras.DATA]
- * for timer edit. The list, saved bouquet, and load jobs live on [TimerServicePickViewModel].
+ * Timer service picker (bouquet, then channel) as a Compose destination. The result Intent
+ * carries the picked [net.reichholf.dreamdroid.enigma.Service] as [NavExtras.DATA] for the
+ * timer editor. Back on a bouquet's channels returns to the bouquet list.
  */
 @Composable
 fun TimerServicePickDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: TimerServicePickViewModel = viewModel()
+    viewModel: TimerServicePickViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val session = viewModel.session
-    val title = session.toolbarTitle
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
 
-    BackHandler(enabled = session.bouquetRef.isNotEmpty()) {
-        session.showBouquetList()
-    }
-
-    LaunchedEffect(title) {
-        (context as? AppCompatActivity)?.title = title
-    }
-    LaunchedEffect(viewModel) {
-        viewModel.start()
+    BackHandler(enabled = !uiState.showsBouquets) {
+        viewModel.showBouquetList()
     }
 
     DreamDroidPullRefresh(
-        refreshing = session.refresh.isRefreshing,
-        onRefresh = { session.reload() },
-        enabled = session.refresh.enabled,
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::reload,
         modifier = modifier
     ) {
         PickServiceScreen(
-            items = session.listState.items,
-            emptyMessage = session.emptyMessage,
+            items = uiState.items,
+            loading = uiState.refreshing,
+            emptyMessage = uiState.emptyMessage?.asString(),
             onItemClick = { service ->
-                val picked = session.onRowClick(service)
+                val picked = viewModel.onRowClick(service)
                 if (picked != null) {
                     val data = Intent().apply {
                         putExtra(NavExtras.DATA, picked)

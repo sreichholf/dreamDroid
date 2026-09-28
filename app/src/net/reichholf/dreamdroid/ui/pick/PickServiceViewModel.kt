@@ -1,117 +1,74 @@
 package net.reichholf.dreamdroid.ui.pick
 
-import android.app.Application
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.isActive
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.BouquetListLoad
+import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.Service
-import net.reichholf.dreamdroid.enigma.loadBouquetList
-import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.UserBouquetCache
-import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.ui.text.UiText
+
+/** The bouquet picker. [emptyMessage] is shown instead of the list when [items] is empty. */
+data class PickServiceUiState(
+    val items: List<Service> = emptyList(),
+    val refreshing: Boolean = false,
+    val emptyMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(if (refreshing) R.string.loading else R.string.services)
+}
 
 /**
- * Bouquet list for [PickServiceDestination]. [PickServiceListState] stays the list model.
- *
- * The load job stays on [viewModelScope] and is not cancelled when the composable leaves.
+ * TV then radio bouquets for [PickServiceDestination]. The receiver's lists, or the Room tab
+ * strips when it fails. Loads when created.
  */
-class PickServiceViewModel(application: Application) : AndroidViewModel(application) {
-    val listState: PickServiceListState = PickServiceListState()
-    val refresh: ComposeRefreshState = ComposeRefreshState()
+@HiltViewModel
+class PickServiceViewModel @Inject constructor(private val services: ServiceRepository) :
+    ViewModel() {
+    private val _uiState = MutableStateFlow(PickServiceUiState())
+    val uiState: StateFlow<PickServiceUiState> = _uiState.asStateFlow()
 
-    var emptyMessage by mutableStateOf<String?>(null)
-        private set
-
-    var toolbarTitle by mutableStateOf("")
-        private set
-
-    private var started = false
     private var loadJob: Job? = null
 
     init {
-        toolbarTitle = getApplication<Application>().getString(R.string.services)
-    }
-
-    fun start() {
-        if (started) {
-            return
-        }
-        started = true
         reload()
     }
 
     fun reload() {
-        val app = getApplication<Application>()
-        if (listState.items.isEmpty()) {
-            emptyMessage = app.getString(R.string.loading)
-        } else {
-            emptyMessage = null
+        _uiState.update {
+            it.copy(
+                refreshing = true,
+                emptyMessage = if (it.items.isEmpty()) UiText.Resource(R.string.loading) else null
+            )
         }
-        refresh.setRefreshing(true)
-        toolbarTitle = app.getString(R.string.loading)
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val result = loadBouquetList(app)
-            if (!isActive) {
-                return@launch
-            }
-            refresh.setRefreshing(false)
-            toolbarTitle = app.getString(R.string.services)
-            if (!result.success) {
-                val profileId = ProfileRepository.get().requireCurrent().id
-                val cached = if (profileId != null) {
-                    val dao = AppDatabase.roster(app)
-                    val rows = ArrayList(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_TV
-                        )
+            val next = when (val load = services.bouquets()) {
+                is BouquetListLoad.Loaded -> {
+                    val rows = load.bouquets.tv + load.bouquets.radio
+                    PickServiceUiState(
+                        items = rows,
+                        emptyMessage = if (rows.isEmpty()) {
+                            UiText.Resource(R.string.no_list_item)
+                        } else {
+                            null
+                        }
                     )
-                    rows.addAll(
-                        UserBouquetCache.loadTabStripServices(
-                            dao,
-                            profileId,
-                            UserBouquetCache.KIND_RADIO
-                        )
-                    )
-                    rows
-                } else {
-                    emptyList()
                 }
-                if (!isActive) {
-                    return@launch
-                }
-                if (cached.isNotEmpty()) {
-                    listState.replaceAll(cached)
-                    emptyMessage = null
-                    return@launch
-                }
-                listState.replaceAll(emptyList())
-                emptyMessage = result.errorText
-                return@launch
-            }
-            val rows = ArrayList(result.bouquets.tv)
-            rows.addAll(result.bouquets.radio)
-            publishRows(rows)
-        }
-    }
 
-    private fun publishRows(rows: List<Service>) {
-        val app = getApplication<Application>()
-        if (rows.isEmpty()) {
-            listState.replaceAll(emptyList())
-            emptyMessage = app.getString(R.string.no_list_item)
-        } else {
-            emptyMessage = null
-            listState.replaceAll(rows)
+                is BouquetListLoad.Failed ->
+                    PickServiceUiState(emptyMessage = load.error.contentErrorText())
+            }
+            _uiState.value = next
         }
     }
 }
