@@ -6,14 +6,19 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.testutil.CurrentProfileRule
 import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Rule
 import org.junit.Test
 
 class HubServiceListSessionTest {
+    @get:Rule
+    val currentProfile = CurrentProfileRule()
+
     @Test
     fun staleReloadDoesNotReplaceNewerServiceList() {
         val session = HubServiceListSession()
