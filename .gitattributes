@@ -1,0 +1,4 @@
+# Spotless infers line endings from git (GIT_ATTRIBUTES mode), and so does
+# every checkout. Pin Kotlin sources to LF so spotlessCheck and
+# spotlessApply agree on every machine.
+*.kt text eol=lf
