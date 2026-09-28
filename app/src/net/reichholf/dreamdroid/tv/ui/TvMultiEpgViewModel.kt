@@ -11,7 +11,6 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -176,7 +175,6 @@ class TvMultiEpgViewModel(application: Application, savedStateHandle: SavedState
         startJob?.cancel()
         setTimerJob?.cancel()
         session.cancel()
-        super.onCleared()
     }
 
     private suspend fun loadBouquets(): List<Service> {

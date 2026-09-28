@@ -24,10 +24,3 @@ internal fun parseChangelogMarkdown(markdown: String): List<ChangelogBlock> {
     }
     return blocks
 }
-
-internal fun ChangelogBlock.displayText(): String = when (this) {
-    is ChangelogBlock.Heading2 -> text
-    is ChangelogBlock.Heading3 -> text
-    is ChangelogBlock.ListItem -> "\u2022 $text"
-    is ChangelogBlock.Paragraph -> text
-}

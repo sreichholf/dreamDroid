@@ -5,7 +5,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.Dispatchers
@@ -26,12 +25,8 @@ import net.reichholf.dreamdroid.room.AppDatabase
 /**
  * Owns one [ProfilesListState], profile activation, and receiver discovery.
  * Jobs stay on [viewModelScope] so leaving the destination does not cancel them.
- *
- * [savedStateHandle] lets viewModel() construct this class. This screen has no
- * rememberSaveable fields, so no keys are written.
  */
-class ProfilesViewModel(application: Application, savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application) {
+class ProfilesViewModel(application: Application) : AndroidViewModel(application) {
     val listState: ProfilesListState = ProfilesListState()
 
     var detectInProgress by mutableStateOf(false)

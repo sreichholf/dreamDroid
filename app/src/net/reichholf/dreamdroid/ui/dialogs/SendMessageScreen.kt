@@ -9,8 +9,6 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -18,7 +16,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditForm
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 class SendMessageUiState(
     initialMessage: String = "",
@@ -60,14 +57,5 @@ fun SendMessageScreen(state: SendMessageUiState, modifier: Modifier = Modifier) 
             keyboardType = KeyboardType.Number,
             suffix = stringResource(R.string.seconds)
         )
-    }
-}
-
-fun ComposeView.bindSendMessageScreen(state: SendMessageUiState) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            SendMessageScreen(state = state)
-        }
     }
 }

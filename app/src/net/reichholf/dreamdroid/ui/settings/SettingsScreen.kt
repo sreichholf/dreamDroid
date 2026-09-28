@@ -28,8 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -41,7 +39,6 @@ import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 @Composable
 fun SettingsScreen(
@@ -566,31 +563,4 @@ internal fun EditTextPreferenceDialog(
 internal fun entryLabel(entries: Array<String>, values: Array<String>, selected: String): String {
     val idx = values.indexOf(selected)
     return if (idx in entries.indices) entries[idx] else selected
-}
-
-fun ComposeView.bindSettingsScreen(
-    state: SettingsState,
-    onThemeChanged: () -> Unit,
-    onDynamicColorsChanged: () -> Unit,
-    onSyncPicons: () -> Unit,
-    onAbout: () -> Unit,
-    onChangelog: () -> Unit,
-    onBackup: () -> Unit,
-    onResetCache: (allProfiles: Boolean) -> Unit = {}
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            SettingsScreen(
-                state = state,
-                onThemeChanged = onThemeChanged,
-                onDynamicColorsChanged = onDynamicColorsChanged,
-                onSyncPicons = onSyncPicons,
-                onAbout = onAbout,
-                onChangelog = onChangelog,
-                onBackup = onBackup,
-                onResetCache = onResetCache
-            )
-        }
-    }
 }

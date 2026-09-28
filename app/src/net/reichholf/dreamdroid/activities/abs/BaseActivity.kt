@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.activities.abs
 import android.Manifest
 import android.app.Activity.OVERRIDE_TRANSITION_CLOSE
 import android.app.Activity.OVERRIDE_TRANSITION_OPEN
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -154,8 +153,6 @@ open class BaseActivity :
 
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
     }
-
-    fun getContext(): Context = this
 
     companion object {
         const val REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON: Int = 0

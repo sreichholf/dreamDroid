@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class SimpleXmlParsersTest {
@@ -82,7 +81,7 @@ class SimpleXmlParsersTest {
                 SimpleResultParser::parse
             )
         assertEquals("True", response.value!!.state)
-        assertEquals("Done", response.value!!.stateText)
+        assertEquals("Done", response.value.stateText)
         assertNull(response.error)
     }
 

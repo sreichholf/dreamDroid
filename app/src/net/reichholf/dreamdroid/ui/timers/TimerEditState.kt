@@ -4,15 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerKeys
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
  * Compose form state for timer create/edit. Persist [Timer] on the fragment
@@ -93,36 +90,5 @@ class TimerEditState {
             afterEvent = afterEventIndex.toString(),
             location = location
         )
-    }
-}
-
-fun ComposeView.bindTimerEditScreen(
-    state: TimerEditState,
-    saveLabel: String,
-    onSave: () -> Unit,
-    onPickBeginDate: () -> Unit,
-    onPickBeginTime: () -> Unit,
-    onPickEndDate: () -> Unit,
-    onPickEndTime: () -> Unit,
-    onPickRepeated: () -> Unit,
-    onPickService: () -> Unit,
-    onPickTags: () -> Unit
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-    setContent {
-        DreamDroidTheme {
-            TimerEditScreen(
-                state = state,
-                saveLabel = saveLabel,
-                onSave = onSave,
-                onPickBeginDate = onPickBeginDate,
-                onPickBeginTime = onPickBeginTime,
-                onPickEndDate = onPickEndDate,
-                onPickEndTime = onPickEndTime,
-                onPickRepeated = onPickRepeated,
-                onPickService = onPickService,
-                onPickTags = onPickTags
-            )
-        }
     }
 }

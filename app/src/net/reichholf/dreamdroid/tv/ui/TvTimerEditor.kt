@@ -24,7 +24,6 @@ import java.util.TimeZone
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -382,18 +381,10 @@ internal class TvTimerEditWorkingCopy(
     }
 
     private fun getRepeated(value: Int): String {
-        var remaining = value
-        var text = ""
+        tvTimerCheckedDays(value).copyInto(checkedDays)
         val daysShort = context.resources.getTextArray(R.array.weekdays_short)
-        for (i in TV_TIMER_REPEATED_VALUES.indices) {
-            val checked = (remaining and 1) == 1
-            if (checked) {
-                if (text.isNotEmpty()) text = text.plus(", ")
-                text = text.plus(daysShort[i].toString())
-            }
-            checkedDays[i] = checked
-            remaining = remaining shr 1
-        }
+        val text = checkedDays.indices.filter { checkedDays[it] }
+            .joinToString(", ") { daysShort[it].toString() }
         return text.ifEmpty { context.getText(R.string.none).toString() }
     }
 

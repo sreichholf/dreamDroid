@@ -12,12 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 data class PowerChoiceItem(val id: Int, val label: String)
 
@@ -53,18 +50,6 @@ fun PowerStateScreen(
                     modifier = Modifier.padding(start = 8.dp)
                 )
             }
-        }
-    }
-}
-
-fun ComposeView.bindPowerStateScreen(
-    items: List<PowerChoiceItem>,
-    onItemClick: (PowerChoiceItem) -> Unit
-) {
-    setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
-    setContent {
-        DreamDroidTheme {
-            PowerStateScreen(items = items, onItemClick = onItemClick)
         }
     }
 }

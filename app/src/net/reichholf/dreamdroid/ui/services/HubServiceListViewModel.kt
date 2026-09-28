@@ -76,7 +76,6 @@ class HubServiceListViewModel(application: Application, savedStateHandle: SavedS
 
     override fun onCleared() {
         session.cancelInFlight()
-        super.onCleared()
     }
 }
 

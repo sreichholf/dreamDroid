@@ -136,7 +136,6 @@ class HubNowPlayingViewModel(
 
     override fun onCleared() {
         prefs.unregisterOnSharedPreferenceChangeListener(prefsListener)
-        super.onCleared()
     }
 
     private fun currentProfileId(): Int = ProfileRepository.get().requireCurrent().id ?: -1

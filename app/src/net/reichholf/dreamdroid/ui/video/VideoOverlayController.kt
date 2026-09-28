@@ -845,7 +845,7 @@ class VideoOverlayController(
         handler.postDelayed(autoHideRunnable, AUTOHIDE_DEFAULT_TIMEOUT.toLong())
     }
 
-    fun onPictureInPictureModeChanged(isInPictureInPictureMode: Boolean) {
+    fun onPictureInPictureModeChanged() {
         hideOverlays()
     }
 
@@ -981,7 +981,7 @@ class VideoOverlayController(
         }
     }
 
-    fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    fun onKeyDown(keyCode: Int): Boolean {
         var ret = false
         autohide()
         val player = VLCPlayer.get()!!

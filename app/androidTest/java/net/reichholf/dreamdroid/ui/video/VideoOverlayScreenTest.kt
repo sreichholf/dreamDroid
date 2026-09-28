@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue

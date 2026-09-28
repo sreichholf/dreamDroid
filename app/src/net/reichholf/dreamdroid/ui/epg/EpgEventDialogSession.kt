@@ -60,12 +60,13 @@ class EpgEventDialogSession {
         val item = currentItem ?: return
         host.runOnlineOnly {
             progress = IndeterminateProgressState(message = ctx.getString(R.string.saving))
-            setTimerJob?.cancel()
-            setTimerJob = host.lifecycleOwner.lifecycleScope.launch {
-                val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(item))
-                dismissProgress()
-                ShellMessages.post(response.userMessage(ctx))
-            }
+            trackSetTimerJob(
+                host.lifecycleOwner.lifecycleScope.launch {
+                    val response = EnigmaClient().addTimerByEventId(Timer.getEventIdParams(item))
+                    dismissProgress()
+                    ShellMessages.post(response.userMessage(ctx))
+                }
+            )
         }
     }
 

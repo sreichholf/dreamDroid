@@ -5,7 +5,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.tv.BrowseItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -28,13 +27,6 @@ class TvComposeHubHostTest {
     fun unmarkedHubDoesNotReload() {
         assertFalse(consumeTvHubReload(SavedStateHandle()))
         markTvHubReload(null)
-    }
-
-    @Test
-    fun destinationForSettingsKinds() {
-        assertEquals(TvSettings, TvComposeHubHost.destinationForKind(BrowseItem.Kind.Preferences))
-        assertEquals(TvProfiles, TvComposeHubHost.destinationForKind(BrowseItem.Kind.Profile))
-        assertNull(TvComposeHubHost.destinationForKind(BrowseItem.Kind.Reload))
     }
 
     @Test

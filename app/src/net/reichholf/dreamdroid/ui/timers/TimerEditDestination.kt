@@ -26,7 +26,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -614,25 +613,6 @@ class TimerEditSession(
                 timer = timer,
                 timerOld = timerOld,
                 isCreate = route.create,
-                selectedTags = ArrayList(),
-                checkedDays = BooleanArray(7)
-            )
-        }
-
-        fun fromArgs(
-            args: android.os.Bundle,
-            routeTag: String,
-            remountEpoch: Int
-        ): TimerEditSession {
-            val timer = args.getSerializableCompat<TypedTimer>(NavExtras.DATA) ?: TypedTimer()
-            val isCreate = !Intent.ACTION_EDIT.equals(args.getString(NavExtras.ACTION))
-            val timerOld = if (isCreate) null else timer.copy()
-            return TimerEditSession(
-                routeTag = routeTag,
-                remountEpoch = remountEpoch,
-                timer = timer,
-                timerOld = timerOld,
-                isCreate = isCreate,
                 selectedTags = ArrayList(),
                 checkedDays = BooleanArray(7)
             )

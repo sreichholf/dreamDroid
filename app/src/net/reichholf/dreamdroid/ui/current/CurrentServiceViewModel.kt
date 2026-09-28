@@ -161,7 +161,6 @@ class CurrentServiceViewModel(application: Application, savedStateHandle: SavedS
     override fun onCleared() {
         PreferenceManager.getDefaultSharedPreferences(getApplication())
             .unregisterOnSharedPreferenceChangeListener(prefsListener)
-        super.onCleared()
     }
 
     private fun onCurrentProfileChanged() {

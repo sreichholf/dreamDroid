@@ -64,7 +64,6 @@ class HubMovieListViewModel(application: Application, savedStateHandle: SavedSta
 
     override fun onCleared() {
         session.cancelInFlight()
-        super.onCleared()
     }
 }
 

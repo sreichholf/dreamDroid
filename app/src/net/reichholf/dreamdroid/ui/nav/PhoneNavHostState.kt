@@ -15,7 +15,6 @@ import java.util.ArrayDeque
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -63,7 +62,6 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override fun onCleared() {
         detach()
-        super.onCleared()
     }
 
     override var composeDialogActionListener: DialogActionListener? = null

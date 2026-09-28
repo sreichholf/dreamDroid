@@ -9,7 +9,6 @@ package net.reichholf.dreamdroid.helpers
 import android.util.Log
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
@@ -135,13 +134,5 @@ object DateTime {
         val min = seconds / 60
         val sec = seconds % 60
         return String.format("%02d:%02d", min, sec)
-    }
-
-    fun getPrimeTimestamp(): Int {
-        val cal = Calendar.getInstance()
-        cal.set(Calendar.HOUR_OF_DAY, 20)
-        cal.set(Calendar.MINUTE, 15)
-        cal.set(Calendar.SECOND, 0)
-        return (cal.timeInMillis / 1000).toInt()
     }
 }

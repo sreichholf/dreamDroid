@@ -12,7 +12,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -211,7 +210,6 @@ class HubViewModel(application: Application, savedStateHandle: SavedStateHandle)
     override fun onCleared() {
         bouquetJob?.cancel()
         locationsJob?.cancel()
-        super.onCleared()
     }
 
     private suspend fun loadBouquets() {

@@ -1,9 +1,6 @@
 package net.reichholf.dreamdroid.ui.profiles
 
-import android.content.Intent
-import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 
 class ProfileEditBindTest {
@@ -70,23 +67,5 @@ class ProfileEditBindTest {
             savedTag = "profile_edit:4"
         )
         assertEquals(ProfileEditBind.LoadLaunch, bind)
-    }
-
-    @Test
-    fun editActionUsesLaunchProfile() {
-        val profile = Profile()
-        profile.name = "Living room"
-        assertSame(profile, initialProfileForEdit(Intent.ACTION_EDIT, profile))
-    }
-
-    @Test
-    fun missingProfileOrOtherActionUsesDefault() {
-        val payload = Profile()
-        payload.name = "Living room"
-        val missing = initialProfileForEdit(Intent.ACTION_EDIT, null)
-        val other = initialProfileForEdit(null, payload)
-        assertEquals("", missing.name)
-        assertEquals(null, missing.id)
-        assertEquals("", other.name)
     }
 }

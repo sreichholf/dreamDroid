@@ -13,19 +13,6 @@ object EnigmaUrls {
         return webPrefix(profile) + profile.host + ":" + profile.port + path
     }
 
-    fun authed(
-        profile: Profile,
-        uri: String,
-        parameters: List<NameValuePair> = emptyList()
-    ): String {
-        val path = withQuery(uri, parameters)
-        var loginString = ""
-        if (profile.login) {
-            loginString = String.format("%s:%s@", profile.user, profile.pass)
-        }
-        return webPrefix(profile) + loginString + profile.host + ":" + profile.port + path
-    }
-
     fun stream(profile: Profile, ref: String): String = if (profile.encoderStream) {
         encoderStream(profile, ref)
     } else {

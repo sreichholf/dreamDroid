@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.video
 import android.net.Uri
 import android.view.SurfaceView
 import kotlin.math.max
-import kotlin.math.min
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
@@ -12,7 +11,7 @@ import org.videolan.libvlc.interfaces.IVLCVout
  * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
  */
 class VLCPlayer {
-    protected var currentMedia: Media? = null
+    private var currentMedia: Media? = null
 
     fun deinit() {
         detach()
@@ -84,10 +83,6 @@ class VLCPlayer {
 
     fun getTime(): Long = getMediaPlayer()!!.time
 
-    fun setTime(position: Long) {
-        getMediaPlayer()!!.time = position
-    }
-
     fun getPosition(): Float = getMediaPlayer()!!.position
 
     fun setPosition(position: Float) {
@@ -95,17 +90,6 @@ class VLCPlayer {
     }
 
     fun isSeekable(): Boolean = getMediaPlayer()!!.isSeekable
-
-    fun faster(): Boolean {
-        if (!isSeekable() || !getMediaPlayer()!!.isPlaying) return false
-        var rate = getMediaPlayer()!!.rate
-        if (rate == -1.0f) {
-            rate = 0.5f // multiplied by 2 below
-        }
-        rate = min(rate * 2, 64f)
-        getMediaPlayer()!!.rate = rate
-        return true
-    }
 
     fun slower(): Boolean {
         if (!isSeekable() || !getMediaPlayer()!!.isPlaying) return false
@@ -165,7 +149,7 @@ class VLCPlayer {
             return player
         }
 
-        protected fun init() {
+        private fun init() {
             val mp = MediaPlayer(VLCInstance.get())
             mp.setAspectRatio(null)
             mp.setScale(0f)

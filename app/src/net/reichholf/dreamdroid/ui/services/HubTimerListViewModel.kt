@@ -39,6 +39,5 @@ class HubTimerListViewModel(application: Application) : AndroidViewModel(applica
 
     override fun onCleared() {
         session.cancelInFlight()
-        super.onCleared()
     }
 }
