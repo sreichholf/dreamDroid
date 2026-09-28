@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.current
 
 import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -13,58 +12,34 @@ import org.junit.jupiter.api.Test
 class CurrentServiceSavedTest {
     @Test
     fun absentSnapshotIsNotRestored() {
-        val saved = readCurrentServiceSaved(
-            SavedStateHandle(),
-            currentProfileId = 3
-        )
+        val saved = readCurrentServiceSaved(SavedStateHandle(), currentProfileId = 3)
         assertNull(saved.current)
-        assertNull(saved.item)
-        assertFalse(saved.ready)
         assertNull(saved.profileId)
         assertFalse(shouldRestoreCurrentService(null, 3))
     }
 
     @Test
-    fun currentServiceRoundTripsWithReadyAndProfileId() {
+    fun currentServiceRoundTripsWithProfileId() {
         val current = CurrentService(
             service = Service(reference = "1:0:1:6DCA", name = "Das Erste HD")
         )
-        val item = Event()
         val handle = SavedStateHandle()
-        CurrentServiceSaved(
-            current = current,
-            item = item,
-            ready = true,
-            profileId = 4
-        ).writeTo(handle)
+        CurrentServiceSaved(current = current, profileId = 4).writeTo(handle)
         val saved = readCurrentServiceSaved(handle, currentProfileId = 4)
-        assertEquals("Das Erste HD", saved.current?.service?.name)
         assertEquals(current, saved.current)
-        assertEquals(item, saved.item)
-        assertTrue(saved.ready)
         assertEquals(4, saved.profileId)
         assertEquals(current, handle.get<Any>(CurrentServiceSavedKeys.CURRENT))
-        assertEquals(true, handle.get<Any>(CurrentServiceSavedKeys.READY))
         assertEquals(4, handle.get<Any>(CurrentServiceSavedKeys.PROFILE_ID))
         assertTrue(shouldRestoreCurrentService(saved.profileId, 4))
     }
 
     @Test
     fun differentProfileIdIgnoresSnapshot() {
-        val current = CurrentService(
-            service = Service(reference = "1:0:1:1", name = "Box A")
-        )
+        val current = CurrentService(service = Service(reference = "1:0:1:1", name = "Box A"))
         val handle = SavedStateHandle()
-        CurrentServiceSaved(
-            current = current,
-            item = Event(),
-            ready = true,
-            profileId = 4
-        ).writeTo(handle)
+        CurrentServiceSaved(current = current, profileId = 4).writeTo(handle)
         val saved = readCurrentServiceSaved(handle, currentProfileId = 9)
         assertNull(saved.current)
-        assertNull(saved.item)
-        assertFalse(saved.ready)
         assertNull(saved.profileId)
         assertFalse(shouldRestoreCurrentService(4, 9))
     }

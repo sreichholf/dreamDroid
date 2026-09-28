@@ -93,7 +93,8 @@ class TvMultiEpgViewModelTest {
         }
         assertEquals("42", request.requestUrl!!.queryParameter("eventid"))
         viewModel.onMessageShown()
-        assertNull(viewModel.uiState.value.userMessage)
+        // uiState is combined on the thread that last emitted, here the HTTP answer's.
+        awaitState(viewModel) { it.userMessage == null }
     }
 
     @Test

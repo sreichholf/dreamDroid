@@ -21,7 +21,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 private const val TAG = "ZapScreen"
@@ -49,7 +47,8 @@ fun ZapScreen(
     modifier: Modifier = Modifier,
     gridState: LazyGridState = rememberLazyGridState(),
     scrollEpoch: Int = 0,
-    emptyMessage: String? = null
+    emptyMessage: String? = null,
+    zapBlocked: Boolean = false
 ) {
     LaunchedEffect(scrollEpoch) {
         if (scrollEpoch > 0) {
@@ -91,6 +90,7 @@ fun ZapScreen(
         items(items, key = { "${it.reference}:${it.name}" }) { service ->
             ZapServiceCard(
                 service = service,
+                zapBlocked = zapBlocked,
                 onClick = { onItemClick(service) },
                 onLongClick = { onItemLongClick(service) }
             )
@@ -100,9 +100,13 @@ fun ZapScreen(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun ZapServiceCard(service: Service, onClick: () -> Unit, onLongClick: () -> Unit) {
+private fun ZapServiceCard(
+    service: Service,
+    zapBlocked: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
     var piconLoaded by remember(service.reference, service.name) { mutableStateOf(false) }
-    val zapBlocked = SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
 
     Box(
         modifier = Modifier

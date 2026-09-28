@@ -1,43 +1,62 @@
 package net.reichholf.dreamdroid.ui.zap
 
+import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
+import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
- * Phase 2.7d: Zap channel grid as a direct Compose NavHost destination.
- * List, saved bouquet, and load/zap jobs live on [ZapViewModel].
- * Bouquet pick results arrive via [PhoneNavHandle.composeActivityResultListener].
+ * The zap channel grid as a NavHost destination. Bouquet picker results arrive through
+ * [PhoneNavHandle.composeActivityResultListener].
  */
 @Composable
 fun ZapDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: ZapViewModel = viewModel()
+    viewModel: ZapViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val title = viewModel.toolbarTitle
-    val error = viewModel.errorText
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val gridState = rememberLazyGridState()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
     DisposableEffect(handle, viewModel) {
-        val listener = ZapPickerResultForwarder(viewModel)
+        val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, data ->
+            if (requestCode != Statics.REQUEST_PICK_BOUQUET) {
+                return@ActivityResultListener
+            }
+            if (resultCode == Activity.RESULT_OK) {
+                viewModel.onBouquetPicked(
+                    data?.getSerializableExtraCompat<Service>(KEY_BOUQUET) ?: Service("", "")
+                )
+            } else {
+                viewModel.onBouquetPickCancelled()
+            }
+        }
         handle.composeActivityResultListener = listener
         handle.dispatchPendingComposeActivityResult()
         onDispose {
@@ -52,71 +71,52 @@ fun ZapDestination(
                 id = R.id.menu_pick_bouquet,
                 label = stringResource(R.string.bouquet_overview),
                 iconRes = R.drawable.ic_action_list,
-                onClick = { viewModel.pickBouquet() }
+                onClick = viewModel::pickBouquet
             )
         )
     )
 
-    LaunchedEffect(title) {
-        (context as? AppCompatActivity)?.title = title
-    }
-    LaunchedEffect(error) {
-        if (!error.isNullOrEmpty()) {
-            ShellMessages.post(error)
-            viewModel.consumeError()
-        }
-    }
-    LaunchedEffect(handle, viewModel) {
-        viewModel.pickBouquetRequests.collect { requestCode ->
-            handle.navigateToPickBouquet(requestCode)
-        }
-    }
-    LaunchedEffect(handle, viewModel, context) {
-        viewModel.streamRequests.collect { service ->
-            handle.runOnlineOnly {
+    val effect = uiState.effect
+    LaunchedEffect(effect) {
+        when (effect) {
+            null -> return@LaunchedEffect
+
+            ZapEffect.PickBouquet -> handle.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
+
+            is ZapEffect.Stream -> handle.runOnlineOnly {
+                val service = effect.service
                 handle.lifecycleOwner.startLiveServiceStream(context, service.reference) {
                     try {
-                        val activity = context as AppCompatActivity
-                        activity.startActivity(
+                        context.startActivity(
                             IntentFactory.getStreamServiceIntent(
-                                activity,
+                                context,
                                 service.reference,
                                 service.name
                             )
                         )
                     } catch (_: ActivityNotFoundException) {
-                        viewModel.reportMissingStreamPlayer()
+                        viewModel.onStreamFailed()
                     }
                 }
             }
         }
-    }
-    LaunchedEffect(viewModel) {
-        viewModel.start()
+        viewModel.onEffectHandled()
     }
 
     DreamDroidPullRefresh(
-        refreshing = viewModel.refresh.isRefreshing,
-        onRefresh = { viewModel.reload() },
-        enabled = viewModel.refresh.enabled,
+        refreshing = uiState.refreshing,
+        onRefresh = viewModel::reload,
+        enabled = true,
         modifier = modifier
     ) {
         ZapScreen(
-            items = viewModel.listState.items,
-            gridState = viewModel.listState.gridState,
-            scrollEpoch = viewModel.listState.scrollEpoch,
-            emptyMessage = viewModel.emptyMessage,
-            onItemClick = { service: Service ->
-                handle.runOnlineOnly { viewModel.zapTo(service.reference) }
-            },
-            onItemLongClick = { service: Service -> viewModel.requestStream(service) }
+            items = uiState.items,
+            gridState = gridState,
+            scrollEpoch = uiState.scrollEpoch,
+            emptyMessage = uiState.emptyMessage?.asString(),
+            zapBlocked = uiState.zapBlocked,
+            onItemClick = { service -> handle.runOnlineOnly { viewModel.zap(service) } },
+            onItemLongClick = viewModel::stream
         )
-    }
-}
-
-private class ZapPickerResultForwarder(private val viewModel: ZapViewModel) :
-    PhoneNavHandle.ActivityResultListener {
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        viewModel.onPickerResult(requestCode, resultCode, data)
     }
 }

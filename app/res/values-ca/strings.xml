@@ -25,7 +25,6 @@
     <string name="send_message">Envia un missatge</string>
     <string name="save">Guarda</string>
     <string name="cancel">Cancel·la</string>
-    <string name="fetching_data">Agafant dades...</string>
     <string name="get_content_error">S\'ha produit un error rebent el contingut!</string>
     <string name="zap">Canvia</string>
     <string name="browse_epg">Veure EPG</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">De dilluns a divendres</string>
     <string name="daily">Cada dia</string>
     <string name="new_timer">Nou temporitzador</string>
-    <string name="locations">Llocs</string>
     <string name="gui_version">Versió de GUI</string>
     <string name="image_version">Versió de la imatge</string>
     <string name="interface_version">Versió de la interficie</string>

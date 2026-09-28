@@ -23,7 +23,6 @@ import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
-import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
@@ -73,14 +72,8 @@ fun HubServiceListPage(
             listEpgLabel = stringResource(R.string.epg_list),
             setDefaultLabel = stringResource(R.string.set_default),
             resetDefaultLabel = stringResource(R.string.reset_default),
-            onMultiEpg = {
-                DrawerEpgMode.saveMulti(context)
-                handle.navigateToMultiEpg(uiState.currentRef, uiState.currentName)
-            },
-            onListEpg = {
-                DrawerEpgMode.saveList(context)
-                handle.navigateToEpg(uiState.currentRef, uiState.currentName)
-            },
+            onMultiEpg = viewModel::openMultiEpg,
+            onListEpg = viewModel::openListEpg,
             onToggleDefault = viewModel::toggleDefaultBouquet
         )
     )
@@ -95,6 +88,10 @@ fun HubServiceListPage(
 
             is HubServiceEffect.ServiceEpg ->
                 handle.navigateToServiceEpg(effect.reference, effect.name)
+
+            is HubServiceEffect.MultiEpg -> handle.navigateToMultiEpg(effect.reference, effect.name)
+
+            is HubServiceEffect.ListEpg -> handle.navigateToEpg(effect.reference, effect.name)
 
             is HubServiceEffect.Stream -> {
                 val row = effect.row

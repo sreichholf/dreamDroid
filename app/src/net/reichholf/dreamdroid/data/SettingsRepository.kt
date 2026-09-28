@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.distinctUntilChanged
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
+import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.video.VLCPlayer
 
@@ -137,6 +138,17 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
         }
         return before to after
     }
+
+    /**
+     * Whether the drawer's EPG entry opens MultiEPG instead of the list EPG. The EPG jumps
+     * of the bouquet screens set it; see [DrawerEpgMode].
+     */
+    var drawerEpgMulti: Boolean
+        get() = DrawerEpgMode.isMulti(preferences)
+        set(value) = DrawerEpgMode.save(
+            preferences,
+            if (value) DrawerEpgMode.MULTI else DrawerEpgMode.LIST
+        )
 
     /** Every stored preference, for a backup. */
     fun all(): Map<String, Any?> = HashMap(preferences.all)

@@ -26,7 +26,6 @@
     <string name="send_message">Надіслати повідомлення</string>
     <string name="save">Зберегти</string>
     <string name="cancel">Скасувати</string>
-    <string name="fetching_data">Отримую дані&#8230;</string>
     <string name="get_content_error">Помилка прийому даних!</string>
     <string name="zap">Перехід</string>
     <string name="browse_epg">Огляд телегіду</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Понеділок - п\'ятниця</string>
     <string name="daily">Щоденно</string>
     <string name="new_timer">Новий таймер</string>
-    <string name="locations">Положення</string>
     <string name="gui_version">Версія оболонки</string>
     <string name="image_version">Версія образу (image)</string>
     <string name="interface_version">Версія інтерфейсу</string>

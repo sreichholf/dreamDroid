@@ -26,7 +26,6 @@
     <string name="send_message">发送信息</string>
     <string name="save">保存</string>
     <string name="cancel">取消</string>
-    <string name="fetching_data">获取数据</string>
     <string name="get_content_error">获取内容错误</string>
     <string name="browse_epg">查看EPG</string>
     <string name="edit">编辑</string>
@@ -71,7 +70,6 @@
     <string name="mo_to_fr">周一至周五</string>
     <string name="daily">每天</string>
     <string name="new_timer">新定时器</string>
-    <string name="locations">位置</string>
     <string name="gui_version">GUI版本</string>
     <string name="image_version">固件版本</string>
     <string name="interface_version">界面版本</string>

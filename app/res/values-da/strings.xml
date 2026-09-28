@@ -26,7 +26,6 @@
     <string name="send_message">Send besked</string>
     <string name="save">Gem</string>
     <string name="cancel">Annuller</string>
-    <string name="fetching_data">Henter data...</string>
     <string name="get_content_error">Fejl ved hentning af indhold</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Gennemse EPG</string>
@@ -72,7 +71,6 @@
     <string name="mo_to_fr">Mandag til Fredag</string>
     <string name="daily">Dagligt</string>
     <string name="new_timer">Ny Timer</string>
-    <string name="locations">Lokationer</string>
     <string name="gui_version">GUI version</string>
     <string name="image_version">Image version</string>
     <string name="interface_version">Interface version</string>

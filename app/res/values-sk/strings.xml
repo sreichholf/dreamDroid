@@ -26,7 +26,6 @@
     <string name="send_message">Pošli správu</string>
     <string name="save">Uložiť</string>
     <string name="cancel">Zrušiť</string>
-    <string name="fetching_data">Načítanie dát ...</string>
     <string name="get_content_error">Chyba pri získavaní obsahu!</string>
     <string name="zap">Prepnúť</string>
     <string name="browse_epg">Prehliadať EPG</string>
@@ -72,7 +71,6 @@
     <string name="mo_to_fr">Pondelok až piatok</string>
     <string name="daily">Denne</string>
     <string name="new_timer">Nový časovač</string>
-    <string name="locations">Umiestnenia</string>
     <string name="gui_version">Verzia GUI</string>
     <string name="image_version">Verzia imidžu</string>
     <string name="interface_version">Verzia interfejsu</string>

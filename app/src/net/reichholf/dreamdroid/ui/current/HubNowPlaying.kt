@@ -1,42 +1,37 @@
 package net.reichholf.dreamdroid.ui.current
 
-import androidx.appcompat.app.AppCompatActivity
+import android.content.ActivityNotFoundException
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.R
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
- * Publishes [HubNowPlayingViewModel]'s `/web/getcurrent` into [hubState] for the
- * Coordinator now-playing strip and hosts [CurrentServiceSheet] on tap. No-op when
- * [DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP] is off.
+ * Publishes [HubNowPlayingViewModel]'s strip into [hubState], which the shell draws, and
+ * hosts [CurrentServiceSheet] on tap. Polls only while the strip setting is on.
  */
 @Composable
 fun HubNowPlaying(
     handle: PhoneNavHandle,
     reloadEpoch: Int,
     hubState: TvMoviesHubState,
-    viewModel: HubNowPlayingViewModel = viewModel()
+    viewModel: HubNowPlayingViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val enabled = viewModel.enabled
-    hubState.nowPlayingStripEnabled = enabled
-    if (!enabled) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    hubState.nowPlayingStripEnabled = uiState.enabled
+    if (!uiState.enabled) {
         hubState.nowPlayingLabel = ""
         hubState.nowPlayingHeadline = ""
         hubState.nowPlayingProgress = 0f
@@ -46,98 +41,44 @@ fun HubNowPlaying(
         return
     }
 
-    var showSheet by rememberSaveable { mutableStateOf(false) }
-    val loadingText = stringResource(R.string.loading)
-    val session = viewModel.sessions.status.collectAsState().value.session
-    val sessionOffline = session == ConnectionStatus.Session.Offline
-    val unavailableText = nowPlayingFallbackText(
-        sessionOffline = sessionOffline,
-        offlineText = stringResource(R.string.session_offline),
-        unavailableText = stringResource(R.string.not_available)
-    )
-    val ready = viewModel.ready
-    val shown = viewModel.shown(sessionOffline)
+    val shown = uiState.shown
 
     fun stream() {
         if (!currentServiceCanStream(shown)) {
             return
         }
         handle.runOnlineOnly {
-            val service = shown?.service
-            val ref = service?.reference.orEmpty()
-            val name = service?.name.orEmpty()
-            val activity = context as AppCompatActivity
-            activity.startLiveServiceStream(activity, ref) {
-                activity.startActivity(IntentFactory.getStreamServiceIntent(activity, ref, name))
+            val ref = shown?.service?.reference.orEmpty()
+            val name = shown?.service?.name.orEmpty()
+            handle.lifecycleOwner.startLiveServiceStream(context, ref) {
+                try {
+                    context.startActivity(IntentFactory.getStreamServiceIntent(context, ref, name))
+                } catch (_: ActivityNotFoundException) {
+                    viewModel.onStreamFailed()
+                }
             }
         }
     }
 
-    LaunchedEffect(viewModel.profileId, session) { viewModel.poll(session) }
+    LaunchedEffect(viewModel) { viewModel.poll() }
 
     LaunchedEffect(reloadEpoch) { viewModel.onReloadEpoch(reloadEpoch) }
 
-    val service = shown?.service
-    val now = shown?.now
-    hubState.nowPlayingLabel = nowPlayingLabelText(
-        sessionOffline = sessionOffline,
-        connectionText = stringResource(R.string.connection),
-        currentServiceText = stringResource(R.string.current_service)
-    )
-    hubState.nowPlayingHeadline = nowPlayingHeadline(
-        ready = ready,
-        serviceName = service?.name.orEmpty(),
-        eventTitle = now?.title.orEmpty(),
-        loadingText = loadingText,
-        unavailableText = unavailableText
-    )
-    hubState.nowPlayingProgress = eventProgressFraction(now)
-    hubState.nowPlayingReference = service?.reference.orEmpty()
-    hubState.nowPlayingName = service?.name.orEmpty()
-    hubState.onNowPlayingClick = { showSheet = true }
+    hubState.nowPlayingLabel = uiState.label.asString()
+    hubState.nowPlayingHeadline = uiState.headline.asString()
+    hubState.nowPlayingProgress = eventProgressFraction(shown?.now)
+    hubState.nowPlayingReference = shown?.service?.reference.orEmpty()
+    hubState.nowPlayingName = shown?.service?.name.orEmpty()
+    hubState.onNowPlayingClick = viewModel::openSheet
 
-    if (showSheet) {
+    if (uiState.sheetOpen) {
         CurrentServiceSheet(
             current = shown,
-            loading = shown == null && !ready,
+            loading = shown == null && !uiState.ready,
+            streamBlocked = uiState.streamBlocked,
             onStream = { stream() },
-            onDismiss = {
-                showSheet = false
-                viewModel.reload()
-            }
+            onDismiss = viewModel::closeSheet
         )
-    }
-}
-
-/**
- * Last-good `/web/getcurrent` keyed by profile id. [beginLoad] stamps a generation so a
- * slower previous fetch cannot paint after a newer reload.
- */
-class CurrentServiceLoadGate {
-    private var loadGeneration = 0
-    var lastGood: CurrentService? = null
-        private set
-    var lastGoodProfileId: Int? = null
-        private set
-
-    fun beginLoad(): Int = ++loadGeneration
-
-    fun isCurrent(generation: Int): Boolean = generation == loadGeneration
-
-    fun applySuccess(generation: Int, profileId: Int, next: CurrentService): Boolean {
-        if (generation != loadGeneration) {
-            return false
-        }
-        if (next.isEmpty()) {
-            return false
-        }
-        lastGood = next
-        lastGoodProfileId = profileId
-        return true
-    }
-
-    fun visible(profileId: Int): CurrentService? = lastGood.takeIf {
-        lastGoodProfileId == profileId
     }
 }
 

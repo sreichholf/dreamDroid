@@ -622,17 +622,6 @@ class MainActivity :
         }
     }
 
-    /*
-     * Dialog action routing for Compose choice / progress / connection dialogs.
-     * EPG/movie detail sheets are in-composition ModalBottomSheet (Phase 2.1g-ii-d).
-     */
-    override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        if (phoneShellReady) {
-            phoneNav.composeDialogActionListener?.onDialogAction(action, details, dialogTag)
-        }
-        super.onDialogAction(action, details, dialogTag)
-    }
-
     fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {
         phoneNav.runOnlineOnly {
             shellActions.setSleepTimer(time, action, enabled)

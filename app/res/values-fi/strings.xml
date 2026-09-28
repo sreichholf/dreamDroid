@@ -17,7 +17,6 @@
     <string name="send_message">Lähetä viesti</string>
     <string name="save">Tallenna</string>
     <string name="cancel">Peruuta</string>
-    <string name="fetching_data">Noutaa tietoja</string>
     <string name="get_content_error">Virhe tietoja noudettaessa</string>
     <string name="zap">Vaihda</string>
     <string name="browse_epg">Selaa EPG:tä</string>
@@ -62,7 +61,6 @@
     <string name="mo_to_fr">Maanantaista Perjantaihin</string>
     <string name="daily">Päivittäin</string>
     <string name="new_timer">Uusi ajastin</string>
-    <string name="locations">Sijainnit</string>
     <string name="gui_version">GUI versio</string>
     <string name="image_version">Image versio</string>
     <string name="interface_version">Interface versio</string>

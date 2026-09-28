@@ -22,7 +22,6 @@
     <string name="send_message">Enviar mensaje</string>
     <string name="save">Guardar</string>
     <string name="cancel">Cancelar</string>
-    <string name="fetching_data">Obteniendo datos…</string>
     <string name="get_content_error">¡Error de conexión!</string>
     <string name="zap">Zapear</string>
     <string name="browse_epg">Buscar EPG</string>
@@ -69,7 +68,6 @@
     <string name="mo_to_fr">Lunes a Viernes</string>
     <string name="daily">Cada día</string>
     <string name="new_timer">Nuevo temporizador</string>
-    <string name="locations">Sitios</string>
     <string name="gui_version">Versión GUI</string>
     <string name="image_version">Versión de la imagen</string>
     <string name="interface_version">Versión de la interfaz</string>

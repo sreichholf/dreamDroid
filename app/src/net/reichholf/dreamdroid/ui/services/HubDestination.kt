@@ -11,7 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -19,10 +18,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.zIndex
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
@@ -30,8 +29,8 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
@@ -45,28 +44,27 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 fun HubDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: HubViewModel = viewModel()
+    viewModel: HubViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val mode = viewModel.mode
-    val selectedRow = viewModel.selectedRow
-    val bouquets = viewModel.bouquets
-    val bouquetError = viewModel.bouquetError
-    val movieLocations = viewModel.movieLocations
-    val nowPlayingReloadEpoch = viewModel.nowPlayingReloadEpoch
+    val resources = LocalResources.current
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    val mode = uiState.mode
+    val selectedRow = uiState.selectedRow
+    val movieLocations = uiState.movieLocations
 
-    val tvBouquets = remember(bouquets) {
+    val tvBouquets = remember(uiState.tvBouquets, resources) {
         buildDedicatedBouquets(
-            bouquets?.tv.orEmpty(),
-            context.resources.getStringArray(R.array.servicelist_dedicated),
-            context.resources.getStringArray(R.array.servicerefstv)
+            uiState.tvBouquets,
+            resources.getStringArray(R.array.servicelist_dedicated),
+            resources.getStringArray(R.array.servicerefstv)
         )
     }
-    val radioBouquets = remember(bouquets) {
+    val radioBouquets = remember(uiState.radioBouquets, resources) {
         buildDedicatedBouquets(
-            bouquets?.radio.orEmpty(),
-            context.resources.getStringArray(R.array.servicelist_dedicated),
-            context.resources.getStringArray(R.array.servicerefsradio)
+            uiState.radioBouquets,
+            resources.getStringArray(R.array.servicelist_dedicated),
+            resources.getStringArray(R.array.servicerefsradio)
         )
     }
     val rows = when (mode) {
@@ -83,19 +81,11 @@ fun HubDestination(
         else -> TvMoviesDestination.TV
     }
 
-    val loadingText = stringResource(R.string.loading)
     fun selectDestination(dest: TvMoviesDestination) {
         when (dest) {
-            TvMoviesDestination.TV -> viewModel.selectTv(tvBouquets)
-
-            TvMoviesDestination.RADIO -> viewModel.selectRadio(radioBouquets)
-
-            TvMoviesDestination.MOVIES -> {
-                if (!viewModel.selectMovies()) {
-                    ShellMessages.post(loadingText)
-                }
-            }
-
+            TvMoviesDestination.TV -> viewModel.selectTv()
+            TvMoviesDestination.RADIO -> viewModel.selectRadio()
+            TvMoviesDestination.MOVIES -> viewModel.selectMovies()
             TvMoviesDestination.TIMER -> viewModel.selectTimer()
         }
     }
@@ -110,7 +100,7 @@ fun HubDestination(
 
     HubNowPlaying(
         handle = handle,
-        reloadEpoch = nowPlayingReloadEpoch,
+        reloadEpoch = uiState.nowPlayingReloadEpoch,
         hubState = destinationBarState
     )
 
@@ -120,13 +110,7 @@ fun HubDestination(
             serviceListGoUp?.invoke()
             return
         }
-        val ref = when (mode) {
-            HubModes.TV -> tvBouquets.getOrNull(index)?.reference
-            HubModes.RADIO -> radioBouquets.getOrNull(index)?.reference
-            HubModes.MOVIES -> movieLocations.getOrNull(index)
-            else -> null
-        }
-        viewModel.onRowSelected(index, ref)
+        viewModel.onRowSelected(index)
     }
 
     // Publish Snapshot state to the NavHost-owned shell ComposeView. Installing
@@ -149,10 +133,7 @@ fun HubDestination(
         }
     }
 
-    val connectionSession = SessionConnectionHolder.shared.status.collectAsState().value.session
-    LaunchedEffect(connectionSession) { viewModel.onBouquetConnection(connectionSession) }
-
-    LaunchedEffect(handle) { viewModel.ensureLocations(handle) }
+    LaunchedEffect(viewModel) { viewModel.ensureLocations() }
 
     // Clamp selectedRow when the active row list shrinks (e.g. rotation before load).
     LaunchedEffect(mode, rows.size) { viewModel.clampSelectedRow(rows.size) }
@@ -173,7 +154,7 @@ fun HubDestination(
             TvMoviesHeader(
                 rows = rows,
                 selectedRow = if (rows.isEmpty()) 0 else selectedRow.coerceIn(0, rows.lastIndex),
-                error = bouquetError,
+                error = uiState.bouquetError?.asString(),
                 onRowSelected = { onRowSelected(it) },
                 modifier = Modifier.zIndex(1f)
             )
@@ -187,7 +168,7 @@ fun HubDestination(
                 when (mode) {
                     HubModes.TV -> {
                         // Wait for bouquet roots (old ServiceListPager stayed empty until then).
-                        if (bouquets != null) {
+                        if (uiState.bouquetsLoaded) {
                             val bouquet = tvBouquets.getOrNull(
                                 if (tvBouquets.isEmpty()) {
                                     0
@@ -213,7 +194,7 @@ fun HubDestination(
                     }
 
                     HubModes.RADIO -> {
-                        if (bouquets != null) {
+                        if (uiState.bouquetsLoaded) {
                             val bouquet = radioBouquets.getOrNull(
                                 if (radioBouquets.isEmpty()) {
                                     0
@@ -255,7 +236,7 @@ fun HubDestination(
                     HubModes.TIMER -> {
                         HubTimerListPage(
                             handle = handle,
-                            remountEpoch = viewModel.timerRemountEpoch
+                            remountEpoch = uiState.timerRemountEpoch
                         )
                     }
                 }

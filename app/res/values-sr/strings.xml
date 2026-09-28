@@ -23,7 +23,6 @@
 
     <string name="save">sacuvati</string>
     <string name="cancel">obustaviti</string>
-    <string name="fetching_data">Fetching data...</string>
     <string name="get_content_error">greska pri dobijanja sadrzaja</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">pregledanje EPG</string>
@@ -62,7 +61,6 @@
     <string name="mo_to_fr">ponedeljak do petak</string>
     <string name="daily">dnevno</string>
     <string name="new_timer">novi tajmer</string>
-    <string name="locations">lokacija</string>
     <string name="gui_version">GUI verzija</string>
     <string name="nics">Network Interfaces</string>
     <string name="message_text_hint">uneti tekst poruke</string>

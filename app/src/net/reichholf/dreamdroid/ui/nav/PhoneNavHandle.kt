@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
@@ -10,10 +9,8 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
-import net.reichholf.dreamdroid.enigma.launchLocationsAndTagsLoad
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
-import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 
@@ -28,7 +25,6 @@ interface PhoneNavHandle {
 
     val lifecycleOwner: LifecycleOwner
 
-    var composeDialogActionListener: DialogActionListener?
     var composeActivityResultListener: ActivityResultListener?
 
     fun epgRemountFlow(): StateFlow<Int>
@@ -126,20 +122,6 @@ fun PhoneNavHandle.runOnlineOnly(action: () -> Unit) {
     } else {
         action()
     }
-}
-
-fun PhoneNavHandle.launchLocationsAndTagsLoad(
-    onProgress: (title: String, progress: String) -> Unit,
-    onReady: () -> Unit,
-    onLocationsResult: ((success: Boolean) -> Unit)? = null
-): Job {
-    val context = lifecycleOwner as Context
-    return lifecycleOwner.launchLocationsAndTagsLoad(
-        context,
-        onProgress,
-        onReady,
-        onLocationsResult
-    )
 }
 
 fun PhoneNavHandle.launchDetectDevicesLoad(onResult: (profiles: ArrayList<Profile>) -> Unit): Job =

@@ -14,90 +14,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
-
-class CurrentServiceUiState {
-    var serviceName by mutableStateOf("")
-        private set
-    var provider by mutableStateOf("")
-        private set
-    var serviceReference by mutableStateOf("")
-        private set
-    var nowTitle by mutableStateOf("")
-        private set
-    var nowStart by mutableStateOf("")
-        private set
-    var nowDuration by mutableStateOf("")
-        private set
-    var nowDescription by mutableStateOf("")
-        private set
-    var nextTitle by mutableStateOf("")
-        private set
-    var nextStart by mutableStateOf("")
-        private set
-    var nextDuration by mutableStateOf("")
-        private set
-    var nextDescription by mutableStateOf("")
-        private set
-    var ready by mutableStateOf(false)
-        private set
-
-    fun apply(current: CurrentService?) {
-        if (current == null || current.isEmpty()) {
-            clear()
-            ready = true
-            return
-        }
-        val service = current.service
-        serviceName = service.name
-        provider = service.provider
-        serviceReference = service.reference
-        val now = current.now
-        nowTitle = now?.title.orEmpty()
-        nowStart = now?.startReadable.orEmpty()
-        nowDuration = now?.durationReadable.orEmpty()
-        nowDescription = now?.descriptionExtended.orEmpty()
-        val next = current.next
-        nextTitle = next?.title.orEmpty()
-        nextStart = next?.startReadable.orEmpty()
-        nextDuration = next?.durationReadable.orEmpty()
-        nextDescription = next?.descriptionExtended.orEmpty()
-        ready = true
-    }
-
-    fun clear() {
-        serviceName = ""
-        provider = ""
-        serviceReference = ""
-        nowTitle = ""
-        nowStart = ""
-        nowDuration = ""
-        nowDescription = ""
-        nextTitle = ""
-        nextStart = ""
-        nextDuration = ""
-        nextDescription = ""
-        ready = false
-    }
-}
 
 @Composable
 fun CurrentServiceScreen(
@@ -109,20 +35,19 @@ fun CurrentServiceScreen(
 ) {
     val horz = dimensionResource(R.dimen.content_horz_padding)
     val vert = dimensionResource(R.dimen.content_vert_padding)
-    val context = LocalContext.current
-    // Read prefs each composition so Settings toggles apply when returning here.
-    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     val loading = stringResource(R.string.loading)
     val unavailable = stringResource(R.string.not_available)
+    val service = state.current?.service
+    val serviceName = service?.name.orEmpty()
+    val serviceReference = service?.reference.orEmpty()
+    val now = state.current?.now
+    val next = state.current?.next
     fun displayOrLoading(value: String): String = if (!state.ready) loading else value
     val serviceText = when {
         !state.ready -> loading
-        state.serviceName.isNotEmpty() -> state.serviceName
+        serviceName.isNotEmpty() -> serviceName
         else -> unavailable
     }
-    val canStream = state.serviceReference.isNotEmpty()
-    val streamBlocked = SessionConnectionHolder.shared.status.collectAsState().value.blocksMutations
 
     Column(
         modifier = modifier
@@ -137,12 +62,12 @@ fun CurrentServiceScreen(
                 .padding(bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (piconsEnabled &&
-                (state.serviceReference.isNotEmpty() || state.serviceName.isNotEmpty())
+            if (state.piconsEnabled &&
+                (serviceReference.isNotEmpty() || serviceName.isNotEmpty())
             ) {
                 PiconImage(
-                    reference = state.serviceReference,
-                    name = state.serviceName,
+                    reference = serviceReference,
+                    name = serviceName,
                     modifier = Modifier
                         .padding(horizontal = 3.dp)
                         .width(48.dp)
@@ -161,7 +86,7 @@ fun CurrentServiceScreen(
 
         SectionHeader(stringResource(R.string.provider))
         Text(
-            text = displayOrLoading(state.provider),
+            text = displayOrLoading(service?.provider.orEmpty()),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.onSurface,
             modifier = Modifier
@@ -173,10 +98,10 @@ fun CurrentServiceScreen(
         SectionHeader(stringResource(R.string.now))
         EventBlock(
             ready = state.ready,
-            title = state.nowTitle,
-            start = state.nowStart,
-            duration = state.nowDuration,
-            description = state.nowDescription,
+            title = now?.title.orEmpty(),
+            start = now?.startReadable.orEmpty(),
+            duration = now?.durationReadable.orEmpty(),
+            description = now?.descriptionExtended.orEmpty(),
             onClick = onNowClick,
             modifier = Modifier.padding(bottom = 6.dp)
         )
@@ -184,21 +109,21 @@ fun CurrentServiceScreen(
         SectionHeader(stringResource(R.string.next))
         EventBlock(
             ready = state.ready,
-            title = state.nextTitle,
-            start = state.nextStart,
-            duration = state.nextDuration,
-            description = state.nextDescription,
+            title = next?.title.orEmpty(),
+            start = next?.startReadable.orEmpty(),
+            duration = next?.durationReadable.orEmpty(),
+            description = next?.descriptionExtended.orEmpty(),
             onClick = onNextClick,
             modifier = Modifier.padding(bottom = 6.dp)
         )
 
-        if (canStream) {
+        if (state.canStream) {
             Button(
                 onClick = onStream,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 6.dp)
-                    .onlineOnlyLook(streamBlocked)
+                    .onlineOnlyLook(state.streamBlocked)
             ) {
                 Text(stringResource(R.string.stream_current))
             }

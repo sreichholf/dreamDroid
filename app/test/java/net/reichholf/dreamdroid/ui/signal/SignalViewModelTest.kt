@@ -217,6 +217,10 @@ class SignalViewModelTest {
     private fun viewModel(
         handle: SavedStateHandle = SavedStateHandle(),
         sessions: SessionConnectionHolder = this.sessions
-    ) = SignalViewModel(handle, ReceiverRepository(EnigmaClientFactory(profiles)), sessions)
+    ) = SignalViewModel(
+        handle,
+        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        sessions
+    )
         .also { viewModels += it }
 }

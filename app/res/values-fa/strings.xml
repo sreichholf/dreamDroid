@@ -26,7 +26,6 @@
     <string name="send_message">ارسال پیام</string>
     <string name="save">ذخیره</string>
     <string name="cancel">لغو</string>
-    <string name="fetching_data">در حال گرفتن اطلاعات &#8230;</string>
     <string name="get_content_error">خطا در هنگام گرفتن محتوا !</string>
     <string name="zap">تعویض</string>
     <string name="browse_epg">مرور EPG</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">دوشنبه تا جمعه</string>
     <string name="daily">روزانه</string>
     <string name="new_timer">زمان جدید</string>
-    <string name="locations">مکان</string>
     <string name="gui_version">نسخه انیگما 2</string>
     <string name="image_version">نسخه ایمیج</string>
     <string name="interface_version">نسخه رابط</string>

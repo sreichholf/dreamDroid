@@ -166,7 +166,7 @@ class ScreenshotViewModelTest {
     }
 
     private fun viewModel(sessions: SessionConnectionHolder = this.sessions) =
-        ScreenshotViewModel(ReceiverRepository(EnigmaClientFactory(profiles)), sessions)
+        ScreenshotViewModel(ReceiverRepository(EnigmaClientFactory(profiles), profiles), sessions)
             .also { viewModels += it }
 
     private suspend fun ScreenshotViewModel.settled(): ScreenshotUiState =

@@ -22,7 +22,6 @@
     <string name="send_message">ارسال رسالة</string>
     <string name="save">حفظ</string>
     <string name="cancel">الغاء</string>
-    <string name="fetching_data">جاري قراءة البيانات</string>
     <string name="get_content_error">خطأ في قراءة البيانات</string>
     <string name="zap">تغيير</string>
     <string name="browse_epg">تصفح البرامج</string>
@@ -67,7 +66,6 @@
     <string name="mo_to_fr">الاثنين الى الجمعة</string>
     <string name="daily">يوميا</string>
     <string name="new_timer">مؤقت جديد</string>
-    <string name="locations">المواقع</string>
     <string name="gui_version">اصدار واجهة المستخدم</string>
     <string name="image_version">اصدار الصورة</string>
     <string name="interface_version">اصدار الواجهة</string>

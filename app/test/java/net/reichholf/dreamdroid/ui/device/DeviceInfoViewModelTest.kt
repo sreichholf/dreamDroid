@@ -137,7 +137,7 @@ class DeviceInfoViewModelTest {
     }
 
     private fun viewModel(handle: SavedStateHandle) =
-        DeviceInfoViewModel(handle, ReceiverRepository(EnigmaClientFactory(profiles)))
+        DeviceInfoViewModel(handle, ReceiverRepository(EnigmaClientFactory(profiles), profiles))
 
     private suspend fun DeviceInfoViewModel.settled(): DeviceInfoUiState =
         uiState.first { !it.refreshing }

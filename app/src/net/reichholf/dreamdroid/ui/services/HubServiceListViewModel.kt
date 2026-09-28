@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.data.NowNextListLoad
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -44,6 +45,12 @@ sealed interface HubServiceEffect {
 
     /** Stream [row], a channel of the list [bouquetRef]. */
     data class Stream(val row: ServiceNowNext, val bouquetRef: String) : HubServiceEffect
+
+    /** Open MultiEPG of the list [reference]. */
+    data class MultiEpg(val reference: String, val name: String) : HubServiceEffect
+
+    /** Open the list EPG of [reference]. */
+    data class ListEpg(val reference: String, val name: String) : HubServiceEffect
 
     /** A zap finished; the hub refreshes what is playing. */
     data object Zapped : HubServiceEffect
@@ -88,7 +95,8 @@ class HubServiceListViewModel @AssistedInject constructor(
     private val epg: EpgRepository,
     private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val settings: SettingsRepository
 ) : ViewModel() {
     @AssistedFactory
     interface Factory {
@@ -216,6 +224,20 @@ class HubServiceListViewModel @AssistedInject constructor(
             ServiceRowAction.Stream ->
                 effect(HubServiceEffect.Stream(row, _uiState.value.currentRef))
         }
+    }
+
+    /** MultiEPG of the list on screen, which also becomes the drawer's EPG view. */
+    fun openMultiEpg() {
+        val state = _uiState.value
+        settings.drawerEpgMulti = true
+        effect(HubServiceEffect.MultiEpg(state.currentRef, state.currentName))
+    }
+
+    /** List EPG of the list on screen, which also becomes the drawer's EPG view. */
+    fun openListEpg() {
+        val state = _uiState.value
+        settings.drawerEpgMulti = false
+        effect(HubServiceEffect.ListEpg(state.currentRef, state.currentName))
     }
 
     fun onEffectHandled() {

@@ -26,7 +26,6 @@
     <string name="send_message">Üzenet küldése</string>
     <string name="save">Mentés</string>
     <string name="cancel">Mégse</string>
-    <string name="fetching_data">Adatok betöltése...</string>
     <string name="get_content_error">Hiba a tartalom betöltése alatt!</string>
     <string name="zap">Aktiválás</string>
     <string name="browse_epg">EPG böngészése</string>
@@ -74,7 +73,6 @@
     <string name="mo_to_fr">Hétfőtől Péntekig</string>
     <string name="daily">Naponta</string>
     <string name="new_timer">Új időzítő</string>
-    <string name="locations">Helyek</string>
     <string name="gui_version">GUI verzió</string>
     <string name="image_version">Kép verzió</string>
     <string name="interface_version">Interfész verzió</string>

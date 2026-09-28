@@ -23,7 +23,6 @@
 
     <string name="save">Čuvanje</string>
     <string name="cancel">Otkazati</string>
-    <string name="fetching_data">Dohvaćanje podataka</string>
     <string name="get_content_error">Pogreška dobivanje sadržaja</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Gledati EPG</string>
@@ -67,7 +66,6 @@
     <string name="mo_to_fr">Ponedjeljak do Petak</string>
     <string name="daily">Dnevno</string>
     <string name="new_timer">Novi timer</string>
-    <string name="locations">Lokacije</string>
     <string name="gui_version">GUI verzija</string>
     <string name="image_version">Image verzija</string>
     <string name="interface_version">Interface verzija</string>

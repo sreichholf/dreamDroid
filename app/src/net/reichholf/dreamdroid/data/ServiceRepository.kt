@@ -72,11 +72,13 @@ class ServiceRepository @Inject constructor(
     private val database: AppDatabase,
     private val sessions: SessionConnectionHolder
 ) {
-    private val tvRoots: List<String> by lazy {
+    /** The dedicated TV roots: the aggregate bouquet index, Provider, and All Services. */
+    val tvRoots: List<String> by lazy {
         context.resources.getStringArray(R.array.servicerefstv).toList()
     }
 
-    private val radioRoots: List<String> by lazy {
+    /** The dedicated radio roots, in the order of [tvRoots]. */
+    val radioRoots: List<String> by lazy {
         context.resources.getStringArray(R.array.servicerefsradio).toList()
     }
 
@@ -394,9 +396,9 @@ fun userBouquetTabs(loaded: List<Service>, excludedTabRefs: Collection<String>):
     }
 
 /**
- * Transitional lookup for callers that are not Hilt-injected yet: the phone hub and zap
- * ViewModels (PR 10), the TV hub browse load (PR 12), and the player (PR 13). All run
- * after `DreamDroid` was injected. Delete with the last caller (docs/hilt-migration.md).
+ * Transitional lookup for the player (`VideoPlaybackViewModel`), which is not Hilt-injected
+ * yet. It runs after `DreamDroid` was injected. Delete with the last caller (PR 13 in
+ * docs/hilt-migration.md).
  */
 @EntryPoint
 @InstallIn(SingletonComponent::class)

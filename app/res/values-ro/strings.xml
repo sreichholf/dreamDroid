@@ -23,7 +23,6 @@
 
     <string name="save">Salveaza</string>
     <string name="cancel">Anuleaza</string>
-    <string name="fetching_data">Primeste date...</string>
     <string name="get_content_error">Error getting content!</string>
     <string name="zap">Zap</string>
     <string name="browse_epg">Browse EPG</string>
@@ -67,7 +66,6 @@
     <string name="mo_to_fr">De Luni pana Vineri</string>
     <string name="daily">Zilnic</string>
     <string name="new_timer">Timer nou</string>
-    <string name="locations">Locatii</string>
     <string name="gui_version">GUI version</string>
     <string name="image_version">Image version</string>
     <string name="interface_version">Interface version</string>
