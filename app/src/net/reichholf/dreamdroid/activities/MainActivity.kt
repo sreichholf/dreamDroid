@@ -25,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -76,6 +77,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 /**
  * @author sre
  */
+@AndroidEntryPoint
 class MainActivity :
     BaseActivity(),
     DialogActionListener,

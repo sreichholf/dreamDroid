@@ -5,6 +5,7 @@ plugins {
     // AGP 9 ships built-in Kotlin. Declare the Kotlin plugin without applying it so AGP
     // uses this compiler instead of its bundled one. Do not apply kotlin-android.
     alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.hilt) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
     alias(libs.plugins.kotlin.serialization) apply false
