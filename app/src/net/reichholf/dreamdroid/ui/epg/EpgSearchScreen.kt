@@ -4,8 +4,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,24 +25,20 @@ const val EPG_SEARCH_FIELD_TAG = "epg_search_field"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EpgSearchScreen(
-    query: String,
-    onQueryChange: (String) -> Unit,
+    queryState: TextFieldState,
     onSearch: (String) -> Unit,
     expanded: Boolean,
     onExpandedChange: (Boolean) -> Unit,
     items: List<Event>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
-    listState: LazyListState = rememberLazyListState(),
-    scrollEpoch: Int = 0,
     emptyMessage: String? = null
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         SearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = query,
-                    onQueryChange = onQueryChange,
+                    state = queryState,
                     onSearch = onSearch,
                     expanded = expanded,
                     onExpandedChange = onExpandedChange,
@@ -56,9 +52,9 @@ fun EpgSearchScreen(
                             contentDescription = null
                         )
                     },
-                    trailingIcon = if (query.isNotEmpty()) {
+                    trailingIcon = if (queryState.text.isNotEmpty()) {
                         {
-                            IconButton(onClick = { onQueryChange("") }) {
+                            IconButton(onClick = { queryState.clearText() }) {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_action_close),
                                     contentDescription = stringResource(R.string.close)
@@ -80,8 +76,6 @@ fun EpgSearchScreen(
             EpgBouquetScreen(
                 items = items,
                 onItemClick = onItemClick,
-                listState = listState,
-                scrollEpoch = scrollEpoch,
                 emptyMessage = emptyMessage,
                 modifier = Modifier
                     .weight(1f)

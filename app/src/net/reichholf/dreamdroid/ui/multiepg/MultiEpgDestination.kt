@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
@@ -26,8 +27,8 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
-import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
-import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
+import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.MultiEpg
@@ -48,7 +49,8 @@ fun MultiEpgDestination(
     route: MultiEpg,
     remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
-    viewModel: MultiEpgViewModel = viewModel()
+    viewModel: MultiEpgViewModel = viewModel(),
+    detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val activity = context as AppCompatActivity
@@ -84,9 +86,6 @@ fun MultiEpgDestination(
         onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
     }
 
-    val dialogSession = remember { EpgEventDialogSession() }
-    dialogSession.handle = handle
-    dialogSession.context = context
     val menuSession = remember { MultiEpgTopBarSession() }
     menuSession.handle = handle
     menuSession.context = context
@@ -101,12 +100,6 @@ fun MultiEpgDestination(
     }
 
     BindShellTopBarActions(menuSession.topBarActions(stringResource(R.string.epg_list)))
-
-    DisposableEffect(dialogSession) {
-        onDispose {
-            dialogSession.dismissProgress()
-        }
-    }
 
     LaunchedEffect(remountEpoch, bouquetRef) {
         viewModel.ensureLoaded(remountEpoch, bouquetRef, anchorSec)
@@ -126,8 +119,8 @@ fun MultiEpgDestination(
             session.onVisibleWindow(start, end)
         }
     }
-    val onEventClick = remember(dialogSession) {
-        { event: Event -> dialogSession.showDetail(event) }
+    val onEventClick = remember(detailViewModel) {
+        { event: Event -> detailViewModel.showDetail(event) }
     }
 
     MultiEpgScreen(
@@ -176,7 +169,7 @@ fun MultiEpgDestination(
         focusedServiceRef = focusedServiceRef,
         modifier = modifier
     )
-    EpgEventDetailSheetHost(session = dialogSession)
+    EpgEventDetailHost(handle, detailViewModel)
 }
 
 internal class MultiEpgTopBarSession {

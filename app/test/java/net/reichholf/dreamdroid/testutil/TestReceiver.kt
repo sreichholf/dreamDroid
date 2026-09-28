@@ -72,6 +72,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         const val PROFILE_ID = 7
 
         const val TIMER_LIST = "/web/timerlist"
+        const val TIMER_ADD_BY_EVENT_ID = "/web/timeraddbyeventid"
         const val TIMER_CHANGE = "/web/timerchange"
         const val TIMER_DELETE = "/web/timerdelete"
         const val TIMER_CLEANUP = "/web/timercleanup"

@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.LOCATIONS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TAGS
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_ADD_BY_EVENT_ID
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CHANGE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CLEANUP
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_DELETE
@@ -199,6 +200,18 @@ class TimerRepositoryTest {
             listOf("1", "0"),
             receiver.requestsTo(TIMER_CHANGE).map { it.requestUrl!!.queryParameter("disabled") }
         )
+    }
+
+    @Test
+    fun addByEventSendsTheEventId() = runTest {
+        receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
+        val event = Event(eventId = "39150", serviceReference = "1:0:1:6DCA:44C:1:C00000:0:0:0:")
+
+        assertEquals("Timer added", repository.addByEvent(event).value?.stateText)
+
+        val url = receiver.requestsTo(TIMER_ADD_BY_EVENT_ID).single().requestUrl!!
+        assertEquals("39150", url.queryParameter("eventid"))
+        assertEquals(event.serviceReference, url.queryParameter("sRef"))
     }
 
     @Test

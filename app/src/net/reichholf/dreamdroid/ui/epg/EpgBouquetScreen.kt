@@ -20,7 +20,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -64,17 +63,10 @@ fun EpgBouquetScreen(
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     listState: LazyListState = rememberLazyListState(),
-    scrollEpoch: Int = 0,
     emptyMessage: String? = null,
     bouquetPick: EpgBouquetPickUi? = null,
     timeJump: EpgTimeJumpUi? = null
 ) {
-    LaunchedEffect(scrollEpoch) {
-        if (scrollEpoch > 0) {
-            listState.scrollToItem(0)
-        }
-    }
-
     val loadingLabel = stringResource(R.string.loading)
     Column(modifier = modifier.fillMaxSize()) {
         if (bouquetPick != null) {

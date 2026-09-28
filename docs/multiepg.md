@@ -199,7 +199,7 @@ Today `MultiEpgViewModel` is an `AndroidViewModel` wrapping `MultiEpgSession` an
 | HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
 | Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
-| Detail / timer | Reuse `EpgEventDialogSession` (`ui/epg/EpgEventDialogSession.kt`) from bouquet/service EPG |
+| Detail / timer | Reuse `EpgEventDetailViewModel` + `EpgEventDetailHost` (`ui/epg/EpgEventDetailSheet.kt`) from bouquet/service EPG |
 | Room | `room/AppDatabase.kt` holds profiles plus the EPG event / chunk entities and the offline roster / snapshot tables |
 | Sync | `multiepg/MultiEpgSync.kt` (one shared instance), `MultiEpgTimerClocks.kt` for record clocks |
 | Proof | `bash .cursor/cloud/connected-test.sh …` (not emulator tap loops); see `AGENTS.md` |
@@ -355,5 +355,5 @@ Phone v1 (§1, §6 #6) is unchanged: that lock-in was **phone-only**. Phone Grap
 | **Grid** | GraphMultiEPG channel rows × time bars; one D-pad cursor (`selectedServiceRef` + `selectedStartSec`); chrome (Now / ±day / zoom / bouquet) is a separate TV Surface row |
 | **Session** | Same `MultiEpgSession` + `MultiEpgSyncHolder.shared` Room `/web/epgmulti` cache as phone. No second sync. TV reads `SessionConnectionHolder` for `shouldSkipReceiverHttp` / Offline (same as phone `MultiEpgDestination`); peek Room first (stale-while-revalidate). Do not invent a second MultiEPG store. |
 | **Persist** | `MultiEpgPersistGate` (shared with phone). TV `knownTabRefs` comes from `UserBouquetCache.userBouquetTabs(loadServiceList(BOUQUETS_TV), excluded)` — never `{ true }`, never the phone tab strip. Fail-closed for empty known tabs, excluded refs, and FROM PROVIDERS. |
-| **Detail** | Full-screen `Box` + `EpgDetailBody` / `EpgDetailScreen(showActions=false)`. Stream is hidden unless `ConnectionStatus.allowsStreaming()` (Online). Set timer is a write (`blocksMutations` explains / skips) — still add-by-event-id. Edit timer opens shared `TvTimerEditorHost` prefilled via `Timer.createByEvent`. IMDb stays (not box HTTP). No Similar; no `EpgEventDialogSession`. Overlay takes D-pad focus; grid/chrome keys are disabled while it is open. |
+| **Detail** | Full-screen `Box` + `EpgDetailBody` / `EpgDetailScreen(showActions=false)`. Stream is hidden unless `ConnectionStatus.allowsStreaming()` (Online). Set timer is a write (`blocksMutations` explains / skips) — still add-by-event-id. Edit timer opens shared `TvTimerEditorHost` prefilled via `Timer.createByEvent`. IMDb stays (not box HTTP). No Similar; no `EpgEventDetailViewModel`. Overlay takes D-pad focus; grid/chrome keys are disabled while it is open. |
 | **Proof** | `TvMultiEpgScreenTest` + hub JVM/chrome tests; Cloud Agent uses `.cursor/cloud/connected-test.sh` |

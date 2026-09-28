@@ -1,4 +1,4 @@
-package net.reichholf.dreamdroid.ui.epg
+package net.reichholf.dreamdroid.data
 
 import net.reichholf.dreamdroid.room.EpgEventEntity
 import org.junit.jupiter.api.Assertions.assertEquals

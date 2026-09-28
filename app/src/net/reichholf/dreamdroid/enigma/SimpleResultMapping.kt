@@ -43,15 +43,15 @@ fun EnigmaResponse<SimpleResult>.userMessage(context: Context): String = mutatio
     fallback = context.getString(R.string.get_content_error)
 )
 
-/** [userMessage] as UI text: the box `statetext`, else the failure's text, else the generic error. */
+/** [userMessage] as [UiText]: `statetext`, else the failure's message, else the generic error. */
 fun EnigmaResponse<SimpleResult>.userMessageText(): UiText {
     val stateText = value?.stateText
     if (!stateText.isNullOrEmpty()) {
         return UiText.Raw(stateText)
     }
-    val errorText = error?.failure?.userMessageText()
-    if (errorText != null && errorText != UiText.Raw("")) {
-        return errorText
+    val failureText = error?.failure?.userMessageText()
+    if (failureText != null && failureText != UiText.Raw("")) {
+        return failureText
     }
     return UiText.Resource(R.string.get_content_error)
 }

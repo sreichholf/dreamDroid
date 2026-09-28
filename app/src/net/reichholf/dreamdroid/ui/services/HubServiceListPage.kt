@@ -16,6 +16,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.preference.PreferenceManager
@@ -27,6 +28,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EpgNowNextLoadResult
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.loadBouquetServiceNowNext
 import net.reichholf.dreamdroid.enigma.userMessage
@@ -46,8 +48,8 @@ import net.reichholf.dreamdroid.ui.compose.ComposeRefreshState
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
-import net.reichholf.dreamdroid.ui.epg.EpgEventDetailSheetHost
-import net.reichholf.dreamdroid.ui.epg.EpgEventDialogSession
+import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
+import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
@@ -72,7 +74,8 @@ fun HubServiceListPage(
     modifier: Modifier = Modifier,
     onProvideGoUp: ((() -> Unit)?) -> Unit = {},
     onZapped: () -> Unit = {},
-    viewModel: HubServiceListViewModel = viewModel(key = "hub-service:$bouquetRef")
+    viewModel: HubServiceListViewModel = viewModel(key = "hub-service:$bouquetRef"),
+    detailViewModel: EpgEventDetailViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val session = viewModel.session
@@ -81,15 +84,12 @@ fun HubServiceListPage(
     val emptyMessage = viewModel.emptyMessage
     val historyDepth = viewModel.historyDepth
 
-    val dialogSession = remember { EpgEventDialogSession() }
     var rowMenu by remember { mutableStateOf<RowMenuState<ServiceRowAction>?>(null) }
-    dialogSession.handle = handle
-    dialogSession.context = context
 
     session.handle = handle
     session.context = context
     session.onShowMenu = { rowMenu = it }
-    session.dialogSession = dialogSession
+    session.onShowEvent = detailViewModel::showDetail
     session.onZapped = onZapped
     session.profileId = ProfileRepository.get().requireCurrent().id
     session.rosterDao = AppDatabase.roster(context)
@@ -115,13 +115,12 @@ fun HubServiceListPage(
             resetDefaultLabel = stringResource(R.string.reset_default)
         )
     )
-    DisposableEffect(handle, session, dialogSession) {
+    DisposableEffect(handle, session) {
         session.chromeAttached = true
         session.setToolbarTitle(session.finishedTitle())
         onDispose {
             session.chromeAttached = false
             session.onShowMenu = null
-            dialogSession.dismissProgress()
         }
     }
 
@@ -156,7 +155,7 @@ fun HubServiceListPage(
         }
     }
 
-    EpgEventDetailSheetHost(dialogSession)
+    EpgEventDetailHost(handle, detailViewModel)
 }
 
 class HubServiceListSession {
@@ -176,7 +175,7 @@ class HubServiceListSession {
     var refresh: ComposeRefreshState? = null
     var rows: MutableList<ServiceNowNext>? = null
     var scope: kotlinx.coroutines.CoroutineScope? = null
-    var dialogSession: EpgEventDialogSession? = null
+    var onShowEvent: ((Event) -> Unit)? = null
     var history: MutableList<Pair<String, String>>? = null
     var onHistoryDepth: ((Int) -> Unit)? = null
     var onCurrentRef: ((String) -> Unit)? = null
@@ -436,13 +435,13 @@ class HubServiceListSession {
         val row = menuRow ?: return
         val ctx = context ?: return
         val host = handle ?: return
-        val dialogs = dialogSession ?: return
+        val showEvent = onShowEvent ?: return
         val ref = row.serviceReference
         val name = row.serviceName
         when (action) {
-            ServiceRowAction.NextEvent -> row.next?.let { dialogs.showDetail(it) }
+            ServiceRowAction.NextEvent -> row.next?.let(showEvent)
 
-            ServiceRowAction.CurrentEvent -> row.now?.let { dialogs.showDetail(it) }
+            ServiceRowAction.CurrentEvent -> row.now?.let(showEvent)
 
             ServiceRowAction.BrowseEpg -> host.navigateToServiceEpg(ref, name)
 

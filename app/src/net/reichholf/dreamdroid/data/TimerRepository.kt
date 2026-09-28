@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.contentErrorText
@@ -69,6 +70,10 @@ class TimerRepository @Inject constructor(
     /** Enables a disabled [timer] and disables an enabled one. */
     suspend fun toggleEnabled(timer: Timer): EnigmaResponse<SimpleResult> =
         save(timer.copy(disabled = if (timer.disabled == "1") "0" else "1"), timer)
+
+    /** Adds a timer for [event] by its event id; the receiver fills in the rest. */
+    suspend fun addByEvent(event: Event): EnigmaResponse<SimpleResult> =
+        clients.current().addTimerByEventId(TimerRequests.getEventIdParams(event))
 
     suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> =
         clients.current().deleteTimer(TimerRequests.getDeleteParams(timer))
