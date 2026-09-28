@@ -1,172 +1,75 @@
 package net.reichholf.dreamdroid.ui.backup
 
-import android.app.Activity
 import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.lifecycle.viewmodel.compose.viewModel
-import java.io.BufferedReader
-import java.io.IOException
-import java.io.InputStreamReader
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
-
-private const val TAG = "BackupDestination"
+import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
 private const val BACKUP_EXPORT_FILENAME = "dreamdroid_backup.json"
+private const val BACKUP_MIME_TYPE = "application/json"
 
-/**
- * Phase 2.7c: Backup as a direct Compose NavHost destination (no nested Fragment).
- * Profile toggles and the pending export live on [BackupViewModel].
- */
+/** Backup as a NavHost destination. The system document pickers run here. */
 @Composable
-fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel = viewModel()) {
-    val context = LocalContext.current
-    val importErrorText = stringResource(R.string.backup_import_error)
-    val importSuccessText = stringResource(R.string.backup_import_successful)
-    val exportPermissionText = stringResource(R.string.backup_export_missing_permission)
-    val title = stringResource(R.string.backup)
-    var showPasswordWarning by remember { mutableStateOf(false) }
-
-    fun toast(message: String) {
-        ShellMessages.post(message)
-    }
+fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel = hiltViewModel()) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShellTitle(uiState.title)
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
     val pickImportFile = rememberLauncherForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode != Activity.RESULT_OK) {
-            return@rememberLauncherForActivityResult
-        }
-        val uri = result.data?.data ?: return@rememberLauncherForActivityResult
-        try {
-            if (!viewModel.importBackup(readTextFromUri(context, uri))) {
-                toast(importErrorText)
-                return@rememberLauncherForActivityResult
-            }
-            toast(importSuccessText)
-        } catch (e: IOException) {
-            Log.e(TAG, "unable to readTextFromUri:$uri", e)
-            toast(importErrorText)
-        }
-    }
-
-    val createBackupFile = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
+        ActivityResultContracts.OpenDocument()
     ) { uri ->
-        val json = viewModel.pendingExportJson
-        viewModel.pendingExportJson = null
-        if (uri == null || json == null) {
-            return@rememberLauncherForActivityResult
-        }
-        toast(backupExportUserMessage(context, writeBackupJson(context, uri, json)))
+        uri?.let { viewModel.importFrom(it.toString()) }
+    }
+    val createBackupFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument(BACKUP_MIME_TYPE)
+    ) { uri ->
+        uri?.let { viewModel.exportTo(it.toString()) }
     }
 
-    fun doImport() {
-        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply { type = "*/*" }
+    fun openImportPicker() {
         try {
-            pickImportFile.launch(intent)
+            pickImportFile.launch(arrayOf("*/*"))
         } catch (e: ActivityNotFoundException) {
-            toast(e.localizedMessage ?: importErrorText)
+            viewModel.onImportPickerMissing(e.localizedMessage)
         }
     }
 
     fun openExportPicker() {
-        viewModel.prepareExport()
         try {
             createBackupFile.launch(BACKUP_EXPORT_FILENAME)
         } catch (e: ActivityNotFoundException) {
-            viewModel.pendingExportJson = null
-            toast(e.localizedMessage ?: exportPermissionText)
+            viewModel.onExportPickerMissing(e.localizedMessage)
         }
-    }
-
-    fun onExportClicked() {
-        if (viewModel.uiState.includePasswords) {
-            showPasswordWarning = true
-        } else {
-            openExportPicker()
-        }
-    }
-
-    DisposableEffect(Unit) {
-        val activity = context as? AppCompatActivity
-        activity?.title = title
-        onDispose { }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.reload()
     }
 
     BackupScreen(
-        state = viewModel.uiState,
-        onImport = { doImport() },
-        onExport = { onExportClicked() },
+        state = uiState,
+        onImport = ::openImportPicker,
+        onExport = {
+            if (uiState.includePasswords) viewModel.confirmPasswords() else openExportPicker()
+        },
+        onProfileCheckedChange = viewModel::setProfileChecked,
+        onExportSettingsChange = viewModel::setExportSettings,
+        onIncludePasswordsChange = viewModel::setIncludePasswords,
         modifier = modifier
     )
 
-    if (showPasswordWarning) {
+    if (uiState.confirmingPasswords) {
         ConfirmAlertDialog(
             title = stringResource(R.string.backup_passwords_confirm_title),
             message = stringResource(R.string.backup_passwords_confirm),
-            onDismiss = { showPasswordWarning = false },
-            onConfirm = { openExportPicker() },
+            onDismiss = viewModel::dismissPasswordWarning,
+            onConfirm = ::openExportPicker,
             confirmLabel = stringResource(R.string.backup_export)
         )
     }
-}
-
-@Throws(IOException::class)
-private fun readTextFromUri(context: Context, uri: Uri): String {
-    val inputStream = context.contentResolver.openInputStream(uri)
-        ?: throw IOException("Unable to open backup $uri")
-    return inputStream.use { stream ->
-        BufferedReader(InputStreamReader(stream)).use { reader ->
-            val builder = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                builder.append(line)
-            }
-            builder.toString()
-        }
-    }
-}
-
-private fun writeBackupJson(context: Context, uri: Uri, json: String): Boolean {
-    return try {
-        val output = context.contentResolver.openOutputStream(uri) ?: return false
-        output.use { stream ->
-            stream.write(json.toByteArray(Charsets.UTF_8))
-        }
-        true
-    } catch (e: IOException) {
-        Log.e(TAG, "Export write failed.", e)
-        false
-    } catch (e: SecurityException) {
-        Log.e(TAG, "Export write failed.", e)
-        false
-    }
-}
-
-internal fun backupExportUserMessage(context: Context, exported: Boolean): String = if (exported) {
-    context.getString(R.string.backup_export_successful)
-} else {
-    context.getString(R.string.backup_export_missing_permission)
 }

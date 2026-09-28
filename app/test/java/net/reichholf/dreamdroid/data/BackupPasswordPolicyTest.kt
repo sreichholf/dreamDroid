@@ -1,7 +1,9 @@
-package net.reichholf.dreamdroid.helpers.backup
+package net.reichholf.dreamdroid.data
 
 import com.google.gson.GsonBuilder
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.helpers.backup.BackupData
+import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull

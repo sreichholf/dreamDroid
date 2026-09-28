@@ -24,7 +24,7 @@ object IntentFactory {
             context.startActivity(intent)
         } catch (_: ActivityNotFoundException) {
             uriString = if (PreferenceManager.getDefaultSharedPreferences(context)
-                    .getBoolean("mobile_imdb", false)
+                    .getBoolean(DreamDroid.PREFS_KEY_MOBILE_IMDB, false)
             ) {
                 "http://m.imdb.com/find?q=" + event.title
             } else {

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -16,22 +17,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AppSettings
 
 /**
  * TV settings subset matching [R.xml.preferences] on television
  * (`xml-television/preferences.xml`). Same PreferenceManager keys as phone.
  */
 @Composable
-fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
+fun TvSettingsScreen(
+    settings: AppSettings,
+    onChange: ((AppSettings) -> AppSettings) -> Unit,
+    showDeveloperCategory: Boolean = false,
+    syncPiconsPathDraft: TextFieldState? = null,
+    onEditSyncPiconsPath: () -> Unit = {},
+    onConfirmSyncPiconsPath: () -> Unit = {},
+    onDismissSyncPiconsPath: () -> Unit = {},
+    modifier: Modifier = Modifier
+) {
     var listDialog by remember { mutableStateOf<ListDialogSpec?>(null) }
-    var editDialog by remember { mutableStateOf<EditDialogSpec?>(null) }
 
     val hwEntries = stringArrayResource(R.array.hw_accel_entries)
     val hwValues = stringArrayResource(R.array.hw_accel_values)
     val hwAccelDialogTitle = stringResource(R.string.video_use_hw_accel)
-    val syncPathDialogTitle = stringResource(R.string.sync_picons_path)
 
     Surface(
         modifier = modifier.fillMaxSize(),
@@ -47,25 +55,25 @@ fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
             SwitchPreferenceRow(
                 title = stringResource(R.string.integrated_video_player),
                 summary = stringResource(R.string.integrated_video_player_long),
-                checked = state.integratedVideoPlayer,
-                onCheckedChange = {
-                    state.setBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, it)
+                checked = settings.integratedVideoPlayer,
+                onCheckedChange = { checked ->
+                    onChange { it.copy(integratedVideoPlayer = checked) }
                 }
             )
             ListPreferenceRow(
                 title = stringResource(R.string.use_hw_accel),
                 summary = stringResource(
                     R.string.use_hw_accel_long,
-                    entryLabel(hwEntries, hwValues, state.videoHardwareAcceleration)
+                    entryLabel(hwEntries, hwValues, settings.videoHardwareAcceleration)
                 ),
-                enabled = state.integratedVideoPlayer,
+                enabled = settings.integratedVideoPlayer,
                 onClick = {
                     listDialog = ListDialogSpec(
                         title = hwAccelDialogTitle,
                         entries = hwEntries.toList(),
                         values = hwValues.toList(),
-                        selectedValue = state.videoHardwareAcceleration,
-                        key = DreamDroid.PREFS_KEY_HWACCEL
+                        selectedValue = settings.videoHardwareAcceleration,
+                        set = { copy(videoHardwareAcceleration = it) }
                     )
                 }
             )
@@ -74,46 +82,42 @@ fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
             SwitchPreferenceRow(
                 title = stringResource(R.string.use_name_as_picon_filename),
                 summary = stringResource(R.string.use_name_as_picon_filename_long),
-                checked = state.useNameAsPiconFilename,
-                onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, it) }
+                checked = settings.useNameAsPiconFilename,
+                onCheckedChange = { checked ->
+                    onChange { it.copy(useNameAsPiconFilename = checked) }
+                }
             )
             ActionPreferenceRow(
                 title = stringResource(R.string.sync_picons_path),
-                summary = state.syncPiconsPath.ifEmpty {
+                summary = settings.syncPiconsPath.ifEmpty {
                     stringResource(R.string.sync_picons_path_long)
                 },
-                onClick = {
-                    editDialog = EditDialogSpec(
-                        title = syncPathDialogTitle,
-                        value = state.syncPiconsPath,
-                        key = DreamDroid.PREFS_KEY_SYNC_PICONS_PATH
-                    )
-                }
+                onClick = onEditSyncPiconsPath
             )
 
-            if (state.showDeveloperCategory) {
+            if (showDeveloperCategory) {
                 PreferenceCategoryHeader(stringResource(R.string.developer_settings))
                 SwitchPreferenceRow(
                     title = stringResource(R.string.developer_settings_enable),
                     summary = null,
-                    checked = state.enableDeveloper,
-                    onCheckedChange = {
-                        state.setBoolean(DreamDroid.PREFS_KEY_ENABLE_DEVELOPER_SETTINGS, it)
+                    checked = settings.enableDeveloper,
+                    onCheckedChange = { checked ->
+                        onChange { it.copy(enableDeveloper = checked) }
                     }
                 )
                 SwitchPreferenceRow(
                     title = stringResource(R.string.use_fake_picon),
                     summary = stringResource(R.string.use_fake_picon_long),
-                    checked = state.fakePicon,
-                    enabled = state.enableDeveloper,
-                    onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, it) }
+                    checked = settings.fakePicon,
+                    enabled = settings.enableDeveloper,
+                    onCheckedChange = { checked -> onChange { it.copy(fakePicon = checked) } }
                 )
                 SwitchPreferenceRow(
                     title = stringResource(R.string.dump_xml),
                     summary = stringResource(R.string.dump_xml_long),
-                    checked = state.xmlDebug,
-                    enabled = state.enableDeveloper,
-                    onCheckedChange = { state.setBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, it) }
+                    checked = settings.xmlDebug,
+                    enabled = settings.enableDeveloper,
+                    onCheckedChange = { checked -> onChange { it.copy(xmlDebug = checked) } }
                 )
             }
         }
@@ -124,20 +128,18 @@ fun TvSettingsScreen(state: SettingsState, modifier: Modifier = Modifier) {
             spec = dialog,
             onDismiss = { listDialog = null },
             onSelect = { value ->
-                state.setString(dialog.key, value)
+                onChange { dialog.set(it, value) }
                 listDialog = null
             }
         )
     }
 
-    editDialog?.let { dialog ->
+    if (syncPiconsPathDraft != null) {
         EditTextPreferenceDialog(
-            spec = dialog,
-            onDismiss = { editDialog = null },
-            onConfirm = { value ->
-                state.setString(dialog.key, value)
-                editDialog = null
-            }
+            title = stringResource(R.string.sync_picons_path),
+            state = syncPiconsPathDraft,
+            onDismiss = onDismissSyncPiconsPath,
+            onConfirm = onConfirmSyncPiconsPath
         )
     }
 }

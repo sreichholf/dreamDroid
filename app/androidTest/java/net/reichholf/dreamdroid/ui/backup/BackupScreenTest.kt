@@ -11,19 +11,13 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import com.google.gson.GsonBuilder
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.helpers.backup.BackupData
-import net.reichholf.dreamdroid.helpers.backup.BackupService
-import net.reichholf.dreamdroid.helpers.backup.GenericSetting
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -41,38 +35,23 @@ class BackupScreenTest {
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
-    @After
-    fun deleteF05Artifacts() {
-        val ctx = InstrumentationRegistry.getInstrumentation().targetContext
-        PreferenceManager.getDefaultSharedPreferences(ctx)
-            .edit()
-            .remove("f05_import_probe")
-            .commit()
-        val dao = AppDatabase.profilesBlocking(ctx)
-        dao.getProfiles()
-            .filter { it.name?.startsWith("f05-") == true }
-            .forEach { dao.deleteProfile(it) }
-    }
-
     @Test
     fun keyLabelsAndButtonsVisible() {
-        val state = BackupUiState().apply {
-            replaceProfiles(
-                listOf(
-                    BackupProfileToggle(
-                        id = 1,
-                        label = "Home (192.168.1.1) (current)",
-                        checked = true
-                    )
-                )
+        val state = BackupUiState(
+            profiles = listOf(
+                BackupProfileToggle(id = 1, name = "Home", host = "192.168.1.1", current = true),
+                BackupProfileToggle(id = 2, name = "Cellar", host = "192.168.1.2")
             )
-        }
+        )
         composeRule.setContent {
             DreamDroidTheme {
                 BackupScreen(
                     state = state,
                     onImport = {},
-                    onExport = {}
+                    onExport = {},
+                    onProfileCheckedChange = { _, _ -> },
+                    onExportSettingsChange = {},
+                    onIncludePasswordsChange = {}
                 )
             }
         }
@@ -81,13 +60,14 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Export").assertIsDisplayed()
         composeRule.onNodeWithText("Profiles").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsDisplayed()
+        composeRule.onNodeWithText("Cellar (192.168.1.2)").assertIsDisplayed()
         composeRule.onNodeWithText("Settings").assertIsDisplayed()
         composeRule.onNodeWithText("Export settings").assertIsDisplayed()
         composeRule.onNodeWithText("Include receiver passwords").assertIsDisplayed()
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
         composeRule.onNodeWithText("Include receiver passwords").assertIsOn()
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(3)
+        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(4)
         composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
         val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
@@ -100,53 +80,33 @@ class BackupScreenTest {
     }
 
     @Test
-    fun failedExportDoesNotToastSuccess() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val message = backupExportUserMessage(context, exported = false)
+    fun switchesAndButtonsReportToTheCaller() {
+        val events = mutableListOf<String>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                BackupScreen(
+                    state = BackupUiState(
+                        profiles = listOf(BackupProfileToggle(id = 7, name = "Home", host = "h"))
+                    ),
+                    onImport = { events += "import" },
+                    onExport = { events += "export" },
+                    onProfileCheckedChange = { id, checked -> events += "profile $id $checked" },
+                    onExportSettingsChange = { events += "settings $it" },
+                    onIncludePasswordsChange = { events += "passwords $it" }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Import").performClick()
+        composeRule.onNodeWithText("Export").performClick()
+        composeRule.onNodeWithText("Home (h)").performClick()
+        composeRule.onNodeWithText("Export settings").performClick()
+        composeRule.onNodeWithText("Include receiver passwords").performClick()
+        composeRule.waitForIdle()
+
         assertEquals(
-            context.getString(net.reichholf.dreamdroid.R.string.backup_export_missing_permission),
-            message
+            listOf("import", "export", "profile 7 false", "settings true", "passwords false"),
+            events
         )
-        assertTrue(
-            backupExportUserMessage(context, exported = true) !=
-                backupExportUserMessage(context, exported = false)
-        )
-    }
-
-    @Test
-    fun importPersistsSettings() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val prefs = PreferenceManager.getDefaultSharedPreferences(context)
-        prefs.edit().remove("f05_import_probe").commit()
-        val data = BackupData()
-        data.addGenericSetting(
-            GenericSetting("f05_import_probe", "from-backup", "String")
-        )
-        BackupService(context).doImport(GsonBuilder().create().toJson(data))
-        assertEquals("from-backup", prefs.getString("f05_import_probe", null))
-    }
-
-    @Test
-    fun importDoesNotReplaceDifferentNamedProfile() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dao = AppDatabase.profilesBlocking(context)
-        val kitchen = Profile.getDefault().apply {
-            name = "f05-kitchen"
-            host = "10.0.0.1"
-        }
-        kitchen.id = dao.addProfile(kitchen).toInt()
-        val incoming = Profile.getDefault().apply {
-            id = kitchen.id
-            name = "f05-bedroom"
-            host = "9.9.9.9"
-        }
-        val data = BackupData()
-        data.addProfile(incoming)
-        BackupService(context).doImport(GsonBuilder().create().toJson(data))
-        val byName = dao.getProfiles()
-            .filter { it.name == "f05-kitchen" || it.name == "f05-bedroom" }
-            .associate { it.name to it.host }
-        assertEquals("10.0.0.1", byName["f05-kitchen"])
-        assertEquals("9.9.9.9", byName["f05-bedroom"])
     }
 }

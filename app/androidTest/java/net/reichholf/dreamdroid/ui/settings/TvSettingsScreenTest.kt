@@ -1,7 +1,12 @@
 package net.reichholf.dreamdroid.ui.settings
 
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -9,11 +14,12 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performTextReplacement
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -32,20 +38,11 @@ class TvSettingsScreenTest {
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
     }
 
-    @After
-    fun restoreIntegratedPlayer() {
-        PreferenceManager.getDefaultSharedPreferences(
-            InstrumentationRegistry.getInstrumentation().targetContext
-        ).edit().remove(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER).commit()
-    }
-
     @Test
     fun tvPreferenceTitlesVisible() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val state = SettingsState.create(context)
         composeRule.setContent {
             DreamDroidTvTheme {
-                TvSettingsScreen(state = state)
+                TvSettingsScreen(settings = AppSettings(), onChange = {})
             }
         }
 
@@ -60,44 +57,62 @@ class TvSettingsScreenTest {
     }
 
     @Test
-    fun integratedPlayerDefaultsOnAndStoresOff() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .remove(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER)
-            .commit()
-        val state = SettingsState.create(context)
-        assertTrue(state.integratedVideoPlayer)
+    fun integratedPlayerDefaultsOnAndTurnsOff() {
+        var settings by mutableStateOf(AppSettings())
+        assertTrue(settings.integratedVideoPlayer)
         composeRule.setContent {
             DreamDroidTvTheme {
-                TvSettingsScreen(state = state)
+                TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
             }
         }
 
         composeRule.onNode(hasText("Integrated video player") and isToggleable()).performClick()
         composeRule.waitForIdle()
-        assertEquals(
-            false,
-            PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true)
-        )
-        assertFalse(state.integratedVideoPlayer)
+        assertFalse(settings.integratedVideoPlayer)
     }
 
     @Test
     fun hwAccelDisabledWhenIntegratedPlayerOff() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
-        PreferenceManager.getDefaultSharedPreferences(context).edit()
-            .putBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, false)
-            .commit()
-        val state = SettingsState.create(context)
         composeRule.setContent {
             DreamDroidTvTheme {
-                TvSettingsScreen(state = state)
+                TvSettingsScreen(
+                    settings = AppSettings(integratedVideoPlayer = false),
+                    onChange = {}
+                )
             }
         }
 
         composeRule.onNodeWithText("Accelerated decoding").performClick()
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText("Hardware Acceleration").assertCountEquals(0)
+    }
+
+    @Test
+    fun syncPathDialogEditsTheDraft() {
+        val draft = TextFieldState("/usr/share/enigma2/picon")
+        var editing by mutableStateOf(false)
+        var confirmed = false
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                TvSettingsScreen(
+                    settings = AppSettings(),
+                    onChange = {},
+                    syncPiconsPathDraft = draft.takeIf { editing },
+                    onEditSyncPiconsPath = { editing = true },
+                    onConfirmSyncPiconsPath = {
+                        confirmed = true
+                        editing = false
+                    }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("/usr/share/enigma2/picon").performScrollTo().performClick()
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("/media/hdd/picon")
+        composeRule.onNodeWithText("OK").performClick()
+        composeRule.waitForIdle()
+
+        assertTrue(confirmed)
+        assertEquals("/media/hdd/picon", draft.text.toString())
     }
 }

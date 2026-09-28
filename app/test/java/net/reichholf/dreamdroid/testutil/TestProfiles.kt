@@ -38,8 +38,10 @@ class TestProfiles(val context: TestContext = TestContext()) {
     val repository = ProfileRepository(RoomProfileStore(database, context))
 }
 
+/** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
 class MemorySharedPreferences : SharedPreferences {
     private val values = HashMap<String, Any?>()
+    private val listeners = mutableListOf<SharedPreferences.OnSharedPreferenceChangeListener>()
 
     override fun getAll(): Map<String, *> = HashMap(values)
 
@@ -65,11 +67,15 @@ class MemorySharedPreferences : SharedPreferences {
 
     override fun registerOnSharedPreferenceChangeListener(
         listener: SharedPreferences.OnSharedPreferenceChangeListener
-    ) = Unit
+    ) {
+        listeners += listener
+    }
 
     override fun unregisterOnSharedPreferenceChangeListener(
         listener: SharedPreferences.OnSharedPreferenceChangeListener
-    ) = Unit
+    ) {
+        listeners -= listener
+    }
 
     private inner class Editor : SharedPreferences.Editor {
         private val changes = HashMap<String, Any?>()
@@ -98,11 +104,18 @@ class MemorySharedPreferences : SharedPreferences {
         }
 
         override fun apply() {
+            val before = HashMap(values)
             if (clear) {
                 values.clear()
             }
             removals.forEach { values.remove(it) }
             values.putAll(changes)
+            val changed = (before.keys + values.keys).filter { before[it] != values[it] }
+            changed.forEach { key ->
+                listeners.toList().forEach {
+                    it.onSharedPreferenceChanged(this@MemorySharedPreferences, key)
+                }
+            }
         }
 
         private fun put(key: String, value: Any?): SharedPreferences.Editor = apply {

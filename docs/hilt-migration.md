@@ -147,11 +147,11 @@ One line per PR: state, then PR link once opened.
 - [x] 1 Hilt + Device info — merged, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
 - [x] 2 Signal + Screenshot — merged, [#527](https://github.com/sreichholf/dreamDroid/pull/527)
 - [x] 3 Profiles + setup — merged, [#528](https://github.com/sreichholf/dreamDroid/pull/528)
-- [ ] 4 Settings + backup — in progress
+- [ ] 4 Settings + backup — in review, [#532](https://github.com/sreichholf/dreamDroid/pull/532)
 - [x] 5 Timers — merged, [#530](https://github.com/sreichholf/dreamDroid/pull/530)
-- [ ] 6 Movies — in review, [#531](https://github.com/sreichholf/dreamDroid/pull/531)
+- [x] 6 Movies — merged, [#531](https://github.com/sreichholf/dreamDroid/pull/531)
 - [x] 7 List EPG — merged, [#529](https://github.com/sreichholf/dreamDroid/pull/529)
-- [ ] 8 MultiEPG — in progress
+- [ ] 8 MultiEPG — in review, [#533](https://github.com/sreichholf/dreamDroid/pull/533)
 - [ ] 9 Service lists + pickers
 - [ ] 10 Hub, now playing, zap
 - [ ] 11 Phone shell
