@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PR 1 in progress. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PR 1 in review. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -144,7 +144,7 @@ Only once a UI test needs a faked binding (decision 8). A custom runner that swa
 
 One line per PR: state, then PR link once opened.
 
-- [ ] 1 Hilt + Device info — in progress
+- [ ] 1 Hilt + Device info — in review, [#526](https://github.com/sreichholf/dreamDroid/pull/526)
 - [ ] 2 Signal + Screenshot
 - [ ] 3 Profiles + setup
 - [ ] 4 Settings + backup
@@ -160,6 +160,19 @@ One line per PR: state, then PR link once opened.
 - [ ] 14 Non-UI entry points + locator removal
 - [ ] 15 *(optional)* Hilt instrumented tests
 
+### Parallel waves
+
+After PR 1, PRs in the same wave do not depend on each other and run in parallel. Each wave starts from `main` with the previous wave merged, or stacked on a reviewed predecessor. Same-wave PRs put their bindings in a feature module (`di/<Feature>Module.kt`) to keep conflicts small, and merge one at a time, each pulling in `main` first.
+
+| Wave | PRs |
+| --- | --- |
+| A | 2, 3 |
+| B | 4, 5, 6, 7 |
+| C | 8, then 9 |
+| D | 10, 12, 13 |
+| E | 11 |
+| F | 14 |
+
 ## Decisions
 
 Accepted by the operator 2026-09-28. Change one only with a note here saying why.
@@ -173,6 +186,7 @@ Accepted by the operator 2026-09-28. Change one only with a note here saying why
 7. **`PiconSyncWorker` uses an `@EntryPoint`** in PR 14. Switch to `@HiltWorker` if a second worker shows up.
 8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding.
 9. **Planned series.** PRs 1–14 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
+10. **JVM tests and Android stubs.** `EnigmaHttp` error paths call `android.util.Log`, which throws on the JVM. The app sets `testOptions.unitTests.isReturnDefaultValues = true` (PR 1) so repository and ViewModel tests cover HTTP errors. `DreamDroid.dumpXml()` still reads `ProfileRepository.get()`, so tests install the static repository until PR 14 removes it.
 
 ## Not in this plan
 

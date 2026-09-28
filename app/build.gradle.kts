@@ -200,6 +200,9 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     testOptions {
+        // android.util.Log and friends return defaults on the JVM, so tests can drive
+        // EnigmaHttp error paths (docs/hilt-migration.md, decision 10).
+        unitTests.isReturnDefaultValues = true
         unitTests.all {
             it.useJUnitPlatform()
         }

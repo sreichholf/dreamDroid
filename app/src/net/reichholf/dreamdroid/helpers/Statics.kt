@@ -16,12 +16,12 @@ object Statics {
     const val ITEM_RESTART_GUI: Int = 0x6014
     const val ITEM_REBOOT: Int = 0x6015
     const val ITEM_SHUTDOWN: Int = 0x6016
-    const val ITEM_SAVE: Int = R.id.menu_save
-    const val ITEM_SET_DEFAULT: Int = R.id.menu_default
-    const val ITEM_TAGS: Int = R.id.menu_tags
-    const val ITEM_CLEANUP: Int = R.id.menu_cleanup
-    const val ITEM_DETECT_DEVICES: Int = R.id.menu_detect_devices
-    const val ITEM_DELETE: Int = R.id.menu_delete
+    val ITEM_SAVE: Int = R.id.menu_save
+    val ITEM_SET_DEFAULT: Int = R.id.menu_default
+    val ITEM_TAGS: Int = R.id.menu_tags
+    val ITEM_CLEANUP: Int = R.id.menu_cleanup
+    val ITEM_DETECT_DEVICES: Int = R.id.menu_detect_devices
+    val ITEM_DELETE: Int = R.id.menu_delete
 
     const val REQUEST_EDIT_TIMER: Int = 0x5000
     const val REQUEST_PICK_SERVICE: Int = 0x5001

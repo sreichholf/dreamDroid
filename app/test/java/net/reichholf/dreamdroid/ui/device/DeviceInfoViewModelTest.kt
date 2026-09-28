@@ -16,6 +16,9 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -84,6 +87,19 @@ class DeviceInfoViewModelTest {
         assertEquals(UiText.Resource(R.string.error_parsing), state.userMessage)
         viewModel.onMessageShown()
         assertNull(viewModel.uiState.value.userMessage)
+    }
+
+    @Test
+    fun httpErrorSetsFailureMessage() = runTest {
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val state = viewModel(SavedStateHandle()).settled()
+
+        assertNull(state.info)
+        assertEquals(
+            EnigmaHttpError(EnigmaFailure.fromHttpStatus(500, "Server Error")).contentErrorText(),
+            state.userMessage
+        )
     }
 
     @Test
