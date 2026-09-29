@@ -1,6 +1,12 @@
 package net.reichholf.dreamdroid.data
 
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Event
@@ -27,9 +33,11 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_LIST
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
+import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -278,6 +286,61 @@ class TimerRepositoryTest {
         assertEquals(1, receiver.requestsTo(TAGS).size)
     }
 
+    @Test
+    fun slowLocationsDoNotHoldTheProfileRepository() = runBlocking {
+        receiver.respond(LOCATIONS, slowLocations())
+        receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val profiles = receiver.repository
+        val profile = profiles.requireCurrent()
+
+        val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
+        awaitRequest(LOCATIONS)
+        val started = System.nanoTime()
+        profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
+        val deviceInfo = profiles.deviceInfo(profile)
+        val waitedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+
+        assertEquals("<e2deviceinfo/>", deviceInfo)
+        assertTrue(waitedMs < HELD_MS / 2, "device info waited $waitedMs ms on the locations")
+        assertEquals(
+            TimerChoices(listOf("/media/hdd/"), listOf("News"), true),
+            choices.await()
+        )
+    }
+
+    @Test
+    fun locationsOfTheProfileSwitchedAwayFromAreDropped() = runBlocking {
+        receiver.respond(LOCATIONS, slowLocations())
+        receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val profiles = receiver.repository
+        val other = Profile().apply {
+            name = "other"
+            host = "other-box"
+        }
+        profiles.save(other)
+
+        val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
+        awaitRequest(LOCATIONS)
+        assertTrue(profiles.activate(other.id!!, forceEvent = true))
+        choices.await()
+
+        assertTrue(profiles.locations().isEmpty())
+        assertTrue(profiles.tags().isEmpty())
+        assertEquals(false, profiles.locationsLoadedFromReceiver())
+    }
+
+    private fun slowLocations(): MockResponse = MockResponse()
+        .setBody("<e2locations><e2location>/media/hdd/</e2location></e2locations>")
+        .setHeadersDelay(HELD_MS, TimeUnit.MILLISECONDS)
+
+    private suspend fun awaitRequest(path: String) = withContext(Dispatchers.IO) {
+        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
+        while (receiver.requestsTo(path).isEmpty()) {
+            check(System.nanoTime() < deadline) { "no request to $path" }
+            Thread.sleep(10)
+        }
+    }
+
     private suspend fun writeSnapshot(timers: List<Timer>) {
         dao.replaceSnapshot(
             PROFILE_ID,
@@ -299,4 +362,8 @@ class TimerRepositoryTest {
         state = "0",
         repeated = "0"
     )
+
+    private companion object {
+        const val HELD_MS = 2_000L
+    }
 }

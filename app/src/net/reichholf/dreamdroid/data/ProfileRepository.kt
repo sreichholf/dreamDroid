@@ -45,7 +45,10 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     )
     val switches: SharedFlow<Profile> = _switches.asSharedFlow()
 
+    @Volatile
     private var locationList: ArrayList<String> = ArrayList()
+
+    @Volatile
     private var tagList: ArrayList<String> = ArrayList()
 
     /**
@@ -244,41 +247,42 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         return setCurrent(id, forceEvent = true)
     }
 
-    @Synchronized
-    fun loadLocations(http: EnigmaHttp): Boolean {
-        locationList.clear()
-        locationsFromReceiver = false
-        var gotLoc = false
+    /**
+     * Asks [profile]'s receiver over [http] for its movie locations; `/hdd/movie` when it
+     * does not answer. The request runs outside the lock so a slow receiver does not stall
+     * other callers, such as the main thread asking for [deviceInfo]. The answer is dropped
+     * when [profile] is no longer the current one.
+     */
+    fun loadLocations(profile: Profile, http: EnigmaHttp): Boolean {
         val parsed = http.fetchStringList(URIStore.LOCATIONS, "e2location")
-        if (parsed != null) {
-            locationList.addAll(parsed)
-            gotLoc = true
-        }
-        if (!gotLoc) {
+        if (parsed == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
-            locationList = ArrayList()
-            locationList.add("/hdd/movie")
-        } else {
-            locationsFromReceiver = true
         }
-        return gotLoc
+        synchronized(this) {
+            if (isCurrent(profile)) {
+                locationList = ArrayList(parsed ?: listOf("/hdd/movie"))
+                locationsFromReceiver = parsed != null
+            }
+        }
+        return parsed != null
     }
 
-    @Synchronized
-    fun loadTags(http: EnigmaHttp): Boolean {
-        tagList.clear()
-        var gotTags = false
+    /** Asks for the timer tags like [loadLocations]; none when the receiver does not answer. */
+    fun loadTags(profile: Profile, http: EnigmaHttp): Boolean {
         val parsed = http.fetchStringList(URIStore.TAGS, "e2tag")
-        if (parsed != null) {
-            tagList.addAll(parsed)
-            gotTags = true
-        }
-        if (!gotTags) {
+        if (parsed == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing Tags, no more Tags will be available")
-            tagList = ArrayList()
         }
-        return gotTags
+        synchronized(this) {
+            if (isCurrent(profile)) {
+                tagList = ArrayList(parsed.orEmpty())
+            }
+        }
+        return parsed != null
     }
+
+    private fun isCurrent(profile: Profile): Boolean =
+        current.value?.let { it.id == profile.id && it.hasSameSettings(profile) } == true
 
     @Synchronized
     private fun clearPerProfileCaches() {
