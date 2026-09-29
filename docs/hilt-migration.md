@@ -71,8 +71,8 @@ Screen groups are ordered so that each PR's repository exists before a later gro
 | 9 | Service lists + pickers | `HubServiceListViewModel`, `PickServiceViewModel`, `TimerServicePickViewModel` | `ServiceRepository` | `UserBouquetCache`, `UseDrivenCache` |
 | 10 | Hub, now playing, zap | `HubViewModel`, `HubNowPlayingViewModel`, `CurrentServiceViewModel`, `ZapViewModel` | `ReceiverRepository` zap/current | `loadCurrentService` |
 | 11a | Phone shell actions | `ShellViewModel` (power/sleep/message), `PhoneNavHostState`, virtual remote | `ReceiverRepository` power/sleep/message/keys/volume | `ShellViewModel.Factory`, phone `ShellMessages` use (`ProfileEditDestination`, virtual remote) |
-| 11b | Phone shell gate | Startup profile check, volume keys, device detection into `ShellViewModel` | — | `VolumePowerSleepLoad`, `launchDetectDevicesLoad` |
-| 12 | TV hub | `TvHubViewModel`, TV hub browse | — | `TvHubViewModel.Factory`, `MultiEpgSyncHolder`, `ProfileDetectLoad`, `ShellMessages` |
+| 11b | Phone shell gate | Startup profile check, reachability probe, volume keys into `ShellViewModel` | `SettingsRepository.firstStart` | `VolumePowerSleepLoad`, `ProfileDetectLoad` (incl. both `launchDetectDevicesLoad`), `hasUseDrivenCache(profile, context)` |
+| 12 | TV hub | `TvHubViewModel`, TV hub browse | — | `TvHubViewModel.Factory`, `MultiEpgSyncHolder`, `ShellMessages` |
 | 13 | Player + share | `VideoPlaybackViewModel`, `ShareViewModel` | `@AndroidEntryPoint` on `VideoActivity`, `ShareActivity` | remaining `*Load.kt` helpers |
 | 14 | Non-UI entry points + locator removal | — | `@AndroidEntryPoint` widget receiver/config, worker injection, injected `EnigmaOkHttp` | `ProfileRepository.get/install`, `SessionConnectionHolder.shared`, `AppDatabase` statics, `getAppContext()`, no-profile `EnigmaClient`/`EnigmaHttp` defaults |
 | 15 | *(optional)* Hilt instrumented tests | — | `HiltTestRunner`, first `@TestInstallIn` fake | — |
@@ -127,7 +127,7 @@ Each repository owns its offline rules. It absorbs the matching `*SnapshotStore`
 - **10** Hub, now-playing strip, current service, zap: `ReceiverRepository` gains zap and current service.
 - **11** Phone shell, split past the ~20-file limit along the sub-bullets below.
   - **11a** Shell actions: `ShellViewModel` loses its factory and exposes `StateFlow<ShellUiState>` (message, sleep-timer and profile-switch effects). Power, sleep timer, send message, and virtual-remote keys move to `ReceiverRepository`. `PhoneNavHostState` becomes a `@HiltViewModel`. `ShellMessages.post` callers in `ProfileEditDestination` and the virtual remote move to shell/screen UI state. The gate (`MainActivity.onProfileChanged`), volume keys, `VolumePowerSleepLoad`, and `launchDetectDevicesLoad` stay for 11b.
-  - **11b** Shell gate: the startup profile check, volume keys, and device detection move out of `MainActivity` / `PhoneNavHandle` into `ShellViewModel`. Deletes `VolumePowerSleepLoad` and `launchDetectDevicesLoad`.
+  - **11b** Shell gate: the startup profile check, the reachability probe, and volume keys move out of `MainActivity` into `ShellViewModel`, which follows `profiles.switches` itself (replacing 11a's profile-switch effect) and owns what the gate shows (`ShellUiState.profileCheck`, moved off `PhoneNavHostState`). The activity only navigates on the check's started/outcome effects. First start goes through `SettingsRepository.firstStart`. Deletes `VolumePowerSleepLoad` and `ProfileDetectLoad`; neither `launchDetectDevicesLoad` had a caller (setup discovery already uses `ReceiverDiscovery`), so no device detection moves.
 - **12** TV hub: `TvHubViewModel` loses its factory, the TV startup profile check moves out of TV `MainActivity`, and TV hub browse stops using `MultiEpgSyncHolder`, so the holder is deleted. `ShellMessages` gets deleted here if nothing else posts to it by then; otherwise in 13.
 - **13** Player and share: `VideoActivity` and `ShareActivity` become `@AndroidEntryPoint`. `ShareActivity` keeps its `Toast` (deliberate exception). `VLCInstance` stops using `getAppContext()` and takes the context from its caller.
 
@@ -158,7 +158,7 @@ One line per PR: state, then PR link once opened.
 - [x] 9 Service lists + pickers — merged, [#534](https://github.com/sreichholf/dreamDroid/pull/534) (hub service list) and [#535](https://github.com/sreichholf/dreamDroid/pull/535) (pickers)
 - [x] 10 Hub, now playing, zap — merged, [#537](https://github.com/sreichholf/dreamDroid/pull/537)
 - [ ] 11a Phone shell actions — in progress
-- [ ] 11b Phone shell gate
+- [ ] 11b Phone shell gate — in review
 - [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
 - [ ] 14 Non-UI entry points + locator removal
