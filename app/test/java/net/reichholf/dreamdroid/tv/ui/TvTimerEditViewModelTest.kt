@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshots.Snapshot
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -44,7 +45,7 @@ class TvTimerEditViewModelTest {
         )
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
         sessions.onSuccess()
-        viewModel = TvTimerEditViewModel(receiver.timerRepository(), receiver.repository, sessions)
+        viewModel = editor(SavedStateHandle())
     }
 
     @AfterEach
@@ -120,6 +121,7 @@ class TvTimerEditViewModelTest {
     @Test
     fun blockedSessionDoesNotSave() = runTest {
         val blocked = TvTimerEditViewModel(
+            SavedStateHandle(),
             receiver.timerRepository(),
             receiver.repository,
             SessionConnectionHolder()
@@ -132,6 +134,47 @@ class TvTimerEditViewModelTest {
         assertTrue(receiver.requestsTo(TIMER_CHANGE).isEmpty())
         blocked.cancelAndJoin()
     }
+
+    @Test
+    fun editsSurviveProcessDeathWhenTheSameTimerIsBoundAgain() = runTest {
+        val handle = SavedStateHandle()
+        val timer = timer("Launch name")
+        val first = editor(handle)
+        first.bind(timer, isCreate = false)
+        first.uiState.first { it.progress == null && it.locations.isNotEmpty() }
+        first.name.state.setTextAndPlaceCursorAtEnd("Typed before death")
+        first.onZapChange(true)
+        Snapshot.sendApplyNotifications()
+        first.cancelAndJoin()
+
+        val restored = editor(handle)
+        restored.bind(timer, isCreate = false)
+
+        assertEquals("Typed before death", restored.name.text)
+        assertEquals("1", restored.uiState.value.timer?.justPlay)
+        restored.cancelAndJoin()
+    }
+
+    @Test
+    fun aReleasedEditorIsNotRestored() = runTest {
+        val handle = SavedStateHandle()
+        val timer = timer("Launch name")
+        val first = editor(handle)
+        first.bind(timer, isCreate = false)
+        first.name.state.setTextAndPlaceCursorAtEnd("Discarded")
+        Snapshot.sendApplyNotifications()
+        first.release(timer, isCreate = false)
+        first.cancelAndJoin()
+
+        val restored = editor(handle)
+        restored.bind(timer, isCreate = false)
+
+        assertEquals("Launch name", restored.name.text)
+        restored.cancelAndJoin()
+    }
+
+    private fun editor(handle: SavedStateHandle) =
+        TvTimerEditViewModel(handle, receiver.timerRepository(), receiver.repository, sessions)
 
     private suspend fun ready(): TimerEditUiState =
         viewModel.uiState.first { it.progress == null && it.locations.isNotEmpty() }

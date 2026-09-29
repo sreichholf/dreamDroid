@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,17 +47,23 @@ data class TvTimerHostUiState(
 
 /**
  * List, add, and edit for [TvTimerHost]. The scope keeps the page and the loaded list
- * across a configuration change; [reload] still runs on each entry. When the session is
- * not Online, the Room snapshot paints without asking the receiver.
+ * across a configuration change, and the page with its editor timer across process death;
+ * [reload] still runs on each entry. When the session is not Online, the Room snapshot
+ * paints without asking the receiver.
  */
 @HiltViewModel
 class TvTimerHostViewModel @Inject constructor(
+    private val handle: SavedStateHandle,
     private val timers: TimerRepository,
     private val profiles: ProfileRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
-        TvTimerHostUiState(mutationsBlocked = sessions.status.value.blocksMutations)
+        TvTimerHostUiState(
+            page = savedPage(),
+            editorTimer = handle[KEY_EDITOR_TIMER],
+            mutationsBlocked = sessions.status.value.blocksMutations
+        )
     )
     val uiState: StateFlow<TvTimerHostUiState> = _uiState.asStateFlow()
 
@@ -72,7 +79,7 @@ class TvTimerHostViewModel @Inject constructor(
     }
 
     fun showList() {
-        _uiState.update { it.copy(page = TvTimerPage.List, editorTimer = null) }
+        show(TvTimerPage.List, editorTimer = null)
     }
 
     /** Opens add with a new timer; keeps the draft when add is already open. */
@@ -81,9 +88,7 @@ class TvTimerHostViewModel @Inject constructor(
         if (state.page is TvTimerPage.Add && state.editorTimer != null) {
             return
         }
-        _uiState.update {
-            it.copy(page = TvTimerPage.Add, editorTimer = TimerRequests.getInitialTimer())
-        }
+        show(TvTimerPage.Add, TimerRequests.getInitialTimer())
     }
 
     fun showEdit(index: Int) {
@@ -92,7 +97,29 @@ class TvTimerHostViewModel @Inject constructor(
             showList()
             return
         }
-        _uiState.update { it.copy(page = TvTimerPage.Edit(index), editorTimer = timer) }
+        show(TvTimerPage.Edit(index), timer)
+    }
+
+    private fun show(page: TvTimerPage, editorTimer: Timer?) {
+        handle[KEY_PAGE] = when (page) {
+            TvTimerPage.List -> PAGE_LIST
+            TvTimerPage.Add -> PAGE_ADD
+            is TvTimerPage.Edit -> page.index
+        }
+        handle[KEY_EDITOR_TIMER] = editorTimer
+        _uiState.update { it.copy(page = page, editorTimer = editorTimer) }
+    }
+
+    /** The saved page; the list when nothing was saved or the editor timer is gone. */
+    private fun savedPage(): TvTimerPage {
+        if (handle.get<Timer>(KEY_EDITOR_TIMER) == null) {
+            return TvTimerPage.List
+        }
+        return when (val page = handle.get<Int>(KEY_PAGE) ?: PAGE_LIST) {
+            PAGE_LIST -> TvTimerPage.List
+            PAGE_ADD -> TvTimerPage.Add
+            else -> TvTimerPage.Edit(page)
+        }
     }
 
     fun reload() {
@@ -158,5 +185,14 @@ class TvTimerHostViewModel @Inject constructor(
             _uiState.update { it.copy(progress = null, userMessage = response.userMessageText()) }
             reload()
         }
+    }
+
+    private companion object {
+        const val KEY_PAGE = "tv_timer_host_page"
+        const val KEY_EDITOR_TIMER = "tv_timer_host_editor_timer"
+
+        // Saved page: an Edit page saves its non-negative list index.
+        const val PAGE_LIST = -1
+        const val PAGE_ADD = -2
     }
 }

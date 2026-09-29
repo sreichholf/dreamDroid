@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -144,7 +145,24 @@ class TvTimerHostViewModelTest {
         assertTrue(receiver.requestsTo(TIMER_DELETE).isEmpty())
     }
 
-    private fun viewModel() = TvTimerHostViewModel(
+    @Test
+    fun theOpenEditorSurvivesProcessDeath() {
+        val handle = SavedStateHandle()
+        val first = viewModel(handle)
+        first.showAdd()
+        val draft = first.uiState.value.editorTimer
+
+        val restored = viewModel(handle)
+
+        assertEquals(TvTimerPage.Add, restored.uiState.value.page)
+        assertEquals(draft, restored.uiState.value.editorTimer)
+
+        restored.showList()
+        assertEquals(TvTimerPage.List, viewModel(handle).uiState.value.page)
+    }
+
+    private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = TvTimerHostViewModel(
+        handle,
         receiver.timerRepository(),
         receiver.repository,
         sessions
