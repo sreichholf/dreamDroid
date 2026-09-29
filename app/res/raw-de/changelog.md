@@ -1,5 +1,9 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.465
+* NEU: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
+* NEU: EPG-Suche funktioniert offline in bereits geöffneten Bouquets
+
 ## 2.0.464
 * NEU: Einrichtungsassistent, solange kein Profil gespeichert ist. Das Offline-Demoprofil entfällt. Der Assistent hilft beim Finden der Box, bei Adresse, HTTP oder HTTPS und Anmeldung und prüft danach die Verbindung. Das Profil lässt sich auch speichern, wenn die Prüfung fehlschlägt.
 
