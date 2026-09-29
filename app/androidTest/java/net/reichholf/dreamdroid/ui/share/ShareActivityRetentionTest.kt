@@ -5,16 +5,19 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.ShareActivity
+import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.ProfileDaoBlocking
-import net.reichholf.dreamdroid.testutil.dreamDroidApp
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -24,13 +27,21 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class ShareActivityRetentionTest {
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var database: AppDatabase
+
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val dao = ProfileDaoBlocking(dreamDroidApp().database.profileDao())
+    private val dao by lazy { ProfileDaoBlocking(database.profileDao()) }
     private val server = MockWebServer()
     private val release = CountDownLatch(1)
     private val plays = AtomicInteger(0)
@@ -38,6 +49,7 @@ class ShareActivityRetentionTest {
 
     @Before
     fun seedProfiles() {
+        hiltRule.inject()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 if (request.requestUrl?.encodedPath != "/web/mediaplayerplay") {

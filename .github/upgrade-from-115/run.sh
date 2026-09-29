@@ -16,7 +16,7 @@ LOG_DIR=$4
 
 PKG=net.reichholf.dreamdroid.debug
 TEST_PKG=$PKG.test
-RUNNER=$TEST_PKG/androidx.test.runner.AndroidJUnitRunner
+RUNNER=$TEST_PKG/net.reichholf.dreamdroid.testutil.HiltTestRunner
 PREFS=shared_prefs/${PKG}_preferences.xml
 HERE=$(cd "$(dirname "$0")" && pwd)
 

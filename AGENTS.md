@@ -10,7 +10,7 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **Architecture:** new and touched code follows the target architecture in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md#target-architecture): repositories + Hilt, ViewModels without `Application`/`Context` exposing `StateFlow` UI state, Material 3 `TopAppBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`, type-safe routes, DataStore. Do not copy a legacy pattern from neighboring code because it is still there; it is listed under remediation.
 
-**Hilt** (migration in progress, see [`docs/hilt-migration.md`](docs/hilt-migration.md)):
+**Hilt** (the app and its instrumented tests run on Hilt; history and decisions in [`docs/hilt-migration.md`](docs/hilt-migration.md)):
 
 - A binding, repository method, or module lands in the PR with its first consumer. No bindings "for later".
 - Migrated screens use a `@HiltViewModel` taking repositories plus `SavedStateHandle`, obtained with `hiltViewModel()`. Their title and user message are UI state (`UiText`), reported with `ShellTitle` and `ShowShellUserMessage`, not `Activity.title`.
@@ -58,7 +58,7 @@ Tests wait for a signal, never for time. Do not use `Thread.sleep`, `delay(n)`, 
 
 To show that something does *not* happen, await a later signal that must follow it, or drive the code with a test dispatcher. Do not sleep and assert.
 
-To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner` (see **Other traps** for what not to pass to Gradle).
+To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/net.reichholf.dreamdroid.testutil.HiltTestRunner` (see **Other traps** for what not to pass to Gradle).
 
 CI is [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml); read it for what runs on which event. Before pushing, run what the PR job runs:
 

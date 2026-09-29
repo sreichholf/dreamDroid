@@ -13,7 +13,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import java.lang.reflect.Proxy
 import java.util.concurrent.atomic.AtomicInteger
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
@@ -23,7 +22,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.memoryProfiles
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
+import net.reichholf.dreamdroid.testutil.unusedNavHandle
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -139,19 +138,3 @@ class HubNowPlayingRetentionTest {
         const val HEADLINE = "Das Erste HD · Tagesschau"
     }
 }
-
-/**
- * [HubNowPlaying] only calls the handle when the sheet streams. Compose still compares
- * parameters with equals when it decides whether to skip.
- */
-private fun unusedNavHandle(): PhoneNavHandle = Proxy.newProxyInstance(
-    PhoneNavHandle::class.java.classLoader,
-    arrayOf(PhoneNavHandle::class.java)
-) { proxy, method, args ->
-    when (method.name) {
-        "equals" -> proxy === args?.firstOrNull()
-        "hashCode" -> System.identityHashCode(proxy)
-        "toString" -> "unusedNavHandle"
-        else -> error("unexpected PhoneNavHandle.${method.name}")
-    }
-} as PhoneNavHandle

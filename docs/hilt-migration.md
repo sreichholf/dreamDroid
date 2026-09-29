@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–13 and 14a merged; 14b in review. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–14 merged; 15, the last, in review. The **End state** holds on `main` since 14b. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -145,9 +145,18 @@ Split in two. **14a** moves the widget, picons, the HTTP stack, live streams, an
 
 14b as landed: `MainActivity` injects `ProfileRepository`. `SessionConnectionHolder` is an `@Singleton` with an `@Inject` constructor, and `PhoneShell` takes `boxActionsBlocked` from the status `MainActivity` already collects. The picon sync, the last `ShellMessages` poster, runs from `SettingsViewModel` through an injected `PiconSyncScheduler` (WorkManager; a fake in the JVM test, since WorkManager does not run there) and reports started / still running as `SettingsUiState.userMessage`. `DatabaseModule` builds the database with `AppDatabase.build`; `DreamDroid` gets it injected for the pre-Room import. Instrumented tests that drive real activities read the app's singletons from the fields Hilt injected into `DreamDroid` (`testutil/DreamDroidApp.kt`).
 
-### PR 15 (optional) — Hilt in instrumented tests
+### PR 15 — Hilt in instrumented tests
 
-Only once a UI test needs a faked binding (decision 8). A custom runner that swaps the Application for `HiltTestApplication` applies to **all** 142 instrumented test files. Before PR 14 it would break the 59 static references and everything `DreamDroid.onCreate` sets up. Also update `.cursor/cloud/connected-test.sh` and the `am instrument` line in `AGENTS.md` for the new runner class.
+Only once a UI test needs a faked binding (decision 8). A custom runner that swaps the Application for `HiltTestApplication` applies to **all** instrumented test files. Before PR 14 it would break the 59 static references and everything `DreamDroid.onCreate` sets up. Also update `.cursor/cloud/connected-test.sh` and the `am instrument` line in `AGENTS.md` for the new runner class.
+
+15 as landed:
+
+- `hilt-android-testing` (Dagger's version) with KSP for `androidTest`. `testutil.HiltTestRunner` creates `HiltTestApplication` and is the `testInstrumentationRunner`. `connected-test.sh`, `.github/upgrade-from-115/run.sh`, `AGENTS.md`, and the verify skill name it.
+- The first faked binding: `PiconSyncScheduler` moves out of `SettingsModule` into `PiconSyncModule`, and `FakePiconSyncModule` (`@TestInstallIn`) binds `FakePiconSync` in its place. `SettingsPiconSyncTest` taps Sync Picons twice on the real settings destination and `SettingsViewModel` and reads "started", then "still running", from the shell snackbar. With WorkManager no worker ran and the answer depended on the device's previous sync.
+- Tests that use the app's graph are `@HiltAndroidTest` with `HiltAndroidRule` as the outermost rule and `@Inject` fields: the ones that launch an `@AndroidEntryPoint` activity (`VideoPlaybackRetentionTest`, `VideoSnackbarHostTest`, `ShareActivityRetentionTest`), the ones hosted in `HiltComposeTestActivity` (`TvHubNavHostTest`, `SettingsPiconSyncTest`), `VirtualRemoteWidgetViewsTest` (it used `WidgetEntryPoint`), and `Upgrade115Test`. `testutil/DreamDroidApp.kt` and `CurrentProfileRule` are gone. Each test gets a fresh graph, so a test sets its current profile (`testReceiverProfile()`) and puts nothing back.
+- `DreamDroid.onCreate` does not run under the test runner. The only step a test repeats is `profiles.loadCurrent()` in `Upgrade115Test`; the pre-Room import it checks ran in the real app, which `run.sh` cold starts before instrumenting. Everything else there is unused by tests or has a safe default: notification channels (only the picon worker posts, and it is faked), `PiconImageLoader.install` (falls back to a plain Coil loader when the entry point is missing), `VERSION_STRING` (empty), `DATE_LOCALE_WO` (false).
+- The database stays the on-disk one from `DatabaseModule`. An in-memory `@TestInstallIn` would apply to every test in the APK, and `Upgrade115Test` has to read the upgraded file.
+- Every other test builds its ViewModels and repositories itself and needs no Hilt.
 
 ## Progress
 
@@ -168,8 +177,8 @@ One line per PR: state, then PR link once opened.
 - [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
 - [x] 14a Non-UI entry points — merged, [#545](https://github.com/sreichholf/dreamDroid/pull/545)
-- [ ] 14b Locator removal — in review
-- [ ] 15 *(optional)* Hilt instrumented tests
+- [x] 14b Locator removal — merged, [#546](https://github.com/sreichholf/dreamDroid/pull/546)
+- [ ] 15 Hilt instrumented tests — in review
 
 ### Parallel waves
 
@@ -183,6 +192,7 @@ After PR 1, PRs in the same wave do not depend on each other and run in parallel
 | D | 10, 12, 13 |
 | E | 11a, then 11b |
 | F | 14 |
+| G | 15 |
 
 ## Decisions
 
@@ -195,8 +205,8 @@ Accepted by the operator 2026-09-28. Change one only with a note here saying why
 5. **`SettingsRepository` over `SharedPreferences`** in the first PR that needs it (PR 4), with typed properties and `Flow` reads so B2 later swaps only its internals. DataStore stays deferred.
 6. **Repositories are concrete classes.** Tests go through the real boundary: a `MockWebServer`-backed profile and `AppDatabase.inMemory`. Add an interface only when a fake is clearly simpler than the server fixture.
 7. **`PiconSyncWorker` uses an `@EntryPoint`** in PR 14. Switch to `@HiltWorker` if a second worker shows up.
-8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding.
-9. **Planned series.** PRs 1–14 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
+8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding. That need was the picon sync: `SettingsPiconSyncTest` drives the real settings screen with `FakePiconSync` bound through `@TestInstallIn` in place of WorkManager (PR 15). Replace a binding for a test only this way, one module per replaceable binding; the replacement applies to every test in the APK.
+9. **Planned series.** PRs 1–15 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
 10. **JVM tests and Android stubs.** `EnigmaHttp` error paths call `android.util.Log`, which throws on the JVM. The app sets `testOptions.unitTests.isReturnDefaultValues = true` (PR 1) so repository and ViewModel tests cover HTTP errors. Tests build their own `ProfileRepository` over an in-memory database; since 14b there is no static repository to install.
 11. **Transitional lookups and assisted ViewModels** (PR 6). When a class moves behind Hilt and a non-Hilt caller that runs after Application injection still needs it (for example the phone hub before PR 10, the TV hub before PR 12), the caller uses a small `@EntryPoint` lookup such as `movieRepository(context)`, which returns the same singleton. It is deleted with its last caller, like `ProfileRepository.get()`. A ViewModel whose input is not a route argument (a pager page keyed by location) uses `@HiltViewModel(assistedFactory = …)` with `hiltViewModel(key = …) { it.create(…) }`.
 

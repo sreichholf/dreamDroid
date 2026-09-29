@@ -8,23 +8,38 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.testutil.CurrentProfileRule
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.testutil.testReceiverProfile
 import net.reichholf.dreamdroid.ui.text.UiText
+import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
 /** The ViewModel's user message shows in the player's own snackbar host, not a toast. */
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class VideoSnackbarHostTest {
     @get:Rule(order = 0)
-    val currentProfile = CurrentProfileRule()
+    val hiltRule = HiltAndroidRule(this)
 
     @get:Rule(order = 1)
     val composeRule = createEmptyComposeRule()
 
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    @Before
+    fun setUp() {
+        hiltRule.inject()
+        profiles.setCurrent(testReceiverProfile())
+    }
 
     @Test
     fun userMessageShowsInPlayer() {
