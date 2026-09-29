@@ -195,40 +195,42 @@ class TvHubViewModelTest {
         val viewModel = viewModel()
         awaitLoaded(viewModel)
         viewModel.selectHeader(FAVOURITES)
+        awaitState(viewModel) { it.selectedHeaderId == FAVOURITES }
 
+        // Each wait names the reloaded rows: a bare "loaded" also matches the state
+        // before the reload reached the combined uiState.
         bouquets = listOf(OTHER to "Other")
         viewModel.reload()
-        val dropped = awaitState(viewModel) { !it.loading && it.bouquetRows.isNotEmpty() }
+        val dropped = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(OTHER) }
         assertEquals(TvComposeHubHost.HEADER_SETTINGS_ID, dropped.selectedHeaderId)
 
         viewModel.selectHeader(TvComposeHubHost.HEADER_TIMERS_ID)
+        awaitState(viewModel) { it.selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID }
+        bouquets = listOf(FAVOURITES to "Favourites")
         viewModel.reload()
-        val kept = awaitLoaded(viewModel)
+        val kept = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(FAVOURITES) }
         assertEquals(TvComposeHubHost.HEADER_TIMERS_ID, kept.selectedHeaderId)
     }
 
     @Test
-    fun overlayAndEditorOpenAndClose() {
+    fun overlayAndEditorOpenAndClose() = runBlocking<Unit> {
         val viewModel = viewModel()
         val service = ServiceNowNext(serviceReference = CHANNEL, serviceName = "Das Erste HD")
         val event = Event(eventId = "42", title = "News")
+        val target = TvServiceTimerTarget(service, FAVOURITES)
 
+        // uiState is combined on the thread that last emitted (Room's for the cache), so
+        // each change is awaited rather than read from value.
         viewModel.showServiceTimer(service, FAVOURITES)
         viewModel.showEditTimer(event)
-        assertEquals(
-            TvServiceTimerTarget(service, FAVOURITES),
-            viewModel.uiState.value.serviceTimerTarget
-        )
-        assertEquals(event, viewModel.uiState.value.editTimerEvent)
+        awaitState(viewModel) { it.serviceTimerTarget == target && it.editTimerEvent == event }
 
         viewModel.dismissEditTimer()
-        assertNull(viewModel.uiState.value.editTimerEvent)
-        assertNotNull(viewModel.uiState.value.serviceTimerTarget)
+        awaitState(viewModel) { it.serviceTimerTarget == target && it.editTimerEvent == null }
 
         viewModel.showEditTimer(event)
         viewModel.onTimerSaved()
-        assertNull(viewModel.uiState.value.editTimerEvent)
-        assertNull(viewModel.uiState.value.serviceTimerTarget)
+        awaitState(viewModel) { it.serviceTimerTarget == null && it.editTimerEvent == null }
     }
 
     @Test
@@ -306,25 +308,20 @@ class TvHubViewModelTest {
     }
 
     @Test
-    fun missingPlayerIsAUserMessage() {
+    fun missingPlayerIsAUserMessage() = runBlocking<Unit> {
         val viewModel = viewModel()
 
         viewModel.onMissingStreamPlayer()
 
-        assertEquals(
-            UiText.Resource(R.string.missing_stream_player),
-            viewModel.uiState.value.userMessage
-        )
+        awaitState(viewModel) { it.userMessage == UiText.Resource(R.string.missing_stream_player) }
     }
 
     @Test
-    fun receiverLabelNamesTheActiveProfile() {
+    fun receiverLabelNamesTheActiveProfile() = runBlocking<Unit> {
         val profile = receiver.profiles.repository.requireCurrent()
+        val label = "${profile.user}@${profile.host}:${profile.port}"
 
-        assertEquals(
-            "${profile.user}@${profile.host}:${profile.port}",
-            viewModel().uiState.value.receiverLabel
-        )
+        awaitState(viewModel()) { it.receiverLabel == label }
     }
 
     private fun routes(request: RecordedRequest): MockResponse {
@@ -387,6 +384,8 @@ class TvHubViewModelTest {
         viewModel: TvHubViewModel,
         condition: (TvHubUiState) -> Boolean
     ): TvHubUiState = withTimeout(5_000L) { viewModel.uiState.first(condition) }
+
+    private fun TvHubUiState.rowRefs(): List<String> = bouquetRows.map { it.bouquet.reference }
 
     private fun RecordedRequest.isBouquetIndex(): Boolean =
         requestUrl?.queryParameter("bRef")?.contains("bouquets.tv") == true

@@ -94,7 +94,8 @@ class EpgEventDetailViewModelTest {
         assertEquals(EVENT.serviceReference, url.queryParameter("sRef"))
         assertEquals(EVENT.eventId, url.queryParameter("eventid"))
         viewModel.onMessageShown()
-        assertNull(viewModel.uiState.value.userMessage)
+        // uiState is combined on the thread that last emitted, here the HTTP answer's.
+        withTimeout(5_000L) { viewModel.uiState.first { it.userMessage == null } }
     }
 
     @Test
