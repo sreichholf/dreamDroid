@@ -172,9 +172,13 @@ class MultiEpgViewModelTest {
         val before = epgMultiRequests()
 
         viewModel.refresh()
-        awaitState(viewModel) { !it.grid.syncing && !it.grid.pullRefreshing }
+        // uiState combines the grid state, so it can still show the idle state from before
+        // refresh(): wait for the new request as well.
+        val state = awaitState(viewModel) {
+            !it.grid.syncing && !it.grid.pullRefreshing && epgMultiRequests() > before
+        }
 
-        assertTrue(epgMultiRequests() > before)
+        assertTrue(state.grid.channels.isNotEmpty())
     }
 
     @Test
