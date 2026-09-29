@@ -12,7 +12,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 
@@ -44,17 +43,17 @@ object WidgetRemoteRequest {
     }
 
     private suspend fun doRemoteRequest(context: Context, intent: Intent) {
+        val deps = WidgetEntryPoint.get(context)
         val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
             context,
+            deps.profileRepository(),
             intent.getIntExtra(KEY_WIDGETID, -1)
         ) ?: return
 
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("command", intent.getStringExtra(KEY_KEYID)))
         params.add(NameValuePair("rcu", "advanced"))
-        val response = EnigmaClientFactory.fromApplication().forProfile(
-            profile
-        ).remoteCommand(params)
+        val response = deps.enigmaClientFactory().forProfile(profile).remoteCommand(params)
         val error = response.error
         val errorText = when {
             response.value == null && error != null -> error.resolve(context).orEmpty()

@@ -64,7 +64,11 @@ class VirtualRemoteWidgetViewsTest {
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putInt(VirtualRemoteWidgetConfiguration.getProfileIdKey(widgetId), 9_001_337)
             .commit()
-        val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, widgetId)
+        val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
+            context,
+            WidgetEntryPoint.get(context).profileRepository(),
+            widgetId
+        )
         assertEquals(null, profile)
     }
 }

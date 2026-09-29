@@ -19,7 +19,11 @@ import net.reichholf.dreamdroid.R
 class VirtualRemoteWidget : GlanceAppWidget() {
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val appWidgetId = GlanceAppWidgetManager(context).getAppWidgetId(id)
-        val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(context, appWidgetId)
+        val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
+            context,
+            WidgetEntryPoint.get(context).profileRepository(),
+            appWidgetId
+        )
         val remoteViews = if (profile == null) {
             RemoteViews(context.packageName, R.layout.virtual_remote_appwidget_quickzap).apply {
                 setTextViewText(
