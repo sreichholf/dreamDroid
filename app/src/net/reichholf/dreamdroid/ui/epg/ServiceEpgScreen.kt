@@ -21,7 +21,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.text.asString
 
 @Composable
 fun ServiceEpgScreen(
@@ -44,7 +46,7 @@ fun ServiceEpgScreen(
         sections.forEachIndexed { index, section ->
             val day = section.day
             if (day != null) {
-                stickyHeader(key = "day:$index") { EpgDayHeader(day) }
+                stickyHeader(key = "day:$index") { ListSectionHeader(day.asString()) }
             }
             itemsIndexed(
                 section.events,

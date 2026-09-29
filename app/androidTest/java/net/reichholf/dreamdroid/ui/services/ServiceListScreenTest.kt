@@ -8,14 +8,19 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasScrollAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -39,6 +44,76 @@ class ServiceListScreenTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+    }
+
+    @Test
+    fun markersAreStickySectionHeaders() {
+        val channels = (1..30).map { n ->
+            ServiceListItem(
+                index = n,
+                reference = "1:0:1:$n:1:1:1:0:0:0:",
+                name = "Channel $n",
+                kind = ServiceRowKind.CHANNEL
+            )
+        }
+        val items = listOf(
+            ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
+        ) + channels + ServiceListItem(
+            31,
+            "1:64:2:0:0:0:0:0:0:0::Sport",
+            "Sport",
+            ServiceRowKind.MARKER
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                ServiceListScreen(items = items, onItemClick = {}, onItemLongClick = {})
+            }
+        }
+        composeRule.onNode(hasText("Doku") and isHeading()).assertIsDisplayed()
+
+        // Channel 20 is list index 20: the marker is one entry, like before.
+        composeRule.onNode(hasScrollAction()).performScrollToIndex(20)
+
+        composeRule.onNodeWithText("Channel 20").assertIsDisplayed()
+        composeRule.onNodeWithText("Channel 1").assertIsNotDisplayed()
+        val list = composeRule.onNode(hasScrollAction()).getBoundsInRoot()
+        val header = composeRule.onNode(hasText("Doku") and isHeading())
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertEquals(list.top.value, header.top.value, 1f)
+    }
+
+    @Test
+    fun spacerIsAGapAndKeepsThePinnedHeader() {
+        val first = (1..10).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+        val second = (12..30).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+        val items = listOf(
+            ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
+        ) + first + ServiceListItem(
+            11,
+            "1:832:D:0:0:0:0:0:0:0:",
+            "",
+            ServiceRowKind.MARKER
+        ) + second
+        composeRule.setContent {
+            DreamDroidTheme {
+                ServiceListScreen(items = items, onItemClick = {}, onItemLongClick = {})
+            }
+        }
+
+        composeRule.onNode(hasScrollAction()).performScrollToIndex(20)
+
+        composeRule.onNodeWithText("Channel 20").assertIsDisplayed()
+        composeRule.onAllNodes(isHeading()).assertCountEquals(1)
+        val list = composeRule.onNode(hasScrollAction()).getBoundsInRoot()
+        val header = composeRule.onNode(hasText("Doku") and isHeading())
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertEquals(list.top.value, header.top.value, 1f)
     }
 
     @Test
