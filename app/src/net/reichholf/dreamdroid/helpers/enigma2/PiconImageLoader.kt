@@ -11,17 +11,20 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import java.util.concurrent.ConcurrentHashMap
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
+import okhttp3.Call
 import okhttp3.Credentials
 import okhttp3.OkHttpClient
+import okhttp3.Request
 
 /**
  * Process-wide Coil [ImageLoader] for Enigma2 picons.
  *
- * TLS matches [EnigmaOkHttp] for the current profile, including trust-all.
- * Basic auth is added on the first request from the current profile, not from URL userinfo.
+ * Each request uses the [EnigmaOkHttp] TLS setup of the current profile, including
+ * trust-all, and basic auth from the current profile, not from URL userinfo.
  * An [OnlinePicon] becomes the current profile's `/file` URL.
  */
 object PiconImageLoader {
@@ -51,11 +54,11 @@ object PiconImageLoader {
         profiles: ProfileRepository,
         okHttp: EnigmaOkHttp
     ): ImageLoader {
-        val okHttpClient = newOkHttpClient(profiles, okHttp)
+        val calls = PiconCalls(profiles, okHttp)
         return ImageLoader.Builder(context)
             .components {
                 add(onlinePiconMapper(profiles))
-                add(OkHttpNetworkFetcherFactory(okHttpClient))
+                add(OkHttpNetworkFetcherFactory(callFactory = { calls }))
             }
             .build()
     }
@@ -65,22 +68,40 @@ object PiconImageLoader {
         Mapper { data, _ ->
             profiles.current.value?.let { Picon.onlinePiconUrl(it, data.fileName).toUri() }
         }
+}
 
-    private fun newOkHttpClient(profiles: ProfileRepository, okHttp: EnigmaOkHttp): OkHttpClient {
+/**
+ * Picon calls on the OkHttp client for the current profile's trust-all setting, so a
+ * profile switch changes TLS without rebuilding the process-wide [ImageLoader].
+ */
+internal class PiconCalls(
+    private val profiles: ProfileRepository,
+    private val okHttp: EnigmaOkHttp
+) : Call.Factory {
+    private val clients = ConcurrentHashMap<Boolean, OkHttpClient>()
+
+    override fun newCall(request: Request): Call = client().newCall(request)
+
+    fun client(): OkHttpClient {
         val trustAll = profiles.current.value?.allCertsTrusted == true
-        return okHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
-            .newBuilder()
-            .addInterceptor { chain ->
-                val profile = profiles.current.value
-                val request = if (profile?.login == true) {
-                    val cred = Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
-                    chain.request().newBuilder().header("Authorization", cred).build()
-                } else {
-                    chain.request()
+        return clients.getOrPut(trustAll) {
+            okHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
+                .newBuilder()
+                .addInterceptor { chain ->
+                    val profile = profiles.current.value
+                    val request = if (profile?.login == true) {
+                        val cred = Credentials.basic(
+                            profile.user.orEmpty(),
+                            profile.pass.orEmpty()
+                        )
+                        chain.request().newBuilder().header("Authorization", cred).build()
+                    } else {
+                        chain.request()
+                    }
+                    chain.proceed(request)
                 }
-                chain.proceed(request)
-            }
-            .build()
+                .build()
+        }
     }
 }
 
