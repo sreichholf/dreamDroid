@@ -18,16 +18,22 @@ import androidx.compose.ui.unit.dp
  */
 @Composable
 fun ListSectionHeader(text: String, modifier: Modifier = Modifier) {
-    Surface(color = MaterialTheme.colorScheme.surface, modifier = modifier.fillMaxWidth()) {
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        modifier = modifier
+            .fillMaxWidth()
+            .semantics(mergeDescendants = true) { heading() }
+    ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.primary,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .padding(horizontal = ListRowHorizontalInset + 16.dp, vertical = 8.dp)
-                .semantics { heading() }
+            modifier = Modifier.padding(
+                horizontal = ListRowHorizontalInset + 16.dp,
+                vertical = 8.dp
+            )
         )
     }
 }
