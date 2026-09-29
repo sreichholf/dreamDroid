@@ -173,7 +173,8 @@ class MainActivity :
         shellActions.onProfileCheckOutcomeHandled()
     }
 
-    override fun requestLocalNetworkOnCreate(): Boolean = profiles.hasCurrent()
+    /** The shell asks once it starts, and setup at its search step. */
+    override fun requestLocalNetworkOnCreate(): Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
@@ -198,6 +199,18 @@ class MainActivity :
             }
         }
         startSessionReachabilityProbe()
+        if (profiles.isLoaded()) {
+            openFirstScreen()
+        } else {
+            lifecycleScope.launch {
+                profiles.awaitLoaded()
+                openFirstScreen()
+            }
+        }
+    }
+
+    /** The setup assistant without a profile, else the shell. Needs the profiles loaded. */
+    private fun openFirstScreen() {
         if (!profiles.hasCurrent()) {
             showSetupAssistant()
             return
@@ -210,9 +223,11 @@ class MainActivity :
         if (showingSetup || !phoneShellReady) {
             return
         }
-        if (!profiles.ensureCurrent()) {
-            shellActions.cancelCheck()
-            showSetupAssistant()
+        lifecycleScope.launch {
+            if (!profiles.ensureCurrent() && !showingSetup) {
+                shellActions.cancelCheck()
+                showSetupAssistant()
+            }
         }
     }
 

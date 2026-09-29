@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
@@ -12,14 +14,14 @@ import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 /**
  * Backup files: every stored preference and the saved profiles, as Gson JSON. Profile
  * writes go through [ProfileRepository], preference writes through [SettingsRepository].
- * Blocking; call off the main thread.
+ * Main-safe.
  */
 @Singleton
 class BackupRepository @Inject constructor(
     private val profiles: ProfileRepository,
     private val settings: SettingsRepository
 ) {
-    fun backupData(): BackupData {
+    suspend fun backupData(): BackupData {
         val export = BackupData()
         for ((key, value) in settings.all()) {
             if (value != null) {
@@ -45,13 +47,13 @@ class BackupRepository @Inject constructor(
      *
      * @return false when [content] cannot be imported. Nothing is changed.
      */
-    fun importBackup(content: String?): Boolean {
+    suspend fun importBackup(content: String?): Boolean = withContext(Dispatchers.IO) {
         Log.i(TAG, "Import started")
         // Reject the whole document before writing profiles or preferences.
         val backupData = parseBackupImport(content)
         if (backupData == null) {
             Log.e(TAG, "Import rejected an unreadable backup document")
-            return false
+            return@withContext false
         }
 
         for (profile in backupData.profiles) {
@@ -64,7 +66,7 @@ class BackupRepository @Inject constructor(
         backupData.settings?.let { imported ->
             settings.restore(imported.associate { it.key to typedValue(it) })
         }
-        return true
+        true
     }
 
     private companion object {

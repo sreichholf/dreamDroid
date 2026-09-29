@@ -25,6 +25,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -141,6 +142,24 @@ class VideoPlaybackViewModelTest {
     }
 
     @Test
+    fun extrasBeforeTheProfileLoadWaitForIt() = runTest {
+        // A restore after process death: the player comes back before the profile is read.
+        val cold = EpgTestReceiver().apply { answer = ::routes }
+        try {
+            val viewModel = viewModel(on = cold)
+            viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
+            assertFalse(cold.profiles.repository.isLoaded())
+
+            cold.start()
+            val state = viewModel.uiState.first { it.bouquets.isNotEmpty() }
+
+            assertEquals("Favourites (TV)", state.bouquets.first().name)
+        } finally {
+            cold.stop()
+        }
+    }
+
+    @Test
     fun liveExtrasLoadTheBouquetBar() = runTest {
         val viewModel = viewModel()
         viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
@@ -154,14 +173,16 @@ class VideoPlaybackViewModelTest {
     private fun zdfStream(): LiveStream.Ready =
         LiveStream.Ready(ZDF, EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), ZDF))
 
-    private fun viewModel(): VideoPlaybackViewModel = VideoPlaybackViewModel(
-        receiver.services,
-        ReceiverRepository(
-            enigmaClients(receiver.profiles.repository),
-            receiver.profiles.repository
-        ),
-        receiver.sessions
-    ).also { viewModels += it }
+    private fun viewModel(on: EpgTestReceiver = receiver): VideoPlaybackViewModel =
+        VideoPlaybackViewModel(
+            on.services,
+            ReceiverRepository(
+                enigmaClients(on.profiles.repository),
+                on.profiles.repository
+            ),
+            on.profiles.repository,
+            on.sessions
+        ).also { viewModels += it }
 
     private fun routes(request: RecordedRequest): MockResponse = when (request.path()) {
         EPG_NOW_NEXT -> MockResponse().setBody(loadWebFixture("epgnownext.xml"))

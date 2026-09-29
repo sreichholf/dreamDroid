@@ -159,7 +159,7 @@ class ShareViewModelTest {
         assertEquals(1, receiver.requestsTo(PLAY).size)
     }
 
-    private fun saveProfile(name: String) {
+    private fun saveProfile(name: String) = runBlocking<Unit> {
         val current = profiles.requireCurrent()
         profiles.save(
             Profile().apply {

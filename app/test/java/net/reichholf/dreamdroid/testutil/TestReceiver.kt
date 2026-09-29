@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.testutil
 
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.TimerRepository
@@ -17,6 +19,7 @@ import okhttp3.mockwebserver.RecordedRequest
 class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
     private val server = MockWebServer()
     private val routes = ConcurrentHashMap<String, MockResponse>()
+    private val holds = ConcurrentHashMap<String, Hold>()
     private val recorded = Collections.synchronizedList(mutableListOf<RecordedRequest>())
 
     val repository: ProfileRepository
@@ -30,8 +33,12 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 recorded += request
-                return routes[request.requestUrl?.encodedPath]
-                    ?: MockResponse().setResponseCode(404)
+                val path = request.requestUrl?.encodedPath
+                holds[path]?.let { hold ->
+                    hold.arrived.countDown()
+                    hold.released.await(HOLD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                }
+                return routes[path] ?: MockResponse().setResponseCode(404)
             }
         }
         server.start()
@@ -46,6 +53,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
     }
 
     fun shutdown() {
+        holds.values.forEach(Hold::release)
         server.shutdown()
         repository.clearCurrent()
     }
@@ -58,6 +66,12 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         routes[path] = response
     }
 
+    /**
+     * Holds the next answers to [path] until [Hold.release]. [Hold.arrived] opens once a
+     * request to [path] reached the receiver.
+     */
+    fun hold(path: String): Hold = Hold().also { holds[path] = it }
+
     fun fail(path: String, code: Int = 500) {
         routes[path] = MockResponse().setResponseCode(code)
     }
@@ -69,7 +83,18 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
     fun timerRepository(): TimerRepository =
         TimerRepository(enigmaClients(repository), repository, profiles.database)
 
+    class Hold {
+        val arrived = CountDownLatch(1)
+        internal val released = CountDownLatch(1)
+
+        fun release() {
+            released.countDown()
+        }
+    }
+
     companion object {
+        private const val HOLD_TIMEOUT_SECONDS = 30L
+
         const val PROFILE_ID = 7
 
         const val TIMER_LIST = "/web/timerlist"

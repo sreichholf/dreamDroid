@@ -69,7 +69,7 @@ class Upgrade115Test {
         database.profileDao().getProfiles().map { it.name }.toSet()
     }
 
-    private fun assertCurrentIsSeeded() {
+    private fun assertCurrentIsSeeded() = runBlocking<Unit> {
         profiles.loadCurrent()
         assertEquals(SEEDED_ID, profiles.current.value?.id)
     }

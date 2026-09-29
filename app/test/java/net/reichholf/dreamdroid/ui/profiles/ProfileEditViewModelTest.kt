@@ -83,7 +83,7 @@ class ProfileEditViewModelTest {
     }
 
     @Test
-    fun emptyHostIsAnErrorUntilTheHostChanges() {
+    fun emptyHostIsAnErrorUntilTheHostChanges() = runBlocking<Unit> {
         val viewModel = viewModel(SavedStateHandle())
         type(viewModel.fields.name, "box")
         type(viewModel.fields.host, " ")

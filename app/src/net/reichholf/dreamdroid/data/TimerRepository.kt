@@ -94,13 +94,14 @@ class TimerRepository @Inject constructor(
      */
     suspend fun locationsAndTags(): TimerChoices {
         if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
-            val http = clients.currentHttp()
+            val profile = profiles.requireCurrent()
+            val http = clients.http(profile)
             withContext(Dispatchers.IO) {
                 if (!profiles.locationsLoadedFromReceiver()) {
-                    profiles.loadLocations(http)
+                    profiles.loadLocations(profile, http)
                 }
                 if (profiles.tags().isEmpty()) {
-                    profiles.loadTags(http)
+                    profiles.loadTags(profile, http)
                 }
             }
         }

@@ -198,7 +198,7 @@ class BackupViewModelTest {
         BackupViewModel(handle, backups, profiles, documents).also { viewModels += it }
 
     private fun saved(name: String, host: String, pass: String = ""): Profile =
-        receiver(name, host).apply { this.pass = pass }.also { profiles.save(it) }
+        receiver(name, host).apply { this.pass = pass }.also { runBlocking { profiles.save(it) } }
 
     private fun receiver(name: String, host: String): Profile = Profile.getDefault().apply {
         this.name = name

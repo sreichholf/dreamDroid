@@ -23,6 +23,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -128,7 +129,7 @@ class SetupAssistantScreenTest {
     }
 
     @Test
-    fun failedCertificateCheckShowsWarningAndStillSaves() {
+    fun failedCertificateCheckShowsWarningAndStillSaves() = runBlocking<Unit> {
         var checks = 0
         var finished = false
         val viewModel = model(

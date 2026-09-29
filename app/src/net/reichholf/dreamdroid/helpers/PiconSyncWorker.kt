@@ -63,10 +63,12 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
         Log.i(TAG, "Syncing from $remotePath to $localPath")
         val client = FTPClient()
-        val profile = EntryPointAccessors
+        val profiles = EntryPointAccessors
             .fromApplication(applicationContext, PiconSyncWorkerEntryPoint::class.java)
             .profileRepository()
-            .requireCurrent()
+        // WorkManager can start this in a fresh process, before the active profile is read.
+        profiles.awaitLoaded()
+        val profile = profiles.requireCurrent()
         try {
             var tmpFile = File(localPath)
             if (!tmpFile.exists()) {

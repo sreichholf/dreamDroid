@@ -1,6 +1,13 @@
 package net.reichholf.dreamdroid.data
 
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Event
@@ -30,6 +37,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -278,6 +286,62 @@ class TimerRepositoryTest {
         assertEquals(1, receiver.requestsTo(TAGS).size)
     }
 
+    @Test
+    fun slowLocationsDoNotHoldTheProfileRepository() = runBlocking {
+        receiver.respond(LOCATIONS, LOCATIONS_BODY)
+        receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val held = receiver.hold(LOCATIONS)
+        val profiles = receiver.repository
+        val profile = profiles.requireCurrent()
+
+        val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
+        awaitArrival(held)
+        // Runs while the receiver still holds the locations answer; it must not wait for it.
+        val deviceInfo = try {
+            withTimeout(5_000L) {
+                async(Dispatchers.IO) {
+                    profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
+                    profiles.deviceInfo(profile)
+                }.await()
+            }
+        } finally {
+            held.release()
+        }
+
+        assertEquals("<e2deviceinfo/>", deviceInfo)
+        assertEquals(
+            TimerChoices(listOf("/media/hdd/"), listOf("News"), true),
+            choices.await()
+        )
+    }
+
+    @Test
+    fun locationsOfTheProfileSwitchedAwayFromAreDropped() = runBlocking {
+        receiver.respond(LOCATIONS, LOCATIONS_BODY)
+        receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val held = receiver.hold(LOCATIONS)
+        val profiles = receiver.repository
+        val other = Profile().apply {
+            name = "other"
+            host = "other-box"
+        }
+        profiles.save(other)
+
+        val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
+        awaitArrival(held)
+        assertTrue(profiles.activate(other.id!!, forceEvent = true))
+        held.release()
+        choices.await()
+
+        assertTrue(profiles.locations().isEmpty())
+        assertTrue(profiles.tags().isEmpty())
+        assertEquals(false, profiles.locationsLoadedFromReceiver())
+    }
+
+    private suspend fun awaitArrival(hold: TestReceiver.Hold) = withContext(Dispatchers.IO) {
+        assertTrue(hold.arrived.await(5, TimeUnit.SECONDS), "the request never arrived")
+    }
+
     private suspend fun writeSnapshot(timers: List<Timer>) {
         dao.replaceSnapshot(
             PROFILE_ID,
@@ -299,4 +363,9 @@ class TimerRepositoryTest {
         state = "0",
         repeated = "0"
     )
+
+    private companion object {
+        const val LOCATIONS_BODY =
+            "<e2locations><e2location>/media/hdd/</e2location></e2locations>"
+    }
 }
