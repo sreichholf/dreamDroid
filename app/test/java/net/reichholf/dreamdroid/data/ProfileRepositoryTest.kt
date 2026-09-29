@@ -8,6 +8,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -86,10 +87,14 @@ class ProfileRepositoryTest {
         val switchedIds = mutableListOf<Int>()
         runBlocking {
             val gate = CompletableDeferred<Unit>()
+            val sawLatest = CompletableDeferred<Unit>()
             val collector = launch(start = CoroutineStart.UNDISPATCHED) {
                 repo.switches.collect {
                     gate.await()
                     switchedIds.add(it.id!!)
+                    if (it.id == 3) {
+                        sawLatest.complete(Unit)
+                    }
                 }
             }
             assertTrue(repo.activate(1, forceEvent = true))
@@ -97,8 +102,7 @@ class ProfileRepositoryTest {
             assertTrue(repo.activate(2, forceEvent = true))
             assertTrue(repo.activate(3, forceEvent = true))
             gate.complete(Unit)
-            yield()
-            yield()
+            withTimeout(5_000L) { sawLatest.await() }
             collector.cancel()
         }
         assertEquals(3, switchedIds.last())
