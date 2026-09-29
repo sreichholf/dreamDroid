@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.session
 
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -102,11 +104,9 @@ fun EnigmaFailure.allowsOfflineSession(): Boolean = when (this) {
     else -> false
 }
 
-/**
- * Process-wide session holder the phone shell (MainActivity / PhoneNavHost) reads.
- * Tests should construct a fresh instance rather than [shared].
- */
-class SessionConnectionHolder {
+/** Process-wide session state the phone shell and the screens' repositories share. */
+@Singleton
+class SessionConnectionHolder @Inject constructor() {
     private val statusState = MutableStateFlow(ConnectionStatus())
 
     val status: StateFlow<ConnectionStatus> = statusState.asStateFlow()
@@ -176,9 +176,5 @@ class SessionConnectionHolder {
         } else {
             onSuccess(nowMs)
         }
-    }
-
-    companion object {
-        val shared = SessionConnectionHolder()
     }
 }

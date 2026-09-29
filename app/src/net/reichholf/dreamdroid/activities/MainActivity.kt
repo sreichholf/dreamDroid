@@ -391,6 +391,7 @@ class MainActivity :
                     },
                     profileName = shellUiState.profileName,
                     connectionLabel = stringResource(status.chipLabelRes()),
+                    boxActionsBlocked = status.blocksMutations,
                     onProfileClick = {
                         checkNavigationHelper()
                         navigationHelper?.navigateTo(R.id.menu_navigation_profiles)

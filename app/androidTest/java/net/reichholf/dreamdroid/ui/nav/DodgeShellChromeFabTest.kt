@@ -90,6 +90,7 @@ private fun ChromeHost(stripEnabled: Boolean) {
             onDrawerOpenChange = {},
             profileName = "Living Room",
             connectionLabel = "Online",
+            boxActionsBlocked = false,
             onProfileClick = {},
             onDrawerItemClick = {},
             onNavigationClick = {},
