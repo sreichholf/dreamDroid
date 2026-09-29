@@ -6,21 +6,28 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.enigma.withReadableTimes
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** The EPG detail sheet: the [event] shown, a timer being [saving], and its result. */
+/**
+ * The EPG detail sheet: the [event] shown, a timer being [saving], and its result.
+ * [timerWritesBlocked] follows the session.
+ */
 data class EpgEventDetailUiState(
     val event: Event? = null,
     val saving: Boolean = false,
-    val userMessage: UiText? = null
+    val userMessage: UiText? = null,
+    val timerWritesBlocked: Boolean = false
 )
 
 /**
@@ -31,12 +38,20 @@ data class EpgEventDetailUiState(
 @HiltViewModel
 class EpgEventDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val timers: TimerRepository
+    private val timers: TimerRepository,
+    sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         EpgEventDetailUiState(event = savedStateHandle.get<Event>(KEY_EVENT))
     )
-    val uiState: StateFlow<EpgEventDetailUiState> = _uiState.asStateFlow()
+    val uiState: StateFlow<EpgEventDetailUiState> =
+        combine(_uiState, sessions.status) { state, connection ->
+            state.copy(timerWritesBlocked = connection.blocksMutations)
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            _uiState.value.copy(timerWritesBlocked = sessions.status.value.blocksMutations)
+        )
 
     fun showDetail(event: Event) {
         val display = event.withReadableTimes()

@@ -23,6 +23,8 @@ fun EpgDetailModalSheet(
     onImdb: () -> Unit,
     onSimilar: () -> Unit,
     showActions: Boolean = true,
+    /** The session blocks timer writes: the timer actions look online-only. */
+    timerWritesBlocked: Boolean = false,
     /** Phone bottom sheet caps body height; TV overlay/fullscreen passes null. */
     bodyHeightCap: Dp? = 360.dp
 ) {
@@ -50,6 +52,7 @@ fun EpgDetailModalSheet(
                 onDismiss()
             },
             showActions = showActions,
+            timerWritesBlocked = timerWritesBlocked,
             bodyHeightCap = bodyHeightCap,
             modifier = Modifier.padding(bottom = 16.dp)
         )

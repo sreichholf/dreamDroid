@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -43,6 +44,16 @@ class EpgEventDetailViewModelTest {
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         receiver.stop()
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun timerWritesFollowTheSession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.timerWritesBlocked)
+
+        receiver.goOffline()
+
+        withTimeout(5_000L) { viewModel.uiState.first { it.timerWritesBlocked } }
     }
 
     @Test
@@ -137,7 +148,8 @@ class EpgEventDetailViewModelTest {
             enigmaClients(receiver.profiles.repository),
             receiver.profiles.repository,
             receiver.profiles.database
-        )
+        ),
+        receiver.sessions
     ).also { viewModels += it }
 
     private companion object {

@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -187,6 +189,26 @@ class EpgDetailDialogHostTest {
         val unavailable = composeRule.activity.getString(R.string.not_available)
         composeRule.onNodeWithText(unavailable).assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
+    }
+
+    @Test
+    fun blockedTimerWritesLookOnlineOnlyInTheSheet() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheet(
+                    state = EpgEventDetailUiState(event = tagesschau(), timerWritesBlocked = true),
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {}
+                )
+            }
+        }
+        val needsReceiver = composeRule.activity.getString(R.string.session_needs_receiver)
+        composeRule.onNodeWithText("Set Timer").assert(hasStateDescription(needsReceiver))
+        composeRule.onNodeWithText("Edit Timer").assert(hasStateDescription(needsReceiver))
+        composeRule.onNodeWithText("IMDb").assert(!hasStateDescription(needsReceiver))
     }
 
     @Test

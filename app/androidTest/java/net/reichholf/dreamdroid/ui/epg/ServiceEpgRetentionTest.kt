@@ -125,7 +125,7 @@ class ServiceEpgRetentionTest {
                             ServiceEpgViewModel(createSavedStateHandle(), repository, sessions)
                         }
                         val detail = viewModel {
-                            EpgEventDetailViewModel(createSavedStateHandle(), timers)
+                            EpgEventDetailViewModel(createSavedStateHandle(), timers, sessions)
                         }
                         viewModels += viewModel
                         ServiceEpgDestination(
