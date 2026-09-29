@@ -1,23 +1,23 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.app.Activity
-import android.app.Application
-import android.content.Context
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
-import androidx.preference.PreferenceManager
+import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.ArrayDeque
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
@@ -33,8 +33,13 @@ internal const val PHONE_NAV_SCHEMA_VERSION = 2
  * Activity-scoped ViewModel for phone NavHost state (result stacks, queued extras,
  * drawer navigate).
  */
-class PhoneNavHostState(application: Application, private val savedStateHandle: SavedStateHandle) :
-    AndroidViewModel(application),
+@HiltViewModel
+class PhoneNavHostState @Inject constructor(
+    private val savedStateHandle: SavedStateHandle,
+    private val profiles: ProfileRepository,
+    private val sessions: SessionConnectionHolder,
+    private val settings: SettingsRepository
+) : ViewModel(),
     PhoneNavHandle {
 
     @Volatile
@@ -244,8 +249,7 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
 
     override fun profileCheckUiFlow(): StateFlow<ProfileCheckUi> = profileCheckUiState.asStateFlow()
 
-    override fun connectionStatusFlow(): StateFlow<ConnectionStatus> =
-        SessionConnectionHolder.shared.status
+    override fun connectionStatusFlow(): StateFlow<ConnectionStatus> = sessions.status
 
     override fun leaveConfirmRequestedFlow(): StateFlow<Boolean> =
         leaveConfirmRequestedState.asStateFlow()
@@ -340,12 +344,10 @@ class PhoneNavHostState(application: Application, private val savedStateHandle: 
     }
 
     override fun navigateToDrawerEpg(): Boolean {
-        val ctx = lifecycleOwner as Context
-        val profile = ProfileRepository.get().requireCurrent()
+        val profile = profiles.requireCurrent()
         val ref = profile.defaultBouquetTv
         val name = profile.defaultBouquetTvName
-        val prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
-        if (!DrawerEpgMode.isMulti(prefs)) {
+        if (!settings.drawerEpgMulti) {
             return navigateToEpg(ref, name)
         }
         val listRoute = Epg(serviceRef = ref.orEmpty(), serviceName = name.orEmpty())

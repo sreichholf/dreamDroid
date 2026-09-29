@@ -9,8 +9,13 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
+import net.reichholf.dreamdroid.ui.nav.ShellViewModel
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Before
 import org.junit.Rule
@@ -35,11 +40,29 @@ class ProfileEditCreateRouteTest {
     fun routeWithoutIdShowsTheCreateForm() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
-        val handle = PhoneNavHostState(app, SavedStateHandle())
-        val viewModel = ProfileEditViewModel(SavedStateHandle(), memoryProfiles())
+        val handle = PhoneNavHostState(
+            SavedStateHandle(),
+            memoryProfiles(),
+            SessionConnectionHolder(),
+            SettingsRepository(
+                PreferenceManager.getDefaultSharedPreferences(
+                    InstrumentationRegistry.getInstrumentation().targetContext
+                )
+            )
+        )
+        val profiles = memoryProfiles()
+        val viewModel = ProfileEditViewModel(SavedStateHandle(), profiles)
+        val shellActions = ShellViewModel(
+            ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+            profiles
+        )
         composeRule.setContent {
             DreamDroidTheme {
-                ProfileEditDestination(handle = handle, viewModel = viewModel)
+                ProfileEditDestination(
+                    handle = handle,
+                    viewModel = viewModel,
+                    shellActions = shellActions
+                )
             }
         }
         val profileName = app.getString(R.string.profile_name)

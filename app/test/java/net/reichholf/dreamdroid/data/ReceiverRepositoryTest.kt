@@ -6,8 +6,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -73,4 +75,106 @@ class ReceiverRepositoryTest {
 
         assertTrue(waited in 200L until 2_000L, "waited $waited ms")
     }
+
+    @Test
+    fun setVolumeSendsTheCommandAndParsesTheLevel() = runBlocking<Unit> {
+        receiver.answer = { request ->
+            if (request.volumePath()) {
+                MockResponse().setBody(
+                    "<e2volume><e2result>True</e2result><e2current>40</e2current>" +
+                        "<e2ismuted>False</e2ismuted></e2volume>"
+                )
+            } else {
+                MockResponse().setResponseCode(404)
+            }
+        }
+
+        val volume = repository.setVolume("up").value
+
+        assertEquals("40", volume?.current)
+        assertEquals("up", receiver.requests.single().requestUrl?.queryParameter("set"))
+    }
+
+    @Test
+    fun failedVolumeCarriesTheError() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setResponseCode(500) }
+
+        val response = repository.setVolume("up")
+
+        assertNull(response.value)
+        assertNotNull(response.error)
+    }
+
+    @Test
+    fun setPowerStateReportsTheNewState() = runBlocking<Unit> {
+        receiver.answer = { request ->
+            if (request.powerPath()) {
+                MockResponse().setBody(
+                    "<e2powerstate><e2instandby>false</e2instandby></e2powerstate>"
+                )
+            } else {
+                MockResponse().setResponseCode(404)
+            }
+        }
+
+        val state = repository.setPowerState("0")
+
+        assertEquals(true, state.value?.isRunning)
+        assertEquals("0", receiver.requests.single().requestUrl?.queryParameter("newstate"))
+    }
+
+    @Test
+    fun sleepTimerReadsAndWrites() = runBlocking<Unit> {
+        receiver.answer = {
+            MockResponse().setBody(
+                "<e2sleeptimer><e2enabled>True</e2enabled><e2minutes>30</e2minutes>" +
+                    "<e2action>standby</e2action><e2text>In 30 minutes</e2text></e2sleeptimer>"
+            )
+        }
+
+        val read = repository.sleepTimer().value
+        assertEquals("True", read?.enabled)
+
+        val written = repository.setSleepTimer("30", "standby", true).value
+        assertEquals("standby", written?.action)
+        val request = receiver.requests.last().requestUrl!!
+        assertEquals("set", request.queryParameter("cmd"))
+        assertEquals("30", request.queryParameter("time"))
+        assertEquals("standby", request.queryParameter("action"))
+        assertEquals("True", request.queryParameter("enabled"))
+    }
+
+    @Test
+    fun sendMessagePostsTextTypeAndTimeout() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(simpleResult(true, "Sent")) }
+
+        val result = repository.sendMessage("Hello", "2", "10").value
+
+        assertEquals("Sent", result?.stateText)
+        val request = receiver.requests.single().requestUrl!!
+        assertEquals("Hello", request.queryParameter("text"))
+        assertEquals("2", request.queryParameter("type"))
+        assertEquals("10", request.queryParameter("timeout"))
+    }
+
+    @Test
+    fun remoteCommandSendsKeyRcuAndLongType() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(simpleResult(true, "Ok")) }
+
+        repository.remoteCommand(412, simpleRemote = false, longClick = true)
+        repository.remoteCommand(113, simpleRemote = true, longClick = false)
+
+        val long = receiver.requests[0].requestUrl!!
+        assertEquals("412", long.queryParameter("command"))
+        assertEquals("advanced", long.queryParameter("rcu"))
+        assertEquals("long", long.queryParameter("type"))
+        val short = receiver.requests[1].requestUrl!!
+        assertEquals("113", short.queryParameter("command"))
+        assertEquals("standard", short.queryParameter("rcu"))
+        assertNull(short.queryParameter("type"))
+    }
+
+    private fun RecordedRequest.volumePath(): Boolean = requestUrl?.encodedPath == "/web/vol"
+
+    private fun RecordedRequest.powerPath(): Boolean = requestUrl?.encodedPath == "/web/powerstate"
 }

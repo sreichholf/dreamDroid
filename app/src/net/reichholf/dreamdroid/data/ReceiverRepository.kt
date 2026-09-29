@@ -9,9 +9,17 @@ import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.PowerState
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.SleepTimer
+import net.reichholf.dreamdroid.enigma.Volume
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.helpers.enigma2.Message
+import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
+import net.reichholf.dreamdroid.helpers.enigma2.Remote
+import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 
 /** Receiver state and commands of the active profile. */
 @Singleton
@@ -62,4 +70,53 @@ class ReceiverRepository @Inject constructor(
     /** Plays [reference], a media player service ref, on the receiver of [profile]. */
     suspend fun playMedia(profile: Profile, reference: String): EnigmaResponse<SimpleResult> =
         clients.forProfile(profile).playMedia(listOf(NameValuePair("file", reference)))
+
+    /** Runs the volume [command] (`up`, `down`, `mute`); the answer carries the new level. */
+    suspend fun setVolume(command: String): EnigmaResponse<Volume> =
+        clients.current().setVolume(listOf(NameValuePair("set", command)))
+
+    /** Sets the power [state]; the answer carries the new state. */
+    suspend fun setPowerState(state: String): EnigmaResponse<PowerState> =
+        clients.current().setPowerState(PowerStateKeys.getStateParams(state))
+
+    /** Reads the sleep timer. */
+    suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = clients.current().sleepTimer(emptyList())
+
+    /** Writes the sleep timer; the answer carries the stored timer. */
+    suspend fun setSleepTimer(
+        time: String?,
+        action: String?,
+        enabled: Boolean
+    ): EnigmaResponse<SleepTimer> = clients.current().sleepTimer(
+        listOf(
+            NameValuePair("cmd", SleepTimerKeys.CMD_SET),
+            NameValuePair("time", time),
+            NameValuePair("action", action),
+            NameValuePair("enabled", if (enabled) Python.TRUE else Python.FALSE)
+        )
+    )
+
+    /** Shows a message on the receiver. */
+    suspend fun sendMessage(
+        text: String?,
+        type: String?,
+        timeout: String?
+    ): EnigmaResponse<SimpleResult> =
+        clients.current().sendMessage(Message.getParams(text, type, timeout))
+
+    /** Sends a remote-control key press. */
+    suspend fun remoteCommand(
+        keyCode: Int,
+        simpleRemote: Boolean,
+        longClick: Boolean
+    ): EnigmaResponse<SimpleResult> {
+        val params = ArrayList<NameValuePair>().apply {
+            add(NameValuePair("command", keyCode.toString()))
+            add(NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"))
+            if (longClick) {
+                add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
+            }
+        }
+        return clients.current().remoteCommand(params)
+    }
 }
