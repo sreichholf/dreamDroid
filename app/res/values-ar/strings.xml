@@ -29,7 +29,6 @@
     <string name="delete">مسح</string>
     <string name="epg">قائمة البرامج الالكترونية</string>
     <string name="ssl_enabled">تفعيل SSL</string>
-    <string name="host">عنوان الجهاز او IP</string>
     <string name="port">المنفذ</string>
     <string name="live">مباشر</string>
     <string name="settings">اعدادات</string>

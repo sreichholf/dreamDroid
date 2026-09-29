@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import android.content.SharedPreferences
 import android.content.res.Resources
+import androidx.preference.PreferenceManager
 import java.io.File
 import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
@@ -62,7 +63,11 @@ class TestProfiles(val context: TestContext = TestContext()) {
         runBlocking { it.profileDao().getProfiles() }
     }
     val sessions = SessionConnectionHolder()
-    val repository = ProfileRepository(RoomProfileStore(database, context) { services })
+    val repository = ProfileRepository(
+        RoomProfileStore(database, PreferenceManager.getDefaultSharedPreferences(context)) {
+            services
+        }
+    )
     val services: ServiceRepository by lazy {
         ServiceRepository(
             context,

@@ -33,7 +33,6 @@
     <string name="delete">Slett</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Aktiver SSL</string>
-    <string name="host">Vertsnavn/IP</string>
     <string name="port">Port</string>
     <string name="live">Live</string>
     <string name="settings">Innstillinger</string>

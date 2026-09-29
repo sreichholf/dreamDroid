@@ -29,7 +29,6 @@
     <string name="delete">Vymazat</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Povolit SSL</string>
-    <string name="host">Jméno hostitele/IP</string>
     <string name="port">Port</string>
     <string name="port_stream_live">Port (vysílání)</string>
     <string name="port_stream_file">Port (nahrávky)</string>

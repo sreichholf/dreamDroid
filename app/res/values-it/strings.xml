@@ -29,7 +29,6 @@
     <string name="delete">Elimina</string>
     <string name="epg">Guida programmi</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">Nome host/IP</string>
     <string name="port">Porta</string>
     <string name="live">Live</string>
     <string name="port_stream_live">Porta (live)</string>

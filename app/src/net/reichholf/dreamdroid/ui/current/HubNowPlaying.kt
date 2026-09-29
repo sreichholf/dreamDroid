@@ -28,6 +28,7 @@ fun HubNowPlaying(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
     hubState.nowPlayingStripEnabled = uiState.enabled
+    hubState.nowPlayingPicons = uiState.piconsEnabled
     if (!uiState.enabled) {
         hubState.nowPlayingLabel = ""
         hubState.nowPlayingHeadline = ""

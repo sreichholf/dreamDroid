@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.activities.abs
 import android.app.Activity.OVERRIDE_TRANSITION_CLOSE
 import android.app.Activity.OVERRIDE_TRANSITION_OPEN
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -22,8 +21,7 @@ import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
  */
 open class BaseActivity :
     AppCompatActivity(),
-    DialogActionListener,
-    SharedPreferences.OnSharedPreferenceChangeListener {
+    DialogActionListener {
     private val localNetworkPermissionRequest =
         LocalNetworkPermissionRequest(this) { onLocalNetworkPermissionGranted() }
 
@@ -119,16 +117,7 @@ open class BaseActivity :
         super.onResume()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        PreferenceManager.getDefaultSharedPreferences(this)
-            .unregisterOnSharedPreferenceChangeListener(this)
-    }
-
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-    }
-
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
     }
 
     companion object {

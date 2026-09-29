@@ -33,7 +33,6 @@
     <string name="delete">Sil</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">SSL etkinleştir</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
     <string name="live">Canlı</string>
     <string name="port_stream_live">Port (Canlı yayın akışı)</string>

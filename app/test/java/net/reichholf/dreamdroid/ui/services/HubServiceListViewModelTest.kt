@@ -513,6 +513,18 @@ class HubServiceListViewModelTest {
             else -> MockResponse().setResponseCode(404)
         }
 
+    @Test
+    fun instantZapSwapsTapAndLongPress() {
+        val viewModel = viewModel()
+        assertFalse(viewModel.zapsOnTap(isLong = false))
+        assertTrue(viewModel.zapsOnTap(isLong = true))
+
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, true).commit()
+
+        assertTrue(viewModel.zapsOnTap(isLong = false))
+        assertFalse(viewModel.zapsOnTap(isLong = true))
+    }
+
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): HubServiceListViewModel =
         HubServiceListViewModel(
             Service(TAB, "Tab"),

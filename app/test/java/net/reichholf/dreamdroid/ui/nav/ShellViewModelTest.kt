@@ -60,6 +60,10 @@ class ShellViewModelTest {
     @Volatile
     private var isReceiver = true
 
+    /** While true, `/web/deviceinfo` answers 401. */
+    @Volatile
+    private var deviceInfoUnauthorized = false
+
     /** While set, `/web/vol` holds its answer until the latch opens. */
     @Volatile
     private var volumeHold: CountDownLatch? = null
@@ -81,9 +85,17 @@ class ShellViewModelTest {
 
                 "/web/message" -> MockResponse().setBody(simpleResult(true, "Sent"))
 
-                "/web/deviceinfo" -> MockResponse().setBody(
-                    if (isReceiver) loadWebFixture("deviceinfo.xml") else "<html>no receiver</html>"
-                )
+                "/web/deviceinfo" -> if (deviceInfoUnauthorized) {
+                    MockResponse().setResponseCode(401)
+                } else {
+                    MockResponse().setBody(
+                        if (isReceiver) {
+                            loadWebFixture("deviceinfo.xml")
+                        } else {
+                            "<html>no receiver</html>"
+                        }
+                    )
+                }
 
                 "/web/vol" -> {
                     volumeArrived.countDown()
@@ -224,8 +236,22 @@ class ShellViewModelTest {
         val failed = assertInstanceOf(ProfileCheckUi.Failed::class.java, state.profileCheck)
         val profile = profiles.requireCurrent()
         assertEquals(UiText.Raw("null@${profile.host}:${profile.port}"), failed.title)
+        assertEquals(UiText.Resource(R.string.get_content_error), failed.message)
         assertNull(sessions.status.value.session)
         assertFalse(sessions.status.value.checking)
+    }
+
+    @Test
+    fun aFailedRequestShowsTheFailuresMessageOnTheGate() = runBlocking<Unit> {
+        settings.firstStart = false
+        deviceInfoUnauthorized = true
+        val viewModel = viewModel()
+
+        viewModel.checkActiveProfile()
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        val failed = assertInstanceOf(ProfileCheckUi.Failed::class.java, state.profileCheck)
+        assertEquals(UiText.Resource(R.string.auth_error), failed.message)
     }
 
     @Test
@@ -379,7 +405,7 @@ class ShellViewModelTest {
     private fun viewModel(): ShellViewModel = ShellViewModel(
         ReceiverRepository(clients, profiles),
         profiles,
-        ReceiverProfileCheckRepository(receiver.profiles.context, profiles, clients),
+        ReceiverProfileCheckRepository(profiles, clients),
         receiver.services,
         sessions,
         settings

@@ -12,10 +12,12 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -29,6 +31,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class EpgSearchViewModelTest {
     private val receiver = EpgTestReceiver()
+    private val preferences = MemorySharedPreferences()
     private val viewModels = mutableListOf<EpgSearchViewModel>()
 
     @BeforeEach
@@ -141,5 +144,8 @@ class EpgSearchViewModelTest {
     }
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        EpgSearchViewModel(handle, receiver.repository).also { viewModels += it }
+        EpgSearchViewModel(handle, receiver.repository, SettingsRepository(preferences)).also {
+            viewModels +=
+                it
+        }
 }

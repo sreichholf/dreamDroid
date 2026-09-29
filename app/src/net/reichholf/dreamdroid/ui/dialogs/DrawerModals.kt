@@ -11,17 +11,19 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 
 /**
  * Phase 2.1g-ii-c: Material 3 [AlertDialog] wrappers for drawer modals
@@ -66,9 +68,10 @@ fun PowerStateDialog(onDismiss: () -> Unit, onChoice: (Int) -> Unit) {
 @Composable
 fun SendMessageDialog(
     onDismiss: () -> Unit,
-    onSend: (text: String, type: String, timeout: String) -> Unit
+    onSend: (text: String, type: String, timeout: String) -> Unit,
+    viewModel: SendMessageViewModel = hiltViewModel()
 ) {
-    val state = remember { SendMessageUiState() }
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     BasicAlertDialogSurface(onDismissRequest = onDismiss) {
         Text(
             text = stringResource(R.string.send_message),
@@ -76,7 +79,10 @@ fun SendMessageDialog(
             color = AlertDialogDefaults.titleContentColor
         )
         SendMessageScreen(
-            state = state,
+            message = viewModel.message.state,
+            timeout = viewModel.timeout.state,
+            typeIndex = uiState.typeIndex,
+            onTypeSelected = viewModel::onTypeSelected,
             modifier = Modifier.padding(top = 16.dp)
         )
         Row(
@@ -90,7 +96,11 @@ fun SendMessageDialog(
             }
             TextButton(
                 onClick = {
-                    onSend(state.message, state.typeIndex.toString(), state.timeout)
+                    onSend(
+                        viewModel.message.text,
+                        uiState.typeIndex.toString(),
+                        viewModel.timeout.text
+                    )
                     onDismiss()
                 }
             ) {
@@ -102,15 +112,11 @@ fun SendMessageDialog(
 
 @Composable
 fun SleepTimerDialog(
-    initialMinutes: Int,
-    initialEnabled: Boolean,
-    initialAction: String,
     onDismiss: () -> Unit,
-    onSave: (time: String, action: String, enabled: Boolean) -> Unit
+    onSave: (time: String, action: String, enabled: Boolean) -> Unit,
+    viewModel: SleepTimerViewModel = hiltViewModel()
 ) {
-    val state = remember(initialMinutes, initialEnabled, initialAction) {
-        SleepTimerUiState(initialMinutes, initialEnabled, initialAction)
-    }
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
     BasicAlertDialogSurface(onDismissRequest = onDismiss) {
         Text(
             text = stringResource(R.string.sleeptimer),
@@ -119,6 +125,11 @@ fun SleepTimerDialog(
         )
         SleepTimerScreen(
             state = state,
+            onMinutesChanged = viewModel::onMinutesChanged,
+            onMinutesTyped = viewModel::onMinutesTyped,
+            onAdjustMinutes = viewModel::adjustMinutes,
+            onEnabledChanged = viewModel::onEnabledChanged,
+            onActionSelected = viewModel::onActionSelected,
             modifier = Modifier.padding(top = 16.dp)
         )
         Row(
@@ -188,6 +199,3 @@ internal fun readChangelogUtf8(input: InputStream): String? = try {
 } catch (_: IOException) {
     null
 }
-
-/** Defaults when sleep-timer HTTP load fails but we still want a form. */
-fun defaultSleepTimerAction(): String = SleepTimer.ACTION_STANDBY

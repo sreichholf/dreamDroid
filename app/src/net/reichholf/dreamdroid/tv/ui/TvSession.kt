@@ -1,8 +1,10 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
 import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
  * TV session helpers. Online / Offline / Checking stay on
@@ -65,26 +67,32 @@ fun shouldShowTvBrowseError(
 sealed class TvSessionGate {
     data object None : TvSessionGate()
 
-    data class Checking(val message: String) : TvSessionGate()
+    data class Checking(val message: UiText) : TvSessionGate()
 
-    data class Failed(val title: String, val message: String) : TvSessionGate()
+    data class Failed(val title: UiText, val message: UiText) : TvSessionGate()
 }
 
+/**
+ * The ProfileCheck gate for [status]: Checking and Failed only while Room has nothing to
+ * paint. [receiverLabel] names the receiver on Failed; the message is the failure's own,
+ * else the generic connection error.
+ */
 fun tvSessionGate(
     status: ConnectionStatus,
     hasCache: Boolean,
-    checkingMessage: String,
-    failedTitle: String,
-    failedMessage: String
+    receiverLabel: String
 ): TvSessionGate {
     if (status.checking && shouldShowProfileCheckCheckingUi(hasCache)) {
-        return TvSessionGate.Checking(checkingMessage)
+        return TvSessionGate.Checking(UiText.Resource(R.string.checking_connection))
     }
+    val failure = status.lastFailure
     if (status.session == null &&
-        status.lastFailure != null &&
-        shouldShowProfileCheckFailedUi(hasCache, status.lastFailure)
+        failure != null &&
+        shouldShowProfileCheckFailedUi(hasCache, failure)
     ) {
-        return TvSessionGate.Failed(failedTitle, failedMessage)
+        val message = failure.userMessageText().takeUnless { it is UiText.Raw && it.text.isBlank() }
+            ?: UiText.Resource(R.string.connection_error)
+        return TvSessionGate.Failed(UiText.Raw(receiverLabel), message)
     }
     return TvSessionGate.None
 }

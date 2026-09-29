@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -167,48 +168,41 @@ class TvSessionTest {
     @Test
     fun profileCheckGateSkippedWhenCacheExists() {
         val checking = ConnectionStatus(checking = true)
-        assertTrue(
-            tvSessionGate(
-                status = checking,
-                hasCache = false,
-                checkingMessage = "Checking",
-                failedTitle = "t",
-                failedMessage = "m"
-            ) is TvSessionGate.Checking
+        assertEquals(
+            TvSessionGate.Checking(UiText.Resource(R.string.checking_connection)),
+            tvSessionGate(status = checking, hasCache = false, receiverLabel = "u@box:80")
         )
         assertEquals(
             TvSessionGate.None,
-            tvSessionGate(
-                status = checking,
-                hasCache = true,
-                checkingMessage = "Checking",
-                failedTitle = "t",
-                failedMessage = "m"
-            )
+            tvSessionGate(status = checking, hasCache = true, receiverLabel = "u@box:80")
         )
         val failed = ConnectionStatus(
             lastFailure = EnigmaFailure.Unreachable(
                 EnigmaFailure.UnreachableReason.Connect
             )
         )
-        assertTrue(
-            tvSessionGate(
-                status = failed,
-                hasCache = false,
-                checkingMessage = "Checking",
-                failedTitle = "t",
-                failedMessage = "m"
-            ) is TvSessionGate.Failed
+        assertEquals(
+            TvSessionGate.Failed(
+                UiText.Raw("u@box:80"),
+                UiText.Resource(R.string.host_unreach)
+            ),
+            tvSessionGate(status = failed, hasCache = false, receiverLabel = "u@box:80")
         )
         assertEquals(
             TvSessionGate.None,
-            tvSessionGate(
-                status = failed,
-                hasCache = true,
-                checkingMessage = "Checking",
-                failedTitle = "t",
-                failedMessage = "m"
-            )
+            tvSessionGate(status = failed, hasCache = true, receiverLabel = "u@box:80")
+        )
+    }
+
+    @Test
+    fun aFailureWithoutItsOwnMessageShowsTheConnectionError() {
+        val cancelled = ConnectionStatus(lastFailure = EnigmaFailure.Cancelled)
+        assertEquals(
+            TvSessionGate.Failed(
+                UiText.Raw("u@box:80"),
+                UiText.Resource(R.string.connection_error)
+            ),
+            tvSessionGate(status = cancelled, hasCache = false, receiverLabel = "u@box:80")
         )
     }
 

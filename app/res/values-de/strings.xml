@@ -30,7 +30,6 @@
     <string name="epg">EPG</string>
     <string name="epg_list">EPG-Liste</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
     <string name="live">Live</string>
     <string name="port_stream_live">Port (Live)</string>

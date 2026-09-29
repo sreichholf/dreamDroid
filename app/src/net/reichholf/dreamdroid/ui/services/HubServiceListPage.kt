@@ -12,8 +12,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.preference.PreferenceManager
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.Statics
@@ -124,9 +122,7 @@ fun HubServiceListPage(
                 ServiceRowKind.DIRECTORY -> viewModel.openDirectory(item.index)
 
                 ServiceRowKind.CHANNEL -> {
-                    val instantZap = PreferenceManager.getDefaultSharedPreferences(context)
-                        .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
-                    if (instantZap != isLong) {
+                    if (viewModel.zapsOnTap(isLong)) {
                         handle.runOnlineOnly { viewModel.zap(item.index) }
                     } else {
                         viewModel.onItemMenu(item.index)

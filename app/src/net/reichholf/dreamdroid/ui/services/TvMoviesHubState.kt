@@ -24,6 +24,7 @@ class TvMoviesHubState {
     var nowPlayingProgress by mutableStateOf(0f)
     var nowPlayingReference by mutableStateOf("")
     var nowPlayingName by mutableStateOf("")
+    var nowPlayingPicons by mutableStateOf(false)
 
     /** Latest now-playing tap handler; shell composition reads this on each click. */
     var onNowPlayingClick: () -> Unit = {}

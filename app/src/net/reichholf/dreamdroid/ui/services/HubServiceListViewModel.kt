@@ -189,6 +189,9 @@ class HubServiceListViewModel @AssistedInject constructor(
         show(rootRef, bouquet.name)
     }
 
+    /** Whether a tap on a row zaps: the instant-zap setting swaps tap and long press. */
+    fun zapsOnTap(isLong: Boolean): Boolean = settings.current().instantZap != isLong
+
     /** Opens the row menu of the channel at [index]; Next event only when there is one. */
     fun onItemMenu(index: Int) {
         val row = rows.getOrNull(index) ?: return

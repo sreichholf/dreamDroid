@@ -33,7 +33,6 @@
     <string name="delete">Törlés</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">SSL Engedélyezése</string>
-    <string name="host">Állomásnév/IP</string>
     <string name="port">Port</string>
     <string name="port_stream_live">Port (Élő)</string>
     <string name="port_stream_file">Port (Filmek)</string>

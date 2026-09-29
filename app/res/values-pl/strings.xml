@@ -33,7 +33,6 @@
     <string name="delete">Usuń</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Włącz SSL</string>
-    <string name="host">Nazwa hosta/IP</string>
     <string name="port">Port</string>
     <string name="live">Na żywo</string>
     <string name="port_stream_live">Port (na żywo)</string>

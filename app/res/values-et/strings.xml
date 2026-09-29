@@ -33,7 +33,6 @@
 <string name="delete">Kustuta</string>
 <string name="epg">EPG</string>
 <string name="ssl_enabled">https (ssl lubatud)</string>
-<string name="host">Masinanimi/IP</string>
 <string name="port">Port</string>
 <string name="live">Otse</string>
 <string name="port_stream_live">Port (Live)</string>

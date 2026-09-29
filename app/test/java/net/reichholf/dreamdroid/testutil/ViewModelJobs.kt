@@ -6,7 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.job
 import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.withTimeout
 
 /**
  * Cancels everything this ViewModel launched (text-field observers never finish on their
@@ -26,11 +25,11 @@ fun ViewModel.jobs(): Set<Job> = viewModelScope.coroutineContext.job.children.to
  * never finish; take it from [jobs] right before the action.
  */
 suspend fun ViewModel.joinJobsSince(before: Set<Job>) {
-    withTimeout(5_000L) {
+    withRealTimeout(5_000L) {
         while (true) {
             val started = jobs() - before
             if (started.isEmpty()) {
-                return@withTimeout
+                return@withRealTimeout
             }
             started.joinAll()
         }

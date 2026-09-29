@@ -1,14 +1,11 @@
 package net.reichholf.dreamdroid.ui.multiepg
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -16,15 +13,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.preference.PreferenceManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgRestore
-import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
@@ -63,26 +57,6 @@ fun MultiEpgDestination(
     }
     var visibleStartSec by remember(remountEpoch, bouquetRef) { mutableLongStateOf(launchSec) }
     var focusEpoch by remember { mutableIntStateOf(0) }
-    val prefs = remember(context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-    var textSize by remember {
-        mutableStateOf(
-            MultiEpgTextSize.fromPref(
-                prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
-            )
-        )
-    }
-    DisposableEffect(prefs) {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE) {
-                textSize = MultiEpgTextSize.fromPref(prefs.getString(key, null))
-            }
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        onDispose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
-    }
-
     val menuSession = remember { MultiEpgTopBarSession() }
     menuSession.handle = handle
     menuSession.context = context
@@ -147,7 +121,8 @@ fun MultiEpgDestination(
         timerClocks = grid.timerClocks,
         visibleMinutes = uiState.visibleMinutes,
         onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
-        textSize = textSize,
+        textSize = uiState.textSize,
+        piconsEnabled = uiState.piconsEnabled,
         focusedServiceRef = focusedServiceRef,
         modifier = modifier
     )

@@ -9,13 +9,16 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.nav.Epg
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -32,6 +35,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class EpgBouquetViewModelTest {
     private val receiver = EpgTestReceiver()
+    private val preferences = MemorySharedPreferences()
     private val viewModels = mutableListOf<EpgBouquetViewModel>()
 
     @BeforeEach
@@ -239,9 +243,23 @@ class EpgBouquetViewModelTest {
         assertEquals(UiText.Resource(R.string.epg), EpgBouquetUiState().title)
     }
 
-    private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) =
-        EpgBouquetViewModel(handle, receiver.repository, receiver.sessions)
-            .also { viewModels += it }
+    @Test
+    fun piconsFollowTheSetting() = runTest {
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.piconsEnabled)
+
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, true).commit()
+
+        viewModel.uiState.first { it.piconsEnabled }
+    }
+
+    private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = EpgBouquetViewModel(
+        handle,
+        receiver.repository,
+        receiver.sessions,
+        SettingsRepository(preferences)
+    )
+        .also { viewModels += it }
 
     private companion object {
         const val NOW = 1_893_456_000L

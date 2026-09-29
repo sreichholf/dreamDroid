@@ -24,7 +24,7 @@ object Picon {
 
     fun getBasepath(context: Context): String {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))) {
+        if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)) {
             return String.format(
                 "%s/",
                 sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
@@ -77,7 +77,7 @@ object Picon {
      */
     fun resolveLoadModel(context: Context, reference: String?, name: String?): Any? {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))) {
+        if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)) {
             return null
         }
         val useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
@@ -93,7 +93,7 @@ object Picon {
 
     private fun piconModel(context: Context, fileName: String): Any {
         if (PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))
+                .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)
         ) {
             return OnlinePicon(fileName)
         }

@@ -35,6 +35,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
  */
 data class HubNowPlayingUiState(
     val enabled: Boolean = true,
+    val piconsEnabled: Boolean = false,
     val current: CurrentService? = null,
     val ready: Boolean = false,
     val sessionOffline: Boolean = false,
@@ -97,9 +98,12 @@ class HubNowPlayingViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            settings.settings.map { it.nowPlayingStrip }.distinctUntilChanged().collect { on ->
-                _uiState.update { it.copy(enabled = on) }
-            }
+            settings.settings
+                .map { it.nowPlayingStrip to it.picons }
+                .distinctUntilChanged()
+                .collect { (on, picons) ->
+                    _uiState.update { it.copy(enabled = on, piconsEnabled = picons) }
+                }
         }
         viewModelScope.launch {
             sessions.status.collect { status ->

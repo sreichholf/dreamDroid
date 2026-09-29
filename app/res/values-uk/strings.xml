@@ -33,7 +33,6 @@
     <string name="delete">Видалити</string>
     <string name="epg">Телегід</string>
     <string name="ssl_enabled">Використовувати шифрування SSL</string>
-    <string name="host">Хост/IP</string>
     <string name="port">Порт</string>
     <string name="port_stream_live">Порт (живе мовлення)</string>
     <string name="port_stream_file">Порт (фільми)</string>

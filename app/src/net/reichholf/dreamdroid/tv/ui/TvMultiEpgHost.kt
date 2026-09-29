@@ -29,7 +29,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.preference.PreferenceManager
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme
@@ -37,14 +36,12 @@ import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
-import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
@@ -61,17 +58,8 @@ fun TvMultiEpgHost(
     bouquetName: String = "",
     viewModel: TvMultiEpgViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val grid = uiState.grid
-    val prefs = remember(context) {
-        PreferenceManager.getDefaultSharedPreferences(context)
-    }
-    val textSize = remember(prefs) {
-        MultiEpgTextSize.fromPref(
-            prefs.getString(DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE, null)
-        )
-    }
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
 
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
@@ -140,7 +128,7 @@ fun TvMultiEpgHost(
                 onBouquetClick = viewModel::showBouquetPicker,
                 visibleMinutes = uiState.visibleMinutes,
                 onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
-                textSize = textSize,
+                textSize = uiState.textSize,
                 timerClocks = grid.timerClocks,
                 keysEnabled = uiState.gridKeysEnabled
             )

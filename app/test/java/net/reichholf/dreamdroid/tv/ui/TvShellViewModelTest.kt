@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -17,6 +18,7 @@ import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
+import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -62,10 +64,12 @@ class TvShellViewModelTest {
 
     @Test
     fun startChecksTheProfileAndGoesOnline() = runBlocking<Unit> {
-        viewModel().start()
+        val viewModel = viewModel()
+        viewModel.start()
 
         val status = awaitStatus { it.session == ConnectionStatus.Session.Online }
 
+        assertEquals(TvSessionGate.None, viewModel.awaitGate { it == TvSessionGate.None })
         assertFalse(status.checking)
         assertEquals(1, deviceInfoRequests())
         assertNotNull(profiles.deviceInfo(profiles.requireCurrent()))
@@ -74,12 +78,17 @@ class TvShellViewModelTest {
     @Test
     fun aFailedCheckWithoutCacheStaysOnTheGate() = runBlocking<Unit> {
         isReceiver = false
-        viewModel().start()
+        val viewModel = viewModel()
+        viewModel.start()
 
         val status = awaitStatus { !it.checking }
 
         assertNull(status.session)
         assertNotNull(status.lastFailure)
+        val gate = viewModel.awaitGate { it is TvSessionGate.Failed } as TvSessionGate.Failed
+        val profile = profiles.requireCurrent()
+        assertEquals(UiText.Raw("${profile.user}@${profile.host}:${profile.port}"), gate.title)
+        assertEquals(UiText.Resource(R.string.error_parsing), gate.message)
     }
 
     @Test
@@ -195,19 +204,20 @@ class TvShellViewModelTest {
             listOf(BouquetTabEntity(PROFILE_ID, "TV", 0, FAVOURITES, "Favourites"))
         )
         isReceiver = false
-        viewModel().start()
+        val viewModel = viewModel()
+        viewModel.start()
 
         // A page that is not a receiver is no reachability failure: the gate stays.
         val status = awaitStatus { !it.checking }
 
         assertNull(status.session)
         assertNotNull(status.lastFailure)
+        viewModel.awaitGate { it is TvSessionGate.Failed }
     }
 
     private fun viewModel(): TvShellViewModel = TvShellViewModel(
         profiles,
         ReceiverProfileCheckRepository(
-            receiver.profiles.context,
             profiles,
             enigmaClients(profiles, receiver.profiles.context)
         ),
@@ -216,6 +226,10 @@ class TvShellViewModelTest {
     ).also { viewModels += it }
 
     private fun deviceInfoRequests(): Int = receiver.requestsTo("/web/deviceinfo").size
+
+    private suspend fun TvShellViewModel.awaitGate(
+        condition: (TvSessionGate?) -> Boolean
+    ): TvSessionGate? = withTimeout(5_000L) { uiState.first { condition(it.gate) } }.gate
 
     private suspend fun awaitStatus(condition: (ConnectionStatus) -> Boolean): ConnectionStatus =
         withTimeout(5_000L) { sessions.status.first(condition) }

@@ -12,12 +12,15 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.HDD
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.PROFILE_ID
@@ -33,6 +36,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -42,6 +46,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class HubMovieListViewModelTest {
     private val receiver = MovieTestReceiver()
+    private val preferences = MemorySharedPreferences()
     private val viewModels = mutableListOf<HubMovieListViewModel>()
 
     @BeforeEach
@@ -437,6 +442,18 @@ class HubMovieListViewModelTest {
         assertEquals(expected, viewModel.uiState.value.detail)
     }
 
+    @Test
+    fun instantZapSwapsTapAndLongPress() {
+        val viewModel = viewModel()
+        assertFalse(viewModel.zapsOnTap(isLong = false))
+        assertTrue(viewModel.zapsOnTap(isLong = true))
+
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, true).commit()
+
+        assertTrue(viewModel.zapsOnTap(isLong = false))
+        assertFalse(viewModel.zapsOnTap(isLong = true))
+    }
+
     private fun viewModel(
         location: String = HDD,
         handle: SavedStateHandle = SavedStateHandle()
@@ -446,7 +463,8 @@ class HubMovieListViewModelTest {
         receiver.movies,
         receiver.receiver,
         receiver.profiles.repository,
-        receiver.sessions
+        receiver.sessions,
+        SettingsRepository(preferences)
     ).also { viewModels += it }
 
     private suspend fun HubMovieListViewModel.settled(): HubMovieListUiState =

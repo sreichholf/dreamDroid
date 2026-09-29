@@ -7,9 +7,7 @@
 package net.reichholf.dreamdroid.activities
 
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.KeyEvent
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
@@ -24,10 +22,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.BuildConfig
@@ -35,6 +36,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
@@ -44,6 +46,7 @@ import net.reichholf.dreamdroid.ui.nav.NavigationHelper
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.PhoneNavigator
 import net.reichholf.dreamdroid.ui.nav.PhoneShell
 import net.reichholf.dreamdroid.ui.nav.ProfileCheckOutcome
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
@@ -56,6 +59,7 @@ import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -66,7 +70,6 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 class MainActivity :
     BaseActivity(),
     DialogActionListener,
-    SharedPreferences.OnSharedPreferenceChangeListener,
     DrawerRouteHighlighter {
 
     private var drawerOpen by mutableStateOf(false)
@@ -85,7 +88,20 @@ class MainActivity :
     @Inject
     lateinit var profiles: ProfileRepository
 
-    val phoneNav: PhoneNavHostState by viewModels()
+    @Inject
+    lateinit var settings: SettingsRepository
+
+    @Inject
+    lateinit var sessions: SessionConnectionHolder
+
+    private var themeJob: Job? = null
+
+    private val phoneNavState: PhoneNavHostState by viewModels()
+
+    /** Created on first use, after Hilt injected; the activity is its drawer highlighter. */
+    val phoneNav: PhoneNavigator by lazy {
+        PhoneNavigator(phoneNavState, this, this, profiles, settings, sessions)
+    }
     val shellActions: ShellViewModel by viewModels()
 
     private var phoneShellReady: Boolean = false
@@ -103,9 +119,7 @@ class MainActivity :
             if (phoneNav.popNavBackStack()) {
                 return
             }
-            val shouldConfirm = PreferenceManager.getDefaultSharedPreferences(this@MainActivity)
-                .getBoolean(DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE, true)
-            if (shouldConfirm) {
+            if (settings.current().confirmAppClose) {
                 phoneNav.requestLeaveConfirm()
             } else {
                 finish()
@@ -118,7 +132,7 @@ class MainActivity :
             val route = if (isFirstStart) {
                 PhoneNavRoutes.PROFILES
             } else {
-                StartScreen.navRoute(this)
+                StartScreen.navRoute(settings.current().startScreen)
             }
             // Drop the gate so Back from the service list does not return to the check.
             phoneNav.navigateReplacingProfileCheck(route)
@@ -127,7 +141,7 @@ class MainActivity :
         if (isFirstStart) {
             navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
         } else {
-            navigationHelper!!.navigateTo(StartScreen.menuId(this))
+            navigationHelper!!.navigateTo(StartScreen.menuId(settings.current().startScreen))
         }
     }
 
@@ -230,17 +244,14 @@ class MainActivity :
         }
         ensureLocalNetworkPermission()
 
-        phoneNav.attach(this, this) // activity is LifecycleOwner and DrawerRouteHighlighter
         if (!phoneNav.hasSavedStartRoute()) {
-            phoneNav.setStartRoute(StartScreen.navRoute(this))
+            phoneNav.setStartRoute(StartScreen.navRoute(settings.current().startScreen))
         }
         phoneShellReady = true
         // Switches from now on are checked; the setup assistant's switch came before.
         shellActions.start()
         initViews()
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        preferences.unregisterOnSharedPreferenceChangeListener(this)
-        preferences.registerOnSharedPreferenceChangeListener(this)
+        followThemeSetting()
         showChangeLog(true)
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
             checkNavigationHelper()
@@ -278,24 +289,15 @@ class MainActivity :
         setIntent(intent)
     }
 
-    override fun onTitleChanged(title: CharSequence?, color: Int) {
-        super.onTitleChanged(title, color)
-        topBarController.title = title?.toString().orEmpty()
-    }
-
     /**
      * open the change log dialog
      *
      * @param onUpdateOnly if true, only show the change log after an app update
      */
     fun showChangeLog(onUpdateOnly: Boolean) {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val lastVersionCode = preferences.getInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, 0)
-        val updated = lastVersionCode < BuildConfig.VERSION_CODE
+        val updated = settings.lastVersionCode < BuildConfig.VERSION_CODE
         if (updated) {
-            val editor = preferences.edit()
-            editor.putInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, BuildConfig.VERSION_CODE)
-            editor.apply()
+            settings.lastVersionCode = BuildConfig.VERSION_CODE
         }
         if (updated || !onUpdateOnly) {
             phoneNav.navigateToChangelog()
@@ -331,12 +333,6 @@ class MainActivity :
 
     override fun onDestroy() {
         navigationHelper = null
-        PreferenceManager.getDefaultSharedPreferences(
-            this
-        ).unregisterOnSharedPreferenceChangeListener(this)
-        if (phoneShellReady) {
-            phoneNav.detach()
-        }
         super.onDestroy()
     }
 
@@ -470,12 +466,17 @@ class MainActivity :
         }
     }
 
-    override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
-        Log.w(DreamDroid.LOG_TAG, key ?: "")
-        if (DreamDroid.PREFS_KEY_THEME_TYPE == key) {
-            DreamDroid.setTheme(this)
-            if (!isPaused()) {
-                recreate()
+    /** Applies a changed theme setting; a resumed shell recreates to show it. */
+    private fun followThemeSetting() {
+        if (themeJob != null) {
+            return
+        }
+        themeJob = lifecycleScope.launch {
+            settings.settings.map { it.themeType }.distinctUntilChanged().drop(1).collect {
+                DreamDroid.setTheme(this@MainActivity)
+                if (!isPaused()) {
+                    recreate()
+                }
             }
         }
     }

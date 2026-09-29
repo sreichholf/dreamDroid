@@ -113,13 +113,13 @@
         android:title="@string/picons">
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/is_television"
             android:key="picons"
             android:summary="@string/use_picons_long"
             android:title="@string/use_picons"/>
 
         <CheckBoxPreference
-            android:defaultValue="false"
+            android:defaultValue="@bool/is_television"
             android:key="picons_online"
             android:summary="@string/online_picons_long"
             android:title="@string/online_picons"/>

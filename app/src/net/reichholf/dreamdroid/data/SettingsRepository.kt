@@ -155,6 +155,12 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
         get() = preferences.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
         set(value) = preferences.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, value).apply()
 
+    /** The version code whose change log the phone shell showed last; 0 before the first. */
+    var lastVersionCode: Int
+        get() = preferences.getInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, 0)
+        set(value) =
+            preferences.edit().putInt(DreamDroid.PREFS_KEY_LAST_VERSION_CODE, value).apply()
+
     /** Every stored preference, for a backup. */
     fun all(): Map<String, Any?> = HashMap(preferences.all)
 

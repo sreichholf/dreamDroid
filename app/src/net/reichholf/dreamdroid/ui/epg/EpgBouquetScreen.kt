@@ -22,15 +22,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
@@ -65,7 +62,8 @@ fun EpgBouquetScreen(
     listState: LazyListState = rememberLazyListState(),
     emptyMessage: String? = null,
     bouquetPick: EpgBouquetPickUi? = null,
-    timeJump: EpgTimeJumpUi? = null
+    timeJump: EpgTimeJumpUi? = null,
+    piconsEnabled: Boolean = false
 ) {
     val loadingLabel = stringResource(R.string.loading)
     Column(modifier = modifier.fillMaxSize()) {
@@ -96,6 +94,7 @@ fun EpgBouquetScreen(
                 ) { event ->
                     EpgBouquetRow(
                         event = event,
+                        piconsEnabled = piconsEnabled,
                         onClick = { onItemClick(event) }
                     )
                 }
@@ -195,10 +194,7 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
 }
 
 @Composable
-private fun EpgBouquetRow(event: Event, onClick: () -> Unit) {
-    val context = LocalContext.current
-    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
+private fun EpgBouquetRow(event: Event, piconsEnabled: Boolean, onClick: () -> Unit) {
     ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         ListItem(
             headlineContent = {

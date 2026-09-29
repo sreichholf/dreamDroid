@@ -24,6 +24,7 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
 /**
@@ -51,9 +52,7 @@ fun TvProfileCheckScreen(
                 CircularProgressIndicator(modifier = Modifier.size(48.dp))
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = gate.message.ifBlank {
-                        stringResource(R.string.checking_connection)
-                    },
+                    text = gate.message.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
@@ -70,14 +69,14 @@ fun TvProfileCheckScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = gate.title,
+                    text = gate.title.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = gate.message,
+                    text = gate.message.asString(),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth()

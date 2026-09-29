@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.dialogs
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
@@ -14,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -38,10 +42,10 @@ class SleepTimerScreenTest {
 
     @Test
     fun showsActivateStandbyShutdown() {
-        val state = SleepTimerUiState(90, true, SleepTimer.ACTION_STANDBY)
+        val viewModel = sleepTimer(90, true, SleepTimer.ACTION_STANDBY)
         composeRule.setContent {
             DreamDroidTheme {
-                SleepTimerScreen(state = state)
+                SleepTimerHost(viewModel)
             }
         }
         composeRule.onNodeWithText("Activate").assertIsDisplayed().assertIsOn()
@@ -61,36 +65,53 @@ class SleepTimerScreenTest {
 
     @Test
     fun incrementAndDecrementMinutes() {
-        val state = SleepTimerUiState(90, true, SleepTimer.ACTION_STANDBY)
+        val viewModel = sleepTimer(90, true, SleepTimer.ACTION_STANDBY)
         composeRule.setContent {
             DreamDroidTheme {
-                SleepTimerScreen(state = state)
+                SleepTimerHost(viewModel)
             }
         }
         composeRule.onNodeWithTag(SLEEP_TIMER_MINUTES_INC_TAG).performClick()
-        composeRule.runOnIdle { assertEquals(91, state.minutes) }
+        composeRule.runOnIdle { assertEquals(91, viewModel.uiState.value.minutes) }
         composeRule.onNodeWithTag(SLEEP_TIMER_MINUTES_DEC_TAG).performClick()
-        composeRule.runOnIdle { assertEquals(90, state.minutes) }
+        composeRule.runOnIdle { assertEquals(90, viewModel.uiState.value.minutes) }
     }
 
     @Test
     fun activateSwitchAndActionSegmentStayIndependent() {
-        val state = SleepTimerUiState(15, false, SleepTimer.ACTION_STANDBY)
+        val viewModel = sleepTimer(15, false, SleepTimer.ACTION_STANDBY)
         composeRule.setContent {
             DreamDroidTheme {
-                SleepTimerScreen(state = state)
+                SleepTimerHost(viewModel)
             }
         }
         composeRule.onNodeWithText("Activate").assertIsOff()
         composeRule.onNodeWithText("Shutdown").performClick()
         composeRule.runOnIdle {
-            assertEquals(false, state.enabled)
-            assertEquals(SleepTimer.ACTION_SHUTDOWN, state.action)
+            assertEquals(false, viewModel.uiState.value.enabled)
+            assertEquals(SleepTimer.ACTION_SHUTDOWN, viewModel.uiState.value.action)
         }
         composeRule.onNodeWithText("Activate").performClick()
-        composeRule.runOnIdle { assertEquals(true, state.enabled) }
+        composeRule.runOnIdle { assertEquals(true, viewModel.uiState.value.enabled) }
         composeRule.onNodeWithText("Activate").assertIsOn()
         composeRule.onNodeWithText("Shutdown").assertIsSelected()
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
+    }
+
+    private fun sleepTimer(minutes: Int, enabled: Boolean, action: String) = SleepTimerViewModel(
+        SavedStateHandle(mapOf("minutes" to minutes, "enabled" to enabled, "action" to action))
+    )
+
+    @Composable
+    private fun SleepTimerHost(viewModel: SleepTimerViewModel) {
+        val state by viewModel.uiState.collectAsState()
+        SleepTimerScreen(
+            state = state,
+            onMinutesChanged = viewModel::onMinutesChanged,
+            onMinutesTyped = viewModel::onMinutesTyped,
+            onAdjustMinutes = viewModel::adjustMinutes,
+            onEnabledChanged = viewModel::onEnabledChanged,
+            onActionSelected = viewModel::onActionSelected
+        )
     }
 }

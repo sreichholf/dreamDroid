@@ -11,11 +11,12 @@ import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -64,18 +65,13 @@ class SleepTimerDialogHostTest {
                             )
                         }
                     }
-                    dialog<SleepTimerRoute> { entry ->
+                    dialog<SleepTimerRoute> {
                         @Suppress("UNUSED_VARIABLE")
                         val recompositionGate = recomposeTick.intValue
-                        val args = entry.toRoute<SleepTimerRoute>()
                         SleepTimerDialog(
-                            initialMinutes = args.minutes,
-                            initialEnabled = args.enabled,
-                            initialAction = args.action.ifEmpty {
-                                defaultSleepTimerAction()
-                            },
                             onDismiss = { navController.popBackStack() },
-                            onSave = { _, _, _ -> }
+                            onSave = { _, _, _ -> },
+                            viewModel = viewModel { SleepTimerViewModel(createSavedStateHandle()) }
                         )
                     }
                 }

@@ -1026,6 +1026,7 @@ class MultiEpgScreenTest {
                     loading = false,
                     errorMessage = null,
                     onJumpToNow = {},
+                    piconsEnabled = true,
                     onEventClick = {}
                 )
             }
@@ -1056,6 +1057,7 @@ class MultiEpgScreenTest {
                         loading = false,
                         errorMessage = null,
                         onJumpToNow = {},
+                        piconsEnabled = true,
                         onEventClick = {},
                         textSize = MultiEpgTextSize.Comfortable
                     )
@@ -1093,6 +1095,7 @@ class MultiEpgScreenTest {
                         loading = false,
                         errorMessage = null,
                         onJumpToNow = {},
+                        piconsEnabled = true,
                         onEventClick = {},
                         textSize = MultiEpgTextSize.Compact
                     )

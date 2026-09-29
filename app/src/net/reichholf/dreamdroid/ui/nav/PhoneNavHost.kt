@@ -34,7 +34,6 @@ import net.reichholf.dreamdroid.ui.dialogs.ExplainAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
 import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
 import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
-import net.reichholf.dreamdroid.ui.dialogs.defaultSleepTimerAction
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetDestination
 import net.reichholf.dreamdroid.ui.epg.EpgSearchDestination
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgDestination
@@ -60,7 +59,7 @@ import net.reichholf.dreamdroid.ui.zap.ZapDestination
 @Composable
 fun rememberPhoneNavController(handle: PhoneNavHandle): NavHostController {
     val controller = rememberNavController()
-    val state = handle as? PhoneNavHostState
+    val state = handle as? PhoneNavigator
     if (state != null && !state.hasNavSchema()) {
         controller.restoreState(Bundle())
     }
@@ -87,7 +86,7 @@ fun PhoneNavHost(
     ProvideShellDestinationBar {
         val controller = LocalShellDestinationBarController.current
         DisposableEffect(handle, controller) {
-            val state = handle as? PhoneNavHostState
+            val state = handle as? PhoneNavigator
             state?.shellDestinationBarController = controller
             onDispose {
                 if (state != null && state.shellDestinationBarController === controller) {
@@ -107,8 +106,8 @@ fun PhoneNavHost(
                 .fillMaxSize()
                 .phoneNavDestinationViewport(shellBarVisible)
         )
-        val leaveConfirm by handle.leaveConfirmRequestedFlow().collectAsState()
-        if (leaveConfirm) {
+        val navUiState by handle.navUiState.collectAsState()
+        if (navUiState.leaveConfirmRequested) {
             val context = LocalContext.current
             ConfirmAlertDialog(
                 title = stringResource(R.string.leave_confirm),
@@ -117,8 +116,7 @@ fun PhoneNavHost(
                 onConfirm = { (context as? Activity)?.finish() }
             )
         }
-        val needsReceiver by handle.needsReceiverRequestedFlow().collectAsState()
-        if (needsReceiver) {
+        if (navUiState.needsReceiverRequested) {
             ExplainAlertDialog(
                 title = stringResource(R.string.session_needs_receiver),
                 message = stringResource(R.string.session_needs_receiver_long),
@@ -163,7 +161,7 @@ private fun PhoneNavHostGraph(
         }
         composable<Epg> { entry ->
             val route = entry.toRoute<Epg>()
-            val remount by handle.epgRemountFlow().collectAsState()
+            val remount = handle.navUiState.collectAsState().value.epgRemount
             key(remount) {
                 EpgBouquetDestination(
                     handle = handle,
@@ -174,7 +172,7 @@ private fun PhoneNavHostGraph(
         }
         composable<MultiEpg> { entry ->
             val route = entry.toRoute<MultiEpg>()
-            val remount by handle.epgRemountFlow().collectAsState()
+            val remount = handle.navUiState.collectAsState().value.epgRemount
             key(remount) {
                 MultiEpgDestination(
                     handle = handle,
@@ -203,7 +201,7 @@ private fun PhoneNavHostGraph(
         }
         composable<EpgSearch> { entry ->
             val query = entry.toRoute<EpgSearch>().query
-            val remount by handle.epgSearchRemountFlow().collectAsState()
+            val remount = handle.navUiState.collectAsState().value.epgSearchRemount
             key(query, remount) {
                 EpgSearchDestination(
                     handle = handle,
@@ -243,13 +241,9 @@ private fun PhoneNavHostGraph(
                 }
             )
         }
-        dialog<SleepTimerRoute> { entry ->
+        dialog<SleepTimerRoute> {
             val activity = LocalActivity.current as? MainActivity
-            val args = entry.toRoute<SleepTimerRoute>()
             SleepTimerDialog(
-                initialMinutes = args.minutes,
-                initialEnabled = args.enabled,
-                initialAction = args.action.ifEmpty { defaultSleepTimerAction() },
                 onDismiss = { navController.popBackStack() },
                 onSave = { time, action, enabled ->
                     activity?.onSetSleepTimer(time, action, enabled)

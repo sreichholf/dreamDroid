@@ -1,9 +1,7 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.content.Context
 import android.content.SharedPreferences
 import androidx.annotation.IdRes
-import androidx.preference.PreferenceManager
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 
@@ -38,9 +36,6 @@ object StartScreen {
         return if (raw in VALUES) raw else VALUE_SERVICES
     }
 
-    fun read(context: Context): String =
-        read(PreferenceManager.getDefaultSharedPreferences(context))
-
     @IdRes
     fun menuId(value: String): Int = when (value) {
         VALUE_EPG -> R.id.menu_navigation_epg
@@ -50,12 +45,6 @@ object StartScreen {
         else -> R.id.menu_navigation_services
     }
 
-    @IdRes
-    fun menuId(prefs: SharedPreferences): Int = menuId(read(prefs))
-
-    @IdRes
-    fun menuId(context: Context): Int = menuId(read(context))
-
     /** PhoneNavHost route for the configured start screen (drawer roots only). */
     fun navRoute(value: String): String = when (value) {
         VALUE_EPG -> PhoneNavRoutes.EPG
@@ -64,8 +53,4 @@ object StartScreen {
         VALUE_TOOLS -> PhoneNavRoutes.TOOLS
         else -> PhoneNavRoutes.HUB
     }
-
-    fun navRoute(prefs: SharedPreferences): String = navRoute(read(prefs))
-
-    fun navRoute(context: Context): String = navRoute(read(context))
 }

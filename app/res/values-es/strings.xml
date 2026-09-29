@@ -29,7 +29,6 @@
     <string name="delete">Borrar</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Habilitar SSL</string>
-    <string name="host">Nombre del host/IP</string>
     <string name="port">Puerto</string>
     <string name="live">En directo</string>
     <string name="port_stream_live">Puerto (Directo)</string>

@@ -27,7 +27,6 @@
     <string name="edit">редакция</string>
     <string name="delete">изтриване</string>
     <string name="ssl_enabled">разрешаване на SSL</string>
-    <string name="host">име на хост/IP</string>
     <string name="port">порт</string>
     <string name="settings">настройки</string>
     <string name="host_long">имена хост или IP</string>

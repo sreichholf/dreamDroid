@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.EventListLoad
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.nav.Epg
@@ -36,7 +37,8 @@ data class EpgBouquetUiState(
     val refreshing: Boolean = false,
     val emptyMessage: UiText? = null,
     val scrollToTop: Boolean = false,
-    val openPicker: Boolean = false
+    val openPicker: Boolean = false,
+    val piconsEnabled: Boolean = false
 ) {
     val title: UiText
         get() = when {
@@ -55,7 +57,8 @@ data class EpgBouquetUiState(
 class EpgBouquetViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val epg: EpgRepository,
-    sessions: SessionConnectionHolder
+    sessions: SessionConnectionHolder,
+    settings: SettingsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         readEpgBouquetNavSaved(savedStateHandle).let { saved ->
@@ -73,6 +76,11 @@ class EpgBouquetViewModel @Inject constructor(
     private var loadJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            settings.settings.map { it.picons }.distinctUntilChanged().collect { on ->
+                _uiState.update { it.copy(piconsEnabled = on) }
+            }
+        }
         viewModelScope.launch {
             sessions.status.map { it.session }.distinctUntilChanged().drop(1).collect {
                 if (seenEpoch != null) {
