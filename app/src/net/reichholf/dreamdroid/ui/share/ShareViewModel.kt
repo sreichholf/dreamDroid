@@ -6,13 +6,11 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -60,7 +58,9 @@ class ShareViewModel @Inject constructor(
         started = true
         this.request = request
         viewModelScope.launch {
-            val saved = withContext(Dispatchers.IO) { profiles.profiles() }
+            // A share can start the process; the 1.x profile import runs in that load.
+            profiles.awaitLoaded()
+            val saved = profiles.profiles()
             when {
                 saved.size > 1 -> {
                     profilesById = saved.associateBy { it.id ?: 0 }

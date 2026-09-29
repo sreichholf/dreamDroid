@@ -173,7 +173,8 @@ class MainActivity :
         shellActions.onProfileCheckOutcomeHandled()
     }
 
-    override fun requestLocalNetworkOnCreate(): Boolean = profiles.hasCurrent()
+    /** The shell asks once it starts, and setup at its search step. */
+    override fun requestLocalNetworkOnCreate(): Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)

@@ -184,6 +184,26 @@ class ProfileRepositoryTest {
     }
 
     @Test
+    fun anEditSavedDuringAnActivationIsNotOverwrittenByTheOlderRow() = runBlocking<Unit> {
+        val store = MemoryProfileStore(listOf(profile(1, "old-box")))
+        val repo = ProfileRepository(store)
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+        val gate = CompletableDeferred<Unit>()
+        store.profileGate = gate
+
+        val activation = async(Dispatchers.IO) { repo.reloadCurrent() }
+        withTimeout(5_000L) { store.profileRead.await() }
+        val save = async(Dispatchers.IO) { repo.save(profile(1, "new-box")) }
+        gate.complete(Unit)
+        withTimeout(5_000L) {
+            activation.await()
+            save.await()
+        }
+
+        assertEquals("new-box", repo.requireCurrent().host)
+    }
+
+    @Test
     fun awaitLoadedWaitsUntilTheStartupLoadIsMarkedDone() = runBlocking<Unit> {
         val repo = ProfileRepository(MemoryProfileStore(listOf(profile(1, "box"))))
         val waiter = async(start = CoroutineStart.UNDISPATCHED) { repo.awaitLoaded() }
@@ -223,7 +243,18 @@ private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
 
     override suspend fun profiles(): List<Profile> = rows.toList()
 
-    override suspend fun profile(id: Int): Profile? = rows.firstOrNull { it.id == id }
+    /** While set, [profile] reads the row, opens [profileRead], and waits for the gate. */
+    var profileGate: CompletableDeferred<Unit>? = null
+    val profileRead = CompletableDeferred<Unit>()
+
+    override suspend fun profile(id: Int): Profile? {
+        val row = rows.firstOrNull { it.id == id }
+        profileGate?.let { gate ->
+            profileRead.complete(Unit)
+            gate.await()
+        }
+        return row
+    }
 
     override suspend fun add(profile: Profile): Long {
         val nextId = (rows.mapNotNull { it.id }.maxOrNull() ?: 0) + 1

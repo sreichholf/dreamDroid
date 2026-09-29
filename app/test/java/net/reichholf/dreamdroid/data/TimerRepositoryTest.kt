@@ -297,13 +297,16 @@ class TimerRepositoryTest {
         val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
         awaitArrival(held)
         // Runs while the receiver still holds the locations answer; it must not wait for it.
-        val deviceInfo = withTimeout(5_000L) {
-            async(Dispatchers.IO) {
-                profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
-                profiles.deviceInfo(profile)
-            }.await()
+        val deviceInfo = try {
+            withTimeout(5_000L) {
+                async(Dispatchers.IO) {
+                    profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
+                    profiles.deviceInfo(profile)
+                }.await()
+            }
+        } finally {
+            held.release()
         }
-        held.release()
 
         assertEquals("<e2deviceinfo/>", deviceInfo)
         assertEquals(

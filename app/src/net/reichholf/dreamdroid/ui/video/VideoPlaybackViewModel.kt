@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.data.BouquetListLoad
 import net.reichholf.dreamdroid.data.LiveStream
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -32,6 +33,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 class VideoPlaybackViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val receiver: ReceiverRepository,
+    private val profiles: ProfileRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(VideoPlaybackUiState())
@@ -89,6 +91,7 @@ class VideoPlaybackViewModel @Inject constructor(
         }
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
+            profiles.awaitLoaded()
             val response = services.bouquetNowNext(bouquetRef)
             val rows = response.value
             if (rows == null) {
@@ -112,6 +115,7 @@ class VideoPlaybackViewModel @Inject constructor(
         val ref = _uiState.value.serviceRef ?: return
         zapJob?.cancel()
         zapJob = viewModelScope.launch {
+            profiles.awaitLoaded()
             when (val stream = receiver.liveStream(ref)) {
                 is LiveStream.Ready -> _uiState.update { it.copy(stream = stream) }
                 is LiveStream.Failed -> showMessage(stream.message)
@@ -138,6 +142,8 @@ class VideoPlaybackViewModel @Inject constructor(
             return
         }
         bouquetJob = viewModelScope.launch {
+            // A restore after process death can land here before the active profile is read.
+            profiles.awaitLoaded()
             val excluded = services.excludedTabRefs
             val cached = services.cachedBouquets()
             val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()

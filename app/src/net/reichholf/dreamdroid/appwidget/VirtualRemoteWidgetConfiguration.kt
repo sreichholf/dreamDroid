@@ -45,6 +45,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
         lifecycleScope.launch {
+            profileRepository.awaitLoaded()
             val items = profileRepository.profiles().map { profile ->
                 ProfileListItem(
                     id = profile.id ?: 0,

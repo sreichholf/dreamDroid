@@ -42,7 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
-        if (!showingSetup) {
+        if (hubStarted && !showingSetup) {
             // The hub ViewModel outlives recreate(), so its loads that failed
             // without the permission have to be restarted by hand.
             hubViewModel.reload()
