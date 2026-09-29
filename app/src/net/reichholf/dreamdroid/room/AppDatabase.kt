@@ -290,32 +290,26 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        @Volatile
-        var db: AppDatabase? = null
-
-        fun database(context: Context): AppDatabase {
-            db?.let { return it }
-            return synchronized(this) {
-                db?.let { return it }
-                Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    DATABASE_NAME
-                )
-                    .addMigrations(
-                        MIGRATION_1_2,
-                        MIGRATION_2_3,
-                        MIGRATION_3_4,
-                        MIGRATION_4_5,
-                        MIGRATION_5_6,
-                        MIGRATION_6_7,
-                        MIGRATION_7_8
-                    )
-                    .configureRoomDriver()
-                    .build()
-                    .also { db = it }
-            }
-        }
+        /**
+         * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
+         * building does not open the file.
+         */
+        fun build(context: Context): AppDatabase = Room.databaseBuilder(
+            context.applicationContext,
+            AppDatabase::class.java,
+            DATABASE_NAME
+        )
+            .addMigrations(
+                MIGRATION_1_2,
+                MIGRATION_2_3,
+                MIGRATION_3_4,
+                MIGRATION_4_5,
+                MIGRATION_5_6,
+                MIGRATION_6_7,
+                MIGRATION_7_8
+            )
+            .configureRoomDriver()
+            .build()
 
         /** In-memory DB for instrumentation tests (does not touch the process singleton). */
         fun inMemory(context: Context): AppDatabase = Room.inMemoryDatabaseBuilder(
@@ -324,19 +318,6 @@ abstract class AppDatabase : RoomDatabase() {
         )
             .configureRoomDriver()
             .build()
-
-        fun profiles(context: Context): Profile.ProfileDao = database(context).profileDao()
-
-        /**
-         * Blocking profile DAO for Application, backup, and other main-thread callers.
-         * Suspend DAOs go through [profiles] from an existing coroutine.
-         */
-        fun profilesBlocking(context: Context): ProfileDaoBlocking =
-            ProfileDaoBlocking(database(context).profileDao())
-
-        fun epg(context: Context): EpgDao = database(context).epgDao()
-
-        fun roster(context: Context): RosterDao = database(context).rosterDao()
 
         private fun RoomDatabase.Builder<AppDatabase>.configureRoomDriver():
             RoomDatabase.Builder<AppDatabase> =

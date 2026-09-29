@@ -5,11 +5,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.preference.PreferenceManager
 import dagger.Lazy
-import dagger.hilt.EntryPoint
-import dagger.hilt.InstallIn
-import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
-import dagger.hilt.components.SingletonComponent
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -294,43 +290,6 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         tagList.clear()
         deviceInfo.clear()
     }
-
-    companion object {
-        @Volatile
-        private var instance: ProfileRepository? = null
-
-        /**
-         * Registers the process instance for static callers. `DreamDroid` passes the
-         * instance Hilt injected into it; JVM tests pass their own (decision 10 in
-         * docs/hilt-migration.md). Goes away with the last [get] caller.
-         */
-        fun install(repository: ProfileRepository) {
-            instance = repository
-        }
-
-        /**
-         * The Hilt-owned instance. A caller that runs before `DreamDroid` installed it
-         * asks the singleton component directly, which builds the same instance that
-         * injection hands out, never a second one. A process whose Application is not
-         * `DreamDroid` (a restricted backup restore) has no component and fails here.
-         */
-        fun get(): ProfileRepository {
-            instance?.let { return it }
-            val app = DreamDroid.getAppContext()
-                ?: error("ProfileRepository used before Application")
-            return EntryPointAccessors
-                .fromApplication(app, ProfileRepositoryEntryPoint::class.java)
-                .profileRepository()
-                .also { instance = it }
-        }
-    }
-}
-
-/** Static lookup for [ProfileRepository.get] before `DreamDroid` has installed it. */
-@EntryPoint
-@InstallIn(SingletonComponent::class)
-interface ProfileRepositoryEntryPoint {
-    fun profileRepository(): ProfileRepository
 }
 
 /**

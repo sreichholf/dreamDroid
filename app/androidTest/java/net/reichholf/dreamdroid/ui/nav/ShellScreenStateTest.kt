@@ -33,6 +33,7 @@ class ShellScreenStateTest {
                     onDrawerOpenChange = {},
                     profileName = "Living Room",
                     connectionLabel = "Online",
+                    boxActionsBlocked = false,
                     onProfileClick = {},
                     onDrawerItemClick = {},
                     onNavigationClick = {},

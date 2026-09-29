@@ -7,11 +7,11 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
-/**
- * Enqueues unique picon FTP sync via WorkManager. [ExistingWorkPolicy.KEEP] so a
- * second Settings tap does not restart an in-flight sync.
- */
 object PiconSync {
     const val UNIQUE_WORK_NAME: String = "picon_sync"
     const val NOTIFICATION_ID: Int = 0x9923
@@ -24,20 +24,26 @@ object PiconSync {
             state == WorkInfo.State.RUNNING ||
             state == WorkInfo.State.BLOCKED
     }
+}
 
-    fun isRunning(context: Context): Boolean {
-        val infos = WorkManager.getInstance(context)
-            .getWorkInfosForUniqueWork(UNIQUE_WORK_NAME)
-            .get()
-        return isWorkInProgress(infos.map { it.state })
-    }
+/** Starts the picon FTP sync. An interface because WorkManager does not run on the JVM. */
+interface PiconSyncScheduler {
+    /** @return true when a new sync was enqueued, false when one is already active. */
+    suspend fun enqueue(): Boolean
+}
 
-    /**
-     * @return true when a new sync was enqueued, false when one is already active.
-     */
-    fun enqueue(context: Context): Boolean {
-        if (isRunning(context)) {
-            return false
+/**
+ * Enqueues unique picon FTP sync via WorkManager. [ExistingWorkPolicy.KEEP] so a
+ * second Settings tap does not restart an in-flight sync.
+ */
+class WorkManagerPiconSync @Inject constructor(
+    @param:ApplicationContext private val context: Context
+) : PiconSyncScheduler {
+    override suspend fun enqueue(): Boolean = withContext(Dispatchers.IO) {
+        val workManager = WorkManager.getInstance(context)
+        val infos = workManager.getWorkInfosForUniqueWork(PiconSync.UNIQUE_WORK_NAME).get()
+        if (PiconSync.isWorkInProgress(infos.map { it.state })) {
+            return@withContext false
         }
         val request = OneTimeWorkRequestBuilder<PiconSyncWorker>()
             .setConstraints(
@@ -46,11 +52,11 @@ object PiconSync {
                     .build()
             )
             .build()
-        WorkManager.getInstance(context).enqueueUniqueWork(
-            UNIQUE_WORK_NAME,
+        workManager.enqueueUniqueWork(
+            PiconSync.UNIQUE_WORK_NAME,
             ExistingWorkPolicy.KEEP,
             request
         )
-        return true
+        true
     }
 }

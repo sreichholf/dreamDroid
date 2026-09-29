@@ -14,7 +14,6 @@ import android.util.Log
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades and
@@ -89,35 +88,33 @@ object DatabaseHelper {
      * Deletes an existing leftover after a successful open, including 0 rows
      * (empty file created by the old [SQLiteOpenHelper] path).
      */
-    fun migrateIntoRoomIfNeeded(
-        context: Context,
-        dao: Profile.ProfileDao = AppDatabase.profiles(context)
-    ): Int = runBlocking(Dispatchers.IO) {
-        if (dao.getProfiles().isNotEmpty()) {
-            return@runBlocking 0
-        }
-        val file = databaseFile(context)
-        if (!file.exists()) {
-            return@runBlocking 0
-        }
-        val profiles = try {
-            SQLiteDatabase.openDatabase(
-                file.absolutePath,
-                null,
-                SQLiteDatabase.OPEN_READONLY
-            ).use { db ->
-                readProfiles(db)
+    fun migrateIntoRoomIfNeeded(context: Context, dao: Profile.ProfileDao): Int =
+        runBlocking(Dispatchers.IO) {
+            if (dao.getProfiles().isNotEmpty()) {
+                return@runBlocking 0
             }
-        } catch (e: SQLiteException) {
-            Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
-            return@runBlocking 0
+            val file = databaseFile(context)
+            if (!file.exists()) {
+                return@runBlocking 0
+            }
+            val profiles = try {
+                SQLiteDatabase.openDatabase(
+                    file.absolutePath,
+                    null,
+                    SQLiteDatabase.OPEN_READONLY
+                ).use { db ->
+                    readProfiles(db)
+                }
+            } catch (e: SQLiteException) {
+                Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
+                return@runBlocking 0
+            }
+            for (profile in profiles) {
+                profile.id = dao.addProfile(profile).toInt()
+            }
+            context.deleteDatabase(DATABASE_NAME)
+            profiles.size
         }
-        for (profile in profiles) {
-            profile.id = dao.addProfile(profile).toInt()
-        }
-        context.deleteDatabase(DATABASE_NAME)
-        profiles.size
-    }
 
     private fun readProfiles(db: SQLiteDatabase): List<Profile> {
         val list = ArrayList<Profile>()

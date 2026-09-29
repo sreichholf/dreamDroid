@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.testutil.dreamDroidApp
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -38,6 +38,7 @@ class VideoPlaybackRetentionTest {
     private val server = MockWebServer()
     private val release = CountDownLatch(1)
     private val loads = AtomicInteger(0)
+    private val profiles = dreamDroidApp().profiles
     private var previousProfile: Profile? = null
 
     @Before
@@ -55,8 +56,8 @@ class VideoPlaybackRetentionTest {
             }
         }
         server.start()
-        previousProfile = ProfileRepository.get().current.value
-        ProfileRepository.get().setCurrent(
+        previousProfile = profiles.current.value
+        profiles.setCurrent(
             Profile.getDefault().apply {
                 name = "video-vm"
                 host = "127.0.0.1"
@@ -73,9 +74,9 @@ class VideoPlaybackRetentionTest {
         server.shutdown()
         val previous = previousProfile
         if (previous != null) {
-            ProfileRepository.get().setCurrent(previous)
+            profiles.setCurrent(previous)
         } else {
-            ProfileRepository.get().loadCurrent()
+            profiles.loadCurrent()
         }
     }
 

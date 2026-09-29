@@ -112,6 +112,7 @@ private fun hostShell(content: @Composable () -> Unit) {
             onDrawerOpenChange = {},
             profileName = "Living Room",
             connectionLabel = "Online",
+            boxActionsBlocked = false,
             onProfileClick = {},
             onDrawerItemClick = {},
             onNavigationClick = {},

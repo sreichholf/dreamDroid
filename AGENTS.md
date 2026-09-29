@@ -13,8 +13,8 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 **Hilt** (migration in progress, see [`docs/hilt-migration.md`](docs/hilt-migration.md)):
 
 - A binding, repository method, or module lands in the PR with its first consumer. No bindings "for later".
-- Migrated screens use a `@HiltViewModel` taking repositories plus `SavedStateHandle`, obtained with `hiltViewModel()`. Their title and user message are UI state (`UiText`), reported with `ShellTitle` and `ShowShellUserMessage`, not `Activity.title` or `ShellMessages`.
-- While a static holder (`SessionConnectionHolder.shared` and friends) still has callers, a Hilt `@Provides` returns that static instance. Delete the provider and the static with the last caller. `ProfileRepository` is already flipped: it has an `@Inject` constructor, and `ProfileRepository.get()` returns the Hilt instance.
+- Migrated screens use a `@HiltViewModel` taking repositories plus `SavedStateHandle`, obtained with `hiltViewModel()`. Their title and user message are UI state (`UiText`), reported with `ShellTitle` and `ShowShellUserMessage`, not `Activity.title`.
+- No static service locators. Get dependencies by injection: `@Inject` constructors and fields, `hiltViewModel()`, or an `@EntryPoint` where Android or Glance creates the object (widget, picon loader, worker).
 - Text input state is a `TextFieldState` owned by the ViewModel (`SavedTextField` keeps it in `SavedStateHandle`), rendered with state-based text fields, not a String in the UiState `StateFlow`.
 - Hilt injects during `super.onCreate()` of `DreamDroid`, before the Room import runs. Constructors of bound classes must not touch the database.
 

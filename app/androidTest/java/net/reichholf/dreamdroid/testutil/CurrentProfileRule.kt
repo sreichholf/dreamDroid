@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.testutil
 
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
 import org.junit.rules.ExternalResource
 
 /**
@@ -13,7 +12,7 @@ class CurrentProfileRule : ExternalResource() {
     private var previous: Profile? = null
 
     override fun before() {
-        val profiles = ProfileRepository.get()
+        val profiles = dreamDroidApp().profiles
         previous = profiles.current.value
         profiles.setCurrent(
             Profile().apply {
@@ -26,7 +25,7 @@ class CurrentProfileRule : ExternalResource() {
     }
 
     override fun after() {
-        val profiles = ProfileRepository.get()
+        val profiles = dreamDroidApp().profiles
         val restore = previous
         if (restore == null) {
             profiles.clearCurrent()

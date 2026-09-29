@@ -13,12 +13,17 @@ import javax.inject.Singleton
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.ContentResolverBackupDocuments
+import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
+import net.reichholf.dreamdroid.helpers.WorkManagerPiconSync
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class SettingsModule {
     @Binds
     abstract fun backupDocuments(documents: ContentResolverBackupDocuments): BackupDocuments
+
+    @Binds
+    abstract fun piconSyncScheduler(sync: WorkManagerPiconSync): PiconSyncScheduler
 
     companion object {
         /**

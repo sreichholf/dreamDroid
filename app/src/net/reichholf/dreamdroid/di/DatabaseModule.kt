@@ -12,12 +12,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-    /**
-     * The instance `AppDatabase`'s static accessors return, so both share one database
-     * until the statics lose their last caller. Building it does not open the file.
-     */
     @Provides
     @Singleton
-    fun appDatabase(@ApplicationContext context: Context): AppDatabase =
-        AppDatabase.database(context)
+    fun appDatabase(@ApplicationContext context: Context): AppDatabase = AppDatabase.build(context)
 }

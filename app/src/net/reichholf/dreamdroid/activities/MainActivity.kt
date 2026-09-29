@@ -26,6 +26,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -80,6 +81,10 @@ class MainActivity :
     private val destinationController = ShellDestinationBarController()
     private val fabController = ShellFabController()
     private val topBarController = ShellTopBarController()
+
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     val phoneNav: PhoneNavHostState by viewModels()
     val shellActions: ShellViewModel by viewModels()
 
@@ -154,7 +159,7 @@ class MainActivity :
         shellActions.onProfileCheckOutcomeHandled()
     }
 
-    override fun requestLocalNetworkOnCreate(): Boolean = ProfileRepository.get().hasCurrent()
+    override fun requestLocalNetworkOnCreate(): Boolean = profiles.hasCurrent()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
@@ -179,7 +184,7 @@ class MainActivity :
             }
         }
         startSessionReachabilityProbe()
-        if (!ProfileRepository.get().hasCurrent()) {
+        if (!profiles.hasCurrent()) {
             showSetupAssistant()
             return
         }
@@ -191,7 +196,7 @@ class MainActivity :
         if (showingSetup || !phoneShellReady) {
             return
         }
-        if (!ProfileRepository.get().ensureCurrent()) {
+        if (!profiles.ensureCurrent()) {
             shellActions.cancelCheck()
             showSetupAssistant()
         }
@@ -262,7 +267,7 @@ class MainActivity :
 
     override fun onLocalNetworkPermissionGranted() {
         lanGranted = true
-        if (showingSetup || !ProfileRepository.get().hasCurrent()) {
+        if (showingSetup || !profiles.hasCurrent()) {
             return
         }
         shellActions.checkActiveProfile()
@@ -386,6 +391,7 @@ class MainActivity :
                     },
                     profileName = shellUiState.profileName,
                     connectionLabel = stringResource(status.chipLabelRes()),
+                    boxActionsBlocked = status.blocksMutations,
                     onProfileClick = {
                         checkNavigationHelper()
                         navigationHelper?.navigateTo(R.id.menu_navigation_profiles)

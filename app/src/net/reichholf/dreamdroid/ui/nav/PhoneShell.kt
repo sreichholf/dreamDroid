@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -31,7 +32,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
@@ -55,7 +55,6 @@ import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 const val SHELL_PROFILE_NAME_TAG = "shell_profile_name"
 
@@ -72,6 +71,7 @@ fun PhoneShell(
     onDrawerOpenChange: (Boolean) -> Unit,
     profileName: String,
     connectionLabel: String,
+    boxActionsBlocked: Boolean,
     onProfileClick: () -> Unit,
     onDrawerItemClick: (Int) -> Unit,
     onNavigationClick: () -> Unit,
@@ -118,11 +118,10 @@ fun PhoneShell(
                         connectionLabel = connectionLabel,
                         onClick = onProfileClick
                     )
-                    val status by SessionConnectionHolder.shared.status.collectAsState()
                     DrawerScreen(
                         state = drawerListState,
                         onItemClick = onDrawerItemClick,
-                        boxActionsBlocked = status.blocksMutations
+                        boxActionsBlocked = boxActionsBlocked
                     )
                 }
             }
@@ -191,7 +190,7 @@ private fun ShellBody(
                     .fillMaxWidth(),
                 containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { ShellSnackbarHost(hostState = snackbarHostState) }
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) { innerPadding ->
                 Box(
                     modifier = Modifier
