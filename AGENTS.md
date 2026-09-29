@@ -58,7 +58,7 @@ Tests wait for a signal, never for time. Do not use `Thread.sleep`, `delay(n)`, 
 
 To show that something does *not* happen, await a later signal that must follow it, or drive the code with a test dispatcher. Do not sleep and assert.
 
-To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner` (see **Other traps** for what not to pass to Gradle).
+To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/net.reichholf.dreamdroid.testutil.HiltTestRunner` (see **Other traps** for what not to pass to Gradle).
 
 CI is [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml); read it for what runs on which event. Before pushing, run what the PR job runs:
 

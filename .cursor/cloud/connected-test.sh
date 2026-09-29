@@ -25,7 +25,7 @@ export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-25-openjdk-amd64}"
 export PATH="$JAVA_HOME/bin:$PATH"
 APP_APK="$REPO_ROOT/app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk"
 TEST_APK="$REPO_ROOT/app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk"
-TEST_RUNNER="net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner"
+TEST_RUNNER="net.reichholf.dreamdroid.debug.test/net.reichholf.dreamdroid.testutil.HiltTestRunner"
 FILTER="${1:-}"
 # Always assemble so snapshot-warmed APKs cannot mask a newer checkout.
 # Set DREAMDROID_SKIP_ASSEMBLE=1 only when you intentionally reuse existing APKs.

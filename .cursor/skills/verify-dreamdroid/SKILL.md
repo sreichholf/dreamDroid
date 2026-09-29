@@ -14,7 +14,7 @@ dreamDroid is a phone/tablet Enigma2 remote (`net.reichholf.dreamdroid`). **Defa
 Use **JDK 25** (`JAVA_HOME`). App `compileOptions` stay on Java 17; Gradle/AGP run on JDK 25. Do not pass `-Pandroid.testInstrumentationRunnerArguments...` — that sets Gradle property `android` to a String and breaks `android.applicationVariants`. Filter a class with:
 
 ```bash
-adb shell am instrument -w -e class net.reichholf.dreamdroid.ui.about.AboutScreenTest net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner
+adb shell am instrument -w -e class net.reichholf.dreamdroid.ui.about.AboutScreenTest net.reichholf.dreamdroid.debug.test/net.reichholf.dreamdroid.testutil.HiltTestRunner
 ```
 
 Tests live in `app/androidTest/java`. Add Compose UI tests next to each new screen. Prefer Compose Material 3 / Navigation `dialog` hosts (Phase **2.1g-ii**). If the UI is still Compose inside an XML dialog or `ComposeView`, host it that way in the test until that wrapper is deleted.

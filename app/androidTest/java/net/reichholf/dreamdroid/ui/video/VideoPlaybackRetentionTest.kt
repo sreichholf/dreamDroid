@@ -7,12 +7,15 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.testutil.dreamDroidApp
+import net.reichholf.dreamdroid.data.ProfileRepository
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -29,20 +32,26 @@ import org.junit.runner.RunWith
  * [VideoPlaybackViewModel] is activity-scoped: a recreate keeps the zap list and the
  * zap position, and the new overlay paints them while the next now/next load hangs.
  */
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class VideoPlaybackRetentionTest {
-    @get:Rule
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
+
+    @get:Rule(order = 1)
     val composeRule = createEmptyComposeRule()
+
+    @Inject
+    lateinit var profiles: ProfileRepository
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val server = MockWebServer()
     private val release = CountDownLatch(1)
     private val loads = AtomicInteger(0)
-    private val profiles = dreamDroidApp().profiles
-    private var previousProfile: Profile? = null
 
     @Before
     fun startReceiver() {
+        hiltRule.inject()
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
                 val path = request.requestUrl?.encodedPath.orEmpty()
@@ -56,7 +65,6 @@ class VideoPlaybackRetentionTest {
             }
         }
         server.start()
-        previousProfile = profiles.current.value
         profiles.setCurrent(
             Profile.getDefault().apply {
                 name = "video-vm"
@@ -72,12 +80,6 @@ class VideoPlaybackRetentionTest {
     fun stopReceiver() {
         release.countDown()
         server.shutdown()
-        val previous = previousProfile
-        if (previous != null) {
-            profiles.setCurrent(previous)
-        } else {
-            profiles.loadCurrent()
-        }
     }
 
     @Test

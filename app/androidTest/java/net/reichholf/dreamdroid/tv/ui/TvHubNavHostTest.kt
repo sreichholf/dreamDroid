@@ -7,23 +7,33 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.testing.HiltComposeTestActivity
-import net.reichholf.dreamdroid.testutil.CurrentProfileRule
+import net.reichholf.dreamdroid.testutil.testReceiverProfile
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import org.junit.rules.RuleChain
 
 /** Each TV route over the app's real Hilt graph, hosted in a debug Hilt activity. */
+@HiltAndroidTest
 class TvHubNavHostTest {
-    private val composeRule = createAndroidComposeRule<HiltComposeTestActivity>()
+    @get:Rule(order = 0)
+    val hiltRule = HiltAndroidRule(this)
 
-    @get:Rule
-    val rules: RuleChain = RuleChain.outerRule(CurrentProfileRule()).around(composeRule)
+    @get:Rule(order = 1)
+    val composeRule = createAndroidComposeRule<HiltComposeTestActivity>()
+
+    @Inject
+    lateinit var profiles: ProfileRepository
 
     @Before
     fun prepare() {
+        hiltRule.inject()
+        profiles.setCurrent(testReceiverProfile())
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")

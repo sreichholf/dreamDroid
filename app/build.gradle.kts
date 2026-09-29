@@ -75,6 +75,8 @@ dependencies {
     androidTestImplementation(libs.androidx.test.core)
     androidTestImplementation(libs.androidx.test.rules)
     androidTestImplementation(libs.okhttp.mockwebserver)
+    androidTestImplementation(libs.hilt.android.testing)
+    kspAndroidTest(libs.hilt.compiler)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testImplementation(libs.okhttp.mockwebserver)
@@ -106,7 +108,8 @@ android {
         versionName = "2.0.464"
         minSdk = 26
         targetSdk = 37
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        // Runs every instrumented test on HiltTestApplication (docs/hilt-migration.md, PR 15).
+        testInstrumentationRunner = "net.reichholf.dreamdroid.testutil.HiltTestRunner"
         multiDexEnabled = true
         buildConfigField("int", "MIN_SDK", "26")
     }

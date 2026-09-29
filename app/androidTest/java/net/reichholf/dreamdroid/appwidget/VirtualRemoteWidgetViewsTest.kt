@@ -7,22 +7,35 @@ import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ProfileRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class VirtualRemoteWidgetViewsTest {
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
 
     @Before
     fun prefs() {
+        hiltRule.inject()
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
             .putBoolean(DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE, false)
@@ -66,7 +79,7 @@ class VirtualRemoteWidgetViewsTest {
             .commit()
         val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
             context,
-            WidgetEntryPoint.get(context).profileRepository(),
+            profiles,
             widgetId
         )
         assertEquals(null, profile)

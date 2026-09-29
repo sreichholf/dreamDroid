@@ -2,13 +2,19 @@ package net.reichholf.dreamdroid
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
+import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.testutil.dreamDroidApp
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.room.AppDatabase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
+import org.junit.Before
+import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 
@@ -16,12 +22,31 @@ import org.junit.runner.RunWith
  * Checks app data after a real 1.15 → 2.0 `adb install -r`. Driven by
  * `.github/upgrade-from-115/run.sh`, which seeds `seed-profile.sql` through
  * 1.15 and passes `-e upgradeFrom115 <scenario>`. Skipped in normal runs.
+ *
+ * `run.sh` cold starts the upgraded app before this runs, so the real `DreamDroid.onCreate`
+ * has done the pre-Room import. The test process runs on `HiltTestApplication`, which
+ * skips that `onCreate`; the test only repeats its read of the current profile.
  */
+@HiltAndroidTest
 @RunWith(AndroidJUnit4::class)
 class Upgrade115Test {
+    @get:Rule
+    val hiltRule = HiltAndroidRule(this)
+
+    @Inject
+    lateinit var database: AppDatabase
+
+    @Inject
+    lateinit var profiles: ProfileRepository
+
     private val scenario: String? =
         InstrumentationRegistry.getArguments().getString(SCENARIO_ARG)
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
+
+    @Before
+    fun inject() {
+        hiltRule.inject()
+    }
 
     @Test
     fun roomV1ProfileSurvivesUpgrade() {
@@ -41,15 +66,16 @@ class Upgrade115Test {
     }
 
     private fun profileNames(): Set<String?> = runBlocking {
-        dreamDroidApp().database.profileDao().getProfiles().map { it.name }.toSet()
+        database.profileDao().getProfiles().map { it.name }.toSet()
     }
 
     private fun assertCurrentIsSeeded() {
-        assertEquals(SEEDED_ID, dreamDroidApp().profiles.current.value?.id)
+        profiles.loadCurrent()
+        assertEquals(SEEDED_ID, profiles.current.value?.id)
     }
 
     private fun assertSeededProfile() {
-        val p = runBlocking { dreamDroidApp().database.profileDao().getProfile(SEEDED_ID) }
+        val p = runBlocking { database.profileDao().getProfile(SEEDED_ID) }
         assertNotNull("profile $SEEDED_ID missing after upgrade", p)
         p!!
         assertEquals(SEEDED_NAME, p.name)

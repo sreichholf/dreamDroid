@@ -58,6 +58,7 @@ fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment"
 glance-appwidget = { module = "androidx.glance:glance-appwidget", version.ref = "glance" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "dagger" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger" }
 hilt-lifecycle-viewmodel-compose = { module = "androidx.hilt:hilt-lifecycle-viewmodel-compose", version.ref = "hiltAndroidx" }
 jmdns = { module = "org.jmdns:jmdns", version.ref = "jmdns" }
