@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–14 merged; 15, the last, in review. The **End state** holds on `main` since 14b. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–15 merged; the migration is complete. The **End state** holds on `main` since 14b. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -178,7 +178,7 @@ One line per PR: state, then PR link once opened.
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
 - [x] 14a Non-UI entry points — merged, [#545](https://github.com/sreichholf/dreamDroid/pull/545)
 - [x] 14b Locator removal — merged, [#546](https://github.com/sreichholf/dreamDroid/pull/546)
-- [ ] 15 Hilt instrumented tests — in review
+- [x] 15 Hilt instrumented tests — merged, [#548](https://github.com/sreichholf/dreamDroid/pull/548)
 
 ### Parallel waves
 
