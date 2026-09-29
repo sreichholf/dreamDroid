@@ -9,6 +9,8 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithText
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.dialog
@@ -16,7 +18,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -60,11 +61,9 @@ class DrawerDialogHostTest {
                         localContent = LocalContentColor.current
                         onSurface = MaterialTheme.colorScheme.onSurface
                         SleepTimerDialog(
-                            initialMinutes = 45,
-                            initialEnabled = true,
-                            initialAction = SleepTimer.ACTION_STANDBY,
                             onDismiss = { navController.popBackStack() },
-                            onSave = { _, _, _ -> }
+                            onSave = { _, _, _ -> },
+                            viewModel = viewModel { SleepTimerViewModel(createSavedStateHandle()) }
                         )
                     }
                 }
@@ -103,7 +102,8 @@ class DrawerDialogHostTest {
                         onSurface = MaterialTheme.colorScheme.onSurface
                         SendMessageDialog(
                             onDismiss = { navController.popBackStack() },
-                            onSend = { _, _, _ -> }
+                            onSend = { _, _, _ -> },
+                            viewModel = viewModel { SendMessageViewModel(createSavedStateHandle()) }
                         )
                     }
                 }

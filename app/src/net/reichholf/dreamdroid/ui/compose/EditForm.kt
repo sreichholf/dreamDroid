@@ -15,6 +15,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.TextObfuscationMode
@@ -277,6 +278,8 @@ fun EditOutlinedTextField(
     singleLine: Boolean = true,
     isError: Boolean = false,
     supportingText: String? = null,
+    suffix: String? = null,
+    inputTransformation: InputTransformation? = null,
     contentDescription: String = label
 ) {
     val keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
@@ -313,6 +316,10 @@ fun EditOutlinedTextField(
         OutlinedTextField(
             state = state,
             label = { Text(label) },
+            inputTransformation = inputTransformation,
+            suffix = suffix?.let { suffixText ->
+                { Text(suffixText) }
+            },
             lineLimits = if (singleLine) {
                 TextFieldLineLimits.SingleLine
             } else {

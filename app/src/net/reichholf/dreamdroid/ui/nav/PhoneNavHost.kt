@@ -34,7 +34,6 @@ import net.reichholf.dreamdroid.ui.dialogs.ExplainAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.PowerStateDialog
 import net.reichholf.dreamdroid.ui.dialogs.SendMessageDialog
 import net.reichholf.dreamdroid.ui.dialogs.SleepTimerDialog
-import net.reichholf.dreamdroid.ui.dialogs.defaultSleepTimerAction
 import net.reichholf.dreamdroid.ui.epg.EpgBouquetDestination
 import net.reichholf.dreamdroid.ui.epg.EpgSearchDestination
 import net.reichholf.dreamdroid.ui.epg.ServiceEpgDestination
@@ -243,13 +242,9 @@ private fun PhoneNavHostGraph(
                 }
             )
         }
-        dialog<SleepTimerRoute> { entry ->
+        dialog<SleepTimerRoute> {
             val activity = LocalActivity.current as? MainActivity
-            val args = entry.toRoute<SleepTimerRoute>()
             SleepTimerDialog(
-                initialMinutes = args.minutes,
-                initialEnabled = args.enabled,
-                initialAction = args.action.ifEmpty { defaultSleepTimerAction() },
                 onDismiss = { navController.popBackStack() },
                 onSave = { time, action, enabled ->
                     activity?.onSetSleepTimer(time, action, enabled)
