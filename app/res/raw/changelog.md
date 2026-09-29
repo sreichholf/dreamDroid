@@ -4,6 +4,7 @@
 * NEW: Setup assistant when no profile is saved: finds the box, sets address, HTTP or HTTPS and sign-in, then checks the connection (replaces the offline demo receiver)
 * NEW: MultiEPG — graphical EPG grid
 * NEW: EPG search as you type, with recent searches and results grouped by day
+* NEW: Channel EPG grouped by day
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
 * NEW: Choose which screen opens when the app starts (Settings → Start screen)
 * NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar

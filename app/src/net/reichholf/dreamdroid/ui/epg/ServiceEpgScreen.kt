@@ -25,13 +25,13 @@ import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 @Composable
 fun ServiceEpgScreen(
-    items: List<Event>,
+    sections: List<EpgDaySection>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     emptyMessage: String? = null
 ) {
     val loadingLabel = stringResource(R.string.loading)
-    if (items.isEmpty()) {
+    if (sections.isEmpty()) {
         ListEmptyState(
             loading = emptyMessage == loadingLabel,
             message = emptyMessage,
@@ -41,17 +41,24 @@ fun ServiceEpgScreen(
     }
 
     LazyColumn(modifier = modifier.fillMaxSize()) {
-        items(items, key = { "${it.eventId}:${it.start}:${it.title}" }) { event ->
-            ServiceEpgRow(
-                event = event,
-                onClick = { onItemClick(event) }
-            )
+        sections.forEachIndexed { index, section ->
+            val day = section.day
+            if (day != null) {
+                stickyHeader(key = "day:$index") { EpgDayHeader(day) }
+            }
+            items(section.events, key = { "${it.eventId}:${it.start}:${it.title}" }) { event ->
+                ServiceEpgRow(
+                    event = event,
+                    onClick = { onItemClick(event) },
+                    showDate = day == null
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
+private fun ServiceEpgRow(event: Event, onClick: () -> Unit, showDate: Boolean) {
     ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         ListItem(
             headlineContent = {
@@ -67,7 +74,11 @@ private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
                 Column {
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                         Text(
-                            text = event.startReadable,
+                            text = if (showDate || event.startTimeReadable.isEmpty()) {
+                                event.startReadable
+                            } else {
+                                event.startTimeReadable
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)

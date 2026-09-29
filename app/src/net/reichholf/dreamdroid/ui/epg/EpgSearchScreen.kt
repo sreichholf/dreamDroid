@@ -248,19 +248,7 @@ private fun SearchResults(
             state.sections.forEachIndexed { index, section ->
                 val day = section.day
                 if (day != null) {
-                    stickyHeader(key = "day:$index") {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = day.asString(),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
+                    stickyHeader(key = "day:$index") { EpgDayHeader(day) }
                 }
                 items(
                     section.events,

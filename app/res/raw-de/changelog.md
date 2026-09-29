@@ -4,6 +4,7 @@
 * NEU: Einrichtungsassistent, solange kein Profil gespeichert ist: findet die Box, setzt Adresse, HTTP oder HTTPS und Anmeldung und prüft die Verbindung (ersetzt das Offline-Demoprofil)
 * NEU: MultiEPG — grafische EPG-Übersicht
 * NEU: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
+* NEU: Sender-EPG nach Tag gruppiert
 * NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
 * NEU: Startbildschirm wählbar (Einstellungen → Startbildschirm)
 * NEU: Werkzeuge-Hub bündelt Screenshot, Geräte-Info und Signal Meter mit gemeinsamer Leiste

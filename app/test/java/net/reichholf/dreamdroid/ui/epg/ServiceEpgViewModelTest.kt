@@ -50,9 +50,9 @@ class ServiceEpgViewModelTest {
     fun loadsTheRouteServiceOnceWhenCreated() = runTest {
         val viewModel = viewModel()
 
-        val state = viewModel.uiState.first { it.events.isNotEmpty() }
+        val state = viewModel.uiState.first { it.sections.isNotEmpty() }
 
-        assertEquals(listOf("Tagesschau", "N/A"), state.events.map { it.title })
+        assertEquals(listOf("Tagesschau", "N/A"), state.titles())
         assertFalse(state.refreshing)
         assertNull(state.emptyMessage)
         assertEquals(
@@ -83,10 +83,29 @@ class ServiceEpgViewModelTest {
         receiver.writeChunk(BOUQUET, now, listOf(event("News", start = now)))
         receiver.goOffline()
 
-        val state = viewModel().uiState.first { it.events.isNotEmpty() }
+        val state = viewModel().uiState.first { it.sections.isNotEmpty() }
 
-        assertEquals(listOf("News"), state.events.map { it.title })
+        assertEquals(listOf("News"), state.titles())
         assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun offlineScheduleIsGroupedByDay() = runTest {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(
+            BOUQUET,
+            now,
+            listOf(event("News", start = now), event("News tomorrow", start = now + 86_400))
+        )
+        receiver.goOffline()
+
+        val state = viewModel().uiState.first { it.sections.isNotEmpty() }
+
+        assertEquals(
+            listOf(UiText.Resource(R.string.today), UiText.Resource(R.string.tomorrow)),
+            state.sections.map { it.day }
+        )
+        assertEquals(listOf("News", "News tomorrow"), state.titles())
     }
 
     @Test
@@ -126,4 +145,6 @@ class ServiceEpgViewModelTest {
         )
     ) = ServiceEpgViewModel(handle, receiver.repository, receiver.sessions)
         .also { viewModels += it }
+
+    private fun ServiceEpgUiState.titles() = sections.flatMap { it.events }.map { it.title }
 }

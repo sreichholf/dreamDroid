@@ -10,19 +10,20 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** Search results of one day, under [day]; [day] is null for events without a start. */
-data class EpgSearchSection(val day: UiText?, val events: List<Event>)
+/** EPG events of one day, under [day]; [day] is null for events without a start. */
+data class EpgDaySection(val day: UiText?, val events: List<Event>)
 
 /**
- * [events] ordered by start and grouped by the day they start in [zone]. Today and
- * tomorrow are named; other days show weekday and date in [locale].
+ * [events] ordered by start and grouped by the day they start in [zone]. An event that
+ * started before [today] is still running, so it counts as today. Today and tomorrow are
+ * named; other days show weekday and date in [locale].
  */
-internal fun epgSearchSections(
+internal fun epgDaySections(
     events: List<Event>,
     today: LocalDate = LocalDate.now(),
     zone: ZoneId = ZoneId.systemDefault(),
     locale: Locale = Locale.getDefault()
-): List<EpgSearchSection> {
+): List<EpgDaySection> {
     if (events.isEmpty()) {
         return emptyList()
     }
@@ -32,7 +33,7 @@ internal fun epgSearchSections(
         .sortedBy { it.start.trim().toLongOrNull() ?: Long.MAX_VALUE }
         .groupBy { event ->
             event.start.trim().toLongOrNull()?.let {
-                Instant.ofEpochSecond(it).atZone(zone).toLocalDate()
+                maxOf(Instant.ofEpochSecond(it).atZone(zone).toLocalDate(), today)
             }
         }
         .map { (day, dayEvents) ->
@@ -42,6 +43,6 @@ internal fun epgSearchSections(
                 today.plusDays(1) -> UiText.Resource(R.string.tomorrow)
                 else -> UiText.Raw("${weekdayFormat.format(day)}, ${dateFormat.format(day)}")
             }
-            EpgSearchSection(header, dayEvents)
+            EpgDaySection(header, dayEvents)
         }
 }

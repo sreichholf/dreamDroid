@@ -9,7 +9,9 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -32,14 +34,16 @@ class ServiceEpgScreenTest {
         val first = Event(
             eventId = "100",
             title = "Tagesschau",
-            startReadable = "20:00",
+            startReadable = "Mon, 01.01. 20:00",
+            startTimeReadable = "20:00",
             durationReadable = "15",
             descriptionExtended = "Die Nachrichten."
         )
         val second = Event(
             eventId = "101",
             title = "Wetter",
-            startReadable = "20:15",
+            startReadable = "Tue, 02.01. 20:15",
+            startTimeReadable = "20:15",
             durationReadable = "10",
             descriptionExtended = "Der Wetterbericht."
         )
@@ -47,15 +51,22 @@ class ServiceEpgScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 ServiceEpgScreen(
-                    items = listOf(first, second),
+                    sections = listOf(
+                        EpgDaySection(UiText.Resource(R.string.today), listOf(first)),
+                        EpgDaySection(UiText.Resource(R.string.tomorrow), listOf(second))
+                    ),
                     onItemClick = { clicked = it }
                 )
             }
         }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithText(context.getString(R.string.today)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.tomorrow)).assertIsDisplayed()
         composeRule.onNodeWithText("Tagesschau", useUnmergedTree = true)
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
+        composeRule.onNodeWithText("Mon, 01.01. 20:00").assertDoesNotExist()
         composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
         assertEquals(second, clicked)
     }
@@ -65,7 +76,7 @@ class ServiceEpgScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 ServiceEpgScreen(
-                    items = emptyList(),
+                    sections = emptyList(),
                     onItemClick = {},
                     emptyMessage = "No items to display…"
                 )
