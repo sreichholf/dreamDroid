@@ -7,7 +7,6 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -21,16 +20,15 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
-import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.memoryProfiles
+import net.reichholf.dreamdroid.testutil.testNavigator
 import net.reichholf.dreamdroid.ui.nav.EpgSearch
 import net.reichholf.dreamdroid.ui.nav.Hub
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.ServiceEpg
 import net.reichholf.dreamdroid.ui.nav.navigateToServiceEpg
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -103,16 +101,7 @@ class ServiceEpgRetentionTest {
     fun popBackFromEventDetailKeepsListWithoutReload() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
-        val handle = PhoneNavHostState(
-            SavedStateHandle(),
-            profiles,
-            sessions,
-            SettingsRepository(
-                PreferenceManager.getDefaultSharedPreferences(
-                    InstrumentationRegistry.getInstrumentation().targetContext
-                )
-            )
-        )
+        val handle = testNavigator(profiles, sessions)
         val viewModels = mutableListOf<ServiceEpgViewModel>()
         lateinit var navController: NavHostController
         composeRule.setContent {

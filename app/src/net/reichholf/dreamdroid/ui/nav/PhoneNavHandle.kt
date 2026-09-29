@@ -13,7 +13,7 @@ import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 
 /**
  * Phone detail-pane navigation owner. [net.reichholf.dreamdroid.activities.MainActivity]
- * holds a [PhoneNavHostState] that implements this; destinations no longer take a Fragment.
+ * holds a [PhoneNavigator] that implements this; destinations no longer take a Fragment.
  */
 interface PhoneNavHandle {
     fun interface ActivityResultListener {
@@ -24,13 +24,10 @@ interface PhoneNavHandle {
 
     var composeActivityResultListener: ActivityResultListener?
 
-    fun epgRemountFlow(): StateFlow<Int>
-    fun epgSearchRemountFlow(): StateFlow<Int>
+    val navUiState: StateFlow<PhoneNavUiState>
     fun connectionStatusFlow(): StateFlow<ConnectionStatus>
-    fun leaveConfirmRequestedFlow(): StateFlow<Boolean>
     fun requestLeaveConfirm()
     fun clearLeaveConfirm()
-    fun needsReceiverRequestedFlow(): StateFlow<Boolean>
     fun requestNeedsReceiver()
     fun clearNeedsReceiver()
 

@@ -9,11 +9,9 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.testutil.memoryProfiles
+import net.reichholf.dreamdroid.testutil.testNavigator
 import net.reichholf.dreamdroid.testutil.testShellViewModel
-import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Before
 import org.junit.Rule
@@ -38,17 +36,8 @@ class ProfileEditCreateRouteTest {
     fun routeWithoutIdShowsTheCreateForm() {
         val app = InstrumentationRegistry.getInstrumentation().targetContext
             .applicationContext as Application
-        val handle = PhoneNavHostState(
-            SavedStateHandle(),
-            memoryProfiles(),
-            SessionConnectionHolder(),
-            SettingsRepository(
-                PreferenceManager.getDefaultSharedPreferences(
-                    InstrumentationRegistry.getInstrumentation().targetContext
-                )
-            )
-        )
         val profiles = memoryProfiles()
+        val handle = testNavigator(profiles)
         val viewModel = ProfileEditViewModel(SavedStateHandle(), profiles)
         val shellActions = testShellViewModel(profiles)
         composeRule.setContent {

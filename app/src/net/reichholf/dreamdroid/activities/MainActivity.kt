@@ -46,6 +46,7 @@ import net.reichholf.dreamdroid.ui.nav.NavigationHelper
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
+import net.reichholf.dreamdroid.ui.nav.PhoneNavigator
 import net.reichholf.dreamdroid.ui.nav.PhoneShell
 import net.reichholf.dreamdroid.ui.nav.ProfileCheckOutcome
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
@@ -58,6 +59,7 @@ import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -89,9 +91,17 @@ class MainActivity :
     @Inject
     lateinit var settings: SettingsRepository
 
+    @Inject
+    lateinit var sessions: SessionConnectionHolder
+
     private var themeJob: Job? = null
 
-    val phoneNav: PhoneNavHostState by viewModels()
+    private val phoneNavState: PhoneNavHostState by viewModels()
+
+    /** Created on first use, after Hilt injected; the activity is its drawer highlighter. */
+    val phoneNav: PhoneNavigator by lazy {
+        PhoneNavigator(phoneNavState, this, this, profiles, settings, sessions)
+    }
     val shellActions: ShellViewModel by viewModels()
 
     private var phoneShellReady: Boolean = false
@@ -234,7 +244,6 @@ class MainActivity :
         }
         ensureLocalNetworkPermission()
 
-        phoneNav.attach(this, this) // activity is LifecycleOwner and DrawerRouteHighlighter
         if (!phoneNav.hasSavedStartRoute()) {
             phoneNav.setStartRoute(StartScreen.navRoute(settings.current().startScreen))
         }
@@ -324,9 +333,6 @@ class MainActivity :
 
     override fun onDestroy() {
         navigationHelper = null
-        if (phoneShellReady) {
-            phoneNav.detach()
-        }
         super.onDestroy()
     }
 
