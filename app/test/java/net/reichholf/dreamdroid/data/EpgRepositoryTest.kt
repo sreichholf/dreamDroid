@@ -196,12 +196,140 @@ class EpgRepositoryTest {
 
     @Test
     fun searchAsksTheReceiver() = runBlocking {
-        val response = repository.search("Tagesschau")
+        val loads = repository.search("Tagesschau").toList()
 
-        assertEquals("Tagesschau", response.value?.first()?.title)
+        assertEquals(listOf("Tagesschau", "N/A"), titles(loads.single()))
         val url = receiver.server.takeRequest().requestUrl!!
         assertEquals("/web/epgsearch", url.encodedPath)
         assertEquals("Tagesschau", url.queryParameter("search"))
+    }
+
+    @Test
+    fun offlineSearchIgnoresCaseBeyondAscii() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(
+            BOUQUET,
+            now,
+            listOf(
+                event("ÄRGER IM PARADIES", start = now),
+                event("Die Straße", start = now + 3600),
+                event("Tagesschau", start = now + 7200)
+            )
+        )
+        receiver.goOffline()
+
+        val umlaut = repository.search("ärger").toList().single()
+        val sharpS = repository.search("STRASSE").toList().single()
+
+        assertEquals(listOf("ÄRGER IM PARADIES"), titles(umlaut))
+        assertEquals(listOf("Die Straße"), titles(sharpS))
+        assertEquals(true, (umlaut as EventListLoad.Events).cached)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun offlineSearchMatchesDecomposedUmlauts() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("Mu\u0308nchen Mord", start = now)))
+        receiver.goOffline()
+
+        val load = repository.search("München").toList().single()
+
+        assertEquals(listOf("Mu\u0308nchen Mord"), titles(load))
+    }
+
+    @Test
+    fun offlineSearchListsAProgrammeOnceAndSkipsEndedOnes() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(
+            BOUQUET,
+            now,
+            listOf(
+                event("News ended", start = now - 7200, duration = 3600),
+                event("News now", start = now - 600),
+                event("News later", start = now + 3600, service = OTHER)
+            )
+        )
+        receiver.writeChunk(
+            OTHER_BOUQUET,
+            now,
+            listOf(
+                event("News later", start = now + 3600, service = OTHER, bouquetRef = OTHER_BOUQUET)
+            )
+        )
+        receiver.goOffline()
+
+        val load = repository.search("news").toList().single()
+
+        assertEquals(listOf("News now", "News later"), titles(load))
+    }
+
+    @Test
+    fun offlineSearchTakesWildcardsLiterally() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(
+            BOUQUET,
+            now,
+            listOf(event("100% Sport", start = now), event("100 Sport", start = now + 3600))
+        )
+        receiver.goOffline()
+
+        assertEquals(listOf("100% Sport"), titles(repository.search("0%").toList().single()))
+        assertEquals(emptyList<String>(), titles(repository.search("_").toList().single()))
+    }
+
+    @Test
+    fun offlineSearchWithoutMatchIsAnEmptyCachedList() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("News", start = now)))
+        receiver.goOffline()
+
+        val loads = repository.search("Tatort").toList()
+
+        assertEquals(listOf(EventListLoad.Events(emptyList(), cached = true)), loads)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun searchWithoutAnyCachedEpgAsksTheReceiverOffline() = runBlocking {
+        receiver.goOffline()
+        receiver.answer = { MockResponse().setResponseCode(500) }
+
+        val load = repository.search("News").toList().single()
+
+        assertTrue(load is EventListLoad.Failed)
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun failedSearchFallsBackToRoom() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("News", start = now)))
+        receiver.answer = { MockResponse().setResponseCode(500) }
+
+        val loads = repository.search("news", forceRefresh = true).toList()
+
+        assertEquals(listOf(true), loads.map { (it as EventListLoad.Events).cached })
+        assertEquals(listOf("News"), titles(loads.single()))
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun cachedSearchIsPerProfile() = runBlocking {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("News", start = now)))
+        receiver.goOffline()
+        receiver.profiles.repository.setCurrent(
+            Profile().apply {
+                id = EpgTestReceiver.PROFILE_ID + 1
+                host = receiver.server.hostName
+                port = receiver.server.port
+            }
+        )
+
+        repository.search("News").toList()
+
+        assertEquals(1, receiver.server.requestCount)
     }
 
     private fun EventListLoad.events() = (this as EventListLoad.Events).events

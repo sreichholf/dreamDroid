@@ -100,6 +100,8 @@
     <string name="next">Nachher</string>
     <string name="epg_search">EPG-Suche</string>
     <string name="epg_search_hint">In EPG suchen</string>
+    <string name="epg_search_cached_hint">Offline-Ergebnisse: Nur auf diesem Gerät geöffnete Bouquets werden durchsucht.</string>
+    <string name="epg_search_no_cached_match">Kein Treffer in den auf diesem Gerät geöffneten Bouquets.</string>
     <string name="standard">Standard-Layout</string>
     <string name="quickzap">QuickZap-Layout</string>
     <string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur Verfügung!</string>

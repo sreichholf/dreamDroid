@@ -16,16 +16,21 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.EventListLoad
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** EPG search results for the route's [query]. */
+/**
+ * EPG search results for the route's [query]. [cached] results come from the Room EPG cache
+ * and only cover bouquets opened on this device.
+ */
 data class EpgSearchUiState(
     val query: String = "",
     val events: List<Event> = emptyList(),
+    val cached: Boolean = false,
     val refreshing: Boolean = false,
     val emptyMessage: UiText? = null,
     val piconsEnabled: Boolean = false
@@ -85,7 +90,11 @@ class EpgSearchViewModel @Inject constructor(
         reload()
     }
 
-    fun reload() {
+    /**
+     * Searches for the route query. [forceRefresh] asks the receiver before the cache, as
+     * pull-to-refresh does. Stays refreshing until the last result arrived.
+     */
+    fun reload(forceRefresh: Boolean = false) {
         val query = _uiState.value.query
         loadJob?.cancel()
         loadJob = null
@@ -100,31 +109,32 @@ class EpgSearchViewModel @Inject constructor(
             )
         }
         loadJob = viewModelScope.launch {
-            val response = epg.search(query)
-            val events = response.value
-            _uiState.update {
-                when {
-                    events == null -> it.copy(
-                        refreshing = false,
-                        events = emptyList(),
-                        emptyMessage = response.error.contentErrorText()
-                    )
-
-                    else -> it.copy(
-                        refreshing = false,
-                        events = events,
-                        emptyMessage = if (events.isEmpty()) {
-                            UiText.Resource(R.string.no_list_item)
-                        } else {
-                            null
-                        }
-                    )
-                }
+            epg.search(query, forceRefresh).collect { load ->
+                _uiState.update { it.applied(load) }
             }
+            _uiState.update { it.copy(refreshing = false) }
         }
     }
 
     private companion object {
         const val KEY_DRAFT = "epg_search_draft"
     }
+}
+
+private fun EpgSearchUiState.applied(load: EventListLoad): EpgSearchUiState = when (load) {
+    is EventListLoad.Events -> copy(
+        events = load.events,
+        cached = load.cached,
+        emptyMessage = when {
+            load.events.isNotEmpty() -> null
+            load.cached -> UiText.Resource(R.string.epg_search_no_cached_match)
+            else -> UiText.Resource(R.string.no_list_item)
+        }
+    )
+
+    is EventListLoad.Failed -> copy(
+        events = emptyList(),
+        cached = false,
+        emptyMessage = load.error.contentErrorText()
+    )
 }

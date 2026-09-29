@@ -23,5 +23,7 @@ data class EpgEventEntity(
     val descriptionExtended: String,
     val serviceName: String,
     val currentTime: Long = 0L,
-    val bouquetPos: Int = 0
+    val bouquetPos: Int = 0,
+    /** [title] as [epgSearchKey] folds it; offline search matches against this. */
+    val titleKey: String = epgSearchKey(title)
 )

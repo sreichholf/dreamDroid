@@ -2,6 +2,9 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -14,6 +17,7 @@ import androidx.compose.ui.test.performTextInput
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -149,5 +153,29 @@ class EpgSearchScreenTest {
             }
         }
         composeRule.onNodeWithText("No items to display…").assertIsDisplayed()
+    }
+
+    @Test
+    fun cachedResultsShowTheOfflineHint() {
+        var cached by mutableStateOf(true)
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgSearchScreen(
+                    queryState = TextFieldState("news"),
+                    onSearch = {},
+                    expanded = false,
+                    onExpandedChange = {},
+                    items = emptyList(),
+                    onItemClick = {},
+                    cachedResults = cached
+                )
+            }
+        }
+        val hint = InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.epg_search_cached_hint)
+        composeRule.onNodeWithText(hint).assertIsDisplayed()
+
+        cached = false
+        composeRule.onNodeWithText(hint).assertDoesNotExist()
     }
 }

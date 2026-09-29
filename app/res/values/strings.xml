@@ -138,6 +138,8 @@
     <string name="next">Next</string>
     <string name="epg_search">EPG-Search</string>
     <string name="epg_search_hint">Search EPG</string>
+    <string name="epg_search_cached_hint">Offline results: only bouquets opened on this device are searched.</string>
+    <string name="epg_search_no_cached_match">No match in the bouquets opened on this device.</string>
     <string name="remote_widget_config_title_style">Select the style of the remote control</string>
     <string name="remote_widget_config_title_profile">Select the profile to use with the widget</string>
     <string name="standard">Standard Layout (Full)</string>

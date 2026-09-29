@@ -40,7 +40,7 @@ fun EpgSearchDestination(
 
     DreamDroidPullRefresh(
         refreshing = uiState.refreshing,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         enabled = query.isNotEmpty() && !expanded,
         modifier = modifier
     ) {
@@ -58,6 +58,7 @@ fun EpgSearchDestination(
             onExpandedChange = { expanded = it },
             items = uiState.events,
             piconsEnabled = uiState.piconsEnabled,
+            cachedResults = uiState.cached,
             emptyMessage = uiState.emptyMessage?.asString(),
             onItemClick = detailViewModel::showDetail
         )

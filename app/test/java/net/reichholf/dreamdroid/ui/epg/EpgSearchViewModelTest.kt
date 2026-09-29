@@ -17,6 +17,8 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
+import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -24,6 +26,7 @@ import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -135,6 +138,49 @@ class EpgSearchViewModelTest {
         val state = viewModel.uiState.first { !it.refreshing }
 
         assertEquals(UiText.Resource(R.string.no_list_item), state.emptyMessage)
+    }
+
+    @Test
+    fun offlineResultsComeFromTheCache() = runTest {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("ÄRGER IM PARADIES", start = now)))
+        receiver.goOffline()
+        val viewModel = viewModel()
+
+        viewModel.syncRoute("ärger", remountEpoch = 0)
+        val state = viewModel.uiState.first { !it.refreshing }
+
+        assertEquals(listOf("ÄRGER IM PARADIES"), state.events.map { it.title })
+        assertTrue(state.cached)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun offlineCacheWithoutMatchSaysOnlyOpenedBouquetsAreSearched() = runTest {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("News", start = now)))
+        receiver.goOffline()
+        val viewModel = viewModel()
+
+        viewModel.syncRoute("Tatort", remountEpoch = 0)
+        val state = viewModel.uiState.first { !it.refreshing }
+
+        assertTrue(state.cached)
+        assertEquals(UiText.Resource(R.string.epg_search_no_cached_match), state.emptyMessage)
+    }
+
+    @Test
+    fun onlineReceiverResultsReplaceTheCachedOnes() = runTest {
+        val now = System.currentTimeMillis() / 1000L
+        receiver.writeChunk(BOUQUET, now, listOf(event("Tagesschau kompakt", start = now)))
+        val viewModel = viewModel()
+
+        viewModel.syncRoute("Tagesschau", remountEpoch = 0)
+        val state = viewModel.uiState.first { !it.refreshing }
+
+        assertEquals(listOf("Tagesschau", "N/A"), state.events.map { it.title })
+        assertFalse(state.cached)
+        assertEquals(1, receiver.server.requestCount)
     }
 
     /** Types like the user does: the edit reaches the field's observer. */

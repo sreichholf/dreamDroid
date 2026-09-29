@@ -98,6 +98,32 @@ interface EpgDao {
     )
     suspend fun eventCountForService(profileId: Int, serviceRef: String): Int
 
+    /**
+     * Programmes of [profileId] still running or ahead at [fromSec] whose
+     * [EpgEventEntity.titleKey] contains [key] (an [epgSearchKey]). One row per programme,
+     * even when several bouquets cached it.
+     */
+    @Query(
+        """
+        SELECT * FROM epg_event
+        WHERE profileId = :profileId
+          AND (start + duration) > :fromSec
+          AND instr(titleKey, :key) > 0
+        GROUP BY serviceRef, eventId
+        ORDER BY start ASC, serviceName ASC
+        LIMIT :limit
+        """
+    )
+    suspend fun searchTitles(
+        profileId: Int,
+        key: String,
+        fromSec: Long,
+        limit: Int
+    ): List<EpgEventEntity>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM epg_event WHERE profileId = :profileId)")
+    suspend fun hasEvents(profileId: Int): Boolean
+
     @Query("DELETE FROM epg_event WHERE profileId = :profileId")
     suspend fun deleteEventsForProfile(profileId: Int)
 

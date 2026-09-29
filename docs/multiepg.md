@@ -104,7 +104,7 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 | `/web/epgbouquet` | `bRef`, `time` | List EPG / “at this instant” (no `endTime`) — keep for existing bouquet list UI |
 | `/web/epgservice` | `sRef`, `time`, `endTime` | Single-channel schedule; **fallback** if `epgmulti` fails on very old webif |
 | `/web/epgnow`, `epgnext`, `epgnownext` | bouquet / service | **Online** hub now/next overlay on the `getservices` roster. Offline/stale hub now/next reads shared `epgmulti` Room chunks. |
-| `/web/epgsearch` | search | Existing search — unchanged |
+| `/web/epgsearch` | search | **Online** title search. Offline, or when the receiver fails, search reads the shared `epgmulti` Room chunks (`epg_event.titleKey`), which only cover bouquets opened on this device. |
 
 `EPG.getBouquetEPGMulti` is `getEPGofBouquet(param, multi=True)`. With `multi=True`, Dreambox passes **both** `time` and `endTime` into the cache lookup; `epgbouquet` does not. Response XML shape matches existing dreamDroid `Event` / `EventParser` fields (`e2eventid`, `e2eventstart`, `e2eventduration`, …).
 

@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.multiepg.nowNextForService
 import net.reichholf.dreamdroid.multiepg.toEvent
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgEventEntity
+import net.reichholf.dreamdroid.room.epgSearchKey
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /** One step of a list EPG load. */
@@ -87,9 +88,20 @@ class EpgRepository @Inject constructor(
             }
         )
 
-    /** Receiver-side EPG search by title. Not cached. */
-    suspend fun search(query: String): EnigmaResponse<List<Event>> =
-        clients.current().getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
+    /**
+     * EPG search by title. The receiver searches its whole EPG; Room only holds the MultiEPG
+     * chunks of bouquets opened on this device, so cached results are a subset. See
+     * [listLoad].
+     */
+    fun search(query: String, forceRefresh: Boolean = false): Flow<EventListLoad> = listLoad(
+        forceRefresh = forceRefresh,
+        readCache = { profileId ->
+            cachedSearch(profileId, query, System.currentTimeMillis() / 1000L)
+        },
+        fetch = { client ->
+            client.getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
+        }
+    )
 
     /**
      * A MultiEPG persist gate that knows no user bouquet yet, so it persists nothing. Callers
@@ -212,6 +224,24 @@ class EpgRepository @Inject constructor(
             return null
         }
         return dao.eventsForServiceFrom(profileId, serviceRef, fromSec).map { it.toEvent() }
+    }
+
+    /**
+     * Cached programmes whose title contains [query], ignoring case, that have not ended at
+     * [fromSec]. Null when Room holds no EPG for [profileId] at all.
+     */
+    private suspend fun cachedSearch(profileId: Int, query: String, fromSec: Long): List<Event>? {
+        val dao = database.epgDao()
+        if (!dao.hasEvents(profileId)) {
+            return null
+        }
+        return dao.searchTitles(profileId, epgSearchKey(query), fromSec, SEARCH_LIMIT)
+            .map { it.toEvent() }
+    }
+
+    private companion object {
+        /** Upper bound of one cached search result list. */
+        const val SEARCH_LIMIT = 256
     }
 }
 

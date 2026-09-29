@@ -4,11 +4,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Text
@@ -17,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 
@@ -33,7 +36,8 @@ fun EpgSearchScreen(
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     emptyMessage: String? = null,
-    piconsEnabled: Boolean = false
+    piconsEnabled: Boolean = false,
+    cachedResults: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         SearchBar(
@@ -72,6 +76,16 @@ fun EpgSearchScreen(
             modifier = Modifier.fillMaxWidth(),
             windowInsets = WindowInsets(0, 0, 0, 0)
         ) {
+        }
+        if (!expanded && cachedResults) {
+            Text(
+                text = stringResource(R.string.epg_search_cached_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
         }
         if (!expanded) {
             EpgBouquetScreen(
