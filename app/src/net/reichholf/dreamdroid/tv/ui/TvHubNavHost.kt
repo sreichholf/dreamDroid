@@ -54,18 +54,18 @@ internal fun consumeTvHubReload(handle: SavedStateHandle): Boolean {
 @Composable
 fun TvHubNavHost(
     activity: ComponentActivity,
-    onRecheckProfile: () -> Unit,
     navController: NavHostController = rememberNavController(),
     startDestination: Any = TvHub
 ) {
     // Activity-scoped: the hub state outlives the hub route and configuration changes.
     val hubViewModel: TvHubViewModel = hiltViewModel(viewModelStoreOwner = activity)
+    val shellViewModel: TvShellViewModel = hiltViewModel(viewModelStoreOwner = activity)
     val snackbarHostState = remember { SnackbarHostState() }
     Box(modifier = Modifier.fillMaxSize()) {
         CompositionLocalProvider(LocalShellSnackbarHostState provides snackbarHostState) {
             TvHubNavGraph(
                 activity = activity,
-                onRecheckProfile = onRecheckProfile,
+                shellViewModel = shellViewModel,
                 hubViewModel = hubViewModel,
                 navController = navController,
                 startDestination = startDestination
@@ -87,7 +87,7 @@ fun TvHubNavHost(
 @Composable
 private fun TvHubNavGraph(
     activity: ComponentActivity,
-    onRecheckProfile: () -> Unit,
+    shellViewModel: TvShellViewModel,
     hubViewModel: TvHubViewModel,
     navController: NavHostController,
     startDestination: Any
@@ -105,9 +105,11 @@ private fun TvHubNavGraph(
                     hubViewModel.reload()
                 }
             }
+            val shellState by shellViewModel.uiState.collectAsStateWithLifecycle()
             ComposeTvHubApp(
                 activity = activity,
-                onRecheckProfile = onRecheckProfile,
+                gate = shellState.gate,
+                onRecheckProfile = shellViewModel::recheck,
                 viewModel = hubViewModel,
                 onOpenSettings = { navController.navigate(TvSettings) },
                 onOpenProfiles = { navController.navigate(TvProfiles) },

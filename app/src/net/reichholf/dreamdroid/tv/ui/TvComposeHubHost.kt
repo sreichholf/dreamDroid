@@ -70,7 +70,6 @@ import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -188,9 +187,9 @@ object TvComposeHubHost {
         hasPaintedContent
     )
 
-    fun install(activity: ComponentActivity, onRecheckProfile: () -> Unit) {
+    fun install(activity: ComponentActivity) {
         activity.setContent {
-            TvHubNavHost(activity = activity, onRecheckProfile = onRecheckProfile)
+            TvHubNavHost(activity = activity)
         }
     }
 }
@@ -207,6 +206,7 @@ internal val HubServiceGridCardHeight = 220.dp
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
+    gate: TvSessionGate?,
     onRecheckProfile: () -> Unit,
     viewModel: TvHubViewModel,
     onOpenSettings: () -> Unit = {},
@@ -227,18 +227,10 @@ fun ComposeTvHubApp(
         }
     }
     // Room answers before the gate is known, so Checking never flashes ProfileCheck.
-    val hasCache = uiState.hasCache ?: return
+    if (gate == null) {
+        return
+    }
     val status = uiState.connection
-    val failedMessage = status.lastFailure?.userMessageText()?.asString()
-        ?.takeIf { it.isNotBlank() }
-        ?: stringResource(R.string.connection_error)
-    val gate = tvSessionGate(
-        status = status,
-        hasCache = hasCache,
-        checkingMessage = stringResource(R.string.checking_connection),
-        failedTitle = uiState.receiverLabel,
-        failedMessage = failedMessage
-    )
     val settingsTitle = stringResource(R.string.preferences)
     val timersTitle = stringResource(R.string.timer)
     val multiEpgTitle = stringResource(R.string.multiepg)

@@ -73,7 +73,6 @@ class TvHubNavHostTest {
         composeRule.setContent {
             TvHubNavHost(
                 activity = activity,
-                onRecheckProfile = {},
                 startDestination = route
             )
         }

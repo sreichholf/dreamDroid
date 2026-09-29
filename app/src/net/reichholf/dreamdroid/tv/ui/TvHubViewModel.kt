@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -12,16 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
@@ -50,8 +46,6 @@ sealed interface TvStreamOpen {
 /**
  * The TV hub: the selected drawer header, the bouquet rows and movie locations, the movies
  * loaded per location, the open service overlay or timer editor, and the session.
- * [hasCache] is null until Room answered for the active profile. [receiverLabel] names the
- * receiver on the failed ProfileCheck gate.
  */
 data class TvHubUiState(
     val selectedHeaderId: String = TvComposeHubHost.HEADER_SETTINGS_ID,
@@ -67,9 +61,7 @@ data class TvHubUiState(
     val settingTimer: Boolean = false,
     val userMessage: UiText? = null,
     val stream: TvStreamOpen? = null,
-    val connection: ConnectionStatus = ConnectionStatus(),
-    val hasCache: Boolean? = null,
-    val receiverLabel: String = ""
+    val connection: ConnectionStatus = ConnectionStatus()
 ) {
     val streamingEnabled: Boolean
         get() = connection.allowsStreaming()
@@ -84,43 +76,20 @@ data class TvHubUiState(
  * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data;
  * switching headers keeps movies already loaded for a location.
  */
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TvHubViewModel @Inject constructor(
     private val browse: TvHubBrowse,
     private val timers: TimerRepository,
     private val receiver: ReceiverRepository,
     private val movies: MovieRepository,
-    profiles: ProfileRepository,
-    services: ServiceRepository,
     sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TvHubUiState())
 
     private val sessionWord = sessions.status.map { it.session }.distinctUntilChanged()
 
-    /**
-     * Whether Room can paint the hub, and for which profile id. Refreshed on each profile or
-     * session change; unknown until Room answered.
-     */
-    private val cache: StateFlow<Pair<Int?, Boolean?>> =
-        combine(profiles.current, sessionWord) { profile, _ -> profile?.id }
-            .mapLatest<Int?, Pair<Int?, Boolean?>> { id ->
-                id to (id?.let { services.hasCache(it) } ?: false)
-            }
-            .stateIn(viewModelScope, SharingStarted.Eagerly, UNKNOWN_CACHE)
-
-    val uiState: StateFlow<TvHubUiState> = combine(
-        _uiState,
-        sessions.status,
-        profiles.current,
-        cache
-    ) { state, connection, profile, (cacheProfileId, hasCache) ->
-        state.copy(
-            connection = connection,
-            hasCache = hasCache.takeIf { profile?.id == cacheProfileId },
-            receiverLabel = profile?.let { "${it.user}@${it.host}:${it.port}" }.orEmpty()
-        )
+    val uiState: StateFlow<TvHubUiState> = combine(_uiState, sessions.status) { state, status ->
+        state.copy(connection = status)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var browseJob: Job? = null
@@ -293,9 +262,5 @@ class TvHubViewModel @Inject constructor(
                 )
             }
         }
-    }
-
-    private companion object {
-        val UNKNOWN_CACHE: Pair<Int?, Boolean?> = Pair(-1, null)
     }
 }

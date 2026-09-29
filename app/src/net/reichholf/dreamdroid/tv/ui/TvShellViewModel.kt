@@ -5,7 +5,15 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
@@ -16,10 +24,17 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 
 /**
+ * The TV ProfileCheck [gate]; null until Room answered whether the active profile has a
+ * cache, so Checking never flashes over content Room can paint.
+ */
+data class TvShellUiState(val gate: TvSessionGate? = null)
+
+/**
  * The TV activity's session: checks the active profile when the hub starts and on every
  * profile switch, rechecks on request, and probes reachability while the activity is
  * resumed. The outcome is the shared [SessionConnectionHolder] status, which the hub reads.
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class TvShellViewModel @Inject constructor(
     private val profiles: ProfileRepository,
@@ -27,6 +42,39 @@ class TvShellViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
+    /**
+     * Whether Room can paint for which profile id. Refreshed on each profile or session
+     * change; unknown until Room answered.
+     */
+    private val cache: StateFlow<Pair<Int?, Boolean?>> =
+        combine(profiles.current, sessions.status.map { it.session }.distinctUntilChanged()) {
+                profile,
+                _
+            ->
+            profile?.id
+        }
+            .mapLatest<Int?, Pair<Int?, Boolean?>> { id ->
+                id to (id?.let { services.hasCache(it) } ?: false)
+            }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, UNKNOWN_CACHE)
+
+    val uiState: StateFlow<TvShellUiState> = combine(
+        sessions.status,
+        profiles.current,
+        cache
+    ) { status, profile, (cacheProfileId, hasCache) ->
+        val known = hasCache.takeIf { profile?.id == cacheProfileId }
+        TvShellUiState(
+            gate = known?.let {
+                tvSessionGate(
+                    status = status,
+                    hasCache = it,
+                    receiverLabel = profile?.let { p -> "${p.user}@${p.host}:${p.port}" }.orEmpty()
+                )
+            }
+        )
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, TvShellUiState())
+
     private var checkJob: Job? = null
     private var switchesJob: Job? = null
     private var checkedProfile: Profile? = null
@@ -109,4 +157,8 @@ class TvShellViewModel @Inject constructor(
 
     private suspend fun hasCache(profile: Profile): Boolean =
         profile.id?.let { services.hasCache(it) } ?: false
+
+    private companion object {
+        val UNKNOWN_CACHE: Pair<Int?, Boolean?> = Pair(-1, null)
+    }
 }

@@ -107,7 +107,6 @@ class TvHubViewModelTest {
         assertEquals(listOf(FAVOURITES), state.bouquetRows.map { it.bouquet.reference })
         assertEquals(listOf(HDD), state.movieLocations)
         assertNull(state.errorText)
-        assertEquals(true, awaitState(viewModel) { it.hasCache == true }.hasCache)
     }
 
     @Test
@@ -118,7 +117,6 @@ class TvHubViewModelTest {
         val failed = awaitLoaded(viewModel)
         assertTrue(failed.bouquetRows.isEmpty())
         assertTrue(failed.errorText is UiText.Resource)
-        assertEquals(false, failed.hasCache)
 
         receiverDown = false
         viewModel.reload()
@@ -326,14 +324,6 @@ class TvHubViewModelTest {
         awaitState(viewModel) { it.userMessage == UiText.Resource(R.string.missing_stream_player) }
     }
 
-    @Test
-    fun receiverLabelNamesTheActiveProfile() = runBlocking<Unit> {
-        val profile = receiver.profiles.repository.requireCurrent()
-        val label = "${profile.user}@${profile.host}:${profile.port}"
-
-        awaitState(viewModel()) { it.receiverLabel == label }
-    }
-
     private fun routes(request: RecordedRequest): MockResponse {
         if (receiverDown) {
             return MockResponse().setResponseCode(500)
@@ -382,13 +372,11 @@ class TvHubViewModelTest {
         timers,
         ReceiverRepository(clients, receiver.profiles.repository),
         movies,
-        receiver.profiles.repository,
-        receiver.services,
         receiver.sessions
     ).also { viewModels += it }
 
     private suspend fun awaitLoaded(viewModel: TvHubViewModel): TvHubUiState =
-        awaitState(viewModel) { !it.loading && it.hasCache != null }
+        awaitState(viewModel) { !it.loading }
 
     private suspend fun awaitState(
         viewModel: TvHubViewModel,

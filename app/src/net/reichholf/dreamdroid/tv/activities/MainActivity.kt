@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
         showingSetup = false
         localNetworkPermissionRequest.ensure(this)
         shellViewModel.start()
-        TvComposeHubHost.install(this, shellViewModel::recheck)
+        TvComposeHubHost.install(this)
         try {
             // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
             // Do not flip process-wide HttpsURLConnection follow-redirects.

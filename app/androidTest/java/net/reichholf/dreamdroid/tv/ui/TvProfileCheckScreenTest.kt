@@ -13,6 +13,8 @@ import androidx.compose.ui.test.requestFocus
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -36,14 +38,18 @@ class TvProfileCheckScreenTest {
         composeRule.setContent {
             DreamDroidTvTheme {
                 TvProfileCheckScreen(
-                    gate = TvSessionGate.Checking("Checking connection…"),
+                    gate = TvSessionGate.Checking(UiText.Resource(R.string.checking_connection)),
                     onRecheck = {},
                     onProfiles = {}
                 )
             }
         }
         composeRule.onNodeWithTag("tv_profile_check").assertIsDisplayed()
-        composeRule.onNodeWithText("Checking connection…").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(
+                R.string.checking_connection
+            )
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -54,8 +60,8 @@ class TvProfileCheckScreenTest {
             DreamDroidTvTheme {
                 TvProfileCheckScreen(
                     gate = TvSessionGate.Failed(
-                        title = "user@host:80",
-                        message = "Host unreachable"
+                        title = UiText.Raw("user@host:80"),
+                        message = UiText.Resource(R.string.host_unreach)
                     ),
                     onRecheck = { recheck = true },
                     onProfiles = { profiles = true }
@@ -64,7 +70,11 @@ class TvProfileCheckScreenTest {
         }
         composeRule.onNodeWithTag("tv_profile_check").assertIsDisplayed()
         composeRule.onNodeWithText("user@host:80").assertIsDisplayed()
-        composeRule.onNodeWithText("Host unreachable").assertIsDisplayed()
+        composeRule.onNodeWithText(
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(
+                R.string.host_unreach
+            )
+        ).assertIsDisplayed()
         composeRule.onNodeWithTag("tv_profile_check_recheck").assertIsDisplayed()
         composeRule.onNodeWithTag("tv_profile_check_profiles").assertIsDisplayed()
 
