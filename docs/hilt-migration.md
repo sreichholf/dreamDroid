@@ -137,7 +137,7 @@ Each repository owns its offline rules. It absorbs the matching `*SnapshotStore`
 
 Split in two. **14a** moves the widget, picons, the HTTP stack, live streams, and the remaining helpers onto Hilt. **14b** deletes the locators once the phone shell (11) stops using them: `ShellMessages`, `SessionConnectionHolder.shared`, `ProfileRepository.get()`/`install`, and `getAppContext()`. The transitional `EnigmaClient()` and two-argument `CheckProfile.checkProfile` lost their last callers with 11b and go in 14a.
 
-- Widget: `VirtualRemoteWidgetProvider` and `VirtualRemoteWidgetConfiguration` become `@AndroidEntryPoint`. `VirtualRemoteWidget` (Glance, not an Android component) and `WidgetRemoteRequest` get dependencies through an `@EntryPoint`. `WidgetRemoteRequest` keeps its `Toast` (deliberate exception).
+- Widget: `VirtualRemoteWidgetConfiguration` becomes `@AndroidEntryPoint`. `VirtualRemoteWidgetProvider` injects nothing and stays a plain `GlanceAppWidgetReceiver`. `VirtualRemoteWidget` (Glance, not an Android component) and `WidgetRemoteRequest` get dependencies through an `@EntryPoint`. `WidgetRemoteRequest` keeps its `Toast` (deliberate exception).
 - `PiconSyncWorker`: see decision 7.
 - `EnigmaOkHttp` becomes an injected `@Singleton` that takes `@ApplicationContext` for `DreamDroidTrustManager`. `EnigmaHttp` requires a profile, and `EnigmaClient` requires its `EnigmaHttp`.
 - Delete everything in **End state** that is still there. At this point the compiler lists any caller that is left.
@@ -193,6 +193,16 @@ After PR 1, PRs in the same wave do not depend on each other and run in parallel
 | E | 11a, then 11b |
 | F | 14 |
 | G | 15 |
+
+## After the wave
+
+An audit of `main` after PR 15 (2026-09-29) found the End state held, and fixed what the compiler does not check:
+
+- `PhoneNavHostState` held the `NavHostController`, the activity, a `Handler`, and result listeners. `PhoneNavigator`, a plain class `MainActivity` creates, now owns them and implements `PhoneNavHandle`. `PhoneNavHostState` keeps only state that outlives the activity (saved routes and request codes, queued navigations, a held result) and exposes `StateFlow<PhoneNavUiState>`. Keep the navigator out of the ViewModel.
+- `TvShellViewModel` exposes `StateFlow<TvShellUiState>` with the TV ProfileCheck gate; `TvSessionGate` and `ProfileCheckResult` carry `UiText` instead of strings resolved with a `Context`.
+- The send-message and sleep-timer dialogs, and the TV timer editor, keep their input in ViewModels over `SavedStateHandle`.
+- Screens, `MainActivity`, and `RoomProfileStore` read settings through `SettingsRepository` or the injected `SharedPreferences`. The picon preference defaults to `@bool/is_television`.
+- The picon `ImageLoader` picks its OkHttp client per call, so it follows the current profile's trust-all setting.
 
 ## Decisions
 
