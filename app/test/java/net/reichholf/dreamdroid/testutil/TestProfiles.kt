@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.content.res.Resources
 import java.io.File
 import java.nio.file.Files
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
@@ -51,9 +52,15 @@ class TestContext : ContextWrapper(null) {
  * The app's profile stack and [ServiceRepository] over an in-memory [AppDatabase]. Tests
  * leave it open: a ViewModel job may still be finishing a blocking read when the test body
  * returns.
+ *
+ * The database is opened here, as the app opens its own at startup. Otherwise the first
+ * query creates the schema, and a test that cancels that query (a stale load) leaves a
+ * database whose next query fails.
  */
 class TestProfiles(val context: TestContext = TestContext()) {
-    val database: AppDatabase = AppDatabase.inMemory(context)
+    val database: AppDatabase = AppDatabase.inMemory(context).also {
+        runBlocking { it.profileDao().getProfiles() }
+    }
     val sessions = SessionConnectionHolder()
     val repository = ProfileRepository(RoomProfileStore(database, context) { services })
     val services: ServiceRepository by lazy {
