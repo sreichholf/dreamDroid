@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.enigma
 
 import androidx.preference.PreferenceManager
 import java.io.File
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
@@ -63,7 +64,7 @@ class EnigmaClientFactoryTest {
         assertFalse(dumpDir.exists())
     }
 
-    private fun activate(xmlDebug: Boolean) {
+    private fun activate(xmlDebug: Boolean) = runBlocking<Unit> {
         PreferenceManager.getDefaultSharedPreferences(profiles.context).edit()
             .putBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, xmlDebug)
             .commit()

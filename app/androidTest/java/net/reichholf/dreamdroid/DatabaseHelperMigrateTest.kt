@@ -33,7 +33,7 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun missingFileDoesNotCreateDatabase() {
+    fun missingFileDoesNotCreateDatabase() = runBlocking<Unit> {
         assertFalse(DatabaseHelper.databaseFile(context).exists())
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
         assertEquals(0, DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao()))
@@ -85,7 +85,7 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun migrateCopiesRowsAndDeletesLeftover() {
+    fun migrateCopiesRowsAndDeletesLeftover() = runBlocking<Unit> {
         writeLegacy {
             execSQL(
                 """
@@ -121,7 +121,7 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun emptyLeftoverIsDeletedWhenRoomIsEmpty() {
+    fun emptyLeftoverIsDeletedWhenRoomIsEmpty() = runBlocking<Unit> {
         writeLegacy {
             execSQL("CREATE TABLE profiles (_id INTEGER PRIMARY KEY, profile TEXT)")
         }
@@ -130,7 +130,7 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun skipsWhenRoomAlreadyHasProfiles() {
+    fun skipsWhenRoomAlreadyHasProfiles() = runBlocking<Unit> {
         runBlocking {
             room.profileDao().addProfile(Profile().apply { name = "RoomFirst" })
         }
@@ -156,7 +156,7 @@ class DatabaseHelperMigrateTest {
     }
 
     @Test
-    fun corruptFileIsLeftInPlace() {
+    fun corruptFileIsLeftInPlace() = runBlocking<Unit> {
         val file = DatabaseHelper.databaseFile(context)
         file.parentFile?.mkdirs()
         file.writeText("not a sqlite database")

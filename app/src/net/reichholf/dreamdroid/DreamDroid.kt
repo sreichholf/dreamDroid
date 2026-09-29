@@ -18,6 +18,7 @@ import android.net.NetworkCapabilities
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
+import android.os.StrictMode
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -57,8 +58,19 @@ class DreamDroid : Application() {
     lateinit var database: AppDatabase
 
     override fun onCreate() {
-        // Hilt injects here, before the pre-Room import below. Building ProfileRepository,
-        // EpgRepository, and AppDatabase does not open the database; the import is the first read.
+        if (BuildConfig.DEBUG) {
+            // Logs disk and network access on the main thread; see "StrictMode" in logcat.
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectDiskReads()
+                    .detectDiskWrites()
+                    .detectNetwork()
+                    .penaltyLog()
+                    .build()
+            )
+        }
+        // Hilt injects here. Building ProfileRepository, EpgRepository, and AppDatabase does
+        // not open the database; the pre-Room import in loadProfiles() is the first read.
         super.onCreate()
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean(PREFS_KEY_DYNAMIC_THEME_COLORS, false)
@@ -82,14 +94,28 @@ class DreamDroid : Application() {
             DATE_LOCALE_WO = false
         }
 
-        DatabaseHelper.migrateIntoRoomIfNeeded(this, database.profileDao())
-
         initChannels()
-        profiles.loadCurrent()
-
-        handleProfileSwitch(this)
+        loadProfiles()
         PiconImageLoader.install(this)
         pruneExpiredMultiEpgCache()
+    }
+
+    /**
+     * Reads the active profile off the main thread. Activities and workers wait for it
+     * with [ProfileRepository.awaitLoaded].
+     */
+    private fun loadProfiles() {
+        ioScope.launch {
+            try {
+                DatabaseHelper.migrateIntoRoomIfNeeded(this@DreamDroid, database.profileDao())
+                profiles.loadCurrent()
+                handleProfileSwitch(this@DreamDroid)
+            } catch (t: Throwable) {
+                Log.e(LOG_TAG, "Loading the active profile failed", t)
+            } finally {
+                profiles.markLoaded()
+            }
+        }
     }
 
     private fun pruneExpiredMultiEpgCache() {
@@ -102,7 +128,7 @@ class DreamDroid : Application() {
         }
     }
 
-    private fun handleProfileSwitch(context: Context) {
+    private suspend fun handleProfileSwitch(context: Context) {
         val currentProfile = profiles.current.value ?: return
         if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(
                 PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED,

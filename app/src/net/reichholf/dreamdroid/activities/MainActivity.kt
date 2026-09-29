@@ -198,6 +198,18 @@ class MainActivity :
             }
         }
         startSessionReachabilityProbe()
+        if (profiles.isLoaded()) {
+            openFirstScreen()
+        } else {
+            lifecycleScope.launch {
+                profiles.awaitLoaded()
+                openFirstScreen()
+            }
+        }
+    }
+
+    /** The setup assistant without a profile, else the shell. Needs the profiles loaded. */
+    private fun openFirstScreen() {
         if (!profiles.hasCurrent()) {
             showSetupAssistant()
             return
@@ -210,9 +222,11 @@ class MainActivity :
         if (showingSetup || !phoneShellReady) {
             return
         }
-        if (!profiles.ensureCurrent()) {
-            shellActions.cancelCheck()
-            showSetupAssistant()
+        lifecycleScope.launch {
+            if (!profiles.ensureCurrent() && !showingSetup) {
+                shellActions.cancelCheck()
+                showSetupAssistant()
+            }
         }
     }
 

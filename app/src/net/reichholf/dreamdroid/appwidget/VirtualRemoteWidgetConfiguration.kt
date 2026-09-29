@@ -11,9 +11,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -42,15 +44,20 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
-        val items = profileRepository.profiles().map { profile ->
-            ProfileListItem(
-                id = profile.id ?: 0,
-                name = profile.name.orEmpty(),
-                host = profile.host.orEmpty(),
-                active = false
-            )
+        lifecycleScope.launch {
+            val items = profileRepository.profiles().map { profile ->
+                ProfileListItem(
+                    id = profile.id ?: 0,
+                    name = profile.name.orEmpty(),
+                    host = profile.host.orEmpty(),
+                    active = false
+                )
+            }
+            showProfiles(items)
         }
+    }
 
+    private fun showProfiles(items: List<ProfileListItem>) {
         setContent {
             DreamDroidTheme {
                 // Match former XML default: QuickZap (simple) checked.
@@ -59,7 +66,9 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
                     profiles = items,
                     isFull = isFull,
                     onStyleFullChange = { isFull = it },
-                    onProfileClick = { profile -> finishWithProfile(profile.id, isFull) },
+                    onProfileClick = { profile ->
+                        lifecycleScope.launch { finishWithProfile(profile.id, isFull) }
+                    },
                     onOpenApp = ::openApp
                 )
             }
@@ -71,7 +80,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         finish()
     }
 
-    private fun finishWithProfile(profileId: Int, isFull: Boolean) {
+    private suspend fun finishWithProfile(profileId: Int, isFull: Boolean) {
         saveWidgetConfiguration(profileId, isFull)
         val context = applicationContext
         val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -91,7 +100,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
 
     companion object {
         /** The profile [appWidgetId] was configured with; null if unset or deleted. */
-        fun getWidgetProfile(
+        suspend fun getWidgetProfile(
             context: Context,
             profiles: ProfileRepository,
             appWidgetId: Int

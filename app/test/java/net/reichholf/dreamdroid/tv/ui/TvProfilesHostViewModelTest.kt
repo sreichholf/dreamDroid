@@ -80,7 +80,7 @@ class TvProfilesHostViewModelTest {
     }
 
     @Test
-    fun emptyHostIsNotSaved() {
+    fun emptyHostIsNotSaved() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.showAdd()
 
@@ -155,5 +155,5 @@ class TvProfilesHostViewModelTest {
     private fun saved(name: String): Profile = Profile.getDefault().apply {
         this.name = name
         host = "10.0.0.1"
-    }.also { profiles.save(it) }
+    }.also { runBlocking { profiles.save(it) } }
 }

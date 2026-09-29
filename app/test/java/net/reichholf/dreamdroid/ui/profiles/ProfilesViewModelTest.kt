@@ -134,7 +134,7 @@ class ProfilesViewModelTest {
     ).also { viewModels += it }
 
     private fun saved(name: String, host: String): Profile =
-        receiver(name, host).also { profiles.save(it) }
+        receiver(name, host).also { runBlocking { profiles.save(it) } }
 }
 
 internal fun receiver(name: String, host: String): Profile = Profile.getDefault().apply {

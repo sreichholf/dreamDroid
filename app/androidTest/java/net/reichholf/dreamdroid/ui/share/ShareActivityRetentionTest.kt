@@ -17,7 +17,6 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.ShareActivity
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.ProfileDaoBlocking
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -41,7 +40,7 @@ class ShareActivityRetentionTest {
     lateinit var database: AppDatabase
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
-    private val dao by lazy { ProfileDaoBlocking(database.profileDao()) }
+    private val dao by lazy { database.profileDao() }
     private val server = MockWebServer()
     private val release = CountDownLatch(1)
     private val plays = AtomicInteger(0)
@@ -73,7 +72,7 @@ class ShareActivityRetentionTest {
                 ssl = false
                 login = false
             }
-            dao.addProfile(profile)
+            runBlocking { dao.addProfile(profile) }
         }
     }
 
@@ -81,9 +80,11 @@ class ShareActivityRetentionTest {
     fun deleteProfiles() {
         release.countDown()
         server.shutdown()
-        dao.getProfiles()
-            .filter { it.name?.startsWith("share-vm-") == true }
-            .forEach { dao.deleteProfile(it) }
+        runBlocking {
+            dao.getProfiles()
+                .filter { it.name?.startsWith("share-vm-") == true }
+                .forEach { dao.deleteProfile(it) }
+        }
     }
 
     @Test

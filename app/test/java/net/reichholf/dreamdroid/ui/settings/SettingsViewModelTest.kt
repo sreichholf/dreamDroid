@@ -221,7 +221,7 @@ class SettingsViewModelTest {
     private fun saved(name: String): Profile = Profile.getDefault().apply {
         this.name = name
         host = "10.0.0.1"
-    }.also { profiles.save(it) }
+    }.also { runBlocking { profiles.save(it) } }
 
     private suspend fun cache(profileId: Int) {
         database.movieDao().replaceLocations(

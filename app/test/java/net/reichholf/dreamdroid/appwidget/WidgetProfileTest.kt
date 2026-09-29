@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.appwidget
 
 import androidx.preference.PreferenceManager
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -14,7 +15,7 @@ class WidgetProfileTest {
     private val repository = profiles.repository
 
     @Test
-    fun configuredWidgetGetsItsProfile() {
+    fun configuredWidgetGetsItsProfile() = runBlocking<Unit> {
         save("other")
         val box = save("box")
         configure(WIDGET_ID, box.id!!)
@@ -30,7 +31,7 @@ class WidgetProfileTest {
     }
 
     @Test
-    fun unconfiguredWidgetHasNoProfile() {
+    fun unconfiguredWidgetHasNoProfile() = runBlocking<Unit> {
         save("box")
 
         assertNull(
@@ -39,7 +40,7 @@ class WidgetProfileTest {
     }
 
     @Test
-    fun deletedProfileLeavesTheWidgetWithoutOne() {
+    fun deletedProfileLeavesTheWidgetWithoutOne() = runBlocking<Unit> {
         val box = save("box")
         configure(WIDGET_ID, box.id!!)
         repository.delete(box)
@@ -52,7 +53,7 @@ class WidgetProfileTest {
     private fun save(name: String): Profile = Profile().apply {
         this.name = name
         host = "$name.local"
-    }.also(repository::save)
+    }.also { runBlocking { repository.save(it) } }
 
     private fun configure(widgetId: Int, profileId: Int) {
         PreferenceManager.getDefaultSharedPreferences(context).edit()

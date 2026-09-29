@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.data
 
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.backup.BackupData
@@ -21,7 +22,7 @@ class BackupRepositoryTest {
     private val backups = BackupRepository(profiles, SettingsRepository(preferences))
 
     @Test
-    fun backupHoldsEveryPreferenceWithItsTypeAndTheProfiles() {
+    fun backupHoldsEveryPreferenceWithItsTypeAndTheProfiles() = runBlocking<Unit> {
         preferences.edit()
             .putBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, true)
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "0")
@@ -43,7 +44,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importStoresSettingsWithTheirTypes() {
+    fun importStoresSettingsWithTheirTypes() = runBlocking<Unit> {
         val data = BackupData()
         data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
@@ -57,7 +58,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importDoesNotReplaceADifferentlyNamedProfile() {
+    fun importDoesNotReplaceADifferentlyNamedProfile() = runBlocking<Unit> {
         val kitchen = saved("Kitchen", "10.0.0.1")
         val data = BackupData()
         data.addProfile(receiver("Bedroom", "9.9.9.9").apply { id = kitchen.id })
@@ -69,7 +70,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importReplacesASameNamedProfileInPlace() {
+    fun importReplacesASameNamedProfileInPlace() = runBlocking<Unit> {
         val living = saved("Living Room", "10.0.0.1")
         profiles.setCurrent(living.id!!)
         val data = BackupData()
@@ -84,7 +85,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importWithoutPasswordsKeepsTheSavedOnes() {
+    fun importWithoutPasswordsKeepsTheSavedOnes() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1").also {
             it.pass = "secret"
             profiles.save(it)
@@ -99,7 +100,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun unreadableDocumentChangesNothing() {
+    fun unreadableDocumentChangesNothing() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1")
 
         assertFalse(backups.importBackup("{"))
@@ -109,7 +110,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun exportWithoutPasswordsClearsThemInTheFileOnly() {
+    fun exportWithoutPasswordsClearsThemInTheFileOnly() = runBlocking<Unit> {
         saved("Living Room", "10.0.0.1").also {
             it.pass = "secret"
             profiles.save(it)
@@ -125,7 +126,7 @@ class BackupRepositoryTest {
     }
 
     private fun saved(name: String, host: String): Profile =
-        receiver(name, host).also { profiles.save(it) }
+        receiver(name, host).also { runBlocking { profiles.save(it) } }
 
     private fun receiver(name: String, host: String): Profile = Profile.getDefault().apply {
         this.name = name

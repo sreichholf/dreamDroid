@@ -53,12 +53,25 @@ class MainActivity : AppCompatActivity() {
     private val shellViewModel: TvShellViewModel by viewModels()
     private var showingSetup: Boolean = false
     private var lanGranted by mutableStateOf(false)
+    private var hubStarted: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         startSessionReachabilityProbe()
+        if (profiles.isLoaded()) {
+            openFirstScreen()
+        } else {
+            lifecycleScope.launch {
+                profiles.awaitLoaded()
+                openFirstScreen()
+            }
+        }
+    }
+
+    /** Setup without a profile, else the hub. Needs the profiles loaded. */
+    private fun openFirstScreen() {
         if (!profiles.hasCurrent()) {
             showSetup()
             return
@@ -68,12 +81,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        if (showingSetup) {
+        if (showingSetup || !hubStarted) {
             return
         }
-        if (!profiles.ensureCurrent()) {
-            shellViewModel.cancelCheck()
-            showSetup()
+        lifecycleScope.launch {
+            if (!profiles.ensureCurrent() && !showingSetup) {
+                shellViewModel.cancelCheck()
+                showSetup()
+            }
         }
     }
 
@@ -95,6 +110,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun startHub() {
         showingSetup = false
+        hubStarted = true
         localNetworkPermissionRequest.ensure(this)
         shellViewModel.start()
         TvComposeHubHost.install(this)

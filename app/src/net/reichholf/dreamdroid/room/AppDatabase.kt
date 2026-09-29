@@ -9,7 +9,6 @@ import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 
 @Database(
@@ -323,28 +322,5 @@ abstract class AppDatabase : RoomDatabase() {
             RoomDatabase.Builder<AppDatabase> =
             setDriver(BundledSQLiteDriver())
                 .setQueryCoroutineContext(Dispatchers.IO)
-    }
-}
-
-/** Single `runBlocking(IO)` facade over [Profile.ProfileDao]. */
-class ProfileDaoBlocking internal constructor(private val dao: Profile.ProfileDao) {
-    fun addProfile(profile: Profile): Long = runBlocking(Dispatchers.IO) {
-        dao.addProfile(profile)
-    }
-
-    fun updateProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
-        dao.updateProfile(profile)
-    }
-
-    fun deleteProfile(profile: Profile) = runBlocking(Dispatchers.IO) {
-        dao.deleteProfile(profile)
-    }
-
-    fun getProfiles(): MutableList<Profile> = runBlocking(Dispatchers.IO) {
-        dao.getProfiles()
-    }
-
-    fun getProfile(id: Int): Profile? = runBlocking(Dispatchers.IO) {
-        dao.getProfile(id)
     }
 }

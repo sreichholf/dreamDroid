@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
@@ -73,5 +74,5 @@ class PiconCallsTest {
         port = 443
         ssl = true
         allCertsTrusted = trustAll
-    }.also { profiles.repository.save(it) }
+    }.also { runBlocking { profiles.repository.save(it) } }
 }

@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.async
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -19,7 +20,7 @@ import org.junit.jupiter.api.Test
 
 class ProfileRepositoryTest {
     @Test
-    fun switchingProfileEmitsOnceAndClearsCaches() {
+    fun switchingProfileEmitsOnceAndClearsCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val second = profile(2, "bedroom")
         val repo = ProfileRepository(MemoryProfileStore(listOf(first, second)))
@@ -50,7 +51,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun replacingCurrentProfileKeepsPerProfileCaches() {
+    fun replacingCurrentProfileKeepsPerProfileCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val edited = profile(1, "living-room").apply { name = "Living Room" }
         val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
@@ -66,7 +67,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun editingConnectionSettingsDropsDeviceInfoOnly() {
+    fun editingConnectionSettingsDropsDeviceInfoOnly() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
         assertTrue(repo.activate(first.id!!, forceEvent = true))
@@ -109,7 +110,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun setCurrentRemembersTheActiveProfile() {
+    fun setCurrentRemembersTheActiveProfile() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "a"), profile(2, "b")))
         val repo = ProfileRepository(store)
 
@@ -124,7 +125,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun savingActiveProfileReplacesCurrentWithoutSwitch() {
+    fun savingActiveProfileReplacesCurrentWithoutSwitch() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "living-room")))
         val repo = ProfileRepository(store)
         assertTrue(repo.setCurrent(1, forceEvent = true))
@@ -145,7 +146,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun deletingActiveProfileActivatesAnother() {
+    fun deletingActiveProfileActivatesAnother() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "keep"), profile(2, "gone")))
         val repo = ProfileRepository(store)
         assertTrue(repo.setCurrent(2, forceEvent = true))
@@ -158,7 +159,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun deletingLastProfileForgetsTheActiveOne() {
+    fun deletingLastProfileForgetsTheActiveOne() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "only")))
         val repo = ProfileRepository(store)
         assertTrue(repo.setCurrent(1, forceEvent = true))
@@ -171,7 +172,7 @@ class ProfileRepositoryTest {
     }
 
     @Test
-    fun deletingAnotherProfileKeepsTheActiveOne() {
+    fun deletingAnotherProfileKeepsTheActiveOne() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "active"), profile(2, "other")))
         val repo = ProfileRepository(store)
         assertTrue(repo.setCurrent(1, forceEvent = true))
@@ -180,6 +181,32 @@ class ProfileRepositoryTest {
 
         assertEquals(1, repo.requireCurrent().id)
         assertEquals(1, store.remembered)
+    }
+
+    @Test
+    fun awaitLoadedWaitsUntilTheStartupLoadIsMarkedDone() = runBlocking<Unit> {
+        val repo = ProfileRepository(MemoryProfileStore(listOf(profile(1, "box"))))
+        val waiter = async(start = CoroutineStart.UNDISPATCHED) { repo.awaitLoaded() }
+
+        repo.loadCurrent()
+        yield()
+        assertFalse(waiter.isCompleted)
+        assertFalse(repo.isLoaded())
+
+        repo.markLoaded()
+        withTimeout(5_000L) { waiter.await() }
+        assertTrue(repo.isLoaded())
+        assertEquals(1, repo.requireCurrent().id)
+    }
+
+    @Test
+    fun anInMemoryCurrentProfileCountsAsLoaded() = runBlocking<Unit> {
+        val repo = ProfileRepository(MemoryProfileStore(emptyList()))
+
+        repo.setCurrent(profile(1, "box"))
+
+        withTimeout(5_000L) { repo.awaitLoaded() }
+        assertTrue(repo.isLoaded())
     }
 }
 
@@ -194,22 +221,22 @@ private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
     var remembered: Int = -1
     val deletedIds = mutableListOf<Int>()
 
-    override fun profiles(): List<Profile> = rows.toList()
+    override suspend fun profiles(): List<Profile> = rows.toList()
 
-    override fun profile(id: Int): Profile? = rows.firstOrNull { it.id == id }
+    override suspend fun profile(id: Int): Profile? = rows.firstOrNull { it.id == id }
 
-    override fun add(profile: Profile): Long {
+    override suspend fun add(profile: Profile): Long {
         val nextId = (rows.mapNotNull { it.id }.maxOrNull() ?: 0) + 1
         profile.id = nextId
         rows.add(profile)
         return nextId.toLong()
     }
 
-    override fun update(profile: Profile) {
+    override suspend fun update(profile: Profile) {
         rows.replaceAll { if (it.id == profile.id) profile else it }
     }
 
-    override fun delete(profile: Profile) {
+    override suspend fun delete(profile: Profile) {
         rows.removeAll { it.id == profile.id }
         profile.id?.let { deletedIds.add(it) }
     }

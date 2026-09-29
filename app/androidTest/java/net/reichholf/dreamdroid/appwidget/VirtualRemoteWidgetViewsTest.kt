@@ -10,6 +10,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -72,7 +73,7 @@ class VirtualRemoteWidgetViewsTest {
     }
 
     @Test
-    fun missingProfileIsNullNotNpe() {
+    fun missingProfileIsNullNotNpe() = runBlocking<Unit> {
         val widgetId = 77
         PreferenceManager.getDefaultSharedPreferences(context).edit()
             .putInt(VirtualRemoteWidgetConfiguration.getProfileIdKey(widgetId), 9_001_337)

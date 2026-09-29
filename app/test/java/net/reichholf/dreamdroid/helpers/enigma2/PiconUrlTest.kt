@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.helpers.enigma2
 
 import coil3.request.Options
 import coil3.toUri
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -38,7 +39,7 @@ class PiconUrlTest {
     }
 
     @Test
-    fun onlinePiconMapper_usesTheActiveProfile() {
+    fun onlinePiconMapper_usesTheActiveProfile() = runBlocking<Unit> {
         val profiles = TestProfiles()
         val profile = loginProfile(ssl = false, port = 80).apply { name = "box" }
         profiles.repository.save(profile)

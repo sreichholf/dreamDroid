@@ -5,7 +5,6 @@ import android.util.Log
 import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,7 +12,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.first
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.StringListParser
@@ -21,7 +20,6 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
-import net.reichholf.dreamdroid.room.ProfileDaoBlocking
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
@@ -44,6 +42,8 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
     val switches: SharedFlow<Profile> = _switches.asSharedFlow()
+
+    private val loaded = MutableStateFlow(false)
 
     @Volatile
     private var locationList: ArrayList<String> = ArrayList()
@@ -112,13 +112,14 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
             setDeviceInfo(profile, null)
         }
         _current.value = profile
+        loaded.value = true
     }
 
     /**
      * Activates the saved profile [id] and remembers it as the active profile.
      * False when there is no such row.
      */
-    fun setCurrent(id: Int, forceEvent: Boolean = false): Boolean {
+    suspend fun setCurrent(id: Int, forceEvent: Boolean = false): Boolean {
         xmlDump = store.xmlDebug()
         val activated = activate(id, forceEvent)
         if (activated) {
@@ -132,14 +133,19 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
      * when the row differs from the active profile or [forceEvent] is true.
      * That path clears locations, tags, and device-info XML.
      */
-    @Synchronized
-    internal fun activate(id: Int, forceEvent: Boolean): Boolean {
-        val oldProfile = _current.value ?: Profile.getDefault()
+    internal suspend fun activate(id: Int, forceEvent: Boolean): Boolean {
         val loaded = store.profile(id)
         if (loaded == null) {
             Log.w(DreamDroid.LOG_TAG, "no profile with given id [$id] found")
             return false
         }
+        publish(loaded, forceEvent)
+        return true
+    }
+
+    @Synchronized
+    private fun publish(loaded: Profile, forceEvent: Boolean) {
+        val oldProfile = _current.value ?: Profile.getDefault()
         val changed = !loaded.hasSameSettings(oldProfile) || forceEvent
         if (changed) {
             clearPerProfileCaches()
@@ -151,7 +157,6 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
             }
             _current.value = loaded
         }
-        return true
     }
 
     fun clearCurrent() {
@@ -159,9 +164,9 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     }
 
     /** All saved profiles. */
-    fun profiles(): List<Profile> = store.profiles()
+    suspend fun profiles(): List<Profile> = store.profiles()
 
-    fun profile(id: Int): Profile? = store.profile(id)
+    suspend fun profile(id: Int): Profile? = store.profile(id)
 
     /** The remembered active profile id, else the live one. Null when neither is set. */
     fun activeProfileId(): Int? = store.activeId().takeIf { it > 0 } ?: current.value?.id
@@ -170,7 +175,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
      * Inserts [profile] and sets its id, or updates it when it already has one. An
      * updated active profile replaces [current] without a switch event (the edit path).
      */
-    fun save(profile: Profile) {
+    suspend fun save(profile: Profile) {
         val id = profile.id ?: 0
         if (id > 0) {
             store.update(profile)
@@ -186,7 +191,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
      * Deletes [profile] and its offline cache. Deleting the active profile activates
      * the first remaining one, or forgets the active profile when none is left.
      */
-    fun delete(profile: Profile) {
+    suspend fun delete(profile: Profile) {
         val deletedId = profile.id
         val wasCurrent = deletedId != null && deletedId == current.value?.id
         store.delete(profile)
@@ -202,7 +207,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         }
     }
 
-    fun ensureCurrent(): Boolean {
+    suspend fun ensureCurrent(): Boolean {
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
         val profiles = store.profiles()
         if (profiles.isEmpty()) {
@@ -217,7 +222,11 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         return setCurrent(first, forceEvent = true)
     }
 
-    fun loadCurrent() {
+    /**
+     * Reads the remembered active profile at process start; see [awaitLoaded]. Imports the
+     * single-receiver settings of dreamDroid 1.x when there are no profiles yet.
+     */
+    suspend fun loadCurrent() {
         val profileId = store.activeId()
         val active = current.value
         if (active != null && profileId > 0 && active.id == profileId) {
@@ -242,7 +251,23 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         clearCurrent()
     }
 
-    fun reloadCurrent(): Boolean {
+    /**
+     * Suspends until the process-start profile load finished, so [current] is settled:
+     * the active profile, or null when setup is needed. Returns at once afterwards.
+     */
+    suspend fun awaitLoaded() {
+        loaded.first { it }
+    }
+
+    /** True once [awaitLoaded] returns without suspending. */
+    fun isLoaded(): Boolean = loaded.value
+
+    /** The process-start load is done, whether or not it found a profile. */
+    fun markLoaded() {
+        loaded.value = true
+    }
+
+    suspend fun reloadCurrent(): Boolean {
         val id = current.value?.id ?: return false
         return setCurrent(id, forceEvent = true)
     }
@@ -298,16 +323,16 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
  * preferences in the app, memory in tests.
  */
 interface ProfileStore {
-    fun profiles(): List<Profile>
+    suspend fun profiles(): List<Profile>
 
-    fun profile(id: Int): Profile?
+    suspend fun profile(id: Int): Profile?
 
-    fun add(profile: Profile): Long
+    suspend fun add(profile: Profile): Long
 
-    fun update(profile: Profile)
+    suspend fun update(profile: Profile)
 
     /** Deletes the row and the offline cache kept for it. */
-    fun delete(profile: Profile)
+    suspend fun delete(profile: Profile)
 
     /** The remembered active profile id, or -1. */
     fun activeId(): Int
@@ -333,23 +358,23 @@ class RoomProfileStore @Inject constructor(
     private val preferences: SharedPreferences,
     private val services: Lazy<ServiceRepository>
 ) : ProfileStore {
-    private val dao: ProfileDaoBlocking
-        get() = ProfileDaoBlocking(database.profileDao())
+    private val dao: Profile.ProfileDao
+        get() = database.profileDao()
 
-    override fun profiles(): List<Profile> = dao.getProfiles()
+    override suspend fun profiles(): List<Profile> = dao.getProfiles()
 
-    override fun profile(id: Int): Profile? = dao.getProfile(id)
+    override suspend fun profile(id: Int): Profile? = dao.getProfile(id)
 
-    override fun add(profile: Profile): Long = dao.addProfile(profile)
+    override suspend fun add(profile: Profile): Long = dao.addProfile(profile)
 
-    override fun update(profile: Profile) {
+    override suspend fun update(profile: Profile) {
         dao.updateProfile(profile)
     }
 
-    override fun delete(profile: Profile) {
+    override suspend fun delete(profile: Profile) {
         dao.deleteProfile(profile)
         val id = profile.id ?: return
-        runBlocking(Dispatchers.IO) { services.get().clearCacheOfDeletedProfile(id) }
+        services.get().clearCacheOfDeletedProfile(id)
     }
 
     override fun activeId(): Int = preferences.getInt(DreamDroid.CURRENT_PROFILE, -1)
