@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -46,11 +46,14 @@ fun ServiceEpgScreen(
             if (day != null) {
                 stickyHeader(key = "day:$index") { EpgDayHeader(day) }
             }
-            items(section.events, key = { "${it.eventId}:${it.start}:${it.title}" }) { event ->
+            itemsIndexed(
+                section.events,
+                key = { _, it -> "${it.eventId}:${it.start}:${it.title}" }
+            ) { eventIndex, event ->
                 ServiceEpgRow(
                     event = event,
                     onClick = { onItemClick(event) },
-                    showDate = day == null
+                    showDate = day == null || eventIndex < section.earlierStarts
                 )
             }
         }

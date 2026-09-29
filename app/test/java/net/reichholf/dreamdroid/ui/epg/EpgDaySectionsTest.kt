@@ -37,14 +37,29 @@ class EpgDaySectionsTest {
     }
 
     @Test
-    fun runningEventFromYesterdayCountsAsToday() {
+    fun runningEventFromYesterdayCountsAsTodayAndIsMarkedEarlier() {
         val sections = sections(
-            event("Late movie", midnight - HOUR),
+            event("Late movie", midnight - HOUR, duration = 3 * HOUR),
             event("Morning", midnight + 8 * HOUR)
         )
 
         assertEquals(listOf(UiText.Resource(R.string.today)), sections.map { it.day })
         assertEquals(listOf("Late movie", "Morning"), sections.single().events.map { it.title })
+        assertEquals(1, sections.single().earlierStarts)
+    }
+
+    @Test
+    fun endedEventFromYesterdayKeepsItsDay() {
+        val sections = sections(
+            event("Evening news", midnight - 3 * HOUR, duration = HOUR),
+            event("Morning", midnight + 8 * HOUR)
+        )
+
+        assertEquals(
+            listOf(UiText.Raw("Monday, Dec 31, 2029"), UiText.Resource(R.string.today)),
+            sections.map { it.day }
+        )
+        assertEquals(listOf(0, 0), sections.map { it.earlierStarts })
     }
 
     @Test
@@ -56,10 +71,14 @@ class EpgDaySectionsTest {
     }
 
     private fun sections(vararg events: Event) =
-        epgDaySections(events.toList(), today, ZoneOffset.UTC, Locale.US)
+        epgDaySections(events.toList(), today, ZoneOffset.UTC, Locale.US, nowSec = midnight)
 
-    private fun event(title: String, start: Long?) =
-        Event(eventId = title, title = title, start = start?.toString().orEmpty())
+    private fun event(title: String, start: Long?, duration: Long = HOUR) = Event(
+        eventId = title,
+        title = title,
+        start = start?.toString().orEmpty(),
+        duration = duration.toString()
+    )
 
     private companion object {
         const val HOUR = 3_600L

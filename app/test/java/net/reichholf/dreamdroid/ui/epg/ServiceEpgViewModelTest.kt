@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import androidx.lifecycle.SavedStateHandle
+import java.time.LocalDate
+import java.time.ZoneId
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -92,10 +94,13 @@ class ServiceEpgViewModelTest {
     @Test
     fun offlineScheduleIsGroupedByDay() = runTest {
         val now = System.currentTimeMillis() / 1000L
+        // Noon tomorrow, not now + 24 h: a DST day is 23 or 25 hours long.
+        val tomorrowNoon = LocalDate.now().plusDays(1).atTime(12, 0)
+            .atZone(ZoneId.systemDefault()).toEpochSecond()
         receiver.writeChunk(
             BOUQUET,
             now,
-            listOf(event("News", start = now), event("News tomorrow", start = now + 86_400))
+            listOf(event("News", start = now), event("News tomorrow", start = tomorrowNoon))
         )
         receiver.goOffline()
 

@@ -80,12 +80,8 @@ class ServiceEpgViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 refreshing = true,
-                emptyMessage = if (it.sections.isEmpty()) {
-                    UiText.Resource(
-                        R.string.loading
-                    )
-                } else {
-                    null
+                emptyMessage = UiText.Resource(R.string.loading).takeIf { _ ->
+                    it.sections.isEmpty()
                 }
             )
         }
