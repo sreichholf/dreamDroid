@@ -5,6 +5,8 @@ import android.view.ViewTreeObserver
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.exclude
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
@@ -38,7 +40,10 @@ import androidx.core.view.WindowInsetsCompat
 @Composable
 fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean): Modifier {
     val overflow = rememberPhoneNavBottomOverflowDp()
+    // The shell already pads by the keyboard; counting it here again squeezed every
+    // destination to a sliver while the keyboard was open.
     val safeBottom = WindowInsets.safeDrawing
+        .exclude(WindowInsets.ime)
         .only(WindowInsetsSides.Bottom)
         .asPaddingValues()
         .calculateBottomPadding()
@@ -112,9 +117,7 @@ private fun View.phoneNavBottomOverflowPx(): Int {
         return 0
     }
     val insets = ViewCompat.getRootWindowInsets(this)
-    val safeBottom = insets?.getInsets(
-        WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
-    )?.bottom ?: 0
+    val safeBottom = insets?.getInsets(WindowInsetsCompat.Type.systemBars())?.bottom ?: 0
     val loc = IntArray(2)
     getLocationInWindow(loc)
     return phoneNavBottomOverflowPx(
