@@ -8,6 +8,9 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.ShareActivity
 import net.reichholf.dreamdroid.room.ProfileDaoBlocking
@@ -31,6 +34,7 @@ class ShareActivityRetentionTest {
     private val server = MockWebServer()
     private val release = CountDownLatch(1)
     private val plays = AtomicInteger(0)
+    private val playStarted = CountDownLatch(1)
 
     @Before
     fun seedProfiles() {
@@ -40,6 +44,7 @@ class ShareActivityRetentionTest {
                     return MockResponse().setBody("session")
                 }
                 plays.incrementAndGet()
+                playStarted.countDown()
                 release.await(60, TimeUnit.SECONDS)
                 return MockResponse().setBody(
                     "<e2simplexmlresult><e2state>True</e2state>" +
@@ -80,12 +85,12 @@ class ShareActivityRetentionTest {
             scenario.onActivity { activity ->
                 before = ViewModelProvider(activity)[ShareViewModel::class.java]
             }
-            waitUntil { before.uiState.value.profiles.any { it.name == "share-vm-a" } }
+            awaitState(before) { state -> state.profiles.any { it.name == "share-vm-a" } }
             scenario.onActivity {
                 val item = before.uiState.value.profiles.first { it.name == "share-vm-a" }
                 before.onProfileClick(item)
             }
-            waitUntil { plays.get() == 1 }
+            assertTrue("play request", playStarted.await(10, TimeUnit.SECONDS))
 
             scenario.recreate()
 
@@ -97,16 +102,12 @@ class ShareActivityRetentionTest {
                 assertTrue("send still in flight", state.sending)
             }
             release.countDown()
-            waitUntil { before.uiState.value.finished }
+            awaitState(before) { it.finished }
             assertEquals(1, plays.get())
         }
     }
 
-    private fun waitUntil(condition: () -> Boolean) {
-        val deadline = System.currentTimeMillis() + 10_000
-        while (!condition()) {
-            check(System.currentTimeMillis() < deadline) { "timed out" }
-            Thread.sleep(50)
-        }
+    private fun awaitState(viewModel: ShareViewModel, condition: (ShareUiState) -> Boolean) {
+        runBlocking { withTimeout(10_000) { viewModel.uiState.first(condition) } }
     }
 }
