@@ -57,6 +57,10 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         routes[path] = MockResponse().setBody(body)
     }
 
+    fun respond(path: String, response: MockResponse) {
+        routes[path] = response
+    }
+
     fun fail(path: String, code: Int = 500) {
         routes[path] = MockResponse().setResponseCode(code)
     }

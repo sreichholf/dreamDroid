@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.ui.share
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import javax.inject.Inject
@@ -18,8 +17,10 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.text.UiText
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 /** What the share or view intent carries. [title] is the media title sent to the box. */
 data class ShareRequest(val url: String?, val title: String)
@@ -103,14 +104,15 @@ class ShareViewModel @Inject constructor(
         val title = request.title
         _uiState.update { it.copy(sending = true) }
         viewModelScope.launch {
-            val error = receiver.playMedia(profile, mediaPlayerRef(url, title)).error
-            val failure = error?.failure?.userMessageText()?.takeIf { it != UiText.Raw("") }
+            val response = receiver.playMedia(profile, mediaPlayerRef(url, title))
+            // A failure without text still failed: userMessageText falls back to the generic error.
+            val message = if (response.error == null) {
+                UiText.Resource(R.string.sent_as, listOf(title))
+            } else {
+                response.userMessageText()
+            }
             _uiState.update {
-                it.copy(
-                    sending = false,
-                    userMessage = failure ?: UiText.Resource(R.string.sent_as, listOf(title)),
-                    finished = true
-                )
+                it.copy(sending = false, userMessage = message, finished = true)
             }
         }
     }
@@ -124,9 +126,10 @@ class ShareViewModel @Inject constructor(
         /** A `4097` service ref for [url]; a youtu.be link becomes a `yt://` ref. */
         fun mediaPlayerRef(url: String, title: String): String {
             val encodedTitle = encode(title)
-            val uri = runCatching { URI(url) }.getOrNull()
+            // HttpUrl, unlike java.net.URI, accepts shared links with unescaped characters.
+            val uri = url.toHttpUrlOrNull()
             if (uri?.host == "youtu.be") {
-                val vid = uri.path.orEmpty().removePrefix("/")
+                val vid = uri.pathSegments.joinToString("/")
                 return "8193:0:1:0:0:0:0:0:0:0:" +
                     URLEncoder.encode("yt://$vid", UTF_8) + ":" + encodedTitle
             }

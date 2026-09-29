@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.UiText
+import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -94,6 +95,32 @@ class ShareViewModelTest {
         assertEquals(UiText.Raw("Cannot play"), done.userMessage)
         viewModel.onMessageShown()
         assertNull(viewModel.uiState.value.userMessage)
+    }
+
+    @Test
+    fun aFailureWithoutTextShowsTheGenericError() = runTest {
+        receiver.respond(PLAY, MockResponse().setStatus("HTTP/1.1 500 "))
+        saveProfile("Only")
+        val viewModel = viewModel()
+        viewModel.start(ShareRequest(url = "http://example.com/a.ts", title = "Stream"))
+
+        val done = viewModel.uiState.first { it.finished }
+
+        assertEquals(UiText.Resource(R.string.get_content_error), done.userMessage)
+    }
+
+    @Test
+    fun aYoutubeLinkWithUnescapedCharactersStillPlaysAsYoutube() = runTest {
+        saveProfile("Only")
+        val viewModel = viewModel()
+        viewModel.start(ShareRequest(url = "https://youtu.be/abc123?si=a|b", title = "Clip"))
+
+        viewModel.uiState.first { it.finished }
+
+        assertEquals(
+            "8193:0:1:0:0:0:0:0:0:0:yt%3A%2F%2Fabc123:Clip",
+            receiver.requestsTo(PLAY).single().requestUrl?.queryParameter("file")
+        )
     }
 
     @Test

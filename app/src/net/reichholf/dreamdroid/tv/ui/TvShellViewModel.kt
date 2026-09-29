@@ -87,7 +87,10 @@ class TvShellViewModel @Inject constructor(
 
     private fun startCheck(profile: Profile, reuseDeviceInfo: Boolean) {
         checkJob?.cancel()
-        sessions.beginChecking()
+        // Cached device info answers without asking the receiver: no Checking flash.
+        if (!reuseDeviceInfo) {
+            sessions.beginChecking()
+        }
         checkJob = viewModelScope.launch {
             val result = if (reuseDeviceInfo) {
                 checks.checkReusingDeviceInfo(profile)
@@ -95,13 +98,13 @@ class TvShellViewModel @Inject constructor(
                 checks.check(profile)
             }
             checkJob = null
-            apply(result)
+            apply(profile, result)
         }
     }
 
-    private suspend fun apply(result: ProfileCheckResult) {
-        val current = profiles.current.value ?: return
-        sessions.applyProfileCheckResult(result, hasCache(current))
+    private suspend fun apply(profile: Profile, result: ProfileCheckResult) {
+        if (profiles.current.value == null) return
+        sessions.applyProfileCheckResult(result, hasCache(profile))
     }
 
     private suspend fun hasCache(profile: Profile): Boolean =
