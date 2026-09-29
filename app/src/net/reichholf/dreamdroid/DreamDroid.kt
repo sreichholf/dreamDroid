@@ -37,6 +37,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
+import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * @author sre
@@ -52,9 +53,12 @@ class DreamDroid : Application() {
     @Inject
     lateinit var epg: EpgRepository
 
+    @Inject
+    lateinit var database: AppDatabase
+
     override fun onCreate() {
-        // Hilt injects here, before the pre-Room import below. Building ProfileRepository and
-        // EpgRepository does not read the database; loadCurrent() further down is the first read.
+        // Hilt injects here, before the pre-Room import below. Building ProfileRepository,
+        // EpgRepository, and AppDatabase does not open the database; the import is the first read.
         super.onCreate()
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean(PREFS_KEY_DYNAMIC_THEME_COLORS, false)
@@ -78,7 +82,7 @@ class DreamDroid : Application() {
             DATE_LOCALE_WO = false
         }
 
-        DatabaseHelper.migrateIntoRoomIfNeeded(this)
+        DatabaseHelper.migrateIntoRoomIfNeeded(this, database.profileDao())
 
         initChannels()
         profiles.loadCurrent()

@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.dreamDroidApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -42,7 +41,7 @@ class Upgrade115Test {
     }
 
     private fun profileNames(): Set<String?> = runBlocking {
-        AppDatabase.profiles(context).getProfiles().map { it.name }.toSet()
+        dreamDroidApp().database.profileDao().getProfiles().map { it.name }.toSet()
     }
 
     private fun assertCurrentIsSeeded() {
@@ -50,7 +49,7 @@ class Upgrade115Test {
     }
 
     private fun assertSeededProfile() {
-        val p = runBlocking { AppDatabase.profiles(context).getProfile(SEEDED_ID) }
+        val p = runBlocking { dreamDroidApp().database.profileDao().getProfile(SEEDED_ID) }
         assertNotNull("profile $SEEDED_ID missing after upgrade", p)
         p!!
         assertEquals(SEEDED_NAME, p.name)
