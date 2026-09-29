@@ -36,7 +36,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 data class EpgSearchUiState(
     val recentSearches: List<String> = emptyList(),
     val showRecent: Boolean = true,
-    val sections: List<EpgSearchSection> = emptyList(),
+    val sections: List<EpgDaySection> = emptyList(),
     val cached: Boolean = false,
     val searching: Boolean = false,
     val emptyMessage: UiText? = null,
@@ -285,7 +285,7 @@ class EpgSearchViewModel @Inject constructor(
             }
             return state.copy(
                 showRecent = false,
-                sections = epgSearchSections(events.orEmpty()),
+                sections = epgDaySections(events.orEmpty()),
                 cached = liveEvents == null && cached != null,
                 searching = searching,
                 emptyMessage = emptyMessage,

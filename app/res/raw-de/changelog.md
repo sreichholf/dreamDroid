@@ -1,16 +1,16 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
-## 2.0.464
-* NEU: Einrichtungsassistent, solange kein Profil gespeichert ist. Das Offline-Demoprofil entfällt. Der Assistent hilft beim Finden der Box, bei Adresse, HTTP oder HTTPS und Anmeldung und prüft danach die Verbindung. Das Profil lässt sich auch speichern, wenn die Prüfung fehlschlägt.
-
-## 2.0.463
+## 2.0.465
+* NEU: Einrichtungsassistent, solange kein Profil gespeichert ist: findet die Box, setzt Adresse, HTTP oder HTTPS und Anmeldung und prüft die Verbindung (ersetzt das Offline-Demoprofil)
 * NEU: MultiEPG — grafische EPG-Übersicht
 * NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
 * NEU: Startbildschirm wählbar (Einstellungen → Startbildschirm)
 * NEU: Werkzeuge-Hub bündelt Screenshot, Geräte-Info und Signal Meter mit gemeinsamer Leiste
-* NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist
+* NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist; auch die EPG-Suche funktioniert offline
 * NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
 * NEU: Android TV kann denselben externen Videoplayer nutzen wie das Telefon (gleicher Einstellungs-Schalter)
+* UPD: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
+* UPD: Sender-EPG nach Tag gruppiert
 * UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
 * UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
 * UPD: Android-TV-Browse-Hub überarbeitet

@@ -16,17 +16,19 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.EventListLoad
-import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.nav.ServiceEpg
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** The schedule of one service. An empty [serviceRef] means the route had none. */
+/**
+ * The schedule of one service, grouped by day. An empty [serviceRef] means the route had
+ * none.
+ */
 data class ServiceEpgUiState(
     val serviceRef: String = "",
     val serviceName: String = "",
-    val events: List<Event> = emptyList(),
+    val sections: List<EpgDaySection> = emptyList(),
     val refreshing: Boolean = false,
     val emptyMessage: UiText? = null
 ) {
@@ -78,7 +80,9 @@ class ServiceEpgViewModel @Inject constructor(
         _uiState.update {
             it.copy(
                 refreshing = true,
-                emptyMessage = if (it.events.isEmpty()) UiText.Resource(R.string.loading) else null
+                emptyMessage = UiText.Resource(R.string.loading).takeIf { _ ->
+                    it.sections.isEmpty()
+                }
             )
         }
         loadJob?.cancel()
@@ -93,13 +97,13 @@ class ServiceEpgViewModel @Inject constructor(
 private fun ServiceEpgUiState.applied(load: EventListLoad): ServiceEpgUiState = when (load) {
     is EventListLoad.Events -> copy(
         refreshing = false,
-        events = load.events,
+        sections = epgDaySections(load.events),
         emptyMessage = if (load.events.isEmpty()) UiText.Resource(R.string.no_list_item) else null
     )
 
     is EventListLoad.Failed -> copy(
         refreshing = false,
-        events = emptyList(),
+        sections = emptyList(),
         emptyMessage = load.error.contentErrorText()
     )
 }

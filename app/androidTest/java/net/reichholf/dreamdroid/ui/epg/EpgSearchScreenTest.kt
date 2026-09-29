@@ -125,8 +125,8 @@ class EpgSearchScreenTest {
         setScreen(
             queryState = TextFieldState("news"),
             state = results(
-                EpgSearchSection(UiText.Resource(R.string.today), listOf(first)),
-                EpgSearchSection(UiText.Raw("Friday, Jan 4, 2030"), listOf(second))
+                EpgDaySection(UiText.Resource(R.string.today), listOf(first)),
+                EpgDaySection(UiText.Raw("Friday, Jan 4, 2030"), listOf(second))
             ),
             onItemClick = { clicked = it }
         )
@@ -213,7 +213,7 @@ class EpgSearchScreenTest {
         }
     }
 
-    private fun results(vararg sections: EpgSearchSection) =
+    private fun results(vararg sections: EpgDaySection) =
         EpgSearchUiState(showRecent = false, sections = sections.toList())
 
     private fun event(id: String, title: String, service: String, time: String) = Event(

@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
@@ -204,7 +204,6 @@ private fun RecentSearches(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun SearchResults(
     state: EpgSearchUiState,
@@ -248,29 +247,19 @@ private fun SearchResults(
             state.sections.forEachIndexed { index, section ->
                 val day = section.day
                 if (day != null) {
-                    stickyHeader(key = "day:$index") {
-                        Surface(
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(
-                                text = day.asString(),
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
+                    stickyHeader(key = "day:$index") { EpgDayHeader(day) }
                 }
-                items(
+                itemsIndexed(
                     section.events,
-                    key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" }
-                ) { event ->
+                    key = { _, it ->
+                        "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}"
+                    }
+                ) { eventIndex, event ->
                     EpgBouquetRow(
                         event = event,
                         piconsEnabled = state.piconsEnabled,
                         onClick = { onItemClick(event) },
-                        showDate = day == null
+                        showDate = day == null || eventIndex < section.earlierStarts
                     )
                 }
             }

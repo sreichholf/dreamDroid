@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -25,13 +25,13 @@ import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 @Composable
 fun ServiceEpgScreen(
-    items: List<Event>,
+    sections: List<EpgDaySection>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     emptyMessage: String? = null
 ) {
     val loadingLabel = stringResource(R.string.loading)
-    if (items.isEmpty()) {
+    if (sections.isEmpty()) {
         ListEmptyState(
             loading = emptyMessage == loadingLabel,
             message = emptyMessage,
@@ -41,17 +41,27 @@ fun ServiceEpgScreen(
     }
 
     LazyColumn(modifier = modifier.fillMaxSize()) {
-        items(items, key = { "${it.eventId}:${it.start}:${it.title}" }) { event ->
-            ServiceEpgRow(
-                event = event,
-                onClick = { onItemClick(event) }
-            )
+        sections.forEachIndexed { index, section ->
+            val day = section.day
+            if (day != null) {
+                stickyHeader(key = "day:$index") { EpgDayHeader(day) }
+            }
+            itemsIndexed(
+                section.events,
+                key = { _, it -> "${it.eventId}:${it.start}:${it.title}" }
+            ) { eventIndex, event ->
+                ServiceEpgRow(
+                    event = event,
+                    onClick = { onItemClick(event) },
+                    showDate = day == null || eventIndex < section.earlierStarts
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
+private fun ServiceEpgRow(event: Event, onClick: () -> Unit, showDate: Boolean) {
     ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         ListItem(
             headlineContent = {
@@ -67,7 +77,11 @@ private fun ServiceEpgRow(event: Event, onClick: () -> Unit) {
                 Column {
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                         Text(
-                            text = event.startReadable,
+                            text = if (showDate || event.startTimeReadable.isEmpty()) {
+                                event.startReadable
+                            } else {
+                                event.startTimeReadable
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)

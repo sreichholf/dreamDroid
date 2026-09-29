@@ -9,7 +9,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
-class EpgSearchSectionsTest {
+class EpgDaySectionsTest {
     private val today = LocalDate.of(2030, 1, 1)
     private val midnight = today.atStartOfDay(ZoneOffset.UTC).toEpochSecond()
 
@@ -37,6 +37,32 @@ class EpgSearchSectionsTest {
     }
 
     @Test
+    fun runningEventFromYesterdayCountsAsTodayAndIsMarkedEarlier() {
+        val sections = sections(
+            event("Late movie", midnight - HOUR, duration = 3 * HOUR),
+            event("Morning", midnight + 8 * HOUR)
+        )
+
+        assertEquals(listOf(UiText.Resource(R.string.today)), sections.map { it.day })
+        assertEquals(listOf("Late movie", "Morning"), sections.single().events.map { it.title })
+        assertEquals(1, sections.single().earlierStarts)
+    }
+
+    @Test
+    fun endedEventFromYesterdayKeepsItsDay() {
+        val sections = sections(
+            event("Evening news", midnight - 3 * HOUR, duration = HOUR),
+            event("Morning", midnight + 8 * HOUR)
+        )
+
+        assertEquals(
+            listOf(UiText.Raw("Monday, Dec 31, 2029"), UiText.Resource(R.string.today)),
+            sections.map { it.day }
+        )
+        assertEquals(listOf(0, 0), sections.map { it.earlierStarts })
+    }
+
+    @Test
     fun eventsWithoutStartGoLastWithoutHeader() {
         val sections = sections(event("Unknown", null), event("Morning", midnight + 8 * HOUR))
 
@@ -45,10 +71,14 @@ class EpgSearchSectionsTest {
     }
 
     private fun sections(vararg events: Event) =
-        epgSearchSections(events.toList(), today, ZoneOffset.UTC, Locale.US)
+        epgDaySections(events.toList(), today, ZoneOffset.UTC, Locale.US, nowSec = midnight)
 
-    private fun event(title: String, start: Long?) =
-        Event(eventId = title, title = title, start = start?.toString().orEmpty())
+    private fun event(title: String, start: Long?, duration: Long = HOUR) = Event(
+        eventId = title,
+        title = title,
+        start = start?.toString().orEmpty(),
+        duration = duration.toString()
+    )
 
     private companion object {
         const val HOUR = 3_600L

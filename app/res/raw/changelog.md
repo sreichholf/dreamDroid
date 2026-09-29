@@ -1,16 +1,16 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
-## 2.0.464
-* NEW: Setup assistant when no profile is saved. The offline demo receiver is gone. The wizard helps you find the box, set the address, HTTP or HTTPS, and sign-in, then checks the connection. You can still save the profile if that check fails.
-
-## 2.0.463
+## 2.0.465
+* NEW: Setup assistant when no profile is saved: finds the box, sets address, HTTP or HTTPS and sign-in, then checks the connection (replaces the offline demo receiver)
 * NEW: MultiEPG — graphical EPG grid
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
 * NEW: Choose which screen opens when the app starts (Settings → Start screen)
 * NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
-* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable
+* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable; EPG search works offline too
 * NEW: Settings option to reset the offline cache (current profile or all profiles)
 * NEW: Android TV can use an external video player (same Settings toggle as phone)
+* UPD: EPG search as you type, with recent searches and results grouped by day
+* UPD: Channel EPG grouped by day
 * UPD: Modernized architecture and Material 3 UI across phone screens
 * UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
 * UPD: Android TV browse hub refreshed

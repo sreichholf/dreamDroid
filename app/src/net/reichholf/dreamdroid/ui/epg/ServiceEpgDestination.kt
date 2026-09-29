@@ -40,7 +40,7 @@ fun ServiceEpgDestination(
         modifier = modifier
     ) {
         ServiceEpgScreen(
-            items = uiState.events,
+            sections = uiState.sections,
             emptyMessage = uiState.emptyMessage?.asString(),
             onItemClick = detailViewModel::showDetail
         )
