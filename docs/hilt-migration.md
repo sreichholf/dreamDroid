@@ -201,7 +201,7 @@ An audit of `main` after PR 15 (2026-09-29) found the End state held, and fixed 
 - `PhoneNavHostState` held the `NavHostController`, the activity, a `Handler`, and result listeners. `PhoneNavigator`, a plain class `MainActivity` creates, now owns them and implements `PhoneNavHandle`. `PhoneNavHostState` keeps only state that outlives the activity (saved routes and request codes, queued navigations, a held result) and exposes `StateFlow<PhoneNavUiState>`. Keep the navigator out of the ViewModel.
 - `TvShellViewModel` exposes `StateFlow<TvShellUiState>` with the TV ProfileCheck gate; `TvSessionGate` and `ProfileCheckResult` carry `UiText` instead of strings resolved with a `Context`.
 - The send-message and sleep-timer dialogs, and the TV timer editor, keep their input in ViewModels over `SavedStateHandle`.
-- Screens, `MainActivity`, and `RoomProfileStore` read settings through `SettingsRepository` or the injected `SharedPreferences`. The picon preference defaults to `@bool/is_television`.
+- Screens, `MainActivity`, and `RoomProfileStore` read settings through `SettingsRepository` or the injected `SharedPreferences`. The picon and online-picon preferences default to `@bool/is_television`.
 - The picon `ImageLoader` picks its OkHttp client per call, so it follows the current profile's trust-all setting.
 
 ## Decisions

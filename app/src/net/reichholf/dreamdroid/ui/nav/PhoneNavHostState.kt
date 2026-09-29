@@ -35,7 +35,7 @@ data class PendingComposeActivityResult(val requestCode: Int, val resultCode: In
  * Navigations asked for while no NavHostController was attached. [PhoneNavigator] runs
  * them on the next attach, in the order of these fields.
  */
-class PendingNavigations {
+internal class PendingNavigations {
     var drawerRoot: Any? = null
     var profileEditRequested: Boolean = false
     var profileEdit: Profile? = null
@@ -66,7 +66,7 @@ class PhoneNavHostState @Inject constructor(private val savedStateHandle: SavedS
     private val _uiState = MutableStateFlow(PhoneNavUiState())
     val uiState: StateFlow<PhoneNavUiState> = _uiState.asStateFlow()
 
-    val pending = PendingNavigations()
+    internal val pending = PendingNavigations()
 
     private val resultRequestCodes: ArrayDeque<Int> = ArrayDeque()
     private var startRouteValue: String = PhoneNavRoutes.DEVICE_INFO

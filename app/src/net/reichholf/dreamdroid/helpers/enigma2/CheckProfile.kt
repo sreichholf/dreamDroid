@@ -69,7 +69,7 @@ object CheckProfile {
                     hasError = true,
                     errorTextId = R.string.connection_error,
                     errorText = fetched.error.failure.userMessageText()
-                        .takeUnless { it == UiText.Raw("") },
+                        .takeUnless { it is UiText.Raw && it.text.isBlank() },
                     failure = fetched.error.failure
                 )
             }
