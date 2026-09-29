@@ -10,10 +10,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.text.SavedTextField
@@ -24,7 +27,8 @@ data class EpgSearchUiState(
     val query: String = "",
     val events: List<Event> = emptyList(),
     val refreshing: Boolean = false,
-    val emptyMessage: UiText? = null
+    val emptyMessage: UiText? = null,
+    val piconsEnabled: Boolean = false
 ) {
     val title: UiText
         get() = UiText.Resource(if (refreshing) R.string.loading else R.string.epg_search)
@@ -37,7 +41,8 @@ data class EpgSearchUiState(
 @HiltViewModel
 class EpgSearchViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val epg: EpgRepository
+    private val epg: EpgRepository,
+    settings: SettingsRepository
 ) : ViewModel() {
     private val hasSavedDraft = KEY_DRAFT in savedStateHandle
     private val searchField = SavedTextField(viewModelScope, savedStateHandle, KEY_DRAFT)
@@ -51,6 +56,14 @@ class EpgSearchViewModel @Inject constructor(
 
     private var boundEpoch: Int? = null
     private var loadJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            settings.settings.map { it.picons }.distinctUntilChanged().collect { on ->
+                _uiState.update { it.copy(piconsEnabled = on) }
+            }
+        }
+    }
 
     /**
      * Applies the route [query] and [remountEpoch] and searches. The first call keeps a

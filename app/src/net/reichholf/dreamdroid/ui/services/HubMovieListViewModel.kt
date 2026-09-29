@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.data.MovieListLoad
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
@@ -83,7 +84,8 @@ class HubMovieListViewModel @AssistedInject constructor(
     private val movieRepository: MovieRepository,
     private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val settings: SettingsRepository
 ) : ViewModel() {
     @AssistedFactory
     interface Factory {
@@ -143,6 +145,9 @@ class HubMovieListViewModel @AssistedInject constructor(
             )
         }
     }
+
+    /** Whether a tap on a row zaps: the instant-zap setting swaps tap and long press. */
+    fun zapsOnTap(isLong: Boolean): Boolean = settings.current().instantZap != isLong
 
     /** A plain tap opens the row menu; [zap] is the other tap (instant-zap setting). */
     fun onItemMenu(index: Int) {

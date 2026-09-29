@@ -57,6 +57,7 @@ fun EpgSearchDestination(
             expanded = expanded,
             onExpandedChange = { expanded = it },
             items = uiState.events,
+            piconsEnabled = uiState.piconsEnabled,
             emptyMessage = uiState.emptyMessage?.asString(),
             onItemClick = detailViewModel::showDetail
         )

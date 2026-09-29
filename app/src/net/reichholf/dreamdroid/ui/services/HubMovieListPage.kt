@@ -14,9 +14,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.preference.PreferenceManager
 import java.io.File
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -86,9 +84,7 @@ fun HubMovieListPage(
         state = uiState,
         onRefresh = viewModel::reload,
         onItemClick = { item, isLong ->
-            val instantZap = PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false)
-            if (instantZap != isLong) {
+            if (viewModel.zapsOnTap(isLong)) {
                 handle.runOnlineOnly { viewModel.zap(item.index) }
             } else {
                 viewModel.onItemMenu(item.index)

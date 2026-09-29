@@ -15,14 +15,17 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerListResult
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.multiepg.MultiEpgGrid
 import net.reichholf.dreamdroid.multiepg.MultiEpgGridState
 import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -30,11 +33,16 @@ import net.reichholf.dreamdroid.ui.text.UiText
 
 const val MULTI_EPG_VISIBLE_MINUTES_KEY: String = "multi_epg_visible_minutes"
 
-/** The phone MultiEPG destination: the bouquet it shows, the loaded grid, and the zoom. */
+/**
+ * The phone MultiEPG destination: the bouquet it shows, the loaded grid, the zoom, and the
+ * text size and picon settings.
+ */
 data class MultiEpgUiState(
     val bouquetName: String = "",
     val grid: MultiEpgGridState = MultiEpgGridState(),
-    val visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES
+    val visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
+    val textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    val piconsEnabled: Boolean = false
 ) {
     val title: UiText
         get() = if (bouquetName.isBlank()) {
@@ -55,7 +63,8 @@ class MultiEpgViewModel @Inject constructor(
     private val services: ServiceRepository,
     timers: TimerRepository,
     profiles: ProfileRepository,
-    sessions: SessionConnectionHolder
+    sessions: SessionConnectionHolder,
+    settings: SettingsRepository
 ) : ViewModel() {
     private val persistGate = epg.multiEpgPersistGate()
     private val grid = newMultiEpgGrid(
@@ -69,9 +78,14 @@ class MultiEpgViewModel @Inject constructor(
     )
     private val _uiState = MutableStateFlow(
         MultiEpgUiState(visibleMinutes = readMultiEpgVisibleMinutes(savedStateHandle))
+            .withSettings(settings.current())
     )
-    val uiState: StateFlow<MultiEpgUiState> = combine(_uiState, grid.state) { state, grid ->
-        state.copy(grid = grid)
+    val uiState: StateFlow<MultiEpgUiState> = combine(
+        _uiState,
+        grid.state,
+        settings.settings
+    ) { state, grid, appSettings ->
+        state.copy(grid = grid).withSettings(appSettings)
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var bouquetRef: String = ""
@@ -180,3 +194,8 @@ fun readMultiEpgVisibleMinutes(handle: SavedStateHandle): Int =
 fun writeMultiEpgVisibleMinutes(handle: SavedStateHandle, minutes: Int) {
     handle[MULTI_EPG_VISIBLE_MINUTES_KEY] = minutes
 }
+
+private fun MultiEpgUiState.withSettings(settings: AppSettings): MultiEpgUiState = copy(
+    textSize = MultiEpgTextSize.fromPref(settings.multiEpgTextSize),
+    piconsEnabled = settings.picons
+)

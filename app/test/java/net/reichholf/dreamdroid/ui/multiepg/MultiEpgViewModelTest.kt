@@ -9,15 +9,19 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -37,6 +41,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class MultiEpgViewModelTest {
     private val receiver = EpgTestReceiver()
+    private val preferences = MemorySharedPreferences()
     private val viewModels = mutableListOf<MultiEpgViewModel>()
     private val chunk = MultiEpgWindows.chunkContaining(NOW)
 
@@ -217,6 +222,25 @@ class MultiEpgViewModelTest {
             else -> MockResponse().setResponseCode(404)
         }
 
+    @Test
+    fun textSizeAndPiconsFollowTheSettings() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        assertEquals(MultiEpgTextSize.DEFAULT, viewModel.uiState.value.textSize)
+        assertFalse(viewModel.uiState.value.piconsEnabled)
+
+        preferences.edit()
+            .putString(
+                DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE,
+                MultiEpgTextSize.Compact.prefValue
+            )
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, true)
+            .commit()
+
+        awaitState(viewModel) {
+            it.textSize == MultiEpgTextSize.Compact && it.piconsEnabled
+        }
+    }
+
     private fun timerRepository(): TimerRepository = TimerRepository(
         enigmaClients(receiver.profiles.repository),
         receiver.profiles.repository,
@@ -230,7 +254,8 @@ class MultiEpgViewModelTest {
             receiver.services,
             timerRepository(),
             receiver.profiles.repository,
-            receiver.sessions
+            receiver.sessions,
+            SettingsRepository(preferences)
         ).also { viewModels += it }
 
     private suspend fun awaitState(

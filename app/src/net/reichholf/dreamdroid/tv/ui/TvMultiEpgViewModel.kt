@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
@@ -26,6 +27,7 @@ import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgGridState
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
+import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.ui.multiepg.MULTI_EPG_VISIBLE_MINUTES
 import net.reichholf.dreamdroid.ui.multiepg.newMultiEpgGrid
@@ -40,7 +42,8 @@ data class TvMultiEpgStream(val title: String, val bouquetRef: String, val strea
 /**
  * The TV MultiEPG: the bouquet it shows and the ones it can switch to, the loaded grid,
  * the focused cell, the zoom, the open overlay (detail, timer editor, or bouquet picker),
- * the set-timer request, and a [stream] for the player. [streamingEnabled] and [mutationsBlocked] follow the session.
+ * the set-timer request, and a [stream] for the player. [streamingEnabled] and
+ * [mutationsBlocked] follow the session, [textSize] the setting.
  */
 data class TvMultiEpgUiState(
     val bouquetRef: String = "",
@@ -57,7 +60,8 @@ data class TvMultiEpgUiState(
     val userMessage: UiText? = null,
     val stream: TvMultiEpgStream? = null,
     val streamingEnabled: Boolean = false,
-    val mutationsBlocked: Boolean = false
+    val mutationsBlocked: Boolean = false,
+    val textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT
 ) {
     val title: UiText
         get() = if (bouquetName.isBlank()) {
@@ -83,7 +87,8 @@ class TvMultiEpgViewModel @Inject constructor(
     private val timers: TimerRepository,
     private val profiles: ProfileRepository,
     private val receiver: ReceiverRepository,
-    sessions: SessionConnectionHolder
+    sessions: SessionConnectionHolder,
+    settings: SettingsRepository
 ) : ViewModel() {
     private val persistGate = epg.multiEpgPersistGate()
     private val grid = newMultiEpgGrid(
@@ -96,17 +101,22 @@ class TvMultiEpgViewModel @Inject constructor(
         persistGate
     )
     private val _uiState = MutableStateFlow(
-        TvMultiEpgUiState(visibleMinutes = readMultiEpgVisibleMinutes(savedStateHandle))
+        TvMultiEpgUiState(
+            visibleMinutes = readMultiEpgVisibleMinutes(savedStateHandle),
+            textSize = MultiEpgTextSize.fromPref(settings.current().multiEpgTextSize)
+        )
     )
     val uiState: StateFlow<TvMultiEpgUiState> = combine(
         _uiState,
         grid.state,
-        sessions.status
-    ) { state, grid, connection ->
+        sessions.status,
+        settings.settings
+    ) { state, grid, connection, appSettings ->
         state.copy(
             grid = grid,
             streamingEnabled = connection.allowsStreaming(),
-            mutationsBlocked = connection.blocksMutations
+            mutationsBlocked = connection.blocksMutations,
+            textSize = MultiEpgTextSize.fromPref(appSettings.multiEpgTextSize)
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 

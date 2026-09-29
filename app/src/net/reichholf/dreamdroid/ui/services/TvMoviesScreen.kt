@@ -101,6 +101,7 @@ fun TvMoviesShellChrome(
                 progress = state.nowPlayingProgress,
                 serviceReference = state.nowPlayingReference,
                 serviceName = state.nowPlayingName,
+                piconsEnabled = state.nowPlayingPicons,
                 onClick = { state.onNowPlayingClick() }
             )
         }

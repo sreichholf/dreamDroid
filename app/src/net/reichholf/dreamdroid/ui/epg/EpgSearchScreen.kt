@@ -32,7 +32,8 @@ fun EpgSearchScreen(
     items: List<Event>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
-    emptyMessage: String? = null
+    emptyMessage: String? = null,
+    piconsEnabled: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         SearchBar(
@@ -77,6 +78,7 @@ fun EpgSearchScreen(
                 items = items,
                 onItemClick = onItemClick,
                 emptyMessage = emptyMessage,
+                piconsEnabled = piconsEnabled,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()

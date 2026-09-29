@@ -132,6 +132,7 @@ fun EpgBouquetDestination(
                 onPickBouquet = viewModel::pickBouquet
             ),
             timeJump = timeJump,
+            piconsEnabled = uiState.piconsEnabled,
             onItemClick = detailViewModel::showDetail
         )
     }

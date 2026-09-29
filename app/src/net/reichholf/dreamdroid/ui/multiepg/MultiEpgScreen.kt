@@ -50,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
@@ -62,11 +61,9 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.preference.PreferenceManager
 import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
@@ -121,6 +118,7 @@ fun MultiEpgScreen(
     visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
     textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    piconsEnabled: Boolean = false,
     focusedServiceRef: String? = null
 ) {
     val hScroll = hScrollState
@@ -458,6 +456,7 @@ fun MultiEpgScreen(
                         MultiEpgChannelLabel(
                             serviceRef = channel.serviceRef,
                             serviceName = channel.serviceName,
+                            piconsEnabled = piconsEnabled,
                             style = channelStyle,
                             modifier = Modifier
                                 .width(channelLabelWidth)
@@ -505,12 +504,10 @@ fun MultiEpgScreen(
 private fun MultiEpgChannelLabel(
     serviceRef: String,
     serviceName: String,
+    piconsEnabled: Boolean,
     style: TextStyle,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val piconsEnabled = PreferenceManager.getDefaultSharedPreferences(context)
-        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))
     var piconLoaded by remember(serviceRef, serviceName, piconsEnabled) {
         mutableStateOf(false)
     }
