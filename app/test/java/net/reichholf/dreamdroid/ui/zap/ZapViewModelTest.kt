@@ -23,6 +23,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -198,8 +200,9 @@ class ZapViewModelTest {
         receiver.goOffline()
 
         assertTrue(viewModel.uiState.value.zapBlocked)
+        val before = viewModel.jobs()
         viewModel.zap(Service(CHANNEL, "Das Erste HD"))
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
     }

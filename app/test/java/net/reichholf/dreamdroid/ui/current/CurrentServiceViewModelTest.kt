@@ -100,8 +100,8 @@ class CurrentServiceViewModelTest {
 
         assertEquals(SAVED, state.current)
         assertTrue(state.ready)
+        // Each load starts through reload(), which marks the state refreshing first.
         assertFalse(state.refreshing)
-        Thread.sleep(100)
         assertTrue(receiver.requests.isEmpty())
     }
 

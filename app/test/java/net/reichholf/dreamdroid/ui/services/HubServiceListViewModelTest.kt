@@ -5,7 +5,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -27,6 +26,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -100,7 +101,7 @@ class HubServiceListViewModelTest {
         receiver.writeTabStrip(Service(TAB, "Tab"))
 
         viewModel().settled()
-        awaitRequest(EPG_MULTI)
+        receiver.awaitRequestsTo(EPG_MULTI, 1)
 
         assertEquals(
             listOf("Favourites (TV)", "Das Erste HD", "--------"),
@@ -114,10 +115,14 @@ class HubServiceListViewModelTest {
 
     @Test
     fun listOutsideTheHubTabsIsNotStored() = runBlocking {
-        viewModel().settled()
+        val viewModel = viewModel()
+        viewModel.settled()
+        val before = viewModel.jobs()
+
+        viewModel.reload(forceRefresh = true)
+        viewModel.joinJobsSince(before)
 
         assertNull(services.cachedNowNext(TAB))
-        Thread.sleep(100)
         assertTrue(receiver.requestsTo(EPG_MULTI).isEmpty())
     }
 
@@ -274,12 +279,12 @@ class HubServiceListViewModelTest {
     }
 
     @Test
-    fun sessionChangeLoadsAgain() = runBlocking {
+    fun sessionChangeLoadsAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.settled()
 
         receiver.goOffline()
-        awaitRequest(GET_SERVICES, count = 2)
+        receiver.awaitRequestsTo(GET_SERVICES, 2)
     }
 
     @Test
@@ -400,14 +405,15 @@ class HubServiceListViewModelTest {
         viewModel.settled()
         receiver.goOffline()
         viewModel.settled()
+        val before = viewModel.jobs()
 
         viewModel.zap(1)
         viewModel.onItemMenu(1)
         viewModel.onMenuAction(ServiceRowAction.Zap)
         viewModel.onItemMenu(1)
         viewModel.onMenuAction(ServiceRowAction.Stream)
+        viewModel.joinJobsSince(before)
 
-        Thread.sleep(100)
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
         assertNull(viewModel.uiState.value.effect)
     }
@@ -489,14 +495,6 @@ class HubServiceListViewModelTest {
     private suspend fun seedRoster(name: String) {
         receiver.writeTabStrip(Service(TAB, "Tab"))
         assertTrue(services.persistRoster(TAB, TAB, listOf(ServiceNowNext(CHANNEL_44D, name))))
-    }
-
-    private suspend fun awaitRequest(path: String, count: Int = 1) {
-        withTimeout(5_000L) {
-            while (receiver.requestsTo(path).size < count) {
-                delay(20)
-            }
-        }
     }
 
     private fun routes(request: RecordedRequest): MockResponse =

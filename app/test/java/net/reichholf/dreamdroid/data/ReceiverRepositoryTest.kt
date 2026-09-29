@@ -1,9 +1,10 @@
 package net.reichholf.dreamdroid.data
 
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.currentTime
+import kotlinx.coroutines.test.runTest
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -64,22 +65,22 @@ class ReceiverRepositoryTest {
     }
 
     @Test
-    fun profileCheckWaitEndsWhenDeviceInfoArrives() = runBlocking<Unit> {
+    fun profileCheckWaitEndsWhenDeviceInfoArrives() = runTest {
         val waiting = async { repository.awaitProfileCheck(timeoutMs = 5_000L) }
-        delay(150)
+        advanceTimeBy(1_000L)
         assertFalse(waiting.isCompleted)
 
         profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
-        val waited = measureTimeMillis { waiting.await() }
+        waiting.await()
 
-        assertTrue(waited < 1_000L, "waited $waited ms")
+        assertTrue(currentTime < 1_200L, "waited $currentTime ms")
     }
 
     @Test
-    fun profileCheckWaitGivesUpAfterTheTimeout() = runBlocking<Unit> {
-        val waited = measureTimeMillis { repository.awaitProfileCheck(timeoutMs = 200L) }
+    fun profileCheckWaitGivesUpAfterTheTimeout() = runTest {
+        repository.awaitProfileCheck(timeoutMs = 200L)
 
-        assertTrue(waited in 200L until 2_000L, "waited $waited ms")
+        assertEquals(200L, currentTime)
     }
 
     @Test

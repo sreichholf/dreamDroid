@@ -28,6 +28,8 @@ import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -85,11 +87,12 @@ class HubNowPlayingViewModelTest {
         val first = poll(viewModel)
         viewModel.ready()
         first.cancelAndJoin()
+        val before = viewModel.jobs()
 
         poll(viewModel)
 
         assertEquals(UiText.Raw("Das Erste HD · Tagesschau"), viewModel.uiState.value.headline)
-        Thread.sleep(200)
+        viewModel.joinJobsSince(before)
         assertEquals(1, getCurrentRequests())
     }
 
@@ -119,10 +122,11 @@ class HubNowPlayingViewModelTest {
             MockResponse().setBody("<e2currentserviceinformation></e2currentserviceinformation>")
         }
 
+        val before = viewModel.jobs()
         viewModel.reload()
-        awaitRequests(2)
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
+        assertEquals(2, getCurrentRequests())
         assertEquals("Das Erste HD", viewModel.uiState.value.shown?.service?.name)
     }
 
@@ -141,7 +145,7 @@ class HubNowPlayingViewModelTest {
                 port = receiver.server.port
             }
         )
-        awaitRequests(2)
+        receiver.awaitRequestsTo(GET_CURRENT, 2)
         val state = withTimeout(5_000L) { viewModel.uiState.first { it.ready } }
 
         assertNull(state.shown)
@@ -153,14 +157,15 @@ class HubNowPlayingViewModelTest {
         val viewModel = viewModel()
 
         viewModel.onReloadEpoch(1)
-        awaitRequests(1)
+        receiver.awaitRequestsTo(GET_CURRENT, 1)
+        val before = viewModel.jobs()
         viewModel.onReloadEpoch(1)
         viewModel.onReloadEpoch(0)
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
         assertEquals(1, getCurrentRequests())
         viewModel.onReloadEpoch(2)
-        awaitRequests(2)
+        receiver.awaitRequestsTo(GET_CURRENT, 2)
     }
 
     @Test
@@ -183,7 +188,7 @@ class HubNowPlayingViewModelTest {
 
         viewModel.closeSheet()
         assertFalse(viewModel.uiState.value.sheetOpen)
-        awaitRequests(1)
+        receiver.awaitRequestsTo(GET_CURRENT, 1)
     }
 
     @Test
@@ -280,14 +285,6 @@ class HubNowPlayingViewModelTest {
         withTimeout(5_000L) { uiState.first { it.ready && it.current != null } }
 
     private fun getCurrentRequests(): Int = receiver.requestsTo(GET_CURRENT).size
-
-    private fun awaitRequests(count: Int) {
-        val deadline = System.currentTimeMillis() + 5_000L
-        while (getCurrentRequests() < count) {
-            check(System.currentTimeMillis() < deadline) { "no request $count" }
-            Thread.sleep(20)
-        }
-    }
 
     private companion object {
         const val GET_CURRENT = "/web/getcurrent"

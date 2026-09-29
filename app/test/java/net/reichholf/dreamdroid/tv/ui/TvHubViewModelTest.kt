@@ -184,9 +184,12 @@ class TvHubViewModelTest {
             it.connection.session == ConnectionStatus.Session.Offline && !it.loading
         }
         receiver.sessions.onSuccess()
-        awaitState(viewModel) {
-            it.connection.session == ConnectionStatus.Session.Online && !it.loading
+        // The state is Online and not loading before the reload starts, so the reload is
+        // awaited by its request.
+        receiver.awaitRequests(2) {
+            it.requestUrl?.encodedPath == BOUQUET_INDEX_PATH && it.isBouquetIndex()
         }
+        awaitLoaded(viewModel)
         assertEquals(2, receiver.requestsTo(BOUQUET_INDEX_PATH).count { it.isBouquetIndex() })
     }
 

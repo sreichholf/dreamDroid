@@ -1,11 +1,11 @@
 package net.reichholf.dreamdroid.ui.services
 
 import androidx.lifecycle.SavedStateHandle
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -79,30 +79,32 @@ class HubViewModelTest {
         assertNull(state.bouquetError)
         assertEquals(1, state.selectedRow)
         // The load publishes the state before it saves it, on another thread.
-        val saved = withTimeout(5_000L) {
-            var saved = readHubShellSaved(handle)
-            while (saved.currentTv == null) {
-                delay(10L)
-                saved = readHubShellSaved(handle)
-            }
-            saved
+        val currentTv = withTimeout(5_000L) {
+            handle.getStateFlow<String?>(HubShellSavedKeys.CURRENT_TV, null)
+                .first { it != null }
         }
-        assertEquals(SPORTS.reference, saved.currentTv)
+        assertEquals(SPORTS.reference, currentTv)
         assertEquals(listOf(FAVOURITES, SPORTS), receiver.services.cachedBouquets().tv)
     }
 
     @Test
     fun withoutAStripTheHubWaitsForTheProfileCheck() = runBlocking<Unit> {
         profiles.setDeviceInfo(profiles.requireCurrent(), null)
+        val beforeTheCheck = CopyOnWriteArrayList<String?>()
+        receiver.answer = { request ->
+            if (profiles.deviceInfo(profiles.requireCurrent()) == null) {
+                beforeTheCheck += request.requestUrl?.encodedPath
+            }
+            routes(request)
+        }
         val viewModel = viewModel()
 
         main.scheduler.advanceTimeBy(10_000L)
-        Thread.sleep(100)
-        assertTrue(receiver.requests.isEmpty())
         profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
         main.scheduler.advanceTimeBy(200L)
 
         assertEquals(listOf(FAVOURITES, SPORTS), viewModel.loaded().tvBouquets)
+        assertTrue(beforeTheCheck.isEmpty(), "sent before the check: $beforeTheCheck")
     }
 
     @Test
@@ -138,11 +140,7 @@ class HubViewModelTest {
         receiver.sessions.resetForProfileChange()
         receiver.sessions.onSuccess()
 
-        withTimeout(5_000L) {
-            while (receiver.requestsTo(GET_SERVICES).size < before + 2) {
-                delay(20)
-            }
-        }
+        receiver.awaitRequestsTo(GET_SERVICES, before + 2)
     }
 
     @Test

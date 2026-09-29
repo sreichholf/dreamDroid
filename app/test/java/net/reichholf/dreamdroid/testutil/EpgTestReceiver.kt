@@ -1,6 +1,10 @@
 package net.reichholf.dreamdroid.testutil
 
-import java.util.Collections
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -39,20 +43,32 @@ class EpgTestReceiver {
         MockResponse().setBody(loadWebFixture("epgservice.xml"))
     }
 
-    private val recorded = Collections.synchronizedList(mutableListOf<RecordedRequest>())
+    private val recorded = MutableStateFlow<List<RecordedRequest>>(emptyList())
 
     /** Requests so far, oldest first. */
     val requests: List<RecordedRequest>
-        get() = synchronized(recorded) { recorded.toList() }
+        get() = recorded.value
 
     /** The requests to [path]. */
     fun requestsTo(path: String): List<RecordedRequest> =
         requests.filter { it.requestUrl?.encodedPath == path }
 
+    /** Waits until [count] requests to [path] arrived, and returns them. */
+    suspend fun awaitRequestsTo(path: String, count: Int): List<RecordedRequest> =
+        awaitRequests(count) { it.requestUrl?.encodedPath == path }
+
+    /** Waits until [count] requests that [matches] accepts arrived, and returns them. */
+    suspend fun awaitRequests(
+        count: Int,
+        matches: (RecordedRequest) -> Boolean
+    ): List<RecordedRequest> = withTimeout(5_000L) {
+        recorded.map { all -> all.filter(matches) }.first { it.size >= count }
+    }
+
     fun start() {
         server.dispatcher = object : Dispatcher() {
             override fun dispatch(request: RecordedRequest): MockResponse {
-                recorded += request
+                recorded.update { it + request }
                 return answer(request)
             }
         }
