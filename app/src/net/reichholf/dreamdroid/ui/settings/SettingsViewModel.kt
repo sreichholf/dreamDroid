@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
 
@@ -48,7 +49,8 @@ data class SettingsUiState(
 class SettingsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val settings: SettingsRepository,
-    private val services: ServiceRepository
+    private val services: ServiceRepository,
+    private val piconSync: PiconSyncScheduler
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         SettingsUiState(
@@ -104,6 +106,18 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             services.clearUseDrivenCache(allProfiles)
             _uiState.update { it.copy(userMessage = UiText.Resource(R.string.reset_cache_done)) }
+        }
+    }
+
+    /** Starts the picon sync, or says that one is still running. */
+    fun syncPicons() {
+        viewModelScope.launch {
+            val message = if (piconSync.enqueue()) {
+                R.string.picon_sync_started
+            } else {
+                R.string.picon_sync_running
+            }
+            _uiState.update { it.copy(userMessage = UiText.Resource(message)) }
         }
     }
 

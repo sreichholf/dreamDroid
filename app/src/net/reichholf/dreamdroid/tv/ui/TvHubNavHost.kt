@@ -4,6 +4,7 @@ import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -25,7 +26,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
-import net.reichholf.dreamdroid.ui.nav.ShellSnackbarHost
 import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
 import net.reichholf.dreamdroid.ui.settings.isDebuggable
@@ -78,7 +78,7 @@ fun TvHubNavHost(
                 .fillMaxWidth()
         ) {
             DreamDroidTheme {
-                ShellSnackbarHost(hostState = snackbarHostState)
+                SnackbarHost(hostState = snackbarHostState)
             }
         }
     }

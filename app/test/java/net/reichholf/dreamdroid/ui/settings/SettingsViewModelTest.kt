@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
 import net.reichholf.dreamdroid.room.MovieLocationStripEntity
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
@@ -40,6 +41,7 @@ class SettingsViewModelTest {
     private val database = testProfiles.database
     private val preferences = PreferenceManager.getDefaultSharedPreferences(testProfiles.context)
     private val connection = testProfiles.sessions
+    private val piconSync = FakePiconSync()
     private val viewModels = mutableListOf<ViewModel>()
 
     @BeforeEach
@@ -180,11 +182,35 @@ class SettingsViewModelTest {
         assertEquals(0, database.movieDao().locationMetaCount(bedroom.id!!))
     }
 
+    @Test
+    fun syncPiconsSaysTheSyncStarted() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.syncPicons()
+        val state = viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals(1, piconSync.enqueued)
+        assertEquals(UiText.Resource(R.string.picon_sync_started), state.userMessage)
+    }
+
+    @Test
+    fun syncPiconsWhileOneRunsSaysSo() = runTest {
+        piconSync.running = true
+        val viewModel = viewModel()
+
+        viewModel.syncPicons()
+        val state = viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals(0, piconSync.enqueued)
+        assertEquals(UiText.Resource(R.string.picon_sync_running), state.userMessage)
+    }
+
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): SettingsViewModel =
         SettingsViewModel(
             handle,
             SettingsRepository(preferences),
-            testProfiles.services
+            testProfiles.services,
+            piconSync
         ).also { viewModels += it }
 
     private fun type(viewModel: SettingsViewModel, text: String) {
@@ -210,5 +236,19 @@ class SettingsViewModelTest {
             hasCache = true
         )
         assertEquals(ConnectionStatus.Session.Offline, connection.status.value.session)
+    }
+}
+
+/** Stands in for WorkManager: a sync is either running or gets enqueued. */
+private class FakePiconSync : PiconSyncScheduler {
+    var running = false
+    var enqueued = 0
+
+    override suspend fun enqueue(): Boolean {
+        if (running) {
+            return false
+        }
+        enqueued += 1
+        return true
     }
 }

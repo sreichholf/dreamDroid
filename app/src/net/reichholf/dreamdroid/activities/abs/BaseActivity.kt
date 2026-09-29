@@ -1,26 +1,21 @@
 package net.reichholf.dreamdroid.activities.abs
 
-import android.Manifest
 import android.app.Activity.OVERRIDE_TRANSITION_CLOSE
 import android.app.Activity.OVERRIDE_TRANSITION_OPEN
 import android.content.Intent
 import android.content.SharedPreferences
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.preference.PreferenceManager
 import javax.net.ssl.HttpsURLConnection
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
-import net.reichholf.dreamdroid.helpers.PiconSync
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
-import net.reichholf.dreamdroid.ui.nav.ShellMessages
 
 /**
  * Created by Stephan on 06.11.13.
@@ -133,30 +128,10 @@ open class BaseActivity :
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
     }
 
-    fun startPiconSync() {
-        if (Build.VERSION.SDK_INT >= 33 &&
-            ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
-            PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
-                REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON
-            )
-        }
-        if (!PiconSync.enqueue(this)) {
-            ShellMessages.post(getString(R.string.picon_sync_running))
-            return
-        }
-        ShellMessages.post(getString(R.string.picon_sync_started))
-    }
-
     override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
     }
 
     companion object {
-        const val REQUEST_PERMISSION_POST_NOTIFICATIONS_PICON: Int = 0
-
         private val TAG: String = BaseActivity::class.java.simpleName
     }
 }

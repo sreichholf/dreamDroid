@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
@@ -189,7 +190,7 @@ private fun ShellBody(
                     .fillMaxWidth(),
                 containerColor = Color.Transparent,
                 contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { ShellSnackbarHost(hostState = snackbarHostState) }
+                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
             ) { innerPadding ->
                 Box(
                     modifier = Modifier

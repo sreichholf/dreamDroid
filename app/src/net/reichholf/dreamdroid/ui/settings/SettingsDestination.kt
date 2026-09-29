@@ -1,20 +1,25 @@
 package net.reichholf.dreamdroid.ui.settings
 
+import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.google.android.material.color.DynamicColors
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.MainActivity
-import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
@@ -28,6 +33,10 @@ fun SettingsDestination(
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // The sync runs either way; without the permission it has no progress notification.
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
@@ -49,7 +58,10 @@ fun SettingsDestination(
         settings = uiState.settings,
         onChange = viewModel::update,
         onSyncPicons = {
-            (context as? BaseActivity)?.startPiconSync()
+            if (context.needsNotificationPermission()) {
+                notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            viewModel.syncPicons()
         },
         showDeveloperCategory = context.isDebuggable(),
         showDynamicThemeColors = DynamicColors.isDynamicColorAvailable(),
@@ -68,6 +80,11 @@ fun SettingsDestination(
         modifier = modifier
     )
 }
+
+private fun Context.needsNotificationPermission(): Boolean =
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+        ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) !=
+        PackageManager.PERMISSION_GRANTED
 
 /** The developer settings show in debuggable builds only. */
 internal fun Context.isDebuggable(): Boolean =

@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.nav
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -112,7 +113,7 @@ class ShellPowerSurvivalTest {
                     ) {
                         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
                         ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
-                        ShellSnackbarHost(hostState = hostState)
+                        SnackbarHost(hostState = hostState)
                     }
                 }
             }
