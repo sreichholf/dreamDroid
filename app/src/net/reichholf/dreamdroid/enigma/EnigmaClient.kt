@@ -3,15 +3,13 @@ package net.reichholf.dreamdroid.enigma
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
-class EnigmaClient(private val http: EnigmaHttp = EnigmaHttp()) {
-    constructor(profile: Profile) : this(EnigmaHttp(profile))
-
+/** Enigma2 web API calls over one [EnigmaHttp]. Built by [EnigmaClientFactory]. */
+class EnigmaClient(private val http: EnigmaHttp) {
     suspend fun getServices(
         params: List<NameValuePair> = emptyList()
     ): EnigmaResponse<List<Service>> = withContext(Dispatchers.IO) {

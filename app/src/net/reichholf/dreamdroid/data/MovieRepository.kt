@@ -11,7 +11,6 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
@@ -104,7 +103,7 @@ class MovieRepository @Inject constructor(
         val out = File(context.cacheDir, movieCacheFileName(remotePath))
         val params = listOf(NameValuePair("file", remotePath))
         val fetched = withContext(Dispatchers.IO) {
-            EnigmaHttp(profile).downloadToFile(URIStore.FILE, params, out)
+            clients.http(profile).downloadToFile(URIStore.FILE, params, out)
         }
         return when (fetched) {
             is EnigmaHttpResult.Failure -> {

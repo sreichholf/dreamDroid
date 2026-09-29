@@ -5,7 +5,6 @@ import java.util.concurrent.ConcurrentHashMap
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.TimerRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -36,8 +35,6 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
             }
         }
         server.start()
-        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
-        ProfileRepository.install(repository)
         repository.setCurrent(
             Profile().apply {
                 id = PROFILE_ID
@@ -70,7 +67,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         requests.filter { it.requestUrl?.encodedPath == path }
 
     fun timerRepository(): TimerRepository =
-        TimerRepository(EnigmaClientFactory(repository), repository, profiles.database)
+        TimerRepository(enigmaClients(repository), repository, profiles.database)
 
     companion object {
         const val PROFILE_ID = 7

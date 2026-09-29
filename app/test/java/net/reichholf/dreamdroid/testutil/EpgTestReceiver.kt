@@ -3,8 +3,6 @@ package net.reichholf.dreamdroid.testutil
 import java.util.Collections
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.EpgRepository
-import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
@@ -28,7 +26,7 @@ class EpgTestReceiver {
     val sessions: SessionConnectionHolder = profiles.sessions
     val services = profiles.services
     val repository = EpgRepository(
-        EnigmaClientFactory(profiles.repository),
+        enigmaClients(profiles.repository),
         profiles.repository,
         profiles.database,
         sessions,
@@ -59,8 +57,6 @@ class EpgTestReceiver {
             }
         }
         server.start()
-        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
-        ProfileRepository.install(profiles.repository)
         profiles.repository.setCurrent(
             Profile().apply {
                 id = PROFILE_ID

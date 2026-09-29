@@ -19,12 +19,12 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -223,7 +223,7 @@ class HubNowPlayingViewModelTest {
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = HubNowPlayingViewModel(
         handle,
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(enigmaClients(profiles), profiles),
         profiles,
         receiver.sessions,
         SettingsRepository(preferences)

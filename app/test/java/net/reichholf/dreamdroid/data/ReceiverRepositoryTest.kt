@@ -4,9 +4,9 @@ import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test
 class ReceiverRepositoryTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val repository = ReceiverRepository(EnigmaClientFactory(profiles), profiles)
+    private val repository = ReceiverRepository(enigmaClients(profiles), profiles)
 
     @BeforeEach
     fun setUp() {

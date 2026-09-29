@@ -13,11 +13,11 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import okhttp3.mockwebserver.MockResponse
@@ -45,8 +45,6 @@ class SetupAssistantViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         server.start()
-        // CheckProfile reads the device-info cache through ProfileRepository.get().
-        ProfileRepository.install(profiles)
     }
 
     @AfterEach
@@ -183,7 +181,11 @@ class SetupAssistantViewModelTest {
     private fun viewModel(handle: SavedStateHandle) = SetupAssistantViewModel(
         handle,
         profiles,
-        ReceiverProfileCheckRepository(testProfiles.context, profiles),
+        ReceiverProfileCheckRepository(
+            testProfiles.context,
+            profiles,
+            enigmaClients(profiles, testProfiles.context)
+        ),
         ReceiverDiscovery {
             searches++
             listOf(

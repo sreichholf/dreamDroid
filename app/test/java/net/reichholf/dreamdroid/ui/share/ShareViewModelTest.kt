@@ -11,10 +11,10 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
@@ -171,7 +171,7 @@ class ShareViewModelTest {
     }
 
     private fun viewModel(): ShareViewModel =
-        ShareViewModel(profiles, ReceiverRepository(EnigmaClientFactory(profiles), profiles))
+        ShareViewModel(profiles, ReceiverRepository(enigmaClients(profiles), profiles))
             .also { viewModels += it }
 
     private companion object {

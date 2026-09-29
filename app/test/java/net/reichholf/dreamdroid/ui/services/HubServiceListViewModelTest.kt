@@ -16,7 +16,6 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -26,6 +25,7 @@ import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -489,7 +489,7 @@ class HubServiceListViewModelTest {
             services,
             receiver.repository,
             ReceiverRepository(
-                EnigmaClientFactory(receiver.profiles.repository),
+                enigmaClients(receiver.profiles.repository),
                 receiver.profiles.repository
             ),
             receiver.profiles.repository,

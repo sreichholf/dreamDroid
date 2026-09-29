@@ -48,7 +48,7 @@ object PiconImageLoader {
     @Suppress("UNUSED_PARAMETER")
     fun newOkHttpClient(context: Context): OkHttpClient {
         val trustAll = ProfileRepository.get().current.value?.allCertsTrusted == true
-        return EnigmaOkHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
+        return EnigmaOkHttp().client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll)
             .newBuilder()
             .addInterceptor { chain ->
                 val profile = ProfileRepository.get().current.value

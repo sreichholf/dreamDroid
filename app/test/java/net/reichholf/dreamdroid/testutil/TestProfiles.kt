@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -56,9 +57,24 @@ class TestProfiles(val context: TestContext = TestContext()) {
     val sessions = SessionConnectionHolder()
     val repository = ProfileRepository(RoomProfileStore(database, context) { services })
     val services: ServiceRepository by lazy {
-        ServiceRepository(context, EnigmaClientFactory(repository), repository, database, sessions)
+        ServiceRepository(
+            context,
+            enigmaClients(repository, context),
+            repository,
+            database,
+            sessions
+        )
     }
 }
+
+/**
+ * The app's [EnigmaClientFactory] for [profiles], with its own OkHttp clients. XML dumps,
+ * when the profile settings ask for them, land in [context]'s cache directory.
+ */
+fun enigmaClients(
+    profiles: ProfileRepository,
+    context: Context = TestContext()
+): EnigmaClientFactory = EnigmaClientFactory(context, profiles, EnigmaOkHttp())
 
 /** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
 class MemorySharedPreferences : SharedPreferences {

@@ -9,7 +9,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -17,6 +16,7 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -151,7 +151,7 @@ class VideoPlaybackViewModelTest {
     private fun viewModel(): VideoPlaybackViewModel = VideoPlaybackViewModel(
         receiver.services,
         ReceiverRepository(
-            EnigmaClientFactory(receiver.profiles.repository),
+            enigmaClients(receiver.profiles.repository),
             receiver.profiles.repository
         ),
         receiver.profiles.repository,

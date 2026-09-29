@@ -16,7 +16,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.contentErrorText
@@ -25,6 +24,7 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -41,7 +41,7 @@ import org.junit.jupiter.api.Test
 class HubViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val clients = EnigmaClientFactory(profiles)
+    private val clients = enigmaClients(profiles)
     private val movies = MovieRepository(
         receiver.profiles.context,
         clients,

@@ -11,13 +11,13 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.TimerRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.multiepg.MULTI_EPG_VISIBLE_MINUTES_KEY
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -185,7 +185,7 @@ class TvMultiEpgViewModelTest {
             receiver.repository,
             receiver.services,
             TimerRepository(
-                EnigmaClientFactory(receiver.profiles.repository),
+                enigmaClients(receiver.profiles.repository),
                 receiver.profiles.repository,
                 receiver.profiles.database
             ),

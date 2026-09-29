@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class EnigmaHttpOkHttpTest {
     private lateinit var server: MockWebServer
+    private val okHttp = EnigmaOkHttp()
 
     @Before
     fun startServer() {
@@ -240,7 +241,7 @@ class EnigmaHttpOkHttpTest {
                 user = "root"
                 pass = "secret"
             }
-        EnigmaHttp(profile).fetch("/web/about")
+        EnigmaHttp(profile, okHttp).fetch("/web/about")
         assertEquals(
             Credentials.basic("root", "secret"),
             server.takeRequest().getHeader("Authorization")
@@ -282,7 +283,7 @@ class EnigmaHttpOkHttpTest {
                 ssl = false
                 login = false
             }
-        val result = EnigmaHttp(profile, timeoutMillis = 2_000).fetch("/web/about")
+        val result = EnigmaHttp(profile, okHttp, timeoutMillis = 2_000).fetch("/web/about")
         assertTrue(result is EnigmaHttpResult.Failure)
     }
 
@@ -290,13 +291,7 @@ class EnigmaHttpOkHttpTest {
     fun httpClientDoesNotInstallProcessSslDefaults() {
         val beforeFactory = HttpsURLConnection.getDefaultSSLSocketFactory()
         val beforeVerifier = HttpsURLConnection.getDefaultHostnameVerifier()
-        val profile = Profile().apply {
-            host = "box.local"
-            port = 443
-            ssl = true
-            allCertsTrusted = true
-        }
-        EnigmaHttp(profile)
+        okHttp.client(EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, trustAll = true)
         assertEquals(beforeFactory, HttpsURLConnection.getDefaultSSLSocketFactory())
         assertEquals(beforeVerifier, HttpsURLConnection.getDefaultHostnameVerifier())
     }
@@ -310,6 +305,6 @@ class EnigmaHttpOkHttpTest {
                 login = false
                 this.sessionId = sessionId
             }
-        return EnigmaHttp(profile)
+        return EnigmaHttp(profile, okHttp)
     }
 }

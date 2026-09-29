@@ -32,7 +32,17 @@ object CheckProfile {
 
     var CURRENT_VERSION: IntArray = intArrayOf(0, 0, 0)
 
-    fun checkProfile(profile: Profile, context: Context): ProfileCheckResult {
+    /**
+     * Asks [profile]'s receiver over [http] for its device info and applies the web
+     * interface features it reports. A device-info answer cached in [profiles] stands in
+     * for asking.
+     */
+    fun checkProfile(
+        profile: Profile,
+        context: Context,
+        http: EnigmaHttp,
+        profiles: ProfileRepository
+    ): ProfileCheckResult {
         CURRENT_VERSION = intArrayOf(0, 0, 0)
 
         val resultList = ArrayList<ProfileCheckEntry>()
@@ -51,8 +61,6 @@ object CheckProfile {
                 val port = profile.port
                 if (port > 0 && port <= 65535) {
                     resultList.add(entry(R.string.port, false, port.toString()))
-                    val http = EnigmaHttp(profile)
-                    val profiles = ProfileRepository.get()
                     var xml = profiles.deviceInfo(profile)
                     var fetchError: EnigmaHttpError? = null
                     if (xml == null) {

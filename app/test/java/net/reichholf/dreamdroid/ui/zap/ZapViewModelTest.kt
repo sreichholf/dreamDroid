@@ -13,13 +13,13 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -239,7 +239,7 @@ class ZapViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = ZapViewModel(
         handle,
         receiver.services,
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(enigmaClients(profiles), profiles),
         receiver.sessions,
         profiles
     ).also { viewModels += it }

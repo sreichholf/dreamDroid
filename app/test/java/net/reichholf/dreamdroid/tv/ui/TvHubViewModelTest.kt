@@ -11,12 +11,12 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.TimerRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -35,7 +35,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class TvHubViewModelTest {
     private val receiver = EpgTestReceiver()
-    private val clients = EnigmaClientFactory(receiver.profiles.repository)
+    private val clients = enigmaClients(receiver.profiles.repository)
     private val movies = MovieRepository(
         receiver.profiles.context,
         clients,
