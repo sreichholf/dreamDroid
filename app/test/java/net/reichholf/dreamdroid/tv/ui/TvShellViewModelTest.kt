@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -213,7 +212,7 @@ class TvShellViewModelTest {
 
         assertNull(status.session)
         assertNotNull(status.lastFailure)
-        assertTrue(viewModel.awaitGate { it != null } is TvSessionGate.Failed)
+        viewModel.awaitGate { it is TvSessionGate.Failed }
     }
 
     private fun viewModel(): TvShellViewModel = TvShellViewModel(
