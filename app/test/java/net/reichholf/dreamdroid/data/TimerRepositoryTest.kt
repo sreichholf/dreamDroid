@@ -6,6 +6,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -33,7 +34,6 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_LIST
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
-import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -288,20 +288,24 @@ class TimerRepositoryTest {
 
     @Test
     fun slowLocationsDoNotHoldTheProfileRepository() = runBlocking {
-        receiver.respond(LOCATIONS, slowLocations())
+        receiver.respond(LOCATIONS, LOCATIONS_BODY)
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val held = receiver.hold(LOCATIONS)
         val profiles = receiver.repository
         val profile = profiles.requireCurrent()
 
         val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
-        awaitRequest(LOCATIONS)
-        val started = System.nanoTime()
-        profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
-        val deviceInfo = profiles.deviceInfo(profile)
-        val waitedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
+        awaitArrival(held)
+        // Runs while the receiver still holds the locations answer; it must not wait for it.
+        val deviceInfo = withTimeout(5_000L) {
+            async(Dispatchers.IO) {
+                profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
+                profiles.deviceInfo(profile)
+            }.await()
+        }
+        held.release()
 
         assertEquals("<e2deviceinfo/>", deviceInfo)
-        assertTrue(waitedMs < HELD_MS / 2, "device info waited $waitedMs ms on the locations")
         assertEquals(
             TimerChoices(listOf("/media/hdd/"), listOf("News"), true),
             choices.await()
@@ -310,8 +314,9 @@ class TimerRepositoryTest {
 
     @Test
     fun locationsOfTheProfileSwitchedAwayFromAreDropped() = runBlocking {
-        receiver.respond(LOCATIONS, slowLocations())
+        receiver.respond(LOCATIONS, LOCATIONS_BODY)
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
+        val held = receiver.hold(LOCATIONS)
         val profiles = receiver.repository
         val other = Profile().apply {
             name = "other"
@@ -320,8 +325,9 @@ class TimerRepositoryTest {
         profiles.save(other)
 
         val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
-        awaitRequest(LOCATIONS)
+        awaitArrival(held)
         assertTrue(profiles.activate(other.id!!, forceEvent = true))
+        held.release()
         choices.await()
 
         assertTrue(profiles.locations().isEmpty())
@@ -329,16 +335,8 @@ class TimerRepositoryTest {
         assertEquals(false, profiles.locationsLoadedFromReceiver())
     }
 
-    private fun slowLocations(): MockResponse = MockResponse()
-        .setBody("<e2locations><e2location>/media/hdd/</e2location></e2locations>")
-        .setHeadersDelay(HELD_MS, TimeUnit.MILLISECONDS)
-
-    private suspend fun awaitRequest(path: String) = withContext(Dispatchers.IO) {
-        val deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5)
-        while (receiver.requestsTo(path).isEmpty()) {
-            check(System.nanoTime() < deadline) { "no request to $path" }
-            Thread.sleep(10)
-        }
+    private suspend fun awaitArrival(hold: TestReceiver.Hold) = withContext(Dispatchers.IO) {
+        assertTrue(hold.arrived.await(5, TimeUnit.SECONDS), "the request never arrived")
     }
 
     private suspend fun writeSnapshot(timers: List<Timer>) {
@@ -364,6 +362,7 @@ class TimerRepositoryTest {
     )
 
     private companion object {
-        const val HELD_MS = 2_000L
+        const val LOCATIONS_BODY =
+            "<e2locations><e2location>/media/hdd/</e2location></e2locations>"
     }
 }
