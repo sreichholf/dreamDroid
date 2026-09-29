@@ -4,6 +4,7 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
+import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.compose.RowMenu
@@ -79,21 +81,36 @@ fun ServiceListScreen(
 
 /**
  * [items] as list entries: a bouquet marker is a sticky section header over the rows up to
- * the next marker, every other item is drawn by [row]. Each item stays one list entry, so
- * an item's index in [items] is its list index.
+ * the next marker, a spacer is a plain gap, every other item is drawn by [row]. Each item
+ * stays one list entry, so an item's index in [items] is its list index.
  */
 fun LazyListScope.serviceListItems(
     items: List<ServiceListItem>,
     row: @Composable (ServiceListItem) -> Unit
 ) {
     for (item in items) {
-        if (item.kind == ServiceRowKind.MARKER) {
-            stickyHeader(key = serviceRowKey(item)) { ListSectionHeader(item.name) }
-        } else {
-            item(key = serviceRowKey(item)) { row(item) }
+        when {
+            item.kind != ServiceRowKind.MARKER -> item(key = serviceRowKey(item)) { row(item) }
+
+            item.isSectionHeader -> stickyHeader(key = serviceRowKey(item)) {
+                ListSectionHeader(item.name)
+            }
+
+            else -> item(key = serviceRowKey(item)) {
+                Spacer(Modifier.height(SpacerGap))
+            }
         }
     }
 }
+
+/**
+ * A marker with a name. Spacers (`1:832:`) are markers too, but unnamed gaps that must
+ * not replace the pinned section header.
+ */
+val ServiceListItem.isSectionHeader: Boolean
+    get() = kind == ServiceRowKind.MARKER && !Service.isSpacer(reference) && name.isNotBlank()
+
+private val SpacerGap = 16.dp
 
 /** A channel or directory row; markers are section headers, see [serviceListItems]. */
 @Composable

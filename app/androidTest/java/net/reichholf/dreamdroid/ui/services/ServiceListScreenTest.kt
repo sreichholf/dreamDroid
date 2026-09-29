@@ -74,7 +74,41 @@ class ServiceListScreenTest {
         // Channel 20 is list index 20: the marker is one entry, like before.
         composeRule.onNode(hasScrollAction()).performScrollToIndex(20)
 
+        composeRule.onNodeWithText("Channel 20").assertIsDisplayed()
         composeRule.onNodeWithText("Channel 1").assertIsNotDisplayed()
+        val list = composeRule.onNode(hasScrollAction()).getBoundsInRoot()
+        val header = composeRule.onNode(hasText("Doku") and isHeading())
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertEquals(list.top.value, header.top.value, 1f)
+    }
+
+    @Test
+    fun spacerIsAGapAndKeepsThePinnedHeader() {
+        val first = (1..10).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+        val second = (12..30).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+        val items = listOf(
+            ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
+        ) + first + ServiceListItem(
+            11,
+            "1:832:D:0:0:0:0:0:0:0:",
+            "",
+            ServiceRowKind.MARKER
+        ) + second
+        composeRule.setContent {
+            DreamDroidTheme {
+                ServiceListScreen(items = items, onItemClick = {}, onItemLongClick = {})
+            }
+        }
+
+        composeRule.onNode(hasScrollAction()).performScrollToIndex(20)
+
+        composeRule.onNodeWithText("Channel 20").assertIsDisplayed()
+        composeRule.onAllNodes(isHeading()).assertCountEquals(1)
         val list = composeRule.onNode(hasScrollAction()).getBoundsInRoot()
         val header = composeRule.onNode(hasText("Doku") and isHeading())
             .assertIsDisplayed()

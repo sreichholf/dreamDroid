@@ -10,8 +10,10 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.ui.services.ServiceListItem
 import net.reichholf.dreamdroid.ui.services.ServiceRow
 import net.reichholf.dreamdroid.ui.services.ServiceRowKind
+import net.reichholf.dreamdroid.ui.services.isSectionHeader
 import net.reichholf.dreamdroid.ui.services.serviceListItems
 import net.reichholf.dreamdroid.ui.services.serviceListItemsFromNowNext
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -41,7 +43,7 @@ fun PhoneZapList(
     }
     LaunchedEffect(currentRef, items.size) {
         if (index >= 0) {
-            listState.scrollToItem(index)
+            listState.scrollToItem(zapScrollTarget(items, index))
         }
     }
     LazyColumn(
@@ -81,4 +83,22 @@ fun ComposeView.bindPhoneZapList(
             )
         }
     }
+}
+
+/**
+ * The list index to scroll to so the row at [index] shows in full. Under a section header
+ * the header is pinned over the first visible row, so the row before [index] (a channel or
+ * the header itself, never a spacer) goes there instead.
+ */
+internal fun zapScrollTarget(items: List<ServiceListItem>, index: Int): Int {
+    if (items.take(index).none { it.isSectionHeader }) {
+        return index
+    }
+    var target = index - 1
+    while (target > 0 && items[target].kind == ServiceRowKind.MARKER &&
+        !items[target].isSectionHeader
+    ) {
+        target -= 1
+    }
+    return target
 }
