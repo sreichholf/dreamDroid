@@ -1,11 +1,8 @@
 package net.reichholf.dreamdroid.data
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
-import androidx.preference.PreferenceManager
 import dagger.Lazy
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -329,14 +326,11 @@ interface ProfileStore {
  */
 class RoomProfileStore @Inject constructor(
     private val database: AppDatabase,
-    @param:ApplicationContext private val context: Context,
+    private val preferences: SharedPreferences,
     private val services: Lazy<ServiceRepository>
 ) : ProfileStore {
     private val dao: ProfileDaoBlocking
         get() = ProfileDaoBlocking(database.profileDao())
-
-    private val preferences: SharedPreferences
-        get() = PreferenceManager.getDefaultSharedPreferences(context)
 
     override fun profiles(): List<Profile> = dao.getProfiles()
 
