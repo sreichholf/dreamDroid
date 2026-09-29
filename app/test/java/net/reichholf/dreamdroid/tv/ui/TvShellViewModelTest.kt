@@ -105,6 +105,29 @@ class TvShellViewModelTest {
     }
 
     @Test
+    fun anEditedProfileWithCachedDeviceInfoStaysOnlineWithoutChecking() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start()
+        awaitStatus { it.session == ConnectionStatus.Session.Online }
+        val checked = profiles.requireCurrent()
+        // An edit that keeps the connection settings replaces the instance, not the id.
+        profiles.setCurrent(
+            Profile().apply {
+                id = checked.id
+                name = "renamed"
+                host = checked.host
+                port = checked.port
+            }
+        )
+
+        viewModel.start()
+
+        assertFalse(sessions.status.value.checking)
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+        assertEquals(1, deviceInfoRequests())
+    }
+
+    @Test
     fun recheckAsksTheReceiverAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.start()

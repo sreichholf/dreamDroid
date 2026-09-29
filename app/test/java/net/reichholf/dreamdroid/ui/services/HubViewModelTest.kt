@@ -78,7 +78,16 @@ class HubViewModelTest {
         assertEquals(listOf(RADIO), state.radioBouquets)
         assertNull(state.bouquetError)
         assertEquals(1, state.selectedRow)
-        assertEquals(SPORTS.reference, readHubShellSaved(handle).currentTv)
+        // The load publishes the state before it saves it, on another thread.
+        val saved = withTimeout(5_000L) {
+            var saved = readHubShellSaved(handle)
+            while (saved.currentTv == null) {
+                delay(10L)
+                saved = readHubShellSaved(handle)
+            }
+            saved
+        }
+        assertEquals(SPORTS.reference, saved.currentTv)
         assertEquals(listOf(FAVOURITES, SPORTS), receiver.services.cachedBouquets().tv)
     }
 
