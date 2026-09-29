@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test
 /**
  * Version 1 is the profile table only. [AppDatabase.MIGRATION_7_8] adds
  * `zap_and_stream`; every other profile column is already in the v1 table.
+ * [AppDatabase.MIGRATION_8_9] fills `epg_event.titleKey` for a cached row.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
@@ -35,9 +36,12 @@ class AppDatabaseMigrationTest {
                     AppDatabase.MIGRATION_5_6.migrate(connection)
                     AppDatabase.MIGRATION_6_7.migrate(connection)
                     AppDatabase.MIGRATION_7_8.migrate(connection)
+                    connection.execSQL(V8_EPG_EVENT_ROW)
+                    AppDatabase.MIGRATION_8_9.migrate(connection)
                 }
                 assertProfileSurvived(connection)
                 assertMigratedTablesExist(connection)
+                assertTitleKeyBackfilled(connection)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -54,6 +58,14 @@ class AppDatabaseMigrationTest {
             assertEquals("root", statement.getText(2))
             assertEquals("secret", statement.getText(3))
             assertEquals(0L, statement.getLong(4))
+            assertFalse(statement.step())
+        }
+    }
+
+    private fun assertTitleKeyBackfilled(connection: SQLiteConnection) {
+        connection.prepare("SELECT titleKey FROM epg_event").use { statement ->
+            assertTrue(statement.step())
+            assertEquals("die strasse", statement.getText(0))
             assertFalse(statement.step())
         }
     }
@@ -78,7 +90,8 @@ class AppDatabaseMigrationTest {
             "movie_location_meta",
             "movie_location_strip",
             "movie_list_meta",
-            "movie_list"
+            "movie_list",
+            "epg_search_recent"
         ).forEach { table ->
             assertTrue(table in names, "missing $table")
         }
@@ -141,6 +154,19 @@ class AppDatabaseMigrationTest {
                 80, 8001, 80, 554,
                 128, 2500,
                 0
+            )
+            """.trimIndent()
+
+        private val V8_EPG_EVENT_ROW =
+            """
+            INSERT INTO `epg_event` (
+                `profileId`, `bouquetRef`, `serviceRef`, `eventId`, `start`, `duration`,
+                `title`, `description`, `descriptionExtended`, `serviceName`,
+                `currentTime`, `bouquetPos`
+            ) VALUES (
+                7, 'bouquet', 'service', '1', 0, 60,
+                'Die Straße', '', '', 'Das Erste HD',
+                0, 0
             )
             """.trimIndent()
 

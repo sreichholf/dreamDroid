@@ -5,6 +5,7 @@ import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
 import androidx.room3.Transaction
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface EpgDao {
@@ -97,6 +98,59 @@ interface EpgDao {
         """
     )
     suspend fun eventCountForService(profileId: Int, serviceRef: String): Int
+
+    /**
+     * Programmes of [profileId] still running or ahead at [fromSec] whose
+     * [EpgEventEntity.titleKey] contains [key] (an [epgSearchKey]). One row per programme,
+     * even when several bouquets cached it.
+     */
+    @Query(
+        """
+        SELECT * FROM epg_event
+        WHERE profileId = :profileId
+          AND (start + duration) > :fromSec
+          AND instr(titleKey, :key) > 0
+        GROUP BY serviceRef, eventId
+        ORDER BY start ASC, serviceName ASC
+        LIMIT :limit
+        """
+    )
+    suspend fun searchTitles(
+        profileId: Int,
+        key: String,
+        fromSec: Long,
+        limit: Int
+    ): List<EpgEventEntity>
+
+    @Query("SELECT EXISTS(SELECT 1 FROM epg_event WHERE profileId = :profileId)")
+    suspend fun hasEvents(profileId: Int): Boolean
+
+    /** The newest [limit] recent searches first. */
+    @Query("SELECT * FROM epg_search_recent ORDER BY usedAtMs DESC LIMIT :limit")
+    fun recentSearches(limit: Int): Flow<List<EpgSearchRecentEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertRecentSearch(recent: EpgSearchRecentEntity)
+
+    @Query(
+        """
+        DELETE FROM epg_search_recent
+        WHERE key NOT IN (
+            SELECT key FROM epg_search_recent ORDER BY usedAtMs DESC LIMIT :keep
+        )
+        """
+    )
+    suspend fun trimRecentSearches(keep: Int)
+
+    /** Stores [recent] as the newest search and keeps the newest [keep] ones. */
+    @Transaction
+    suspend fun addRecentSearch(recent: EpgSearchRecentEntity, keep: Int) {
+        upsertRecentSearch(recent)
+        trimRecentSearches(keep)
+    }
+
+    @Query("DELETE FROM epg_search_recent WHERE key = :key")
+    suspend fun deleteRecentSearch(key: String)
 
     @Query("DELETE FROM epg_event WHERE profileId = :profileId")
     suspend fun deleteEventsForProfile(profileId: Int)

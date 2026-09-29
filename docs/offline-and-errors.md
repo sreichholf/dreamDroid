@@ -126,6 +126,8 @@ Not cached as blobs: device info live page, signal, screenshot, `/web/getcurrent
 
 **List EPG** (drawer `/web/epgbouquet`): v1 Offline reads shared `epgmulti` Room chunks for that user bouquet, or Unavailable if never filled. Do not persist `epgbouquet` separately.
 
+**EPG search** (`/web/epgsearch`): searches as you type. Room (the same `epgmulti` chunks) answers after a short pause; the receiver only after the user stopped typing for `EpgSearchViewModel.RECEIVER_SETTLE_MS` with at least three characters, and one search at a time: while one runs, later queries wait and only the newest is sent, because the box scans its whole EPG per search. Submit, a recent search, the route query, and pull-to-refresh search right away. Offline with cached EPG the receiver is skipped; a receiver failure keeps the cached results. Matching is a substring match on `epg_event.titleKey`, a Unicode case fold of the title (`epgSearchKey`: NFKC, upper then lower), because SQLite `LIKE` folds ASCII only. Ended programmes are dropped and a programme cached in several bouquets is listed once. Cached results say that only bouquets opened on this device are searched. Recent searches live in `epg_search_recent` (all profiles, newest ten). Do not persist `epgsearch` responses.
+
 **Phone hub Online path:** roster from `getservices`, now/next overlaid from `epgnownext` (`ServiceRepository.receiverNowNext`, which `HubServiceListViewModel` and the TV hub use). A failed service list stays an error. Room roster + `epgmulti` remain Offline writers, not a replacement for Online now/next.
 
 ### 4.5 Hard excludes

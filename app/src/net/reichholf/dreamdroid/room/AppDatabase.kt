@@ -24,9 +24,10 @@ import net.reichholf.dreamdroid.Profile
         MovieLocationMetaEntity::class,
         MovieLocationStripEntity::class,
         MovieListMetaEntity::class,
-        MovieListEntity::class
+        MovieListEntity::class,
+        EpgSearchRecentEntity::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -290,6 +291,49 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
+         * Adds [EpgEventEntity.titleKey] and fills it for the cached rows, so offline EPG
+         * search finds them without waiting for the next MultiEPG fetch. Adds the recent
+         * EPG searches. The key is the current [epgSearchKey]; if that function changes,
+         * a later migration has to fill `titleKey` again.
+         */
+        val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    ALTER TABLE `epg_event`
+                    ADD COLUMN `titleKey` TEXT NOT NULL DEFAULT ''
+                    """.trimIndent()
+                )
+                val titles = ArrayList<Pair<Long, String>>()
+                connection.prepare("SELECT rowid, title FROM `epg_event`").use { select ->
+                    while (select.step()) {
+                        titles.add(select.getLong(0) to select.getText(1))
+                    }
+                }
+                connection.prepare(
+                    "UPDATE `epg_event` SET `titleKey` = ? WHERE rowid = ?"
+                ).use { update ->
+                    for ((rowId, title) in titles) {
+                        update.bindText(1, epgSearchKey(title))
+                        update.bindLong(2, rowId)
+                        update.step()
+                        update.reset()
+                    }
+                }
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `epg_search_recent` (
+                        `key` TEXT NOT NULL,
+                        `query` TEXT NOT NULL,
+                        `usedAtMs` INTEGER NOT NULL,
+                        PRIMARY KEY(`key`)
+                    )
+                    """.trimIndent()
+                )
+            }
+        }
+
+        /**
          * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
          * building does not open the file.
          */
@@ -305,7 +349,8 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_4_5,
                 MIGRATION_5_6,
                 MIGRATION_6_7,
-                MIGRATION_7_8
+                MIGRATION_7_8,
+                MIGRATION_8_9
             )
             .configureRoomDriver()
             .build()

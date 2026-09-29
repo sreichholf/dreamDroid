@@ -179,11 +179,13 @@ private fun ShellBody(
                 .weight(1f)
                 .fillMaxHeight()
         ) {
-            ShellTopAppBar(
-                controller = topBarController,
-                onNavigationClick = onNavigationClick,
-                trailingActions = trailingTopBarActions
-            )
+            if (!topBarController.replaced) {
+                ShellTopAppBar(
+                    controller = topBarController,
+                    onNavigationClick = onNavigationClick,
+                    trailingActions = trailingTopBarActions
+                )
+            }
             Scaffold(
                 modifier = Modifier
                     .weight(1f)

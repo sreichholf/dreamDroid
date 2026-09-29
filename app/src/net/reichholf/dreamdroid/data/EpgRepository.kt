@@ -4,6 +4,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.enigma.EnigmaClient
@@ -21,6 +22,8 @@ import net.reichholf.dreamdroid.multiepg.nowNextForService
 import net.reichholf.dreamdroid.multiepg.toEvent
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.EpgEventEntity
+import net.reichholf.dreamdroid.room.EpgSearchRecentEntity
+import net.reichholf.dreamdroid.room.epgSearchKey
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /** One step of a list EPG load. */
@@ -46,6 +49,7 @@ class EpgRepository @Inject constructor(
     private val services: ServiceRepository
 ) {
     private val epgMultiRequest = Mutex()
+    private val epgSearchRequest = Mutex()
 
     /**
      * The process's one MultiEPG chunk cache. MultiEPG, the hub service list, and the TV hub
@@ -87,9 +91,68 @@ class EpgRepository @Inject constructor(
             }
         )
 
-    /** Receiver-side EPG search by title. Not cached. */
-    suspend fun search(query: String): EnigmaResponse<List<Event>> =
-        clients.current().getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
+    /**
+     * Cached programmes of the active profile whose title contains [query], ignoring case,
+     * that have not ended yet. Room only holds the MultiEPG chunks of bouquets opened on
+     * this device, so this is a subset of [receiverSearch]. Null when Room holds no EPG for
+     * the profile at all.
+     */
+    suspend fun cachedSearch(query: String): List<Event>? {
+        val profileId = profiles.requireCurrent().id ?: return null
+        val dao = database.epgDao()
+        if (!dao.hasEvents(profileId)) {
+            return null
+        }
+        val nowSec = System.currentTimeMillis() / 1000L
+        return dao.searchTitles(profileId, epgSearchKey(query), nowSec, SEARCH_LIMIT)
+            .map { it.toEvent() }
+    }
+
+    /**
+     * Whether a receiver search should be skipped: the session is Offline and Room has EPG
+     * for the active profile. Same rule as [listLoad].
+     */
+    suspend fun skipsReceiverSearch(): Boolean {
+        val status = sessions.status.value
+        if (!status.shouldSkipReceiverHttp(hasCache = true)) {
+            return false
+        }
+        val profileId = profiles.requireCurrent().id ?: return false
+        return status.shouldSkipReceiverHttp(database.epgDao().hasEvents(profileId))
+    }
+
+    /**
+     * Receiver-side EPG search by title (`/web/epgsearch`). Searches run one at a time for
+     * the whole app: the box scans its whole EPG per search, and a cancelled caller's HTTP
+     * call still finishes, so the next search waits for it.
+     */
+    suspend fun receiverSearch(query: String): EnigmaResponse<List<Event>> =
+        epgSearchRequest.withLock {
+            clients.current().getEvents(
+                listOf(NameValuePair("search", query)),
+                URIStore.EPG_SEARCH
+            )
+        }
+
+    /** The newest recent EPG searches first. */
+    fun recentSearches(): Flow<List<String>> =
+        database.epgDao().recentSearches(RECENT_SEARCHES).map { rows -> rows.map { it.query } }
+
+    /** Stores [query] as the newest recent search. */
+    suspend fun rememberSearch(query: String, nowMs: Long = System.currentTimeMillis()) {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) {
+            return
+        }
+        database.epgDao().addRecentSearch(
+            EpgSearchRecentEntity(epgSearchKey(trimmed), trimmed, nowMs),
+            keep = RECENT_SEARCHES
+        )
+    }
+
+    suspend fun forgetSearch(query: String) {
+        database.epgDao().deleteRecentSearch(epgSearchKey(query.trim()))
+    }
 
     /**
      * A MultiEPG persist gate that knows no user bouquet yet, so it persists nothing. Callers
@@ -212,6 +275,14 @@ class EpgRepository @Inject constructor(
             return null
         }
         return dao.eventsForServiceFrom(profileId, serviceRef, fromSec).map { it.toEvent() }
+    }
+
+    private companion object {
+        /** Upper bound of one cached search result list. */
+        const val SEARCH_LIMIT = 256
+
+        /** How many recent searches are kept. */
+        const val RECENT_SEARCHES = 10
     }
 }
 
