@@ -44,7 +44,7 @@ class TvTimerEditViewModelTest {
         )
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
         sessions.onSuccess()
-        viewModel = TvTimerEditViewModel(receiver.timerRepository(), sessions)
+        viewModel = TvTimerEditViewModel(receiver.timerRepository(), receiver.repository, sessions)
     }
 
     @AfterEach
@@ -111,8 +111,19 @@ class TvTimerEditViewModelTest {
     }
 
     @Test
+    fun servicePickKeyFollowsTheActiveProfile() {
+        val id = receiver.repository.requireCurrent().id
+
+        assertEquals("tv-timer-service-pick:$id", viewModel.servicePickKey())
+    }
+
+    @Test
     fun blockedSessionDoesNotSave() = runTest {
-        val blocked = TvTimerEditViewModel(receiver.timerRepository(), SessionConnectionHolder())
+        val blocked = TvTimerEditViewModel(
+            receiver.timerRepository(),
+            receiver.repository,
+            SessionConnectionHolder()
+        )
         blocked.bind(timer("New"), isCreate = true)
         assertTrue(blocked.uiState.value.mutationsBlocked)
 

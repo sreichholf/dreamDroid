@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -16,9 +17,13 @@ import net.reichholf.dreamdroid.ui.timers.TimerFormViewModel
 @HiltViewModel
 class TvTimerEditViewModel @Inject constructor(
     timers: TimerRepository,
+    private val profiles: ProfileRepository,
     sessions: SessionConnectionHolder
 ) : TimerFormViewModel(timers, sessions, handle = null) {
     private var launch: Pair<Timer, Boolean>? = null
+
+    /** The ViewModel key of the service pick for the active profile. */
+    fun servicePickKey(): String = tvTimerServicePickKey(profiles.current.value?.id)
 
     /** Edits [timer], unless that editor is open already. */
     fun bind(timer: Timer, isCreate: Boolean) {

@@ -30,7 +30,6 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.pick.TimerServicePickUiState
@@ -42,20 +41,21 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
  * The picker has no nav entry of its own, so its ViewModel lives on the activity. The key
  * carries the profile because a TV profile switch does not recreate the activity.
  */
-internal fun tvTimerServicePickKey(): String =
-    "tv-timer-service-pick:${ProfileRepository.get().current.value?.id}"
+internal fun tvTimerServicePickKey(profileId: Int?): String = "tv-timer-service-pick:$profileId"
 
 /**
  * D-pad timer service picker: bouquet list, then channels. Back on channels returns
  * to bouquets; Back on bouquets dismisses. TV then radio, markers skipped.
- * Reopening the picker shows the bouquet and list it was left on.
+ * Reopening the picker shows the bouquet and list it was left on. [viewModelKey] is
+ * [tvTimerServicePickKey] of the active profile.
  */
 @Composable
 fun TvTimerServicePick(
+    viewModelKey: String,
     onPicked: (Service) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: TimerServicePickViewModel = hiltViewModel(key = tvTimerServicePickKey())
+    viewModel: TimerServicePickViewModel = hiltViewModel(key = viewModelKey)
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
