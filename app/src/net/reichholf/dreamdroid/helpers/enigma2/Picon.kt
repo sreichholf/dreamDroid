@@ -11,9 +11,11 @@ import androidx.preference.PreferenceManager
 import java.io.File
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
+
+/** A picon on the receiver. The picon image loader turns it into the active profile's URL. */
+data class OnlinePicon(val fileName: String)
 
 /**
  * @author sre
@@ -69,14 +71,18 @@ object Picon {
         return fileName
     }
 
-    fun resolveLoadUri(context: Context, reference: String?, name: String?): String? {
+    /**
+     * What the picon image loader loads for a service: a `file://` URI of a synced picon, or
+     * an [OnlinePicon]. Null when picons are off.
+     */
+    fun resolveLoadModel(context: Context, reference: String?, name: String?): Any? {
         val sp = PreferenceManager.getDefaultSharedPreferences(context)
         if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, DreamDroid.isTV(context))) {
             return null
         }
         val useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
         val fileName = getPiconFileName(context, reference, name, useName) ?: return null
-        return getPiconUri(context, fileName)
+        return piconModel(context, fileName)
     }
 
     fun onlinePiconUrl(profile: Profile, fileName: String?): String = EnigmaUrls.page(
@@ -85,11 +91,11 @@ object Picon {
         listOf(NameValuePair("file", fileName))
     )
 
-    fun getPiconUri(context: Context, fileName: String?): String {
+    private fun piconModel(context: Context, fileName: String): Any {
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, DreamDroid.isTV(context))
         ) {
-            return onlinePiconUrl(ProfileRepository.get().requireCurrent(), fileName)
+            return OnlinePicon(fileName)
         }
         return String.format("file://%s", fileName)
     }

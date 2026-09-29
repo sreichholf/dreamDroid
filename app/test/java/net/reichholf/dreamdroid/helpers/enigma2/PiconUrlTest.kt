@@ -1,10 +1,14 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
+import coil3.request.Options
+import coil3.toUri
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
+import net.reichholf.dreamdroid.testutil.TestProfiles
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -31,6 +35,30 @@ class PiconUrlTest {
         assertFalse(url.contains("user:pass@"))
         assertFalse(url.contains("@"))
         assertTrue(url.startsWith("https://box.local:443/file?"))
+    }
+
+    @Test
+    fun onlinePiconMapper_usesTheActiveProfile() {
+        val profiles = TestProfiles()
+        val profile = loginProfile(ssl = false, port = 80).apply { name = "box" }
+        profiles.repository.save(profile)
+        assertTrue(profiles.repository.setCurrent(profile.id!!))
+        val fileName = "/usr/share/enigma2/picon/1_0_1.png"
+
+        val mapped = PiconImageLoader.onlinePiconMapper(profiles.repository)
+            .map(OnlinePicon(fileName), Options(profiles.context))
+
+        assertEquals(pageUrl(profile, fileName).toUri(), mapped)
+    }
+
+    @Test
+    fun onlinePiconMapper_withoutProfileLeavesThePiconUnmapped() {
+        val profiles = TestProfiles()
+
+        val mapped = PiconImageLoader.onlinePiconMapper(profiles.repository)
+            .map(OnlinePicon("/picon.png"), Options(profiles.context))
+
+        assertNull(mapped)
     }
 
     private fun pageUrl(profile: Profile, fileName: String): String =

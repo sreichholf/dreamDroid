@@ -23,9 +23,9 @@ fun PiconImage(
 ) {
     val context = LocalContext.current
     PiconImageLoader.install(context)
-    val uri = Picon.resolveLoadUri(context, reference, name) ?: return
+    val model = Picon.resolveLoadModel(context, reference, name) ?: return
     AsyncImage(
-        model = uri,
+        model = model,
         contentDescription = contentDescription,
         error = painterResource(R.drawable.dreamdroid_logo_simple),
         contentScale = ContentScale.Fit,
