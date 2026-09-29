@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.session
 
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
@@ -229,7 +228,6 @@ class ConnectionStatusTest {
     @Test
     fun hasUseDrivenCacheGainsTabStripMovieAndTimerSources() {
         assertFalse(hasUseDrivenCache(emptyList()))
-        assertFalse(hasUseDrivenCache(Profile().apply { id = 1 }))
         assertTrue(hasUseDrivenCache(listOf("1:7:1:FROM BOUQUET \"userbouquet.fav.tv\"")))
         assertTrue(hasUseDrivenCache(emptyList(), hasMovieLocationStrip = true))
         assertTrue(hasUseDrivenCache(emptyList(), hasTimerSnapshot = true))

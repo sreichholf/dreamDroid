@@ -1,39 +1,67 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import android.view.KeyEvent
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
+import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** [ShellViewModel] over the real repositories and a MockWebServer receiver. */
+/**
+ * [ShellViewModel] over the real repositories, the real [ReceiverProfileCheckRepository],
+ * a MockWebServer receiver, and Room.
+ */
 @OptIn(ExperimentalCoroutinesApi::class)
 class ShellViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
+    private val sessions = receiver.sessions
+    private val preferences = MemorySharedPreferences()
+    private val settings = SettingsRepository(preferences)
     private val viewModels = mutableListOf<ShellViewModel>()
+
+    /** `/web/deviceinfo` answers a receiver while true, a non-receiver page otherwise. */
+    @Volatile
+    private var isReceiver = true
+
+    /** While set, `/web/vol` holds its answer until the latch opens. */
+    @Volatile
+    private var volumeHold: CountDownLatch? = null
+    private val volumeArrived = CountDownLatch(1)
 
     @BeforeEach
     fun setUp() {
@@ -51,14 +79,29 @@ class ShellViewModelTest {
 
                 "/web/message" -> MockResponse().setBody(simpleResult(true, "Sent"))
 
+                "/web/deviceinfo" -> MockResponse().setBody(
+                    if (isReceiver) loadWebFixture("deviceinfo.xml") else "<html>no receiver</html>"
+                )
+
+                "/web/vol" -> {
+                    volumeArrived.countDown()
+                    volumeHold?.await(5, TimeUnit.SECONDS)
+                    MockResponse().setBody(
+                        "<e2volume><e2result>True</e2result><e2current>40</e2current>" +
+                            "<e2ismuted>False</e2ismuted></e2volume>"
+                    )
+                }
+
                 else -> MockResponse().setResponseCode(404)
             }
         }
         receiver.start()
+        sessions.resetForProfileChange()
     }
 
     @AfterEach
     fun tearDown() {
+        volumeHold?.countDown()
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         receiver.stop()
         Dispatchers.resetMain()
@@ -139,29 +182,183 @@ class ShellViewModelTest {
     }
 
     @Test
-    fun profileSwitchSurfacesAnEffect() = runBlocking {
+    fun theFirstCheckGoesOnlineAndLeavesTheGateForProfiles() = runBlocking<Unit> {
         val viewModel = viewModel()
-        receiver.profiles.database.profileDao().addProfile(
-            Profile().apply {
-                id = 8
-                name = "other"
-                host = "other-box"
-                port = 80
-            }
+
+        viewModel.checkActiveProfile()
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        // No cache: the gate shows Checking while the receiver answers.
+        assertEquals(ProfileCheckStart(showGate = true), state.profileCheckStarted)
+        assertEquals(
+            ProfileCheckUi.Checking(UiText.Resource(R.string.checking_connection)),
+            state.profileCheck
         )
+        assertEquals(
+            ProfileCheckOutcome.Leave(offGateToo = true, firstStart = true),
+            state.profileCheckOutcome
+        )
+        assertEquals("test", state.profileName)
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+        assertEquals(1, deviceInfoRequests())
 
-        profiles.setCurrent(8)
-        val state = viewModel.awaitState { it.profileSwitchEffect != null }
+        viewModel.onProfileCheckStartHandled()
+        viewModel.onProfileCheckOutcomeHandled()
+        assertNull(viewModel.uiState.value.profileCheckStarted)
+        assertNull(viewModel.uiState.value.profileCheckOutcome)
+        assertFalse(settings.firstStart)
+    }
 
-        assertEquals(8, state.profileSwitchEffect?.id)
-        viewModel.onProfileSwitchHandled()
-        assertNull(viewModel.uiState.value.profileSwitchEffect)
+    @Test
+    fun aFailedCheckWithoutCacheOpensTheFailedGate() = runBlocking<Unit> {
+        settings.firstStart = false
+        isReceiver = false
+        val viewModel = viewModel()
+
+        viewModel.checkActiveProfile()
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        assertEquals(ProfileCheckOutcome.Failed(firstStart = false), state.profileCheckOutcome)
+        val failed = assertInstanceOf(ProfileCheckUi.Failed::class.java, state.profileCheck)
+        val profile = profiles.requireCurrent()
+        assertEquals(UiText.Raw("null@${profile.host}:${profile.port}"), failed.title)
+        assertNull(sessions.status.value.session)
+        assertFalse(sessions.status.value.checking)
+    }
+
+    @Test
+    fun aSuccessfulRecheckAfterAFailureLeavesForTheStartRoute() = runBlocking<Unit> {
+        settings.firstStart = false
+        isReceiver = false
+        val viewModel = viewModel()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome is ProfileCheckOutcome.Failed }
+        viewModel.onProfileCheckOutcomeHandled()
+
+        isReceiver = true
+        viewModel.recheck()
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        assertEquals(
+            ProfileCheckOutcome.Leave(offGateToo = true, firstStart = false),
+            state.profileCheckOutcome
+        )
+        assertEquals(2, deviceInfoRequests())
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+    }
+
+    @Test
+    fun aCachedDeviceInfoAnswerIsReusedAndStaysOffTheGate() = runBlocking<Unit> {
+        settings.firstStart = false
+        profiles.setDeviceInfo(profiles.requireCurrent(), loadWebFixture("deviceinfo.xml"))
+        val viewModel = viewModel()
+
+        viewModel.checkActiveProfile()
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        assertEquals(ProfileCheckStart(showGate = false), state.profileCheckStarted)
+        assertEquals(
+            ProfileCheckOutcome.Leave(offGateToo = false, firstStart = false),
+            state.profileCheckOutcome
+        )
+        assertEquals(0, deviceInfoRequests())
+    }
+
+    @Test
+    fun switchesAreCheckedOnlyAfterStart() = runBlocking<Unit> {
+        settings.firstStart = false
+        val viewModel = viewModel()
+        val first = profiles.requireCurrent()
+        val (setup, next) = listOf("setup", "next").map { profileName ->
+            Profile().apply {
+                name = profileName
+                host = first.host
+                port = first.port
+            }.also { profiles.save(it) }
+        }
+
+        // Before the shell exists, a switch (the setup assistant's) is dropped.
+        profiles.setCurrent(setup.id!!, forceEvent = true)
+        viewModel.start()
+        profiles.setCurrent(next.id!!, forceEvent = true)
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+
+        assertEquals(
+            ProfileCheckOutcome.Leave(offGateToo = false, firstStart = false),
+            state.profileCheckOutcome
+        )
+        assertEquals("next", state.profileName)
+        assertEquals(1, deviceInfoRequests())
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+    }
+
+    @Test
+    fun probeRechecksAnOnlineSession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+
+        assertTrue(viewModel.probeReachability())
+
+        assertEquals(2, deviceInfoRequests())
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+    }
+
+    @Test
+    fun probeSkipsWithoutASession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+
+        assertFalse(viewModel.probeReachability())
+
+        assertEquals(0, deviceInfoRequests())
+    }
+
+    @Test
+    fun volumeKeysFollowTheSetting() {
+        val viewModel = viewModel()
+        assertFalse(viewModel.controlsReceiverVolume(KeyEvent.KEYCODE_VOLUME_UP))
+
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_VOLUME_CONTROL, true).apply()
+
+        assertTrue(viewModel.controlsReceiverVolume(KeyEvent.KEYCODE_VOLUME_UP))
+        assertTrue(viewModel.controlsReceiverVolume(KeyEvent.KEYCODE_VOLUME_DOWN))
+        assertFalse(viewModel.controlsReceiverVolume(KeyEvent.KEYCODE_BACK))
+    }
+
+    @Test
+    fun aVolumeKeyWhileARequestRunsIsDropped() = runBlocking<Unit> {
+        val hold = CountDownLatch(1)
+        volumeHold = hold
+        val viewModel = viewModel()
+
+        viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_UP)
+        assertTrue(volumeArrived.await(5, TimeUnit.SECONDS))
+        viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_UP)
+        hold.countDown()
+        // Once the first request finished, the next key is sent.
+        withTimeout(5_000L) {
+            while (volumeRequests().size < 2) {
+                viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_DOWN)
+                delay(10)
+            }
+        }
+
+        assertEquals(listOf("up", "down"), volumeRequests().take(2))
     }
 
     private fun viewModel(): ShellViewModel = ShellViewModel(
         ReceiverRepository(EnigmaClientFactory(profiles), profiles),
-        profiles
+        profiles,
+        ReceiverProfileCheckRepository(receiver.profiles.context, profiles),
+        receiver.services,
+        sessions,
+        settings
     ).also { viewModels += it }
+
+    private fun deviceInfoRequests(): Int = receiver.requestsTo("/web/deviceinfo").size
+
+    private fun volumeRequests(): List<String?> =
+        receiver.requestsTo("/web/vol").map { it.requestUrl?.queryParameter("set") }
 
     private fun EpgTestReceiver.powerRequest() = requests.single {
         it.requestUrl?.encodedPath == "/web/powerstate"
