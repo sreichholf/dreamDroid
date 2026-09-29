@@ -258,7 +258,11 @@ class MainActivity :
                     }
                     state.profileSwitchEffect?.let { profile ->
                         shellActions.onProfileSwitchHandled()
-                        onProfileChanged(profile, false)
+                        // The setup assistant activates its profile before the shell
+                        // exists; startPhoneShell checks that profile itself.
+                        if (phoneShellReady) {
+                            onProfileChanged(profile, false)
+                        }
                     }
                 }
             }
