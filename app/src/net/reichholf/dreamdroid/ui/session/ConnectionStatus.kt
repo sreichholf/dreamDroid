@@ -1,17 +1,11 @@
 package net.reichholf.dreamdroid.ui.session
 
-import android.content.Context
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.room.AppDatabase
 
 /**
  * Session connectivity for the phone shell. [Session.Online] / [Session.Offline] are stored;
@@ -77,23 +71,6 @@ fun hasUseDrivenCache(
     hasMovieLocationStrip: Boolean = false,
     hasTimerSnapshot: Boolean = false
 ): Boolean = tabStripRefs.isNotEmpty() || hasMovieLocationStrip || hasTimerSnapshot
-
-fun hasUseDrivenCache(profile: Profile, context: Context): Boolean {
-    val id = profile.id ?: return false
-    return runBlocking(Dispatchers.IO) {
-        val db = AppDatabase.database(context)
-        hasUseDrivenCache(
-            db.rosterDao().getTabStripRefs(id),
-            db.movieDao().locationMetaCount(id) > 0,
-            db.timerDao().snapshotCount(id) > 0
-        )
-    }
-}
-
-fun hasUseDrivenCache(profile: Profile): Boolean {
-    val context = DreamDroid.getAppContext() ?: return false
-    return hasUseDrivenCache(profile, context)
-}
 
 /** Skip the hub 20s device-info wait when Room can paint the start surface. */
 fun shouldWaitForDeviceInfo(hasCache: Boolean): Boolean = !hasCache

@@ -6,7 +6,6 @@
 
 package net.reichholf.dreamdroid.activities
 
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
@@ -27,26 +26,15 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.enigma.launchCheckProfileLoad
-import net.reichholf.dreamdroid.enigma.launchVolumeSetLoad
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
-import net.reichholf.dreamdroid.helpers.enigma2.shouldConsumeVolumeKey
-import net.reichholf.dreamdroid.helpers.enigma2.volumeCommandForKey
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -56,21 +44,17 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHost
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHostState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes
 import net.reichholf.dreamdroid.ui.nav.PhoneShell
+import net.reichholf.dreamdroid.ui.nav.ProfileCheckOutcome
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarController
 import net.reichholf.dreamdroid.ui.nav.ShellFabController
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarController
+import net.reichholf.dreamdroid.ui.nav.ShellUiState
 import net.reichholf.dreamdroid.ui.nav.ShellViewModel
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.StartScreen
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
-import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
-import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckCheckingUi
-import net.reichholf.dreamdroid.ui.session.shouldShowProfileCheckFailedUi
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -85,11 +69,8 @@ class MainActivity :
     DrawerRouteHighlighter {
 
     private var drawerOpen by mutableStateOf(false)
-    private var profileName by mutableStateOf("")
     private var shellWasPaused: Boolean = false
 
-    private var checkProfileJob: Job? = null
-    private var volumeSetJob: Job? = null
     private var showingSetup: Boolean = false
     private var shellCallbackRegistered: Boolean = false
     private var lanGranted by mutableStateOf(false)
@@ -103,11 +84,6 @@ class MainActivity :
     val shellActions: ShellViewModel by viewModels()
 
     private var phoneShellReady: Boolean = false
-
-    /** When true, a successful profile check opens the start route (after Recheck). */
-    private var openStartOnProfileSuccess: Boolean = false
-
-    private lateinit var currentProfile: Profile
 
     /**
      * Lowest-priority back handler: drawer close, then NavHost pop, then optional leave-confirm.
@@ -132,50 +108,6 @@ class MainActivity :
         }
     }
 
-    private fun showProfileCheckChecking(message: String) {
-        val ui = ProfileCheckUi.Checking(message)
-        phoneNav.navigateToProfileCheck(ui)
-    }
-
-    private fun showProfileCheckFailed(result: ProfileCheckResult) {
-        openStartOnProfileSuccess = true
-        var error: String? = getString(result.errorTextId)
-        if (result.errorTextExt.isNotEmpty()) {
-            error = result.errorTextExt
-        }
-        if (error.isNullOrEmpty()) {
-            error = getString(result.errorTextId)
-        }
-        val p = ProfileRepository.get().requireCurrent()
-        val title = String.format("%s@%s:%s", p.user, p.host, p.port)
-        val ui = ProfileCheckUi.Failed(title = title, message = error.orEmpty())
-        phoneNav.navigateToProfileCheck(ui)
-    }
-
-    private fun updateProfileCheckChecking(message: String) {
-        if (phoneNav.isOnProfileCheckRoute()) {
-            phoneNav.updateProfileCheckUi(ProfileCheckUi.Checking(message))
-        }
-    }
-
-    fun recheckProfileAfterFailure() {
-        // Keep openStartOnProfileSuccess so a later success opens the start route.
-        showProfileCheckChecking(getString(R.string.checking_connection))
-        val p = ProfileRepository.get().requireCurrent()
-        ProfileRepository.get().setDeviceInfo(p, null)
-        onProfileChanged(p, true)
-    }
-
-    fun openProfilesFromProfileCheckFailed() {
-        openStartOnProfileSuccess = false
-        if (phoneNav.isOnProfileCheckRoute()) {
-            // Keep the gate under Profiles so Back returns to the check.
-            phoneNav.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
-            return
-        }
-        navigationHelper?.navigateTo(R.id.menu_navigation_profiles)
-    }
-
     private fun leaveProfileCheckGate(isFirstStart: Boolean) {
         if (phoneNav.isOnProfileCheckRoute()) {
             val route = if (isFirstStart) {
@@ -196,52 +128,30 @@ class MainActivity :
 
     private fun isPaused(): Boolean = !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
 
-    fun getProfileCheckContext(): Context = this
-
-    private fun onProfileCheckProgress(state: String) {
-        SessionConnectionHolder.shared.beginChecking()
-        bindDrawerConnectionChip()
-        updateProfileCheckChecking(state)
-    }
-
-    fun onProfileChecked(result: ProfileCheckResult) {
-        val hasCache = hasUseDrivenCache(ProfileRepository.get().requireCurrent(), this)
-        // Apply before any UI/helper gate so a finished check cannot leave Checking
-        // stuck (paused window, or helper recreated between onPause and RESUMED).
-        SessionConnectionHolder.shared.applyProfileCheckResult(result, hasCache)
-        bindDrawerConnectionChip()
-        if (isPaused()) {
-            return
+    /** Navigation for the profile check that [shellActions] runs; only while resumed. */
+    private fun onProfileCheckEffects(state: ShellUiState) {
+        state.profileCheckStarted?.let { start ->
+            shellActions.onProfileCheckStartHandled()
+            if (start.showGate) {
+                phoneNav.navigateToProfileCheck()
+            }
+            navigationHelper?.onProfileChanged()
         }
+        val outcome = state.profileCheckOutcome ?: return
         ensureNavigationHelper()
         navigationHelper!!.setAvailableFeatures()
-        val sp = PreferenceManager.getDefaultSharedPreferences(this)
-        val isFirstStart = sp.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
+        when (outcome) {
+            is ProfileCheckOutcome.Failed -> phoneNav.navigateToProfileCheck()
 
-        if (result.hasError && !result.isSoftError) {
-            if (shouldShowProfileCheckFailedUi(hasCache, result.failure)) {
-                showProfileCheckFailed(result)
-            } else if (phoneNav.isOnProfileCheckRoute()) {
-                leaveProfileCheckGate(isFirstStart)
-            }
-        } else {
-            val openStart = openStartOnProfileSuccess
-            openStartOnProfileSuccess = false
-            val onGate = phoneNav.isOnProfileCheckRoute()
-            if (onGate || openStart) {
-                // Leave PROFILE_CHECK on the back stack so Back returns to the gate.
-                leaveProfileCheckGate(isFirstStart)
-            } else if (isFirstStart) {
-                navigationHelper!!.navigateTo(R.id.menu_navigation_profiles)
-            }
+            is ProfileCheckOutcome.Leave ->
+                if (outcome.offGateToo || phoneNav.isOnProfileCheckRoute()) {
+                    leaveProfileCheckGate(outcome.firstStart)
+                }
         }
-
-        if (isFirstStart) {
-            if (!isNavigationDrawerVisible()) {
-                toggle()
-            }
-            sp.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false).apply()
+        if (outcome.firstStart && !isNavigationDrawerVisible()) {
+            toggle()
         }
+        shellActions.onProfileCheckOutcomeHandled()
     }
 
     override fun requestLocalNetworkOnCreate(): Boolean = ProfileRepository.get().hasCurrent()
@@ -256,13 +166,14 @@ class MainActivity :
                         shellActions.onSleepTimerEffectHandled()
                         phoneNav.navigateToSleepTimer(timer)
                     }
-                    state.profileSwitchEffect?.let { profile ->
-                        shellActions.onProfileSwitchHandled()
-                        // The setup assistant activates its profile before the shell
-                        // exists; startPhoneShell checks that profile itself.
-                        if (phoneShellReady) {
-                            onProfileChanged(profile, false)
-                        }
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                shellActions.uiState.collect { state ->
+                    if (phoneShellReady) {
+                        onProfileCheckEffects(state)
                     }
                 }
             }
@@ -281,8 +192,7 @@ class MainActivity :
             return
         }
         if (!ProfileRepository.get().ensureCurrent()) {
-            checkProfileJob?.cancel()
-            checkProfileJob = null
+            shellActions.cancelCheck()
             showSetupAssistant()
         }
     }
@@ -297,9 +207,7 @@ class MainActivity :
                     localNetworkGranted = lanGranted,
                     onRequestLocalNetwork = { ensureLocalNetworkPermission() },
                     onFinished = {
-                        PreferenceManager.getDefaultSharedPreferences(this).edit()
-                            .putBoolean(DreamDroid.PREFS_KEY_FIRST_START, false)
-                            .apply()
+                        shellActions.onSetupFinished()
                         startPhoneShell()
                     },
                     onLeave = { finish() }
@@ -317,21 +225,20 @@ class MainActivity :
         }
         ensureLocalNetworkPermission()
 
-        currentProfile = Profile.getDefault()
         phoneNav.attach(this, this) // activity is LifecycleOwner and DrawerRouteHighlighter
         if (!phoneNav.hasSavedStartRoute()) {
             phoneNav.setStartRoute(StartScreen.navRoute(this))
         }
         phoneShellReady = true
+        // Switches from now on are checked; the setup assistant's switch came before.
+        shellActions.start()
         initViews()
         val preferences = PreferenceManager.getDefaultSharedPreferences(this)
         preferences.unregisterOnSharedPreferenceChangeListener(this)
         preferences.registerOnSharedPreferenceChangeListener(this)
         showChangeLog(true)
         if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
-            checkNavigationHelper(
-                lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
-            )
+            checkNavigationHelper()
         }
     }
 
@@ -344,28 +251,7 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    val active = ProfileRepository.get().current.value
-                    if (active == null || showingSetup) {
-                        delay(SESSION_REACHABILITY_INTERVAL_MS)
-                        continue
-                    }
-                    val ran = probeSessionReachabilityIfNeeded(
-                        holder = SessionConnectionHolder.shared,
-                        hasCache = hasUseDrivenCache(
-                            active,
-                            this@MainActivity
-                        ),
-                        isBusy = { checkProfileJob != null },
-                        check = {
-                            val profile = ProfileRepository.get().current.value ?: active
-                            ProfileRepository.get().setDeviceInfo(profile, null)
-                            withContext(Dispatchers.IO) {
-                                CheckProfile.checkProfile(profile, this@MainActivity)
-                            }
-                        }
-                    )
-                    if (ran) {
-                        bindDrawerConnectionChip()
+                    if (!showingSetup && shellActions.probeReachability()) {
                         navigationHelper?.setAvailableFeatures()
                     }
                     delay(SESSION_REACHABILITY_INTERVAL_MS)
@@ -379,7 +265,7 @@ class MainActivity :
         if (showingSetup || !ProfileRepository.get().hasCurrent()) {
             return
         }
-        onProfileChanged(ProfileRepository.get().requireCurrent(), true)
+        shellActions.checkActiveProfile()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -429,12 +315,12 @@ class MainActivity :
             return
         }
         if (navigationHelper == null) {
-            checkNavigationHelper(true)
+            checkNavigationHelper()
             return
         }
         if (shellWasPaused) {
             shellWasPaused = false
-            onProfileChanged(ProfileRepository.get().requireCurrent(), true)
+            shellActions.checkActiveProfile()
         }
     }
 
@@ -456,14 +342,12 @@ class MainActivity :
         navigationHelper = NavigationHelper(this, drawerListState)
     }
 
-    private fun checkNavigationHelper(): Boolean = checkNavigationHelper(false)
-
-    private fun checkNavigationHelper(isResume: Boolean): Boolean {
+    private fun checkNavigationHelper(): Boolean {
         if (navigationHelper != null) {
             return false
         }
         ensureNavigationHelper()
-        onProfileChanged(ProfileRepository.get().requireCurrent(), isResume)
+        shellActions.checkActiveProfile()
         return true
     }
 
@@ -485,10 +369,7 @@ class MainActivity :
     }
 
     override fun onStop() {
-        checkProfileJob?.cancel(null)
-        checkProfileJob = null
-        SessionConnectionHolder.shared.cancelChecking()
-        bindDrawerConnectionChip()
+        shellActions.cancelCheck()
         super.onStop()
     }
 
@@ -496,13 +377,14 @@ class MainActivity :
         setContent {
             DreamDroidTheme {
                 val status by phoneNav.connectionStatusFlow().collectAsState()
+                val shellUiState by shellActions.uiState.collectAsStateWithLifecycle()
                 PhoneShell(
                     drawerListState = drawerListState,
                     drawerOpen = drawerOpen,
                     onDrawerOpenChange = { open ->
                         drawerOpen = open
                     },
-                    profileName = profileName,
+                    profileName = shellUiState.profileName,
                     connectionLabel = stringResource(status.chipLabelRes()),
                     onProfileClick = {
                         checkNavigationHelper()
@@ -529,7 +411,6 @@ class MainActivity :
                         )
                     )
                 ) {
-                    val shellUiState by shellActions.uiState.collectAsStateWithLifecycle()
                     ShowShellUserMessage(
                         shellUiState.userMessage,
                         shellActions::onMessageShown
@@ -550,93 +431,21 @@ class MainActivity :
         drawerOpen = false
     }
 
-    fun onProfileChanged(p: Profile, isResuming: Boolean) {
-        if (!isResuming && isPaused()) {
-            return
-        }
-
-        if (p.id != currentProfile.id) {
-            SessionConnectionHolder.shared.resetForProfileChange()
-            bindDrawerConnectionChip()
-        }
-        setProfileName()
-        if (ProfileRepository.get().deviceInfo(p) == null) {
-            if (p == currentProfile && checkProfileJob != null) {
-                return
-            }
-            currentProfile = p
-            checkProfileJob?.cancel(null)
-            checkProfileJob = null
-            val hasCache = hasUseDrivenCache(p, this)
-            if (shouldShowProfileCheckCheckingUi(hasCache)) {
-                showProfileCheckChecking(getString(R.string.checking_connection))
-            }
-            SessionConnectionHolder.shared.beginChecking()
-            bindDrawerConnectionChip()
-            checkProfileJob = launchCheckProfileLoad(
-                p,
-                getProfileCheckContext(),
-                { state -> onProfileCheckProgress(state) },
-                { result ->
-                    checkProfileJob = null
-                    if (result != null) {
-                        onProfileChecked(result)
-                    }
-                }
-            )
-        } else {
-            currentProfile = p
-            onProfileChecked(CheckProfile.checkProfile(p, this))
-        }
-        navigationHelper?.onProfileChanged()
-    }
-
-    /**
-     *
-     */
-    fun setProfileName() {
-        profileName = ProfileRepository.get().requireCurrent().name.orEmpty()
-    }
-
-    private fun bindDrawerConnectionChip() {
-        if (!phoneShellReady) {
-            return
-        }
-        profileName = ProfileRepository.get().requireCurrent().name.orEmpty()
-    }
-
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (!shouldConsumeVolumeKey(keyCode, volumeControlEnabled())) {
+        if (!shellActions.controlsReceiverVolume(keyCode)) {
             return super.onKeyDown(keyCode, event)
         }
-        sendReceiverVolume(keyCode)
+        if (phoneShellReady) {
+            phoneNav.runOnlineOnly { shellActions.onVolumeKey(keyCode) }
+        }
         return true
     }
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent): Boolean {
-        if (!shouldConsumeVolumeKey(keyCode, volumeControlEnabled())) {
+        if (!shellActions.controlsReceiverVolume(keyCode)) {
             return super.onKeyUp(keyCode, event)
         }
         return true
-    }
-
-    private fun volumeControlEnabled(): Boolean =
-        PreferenceManager.getDefaultSharedPreferences(this)
-            .getBoolean(DreamDroid.PREFS_KEY_VOLUME_CONTROL, false)
-
-    private fun sendReceiverVolume(keyCode: Int) {
-        if (volumeSetJob?.isActive == true) {
-            return
-        }
-        val command = volumeCommandForKey(keyCode) ?: return
-        if (!phoneShellReady) {
-            return
-        }
-        phoneNav.runOnlineOnly {
-            volumeSetJob = launchVolumeSetLoad(
-                listOf(NameValuePair("set", command))
-            ) { _, _ -> }
-        }
     }
 
     fun onSetSleepTimer(time: String, action: String, enabled: Boolean) {

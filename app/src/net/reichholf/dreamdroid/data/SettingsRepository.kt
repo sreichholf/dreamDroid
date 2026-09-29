@@ -150,6 +150,11 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             if (value) DrawerEpgMode.MULTI else DrawerEpgMode.LIST
         )
 
+    /** True until the phone shell finished its first profile check, or setup finished. */
+    var firstStart: Boolean
+        get() = preferences.getBoolean(DreamDroid.PREFS_KEY_FIRST_START, true)
+        set(value) = preferences.edit().putBoolean(DreamDroid.PREFS_KEY_FIRST_START, value).apply()
+
     /** Every stored preference, for a backup. */
     fun all(): Map<String, Any?> = HashMap(preferences.all)
 

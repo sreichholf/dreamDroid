@@ -22,7 +22,6 @@ import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
@@ -88,9 +87,6 @@ class PhoneNavHostState @Inject constructor(
     private var pendingPower: Boolean = false
     private var pendingSendMessage: Boolean = false
     private var pendingBackup: Boolean = false
-    private val profileCheckUiState = MutableStateFlow<ProfileCheckUi>(
-        ProfileCheckUi.Checking("")
-    )
     private val leaveConfirmRequestedState = MutableStateFlow(false)
     private val needsReceiverRequestedState = MutableStateFlow(false)
     private val epgRemountState = MutableStateFlow(0)
@@ -247,8 +243,6 @@ class PhoneNavHostState @Inject constructor(
         flushPendingNavigations()
     }
 
-    override fun profileCheckUiFlow(): StateFlow<ProfileCheckUi> = profileCheckUiState.asStateFlow()
-
     override fun connectionStatusFlow(): StateFlow<ConnectionStatus> = sessions.status
 
     override fun leaveConfirmRequestedFlow(): StateFlow<Boolean> =
@@ -273,15 +267,10 @@ class PhoneNavHostState @Inject constructor(
         needsReceiverRequestedState.value = false
     }
 
-    override fun updateProfileCheckUi(ui: ProfileCheckUi) {
-        profileCheckUiState.value = ui
-    }
-
     override fun isOnProfileCheckRoute(): Boolean =
         routeKey(navController?.currentDestination?.route) == PhoneNavRoutes.PROFILE_CHECK
 
-    override fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean {
-        updateProfileCheckUi(ui)
+    override fun navigateToProfileCheck(): Boolean {
         val controller = navController
         if (controller == null) {
             pendingProfileCheck = true
@@ -289,12 +278,6 @@ class PhoneNavHostState @Inject constructor(
         }
         controller.navigateToProfileCheck()
         return true
-    }
-
-    override fun queueProfileCheck(ui: ProfileCheckUi) {
-        updateProfileCheckUi(ui)
-        pendingProfileCheck = true
-        flushPendingNavigations()
     }
 
     override fun navigateAboveProfileCheck(route: Any): Boolean {

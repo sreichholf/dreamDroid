@@ -18,9 +18,8 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.testutil.memoryProfiles
+import net.reichholf.dreamdroid.testutil.testShellViewModel
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -70,11 +69,10 @@ class ShellPowerSurvivalTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-        val receiver = ReceiverRepository(EnigmaClientFactory(profiles), profiles)
         val factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                ShellViewModel(receiver, profiles) as T
+                testShellViewModel(profiles) as T
         }
         viewModel = ViewModelProvider(composeRule.activity, factory)[ShellViewModel::class.java]
     }

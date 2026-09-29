@@ -3,15 +3,12 @@ package net.reichholf.dreamdroid.ui.nav
 import android.content.Intent
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
-import net.reichholf.dreamdroid.enigma.launchDetectDevicesLoad
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
-import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 
 /**
@@ -29,7 +26,6 @@ interface PhoneNavHandle {
 
     fun epgRemountFlow(): StateFlow<Int>
     fun epgSearchRemountFlow(): StateFlow<Int>
-    fun profileCheckUiFlow(): StateFlow<ProfileCheckUi>
     fun connectionStatusFlow(): StateFlow<ConnectionStatus>
     fun leaveConfirmRequestedFlow(): StateFlow<Boolean>
     fun requestLeaveConfirm()
@@ -52,10 +48,8 @@ interface PhoneNavHandle {
     fun queueSleepTimer(timer: SleepTimer)
     fun navigateToChangelog(): Boolean
     fun queueChangelog()
-    fun updateProfileCheckUi(ui: ProfileCheckUi)
     fun isOnProfileCheckRoute(): Boolean
-    fun navigateToProfileCheck(ui: ProfileCheckUi): Boolean
-    fun queueProfileCheck(ui: ProfileCheckUi)
+    fun navigateToProfileCheck(): Boolean
     fun navigateAboveProfileCheck(route: Any): Boolean
     fun navigateReplacingProfileCheck(route: Any): Boolean
     fun navigateToEpg(
@@ -123,6 +117,3 @@ fun PhoneNavHandle.runOnlineOnly(action: () -> Unit) {
         action()
     }
 }
-
-fun PhoneNavHandle.launchDetectDevicesLoad(onResult: (profiles: ArrayList<Profile>) -> Unit): Job =
-    lifecycleOwner.launchDetectDevicesLoad(onResult)

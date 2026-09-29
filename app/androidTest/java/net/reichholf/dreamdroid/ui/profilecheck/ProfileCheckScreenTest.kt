@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -29,7 +30,7 @@ class ProfileCheckScreenTest {
         composeRule.setContent {
             DreamDroidTheme {
                 ProfileCheckScreen(
-                    ui = ProfileCheckUi.Checking("Checking connection…"),
+                    ui = ProfileCheckUi.Checking(UiText.Raw("Checking connection…")),
                     onRecheck = {},
                     onProfiles = {}
                 )
@@ -46,8 +47,8 @@ class ProfileCheckScreenTest {
             DreamDroidTheme {
                 ProfileCheckScreen(
                     ui = ProfileCheckUi.Failed(
-                        title = "user@host:80",
-                        message = "Host unreachable"
+                        title = UiText.Raw("user@host:80"),
+                        message = UiText.Raw("Host unreachable")
                     ),
                     onRecheck = { recheck = true },
                     onProfiles = { profiles = true }

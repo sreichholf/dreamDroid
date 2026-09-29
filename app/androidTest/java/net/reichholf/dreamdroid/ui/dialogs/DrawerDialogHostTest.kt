@@ -128,8 +128,8 @@ class DrawerDialogHostTest {
             DreamDroidTheme {
                 net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckScreen(
                     ui = net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi.Failed(
-                        title = "user@box:80",
-                        message = "Cannot reach box"
+                        title = net.reichholf.dreamdroid.ui.text.UiText.Raw("user@box:80"),
+                        message = net.reichholf.dreamdroid.ui.text.UiText.Raw("Cannot reach box")
                     ),
                     onRecheck = {},
                     onProfiles = {}

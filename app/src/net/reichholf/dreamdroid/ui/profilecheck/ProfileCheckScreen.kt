@@ -20,14 +20,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * Full-screen profile-check gate shown on
  * [net.reichholf.dreamdroid.ui.nav.PhoneNavRoutes.PROFILE_CHECK].
  */
 sealed class ProfileCheckUi {
-    data class Checking(val message: String) : ProfileCheckUi()
-    data class Failed(val title: String, val message: String) : ProfileCheckUi()
+    data class Checking(val message: UiText) : ProfileCheckUi()
+    data class Failed(val title: UiText, val message: UiText) : ProfileCheckUi()
 }
 
 @Composable
@@ -49,7 +51,7 @@ fun ProfileCheckScreen(
                 CircularProgressIndicator(modifier = Modifier.size(48.dp))
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = ui.message.ifBlank { stringResource(R.string.checking_connection) },
+                    text = ui.message.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
@@ -67,7 +69,7 @@ fun ProfileCheckScreen(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = ui.title,
+                    text = ui.title.asString(),
                     style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -75,7 +77,7 @@ fun ProfileCheckScreen(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
-                    text = ui.message,
+                    text = ui.message.asString(),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurface,
                     textAlign = TextAlign.Center,
