@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.text.asString
 
 const val EPG_SEARCH_FIELD_TAG = "epg_search_field"
@@ -247,7 +248,7 @@ private fun SearchResults(
             state.sections.forEachIndexed { index, section ->
                 val day = section.day
                 if (day != null) {
-                    stickyHeader(key = "day:$index") { EpgDayHeader(day) }
+                    stickyHeader(key = "day:$index") { ListSectionHeader(day.asString()) }
                 }
                 itemsIndexed(
                     section.events,

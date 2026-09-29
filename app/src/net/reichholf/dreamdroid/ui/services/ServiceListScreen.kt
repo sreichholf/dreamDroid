@@ -10,9 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -29,8 +28,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
-import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.compose.RowMenu
 import net.reichholf.dreamdroid.ui.compose.RowMenuAction
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
@@ -65,7 +64,7 @@ fun ServiceListScreen(
     onMenuDismiss: () -> Unit = {}
 ) {
     LazyColumn(modifier.fillMaxSize()) {
-        items(items, key = ::serviceRowKey) { item ->
+        serviceListItems(items) { item ->
             Box {
                 ServiceRow(
                     item = item,
@@ -78,20 +77,27 @@ fun ServiceListScreen(
     }
 }
 
+/**
+ * [items] as list entries: a bouquet marker is a sticky section header over the rows up to
+ * the next marker, every other item is drawn by [row]. Each item stays one list entry, so
+ * an item's index in [items] is its list index.
+ */
+fun LazyListScope.serviceListItems(
+    items: List<ServiceListItem>,
+    row: @Composable (ServiceListItem) -> Unit
+) {
+    for (item in items) {
+        if (item.kind == ServiceRowKind.MARKER) {
+            stickyHeader(key = serviceRowKey(item)) { ListSectionHeader(item.name) }
+        } else {
+            item(key = serviceRowKey(item)) { row(item) }
+        }
+    }
+}
+
+/** A channel or directory row; markers are section headers, see [serviceListItems]. */
 @Composable
 internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
-    if (item.kind == ServiceRowKind.MARKER) {
-        Text(
-            text = item.name,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = ListRowHorizontalInset + 16.dp, vertical = 8.dp)
-                .wrapContentHeight(Alignment.CenterVertically)
-        )
-        return
-    }
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
