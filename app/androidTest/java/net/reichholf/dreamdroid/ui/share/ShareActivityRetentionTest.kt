@@ -16,6 +16,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.ShareActivity
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -38,6 +39,9 @@ class ShareActivityRetentionTest {
 
     @Inject
     lateinit var database: AppDatabase
+
+    @Inject
+    lateinit var profiles: ProfileRepository
 
     private val context = InstrumentationRegistry.getInstrumentation().targetContext
     private val dao by lazy { database.profileDao() }
@@ -74,6 +78,8 @@ class ShareActivityRetentionTest {
             }
             runBlocking { dao.addProfile(profile) }
         }
+        // DreamDroid.onCreate does not run under HiltTestApplication; its load ends here.
+        profiles.markLoaded()
     }
 
     @After
