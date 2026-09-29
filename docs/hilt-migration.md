@@ -1,6 +1,6 @@
 # Hilt migration plan (B1, with C2 and B4)
 
-**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–9 and 12 merged; PRs 10 and 13 in review. Progress is tracked in **Progress** below.
+**Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–13 and 14a merged; 14b in review. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
 
 ## End state
@@ -53,6 +53,8 @@ fun profileRepository(@ApplicationContext context: Context): ProfileRepository =
 This changes no behavior: the existing lazy init, the early `getAppContext()` path, and any caller that runs before Hilt injects all still work. There is one instance. When a class gets an `@Inject constructor` (at the latest when its static is deleted), the `@Provides` goes away with the static.
 
 The alternative, where statics delegate to Hilt through an `EntryPoint`, is what B1 currently describes. It fails for callers that run before `super.onCreate()` of the Application finishes injection, or in a process where the Application is not `DreamDroid`. Decision 2 settles the direction.
+
+Since 14b no transitional provider is left: every binding is an `@Inject` constructor or a `@Provides` that builds its own instance.
 
 ## PR sequence
 
@@ -141,6 +143,8 @@ Split in two. **14a** moves the widget, picons, the HTTP stack, live streams, an
 - Delete everything in **End state** that is still there. At this point the compiler lists any caller that is left.
 - `DreamDroidBackupAgent` needs nothing: it only names files. It must stay free of injection, because a restore can run the agent in a process whose Application is not `DreamDroid`.
 
+14b as landed: `MainActivity` injects `ProfileRepository`. `SessionConnectionHolder` is an `@Singleton` with an `@Inject` constructor, and `PhoneShell` takes `boxActionsBlocked` from the status `MainActivity` already collects. The picon sync, the last `ShellMessages` poster, runs from `SettingsViewModel` through an injected `PiconSyncScheduler` (WorkManager; a fake in the JVM test, since WorkManager does not run there) and reports started / still running as `SettingsUiState.userMessage`. `DatabaseModule` builds the database with `AppDatabase.build`; `DreamDroid` gets it injected for the pre-Room import. Instrumented tests that drive real activities read the app's singletons from the fields Hilt injected into `DreamDroid` (`testutil/DreamDroidApp.kt`).
+
 ### PR 15 (optional) — Hilt in instrumented tests
 
 Only once a UI test needs a faked binding (decision 8). A custom runner that swaps the Application for `HiltTestApplication` applies to **all** 142 instrumented test files. Before PR 14 it would break the 59 static references and everything `DreamDroid.onCreate` sets up. Also update `.cursor/cloud/connected-test.sh` and the `am instrument` line in `AGENTS.md` for the new runner class.
@@ -163,8 +167,8 @@ One line per PR: state, then PR link once opened.
 - [x] 11b Phone shell gate — merged, [#543](https://github.com/sreichholf/dreamDroid/pull/543)
 - [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
-- [ ] 14a Non-UI entry points — in review
-- [ ] 14b Locator removal
+- [x] 14a Non-UI entry points — merged, [#545](https://github.com/sreichholf/dreamDroid/pull/545)
+- [ ] 14b Locator removal — in review
 - [ ] 15 *(optional)* Hilt instrumented tests
 
 ### Parallel waves
@@ -193,7 +197,7 @@ Accepted by the operator 2026-09-28. Change one only with a note here saying why
 7. **`PiconSyncWorker` uses an `@EntryPoint`** in PR 14. Switch to `@HiltWorker` if a second worker shows up.
 8. **No Hilt instrumented test as B1 proof.** Proof is Dagger's compile-time graph validation, the emulator job, and JVM tests. PR 15 happens only once a UI test needs a faked binding.
 9. **Planned series.** PRs 1–14 run in order; 2.0 blocker fixes go first when they come up. Every PR leaves the app shippable, so the series can pause between any two PRs.
-10. **JVM tests and Android stubs.** `EnigmaHttp` error paths call `android.util.Log`, which throws on the JVM. The app sets `testOptions.unitTests.isReturnDefaultValues = true` (PR 1) so repository and ViewModel tests cover HTTP errors. `DreamDroid.dumpXml()` still reads `ProfileRepository.get()`, so tests install the static repository until PR 14 removes it.
+10. **JVM tests and Android stubs.** `EnigmaHttp` error paths call `android.util.Log`, which throws on the JVM. The app sets `testOptions.unitTests.isReturnDefaultValues = true` (PR 1) so repository and ViewModel tests cover HTTP errors. Tests build their own `ProfileRepository` over an in-memory database; since 14b there is no static repository to install.
 11. **Transitional lookups and assisted ViewModels** (PR 6). When a class moves behind Hilt and a non-Hilt caller that runs after Application injection still needs it (for example the phone hub before PR 10, the TV hub before PR 12), the caller uses a small `@EntryPoint` lookup such as `movieRepository(context)`, which returns the same singleton. It is deleted with its last caller, like `ProfileRepository.get()`. A ViewModel whose input is not a route argument (a pager page keyed by location) uses `@HiltViewModel(assistedFactory = …)` with `hiltViewModel(key = …) { it.create(…) }`.
 
 ## Not in this plan
