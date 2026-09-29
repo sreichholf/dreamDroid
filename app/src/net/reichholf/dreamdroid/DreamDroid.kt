@@ -56,7 +56,6 @@ class DreamDroid : Application() {
         // Hilt injects here, before the pre-Room import below. Building ProfileRepository and
         // EpgRepository does not read the database; loadCurrent() further down is the first read.
         super.onCreate()
-        ProfileRepository.install(profiles)
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean(PREFS_KEY_DYNAMIC_THEME_COLORS, false)
         if (dynamicColors) {
@@ -79,8 +78,7 @@ class DreamDroid : Application() {
             DATE_LOCALE_WO = false
         }
 
-        val appContext = getAppContext()!!
-        DatabaseHelper.migrateIntoRoomIfNeeded(appContext)
+        DatabaseHelper.migrateIntoRoomIfNeeded(this)
 
         initChannels()
         profiles.loadCurrent()
@@ -201,9 +199,6 @@ class DreamDroid : Application() {
     }
 
     companion object {
-        @Volatile
-        private var instance: DreamDroid? = null
-
         const val INITIAL_SERVICELIST_PANE: Int = 1
         const val PREFS_KEY_HWACCEL: String = "video_hardware_acceleration"
         const val PREFS_KEY_PICONS_ONLINE: String = "picons_online"
@@ -277,25 +272,6 @@ class DreamDroid : Application() {
         private var nowNextEnabled: Boolean = true
 
         private var postRequestEnabled: Boolean = true
-
-        fun getAppContext(): Context? {
-            if (instance != null) {
-                return instance
-            } else {
-                try {
-                    @Suppress("UNCHECKED_CAST")
-                    instance = Class.forName("android.app.ActivityThread")
-                        .getDeclaredMethod("currentApplication")
-                        .invoke(null) as DreamDroid?
-                } catch (ignored: IllegalAccessException) {
-                } catch (ignored: java.lang.reflect.InvocationTargetException) {
-                } catch (ignored: NoSuchMethodException) {
-                } catch (ignored: ClassNotFoundException) {
-                } catch (ignored: ClassCastException) {
-                }
-                return instance
-            }
-        }
 
         fun getVersionString(): String {
             var buildDate = "<build-no-date>"

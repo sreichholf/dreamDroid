@@ -3,8 +3,8 @@ package net.reichholf.dreamdroid
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.testutil.dreamDroidApp
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
@@ -46,7 +46,7 @@ class Upgrade115Test {
     }
 
     private fun assertCurrentIsSeeded() {
-        assertEquals(SEEDED_ID, ProfileRepository.get().current.value?.id)
+        assertEquals(SEEDED_ID, dreamDroidApp().profiles.current.value?.id)
     }
 
     private fun assertSeededProfile() {

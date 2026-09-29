@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -19,24 +18,15 @@ import org.junit.runner.RunWith
 @RunWith(AndroidJUnit4::class)
 class EnigmaClientHttpFailTest {
     private lateinit var server: MockWebServer
-    private var previousProfile: Profile? = null
 
     @Before
     fun startServer() {
         server = MockWebServer()
         server.start()
-        previousProfile = ProfileRepository.get().current.value
-        ProfileRepository.get().setCurrent(profileForServer())
     }
 
     @After
     fun stopServer() {
-        val previous = previousProfile
-        if (previous != null) {
-            ProfileRepository.get().setCurrent(previous)
-        } else {
-            ProfileRepository.get().loadCurrent()
-        }
         server.shutdown()
     }
 
