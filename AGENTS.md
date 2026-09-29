@@ -49,6 +49,15 @@ Default proof for Compose and in-app UI:
 
 Use `JAVA_HOME` pointing at JDK 25. Instrumented tests live in `app/androidTest/java`. ViewModels, repositories, and parsers also get JVM tests in `app/test` (`:app:testGoogleDebugUnitTest`) with fake repositories. Add Compose UI tests next to each new screen (`createComposeRule` / `createAndroidComposeRule`). Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
+Tests wait for a signal, never for time. Do not use `Thread.sleep`, `delay(n)`, `SystemClock.sleep` or a poll-with-delay loop when there is something to await:
+- `flow.first { … }` on the `StateFlow` / UiState, wrapped in `withTimeout` as an upper bound;
+- `advanceUntilIdle()` / `runCurrent()` under a test dispatcher;
+- `composeRule.waitUntil { … }` / `waitForIdle()`;
+- a `CompletableDeferred` or latch completed by the fake;
+- `MockWebServer.takeRequest(timeout)`.
+
+To show that something does *not* happen, await a later signal that must follow it, or drive the code with a test dispatcher. Do not sleep and assert.
+
 To run one test class, filter with `adb shell am instrument -w -e class ... net.reichholf.dreamdroid.debug.test/androidx.test.runner.AndroidJUnitRunner` (see **Other traps** for what not to pass to Gradle).
 
 CI is [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml); read it for what runs on which event. Before pushing, run what the PR job runs:
