@@ -193,8 +193,17 @@ private fun EpgTimeJumpBar(timeJump: EpgTimeJumpUi) {
     }
 }
 
+/**
+ * One EPG list row: title, channel, start, duration, and the extended description. With
+ * [showDate] false the start is the time only, for a list that heads each day.
+ */
 @Composable
-private fun EpgBouquetRow(event: Event, piconsEnabled: Boolean, onClick: () -> Unit) {
+internal fun EpgBouquetRow(
+    event: Event,
+    piconsEnabled: Boolean,
+    onClick: () -> Unit,
+    showDate: Boolean = true
+) {
     ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         ListItem(
             headlineContent = {
@@ -217,7 +226,11 @@ private fun EpgBouquetRow(event: Event, piconsEnabled: Boolean, onClick: () -> U
                     )
                     Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                         Text(
-                            text = event.startReadable,
+                            text = if (showDate || event.startTimeReadable.isEmpty()) {
+                                event.startReadable
+                            } else {
+                                event.startTimeReadable
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.weight(1f)

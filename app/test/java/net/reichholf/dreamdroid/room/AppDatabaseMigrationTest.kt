@@ -90,7 +90,8 @@ class AppDatabaseMigrationTest {
             "movie_location_meta",
             "movie_location_strip",
             "movie_list_meta",
-            "movie_list"
+            "movie_list",
+            "epg_search_recent"
         ).forEach { table ->
             assertTrue(table in names, "missing $table")
         }

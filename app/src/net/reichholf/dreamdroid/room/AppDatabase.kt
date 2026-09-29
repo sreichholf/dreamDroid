@@ -24,7 +24,8 @@ import net.reichholf.dreamdroid.Profile
         MovieLocationMetaEntity::class,
         MovieLocationStripEntity::class,
         MovieListMetaEntity::class,
-        MovieListEntity::class
+        MovieListEntity::class,
+        EpgSearchRecentEntity::class
     ],
     version = 9,
     exportSchema = true
@@ -291,7 +292,8 @@ abstract class AppDatabase : RoomDatabase() {
 
         /**
          * Adds [EpgEventEntity.titleKey] and fills it for the cached rows, so offline EPG
-         * search finds them without waiting for the next MultiEPG fetch.
+         * search finds them without waiting for the next MultiEPG fetch. Adds the recent
+         * EPG searches.
          */
         val MIGRATION_8_9: Migration = object : Migration(8, 9) {
             override suspend fun migrate(connection: SQLiteConnection) {
@@ -317,6 +319,16 @@ abstract class AppDatabase : RoomDatabase() {
                         update.reset()
                     }
                 }
+                connection.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS `epg_search_recent` (
+                        `key` TEXT NOT NULL,
+                        `query` TEXT NOT NULL,
+                        `usedAtMs` INTEGER NOT NULL,
+                        PRIMARY KEY(`key`)
+                    )
+                    """.trimIndent()
+                )
             }
         }
 

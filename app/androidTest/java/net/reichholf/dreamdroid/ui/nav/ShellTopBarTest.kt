@@ -162,6 +162,39 @@ class ShellTopBarTest {
     }
 
     @Test
+    fun replacingDestinationHidesTheShellBarUntilItIsPopped() {
+        lateinit var nav: NavHostController
+        val controller = ShellTopBarController()
+        controller.title = "Services"
+        composeRule.setContent {
+            hostShell(controller = controller) {
+                nav = rememberNavController()
+                NavHost(navController = nav, startDestination = "list") {
+                    composable("list") {
+                        BindShellTopBarActions(listOf(action("Clean up")))
+                    }
+                    composable("search") {
+                        ReplaceShellTopBar()
+                        Text("Own search bar")
+                    }
+                }
+            }
+        }
+        val drawer = composeRule.activity.getString(R.string.drawer_open)
+        composeRule.onNodeWithContentDescription(drawer).assertIsDisplayed()
+        composeRule.runOnIdle { nav.navigate("search") }
+        assertGone(drawer)
+        composeRule.onNodeWithText("Own search bar").assertIsDisplayed()
+        composeRule.runOnIdle { nav.popBackStack() }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            composeRule.onAllNodesWithContentDescription("Clean up")
+                .fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        composeRule.onNodeWithContentDescription(drawer).assertIsDisplayed()
+    }
+
+    @Test
     fun navigationIconOpensTheDrawer() {
         var opened = 0
         composeRule.setContent {

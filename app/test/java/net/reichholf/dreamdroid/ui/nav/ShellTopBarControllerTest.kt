@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -39,6 +40,19 @@ class ShellTopBarControllerTest {
         assertEquals(listOf("Save"), labels())
         controller.update(b, listOf(action("Save"), action("Delete")))
         assertEquals(listOf("Save", "Delete"), labels())
+    }
+
+    @Test
+    fun replacingDestinationHidesTheBarUntilItLeaves() {
+        val hub = controller.claim()
+        controller.bind(hub, listOf(action("A")))
+        val search = controller.claim()
+        controller.bind(search, null)
+        assertTrue(controller.replaced)
+        assertTrue(controller.actions.isEmpty())
+        controller.release(search)
+        assertFalse(controller.replaced)
+        assertEquals(listOf("A"), labels())
     }
 
     @Test

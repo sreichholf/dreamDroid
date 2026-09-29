@@ -140,6 +140,12 @@
     <string name="epg_search_hint">Search EPG</string>
     <string name="epg_search_cached_hint">Offline results: only bouquets opened on this device are searched.</string>
     <string name="epg_search_no_cached_match">No match in the bouquets opened on this device.</string>
+    <string name="epg_search_recent">Recent searches</string>
+    <string name="epg_search_recent_remove">Remove from recent searches</string>
+    <string name="epg_search_prompt">Search programme titles. Results appear as you type.</string>
+    <string name="epg_search_back">Back</string>
+    <string name="today">Today</string>
+    <string name="tomorrow">Tomorrow</string>
     <string name="remote_widget_config_title_style">Select the style of the remote control</string>
     <string name="remote_widget_config_title_profile">Select the profile to use with the widget</string>
     <string name="standard">Standard Layout (Full)</string>

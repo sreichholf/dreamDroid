@@ -39,10 +39,10 @@ data class ShellTopBarAction(
 
 /**
  * Title and destination actions for the phone shell's [TopAppBar]. Destinations report
- * the title from their UI state with [ShellTitle]. Every
- * attached [BindShellTopBarActions] keeps a binding; the newest one is shown. When it
- * leaves (a pop, or a cancelled predictive-back preview of the previous destination), the
- * newest remaining binding shows again.
+ * the title from their UI state with [ShellTitle]. Every attached [BindShellTopBarActions]
+ * or [ReplaceShellTopBar] keeps a binding; the newest one is shown. When it leaves (a pop,
+ * or a cancelled predictive-back preview of the previous destination), the newest
+ * remaining binding shows again.
  */
 class ShellTopBarController {
     var title by mutableStateOf("")
@@ -50,7 +50,11 @@ class ShellTopBarController {
     var actions by mutableStateOf<List<ShellTopBarAction>>(emptyList())
         private set
 
-    private val bindings = sortedMapOf<Int, List<ShellTopBarAction>>()
+    /** True while the newest binding is a [ReplaceShellTopBar]: the shell hides its bar. */
+    var replaced by mutableStateOf(false)
+        private set
+
+    private val bindings = sortedMapOf<Int, List<ShellTopBarAction>?>()
     private var nextEpoch = 0
 
     internal fun claim(): Int {
@@ -58,7 +62,8 @@ class ShellTopBarController {
         return nextEpoch
     }
 
-    internal fun bind(epoch: Int, actions: List<ShellTopBarAction>) {
+    /** [actions] null: the destination draws its own bar instead of the shell's. */
+    internal fun bind(epoch: Int, actions: List<ShellTopBarAction>?) {
         bindings[epoch] = actions
         publish()
     }
@@ -71,15 +76,18 @@ class ShellTopBarController {
     }
 
     internal fun release(epoch: Int) {
-        if (bindings.remove(epoch) != null) {
+        if (epoch in bindings) {
+            bindings.remove(epoch)
             publish()
         }
     }
 
     private fun publish() {
         val newest = if (bindings.isEmpty()) emptyList() else bindings.getValue(bindings.lastKey())
-        if (newest !== actions) {
-            actions = newest
+        replaced = newest == null
+        val shown = newest ?: emptyList()
+        if (shown !== actions) {
+            actions = shown
         }
     }
 }
@@ -106,6 +114,20 @@ fun BindShellTopBarActions(actions: List<ShellTopBarAction>) {
         onDispose { controller.release(epoch) }
     }
     SideEffect { controller.update(epoch, actions) }
+}
+
+/**
+ * Hides the shell top bar while this composition is attached, for a destination that draws
+ * its own bar in its content, such as EPG search with its search field.
+ */
+@Composable
+fun ReplaceShellTopBar() {
+    val controller = LocalShellTopBarController.current ?: return
+    val epoch = remember(controller) { controller.claim() }
+    DisposableEffect(controller, epoch) {
+        controller.bind(epoch, null)
+        onDispose { controller.release(epoch) }
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

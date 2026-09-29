@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 9,
-    "identityHash": "0eabb407a2477008305211d2900a97d1",
+    "identityHash": "1bda03c2b1ebb33a40d893c6157a3554",
     "entities": [
       {
         "tableName": "profile",
@@ -833,11 +833,41 @@
             "position"
           ]
         }
+      },
+      {
+        "tableName": "epg_search_recent",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `query` TEXT NOT NULL, `usedAtMs` INTEGER NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "query",
+            "columnName": "query",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "usedAtMs",
+            "columnName": "usedAtMs",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0eabb407a2477008305211d2900a97d1')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '1bda03c2b1ebb33a40d893c6157a3554')"
     ]
   }
 }
