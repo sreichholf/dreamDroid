@@ -265,6 +265,34 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun anEditedProfileWithCachedDeviceInfoStaysOnlineWithoutChecking() = runBlocking<Unit> {
+        settings.firstStart = false
+        val viewModel = viewModel()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        viewModel.onProfileCheckOutcomeHandled()
+        val checked = profiles.requireCurrent()
+        // An edit that keeps the connection settings replaces the instance, not the id.
+        profiles.setCurrent(
+            Profile().apply {
+                id = checked.id
+                name = "renamed"
+                host = checked.host
+                port = checked.port
+            }
+        )
+
+        viewModel.checkActiveProfile()
+
+        assertFalse(sessions.status.value.checking)
+        val state = viewModel.awaitState { it.profileCheckOutcome != null }
+        assertEquals(ProfileCheckStart(showGate = false), state.profileCheckStarted)
+        assertEquals("renamed", state.profileName)
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+        assertEquals(1, deviceInfoRequests())
+    }
+
+    @Test
     fun switchesAreCheckedOnlyAfterStart() = runBlocking<Unit> {
         settings.firstStart = false
         val viewModel = viewModel()

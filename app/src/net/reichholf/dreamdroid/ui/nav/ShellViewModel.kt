@@ -301,19 +301,21 @@ class ShellViewModel @Inject constructor(
                 checks.check(profile)
             }
             checkJob = null
-            onChecked(result)
+            onChecked(profile, result)
         }
     }
 
-    private suspend fun onChecked(result: ProfileCheckResult) {
-        val current = profiles.current.value ?: return
-        val hasCache = hasCache(current)
+    private suspend fun onChecked(profile: Profile, result: ProfileCheckResult) {
+        if (profiles.current.value == null) {
+            return
+        }
+        val hasCache = hasCache(profile)
         sessions.applyProfileCheckResult(result, hasCache)
         val firstStart = settings.firstStart
         val outcome = if (result.hasError && !result.isSoftError) {
             if (shouldShowProfileCheckFailedUi(hasCache, result.failure)) {
                 openStartOnSuccess = true
-                _uiState.update { it.copy(profileCheck = failedGate(current, result)) }
+                _uiState.update { it.copy(profileCheck = failedGate(profile, result)) }
                 ProfileCheckOutcome.Failed(firstStart)
             } else {
                 ProfileCheckOutcome.Leave(offGateToo = false, firstStart = firstStart)
