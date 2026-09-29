@@ -30,7 +30,6 @@
     <string name="delete">Izbrisati</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Omogućiti SSL</string>
-    <string name="host">Ime od Hosta/IP</string>
     <string name="port">Port</string>
     <string name="settings">Postavke</string>
     <string name="host_long">Ime od Hosta ili IP</string>

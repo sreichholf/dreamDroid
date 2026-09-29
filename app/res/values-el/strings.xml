@@ -33,7 +33,6 @@
     <string name="delete">Διαγραφή</string>
     <string name="epg">Ηλεκτρονικος Οδηγος Προγραμματος</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Θύρα</string>
     <string name="port_stream_live">Θύρα (live)</string>
     <string name="port_stream_file">Θύρα (εγγραφές)</string>

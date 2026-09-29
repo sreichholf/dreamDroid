@@ -24,7 +24,6 @@
     <string name="delete">Poista</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Käytä SSL</string>
-    <string name="host">Verkkonimi tai IP</string>
     <string name="port">Portti</string>
     <string name="settings">Asetukset</string>
     <string name="host_long">Verkkonimi tai IP</string>

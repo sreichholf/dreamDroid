@@ -33,7 +33,6 @@
     <string name="delete">Verwijder</string>
     <string name="epg">Gids (EPG)</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Poort</string>
     <string name="port_stream_live">Poort (live)</string>
     <string name="port_stream_file">Poort (films)</string>

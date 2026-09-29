@@ -331,11 +331,7 @@ class ShellViewModel @Inject constructor(
     private fun failedGate(profile: Profile, result: ProfileCheckResult): ProfileCheckUi.Failed =
         ProfileCheckUi.Failed(
             title = UiText.Raw("${profile.user}@${profile.host}:${profile.port}"),
-            message = if (result.errorTextExt.isNotEmpty()) {
-                UiText.Raw(result.errorTextExt)
-            } else {
-                UiText.Resource(result.errorTextId)
-            }
+            message = result.errorText ?: UiText.Resource(result.errorTextId)
         )
 
     private suspend fun hasCache(profile: Profile): Boolean =

@@ -182,7 +182,6 @@ class SetupAssistantViewModelTest {
         handle,
         profiles,
         ReceiverProfileCheckRepository(
-            testProfiles.context,
             profiles,
             enigmaClients(profiles, testProfiles.context)
         ),

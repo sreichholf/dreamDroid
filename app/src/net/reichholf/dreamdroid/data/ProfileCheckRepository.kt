@@ -1,7 +1,5 @@
 package net.reichholf.dreamdroid.data
 
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +26,6 @@ interface ProfileCheckRepository {
 /** [ProfileCheckRepository] over [CheckProfile]. */
 @Singleton
 class ReceiverProfileCheckRepository @Inject constructor(
-    @param:ApplicationContext private val context: Context,
     private val profiles: ProfileRepository,
     private val clients: EnigmaClientFactory
 ) : ProfileCheckRepository {
@@ -39,6 +36,6 @@ class ReceiverProfileCheckRepository @Inject constructor(
 
     override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
         withContext(Dispatchers.IO) {
-            CheckProfile.checkProfile(profile, context, clients.http(profile), profiles)
+            CheckProfile.checkProfile(profile, clients.http(profile), profiles)
         }
 }

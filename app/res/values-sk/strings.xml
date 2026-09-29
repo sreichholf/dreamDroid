@@ -33,7 +33,6 @@
     <string name="delete">Vymazať</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Umožniť SSL</string>
-    <string name="host">Meno hostiteľa/IP</string>
     <string name="port">Port</string>
     <string name="settings">Nastavenia</string>
     <string name="host_long">Meno hostiteľa alebo IP</string>

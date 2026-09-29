@@ -30,7 +30,6 @@
     <string name="delete">Sterge</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">Activeaza SSL</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
     <string name="settings">Setari</string>
     <string name="host_long">Hostname sau IP</string>

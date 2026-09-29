@@ -28,8 +28,8 @@ fun ProfileCheckResult.isCertificateFailure(): Boolean {
 
 /** The receiver's own error text, else the failure's, else the check step's; null if none. */
 fun ProfileCheckResult.setupMessage(): UiText? {
-    if (errorTextExt.isNotBlank()) {
-        return UiText.Raw(errorTextExt)
+    if (errorText != null) {
+        return errorText
     }
     val fromFailure = failure?.userMessageText()
     if (fromFailure != null && !(fromFailure is UiText.Raw && fromFailure.text.isBlank())) {

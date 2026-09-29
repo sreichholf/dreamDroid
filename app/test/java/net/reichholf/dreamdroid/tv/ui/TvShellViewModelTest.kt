@@ -207,7 +207,6 @@ class TvShellViewModelTest {
     private fun viewModel(): TvShellViewModel = TvShellViewModel(
         profiles,
         ReceiverProfileCheckRepository(
-            receiver.profiles.context,
             profiles,
             enigmaClients(profiles, receiver.profiles.context)
         ),

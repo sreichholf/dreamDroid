@@ -31,6 +31,7 @@ import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.testutil.memoryProfiles
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -135,7 +136,7 @@ class SetupAssistantScreenTest {
                 checks += 1
                 ProfileCheckResult(
                     hasError = true,
-                    errorTextExt = "certificate",
+                    errorText = UiText.Raw("certificate"),
                     failure = EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Ssl)
                 ).also { savedTrust = profile.allCertsTrusted }
             }

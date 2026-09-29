@@ -6,18 +6,16 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2
 
-import android.content.Context
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
-import net.reichholf.dreamdroid.enigma.ProfileCheckEntry
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
+import net.reichholf.dreamdroid.ui.text.UiText
 
 object CheckProfile {
     const val LOG_TAG: String = "CheckProfile"
@@ -30,8 +28,6 @@ object CheckProfile {
 
     val REQUIRED_VERSION: IntArray = intArrayOf(1, 6, 5)
 
-    var CURRENT_VERSION: IntArray = intArrayOf(0, 0, 0)
-
     /**
      * Asks [profile]'s receiver over [http] for its device info and applies the web
      * interface features it reports. A device-info answer cached in [profiles] stands in
@@ -39,145 +35,65 @@ object CheckProfile {
      */
     fun checkProfile(
         profile: Profile,
-        context: Context,
         http: EnigmaHttp,
         profiles: ProfileRepository
     ): ProfileCheckResult {
-        CURRENT_VERSION = intArrayOf(0, 0, 0)
-
-        val resultList = ArrayList<ProfileCheckEntry>()
-        var hasError = false
-        var isSoftError = false
-        var errorTextId = -1
-        var errorTextExt = ""
-        var failure: EnigmaFailure? = null
-
-        val host = profile.host
-
-        if (host != null) {
-            if (!host.contains(" ")) {
-                resultList.add(entry(R.string.host, false, host))
-
-                val port = profile.port
-                if (port > 0 && port <= 65535) {
-                    resultList.add(entry(R.string.port, false, port.toString()))
-                    var xml = profiles.deviceInfo(profile)
-                    var fetchError: EnigmaHttpError? = null
-                    if (xml == null) {
-                        when (val fetched = http.fetch(URIStore.DEVICE_INFO)) {
-                            is EnigmaHttpResult.Success -> xml = fetched.text
-                            is EnigmaHttpResult.Failure -> fetchError = fetched.error
-                        }
-                    }
-
-                    if (xml != null) {
-                        val deviceInfo = DeviceInfoParser.parse(xml)
-
-                        if (deviceInfo != null && !deviceInfo.isEmpty()) {
-                            profiles.setDeviceInfo(profile, xml)
-                            resultList.add(
-                                entry(R.string.device_name, false, deviceInfo.deviceName)
-                            )
-
-                            var version = deviceInfo.interfaceVersion
-                            if (version.isEmpty()) {
-                                version = "0"
-                            }
-                            applyWebInterfaceFeatures(version)
-                            if (checkVersion(version) >= 0) {
-                                resultList.add(entry(R.string.interface_version, false, version))
-                            } else {
-                                resultList.add(
-                                    entry(
-                                        R.string.interface_version,
-                                        true,
-                                        version,
-                                        R.string.version_too_low
-                                    )
-                                )
-                                hasError = true
-                                isSoftError = true
-                                errorTextId = R.string.version_too_low
-                            }
-                        } else {
-                            profiles.setDeviceInfo(profile, null)
-                            resultList.add(
-                                entry(
-                                    R.string.connection,
-                                    true,
-                                    host,
-                                    R.string.get_content_error
-                                )
-                            )
-                            hasError = true
-                            errorTextId = R.string.get_content_error
-                            failure = EnigmaFailure.Parse
-                        }
-                    } else if (fetchError != null) {
-                        val ext = fetchError.resolve(context)
-                        resultList.add(
-                            entry(
-                                R.string.connection,
-                                true,
-                                host,
-                                R.string.connection_error,
-                                ext
-                            )
-                        )
-                        hasError = true
-                        errorTextId = R.string.connection_error
-                        errorTextExt = ext ?: ""
-                        failure = fetchError.failure
-                    } else {
-                        resultList.add(
-                            entry(
-                                R.string.connection,
-                                true,
-                                host,
-                                R.string.get_content_error
-                            )
-                        )
-                        hasError = true
-                        errorTextId = R.string.get_content_error
-                        failure = EnigmaFailure.Parse
-                    }
-                } else {
-                    resultList.add(
-                        entry(
-                            R.string.port,
-                            true,
-                            port.toString(),
-                            R.string.port_out_of_range
-                        )
-                    )
-                    hasError = true
-                    errorTextId = R.string.port_out_of_range
-                    failure = EnigmaFailure.Unreachable(
-                        EnigmaFailure.UnreachableReason.IllegalHost,
-                        port.toString()
-                    )
-                }
-            } else {
-                resultList.add(
-                    entry(R.string.host, true, host, R.string.illegal_host)
-                )
-                hasError = true
-                errorTextId = R.string.illegal_host
+        val host = profile.host ?: return ProfileCheckResult()
+        if (host.contains(" ")) {
+            return ProfileCheckResult(
+                hasError = true,
+                errorTextId = R.string.illegal_host,
                 failure = EnigmaFailure.Unreachable(
                     EnigmaFailure.UnreachableReason.IllegalHost,
                     host
                 )
-            }
+            )
+        }
+        val port = profile.port
+        if (port <= 0 || port > 65535) {
+            return ProfileCheckResult(
+                hasError = true,
+                errorTextId = R.string.port_out_of_range,
+                failure = EnigmaFailure.Unreachable(
+                    EnigmaFailure.UnreachableReason.IllegalHost,
+                    port.toString()
+                )
+            )
         }
 
-        return ProfileCheckResult(
-            hasError = hasError,
-            isSoftError = isSoftError,
-            errorTextId = errorTextId,
-            errorTextExt = errorTextExt,
-            entries = resultList,
-            failure = failure
-        )
+        val xml = profiles.deviceInfo(profile)
+            ?: when (val fetched = http.fetch(URIStore.DEVICE_INFO)) {
+                is EnigmaHttpResult.Success -> fetched.text
+
+                is EnigmaHttpResult.Failure -> return ProfileCheckResult(
+                    hasError = true,
+                    errorTextId = R.string.connection_error,
+                    errorText = fetched.error.failure.userMessageText()
+                        .takeUnless { it == UiText.Raw("") },
+                    failure = fetched.error.failure
+                )
+            }
+
+        val deviceInfo = DeviceInfoParser.parse(xml)
+        if (deviceInfo == null || deviceInfo.isEmpty()) {
+            profiles.setDeviceInfo(profile, null)
+            return ProfileCheckResult(
+                hasError = true,
+                errorTextId = R.string.get_content_error,
+                failure = EnigmaFailure.Parse
+            )
+        }
+        profiles.setDeviceInfo(profile, xml)
+        val version = deviceInfo.interfaceVersion.ifEmpty { "0" }
+        applyWebInterfaceFeatures(version)
+        if (checkVersion(version) < 0) {
+            return ProfileCheckResult(
+                hasError = true,
+                isSoftError = true,
+                errorTextId = R.string.version_too_low
+            )
+        }
+        return ProfileCheckResult()
     }
 
     fun checkVersion(version: String): Int = checkVersion(version, REQUIRED_VERSION)
@@ -243,18 +159,4 @@ object CheckProfile {
         }
         DreamDroid.setFeaturePostRequest(features.postRequest)
     }
-
-    private fun entry(
-        checkTypeId: Int,
-        hasError: Boolean,
-        value: String?,
-        errorTextId: Int = -1,
-        errorTextExt: String? = null
-    ): ProfileCheckEntry = ProfileCheckEntry(
-        hasError = hasError,
-        what = checkTypeId,
-        value = value.toString(),
-        errorTextId = errorTextId,
-        errorTextExt = errorTextExt
-    )
 }

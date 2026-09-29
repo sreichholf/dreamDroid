@@ -33,7 +33,6 @@
     <string name="delete">Fshij</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">Hostname/IP</string>
     <string name="port">Port</string>
     <string name="settings">Rregullimet</string>
     <string name="host_long">Hostname ose IP</string>

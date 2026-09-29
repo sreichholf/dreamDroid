@@ -33,7 +33,6 @@
     <string name="delete">حذف</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">https</string>
-    <string name="host">نام هاست/آیپی</string>
     <string name="port">پورت</string>
     <string name="port_stream_live">پورت (زنده)</string>
     <string name="port_stream_file">پورت (فبلم)</string>

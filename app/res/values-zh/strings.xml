@@ -32,7 +32,6 @@
     <string name="delete">删除</string>
     <string name="epg">EPG</string>
     <string name="ssl_enabled">允许SSL</string>
-    <string name="host">主机/IP</string>
     <string name="port">端口</string>
     <string name="settings">设置</string>
     <string name="host_long">主机或IP</string>
