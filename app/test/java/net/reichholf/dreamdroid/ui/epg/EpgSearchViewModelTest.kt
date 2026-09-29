@@ -126,6 +126,52 @@ class EpgSearchViewModelTest {
     }
 
     @Test
+    fun submittingTheAnsweredQueryOnlyRemembersIt() = runTest {
+        val viewModel = viewModel()
+        viewModel.syncRoute("", remountEpoch = 0)
+        viewModel.type("Tagesschau")
+        advanceTimeBy(EpgSearchViewModel.RECEIVER_SETTLE_MS + 1)
+        viewModel.awaitState { !it.searching && it.sections.isNotEmpty() }
+
+        viewModel.submit()
+
+        assertFalse(viewModel.uiState.value.searching)
+        assertEquals(listOf("Tagesschau", "N/A"), viewModel.uiState.value.titles())
+        // The remembered query is written after submit returned; the search would have
+        // been requested before that write.
+        viewModel.awaitState { it.recentSearches == listOf("Tagesschau") }
+        assertEquals(1, receiver.requestsTo(SEARCH_PATH).size)
+    }
+
+    @Test
+    fun submittingAFailedQuerySearchesAgain() = runTest {
+        receiver.answer = { MockResponse().setResponseCode(500) }
+        val viewModel = viewModel()
+        viewModel.syncRoute("Tagesschau", remountEpoch = 0)
+        val failed = viewModel.awaitState { !it.searching }
+        assertTrue(failed.retryable)
+        receiver.answer = { MockResponse().setBody(loadWebFixture("epgservice.xml")) }
+
+        viewModel.submit()
+
+        val state = viewModel.awaitState { !it.searching && it.sections.isNotEmpty() }
+        assertFalse(state.retryable)
+        assertEquals(2, receiver.requestsTo(SEARCH_PATH).size)
+    }
+
+    @Test
+    fun typingKeepsThePreviousResultsUntilTheNewOnesArrive() = runTest {
+        val viewModel = viewModel()
+        viewModel.syncRoute("Tagesschau", remountEpoch = 0)
+        viewModel.awaitState { !it.searching && it.sections.isNotEmpty() }
+
+        viewModel.type("Tagesschau spät")
+
+        val typing = viewModel.awaitState { it.searching }
+        assertEquals(listOf("Tagesschau", "N/A"), typing.titles())
+    }
+
+    @Test
     fun shortTypedQueryNeverReachesTheReceiver() = runTest {
         val viewModel = viewModel()
         viewModel.syncRoute("", remountEpoch = 0)

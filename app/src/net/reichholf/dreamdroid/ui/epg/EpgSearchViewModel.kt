@@ -30,7 +30,8 @@ import net.reichholf.dreamdroid.ui.text.UiText
 /**
  * EPG search screen state. With [showRecent] the field holds too little to search and the
  * screen lists [recentSearches]; otherwise it lists [sections]. [cached] results come from
- * the Room EPG cache and only cover bouquets opened on this device.
+ * the Room EPG cache and only cover bouquets opened on this device. [retryable]: the
+ * receiver failed and nothing is shown, so the empty state offers a retry.
  */
 data class EpgSearchUiState(
     val recentSearches: List<String> = emptyList(),
@@ -39,6 +40,7 @@ data class EpgSearchUiState(
     val cached: Boolean = false,
     val searching: Boolean = false,
     val emptyMessage: UiText? = null,
+    val retryable: Boolean = false,
     val piconsEnabled: Boolean = false
 ) {
     val title: UiText
@@ -52,8 +54,9 @@ data class EpgSearchUiState(
  * Typing searches Room after [CACHE_SETTLE_MS] and the receiver only after the user paused
  * for [RECEIVER_SETTLE_MS] with at least [MIN_TYPED_LENGTH] characters. Receiver searches
  * run one at a time: while one runs, later queries wait and only the newest one is sent,
- * so a slow box never serves two searches at once. Submitting, a recent search, the route
- * query, and pull-to-refresh search right away.
+ * and [EpgRepository.receiverSearch] serialises them across screens, so a slow box never
+ * serves two searches at once. Submitting, a recent search, the route query, and
+ * pull-to-refresh search right away; submitting an answered query does not search again.
  */
 @OptIn(FlowPreview::class)
 @HiltViewModel
@@ -100,7 +103,6 @@ class EpgSearchViewModel @Inject constructor(
         viewModelScope.launch {
             requests.debounce { if (it.immediate) 0L else RECEIVER_SETTLE_MS }
                 .filter { it.searchable }
-                .distinctUntilChanged()
                 .conflate()
                 .collect(::searchReceiver)
         }
@@ -131,13 +133,13 @@ class EpgSearchViewModel @Inject constructor(
             return
         }
         rememberQuery(query)
-        search(query, immediate = true)
+        searchUnlessAnswered(query)
     }
 
     fun searchRecent(query: String) {
         searchField.set(query)
         rememberQuery(query)
-        search(query, immediate = true)
+        searchUnlessAnswered(query)
     }
 
     fun forgetRecent(query: String) {
@@ -155,6 +157,23 @@ class EpgSearchViewModel @Inject constructor(
     /** Pull-to-refresh: searches the current query again right away. */
     fun reload() {
         search(requests.value.query, immediate = true)
+    }
+
+    /**
+     * Searches [query] right away unless the receiver already answered it, is asking the box
+     * for it now, or was skipped offline: pressing search on the shown results only closes
+     * the keyboard, it does not ask the box again. A failed answer is searched again.
+     */
+    private fun searchUnlessAnswered(query: String) {
+        val current = results.value
+        val sameQuery = current.request.query == query && current.request.searchable
+        val receiverDone = !current.receiverPending && current.live?.value != null
+        val skippedOffline = !current.receiverPending && current.live == null
+        val answered = sameQuery &&
+            (current.receiverInFlight || receiverDone || skippedOffline)
+        if (!answered) {
+            search(query, immediate = true)
+        }
     }
 
     private fun onTyped(text: String) {
@@ -206,10 +225,13 @@ class EpgSearchViewModel @Inject constructor(
             }
             return
         }
+        results.update {
+            if (it.request.query == request.query) it.copy(receiverInFlight = true) else it
+        }
         val response = epg.receiverSearch(request.query)
         results.update {
             if (it.request.query == request.query) {
-                it.copy(live = response, receiverPending = false)
+                it.copy(live = response, receiverPending = false, receiverInFlight = false)
             } else {
                 it
             }
@@ -228,7 +250,8 @@ class EpgSearchViewModel @Inject constructor(
         val cached: List<Event>? = null,
         val cacheDone: Boolean = false,
         val live: EnigmaResponse<List<Event>>? = null,
-        val receiverPending: Boolean = request.searchable
+        val receiverPending: Boolean = request.searchable,
+        val receiverInFlight: Boolean = false
     ) {
         fun applyTo(state: EpgSearchUiState): EpgSearchUiState {
             if (!request.searchable) {
@@ -237,12 +260,17 @@ class EpgSearchViewModel @Inject constructor(
                     sections = emptyList(),
                     cached = false,
                     searching = false,
-                    emptyMessage = null
+                    emptyMessage = null,
+                    retryable = false
                 )
             }
             val liveEvents = live?.value
             val events = liveEvents ?: cached
             val searching = !cacheDone || receiverPending
+            if (events == null && searching && !state.showRecent) {
+                // Keep the previous query's results on screen until this one has some.
+                return state.copy(searching = true, retryable = false, emptyMessage = null)
+            }
             val emptyMessage = when {
                 !events.isNullOrEmpty() -> null
 
@@ -260,7 +288,8 @@ class EpgSearchViewModel @Inject constructor(
                 sections = epgSearchSections(events.orEmpty()),
                 cached = liveEvents == null && cached != null,
                 searching = searching,
-                emptyMessage = emptyMessage
+                emptyMessage = emptyMessage,
+                retryable = events == null && !searching
             )
         }
     }

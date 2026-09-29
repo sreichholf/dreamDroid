@@ -165,6 +165,29 @@ class EpgSearchScreenTest {
         composeRule.onNodeWithTag(EPG_SEARCH_PROGRESS_TAG).assertDoesNotExist()
     }
 
+    @Test
+    fun failedSearchOffersRetry() {
+        var retried = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgSearchScreen(
+                    queryState = TextFieldState("news"),
+                    state = results().copy(emptyMessage = UiText.Raw("Timeout"), retryable = true),
+                    onBack = {},
+                    onSearch = {},
+                    onRecentClick = {},
+                    onRecentRemove = {},
+                    onItemClick = {},
+                    onRetry = { retried += 1 }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Timeout").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.reload)).performClick()
+        composeRule.runOnIdle { assertEquals(1, retried) }
+    }
+
     private fun setScreen(
         queryState: TextFieldState = TextFieldState(),
         state: EpgSearchUiState = EpgSearchUiState(),

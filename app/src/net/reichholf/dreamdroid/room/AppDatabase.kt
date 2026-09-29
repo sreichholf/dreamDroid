@@ -293,7 +293,8 @@ abstract class AppDatabase : RoomDatabase() {
         /**
          * Adds [EpgEventEntity.titleKey] and fills it for the cached rows, so offline EPG
          * search finds them without waiting for the next MultiEPG fetch. Adds the recent
-         * EPG searches.
+         * EPG searches. The key is the current [epgSearchKey]; if that function changes,
+         * a later migration has to fill `titleKey` again.
          */
         val MIGRATION_8_9: Migration = object : Migration(8, 9) {
             override suspend fun migrate(connection: SQLiteConnection) {

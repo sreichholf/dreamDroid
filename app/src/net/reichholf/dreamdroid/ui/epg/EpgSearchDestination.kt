@@ -50,6 +50,7 @@ fun EpgSearchDestination(
                 viewModel.onResultOpened()
                 detailViewModel.showDetail(event)
             },
+            onRetry = viewModel::reload,
             focusOnStart = query.isEmpty()
         )
     }

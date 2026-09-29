@@ -49,6 +49,7 @@ class EpgRepository @Inject constructor(
     private val services: ServiceRepository
 ) {
     private val epgMultiRequest = Mutex()
+    private val epgSearchRequest = Mutex()
 
     /**
      * The process's one MultiEPG chunk cache. MultiEPG, the hub service list, and the TV hub
@@ -120,9 +121,18 @@ class EpgRepository @Inject constructor(
         return status.shouldSkipReceiverHttp(database.epgDao().hasEvents(profileId))
     }
 
-    /** Receiver-side EPG search by title (`/web/epgsearch`). */
+    /**
+     * Receiver-side EPG search by title (`/web/epgsearch`). Searches run one at a time for
+     * the whole app: the box scans its whole EPG per search, and a cancelled caller's HTTP
+     * call still finishes, so the next search waits for it.
+     */
     suspend fun receiverSearch(query: String): EnigmaResponse<List<Event>> =
-        clients.current().getEvents(listOf(NameValuePair("search", query)), URIStore.EPG_SEARCH)
+        epgSearchRequest.withLock {
+            clients.current().getEvents(
+                listOf(NameValuePair("search", query)),
+                URIStore.EPG_SEARCH
+            )
+        }
 
     /** The newest recent EPG searches first. */
     fun recentSearches(): Flow<List<String>> =

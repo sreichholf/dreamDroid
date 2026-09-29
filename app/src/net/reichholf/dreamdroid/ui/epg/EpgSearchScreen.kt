@@ -64,6 +64,7 @@ fun EpgSearchScreen(
     onRecentRemove: (String) -> Unit,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
+    onRetry: () -> Unit = {},
     focusOnStart: Boolean = false
 ) {
     var editing by rememberSaveable { mutableStateOf(focusOnStart) }
@@ -145,7 +146,7 @@ fun EpgSearchScreen(
                     onRemove = onRecentRemove
                 )
             } else {
-                SearchResults(state = state, onItemClick = onItemClick)
+                SearchResults(state = state, onItemClick = onItemClick, onRetry = onRetry)
             }
         }
     }
@@ -205,7 +206,11 @@ private fun RecentSearches(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SearchResults(state: EpgSearchUiState, onItemClick: (Event) -> Unit) {
+private fun SearchResults(
+    state: EpgSearchUiState,
+    onItemClick: (Event) -> Unit,
+    onRetry: () -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (state.cached) {
             Surface(
@@ -228,6 +233,7 @@ private fun SearchResults(state: EpgSearchUiState, onItemClick: (Event) -> Unit)
             ListEmptyState(
                 loading = false,
                 message = state.emptyMessage?.asString(),
+                onRetry = if (state.retryable) onRetry else null,
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
@@ -258,7 +264,7 @@ private fun SearchResults(state: EpgSearchUiState, onItemClick: (Event) -> Unit)
                 }
                 items(
                     section.events,
-                    key = { "${it.serviceReference}:${it.eventId}:${it.start}" }
+                    key = { "${it.serviceReference}:${it.eventId}:${it.start}:${it.title}" }
                 ) { event ->
                     EpgBouquetRow(
                         event = event,
