@@ -4,7 +4,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -61,7 +60,7 @@ class EpgTestReceiver {
     suspend fun awaitRequests(
         count: Int,
         matches: (RecordedRequest) -> Boolean
-    ): List<RecordedRequest> = withTimeout(5_000L) {
+    ): List<RecordedRequest> = withRealTimeout(5_000L) {
         recorded.map { all -> all.filter(matches) }.first { it.size >= count }
     }
 

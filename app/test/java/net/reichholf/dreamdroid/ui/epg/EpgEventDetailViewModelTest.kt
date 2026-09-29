@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.withRealTimeout
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
@@ -95,7 +96,7 @@ class EpgEventDetailViewModelTest {
         assertEquals(EVENT.eventId, url.queryParameter("eventid"))
         viewModel.onMessageShown()
         // uiState is combined on the thread that last emitted, here the HTTP answer's.
-        withTimeout(5_000L) { viewModel.uiState.first { it.userMessage == null } }
+        withRealTimeout(5_000L) { viewModel.uiState.first { it.userMessage == null } }
     }
 
     @Test
