@@ -278,11 +278,6 @@ class MainActivity :
         setIntent(intent)
     }
 
-    override fun onTitleChanged(title: CharSequence?, color: Int) {
-        super.onTitleChanged(title, color)
-        topBarController.title = title?.toString().orEmpty()
-    }
-
     /**
      * open the change log dialog
      *

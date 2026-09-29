@@ -38,8 +38,8 @@ data class ShellTopBarAction(
 )
 
 /**
- * Title and destination actions for the phone shell's [TopAppBar]. The title follows
- * the activity title, or [ShellTitle] for destinations that keep it in UI state. Every
+ * Title and destination actions for the phone shell's [TopAppBar]. Destinations report
+ * the title from their UI state with [ShellTitle]. Every
  * attached [BindShellTopBarActions] keeps a binding; the newest one is shown. When it
  * leaves (a pop, or a cancelled predictive-back preview of the previous destination), the
  * newest remaining binding shows again.
@@ -86,10 +86,7 @@ class ShellTopBarController {
 
 val LocalShellTopBarController = staticCompositionLocalOf<ShellTopBarController?> { null }
 
-/**
- * Reports a destination's title from its UI state to the shell top bar. Destinations
- * that have not moved to this still set `Activity.title`, which `MainActivity` forwards.
- */
+/** Reports a destination's title from its UI state to the shell top bar. */
 @Composable
 fun ShellTitle(title: UiText) {
     val controller = LocalShellTopBarController.current ?: return
