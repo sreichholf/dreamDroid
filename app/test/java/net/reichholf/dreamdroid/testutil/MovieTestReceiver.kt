@@ -3,9 +3,7 @@ package net.reichholf.dreamdroid.testutil
 import java.util.concurrent.TimeUnit
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.MovieRepository
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import okhttp3.mockwebserver.Dispatcher
@@ -21,7 +19,7 @@ class MovieTestReceiver {
     val server = MockWebServer()
     val profiles = TestProfiles()
     val sessions = SessionConnectionHolder()
-    private val clients = EnigmaClientFactory(profiles.repository)
+    private val clients = enigmaClients(profiles.repository)
     val movies = MovieRepository(
         profiles.context,
         clients,
@@ -48,8 +46,6 @@ class MovieTestReceiver {
             override fun dispatch(request: RecordedRequest): MockResponse = answer(request)
         }
         server.start()
-        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
-        ProfileRepository.install(profiles.repository)
         useProfile(PROFILE_ID, login)
         sessions.onSuccess()
     }

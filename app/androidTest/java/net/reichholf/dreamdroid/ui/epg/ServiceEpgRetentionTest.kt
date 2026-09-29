@@ -24,6 +24,7 @@ import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.memoryProfiles
@@ -64,7 +65,11 @@ class ServiceEpgRetentionTest {
     private val database = AppDatabase.inMemory(
         InstrumentationRegistry.getInstrumentation().targetContext
     )
-    private val clients = EnigmaClientFactory(profiles)
+    private val clients = EnigmaClientFactory(
+        InstrumentationRegistry.getInstrumentation().targetContext,
+        profiles,
+        EnigmaOkHttp()
+    )
     private val sessions = SessionConnectionHolder().apply { onSuccess() }
     private val repository = EpgRepository(
         clients,
@@ -120,7 +125,7 @@ class ServiceEpgRetentionTest {
                             ServiceEpgViewModel(createSavedStateHandle(), repository, sessions)
                         }
                         val detail = viewModel {
-                            EpgEventDetailViewModel(createSavedStateHandle(), timers)
+                            EpgEventDetailViewModel(createSavedStateHandle(), timers, sessions)
                         }
                         viewModels += viewModel
                         ServiceEpgDestination(

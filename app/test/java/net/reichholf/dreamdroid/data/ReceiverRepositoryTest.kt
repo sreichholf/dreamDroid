@@ -1,13 +1,17 @@
 package net.reichholf.dreamdroid.data
 
-import kotlin.system.measureTimeMillis
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.currentTime
+import kotlinx.coroutines.test.runTest
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
@@ -19,11 +23,14 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** [ReceiverRepository]'s current service and profile-check wait against a MockWebServer. */
+/**
+ * [ReceiverRepository]'s current service, live streams, and profile-check wait against a
+ * MockWebServer.
+ */
 class ReceiverRepositoryTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val repository = ReceiverRepository(EnigmaClientFactory(profiles), profiles)
+    private val repository = ReceiverRepository(enigmaClients(profiles), profiles)
 
     @BeforeEach
     fun setUp() {
@@ -58,22 +65,22 @@ class ReceiverRepositoryTest {
     }
 
     @Test
-    fun profileCheckWaitEndsWhenDeviceInfoArrives() = runBlocking<Unit> {
+    fun profileCheckWaitEndsWhenDeviceInfoArrives() = runTest {
         val waiting = async { repository.awaitProfileCheck(timeoutMs = 5_000L) }
-        delay(150)
+        advanceTimeBy(1_000L)
         assertFalse(waiting.isCompleted)
 
         profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
-        val waited = measureTimeMillis { waiting.await() }
+        waiting.await()
 
-        assertTrue(waited < 1_000L, "waited $waited ms")
+        assertTrue(currentTime < 1_200L, "waited $currentTime ms")
     }
 
     @Test
-    fun profileCheckWaitGivesUpAfterTheTimeout() = runBlocking<Unit> {
-        val waited = measureTimeMillis { repository.awaitProfileCheck(timeoutMs = 200L) }
+    fun profileCheckWaitGivesUpAfterTheTimeout() = runTest {
+        repository.awaitProfileCheck(timeoutMs = 200L)
 
-        assertTrue(waited in 200L until 2_000L, "waited $waited ms")
+        assertEquals(200L, currentTime)
     }
 
     @Test
@@ -174,7 +181,56 @@ class ReceiverRepositoryTest {
         assertNull(short.queryParameter("type"))
     }
 
+    @Test
+    fun liveStreamWithoutZapAndStreamPlaysRightAway() = runBlocking<Unit> {
+        val stream = repository.liveStream(SERVICE)
+
+        assertEquals(
+            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.requireCurrent(), SERVICE)),
+            stream
+        )
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
+    fun zapAndStreamZapsBeforeTheStream() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { MockResponse().setBody(simpleResult(true, "Active service changed")) }
+
+        val stream = repository.liveStream(SERVICE)
+
+        assertEquals(
+            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.requireCurrent(), SERVICE)),
+            stream
+        )
+        val zap = receiver.requestsTo("/web/zap").single()
+        assertEquals(SERVICE, zap.requestUrl?.queryParameter("sRef"))
+    }
+
+    @Test
+    fun rejectedZapStreamsNothingAndSaysWhy() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { MockResponse().setBody(simpleResult(false, "No free tuner")) }
+
+        assertEquals(LiveStream.Failed(UiText.Raw("No free tuner")), repository.liveStream(SERVICE))
+    }
+
+    @Test
+    fun zapAndStreamWithoutAServiceIsAContentError() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+
+        assertEquals(
+            LiveStream.Failed(UiText.Resource(R.string.get_content_error)),
+            repository.liveStream("")
+        )
+        assertTrue(receiver.requests.isEmpty())
+    }
+
     private fun RecordedRequest.volumePath(): Boolean = requestUrl?.encodedPath == "/web/vol"
 
     private fun RecordedRequest.powerPath(): Boolean = requestUrl?.encodedPath == "/web/powerstate"
+
+    private companion object {
+        const val SERVICE = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
+    }
 }

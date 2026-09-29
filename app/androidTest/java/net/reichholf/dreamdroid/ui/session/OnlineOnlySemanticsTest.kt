@@ -9,7 +9,6 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
@@ -17,7 +16,6 @@ import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.zap.ZapScreen
-import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -32,15 +30,6 @@ class OnlineOnlySemanticsTest {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
         ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
-        SessionConnectionHolder.shared.onFailure(
-            EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Connect),
-            hasCache = true
-        )
-    }
-
-    @After
-    fun clearSession() {
-        SessionConnectionHolder.shared.onFailure(EnigmaFailure.Unknown(null), hasCache = false)
     }
 
     @Test
@@ -101,6 +90,7 @@ class OnlineOnlySemanticsTest {
                     onEditTimer = {},
                     onImdb = {},
                     onSimilar = {},
+                    timerWritesBlocked = true,
                     bodyHeightCap = null
                 )
             }

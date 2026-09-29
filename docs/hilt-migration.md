@@ -133,6 +133,8 @@ Each repository owns its offline rules. It absorbs the matching `*SnapshotStore`
 
 ### PR 14 — Non-UI entry points and locator removal
 
+Split in two. **14a** moves the widget, picons, the HTTP stack, live streams, and the remaining helpers onto Hilt. **14b** deletes the locators once the phone shell (11) stops using them: `ShellMessages`, `SessionConnectionHolder.shared`, `ProfileRepository.get()`/`install`, and `getAppContext()`. The transitional `EnigmaClient()` and two-argument `CheckProfile.checkProfile` lost their last callers with 11b and go in 14a.
+
 - Widget: `VirtualRemoteWidgetProvider` and `VirtualRemoteWidgetConfiguration` become `@AndroidEntryPoint`. `VirtualRemoteWidget` (Glance, not an Android component) and `WidgetRemoteRequest` get dependencies through an `@EntryPoint`. `WidgetRemoteRequest` keeps its `Toast` (deliberate exception).
 - `PiconSyncWorker`: see decision 7.
 - `EnigmaOkHttp` becomes an injected `@Singleton` that takes `@ApplicationContext` for `DreamDroidTrustManager`. `EnigmaHttp` requires a profile, and `EnigmaClient` requires its `EnigmaHttp`.
@@ -158,10 +160,11 @@ One line per PR: state, then PR link once opened.
 - [x] 9 Service lists + pickers — merged, [#534](https://github.com/sreichholf/dreamDroid/pull/534) (hub service list) and [#535](https://github.com/sreichholf/dreamDroid/pull/535) (pickers)
 - [x] 10 Hub, now playing, zap — merged, [#537](https://github.com/sreichholf/dreamDroid/pull/537)
 - [x] 11a Phone shell actions — merged, [#541](https://github.com/sreichholf/dreamDroid/pull/541)
-- [ ] 11b Phone shell gate — in review
+- [x] 11b Phone shell gate — merged, [#543](https://github.com/sreichholf/dreamDroid/pull/543)
 - [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
-- [ ] 14 Non-UI entry points + locator removal
+- [ ] 14a Non-UI entry points — in review
+- [ ] 14b Locator removal
 - [ ] 15 *(optional)* Hilt instrumented tests
 
 ### Parallel waves

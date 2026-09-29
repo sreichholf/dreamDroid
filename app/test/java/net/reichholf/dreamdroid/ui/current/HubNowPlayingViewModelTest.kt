@@ -16,15 +16,20 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -82,11 +87,12 @@ class HubNowPlayingViewModelTest {
         val first = poll(viewModel)
         viewModel.ready()
         first.cancelAndJoin()
+        val before = viewModel.jobs()
 
         poll(viewModel)
 
         assertEquals(UiText.Raw("Das Erste HD · Tagesschau"), viewModel.uiState.value.headline)
-        Thread.sleep(200)
+        viewModel.joinJobsSince(before)
         assertEquals(1, getCurrentRequests())
     }
 
@@ -116,10 +122,11 @@ class HubNowPlayingViewModelTest {
             MockResponse().setBody("<e2currentserviceinformation></e2currentserviceinformation>")
         }
 
+        val before = viewModel.jobs()
         viewModel.reload()
-        awaitRequests(2)
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
+        assertEquals(2, getCurrentRequests())
         assertEquals("Das Erste HD", viewModel.uiState.value.shown?.service?.name)
     }
 
@@ -138,7 +145,7 @@ class HubNowPlayingViewModelTest {
                 port = receiver.server.port
             }
         )
-        awaitRequests(2)
+        receiver.awaitRequestsTo(GET_CURRENT, 2)
         val state = withTimeout(5_000L) { viewModel.uiState.first { it.ready } }
 
         assertNull(state.shown)
@@ -150,14 +157,15 @@ class HubNowPlayingViewModelTest {
         val viewModel = viewModel()
 
         viewModel.onReloadEpoch(1)
-        awaitRequests(1)
+        receiver.awaitRequestsTo(GET_CURRENT, 1)
+        val before = viewModel.jobs()
         viewModel.onReloadEpoch(1)
         viewModel.onReloadEpoch(0)
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
         assertEquals(1, getCurrentRequests())
         viewModel.onReloadEpoch(2)
-        awaitRequests(2)
+        receiver.awaitRequestsTo(GET_CURRENT, 2)
     }
 
     @Test
@@ -180,7 +188,48 @@ class HubNowPlayingViewModelTest {
 
         viewModel.closeSheet()
         assertFalse(viewModel.uiState.value.sheetOpen)
-        awaitRequests(1)
+        receiver.awaitRequestsTo(GET_CURRENT, 1)
+    }
+
+    @Test
+    fun streamHandsTheShownServiceToThePlayer() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        poll(viewModel)
+        viewModel.ready()
+
+        viewModel.stream()
+        val stream = withTimeout(5_000L) { viewModel.uiState.first { it.stream != null } }.stream
+
+        assertEquals(
+            CurrentServiceStream(
+                "Das Erste HD",
+                LiveStream.Ready(REF, EnigmaUrls.stream(profiles.requireCurrent(), REF))
+            ),
+            stream
+        )
+        viewModel.onStreamStarted()
+        assertNull(viewModel.uiState.value.stream)
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == "/web/zap") {
+                MockResponse().setBody(simpleResult(false, "No free tuner"))
+            } else {
+                MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+            }
+        }
+        val viewModel = viewModel()
+        poll(viewModel)
+        viewModel.ready()
+
+        viewModel.stream()
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.stream)
     }
 
     @Test
@@ -223,7 +272,7 @@ class HubNowPlayingViewModelTest {
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = HubNowPlayingViewModel(
         handle,
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(enigmaClients(profiles), profiles),
         profiles,
         receiver.sessions,
         SettingsRepository(preferences)
@@ -237,15 +286,8 @@ class HubNowPlayingViewModelTest {
 
     private fun getCurrentRequests(): Int = receiver.requestsTo(GET_CURRENT).size
 
-    private fun awaitRequests(count: Int) {
-        val deadline = System.currentTimeMillis() + 5_000L
-        while (getCurrentRequests() < count) {
-            check(System.currentTimeMillis() < deadline) { "no request $count" }
-            Thread.sleep(20)
-        }
-    }
-
     private companion object {
         const val GET_CURRENT = "/web/getcurrent"
+        const val REF = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
     }
 }

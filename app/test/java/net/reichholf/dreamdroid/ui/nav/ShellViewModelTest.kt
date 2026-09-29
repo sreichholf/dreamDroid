@@ -5,7 +5,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -18,7 +17,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -27,6 +25,9 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -49,6 +50,7 @@ import org.junit.jupiter.api.Test
 class ShellViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
+    private val clients = enigmaClients(profiles)
     private val sessions = receiver.sessions
     private val preferences = MemorySharedPreferences()
     private val settings = SettingsRepository(preferences)
@@ -358,26 +360,26 @@ class ShellViewModelTest {
         val hold = CountDownLatch(1)
         volumeHold = hold
         val viewModel = viewModel()
+        val before = viewModel.jobs()
 
         viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_UP)
         assertTrue(volumeArrived.await(5, TimeUnit.SECONDS))
         viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_UP)
         hold.countDown()
-        // Once the first request finished, the next key is sent.
-        withTimeout(5_000L) {
-            while (volumeRequests().size < 2) {
-                viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_DOWN)
-                delay(10)
-            }
-        }
+        viewModel.joinJobsSince(before)
+        assertEquals(listOf("up"), volumeRequests())
 
-        assertEquals(listOf("up", "down"), volumeRequests().take(2))
+        // Once the first request finished, the next key is sent.
+        viewModel.onVolumeKey(KeyEvent.KEYCODE_VOLUME_DOWN)
+        receiver.awaitRequestsTo("/web/vol", 2)
+
+        assertEquals(listOf("up", "down"), volumeRequests())
     }
 
     private fun viewModel(): ShellViewModel = ShellViewModel(
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(clients, profiles),
         profiles,
-        ReceiverProfileCheckRepository(receiver.profiles.context, profiles),
+        ReceiverProfileCheckRepository(receiver.profiles.context, profiles, clients),
         receiver.services,
         sessions,
         settings

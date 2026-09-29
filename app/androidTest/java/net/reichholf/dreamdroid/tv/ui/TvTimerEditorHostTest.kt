@@ -145,6 +145,7 @@ class TvTimerEditorHostTest {
                     name = remember { TextFieldState(name) },
                     description = remember { TextFieldState("Desc") },
                     actions = object : TimerFormActions {},
+                    servicePickKey = tvTimerServicePickKey(null),
                     onServicePicked = {},
                     onSave = onSave,
                     onDismiss = onDismiss

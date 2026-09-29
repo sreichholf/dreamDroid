@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
@@ -43,9 +42,16 @@ sealed class EnigmaHttpResult {
 /**
  * Per-request Enigma2 HTTP. Share [EnigmaOkHttp] under the hood; do not share
  * this type across concurrent fetches (a second [fetch] cancels the first).
+ *
+ * Built by `EnigmaClientFactory`. Response bodies are copied into [xmlDumpDir] when it is set
+ * (the "dump XML" developer setting).
  */
-class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS) {
-    private val profile: Profile = profile ?: ProfileRepository.get().requireCurrent()
+class EnigmaHttp(
+    private val profile: Profile,
+    private val okHttp: EnigmaOkHttp,
+    private val xmlDumpDir: File? = null,
+    timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+) {
     private var timeoutMillis: Int = timeoutMillis
     private var rememberedReturnCode: Int = 0
 
@@ -182,14 +188,12 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
         if (epoch != fetchEpoch.get()) {
             return cancelledResult()
         }
-        if (DreamDroid.dumpXml()) {
-            dumpToFile(urlString, body)
-        }
+        xmlDumpDir?.let { dumpToFile(it, urlString, body) }
         return EnigmaHttpResult.Success(body)
     }
 
     private fun createSession() {
-        val sessionHttp = EnigmaHttp(profile, timeoutMillis)
+        val sessionHttp = EnigmaHttp(profile, okHttp, xmlDumpDir, timeoutMillis)
         when (val result = sessionHttp.fetch(URIStore.SESSION)) {
             is EnigmaHttpResult.Success -> {
                 val content = result.text.replace(Regex("\\<.*?\\>"), "").trim()
@@ -200,9 +204,7 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
         }
     }
 
-    private fun dumpToFile(urlString: String, bytes: ByteArray) {
-        val context = DreamDroid.getAppContext() ?: return
-        val dumpDir = File(context.cacheDir, "xml")
+    private fun dumpToFile(dumpDir: File, urlString: String, bytes: ByteArray) {
         val parts = urlString.split("/")
         val fn = parts[parts.size - 1].split("\\?".toRegex()).toTypedArray()[0]
         Log.w("--------------", fn)
@@ -226,7 +228,7 @@ class EnigmaHttp(profile: Profile? = null, timeoutMillis: Int = DEFAULT_CONNECTI
         return Credentials.basic(profile.user.orEmpty(), profile.pass.orEmpty())
     }
 
-    private fun httpClient() = EnigmaOkHttp.client(timeoutMillis, profile.allCertsTrusted)
+    private fun httpClient() = okHttp.client(timeoutMillis, profile.allCertsTrusted)
 
     private fun cancelledResult(): EnigmaHttpResult =
         EnigmaHttpResult.Failure(EnigmaHttpError(EnigmaFailure.Cancelled))

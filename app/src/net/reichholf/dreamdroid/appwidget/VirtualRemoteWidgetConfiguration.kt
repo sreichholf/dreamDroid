@@ -12,9 +12,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.preference.PreferenceManager
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -22,7 +24,10 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
  * App widget configure activity. Compose UI; prefs contract unchanged for
  * [VirtualRemoteWidgetProvider] / [WidgetRemoteRequest].
  */
+@AndroidEntryPoint
 class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
+    @Inject
+    lateinit var profileRepository: ProfileRepository
 
     private var appWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
@@ -37,8 +42,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
             AppWidgetManager.INVALID_APPWIDGET_ID
         ) ?: AppWidgetManager.INVALID_APPWIDGET_ID
 
-        val profiles = AppDatabase.profilesBlocking(this).getProfiles()
-        val items = profiles.map { profile ->
+        val items = profileRepository.profiles().map { profile ->
             ProfileListItem(
                 id = profile.id ?: 0,
                 name = profile.name.orEmpty(),
@@ -71,7 +75,7 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         saveWidgetConfiguration(profileId, isFull)
         val context = applicationContext
         val appWidgetManager = AppWidgetManager.getInstance(context)
-        val profile = getWidgetProfile(context, appWidgetId)
+        val profile = getWidgetProfile(context, profileRepository, appWidgetId)
         VirtualRemoteWidgetProvider.updateWidget(context, appWidgetManager, appWidgetId, profile)
         val data = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_OK, data)
@@ -86,12 +90,16 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
     }
 
     companion object {
-        fun getWidgetProfile(context: Context, appWidgetId: Int): Profile? {
+        /** The profile [appWidgetId] was configured with; null if unset or deleted. */
+        fun getWidgetProfile(
+            context: Context,
+            profiles: ProfileRepository,
+            appWidgetId: Int
+        ): Profile? {
             val profileId = PreferenceManager.getDefaultSharedPreferences(context)
                 .getInt(getProfileIdKey(appWidgetId), -1)
             if (profileId < 0) return null
-            return AppDatabase.profilesBlocking(context).getProfiles()
-                .firstOrNull { profile -> profile.id == profileId }
+            return profiles.profile(profileId)
         }
 
         fun getProfileIdKey(appWidgetId: Int): String =

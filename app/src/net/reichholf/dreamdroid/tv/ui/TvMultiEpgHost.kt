@@ -53,7 +53,6 @@ import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 @Composable
 fun TvMultiEpgHost(
@@ -76,6 +75,22 @@ fun TvMultiEpgHost(
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
 
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    val stream = uiState.stream
+    LaunchedEffect(stream) {
+        if (stream != null) {
+            TvComposeHubHost.startStreamIntent(
+                activity,
+                IntentFactory.getStreamServiceIntent(
+                    activity,
+                    stream.stream,
+                    stream.title,
+                    stream.bouquetRef
+                ),
+                viewModel::onMissingStreamPlayer
+            )
+            viewModel.onStreamStarted()
+        }
+    }
 
     LaunchedEffect(viewModel) {
         viewModel.start(
@@ -133,17 +148,15 @@ fun TvMultiEpgHost(
             if (event != null) {
                 TvMultiEpgEventDetail(
                     event = event,
-                    bouquetRef = uiState.bouquetRef,
-                    activity = activity,
                     progress = if (uiState.settingTimer) {
                         IndeterminateProgressState(message = stringResource(R.string.saving))
                     } else {
                         null
                     },
                     onDismiss = viewModel::dismissDetail,
+                    onStream = { viewModel.stream(event) },
                     onSetTimer = { viewModel.setTimer(event) },
                     onEditTimer = { viewModel.editTimer(event) },
-                    onMissingStreamPlayer = viewModel::onMissingStreamPlayer,
                     streamingEnabled = uiState.streamingEnabled,
                     mutationsBlocked = uiState.mutationsBlocked
                 )
@@ -172,15 +185,12 @@ fun TvMultiEpgHost(
 @Composable
 internal fun TvMultiEpgEventDetail(
     event: Event,
-    bouquetRef: String,
     progress: IndeterminateProgressState?,
     onDismiss: () -> Unit,
-    activity: ComponentActivity? = null,
     onStream: (() -> Unit)? = null,
     onSetTimer: (() -> Unit)? = null,
     onEditTimer: (() -> Unit)? = null,
     onImdb: (() -> Unit)? = null,
-    onMissingStreamPlayer: () -> Unit = {},
     streamingEnabled: Boolean = true,
     mutationsBlocked: Boolean = false
 ) {
@@ -228,27 +238,7 @@ internal fun TvMultiEpgEventDetail(
                     TvMultiEpgAction(
                         label = stringResource(R.string.stream),
                         tag = "tv_multi_epg_detail_stream",
-                        onClick = {
-                            if (onStream != null) {
-                                onStream()
-                                return@TvMultiEpgAction
-                            }
-                            val host = activity ?: return@TvMultiEpgAction
-                            host.startLiveServiceStream(context, event.serviceReference) {
-                                val intent = IntentFactory.getStreamServiceIntent(
-                                    context,
-                                    event.serviceReference,
-                                    event.title,
-                                    bouquetRef,
-                                    null
-                                )
-                                TvComposeHubHost.startStreamIntent(
-                                    host,
-                                    intent,
-                                    onMissingStreamPlayer
-                                )
-                            }
-                        },
+                        onClick = { onStream?.invoke() },
                         focusRequester = firstActionFocus
                     )
                 }
@@ -288,8 +278,7 @@ internal fun TvMultiEpgEventDetail(
                         if (onImdb != null) {
                             onImdb()
                         } else {
-                            val host = activity ?: return@TvMultiEpgAction
-                            IntentFactory.queryIMDb(host, event)
+                            IntentFactory.queryIMDb(context, event)
                         }
                     }
                 )

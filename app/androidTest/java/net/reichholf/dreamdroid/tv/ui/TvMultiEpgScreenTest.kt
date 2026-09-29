@@ -208,7 +208,6 @@ class TvMultiEpgScreenTest {
                             serviceReference = "1:0:1:1:0:0:0:0:0:0:",
                             serviceName = "Das Erste"
                         ),
-                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
                         onDismiss = {},
                         onStream = { streamed = true }
@@ -241,7 +240,6 @@ class TvMultiEpgScreenTest {
                             serviceReference = "1:0:1:1:0:0:0:0:0:0:",
                             serviceName = "Das Erste"
                         ),
-                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
                         onDismiss = {},
                         streamingEnabled = false
@@ -268,7 +266,6 @@ class TvMultiEpgScreenTest {
                             serviceReference = "1:0:1:1:0:0:0:0:0:0:",
                             serviceName = "Das Erste"
                         ),
-                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:",
                         progress = null,
                         onDismiss = {},
                         onEditTimer = { edited = true }

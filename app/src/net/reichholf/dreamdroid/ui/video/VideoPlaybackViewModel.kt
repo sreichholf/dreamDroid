@@ -11,19 +11,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.contentErrorText
-import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
-import net.reichholf.dreamdroid.video.ZapAndStream
 
 /**
  * Zap list, zap position, and now/next for the player overlay, with their loads.
@@ -35,7 +32,6 @@ import net.reichholf.dreamdroid.video.ZapAndStream
 class VideoPlaybackViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val receiver: ReceiverRepository,
-    private val profiles: ProfileRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(VideoPlaybackUiState())
@@ -109,34 +105,23 @@ class VideoPlaybackViewModel @Inject constructor(
     }
 
     /**
-     * Sets [VideoPlaybackUiState.streamRef] to the zap position once the receiver can stream
-     * it: right away, or after `/web/zap` when the profile is zap-and-stream
-     * ([ZapAndStream]). A failed zap shows a message and streams nothing.
+     * Sets [VideoPlaybackUiState.stream] to the zap position once the receiver can stream it
+     * ([ReceiverRepository.liveStream]). A failed zap shows a message and streams nothing.
      */
     fun streamCurrent() {
         val ref = _uiState.value.serviceRef ?: return
         zapJob?.cancel()
-        if (!ZapAndStream.required(profiles.requireCurrent())) {
-            _uiState.update { it.copy(streamRef = ref) }
-            return
-        }
-        if (ref.isEmpty()) {
-            showMessage(UiText.Resource(R.string.get_content_error))
-            return
-        }
         zapJob = viewModelScope.launch {
-            val response = receiver.zap(ref)
-            if (response.value != null && response.error == null) {
-                _uiState.update { it.copy(streamRef = ref) }
-            } else {
-                showMessage(response.userMessageText())
+            when (val stream = receiver.liveStream(ref)) {
+                is LiveStream.Ready -> _uiState.update { it.copy(stream = stream) }
+                is LiveStream.Failed -> showMessage(stream.message)
             }
         }
     }
 
-    /** The overlay started [VideoPlaybackUiState.streamRef]. */
+    /** The overlay started [VideoPlaybackUiState.stream]. */
     fun onStreamStarted() {
-        _uiState.update { it.copy(streamRef = null) }
+        _uiState.update { it.copy(stream = null) }
     }
 
     fun showMessage(message: UiText) {

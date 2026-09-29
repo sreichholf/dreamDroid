@@ -58,7 +58,8 @@ fun EpgEventDetailSheet(
             onSetTimer = { onSetTimer(event) },
             onEditTimer = { onEditTimer(event) },
             onImdb = { onImdb(event) },
-            onSimilar = { onSimilar(event) }
+            onSimilar = { onSimilar(event) },
+            timerWritesBlocked = state.timerWritesBlocked
         )
     }
     val progress = if (state.saving) {

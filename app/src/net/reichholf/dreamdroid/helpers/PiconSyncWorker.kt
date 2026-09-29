@@ -15,6 +15,10 @@ import androidx.preference.PreferenceManager
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
 import androidx.work.WorkerParameters
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -59,7 +63,10 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
         Log.i(TAG, "Syncing from $remotePath to $localPath")
         val client = FTPClient()
-        val profile = ProfileRepository.get().requireCurrent()
+        val profile = EntryPointAccessors
+            .fromApplication(applicationContext, PiconSyncWorkerEntryPoint::class.java)
+            .profileRepository()
+            .requireCurrent()
         try {
             var tmpFile = File(localPath)
             if (!tmpFile.exists()) {
@@ -280,4 +287,11 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
     companion object {
         private val TAG = PiconSyncWorker::class.java.simpleName
     }
+}
+
+/** The worker's dependencies (decision 7 in docs/hilt-migration.md). */
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface PiconSyncWorkerEntryPoint {
+    fun profileRepository(): ProfileRepository
 }

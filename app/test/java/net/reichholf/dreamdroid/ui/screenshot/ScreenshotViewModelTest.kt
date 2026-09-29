@@ -15,9 +15,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.testutil.TestProfiles
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -45,8 +45,6 @@ class ScreenshotViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         server.start()
-        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
-        ProfileRepository.install(profiles)
         profiles.setCurrent(
             Profile().apply {
                 id = 1
@@ -166,7 +164,7 @@ class ScreenshotViewModelTest {
     }
 
     private fun viewModel(sessions: SessionConnectionHolder = this.sessions) =
-        ScreenshotViewModel(ReceiverRepository(EnigmaClientFactory(profiles), profiles), sessions)
+        ScreenshotViewModel(ReceiverRepository(enigmaClients(profiles), profiles), sessions)
             .also { viewModels += it }
 
     private suspend fun ScreenshotViewModel.settled(): ScreenshotUiState =

@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -16,12 +17,15 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.HDD
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.movieList
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.movies.toMovieDetailContent
@@ -161,7 +165,8 @@ class HubMovieListViewModelTest {
         viewModel.onTagsPicked(listOf(0))
         assertEquals(listOf("Fresh"), viewModel.settled().items.map { it.title })
         releaseStale.countDown()
-        Thread.sleep(300)
+        // The pick cancelled the stale load; it ends once its held answer arrives.
+        viewModel.jobs().filter { it.isCancelled }.joinAll()
 
         assertEquals(listOf("Fresh"), viewModel.uiState.value.items.map { it.title })
     }
@@ -302,6 +307,7 @@ class HubMovieListViewModelTest {
         viewModel.settled()
         viewModel.onItemMenu(0)
         viewModel.onMenuAction(MovieRowAction.Delete)
+        val before = viewModel.jobs()
 
         viewModel.onDeleteConfirmed()
 
@@ -309,7 +315,7 @@ class HubMovieListViewModelTest {
             UiText.Raw("Locked"),
             viewModel.uiState.first { it.userMessage != null }.userMessage
         )
-        Thread.sleep(200)
+        viewModel.joinJobsSince(before)
         val paths = receiver.takeRequests(2).map { it.requestUrl!!.encodedPath }
         assertEquals(listOf(MOVIES, DELETE), paths)
         assertEquals(2, receiver.server.requestCount)
@@ -344,6 +350,11 @@ class HubMovieListViewModelTest {
         viewModel.onMenuAction(MovieRowAction.Stream)
         val open = viewModel.uiState.value.open as MovieOpen.Stream
         assertEquals("Evening News", open.movie.title)
+        val profile = receiver.profiles.repository.requireCurrent()
+        assertEquals(
+            EnigmaUrls.fileStream(profile, open.movie.reference, open.movie.fileName),
+            open.url
+        )
         viewModel.onOpened()
         assertNull(viewModel.uiState.value.open)
 

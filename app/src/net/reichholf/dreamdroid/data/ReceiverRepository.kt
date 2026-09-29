@@ -5,6 +5,7 @@ import javax.inject.Singleton
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
@@ -14,12 +15,28 @@ import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Volume
+import net.reichholf.dreamdroid.enigma.userMessageText
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Message
 import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
 import net.reichholf.dreamdroid.helpers.enigma2.Remote
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
+import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.video.ZapAndStream
+
+/**
+ * Whether a live service of the active profile can be streamed, from
+ * [ReceiverRepository.liveStream].
+ */
+sealed interface LiveStream {
+    /** Play [url], the stream of the service [reference]. */
+    data class Ready(val reference: String, val url: String) : LiveStream
+
+    /** The receiver cannot stream the service; show [message]. */
+    data class Failed(val message: UiText) : LiveStream
+}
 
 /** Receiver state and commands of the active profile. */
 @Singleton
@@ -45,6 +62,24 @@ class ReceiverRepository @Inject constructor(
     /** Zaps the receiver to [reference], a service or a recording. */
     suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
         clients.current().zap(listOf(NameValuePair("sRef", reference)))
+
+    /**
+     * The stream of the live service [reference]. A zap-and-stream profile ([ZapAndStream])
+     * zaps first; a failed zap streams nothing.
+     */
+    suspend fun liveStream(reference: String): LiveStream {
+        val profile = profiles.requireCurrent()
+        if (ZapAndStream.required(profile)) {
+            if (reference.isEmpty()) {
+                return LiveStream.Failed(UiText.Resource(R.string.get_content_error))
+            }
+            val response = zap(reference)
+            if (response.value == null || response.error != null) {
+                return LiveStream.Failed(response.userMessageText())
+            }
+        }
+        return LiveStream.Ready(reference, EnigmaUrls.stream(profile, reference))
+    }
 
     /** The service the receiver is tuned to, with its now and next event. */
     suspend fun currentService(): EnigmaResponse<CurrentService> = clients.current().getCurrent()

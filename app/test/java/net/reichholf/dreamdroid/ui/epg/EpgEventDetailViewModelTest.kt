@@ -11,11 +11,12 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.data.TimerRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
@@ -43,6 +44,16 @@ class EpgEventDetailViewModelTest {
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         receiver.stop()
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun timerWritesFollowTheSession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.timerWritesBlocked)
+
+        receiver.goOffline()
+
+        withTimeout(5_000L) { viewModel.uiState.first { it.timerWritesBlocked } }
     }
 
     @Test
@@ -83,7 +94,8 @@ class EpgEventDetailViewModelTest {
         assertEquals(EVENT.serviceReference, url.queryParameter("sRef"))
         assertEquals(EVENT.eventId, url.queryParameter("eventid"))
         viewModel.onMessageShown()
-        assertNull(viewModel.uiState.value.userMessage)
+        // uiState is combined on the thread that last emitted, here the HTTP answer's.
+        withTimeout(5_000L) { viewModel.uiState.first { it.userMessage == null } }
     }
 
     @Test
@@ -134,10 +146,11 @@ class EpgEventDetailViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = EpgEventDetailViewModel(
         handle,
         TimerRepository(
-            EnigmaClientFactory(receiver.profiles.repository),
+            enigmaClients(receiver.profiles.repository),
             receiver.profiles.repository,
             receiver.profiles.database
-        )
+        ),
+        receiver.sessions
     ).also { viewModels += it }
 
     private companion object {

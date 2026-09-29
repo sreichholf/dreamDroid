@@ -14,14 +14,17 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -97,8 +100,8 @@ class CurrentServiceViewModelTest {
 
         assertEquals(SAVED, state.current)
         assertTrue(state.ready)
+        // Each load starts through reload(), which marks the state refreshing first.
         assertFalse(state.refreshing)
-        Thread.sleep(100)
         assertTrue(receiver.requests.isEmpty())
     }
 
@@ -175,6 +178,45 @@ class CurrentServiceViewModelTest {
     }
 
     @Test
+    fun streamHandsTheServiceOnScreenToThePlayer() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.stream()
+        val stream = withTimeout(5_000L) { viewModel.uiState.first { it.stream != null } }.stream
+
+        assertEquals(
+            CurrentServiceStream(
+                "Das Erste HD",
+                LiveStream.Ready(REF, EnigmaUrls.stream(profiles.requireCurrent(), REF))
+            ),
+            stream
+        )
+        viewModel.onStreamStarted()
+        assertNull(viewModel.uiState.value.stream)
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == "/web/zap") {
+                MockResponse().setBody(simpleResult(false, "No free tuner"))
+            } else {
+                MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.stream()
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.stream)
+    }
+
+    @Test
     fun missingStreamPlayerIsReportedUntilShown() {
         val viewModel = viewModel()
 
@@ -190,7 +232,7 @@ class CurrentServiceViewModelTest {
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = CurrentServiceViewModel(
         handle,
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(enigmaClients(profiles), profiles),
         profiles,
         receiver.sessions,
         SettingsRepository(preferences)
@@ -201,5 +243,6 @@ class CurrentServiceViewModelTest {
 
     private companion object {
         val SAVED = CurrentService(service = Service("1:0:1:1", "Saved box"))
+        const val REF = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
     }
 }

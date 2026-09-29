@@ -11,8 +11,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -21,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.withReadableTimes
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 const val EPG_DETAIL_CAPPED_TAG = "epg_detail_capped"
@@ -124,11 +121,11 @@ fun EpgDetailScreen(
     onSimilar: () -> Unit,
     modifier: Modifier = Modifier,
     showActions: Boolean = true,
+    /** The session blocks timer writes: the timer actions look online-only. */
+    timerWritesBlocked: Boolean = false,
     /** Phone bottom sheet caps body height; TV fullscreen passes null. */
     bodyHeightCap: Dp? = 360.dp
 ) {
-    val status by SessionConnectionHolder.shared.status.collectAsState()
-    val timerWritesBlocked = status.blocksMutations
     // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
     Column(modifier = modifier.fillMaxWidth()) {
         Column(

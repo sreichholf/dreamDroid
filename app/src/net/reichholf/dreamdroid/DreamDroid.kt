@@ -339,8 +339,6 @@ class DreamDroid : Application() {
 
         fun featureSleepTimer(): Boolean = sleepTimerEnabled
 
-        fun dumpXml(): Boolean = ProfileRepository.get().dumpXml()
-
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)
             val type = Integer.parseInt(sp.getString("theme_type", "1") ?: "1")

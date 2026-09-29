@@ -66,6 +66,7 @@ import androidx.tv.material3.NavigationDrawerItem
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -81,7 +82,6 @@ import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Phase 3.1c-iv Compose TV hub host.
@@ -144,29 +144,28 @@ object TvComposeHubHost {
         else -> R.drawable.ic_menu_tv
     }
 
+    /** Plays [stream] of [service], titled by its now event, as a channel of [bouquetRef]. */
     fun streamServiceIntent(
         context: Context,
         service: ServiceNowNext,
-        bouquetRef: String?
+        bouquetRef: String?,
+        stream: LiveStream.Ready
     ): Intent {
         val title = service.now?.title?.takeIf { it.isNotEmpty() } ?: service.serviceName
-        return IntentFactory.getStreamServiceIntent(
-            context,
-            service.serviceReference,
-            title,
-            bouquetRef,
-            service
-        )
+        return IntentFactory.getStreamServiceIntent(context, stream, title, bouquetRef, service)
     }
 
-    fun streamMovieIntent(context: Context, movie: Movie): Intent =
-        IntentFactory.getStreamFileIntent(
-            context,
-            movie.reference,
-            movie.fileName,
-            movie.title,
-            movie
-        )
+    /** Plays the recording [movie] from [url] (see `MovieRepository.streamUrl`). */
+    fun streamMovieIntent(context: Context, movie: Movie, url: String): Intent =
+        IntentFactory.getStreamFileIntent(context, url, movie.title, movie)
+
+    /** The player intent for [stream]. */
+    fun streamIntent(context: Context, stream: TvStreamOpen): Intent = when (stream) {
+        is TvStreamOpen.Service ->
+            streamServiceIntent(context, stream.service, stream.bouquetRef, stream.stream)
+
+        is TvStreamOpen.Recording -> streamMovieIntent(context, stream.movie, stream.url)
+    }
 
     /** Starts [intent]; calls [onMissingPlayer] when no app on the device can play it. */
     fun startStreamIntent(activity: Activity, intent: Intent, onMissingPlayer: () -> Unit) {
@@ -216,6 +215,17 @@ fun ComposeTvHubApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    val stream = uiState.stream
+    LaunchedEffect(stream) {
+        if (stream != null) {
+            TvComposeHubHost.startStreamIntent(
+                activity,
+                TvComposeHubHost.streamIntent(activity, stream),
+                viewModel::onMissingStreamPlayer
+            )
+            viewModel.onStreamStarted()
+        }
+    }
     // Room answers before the gate is known, so Checking never flashes ProfileCheck.
     val hasCache = uiState.hasCache ?: return
     val status = uiState.connection
@@ -301,16 +311,8 @@ fun ComposeTvHubApp(
             movieLoading = uiState.movieLoading,
             errorText = uiState.browseError?.asString(),
             streamingEnabled = streamingEnabled,
-            onServiceClick = { service, bouquetRef ->
-                openServiceStream(activity, service, bouquetRef, viewModel::onMissingStreamPlayer)
-            },
-            onMovieClick = { movie ->
-                TvComposeHubHost.startStreamIntent(
-                    activity,
-                    TvComposeHubHost.streamMovieIntent(activity, movie),
-                    viewModel::onMissingStreamPlayer
-                )
-            },
+            onServiceClick = viewModel::streamService,
+            onMovieClick = viewModel::streamMovie,
             onOpenMultiEpg = onOpenMultiEpg,
             sessionChipLabel = stringResource(status.chipLabelRes()),
             onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
@@ -330,12 +332,7 @@ fun ComposeTvHubApp(
                     service = overlayTarget.service,
                     onDismiss = viewModel::dismissServiceTimer,
                     onStream = {
-                        openServiceStream(
-                            activity,
-                            overlayTarget.service,
-                            overlayTarget.bouquetRef,
-                            viewModel::onMissingStreamPlayer
-                        )
+                        viewModel.streamService(overlayTarget.service, overlayTarget.bouquetRef)
                         viewModel.dismissServiceTimer()
                     },
                     onSetTimer = viewModel::setTimer,
@@ -355,21 +352,6 @@ fun ComposeTvHubApp(
                 )
             }
         }
-    }
-}
-
-private fun openServiceStream(
-    activity: ComponentActivity,
-    service: ServiceNowNext,
-    bouquetRef: String?,
-    onMissingPlayer: () -> Unit
-) {
-    activity.startLiveServiceStream(activity, service.serviceReference) {
-        TvComposeHubHost.startStreamIntent(
-            activity,
-            TvComposeHubHost.streamServiceIntent(activity, service, bouquetRef),
-            onMissingPlayer
-        )
     }
 }
 

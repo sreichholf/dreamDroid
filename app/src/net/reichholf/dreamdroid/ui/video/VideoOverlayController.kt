@@ -30,6 +30,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.VideoActivity
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.Service as BouquetService
@@ -547,9 +548,10 @@ class VideoOverlayController(
     /** Paints load results the view model publishes after the fact. */
     private fun onSessionChanged(session: VideoPlaybackUiState) {
         if (!attached) return
-        if (session.streamRef != null) {
+        val stream = session.stream
+        if (stream != null) {
             playback.onStreamStarted()
-            playZappedService()
+            playZappedService(stream)
         }
         renderZapState()
         val key = eventKey(session)
@@ -608,15 +610,14 @@ class VideoOverlayController(
         playback.streamCurrent()
     }
 
-    private fun playZappedService() {
+    private fun playZappedService(stream: LiveStream.Ready) {
         if (!allowsTvStreaming()) return
         val session = session
-        val ref = session.serviceRef ?: return
-        if (Service.isMarker(ref)) return
+        if (Service.isMarker(stream.reference)) return
         val streamingIntent =
             IntentFactory.getStreamServiceIntent(
                 activity,
-                ref,
+                stream,
                 session.title ?: "",
                 session.bouquetRef,
                 session.currentService

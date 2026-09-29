@@ -11,7 +11,6 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.SimpleResult
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
@@ -86,6 +85,10 @@ class MovieRepository @Inject constructor(
     suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
         clients.current().deleteMovie(MovieKeys.getDeleteParams(movie))
 
+    /** The stream of [movie] from the active profile, for the video player. */
+    fun streamUrl(movie: Movie): String =
+        EnigmaUrls.fileStream(profiles.requireCurrent(), movie.reference, movie.fileName)
+
     /**
      * A URL any viewer can open for the recording at [remotePath], or null when the profile
      * needs a login and the file has to go through [downloadToCache].
@@ -104,7 +107,7 @@ class MovieRepository @Inject constructor(
         val out = File(context.cacheDir, movieCacheFileName(remotePath))
         val params = listOf(NameValuePair("file", remotePath))
         val fetched = withContext(Dispatchers.IO) {
-            EnigmaHttp(profile).downloadToFile(URIStore.FILE, params, out)
+            clients.http(profile).downloadToFile(URIStore.FILE, params, out)
         }
         return when (fetched) {
             is EnigmaHttpResult.Failure -> {

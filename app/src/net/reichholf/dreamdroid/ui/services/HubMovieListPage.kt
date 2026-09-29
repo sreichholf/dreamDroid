@@ -184,16 +184,8 @@ fun HubMovieListScreen(
 }
 
 private fun MovieOpen.intent(context: Context): Intent = when (this) {
-    is MovieOpen.Stream -> IntentFactory.getStreamFileIntent(
-        context,
-        movie.reference,
-        movie.fileName,
-        movie.title,
-        movie
-    )
-
+    is MovieOpen.Stream -> IntentFactory.getStreamFileIntent(context, url, movie.title, movie)
     is MovieOpen.Link -> Intent(Intent.ACTION_VIEW, url.toUri())
-
     is MovieOpen.CachedFile -> cachedFileIntent(context, file)
 }
 

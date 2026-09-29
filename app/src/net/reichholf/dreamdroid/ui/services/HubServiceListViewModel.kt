@@ -21,6 +21,7 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.NowNextListLoad
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -43,8 +44,12 @@ sealed interface HubServiceEffect {
     /** Open the EPG of one service. */
     data class ServiceEpg(val reference: String, val name: String) : HubServiceEffect
 
-    /** Stream [row], a channel of the list [bouquetRef]. */
-    data class Stream(val row: ServiceNowNext, val bouquetRef: String) : HubServiceEffect
+    /** Play [stream] of [row], a channel of the list [bouquetRef]. */
+    data class Stream(
+        val row: ServiceNowNext,
+        val bouquetRef: String,
+        val stream: LiveStream.Ready
+    ) : HubServiceEffect
 
     /** Open MultiEPG of the list [reference]. */
     data class MultiEpg(val reference: String, val name: String) : HubServiceEffect
@@ -111,6 +116,7 @@ class HubServiceListViewModel @AssistedInject constructor(
     private var rows: List<ServiceNowNext> = emptyList()
     private var menuRow: ServiceNowNext? = null
     private var loadJob: Job? = null
+    private var streamJob: Job? = null
 
     init {
         val saved = readHubServiceListSaved(savedStateHandle, rootRef)
@@ -221,8 +227,19 @@ class HubServiceListViewModel @AssistedInject constructor(
 
             ServiceRowAction.Zap -> zapTo(row.serviceReference)
 
-            ServiceRowAction.Stream ->
-                effect(HubServiceEffect.Stream(row, _uiState.value.currentRef))
+            ServiceRowAction.Stream -> stream(row)
+        }
+    }
+
+    /** Streams [row] once the receiver can ([ReceiverRepository.liveStream]). */
+    private fun stream(row: ServiceNowNext) {
+        val bouquetRef = _uiState.value.currentRef
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            when (val stream = receiver.liveStream(row.serviceReference)) {
+                is LiveStream.Ready -> effect(HubServiceEffect.Stream(row, bouquetRef, stream))
+                is LiveStream.Failed -> showMessage(stream.message)
+            }
         }
     }
 

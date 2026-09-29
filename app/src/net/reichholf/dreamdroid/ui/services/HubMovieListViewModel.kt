@@ -32,8 +32,8 @@ import net.reichholf.dreamdroid.ui.text.UiText
 
 /** Something the page hands to another app. */
 sealed interface MovieOpen {
-    /** Stream the recording with the player. */
-    data class Stream(val movie: Movie) : MovieOpen
+    /** Stream the recording from [url] with the player. */
+    data class Stream(val movie: Movie, val url: String) : MovieOpen
 
     /** A URL the receiver serves without a login. */
     data class Link(val url: String) : MovieOpen
@@ -180,7 +180,10 @@ class HubMovieListViewModel @AssistedInject constructor(
 
             MovieRowAction.Download -> download(movie)
 
-            MovieRowAction.Stream -> _uiState.update { it.copy(open = MovieOpen.Stream(movie)) }
+            MovieRowAction.Stream -> {
+                val open = MovieOpen.Stream(movie, movieRepository.streamUrl(movie))
+                _uiState.update { it.copy(open = open) }
+            }
         }
     }
 

@@ -12,14 +12,19 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -195,20 +200,30 @@ class ZapViewModelTest {
         receiver.goOffline()
 
         assertTrue(viewModel.uiState.value.zapBlocked)
+        val before = viewModel.jobs()
         viewModel.zap(Service(CHANNEL, "Das Erste HD"))
-        Thread.sleep(100)
+        viewModel.joinJobsSince(before)
 
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
     }
 
     @Test
-    fun longPressStreamsThroughTheDestination() {
+    fun longPressStreamsThroughTheDestination() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.onEffectHandled()
         val service = Service(CHANNEL, "Das Erste HD")
 
         viewModel.stream(service)
-        assertEquals(ZapEffect.Stream(service), viewModel.uiState.value.effect)
+        val effect = withTimeout(5_000L) {
+            viewModel.uiState.first { it.effect is ZapEffect.Stream }
+        }.effect
+        assertEquals(
+            ZapEffect.Stream(
+                service,
+                LiveStream.Ready(CHANNEL, EnigmaUrls.stream(profiles.requireCurrent(), CHANNEL))
+            ),
+            effect
+        )
         viewModel.onEffectHandled()
         viewModel.onStreamFailed()
 
@@ -218,6 +233,27 @@ class ZapViewModelTest {
             viewModel.uiState.value.userMessage
         )
         assertFalse(viewModel.uiState.value.zapBlocked)
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == ZAP) {
+                MockResponse().setBody(simpleResult(false, "No free tuner"))
+            } else {
+                routes(request)
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.onEffectHandled()
+
+        viewModel.stream(Service(CHANNEL, "Das Erste HD"))
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.effect)
+        assertEquals(CHANNEL, receiver.requestsTo(ZAP).single().sRef())
     }
 
     private fun useDefaultBouquet() {
@@ -239,7 +275,7 @@ class ZapViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = ZapViewModel(
         handle,
         receiver.services,
-        ReceiverRepository(EnigmaClientFactory(profiles), profiles),
+        ReceiverRepository(enigmaClients(profiles), profiles),
         receiver.sessions,
         profiles
     ).also { viewModels += it }

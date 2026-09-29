@@ -60,6 +60,7 @@ fun TvTimerEditorHost(
         name = viewModel.name.state,
         description = viewModel.description.state,
         actions = viewModel,
+        servicePickKey = viewModel.servicePickKey(),
         onServicePicked = viewModel::onServicePicked,
         onSave = viewModel::save,
         onDismiss = onDismiss,
@@ -68,7 +69,8 @@ fun TvTimerEditorHost(
 }
 
 /**
- * The editor of [uiState] with the in-host service pick. While
+ * The editor of [uiState] with the in-host service pick, whose ViewModel is
+ * [servicePickKey]. While
  * [TimerEditUiState.mutationsBlocked], save shows [TvNeedsReceiverOverlay] instead.
  */
 @Composable
@@ -77,6 +79,7 @@ fun TvTimerEditorContent(
     name: TextFieldState,
     description: TextFieldState,
     actions: TimerFormActions,
+    servicePickKey: String,
     onServicePicked: (Service) -> Unit,
     onSave: () -> Unit,
     onDismiss: () -> Unit,
@@ -90,6 +93,7 @@ fun TvTimerEditorContent(
     Box(modifier = modifier.fillMaxSize()) {
         if (pickingService) {
             TvTimerServicePick(
+                viewModelKey = servicePickKey,
                 onPicked = { service ->
                     onServicePicked(service)
                     pickingService = false

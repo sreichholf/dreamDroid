@@ -11,7 +11,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.contentErrorText
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerRequests
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.toListEntity
@@ -95,7 +94,7 @@ class TimerRepository @Inject constructor(
      */
     suspend fun locationsAndTags(): TimerChoices {
         if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
-            val http = EnigmaHttp(profiles.requireCurrent())
+            val http = clients.currentHttp()
             withContext(Dispatchers.IO) {
                 if (!profiles.locationsLoadedFromReceiver()) {
                     profiles.loadLocations(http)

@@ -17,7 +17,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
+import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
@@ -30,6 +33,19 @@ import net.reichholf.dreamdroid.ui.text.UiText
 
 /** The bouquet service whose INFO/MENU overlay is open, and the bouquet it was opened in. */
 data class TvServiceTimerTarget(val service: ServiceNowNext, val bouquetRef: String?)
+
+/** A stream the hub hands to the player once. */
+sealed interface TvStreamOpen {
+    /** Play [stream] of [service], a channel of the list [bouquetRef]. */
+    data class Service(
+        val service: ServiceNowNext,
+        val bouquetRef: String?,
+        val stream: LiveStream.Ready
+    ) : TvStreamOpen
+
+    /** Play the recording [movie] from [url]. */
+    data class Recording(val movie: Movie, val url: String) : TvStreamOpen
+}
 
 /**
  * The TV hub: the selected drawer header, the bouquet rows and movie locations, the movies
@@ -50,6 +66,7 @@ data class TvHubUiState(
     val editTimerEvent: Event? = null,
     val settingTimer: Boolean = false,
     val userMessage: UiText? = null,
+    val stream: TvStreamOpen? = null,
     val connection: ConnectionStatus = ConnectionStatus(),
     val hasCache: Boolean? = null,
     val receiverLabel: String = ""
@@ -63,7 +80,8 @@ data class TvHubUiState(
 
 /**
  * State of the TV hub, scoped to the TV activity so it survives configuration changes and
- * the hub leaving composition. Each new [ConnectionStatus.Session] reloads the browse data;
+ * the hub leaving composition. [TvHubUiState.stream] is a stream for the player; the host
+ * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data;
  * switching headers keeps movies already loaded for a location.
  */
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -71,6 +89,8 @@ data class TvHubUiState(
 class TvHubViewModel @Inject constructor(
     private val browse: TvHubBrowse,
     private val timers: TimerRepository,
+    private val receiver: ReceiverRepository,
+    private val movies: MovieRepository,
     profiles: ProfileRepository,
     services: ServiceRepository,
     sessions: SessionConnectionHolder
@@ -106,6 +126,7 @@ class TvHubViewModel @Inject constructor(
     private var browseJob: Job? = null
     private var movieJob: Job? = null
     private var movieJobDirname: String? = null
+    private var streamJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -200,6 +221,36 @@ class TvHubViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    /**
+     * Streams [service] of the list [bouquetRef] once the receiver can
+     * ([ReceiverRepository.liveStream]); otherwise the receiver's answer is the user message.
+     */
+    fun streamService(service: ServiceNowNext, bouquetRef: String?) {
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            when (val stream = receiver.liveStream(service.serviceReference)) {
+                is LiveStream.Ready -> _uiState.update {
+                    it.copy(stream = TvStreamOpen.Service(service, bouquetRef, stream))
+                }
+
+                is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
+            }
+        }
+    }
+
+    /** Streams the recording [movie]. */
+    fun streamMovie(movie: Movie) {
+        streamJob?.cancel()
+        _uiState.update {
+            it.copy(stream = TvStreamOpen.Recording(movie, movies.streamUrl(movie)))
+        }
+    }
+
+    /** The host handed [TvHubUiState.stream] to the player. */
+    fun onStreamStarted() {
+        _uiState.update { it.copy(stream = null) }
     }
 
     /** No app on the device plays the stream. */

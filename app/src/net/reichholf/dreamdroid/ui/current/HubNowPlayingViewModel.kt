@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
@@ -39,6 +40,7 @@ data class HubNowPlayingUiState(
     val sessionOffline: Boolean = false,
     val streamBlocked: Boolean = false,
     val sheetOpen: Boolean = false,
+    val stream: CurrentServiceStream? = null,
     val userMessage: UiText? = null
 ) {
     val shown: CurrentService?
@@ -90,6 +92,7 @@ class HubNowPlayingViewModel @Inject constructor(
     private var lastGoodProfileId: Int? = null
     private var lastSuccess: TimeSource.Monotonic.ValueTimeMark? = null
     private var loadJob: Job? = null
+    private var streamJob: Job? = null
     private var handledReloadEpoch = 0
 
     init {
@@ -158,6 +161,30 @@ class HubNowPlayingViewModel @Inject constructor(
     fun closeSheet() {
         setSheetOpen(false)
         reload()
+    }
+
+    /** Streams the shown service once the receiver can ([ReceiverRepository.liveStream]). */
+    fun stream() {
+        val shown = _uiState.value.shown
+        val service = shown?.service
+        if (!currentServiceCanStream(shown) || service == null) {
+            return
+        }
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            _uiState.update {
+                when (val stream = receiver.liveStream(service.reference)) {
+                    is LiveStream.Ready ->
+                        it.copy(stream = CurrentServiceStream(service.name, stream))
+
+                    is LiveStream.Failed -> it.copy(userMessage = stream.message)
+                }
+            }
+        }
+    }
+
+    fun onStreamStarted() {
+        _uiState.update { it.copy(stream = null) }
     }
 
     /** No app could play the stream. */

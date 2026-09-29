@@ -15,7 +15,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
@@ -32,10 +34,13 @@ import net.reichholf.dreamdroid.ui.multiepg.writeMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
+/** Play [stream], the service of the event [title], as a channel of [bouquetRef]. */
+data class TvMultiEpgStream(val title: String, val bouquetRef: String, val stream: LiveStream.Ready)
+
 /**
  * The TV MultiEPG: the bouquet it shows and the ones it can switch to, the loaded grid,
  * the focused cell, the zoom, the open overlay (detail, timer editor, or bouquet picker),
- * and the set-timer request. [streamingEnabled] and [mutationsBlocked] follow the session.
+ * the set-timer request, and a [stream] for the player. [streamingEnabled] and [mutationsBlocked] follow the session.
  */
 data class TvMultiEpgUiState(
     val bouquetRef: String = "",
@@ -50,6 +55,7 @@ data class TvMultiEpgUiState(
     val pickingBouquet: Boolean = false,
     val settingTimer: Boolean = false,
     val userMessage: UiText? = null,
+    val stream: TvMultiEpgStream? = null,
     val streamingEnabled: Boolean = false,
     val mutationsBlocked: Boolean = false
 ) {
@@ -76,6 +82,7 @@ class TvMultiEpgViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val timers: TimerRepository,
     private val profiles: ProfileRepository,
+    private val receiver: ReceiverRepository,
     sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val persistGate = epg.multiEpgPersistGate()
@@ -104,6 +111,7 @@ class TvMultiEpgViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var startJob: Job? = null
+    private var streamJob: Job? = null
 
     /** Loads the bouquet list and the launch bouquet once per ViewModel. */
     fun start(extraRef: String?, extraName: String?) {
@@ -232,6 +240,29 @@ class TvMultiEpgViewModel @Inject constructor(
                 it.copy(settingTimer = false, userMessage = response.userMessageText())
             }
         }
+    }
+
+    /**
+     * Streams the service of [event] once the receiver can ([ReceiverRepository.liveStream]);
+     * otherwise the receiver's answer is the user message.
+     */
+    fun stream(event: Event) {
+        val bouquetRef = _uiState.value.bouquetRef
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            when (val stream = receiver.liveStream(event.serviceReference)) {
+                is LiveStream.Ready -> _uiState.update {
+                    it.copy(stream = TvMultiEpgStream(event.title, bouquetRef, stream))
+                }
+
+                is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
+            }
+        }
+    }
+
+    /** The host handed [TvMultiEpgUiState.stream] to the player. */
+    fun onStreamStarted() {
+        _uiState.update { it.copy(stream = null) }
     }
 
     /** No app on the device plays the stream. */

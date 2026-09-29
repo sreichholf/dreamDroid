@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ssl
 
-import android.content.Context
 import android.util.Log
 import java.security.KeyStore
 import java.security.cert.CertificateException
@@ -9,15 +8,10 @@ import javax.net.ssl.HostnameVerifier
 import javax.net.ssl.SSLSession
 import javax.net.ssl.TrustManagerFactory
 import javax.net.ssl.X509TrustManager
-import net.reichholf.dreamdroid.data.ProfileRepository
 
-class DreamDroidTrustManager(ctx: Context?, private val trustAll: Boolean) :
+class DreamDroidTrustManager(private val trustAll: Boolean) :
     HostnameVerifier,
     X509TrustManager {
-    constructor(ctx: Context?) : this(
-        ctx,
-        ProfileRepository.get().requireCurrent().allCertsTrusted
-    )
 
     private var platformTrustManager: X509TrustManager? = getDefaultTrustManager()
 

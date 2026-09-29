@@ -5,7 +5,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -16,16 +15,19 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -99,7 +101,7 @@ class HubServiceListViewModelTest {
         receiver.writeTabStrip(Service(TAB, "Tab"))
 
         viewModel().settled()
-        awaitRequest(EPG_MULTI)
+        receiver.awaitRequestsTo(EPG_MULTI, 1)
 
         assertEquals(
             listOf("Favourites (TV)", "Das Erste HD", "--------"),
@@ -113,10 +115,14 @@ class HubServiceListViewModelTest {
 
     @Test
     fun listOutsideTheHubTabsIsNotStored() = runBlocking {
-        viewModel().settled()
+        val viewModel = viewModel()
+        viewModel.settled()
+        val before = viewModel.jobs()
+
+        viewModel.reload(forceRefresh = true)
+        viewModel.joinJobsSince(before)
 
         assertNull(services.cachedNowNext(TAB))
-        Thread.sleep(100)
         assertTrue(receiver.requestsTo(EPG_MULTI).isEmpty())
     }
 
@@ -273,12 +279,12 @@ class HubServiceListViewModelTest {
     }
 
     @Test
-    fun sessionChangeLoadsAgain() = runBlocking {
+    fun sessionChangeLoadsAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.settled()
 
         receiver.goOffline()
-        awaitRequest(GET_SERVICES, count = 2)
+        receiver.awaitRequestsTo(GET_SERVICES, 2)
     }
 
     @Test
@@ -335,15 +341,47 @@ class HubServiceListViewModelTest {
         )
 
         viewModel.onMenuAction(ServiceRowAction.Stream)
-        val stream = viewModel.uiState.value.effect as HubServiceEffect.Stream
+        val stream = withTimeout(5_000L) {
+            viewModel.uiState.first { it.effect is HubServiceEffect.Stream }
+        }.effect as HubServiceEffect.Stream
         assertEquals(CHANNEL_44D, stream.row.serviceReference)
         assertEquals(TAB, stream.bouquetRef)
+        assertEquals(
+            EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), CHANNEL_44D),
+            stream.stream.url
+        )
+        assertTrue(receiver.requestsTo(ZAP).isEmpty())
         viewModel.onStreamFailed()
         assertNull(viewModel.uiState.value.effect)
         assertEquals(
             UiText.Resource(R.string.missing_stream_player),
             viewModel.uiState.value.userMessage
         )
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverTextAndStreamsNothing() = runBlocking {
+        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == ZAP) {
+                MockResponse().setBody(
+                    "<e2simplexmlresult><e2state>False</e2state>" +
+                        "<e2statetext>No free tuner</e2statetext></e2simplexmlresult>"
+                )
+            } else {
+                routes(request)
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.onItemMenu(1)
+
+        viewModel.onMenuAction(ServiceRowAction.Stream)
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.effect)
+        assertEquals(CHANNEL_44D, receiver.requestsTo(ZAP).single().sRef())
     }
 
     @Test
@@ -367,14 +405,15 @@ class HubServiceListViewModelTest {
         viewModel.settled()
         receiver.goOffline()
         viewModel.settled()
+        val before = viewModel.jobs()
 
         viewModel.zap(1)
         viewModel.onItemMenu(1)
         viewModel.onMenuAction(ServiceRowAction.Zap)
         viewModel.onItemMenu(1)
         viewModel.onMenuAction(ServiceRowAction.Stream)
+        viewModel.joinJobsSince(before)
 
-        Thread.sleep(100)
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
         assertNull(viewModel.uiState.value.effect)
     }
@@ -458,14 +497,6 @@ class HubServiceListViewModelTest {
         assertTrue(services.persistRoster(TAB, TAB, listOf(ServiceNowNext(CHANNEL_44D, name))))
     }
 
-    private suspend fun awaitRequest(path: String, count: Int = 1) {
-        withTimeout(5_000L) {
-            while (receiver.requestsTo(path).size < count) {
-                delay(20)
-            }
-        }
-    }
-
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
             GET_SERVICES -> MockResponse().setBody(loadWebFixture("getservices.xml"))
@@ -489,7 +520,7 @@ class HubServiceListViewModelTest {
             services,
             receiver.repository,
             ReceiverRepository(
-                EnigmaClientFactory(receiver.profiles.repository),
+                enigmaClients(receiver.profiles.repository),
                 receiver.profiles.repository
             ),
             receiver.profiles.repository,

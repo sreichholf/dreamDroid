@@ -8,15 +8,17 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -103,11 +105,12 @@ class VideoPlaybackViewModelTest {
         viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
 
         viewModel.streamCurrent()
+        val state = viewModel.uiState.first { it.stream != null }
 
-        assertEquals(ZDF, viewModel.uiState.value.streamRef)
+        assertEquals(zdfStream(), state.stream)
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
         viewModel.onStreamStarted()
-        assertNull(viewModel.uiState.value.streamRef)
+        assertNull(viewModel.uiState.value.stream)
     }
 
     @Test
@@ -117,9 +120,9 @@ class VideoPlaybackViewModelTest {
         viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
 
         viewModel.streamCurrent()
-        val state = viewModel.uiState.first { it.streamRef != null }
+        val state = viewModel.uiState.first { it.stream != null }
 
-        assertEquals(ZDF, state.streamRef)
+        assertEquals(zdfStream(), state.stream)
         assertEquals(ZDF, receiver.requestsTo(ZAP).single().requestUrl?.queryParameter("sRef"))
     }
 
@@ -134,7 +137,7 @@ class VideoPlaybackViewModelTest {
         val state = viewModel.uiState.first { it.userMessage != null }
 
         assertEquals(UiText.Raw("No free tuner"), state.userMessage)
-        assertNull(state.streamRef)
+        assertNull(state.stream)
     }
 
     @Test
@@ -148,13 +151,15 @@ class VideoPlaybackViewModelTest {
         assertEquals(TV_ROOTS[0], receiver.requestsTo(GET_SERVICES).first().sRef())
     }
 
+    private fun zdfStream(): LiveStream.Ready =
+        LiveStream.Ready(ZDF, EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), ZDF))
+
     private fun viewModel(): VideoPlaybackViewModel = VideoPlaybackViewModel(
         receiver.services,
         ReceiverRepository(
-            EnigmaClientFactory(receiver.profiles.repository),
+            enigmaClients(receiver.profiles.repository),
             receiver.profiles.repository
         ),
-        receiver.profiles.repository,
         receiver.sessions
     ).also { viewModels += it }
 

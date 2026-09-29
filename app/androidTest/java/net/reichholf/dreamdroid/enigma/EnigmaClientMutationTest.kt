@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import okhttp3.mockwebserver.MockResponse
@@ -93,12 +95,15 @@ class EnigmaClientMutationTest {
     }
 
     private fun client() = EnigmaClient(
-        Profile().apply {
-            host = "127.0.0.1"
-            port = server.port
-            ssl = false
-            login = false
-        }
+        EnigmaHttp(
+            Profile().apply {
+                host = "127.0.0.1"
+                port = server.port
+                ssl = false
+                login = false
+            },
+            EnigmaOkHttp()
+        )
     )
 
     private fun simpleResult(state: String, stateText: String): String =

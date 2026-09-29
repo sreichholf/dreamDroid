@@ -13,11 +13,11 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfo
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.TestProfiles
+import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -40,8 +40,6 @@ class DeviceInfoViewModelTest {
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
         server.start()
-        // EnigmaHttp still reads ProfileRepository.get() for the XML dump flag.
-        ProfileRepository.install(profiles)
         profiles.setCurrent(
             Profile().apply {
                 id = 1
@@ -137,7 +135,7 @@ class DeviceInfoViewModelTest {
     }
 
     private fun viewModel(handle: SavedStateHandle) =
-        DeviceInfoViewModel(handle, ReceiverRepository(EnigmaClientFactory(profiles), profiles))
+        DeviceInfoViewModel(handle, ReceiverRepository(enigmaClients(profiles), profiles))
 
     private suspend fun DeviceInfoViewModel.settled(): DeviceInfoUiState =
         uiState.first { !it.refreshing }

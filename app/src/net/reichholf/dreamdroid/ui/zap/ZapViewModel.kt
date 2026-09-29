@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceListLoad
@@ -27,8 +28,8 @@ sealed interface ZapEffect {
     /** Open the bouquet picker; its answer comes back through `onBouquetPicked`. */
     data object PickBouquet : ZapEffect
 
-    /** Stream [service]. */
-    data class Stream(val service: Service) : ZapEffect
+    /** Play [stream] of [service]. */
+    data class Stream(val service: Service, val stream: LiveStream.Ready) : ZapEffect
 }
 
 /**
@@ -69,6 +70,7 @@ class ZapViewModel @Inject constructor(
     private var saved: ZapNavSaved
     private var loadJob: Job? = null
     private var zapJob: Job? = null
+    private var streamJob: Job? = null
 
     private val _uiState: MutableStateFlow<ZapUiState>
     val uiState: StateFlow<ZapUiState>
@@ -145,8 +147,17 @@ class ZapViewModel @Inject constructor(
         }
     }
 
+    /** Streams [service] once the receiver can ([ReceiverRepository.liveStream]). */
     fun stream(service: Service) {
-        _uiState.update { it.copy(effect = ZapEffect.Stream(service)) }
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            when (val stream = receiver.liveStream(service.reference)) {
+                is LiveStream.Ready ->
+                    _uiState.update { it.copy(effect = ZapEffect.Stream(service, stream)) }
+
+                is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
+            }
+        }
     }
 
     fun pickBouquet() {
