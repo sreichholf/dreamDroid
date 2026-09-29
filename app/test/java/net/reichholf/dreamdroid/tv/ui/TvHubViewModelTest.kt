@@ -22,6 +22,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -175,8 +177,13 @@ class TvHubViewModelTest {
         val viewModel = viewModel()
         awaitLoaded(viewModel)
 
+        // Main is unconfined: a reload would launch its browse job inside onSuccess().
+        // Joining what it started means any request it sent has arrived.
+        val before = viewModel.jobs()
         receiver.sessions.onSuccess()
-        awaitLoaded(viewModel)
+        val started = viewModel.jobs() - before
+        viewModel.joinJobsSince(before)
+        assertTrue(started.isEmpty(), "the same session started $started")
         assertEquals(1, receiver.requestsTo(EPG_MULTI).size)
 
         receiver.goOffline()

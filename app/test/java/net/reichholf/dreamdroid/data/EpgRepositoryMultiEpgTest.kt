@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.data
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -92,9 +93,14 @@ class EpgRepositoryMultiEpgTest {
             routes(request)
         }
 
-        val first = async(Dispatchers.IO) { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW) }
-        val second = async(Dispatchers.IO) { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW + 60) }
-        Thread.sleep(200)
+        // Unpersisted misses skip the Room check: the first call registers the chunk and
+        // suspends in its request, the second joins it, both before async returns.
+        val first = async(start = CoroutineStart.UNDISPATCHED) {
+            sync.ensureChunk(PROFILE_ID, BOUQUET, NOW, persist = false)
+        }
+        val second = async(start = CoroutineStart.UNDISPATCHED) {
+            sync.ensureChunk(PROFILE_ID, BOUQUET, NOW + 60, persist = false)
+        }
         release.countDown()
 
         assertEquals(listOf(2, 2), awaitAll(first, second).map { it.size })
@@ -108,6 +114,8 @@ class EpgRepositoryMultiEpgTest {
         receiver.answer = { request ->
             val now = active.incrementAndGet()
             maxActive.accumulateAndGet(now) { a, b -> maxOf(a, b) }
+            // A slow receiver, not a wait: overlapping requests only show while one is open,
+            // and a request that is never sent has no signal to await.
             Thread.sleep(150)
             active.decrementAndGet()
             routes(request)

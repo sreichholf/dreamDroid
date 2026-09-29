@@ -2,8 +2,9 @@ package net.reichholf.dreamdroid.multiepg
 
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
 import net.reichholf.dreamdroid.enigma.Event
@@ -64,7 +65,7 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad("bouquet-a", t0)
-        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitState { titleOnFocusedChunkOrNull(grid, t0) != null }
         assertEquals("T1", titleOnFocusedChunk(grid, t0))
         assertTrue(grid.state.value.syncing)
         gate.complete(Unit)
@@ -159,7 +160,7 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad("bouquet-a", t0)
-        waitUntil { grid.state.value.channels.isNotEmpty() }
+        grid.awaitState { grid.state.value.channels.isNotEmpty() }
         assertEquals("T", titleOnFocusedChunk(grid, t0))
         assertTrue(grid.state.value.syncing)
         gate.complete(Unit)
@@ -375,7 +376,7 @@ class MultiEpgGridTest {
         assertFalse(grid.state.value.syncing)
 
         grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
-        waitUntil { grid.state.value.syncing }
+        grid.awaitState { grid.state.value.syncing }
         assertTrue(grid.state.value.channels.isNotEmpty())
         gate.complete(Unit)
         grid.awaitIdle()
@@ -406,7 +407,7 @@ class MultiEpgGridTest {
             }
         )
         grid.replaceAndLoad("bouquet-a", t0)
-        waitUntil { grid.state.value.channels.isNotEmpty() }
+        grid.awaitState { grid.state.value.channels.isNotEmpty() }
         assertTrue(grid.state.value.timerClocks.isEmpty())
         gate.complete(Unit)
         grid.awaitIdle()
@@ -445,7 +446,7 @@ class MultiEpgGridTest {
         )
         grid.replaceAndLoad("bouquet-a", t0)
         grid.awaitIdle()
-        waitUntil(dump = { gridDump(grid, t0) + " clocks=${grid.state.value.timerClocks}" }) {
+        grid.awaitState(dump = { gridDump(grid, t0) + " clocks=${grid.state.value.timerClocks}" }) {
             grid.state.value.timerClocks.isNotEmpty()
         }
         assertEquals(MultiEpgTimerClock.Record, grid.state.value.timerClocks.values.single())
@@ -644,7 +645,7 @@ class MultiEpgGridTest {
             }
         )
         grid.replaceAndLoad("bouquet-a", t0)
-        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitState { titleOnFocusedChunkOrNull(grid, t0) != null }
         assertEquals("Cached", titleOnFocusedChunk(grid, t0))
         assertEquals(1, fetches.get())
         assertEquals(0, bouquetCalls.get())
@@ -695,7 +696,7 @@ class MultiEpgGridTest {
             }
         )
         grid.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitState { titleOnFocusedChunkOrNull(grid, t0) != null }
         assertEquals("HubFill", titleOnFocusedChunk(grid, t0))
         assertEquals(0, fetches.get())
         assertEquals(0, bouquetCalls.get())
@@ -770,7 +771,7 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitState { titleOnFocusedChunkOrNull(grid, t0) != null }
         grid.awaitIdle()
         assertTrue(fetches.get() >= 1)
         assertEquals("Live", titleOnFocusedChunk(grid, t0))
@@ -857,7 +858,7 @@ class MultiEpgGridTest {
             }
         )
         grid.replaceAndLoad(bouquet, t0)
-        waitUntil { titleOnFocusedChunkOrNull(grid, t0) != null }
+        grid.awaitState { titleOnFocusedChunkOrNull(grid, t0) != null }
         grid.awaitIdle()
         assertEquals("HubFill", titleOnFocusedChunk(grid, t0))
         val day2 = MultiEpgWindows.chunkContaining(t0).startSec +
@@ -939,17 +940,13 @@ class MultiEpgGridTest {
         serviceName = serviceName
     )
 
-    private suspend fun waitUntil(
+    private suspend fun MultiEpgGrid.awaitState(
         timeoutMs: Long = 5_000L,
         dump: () -> String = { "" },
         condition: () -> Boolean
     ) {
-        val startMs = System.currentTimeMillis()
-        while (!condition()) {
-            if (System.currentTimeMillis() - startMs > timeoutMs) {
-                error("timed out waiting for grid condition ${dump()}")
-            }
-            delay(10)
-        }
+        // The grid publishes every change on [MultiEpgGrid.state]; wake on each emission.
+        withTimeoutOrNull(timeoutMs) { state.first { condition() } }
+            ?: error("timed out waiting for grid condition ${dump()}")
     }
 }

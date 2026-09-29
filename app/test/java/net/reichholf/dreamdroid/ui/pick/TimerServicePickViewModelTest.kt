@@ -6,6 +6,7 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -21,6 +22,7 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
 import net.reichholf.dreamdroid.tv.ui.tvTimerServicePickRows
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -179,7 +181,9 @@ class TimerServicePickViewModelTest {
         viewModel.onRowClick(BOUQUET)
         val channels = viewModel.settled()
         release.countDown()
-        Thread.sleep(200)
+        // The cancelled root load stays a child until its blocked read returns; once it has
+        // finished it can no longer write the list.
+        withTimeout(5_000L) { viewModel.jobs().joinAll() }
 
         assertEquals(listOf("Das Erste HD"), channels.items.map { it.name })
         assertSame(channels.items, viewModel.uiState.value.items)

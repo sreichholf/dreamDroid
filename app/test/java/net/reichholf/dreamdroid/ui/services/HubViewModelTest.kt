@@ -4,10 +4,21 @@ import androidx.lifecycle.SavedStateHandle
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlin.coroutines.CoroutineContext
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Delay
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Runnable
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestCoroutineScheduler
+import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -50,7 +61,7 @@ class HubViewModelTest {
     )
     private val timers = TimerRepository(clients, profiles, receiver.profiles.database)
     private val viewModels = mutableListOf<HubViewModel>()
-    private val main = UnconfinedTestDispatcher()
+    private val main = DelayCountingDispatcher(UnconfinedTestDispatcher())
 
     @BeforeEach
     fun setUp() {
@@ -99,6 +110,9 @@ class HubViewModelTest {
         }
         val viewModel = viewModel()
 
+        // The load polls the check on Main; a load that skipped it would never delay, and
+        // one that asks the receiver first has sent that request by now.
+        withTimeout(5_000L) { main.delays.first { it >= 1 } }
         main.scheduler.advanceTimeBy(10_000L)
         profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
         main.scheduler.advanceTimeBy(200L)
@@ -335,4 +349,37 @@ class HubViewModelTest {
             "Favourites (Radio)"
         )
     }
+}
+
+/**
+ * [inner] as Main, counting the delays scheduled on it, so a test can await that a
+ * coroutine parked in a delay. Virtual time stays on [scheduler].
+ */
+@OptIn(InternalCoroutinesApi::class)
+private class DelayCountingDispatcher(private val inner: TestDispatcher) :
+    CoroutineDispatcher(),
+    Delay {
+    val delays = MutableStateFlow(0)
+    val scheduler: TestCoroutineScheduler get() = inner.scheduler
+
+    override fun isDispatchNeeded(context: CoroutineContext): Boolean =
+        inner.isDispatchNeeded(context)
+
+    override fun dispatch(context: CoroutineContext, block: Runnable) =
+        inner.dispatch(context, block)
+
+    override fun scheduleResumeAfterDelay(
+        timeMillis: Long,
+        continuation: CancellableContinuation<Unit>
+    ) {
+        // Count once the delay is on the scheduler, so an advance after the await wakes it.
+        inner.scheduleResumeAfterDelay(timeMillis, continuation)
+        delays.update { it + 1 }
+    }
+
+    override fun invokeOnTimeout(
+        timeMillis: Long,
+        block: Runnable,
+        context: CoroutineContext
+    ): DisposableHandle = inner.invokeOnTimeout(timeMillis, block, context)
 }
