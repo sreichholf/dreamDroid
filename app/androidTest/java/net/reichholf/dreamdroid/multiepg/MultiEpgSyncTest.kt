@@ -3,9 +3,10 @@ package net.reichholf.dreamdroid.multiepg
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import java.util.concurrent.atomic.AtomicInteger
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.EventParser
@@ -91,12 +92,13 @@ class MultiEpgSyncTest {
     @Test
     fun singleFlightCoalescesConcurrentMisses() = runBlocking {
         val fetches = AtomicInteger(0)
+        val release = CompletableDeferred<Unit>()
         val fixture = EventParser.parse(loadWebFixture("epgmulti.xml"))
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, _, _ ->
                 fetches.incrementAndGet()
-                delay(150)
+                release.await()
                 fixture
             },
             clockMs = { 2_000_000L },
@@ -104,11 +106,15 @@ class MultiEpgSyncTest {
         )
         val bouquet = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET"
         val t0 = 1_893_456_000L
-        val results = listOf(
-            async { sync.ensureChunk(1, bouquet, t0) },
-            async { sync.ensureChunk(1, bouquet, t0) },
-            async { sync.ensureChunk(1, bouquet, t0) }
-        ).awaitAll()
+        // Unpersisted misses skip the Room check, so each call runs straight to the fetch or
+        // to the in-flight join before async returns.
+        val calls = List(3) {
+            async(start = CoroutineStart.UNDISPATCHED) {
+                sync.ensureChunk(1, bouquet, t0, persist = false)
+            }
+        }
+        release.complete(Unit)
+        val results = calls.awaitAll()
         assertEquals(1, fetches.get())
         results.forEach { assertEquals(2, it.size) }
     }
