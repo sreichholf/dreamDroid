@@ -157,7 +157,7 @@ One line per PR: state, then PR link once opened.
 - [x] 8 MultiEPG — merged, [#533](https://github.com/sreichholf/dreamDroid/pull/533)
 - [x] 9 Service lists + pickers — merged, [#534](https://github.com/sreichholf/dreamDroid/pull/534) (hub service list) and [#535](https://github.com/sreichholf/dreamDroid/pull/535) (pickers)
 - [x] 10 Hub, now playing, zap — merged, [#537](https://github.com/sreichholf/dreamDroid/pull/537)
-- [ ] 11a Phone shell actions — in progress
+- [x] 11a Phone shell actions — merged, [#541](https://github.com/sreichholf/dreamDroid/pull/541)
 - [ ] 11b Phone shell gate — in review
 - [x] 12 TV hub — merged, [#536](https://github.com/sreichholf/dreamDroid/pull/536)
 - [x] 13 Player + share — merged, [#538](https://github.com/sreichholf/dreamDroid/pull/538)
