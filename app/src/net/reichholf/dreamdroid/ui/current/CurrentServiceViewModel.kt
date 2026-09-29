@@ -14,12 +14,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
+
+/** Play [stream] of the service [name], then report with `onStreamStarted`. */
+data class CurrentServiceStream(val name: String, val stream: LiveStream.Ready)
 
 /**
  * The Current service screen. [current] is the last `/web/getcurrent` that named a service
@@ -32,6 +36,7 @@ data class CurrentServiceUiState(
     val refreshing: Boolean = false,
     val piconsEnabled: Boolean = false,
     val streamBlocked: Boolean = false,
+    val stream: CurrentServiceStream? = null,
     val userMessage: UiText? = null
 ) {
     val title: UiText
@@ -59,6 +64,7 @@ class CurrentServiceViewModel @Inject constructor(
     private var lastGood: CurrentService? = null
     private var lastGoodProfileId: Int? = null
     private var loadJob: Job? = null
+    private var streamJob: Job? = null
 
     private val _uiState: MutableStateFlow<CurrentServiceUiState>
     val uiState: StateFlow<CurrentServiceUiState>
@@ -103,6 +109,30 @@ class CurrentServiceViewModel @Inject constructor(
             }
             _uiState.update { it.copy(current = visible(), ready = true, refreshing = false) }
         }
+    }
+
+    /** Streams the service on screen once the receiver can ([ReceiverRepository.liveStream]). */
+    fun stream() {
+        val state = _uiState.value
+        val service = state.current?.service
+        if (!state.ready || !state.canStream || service == null) {
+            return
+        }
+        streamJob?.cancel()
+        streamJob = viewModelScope.launch {
+            _uiState.update {
+                when (val stream = receiver.liveStream(service.reference)) {
+                    is LiveStream.Ready ->
+                        it.copy(stream = CurrentServiceStream(service.name, stream))
+
+                    is LiveStream.Failed -> it.copy(userMessage = stream.message)
+                }
+            }
+        }
+    }
+
+    fun onStreamStarted() {
+        _uiState.update { it.copy(stream = null) }
     }
 
     /** No app could play the stream. */

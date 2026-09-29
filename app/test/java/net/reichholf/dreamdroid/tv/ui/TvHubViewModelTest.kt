@@ -9,12 +9,17 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -248,6 +253,59 @@ class TvHubViewModelTest {
     }
 
     @Test
+    fun streamServiceHandsTheStreamToTheHost() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        val service = ServiceNowNext(serviceReference = CHANNEL, serviceName = "Das Erste HD")
+
+        viewModel.streamService(service, FAVOURITES)
+        val stream = awaitState(viewModel) { it.stream != null }.stream
+
+        val profile = receiver.profiles.repository.requireCurrent()
+        assertEquals(
+            TvStreamOpen.Service(
+                service,
+                FAVOURITES,
+                LiveStream.Ready(CHANNEL, EnigmaUrls.stream(profile, CHANNEL))
+            ),
+            stream
+        )
+        assertTrue(receiver.requestsTo(ZAP).isEmpty())
+        viewModel.onStreamStarted()
+        awaitState(viewModel) { it.stream == null }
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        val viewModel = viewModel()
+
+        viewModel.streamService(
+            ServiceNowNext(serviceReference = CHANNEL, serviceName = "Das Erste HD"),
+            FAVOURITES
+        )
+        val state = awaitState(viewModel) { it.userMessage != null }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.stream)
+        assertEquals(CHANNEL, receiver.requestsTo(ZAP).single().requestUrl!!.queryParameter("sRef"))
+    }
+
+    @Test
+    fun streamMovieHandsTheRecordingUrlToTheHost() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        val movie = Movie(reference = MOVIE_REF, fileName = MOVIE_FILE, title = "News")
+
+        viewModel.streamMovie(movie)
+        val stream = awaitState(viewModel) { it.stream != null }.stream
+
+        val profile = receiver.profiles.repository.requireCurrent()
+        assertEquals(
+            TvStreamOpen.Recording(movie, EnigmaUrls.fileStream(profile, MOVIE_REF, MOVIE_FILE)),
+            stream
+        )
+    }
+
+    @Test
     fun missingPlayerIsAUserMessage() {
         val viewModel = viewModel()
 
@@ -299,6 +357,8 @@ class TvHubViewModelTest {
                     "<e2statetext>Timer added</e2statetext></e2simplexmlresult>"
             )
 
+            ZAP -> MockResponse().setBody(simpleResult(false, "No free tuner"))
+
             else -> MockResponse().setResponseCode(404)
         }
     }
@@ -313,6 +373,8 @@ class TvHubViewModelTest {
             receiver.sessions
         ),
         timers,
+        ReceiverRepository(clients, receiver.profiles.repository),
+        movies,
         receiver.profiles.repository,
         receiver.services,
         receiver.sessions
@@ -349,5 +411,8 @@ class TvHubViewModelTest {
         const val BOUQUET_INDEX_PATH = "/web/getservices"
         const val EPG_MULTI = "/web/epgmulti"
         const val MOVIE_LIST = "/web/movielist"
+        const val ZAP = "/web/zap"
+        const val MOVIE_FILE = "/media/hdd/movie/news.ts"
+        const val MOVIE_REF = "1:0:0:0:0:0:0:0:0:0:$MOVIE_FILE"
     }
 }

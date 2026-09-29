@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.ui.current
 
 import android.content.ActivityNotFoundException
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -16,7 +18,6 @@ import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Current service as a NavHost destination. The now and next event open the shared EPG
@@ -40,25 +41,11 @@ fun CurrentServiceDestination(
         }
     }
 
-    fun stream() {
-        val service = uiState.current?.service
-        if (!uiState.ready || !uiState.canStream || service == null) {
-            return
-        }
-        handle.runOnlineOnly {
-            handle.lifecycleOwner.startLiveServiceStream(context, service.reference) {
-                try {
-                    context.startActivity(
-                        IntentFactory.getStreamServiceIntent(
-                            context,
-                            service.reference,
-                            service.name
-                        )
-                    )
-                } catch (_: ActivityNotFoundException) {
-                    viewModel.onStreamFailed()
-                }
-            }
+    val stream = uiState.stream
+    LaunchedEffect(stream) {
+        if (stream != null) {
+            startServiceStream(context, stream, viewModel::onStreamFailed)
+            viewModel.onStreamStarted()
         }
     }
 
@@ -72,9 +59,24 @@ fun CurrentServiceDestination(
             state = uiState,
             onNowClick = { showDetail(uiState.current?.now) },
             onNextClick = { showDetail(uiState.current?.next) },
-            onStream = { stream() }
+            onStream = { handle.runOnlineOnly(viewModel::stream) }
         )
     }
 
     EpgEventDetailHost(handle, detailViewModel)
+}
+
+/** Starts the player for [stream]; [onMissingPlayer] when no app on the device plays it. */
+internal fun startServiceStream(
+    context: Context,
+    stream: CurrentServiceStream,
+    onMissingPlayer: () -> Unit
+) {
+    try {
+        context.startActivity(
+            IntentFactory.getStreamServiceIntent(context, stream.stream, stream.name)
+        )
+    } catch (_: ActivityNotFoundException) {
+        onMissingPlayer()
+    }
 }

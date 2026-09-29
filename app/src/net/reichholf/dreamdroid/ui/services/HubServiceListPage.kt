@@ -29,7 +29,6 @@ import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.text.asString
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * One TV/Radio hub bouquet tab. The ViewModel is keyed by the tab's ref on the hub
@@ -95,20 +94,18 @@ fun HubServiceListPage(
 
             is HubServiceEffect.Stream -> {
                 val row = effect.row
-                handle.lifecycleOwner.startLiveServiceStream(context, row.serviceReference) {
-                    try {
-                        context.startActivity(
-                            IntentFactory.getStreamServiceIntent(
-                                context,
-                                row.serviceReference,
-                                row.serviceName,
-                                effect.bouquetRef,
-                                row
-                            )
+                try {
+                    context.startActivity(
+                        IntentFactory.getStreamServiceIntent(
+                            context,
+                            effect.stream,
+                            row.serviceName,
+                            effect.bouquetRef,
+                            row
                         )
-                    } catch (_: ActivityNotFoundException) {
-                        viewModel.onStreamFailed()
-                    }
+                    )
+                } catch (_: ActivityNotFoundException) {
+                    viewModel.onStreamFailed()
                 }
             }
 

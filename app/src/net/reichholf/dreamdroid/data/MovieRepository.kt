@@ -85,6 +85,10 @@ class MovieRepository @Inject constructor(
     suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
         clients.current().deleteMovie(MovieKeys.getDeleteParams(movie))
 
+    /** The stream of [movie] from the active profile, for the video player. */
+    fun streamUrl(movie: Movie): String =
+        EnigmaUrls.fileStream(profiles.requireCurrent(), movie.reference, movie.fileName)
+
     /**
      * A URL any viewer can open for the recording at [remotePath], or null when the profile
      * needs a login and the file has to go through [downloadToCache].

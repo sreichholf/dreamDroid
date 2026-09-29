@@ -16,13 +16,16 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -184,6 +187,47 @@ class HubNowPlayingViewModelTest {
     }
 
     @Test
+    fun streamHandsTheShownServiceToThePlayer() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        poll(viewModel)
+        viewModel.ready()
+
+        viewModel.stream()
+        val stream = withTimeout(5_000L) { viewModel.uiState.first { it.stream != null } }.stream
+
+        assertEquals(
+            CurrentServiceStream(
+                "Das Erste HD",
+                LiveStream.Ready(REF, EnigmaUrls.stream(profiles.requireCurrent(), REF))
+            ),
+            stream
+        )
+        viewModel.onStreamStarted()
+        assertNull(viewModel.uiState.value.stream)
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        profiles.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == "/web/zap") {
+                MockResponse().setBody(simpleResult(false, "No free tuner"))
+            } else {
+                MockResponse().setBody(loadWebFixture("getcurrent.xml"))
+            }
+        }
+        val viewModel = viewModel()
+        poll(viewModel)
+        viewModel.ready()
+
+        viewModel.stream()
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.stream)
+    }
+
+    @Test
     fun missingStreamPlayerIsReportedUntilShown() {
         val viewModel = viewModel()
 
@@ -247,5 +291,6 @@ class HubNowPlayingViewModelTest {
 
     private companion object {
         const val GET_CURRENT = "/web/getcurrent"
+        const val REF = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
     }
 }

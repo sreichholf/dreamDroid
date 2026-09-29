@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.video
 
 import java.io.Serializable
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -18,7 +19,7 @@ sealed interface VideoPlaying {
 
 /**
  * Zap list and playing item behind the player overlay. [services] is the now/next list
- * of [bouquetRef]; [serviceRef] is the zap position in it. [streamRef] is a zapped-to
+ * of [bouquetRef]; [serviceRef] is the zap position in it. [stream] is a zapped-to
  * service that may stream now: the overlay plays it and reports that back.
  */
 data class VideoPlaybackUiState(
@@ -28,7 +29,7 @@ data class VideoPlaybackUiState(
     val playing: VideoPlaying = VideoPlaying.Unknown,
     val services: List<ServiceNowNext> = emptyList(),
     val bouquets: List<Service> = emptyList(),
-    val streamRef: String? = null,
+    val stream: LiveStream.Ready? = null,
     val userMessage: UiText? = null
 ) {
     val movie: Movie? get() = (playing as? VideoPlaying.Recording)?.movie

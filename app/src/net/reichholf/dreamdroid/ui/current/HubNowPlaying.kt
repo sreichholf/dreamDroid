@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.current
 
-import android.content.ActivityNotFoundException
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -8,13 +7,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.CurrentService
-import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.text.asString
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * Publishes [HubNowPlayingViewModel]'s strip into [hubState], which the shell draws, and
@@ -43,20 +40,11 @@ fun HubNowPlaying(
 
     val shown = uiState.shown
 
-    fun stream() {
-        if (!currentServiceCanStream(shown)) {
-            return
-        }
-        handle.runOnlineOnly {
-            val ref = shown?.service?.reference.orEmpty()
-            val name = shown?.service?.name.orEmpty()
-            handle.lifecycleOwner.startLiveServiceStream(context, ref) {
-                try {
-                    context.startActivity(IntentFactory.getStreamServiceIntent(context, ref, name))
-                } catch (_: ActivityNotFoundException) {
-                    viewModel.onStreamFailed()
-                }
-            }
+    val stream = uiState.stream
+    LaunchedEffect(stream) {
+        if (stream != null) {
+            startServiceStream(context, stream, viewModel::onStreamFailed)
+            viewModel.onStreamStarted()
         }
     }
 
@@ -76,7 +64,7 @@ fun HubNowPlaying(
             current = shown,
             loading = shown == null && !uiState.ready,
             streamBlocked = uiState.streamBlocked,
-            onStream = { stream() },
+            onStream = { handle.runOnlineOnly(viewModel::stream) },
             onDismiss = viewModel::closeSheet
         )
     }

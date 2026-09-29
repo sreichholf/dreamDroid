@@ -26,7 +26,6 @@ import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.pick.KEY_BOUQUET
 import net.reichholf.dreamdroid.ui.text.asString
-import net.reichholf.dreamdroid.video.startLiveServiceStream
 
 /**
  * The zap channel grid as a NavHost destination. Bouquet picker results arrive through
@@ -83,21 +82,16 @@ fun ZapDestination(
 
             ZapEffect.PickBouquet -> handle.navigateToPickBouquet(Statics.REQUEST_PICK_BOUQUET)
 
-            is ZapEffect.Stream -> handle.runOnlineOnly {
-                val service = effect.service
-                handle.lifecycleOwner.startLiveServiceStream(context, service.reference) {
-                    try {
-                        context.startActivity(
-                            IntentFactory.getStreamServiceIntent(
-                                context,
-                                service.reference,
-                                service.name
-                            )
-                        )
-                    } catch (_: ActivityNotFoundException) {
-                        viewModel.onStreamFailed()
-                    }
-                }
+            is ZapEffect.Stream -> try {
+                context.startActivity(
+                    IntentFactory.getStreamServiceIntent(
+                        context,
+                        effect.stream,
+                        effect.service.name
+                    )
+                )
+            } catch (_: ActivityNotFoundException) {
+                viewModel.onStreamFailed()
             }
         }
         viewModel.onEffectHandled()
@@ -116,7 +110,7 @@ fun ZapDestination(
             emptyMessage = uiState.emptyMessage?.asString(),
             zapBlocked = uiState.zapBlocked,
             onItemClick = { service -> handle.runOnlineOnly { viewModel.zap(service) } },
-            onItemLongClick = viewModel::stream
+            onItemLongClick = { service -> handle.runOnlineOnly { viewModel.stream(service) } }
         )
     }
 }

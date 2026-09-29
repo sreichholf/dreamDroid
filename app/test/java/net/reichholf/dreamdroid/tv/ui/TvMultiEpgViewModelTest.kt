@@ -10,12 +10,16 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LiveStream
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -98,6 +102,40 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
+    fun streamHandsTheEventServiceToTheHost() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.bouquetRef == BOUQUET }
+
+        viewModel.stream(Event(title = "News", serviceReference = BOUQUET_CHANNEL))
+        val stream = awaitState(viewModel) { it.stream != null }.stream
+
+        val profile = receiver.profiles.repository.requireCurrent()
+        assertEquals(
+            TvMultiEpgStream(
+                "News",
+                BOUQUET,
+                LiveStream.Ready(BOUQUET_CHANNEL, EnigmaUrls.stream(profile, BOUQUET_CHANNEL))
+            ),
+            stream
+        )
+        viewModel.onStreamStarted()
+        awaitState(viewModel) { it.stream == null }
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
+        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        val viewModel = viewModel()
+
+        viewModel.stream(Event(title = "News", serviceReference = BOUQUET_CHANNEL))
+        val state = awaitState(viewModel) { it.userMessage != null }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.stream)
+    }
+
+    @Test
     fun sessionDecidesStreamingAndMutations() = runBlocking {
         val viewModel = viewModel()
         assertTrue(viewModel.uiState.value.streamingEnabled)
@@ -176,6 +214,8 @@ class TvMultiEpgViewModelTest {
                     "<e2statetext>Timer added</e2statetext></e2simplexmlresult>"
             )
 
+            "/web/zap" -> MockResponse().setBody(simpleResult(false, "No free tuner"))
+
             else -> MockResponse().setResponseCode(404)
         }
 
@@ -190,6 +230,10 @@ class TvMultiEpgViewModelTest {
                 receiver.profiles.database
             ),
             receiver.profiles.repository,
+            ReceiverRepository(
+                enigmaClients(receiver.profiles.repository),
+                receiver.profiles.repository
+            ),
             receiver.sessions
         ).also { viewModels += it }
 

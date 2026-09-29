@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.HDD
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.PROFILE_ID
@@ -344,6 +345,11 @@ class HubMovieListViewModelTest {
         viewModel.onMenuAction(MovieRowAction.Stream)
         val open = viewModel.uiState.value.open as MovieOpen.Stream
         assertEquals("Evening News", open.movie.title)
+        val profile = receiver.profiles.repository.requireCurrent()
+        assertEquals(
+            EnigmaUrls.fileStream(profile, open.movie.reference, open.movie.fileName),
+            open.url
+        )
         viewModel.onOpened()
         assertNull(viewModel.uiState.value.open)
 

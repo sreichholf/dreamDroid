@@ -5,9 +5,8 @@ import androidx.preference.PreferenceManager
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -16,38 +15,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
-import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class TvComposeHubStreamIntentTest {
-    private var previousProfile: Profile? = null
-
-    @Before
-    fun installProfile() {
-        previousProfile = ProfileRepository.get().current.value
-        ProfileRepository.get().setCurrent(
-            Profile().apply {
-                host = "127.0.0.1"
-                port = 80
-                streamPort = 8001
-            }
-        )
-    }
-
     @After
     fun restoreIntegratedPlayer() {
         PreferenceManager.getDefaultSharedPreferences(context())
             .edit()
             .remove(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER)
             .commit()
-        val previous = previousProfile
-        if (previous != null) {
-            ProfileRepository.get().setCurrent(previous)
-        } else {
-            ProfileRepository.get().loadCurrent()
-        }
     }
 
     @Test
@@ -58,7 +36,8 @@ class TvComposeHubStreamIntentTest {
         val serviceIntent = TvComposeHubHost.streamServiceIntent(
             context(),
             sampleService(),
-            "1:7:1:0:0:0:0:0:0:0:"
+            "1:7:1:0:0:0:0:0:0:0:",
+            sampleStream()
         )
         assertEquals(VideoActivity::class.java.name, serviceIntent.component?.className)
         assertEquals("Now Show", serviceIntent.getStringExtra("title"))
@@ -66,11 +45,13 @@ class TvComposeHubStreamIntentTest {
             sampleService().serviceReference,
             serviceIntent.getStringExtra("serviceRef")
         )
+        assertEquals(SERVICE_URL, serviceIntent.dataString)
         assertTrue(serviceIntent.hasExtra("serviceInfo"))
 
-        val movieIntent = TvComposeHubHost.streamMovieIntent(context(), sampleMovie())
+        val movieIntent = TvComposeHubHost.streamMovieIntent(context(), sampleMovie(), MOVIE_URL)
         assertEquals(VideoActivity::class.java.name, movieIntent.component?.className)
         assertEquals("Demo Recording", movieIntent.getStringExtra("title"))
+        assertEquals(MOVIE_URL, movieIntent.dataString)
         assertTrue(movieIntent.hasExtra("serviceInfo"))
     }
 
@@ -82,14 +63,15 @@ class TvComposeHubStreamIntentTest {
         val serviceIntent = TvComposeHubHost.streamServiceIntent(
             context(),
             sampleService(),
-            "1:7:1:0:0:0:0:0:0:0:"
+            "1:7:1:0:0:0:0:0:0:0:",
+            sampleStream()
         )
         assertEquals(Intent.ACTION_VIEW, serviceIntent.action)
         assertEquals("video/*", serviceIntent.type)
         assertNull(serviceIntent.component)
         assertFalse(serviceIntent.hasExtra("serviceInfo"))
 
-        val movieIntent = TvComposeHubHost.streamMovieIntent(context(), sampleMovie())
+        val movieIntent = TvComposeHubHost.streamMovieIntent(context(), sampleMovie(), MOVIE_URL)
         assertEquals(Intent.ACTION_VIEW, movieIntent.action)
         assertNull(movieIntent.component)
         assertFalse(movieIntent.hasExtra("serviceInfo"))
@@ -103,9 +85,16 @@ class TvComposeHubStreamIntentTest {
         now = Event(title = "Now Show")
     )
 
+    private fun sampleStream() = LiveStream.Ready(sampleService().serviceReference, SERVICE_URL)
+
     private fun sampleMovie() = Movie(
         reference = "1:0:0:0:0:0:0:0:0:0:",
         title = "Demo Recording",
         fileName = "demo.ts"
     )
+
+    private companion object {
+        const val SERVICE_URL = "http://127.0.0.1:8001/1:0:1:1:1:1:1:0:0:0:"
+        const val MOVIE_URL = "http://127.0.0.1:80/file?file=demo.ts"
+    }
 }

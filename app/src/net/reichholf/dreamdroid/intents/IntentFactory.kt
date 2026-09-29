@@ -9,11 +9,10 @@ import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
-import net.reichholf.dreamdroid.helpers.EnigmaUrls
 
 object IntentFactory {
     fun queryIMDb(context: Context, event: Event) {
@@ -35,9 +34,6 @@ object IntentFactory {
         }
     }
 
-    fun getStreamServiceIntent(context: Context, ref: String, title: String): Intent =
-        getStreamServiceIntent(context, ref, title, null, null)
-
     fun usesIntegratedPlayer(context: Context): Boolean =
         PreferenceManager.getDefaultSharedPreferences(context)
             .getBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, true)
@@ -57,34 +53,30 @@ object IntentFactory {
         return intent
     }
 
+    /** Plays [stream], a live service of the list [bouquetRef]. */
     fun getStreamServiceIntent(
         context: Context,
-        ref: String,
+        stream: LiveStream.Ready,
         title: String,
-        bouquetRef: String?,
-        serviceInfo: ServiceNowNext?
+        bouquetRef: String? = null,
+        serviceInfo: ServiceNowNext? = null
     ): Intent = streamIntent(
         context,
-        EnigmaUrls.stream(ProfileRepository.get().requireCurrent(), ref),
+        stream.url,
         "Service-Streaming URL set to",
         title,
-        ref,
+        stream.reference,
         bouquetRef,
         serviceInfo
     )
 
+    /** Plays the recording at [uriString] (see `MovieRepository.streamUrl`). */
     fun getStreamFileIntent(
         context: Context,
-        ref: String,
-        fileName: String?,
+        uriString: String,
         title: String?,
         fileInfo: Movie?
     ): Intent {
-        val uriString = EnigmaUrls.fileStream(
-            ProfileRepository.get().requireCurrent(),
-            ref,
-            fileName
-        )
         Log.i(DreamDroid.LOG_TAG, "File-Streaming URL set to '$uriString'")
         val intent = videoPlaybackIntent(context, uriString)
         intent.putExtra("title", title)

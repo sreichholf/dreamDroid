@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
@@ -335,15 +336,47 @@ class HubServiceListViewModelTest {
         )
 
         viewModel.onMenuAction(ServiceRowAction.Stream)
-        val stream = viewModel.uiState.value.effect as HubServiceEffect.Stream
+        val stream = withTimeout(5_000L) {
+            viewModel.uiState.first { it.effect is HubServiceEffect.Stream }
+        }.effect as HubServiceEffect.Stream
         assertEquals(CHANNEL_44D, stream.row.serviceReference)
         assertEquals(TAB, stream.bouquetRef)
+        assertEquals(
+            EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), CHANNEL_44D),
+            stream.stream.url
+        )
+        assertTrue(receiver.requestsTo(ZAP).isEmpty())
         viewModel.onStreamFailed()
         assertNull(viewModel.uiState.value.effect)
         assertEquals(
             UiText.Resource(R.string.missing_stream_player),
             viewModel.uiState.value.userMessage
         )
+    }
+
+    @Test
+    fun rejectedZapAndStreamShowsTheReceiverTextAndStreamsNothing() = runBlocking {
+        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == ZAP) {
+                MockResponse().setBody(
+                    "<e2simplexmlresult><e2state>False</e2state>" +
+                        "<e2statetext>No free tuner</e2statetext></e2simplexmlresult>"
+                )
+            } else {
+                routes(request)
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.onItemMenu(1)
+
+        viewModel.onMenuAction(ServiceRowAction.Stream)
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.userMessage != null } }
+
+        assertEquals(UiText.Raw("No free tuner"), state.userMessage)
+        assertNull(state.effect)
+        assertEquals(CHANNEL_44D, receiver.requestsTo(ZAP).single().sRef())
     }
 
     @Test
