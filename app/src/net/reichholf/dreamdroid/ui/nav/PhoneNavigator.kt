@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.SleepTimer
@@ -447,6 +448,26 @@ class PhoneNavigator(
             state.popResultRequestCode()
         }
         return controller.popBackStack()
+    }
+
+    override fun navigateToBouquetContent(
+        bouquetRef: String,
+        bouquetName: String,
+        mode: BouquetMode
+    ): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(BouquetContent(bouquetRef, bouquetName, mode.name)) {
+            launchSingleTop = true
+        }
+        return true
+    }
+
+    override fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(BouquetAddServices(bouquetRef, mode.name)) {
+            launchSingleTop = true
+        }
+        return true
     }
 
     override fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean {

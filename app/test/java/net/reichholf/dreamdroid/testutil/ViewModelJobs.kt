@@ -20,6 +20,16 @@ suspend fun ViewModel.cancelAndJoin() {
 fun ViewModel.jobs(): Set<Job> = viewModelScope.coroutineContext.job.children.toSet()
 
 /**
+ * Everything this ViewModel runs right now, including what its collectors launched. Under an
+ * unconfined main dispatcher a collector reacts before the emitting call returns, so a test
+ * can compare this before and after an emission to check that nothing started.
+ */
+fun ViewModel.activeJobs(): Set<Job> {
+    fun Job.descendants(): Sequence<Job> = children.flatMap { sequenceOf(it) + it.descendants() }
+    return viewModelScope.coroutineContext.job.descendants().filter { it.isActive }.toSet()
+}
+
+/**
  * Waits for what this ViewModel started since [before], and for what that started in turn,
  * so a test can check that an action sent no request. [before] holds the collectors that
  * never finish; take it from [jobs] right before the action.

@@ -26,6 +26,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.ui.about.AboutDialog
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
+import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetAddServicesDestination
+import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetContentDestination
 import net.reichholf.dreamdroid.ui.current.CurrentServiceDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.dialogs.ChangelogDialog
@@ -221,6 +223,12 @@ private fun PhoneNavHostGraph(
         }
         composable<TimerServicePick> {
             TimerServicePickDestination(handle = handle)
+        }
+        composable<BouquetContent> {
+            BouquetContentDestination(handle = handle)
+        }
+        composable<BouquetAddServices> {
+            BouquetAddServicesDestination(handle = handle)
         }
         dialog<About> {
             AboutDialog(onDismiss = { navController.popBackStack() })

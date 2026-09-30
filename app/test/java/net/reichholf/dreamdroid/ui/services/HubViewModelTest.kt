@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.DisposableHandle
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.Runnable
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
@@ -34,6 +35,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
+import net.reichholf.dreamdroid.testutil.activeJobs
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -62,6 +64,9 @@ class HubViewModelTest {
     private val timers = TimerRepository(clients, profiles, receiver.profiles.database)
     private val viewModels = mutableListOf<HubViewModel>()
     private val main = DelayCountingDispatcher(UnconfinedTestDispatcher())
+
+    @Volatile
+    private var tvBouquets = listOf(FAVOURITES, SPORTS)
 
     @BeforeEach
     fun setUp() {
@@ -155,6 +160,31 @@ class HubViewModelTest {
         receiver.sessions.onSuccess()
 
         receiver.awaitRequestsTo(GET_SERVICES, before + 2)
+    }
+
+    @Test
+    fun bouquetEditLoadsTheBouquetsAgain() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.loaded()
+        tvBouquets = listOf(SPORTS)
+
+        receiver.services.onBouquetsEdited(listOf(TV_ROOTS[0]))
+
+        val state = withTimeout(5_000L) {
+            viewModel.uiState.first { it.tvBouquets == listOf(SPORTS) }
+        }
+        assertEquals(listOf(RADIO), state.radioBouquets)
+    }
+
+    @Test
+    fun editInsideABouquetKeepsTheStrip() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.loaded()
+        val before = viewModel.activeJobs()
+
+        receiver.services.onBouquetsEdited(listOf(FAVOURITES.reference))
+
+        assertEquals(emptySet<Job>(), viewModel.activeJobs() - before)
     }
 
     @Test
@@ -311,7 +341,7 @@ class HubViewModelTest {
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
             GET_SERVICES -> when (request.requestUrl?.queryParameter("sRef")) {
-                TV_ROOTS[0] -> serviceList(FAVOURITES, SPORTS)
+                TV_ROOTS[0] -> serviceList(*tvBouquets.toTypedArray())
                 RADIO_ROOTS[0] -> serviceList(RADIO)
                 else -> MockResponse().setResponseCode(404)
             }

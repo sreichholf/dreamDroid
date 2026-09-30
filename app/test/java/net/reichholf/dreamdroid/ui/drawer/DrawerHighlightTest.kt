@@ -20,6 +20,13 @@ class DrawerHighlightTest {
     }
 
     @Test
+    fun bouquetEditorScreensHighlightTools() {
+        listOf(PhoneNavRoutes.BOUQUET_CONTENT, PhoneNavRoutes.BOUQUET_ADD_SERVICES).forEach {
+            assertEquals(R.id.menu_navigation_tools, DrawerHighlight.itemIdForRoute(it))
+        }
+    }
+
+    @Test
     fun backFromZapHighlightsZap() {
         assertEquals(
             R.id.menu_navigation_zap,

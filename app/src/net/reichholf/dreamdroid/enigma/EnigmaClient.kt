@@ -111,6 +111,22 @@ class EnigmaClient(private val http: EnigmaHttp) {
             }
         }
 
+    /** The `e2path` of each web interface plugin (`/web/external`). */
+    suspend fun getWebExternals(): EnigmaResponse<List<String>> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.WEB_EXTERNALS).mapParsed { xml ->
+            StringListParser.parse(xml, "e2path")
+        }
+    }
+
+    /** Satellite roots of the WebBouquetEditor plugin for `mode` (0 TV, 1 radio). */
+    suspend fun getBouquetEditorSatellites(
+        params: List<NameValuePair>
+    ): EnigmaResponse<List<Service>> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.BOUQUET_EDITOR_SATELLITES, params).mapParsed { xml ->
+            ServiceParser.parse(xml)
+        }
+    }
+
     // Mutations below: a rejected command has a value and a BoxRejected error.
     suspend fun zap(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.ZAP, params)
@@ -137,6 +153,34 @@ class EnigmaClient(private val http: EnigmaHttp) {
         simpleResult(URIStore.TIMER_DELETE, params)
 
     suspend fun cleanupTimers(): EnigmaResponse<SimpleResult> = simpleResult(URIStore.TIMER_CLEANUP)
+
+    // WebBouquetEditor plugin (/bouqueteditor). The box applies each edit immediately.
+    suspend fun addBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_ADD_BOUQUET, params)
+
+    suspend fun removeBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_REMOVE_BOUQUET, params)
+
+    suspend fun moveBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_MOVE_BOUQUET, params)
+
+    suspend fun addServiceToBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_ADD_SERVICE, params)
+
+    suspend fun removeBouquetService(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_REMOVE_SERVICE, params)
+
+    suspend fun moveBouquetService(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_MOVE_SERVICE, params)
+
+    suspend fun renameBouquetEntry(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_RENAME_SERVICE, params)
+
+    suspend fun addBouquetMarker(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_ADD_MARKER, params)
+
+    suspend fun backupBouquets(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.BOUQUET_EDITOR_BACKUP, params)
 
     private suspend fun simpleResult(
         uri: String,

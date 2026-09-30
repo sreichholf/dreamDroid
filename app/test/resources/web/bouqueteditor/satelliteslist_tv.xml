@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2servicelist>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (type == 1) || (type == 17) || (type == 22) || (type == 25) || (type == 31) || (type == 134) || (type == 195) ORDER BY name:19.2 O - Kanäle</e2servicereference>
+		<e2servicename>19.2 O - Kanäle</e2servicename>
+		</e2service>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (numCAIDs == 0) &amp;&amp; (type == 1) || (type == 17) || (type == 22) || (type == 25) || (type == 31) || (type == 134) || (type == 195) ORDER BY name:19.2 O - Kanäle FTA</e2servicereference>
+		<e2servicename>19.2 O - Kanäle FTA</e2servicename>
+		</e2service>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (flags == 64) &amp;&amp; (type == 1) || (type == 17) || (type == 22) || (type == 25) || (type == 31) || (type == 134) || (type == 195) ORDER BY name:19.2 O - Neu</e2servicereference>
+		<e2servicename>19.2 O - Neu</e2servicename>
+		</e2service>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (type == 17) || (type == 25) || (type == 134) || (type == 195) ORDER BY name:19.2 O - HD Kanäle</e2servicereference>
+		<e2servicename>19.2 O - HD Kanäle</e2servicename>
+		</e2service>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (numCAIDs == 0) &amp;&amp; (type == 17) || (type == 25) || (type == 134) || (type == 195) ORDER BY name:19.2 O - HD Kanäle FTA</e2servicereference>
+		<e2servicename>19.2 O - HD Kanäle FTA</e2servicename>
+		</e2service>
+		<e2service>
+		<e2servicereference>1:7:0:0:0:0:C00000:0:0:0:(satellitePosition == 192) &amp;&amp; (flags == 64) &amp;&amp; (type == 17) || (type == 25) || (type == 134) || (type == 195) ORDER BY name:19.2 O - HD Neu</e2servicereference>
+		<e2servicename>19.2 O - HD Neu</e2servicename>
+		</e2service>
+
+</e2servicelist>

@@ -40,6 +40,7 @@ class ToolsDestinationBarTest {
         composeRule.onNodeWithText("Screenshot").assertIsDisplayed()
         composeRule.onNodeWithText("Device Information").assertIsDisplayed()
         composeRule.onNodeWithText("Signal Meter").assertIsDisplayed()
+        composeRule.onNodeWithText("Bouquets").assertIsDisplayed()
         composeRule.onNodeWithText("Screenshot").assertIsSelected()
     }
 
@@ -73,6 +74,7 @@ class ToolsDestinationBarTest {
         composeRule.onNodeWithText("Screenshot").assertIsDisplayed()
         composeRule.onNodeWithText("Device Information").assertIsDisplayed()
         composeRule.onNodeWithText("Signal Meter").assertIsDisplayed()
+        composeRule.onNodeWithText("Bouquets").assertIsDisplayed()
         composeRule.onNodeWithText("Screenshot").assertIsSelected()
         composeRule.onNodeWithText("Signal Meter").performClick()
         assertEquals(listOf(ToolsDestination.SIGNAL), selected)

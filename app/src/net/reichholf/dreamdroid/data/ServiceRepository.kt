@@ -5,7 +5,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -83,6 +87,39 @@ class ServiceRepository @Inject constructor(
      * Services. They are never a user bouquet tab and never persist.
      */
     val excludedTabRefs: Set<String> by lazy { LinkedHashSet(tvRoots + radioRoots) }
+
+    private val bouquetEditsState = MutableStateFlow<Map<String, Int>>(emptyMap())
+
+    /**
+     * For each container a bouquet edit touched, the number of the last edit that did. A
+     * list reloads when the entry of its own container moves; the aggregate bouquet index
+     * ([tvRoots] / [radioRoots] first) moves when bouquets are added, removed, moved, or
+     * renamed.
+     */
+    val bouquetEdits: StateFlow<Map<String, Int>> = bouquetEditsState.asStateFlow()
+
+    /** The bouquet indexes the hub tab strips come from. */
+    val bouquetIndexRefs: List<String>
+        get() = listOf(tvRoots[0], radioRoots[0])
+
+    /**
+     * The receiver's bouquets changed: drops the active profile's Room rosters of the edited
+     * containers [refs] and moves their [bouquetEdits] entries. The tab strips stay until the
+     * hub reloads.
+     */
+    suspend fun onBouquetsEdited(refs: Collection<String>) {
+        profiles.current.value?.id?.let { profileId ->
+            val dao = database.rosterDao()
+            refs.forEach { ref ->
+                dao.deleteRosterRows(profileId, ref)
+                dao.deleteRosterContainer(profileId, ref)
+            }
+        }
+        bouquetEditsState.update { edits ->
+            val edit = (edits.values.maxOrNull() ?: 0) + 1
+            edits + refs.associateWith { edit }
+        }
+    }
 
     /** The user bouquet tabs among [bouquets]: no dedicated root and no provider path. */
     fun userBouquetTabs(bouquets: List<Service>): List<Service> =

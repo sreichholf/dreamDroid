@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -90,7 +91,9 @@ data class HubServiceListUiState(
  * The service list of one hub bouquet tab. Keyed by the tab's ref on the hub back-stack
  * entry, so a tab change keeps the loaded list and the opened folder; the folder survives
  * process death with one back step to the tab. Loads follow the session: each change of the
- * connection loads again. A live answer fills the Room EPG chunk of a cacheable list.
+ * connection, and each edit of the tab's bouquet ([ServiceRepository.bouquetEdits]), loads
+ * again. A
+ * live answer fills the Room EPG chunk of a cacheable list.
  */
 @HiltViewModel(assistedFactory = HubServiceListViewModel.Factory::class)
 class HubServiceListViewModel @AssistedInject constructor(
@@ -137,7 +140,10 @@ class HubServiceListViewModel @AssistedInject constructor(
         )
         uiState = _uiState.asStateFlow()
         viewModelScope.launch {
-            sessions.status.map { it.session }.distinctUntilChanged().collect { reload() }
+            combine(
+                sessions.status.map { it.session }.distinctUntilChanged(),
+                services.bouquetEdits.map { it[rootRef] }.distinctUntilChanged()
+            ) { session, edit -> session to edit }.collect { reload() }
         }
     }
 

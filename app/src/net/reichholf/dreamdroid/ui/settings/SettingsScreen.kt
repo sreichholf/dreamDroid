@@ -12,13 +12,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -42,6 +40,7 @@ import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
+import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 
 @Composable
 fun SettingsScreen(
@@ -336,7 +335,7 @@ fun SettingsScreen(
     }
 
     if (syncPiconsPathDraft != null) {
-        EditTextPreferenceDialog(
+        TextInputDialog(
             title = stringResource(R.string.sync_picons_path),
             state = syncPiconsPathDraft,
             onDismiss = onDismissSyncPiconsPath,
@@ -514,36 +513,6 @@ internal fun ListPreferenceDialog(
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(android.R.string.cancel))
-            }
-        }
-    )
-}
-
-@Composable
-internal fun EditTextPreferenceDialog(
-    title: String,
-    state: TextFieldState,
-    onDismiss: () -> Unit,
-    onConfirm: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(title) },
-        text = {
-            OutlinedTextField(
-                state = state,
-                modifier = Modifier.fillMaxWidth(),
-                lineLimits = TextFieldLineLimits.SingleLine
-            )
-        },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(stringResource(android.R.string.ok))
-            }
-        },
-        dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(android.R.string.cancel))
             }

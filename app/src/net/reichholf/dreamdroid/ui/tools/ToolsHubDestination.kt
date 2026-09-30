@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetListDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
@@ -23,7 +24,7 @@ import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 
 /**
- * Tools hub: Screenshot / Device Info / Signal Meter with shell destination chrome
+ * Tools hub: Screenshot / Device Info / Signal Meter / Bouquets with shell destination chrome
  * (phone bottom bar or tablet start rail, owned by
  * [net.reichholf.dreamdroid.ui.nav.ProvideShellDestinationBar]).
  */
@@ -57,6 +58,7 @@ fun ToolsHubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
                     ToolsDestination.SCREENSHOT -> ScreenshotDestination(handle = handle)
                     ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
                     ToolsDestination.SIGNAL -> SignalDestination(handle = handle)
+                    ToolsDestination.BOUQUETS -> BouquetListDestination(handle = handle)
                 }
             }
             ShellHubBottomChromeSpacer()

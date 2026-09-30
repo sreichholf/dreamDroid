@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.Timer
 
 /**
@@ -36,6 +37,8 @@ object PhoneNavRoutes {
     const val PROFILE_EDIT = "profile_edit"
     const val TIMER_EDIT = "timer_edit"
     const val TIMER_SERVICE_PICK = "timer_service_pick"
+    const val BOUQUET_CONTENT = "bouquet_content"
+    const val BOUQUET_ADD_SERVICES = "bouquet_add_services"
 
     /** Absent [Epg.timeSec] / [MultiEpg.timeSec]. Zero is a real instant. */
     const val ABSENT_TIME_SEC = -1L
@@ -98,6 +101,8 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.TIMER_SERVICE_PICK -> TimerServicePick
     PhoneNavRoutes.SERVICE_EPG -> ServiceEpg(serviceRef = "")
     PhoneNavRoutes.EPG_SEARCH -> EpgSearch()
+    PhoneNavRoutes.BOUQUET_CONTENT -> BouquetContent(bouquetRef = "")
+    PhoneNavRoutes.BOUQUET_ADD_SERVICES -> BouquetAddServices(bouquetRef = "")
     else -> Hub
 }
 
@@ -147,6 +152,8 @@ fun routeId(route: Any): String {
         is SleepTimerRoute -> PhoneNavRoutes.SLEEP_TIMER
         is ProfileEdit -> PhoneNavRoutes.PROFILE_EDIT
         is TimerEdit -> PhoneNavRoutes.TIMER_EDIT
+        is BouquetContent -> PhoneNavRoutes.BOUQUET_CONTENT
+        is BouquetAddServices -> PhoneNavRoutes.BOUQUET_ADD_SERVICES
         else -> PhoneNavRoutes.HUB
     }
 }
@@ -226,6 +233,20 @@ data object TimerServicePick
 @Serializable
 @SerialName(PhoneNavRoutes.SERVICE_EPG)
 data class ServiceEpg(val serviceRef: String, val serviceName: String = "")
+
+/** The entries of one bouquet; [mode] is a [BouquetMode] name. */
+@Serializable
+@SerialName(PhoneNavRoutes.BOUQUET_CONTENT)
+data class BouquetContent(
+    val bouquetRef: String,
+    val bouquetName: String = "",
+    val mode: String = BouquetMode.Tv.name
+)
+
+/** Services to add to [bouquetRef]; [mode] is a [BouquetMode] name. */
+@Serializable
+@SerialName(PhoneNavRoutes.BOUQUET_ADD_SERVICES)
+data class BouquetAddServices(val bouquetRef: String, val mode: String = BouquetMode.Tv.name)
 
 @Serializable
 @SerialName(PhoneNavRoutes.EPG_SEARCH)

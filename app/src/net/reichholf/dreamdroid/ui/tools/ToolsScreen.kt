@@ -53,6 +53,7 @@ private fun destinationLabelRes(dest: ToolsDestination): Int = when (dest) {
     ToolsDestination.SCREENSHOT -> R.string.screenshot
     ToolsDestination.DEVICE_INFO -> R.string.device_info
     ToolsDestination.SIGNAL -> R.string.signal_meter
+    ToolsDestination.BOUQUETS -> R.string.bouquets
 }
 
 @AttrRes
@@ -60,6 +61,7 @@ private fun destinationIconAttr(dest: ToolsDestination): Int = when (dest) {
     ToolsDestination.SCREENSHOT -> R.attr.ic_menu_picture
     ToolsDestination.DEVICE_INFO -> R.attr.ic_menu_device
     ToolsDestination.SIGNAL -> R.attr.ic_menu_signal
+    ToolsDestination.BOUQUETS -> R.attr.ic_menu_list
 }
 
 @Composable

@@ -394,4 +394,34 @@
     <string name="setup_name_body">This name is shown in the profile list.</string>
     <string name="setup_test_body">dreamDroid contacts the receiver before saving.</string>
     <string name="setup_connected">The receiver answered.</string>
+
+    <string name="bouquets">Bouquets</string>
+    <string name="bouquet_add">Add bouquet</string>
+    <string name="bouquet_rename">Rename bouquet</string>
+    <string name="bouquet_remove">Remove bouquet</string>
+    <string name="bouquet_remove_confirm">Remove the bouquet \"%1$s\" from the receiver?</string>
+    <string name="bouquet_name_empty">Enter a name.</string>
+    <string name="bouquet_name_exists">A bouquet with this name already exists.</string>
+    <string name="bouquet_editor_not_installed">Editing bouquets needs the WebBouquetEditor plugin for the receiver\'s web interface (package enigma2-plugin-extensions-webbouqueteditor). This receiver does not have it installed. Install it on the receiver, then tap Reload.</string>
+    <string name="bouquet_backup_saved">Bouquets backed up on the receiver as /tmp/%1$s</string>
+    <string name="bouquet_backup_failed">The receiver could not back up its bouquets. Editing continues without a backup.</string>
+    <string name="bouquet_drag">Drag to reorder</string>
+    <string name="rename">Rename</string>
+    <string name="remove">Remove</string>
+    <string name="move_up">Move up</string>
+    <string name="move_down">Move down</string>
+    <string name="more_options">More options</string>
+    <string name="bouquet_add_services">Add services</string>
+    <string name="bouquet_add_selected">Add (%1$d)</string>
+    <string name="bouquet_services_added">Added to the bouquet: %1$d</string>
+    <string name="bouquet_service_present">Already in the bouquet</string>
+    <string name="bouquet_source_satellites">Satellites</string>
+    <string name="bouquet_source_providers">Providers</string>
+    <string name="bouquet_source_all">All services</string>
+    <string name="bouquet_marker_add">Add marker</string>
+    <string name="bouquet_marker_insert_above">Insert marker above</string>
+    <string name="bouquet_entry_remove">Remove entry</string>
+    <string name="bouquet_entry_remove_confirm">Remove \"%1$s\" from this bouquet?</string>
+    <string name="bouquet_entry_stream">Stream</string>
+    <string name="bouquet_entry_alternative">Alternatives group. Edit it on the receiver.</string>
 </resources>
