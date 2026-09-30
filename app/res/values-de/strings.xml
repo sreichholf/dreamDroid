@@ -457,4 +457,6 @@
     <string name="autotimer_compare_all">Titel und alle Beschreibungen</string>
     <string name="autotimer_record_series">Serie aufnehmen</string>
     <string name="autotimer_suggested_window">Nur zwischen %1$s und %2$s</string>
+    <string name="autotimer_run">Jetzt ausführen</string>
+    <string name="autotimer_run_confirm">Jetzt den EPG für alle aktiven AutoTimer durchsuchen? Der Receiver legt für neue Treffer Timer an. Das kann einige Minuten dauern.</string>
 </resources>

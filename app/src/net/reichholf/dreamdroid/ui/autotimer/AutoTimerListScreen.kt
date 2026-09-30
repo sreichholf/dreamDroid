@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -15,6 +16,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +61,7 @@ fun AutoTimerListScreen(
         DreamDroidPullRefresh(
             refreshing = state.refreshing,
             onRefresh = onRefresh,
-            enabled = !state.pending
+            enabled = !state.pending && !state.running
         ) {
             when (val content = state.content) {
                 AutoTimerListContent.Loading -> ListEmptyState(loading = true, message = null)
@@ -87,7 +89,7 @@ fun AutoTimerListScreen(
                             Box {
                                 AutoTimerRow(
                                     entry = entry,
-                                    writable = !state.pending,
+                                    writable = !state.pending && !state.running,
                                     onOpen = onOpen,
                                     onEnabledChange = onEnabledChange,
                                     onMenu = { onMenu(entry) }
@@ -104,28 +106,51 @@ fun AutoTimerListScreen(
                 }
             }
         }
-        if (state.pending) {
+        if (state.pending || state.running) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
     }
 }
 
-/** The delete confirmation for [AutoTimerListUiState.deleting]. */
+/** The delete and Run now confirmations, and the result of a run. */
 @Composable
 fun AutoTimerListDialogs(
     state: AutoTimerListUiState,
     onConfirmDelete: () -> Unit,
-    onDismiss: () -> Unit
+    onDismissDelete: () -> Unit,
+    onConfirmRun: () -> Unit,
+    onDismissRun: () -> Unit,
+    onRunResultShown: () -> Unit
 ) {
-    val entry = state.deleting ?: return
-    ConfirmAlertDialog(
-        title = stringResource(R.string.autotimer_delete),
-        message = stringResource(R.string.autotimer_delete_confirm, entry.title()),
-        onDismiss = onDismiss,
-        onConfirm = onConfirmDelete,
-        confirmLabel = stringResource(R.string.delete),
-        destructive = true
-    )
+    val entry = state.deleting
+    val runResult = state.runResult
+    when {
+        entry != null -> ConfirmAlertDialog(
+            title = stringResource(R.string.autotimer_delete),
+            message = stringResource(R.string.autotimer_delete_confirm, entry.title()),
+            onDismiss = onDismissDelete,
+            onConfirm = onConfirmDelete,
+            confirmLabel = stringResource(R.string.delete),
+            destructive = true
+        )
+
+        state.confirmRun -> ConfirmAlertDialog(
+            title = stringResource(R.string.autotimer_run),
+            message = stringResource(R.string.autotimer_run_confirm),
+            onDismiss = onDismissRun,
+            onConfirm = onConfirmRun,
+            confirmLabel = stringResource(R.string.autotimer_run)
+        )
+
+        runResult != null -> AlertDialog(
+            onDismissRequest = onRunResultShown,
+            title = { Text(stringResource(R.string.autotimer_run)) },
+            text = { Text(runResult.asString()) },
+            confirmButton = {
+                TextButton(onClick = onRunResultShown) { Text(stringResource(R.string.ok)) }
+            }
+        )
+    }
 }
 
 @Composable

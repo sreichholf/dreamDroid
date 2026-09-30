@@ -163,6 +163,16 @@ class AutoTimerRepository @Inject constructor(
     }
 
     /**
+     * Searches the EPG for all enabled AutoTimers now and adds timers for new matches, as a
+     * run on the box does. It gets its own client with a long timeout, so other requests do
+     * not cancel it.
+     */
+    suspend fun runNow(): AutoTimerWriteResult {
+        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
+        return result(EnigmaClient(http).runAutoTimers())
+    }
+
+    /**
      * The AutoTimer the box lists for [settings] after a save: the one with that id when
      * [id] is set, else the newest one with that match and name. The box does not answer a
      * create with the new id.
@@ -227,5 +237,8 @@ class AutoTimerRepository @Inject constructor(
 
         /** The box searches the whole EPG for a preview; that can take a while. */
         const val PREVIEW_TIMEOUT_MS = 60_000
+
+        /** Longer than the 50 s between the keep-alives the box sends during a run. */
+        const val RUN_TIMEOUT_MS = 120_000
     }
 }

@@ -215,6 +215,13 @@ class EnigmaClient(private val http: EnigmaHttp) {
     suspend fun removeAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.AUTOTIMER_REMOVE, params)
 
+    /**
+     * Runs all enabled AutoTimers now; the reply is the plugin's summary. The box writes
+     * `<ignore />` every 50 s while it searches, which the parser skips.
+     */
+    suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.AUTOTIMER_PARSE)
+
     private suspend fun simpleResult(
         uri: String,
         params: List<NameValuePair> = emptyList()

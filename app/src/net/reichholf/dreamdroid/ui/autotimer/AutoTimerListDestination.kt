@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
 private const val ACTION_ADD = 1
+private const val ACTION_RUN = 2
 
 /**
  * The drawer's AutoTimer destination. While the session blocks writes, a write explains that
@@ -36,6 +37,13 @@ fun AutoTimerListDestination(
 
     BindShellTopBarActions(
         listOf(
+            ShellTopBarAction(
+                id = ACTION_RUN,
+                label = stringResource(R.string.autotimer_run),
+                enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending &&
+                    !uiState.running,
+                onClick = { online(viewModel::requestRun) }
+            ),
             ShellTopBarAction(
                 id = ACTION_ADD,
                 label = stringResource(R.string.autotimer_new),
@@ -65,6 +73,9 @@ fun AutoTimerListDestination(
     AutoTimerListDialogs(
         state = uiState,
         onConfirmDelete = viewModel::confirmDelete,
-        onDismiss = viewModel::dismissDelete
+        onDismissDelete = viewModel::dismissDelete,
+        onConfirmRun = viewModel::confirmRun,
+        onDismissRun = viewModel::dismissRun,
+        onRunResultShown = viewModel::onRunResultShown
     )
 }

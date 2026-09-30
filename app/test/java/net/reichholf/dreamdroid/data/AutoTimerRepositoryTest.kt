@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.data
 
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
@@ -17,6 +20,7 @@ import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -266,6 +270,32 @@ class AutoTimerRepositoryTest {
         assertEquals(null, repository.locate(edited.copy(name = "Renamed"), AutoTimerId(2)))
     }
 
+    /**
+     * Synthetic reply: the keep-alives and summary `AutoTimerResource.py` writes for
+     * `/autotimer/parse`, which was not run on a box.
+     */
+    @Test
+    fun runNowReadsTheSummaryPastTheKeepAlives() = runBlocking<Unit> {
+        receiver.respond(PARSE, RUN_REPLY)
+
+        val result = repository.runNow()
+
+        assertEquals(AutoTimerWriteResult.Done(UiText.Raw(RUN_SUMMARY)), result)
+    }
+
+    @Test
+    fun anotherRequestDoesNotCancelARun() = runBlocking<Unit> {
+        receiver.respond(PARSE, RUN_REPLY)
+        val hold = receiver.hold(PARSE)
+        val run = async(Dispatchers.IO) { repository.runNow() }
+        assertTrue(hold.arrived.await(5, TimeUnit.SECONDS))
+
+        assertTrue(repository.list() is AutoTimerLoad.Ready)
+        hold.release()
+
+        assertEquals(AutoTimerWriteResult.Done(UiText.Raw(RUN_SUMMARY)), run.await())
+    }
+
     private suspend fun loaded(): AutoTimer {
         val ready = repository.list() as AutoTimerLoad.Ready
         return (ready.entries.single() as AutoTimerEntry.Readable).autoTimer
@@ -284,5 +314,11 @@ class AutoTimerRepositoryTest {
         const val EDIT = "/autotimer/edit"
         const val REMOVE = "/autotimer/remove"
         const val TEST = "/autotimer/test"
+        const val PARSE = "/autotimer/parse"
+        const val RUN_SUMMARY = "Found a total of 4 matching Events.\n1 Timer were added and\n" +
+            "0 modified,\n0 conflicts encountered,\n0 similars added."
+        const val RUN_REPLY = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><e2simplexmlresult>" +
+            "<ignore /><ignore /><e2state>True</e2state>\n\t<e2statetext>" + RUN_SUMMARY +
+            "</e2statetext></e2simplexmlresult>"
     }
 }

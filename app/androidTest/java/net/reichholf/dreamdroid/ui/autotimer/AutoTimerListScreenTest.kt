@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.ui.autotimer
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -164,7 +166,10 @@ class AutoTimerListScreenTest {
                 AutoTimerListDialogs(
                     state = ready(WILSBERG).copy(deleting = WILSBERG),
                     onConfirmDelete = { confirmed++ },
-                    onDismiss = {}
+                    onDismissDelete = {},
+                    onConfirmRun = {},
+                    onDismissRun = {},
+                    onRunResultShown = {}
                 )
             }
         }
@@ -175,6 +180,55 @@ class AutoTimerListScreenTest {
         composeRule.onNodeWithText("Delete").performClick()
 
         composeRule.runOnIdle { assertEquals(1, confirmed) }
+    }
+
+    @Test
+    fun runNowAsksFirst() {
+        var runs = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                AutoTimerListDialogs(
+                    state = ready(WILSBERG).copy(confirmRun = true),
+                    onConfirmDelete = {},
+                    onDismissDelete = {},
+                    onConfirmRun = { runs++ },
+                    onDismissRun = {},
+                    onRunResultShown = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(
+            "Search the EPG for all enabled AutoTimers now? The receiver adds timers for new " +
+                "matches. This can take a few minutes."
+        ).assertIsDisplayed()
+        composeRule.onNode(hasText("Run now") and hasClickAction()).performClick()
+
+        composeRule.runOnIdle { assertEquals(1, runs) }
+    }
+
+    @Test
+    fun theSummaryOfARunIsShownUntilDismissed() {
+        var shown = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                AutoTimerListDialogs(
+                    state = ready(WILSBERG).copy(
+                        runResult = UiText.Raw("Found a total of 4 matching Events.")
+                    ),
+                    onConfirmDelete = {},
+                    onDismissDelete = {},
+                    onConfirmRun = {},
+                    onDismissRun = {},
+                    onRunResultShown = { shown++ }
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Found a total of 4 matching Events.").assertIsDisplayed()
+        composeRule.onNodeWithText("OK").performClick()
+
+        composeRule.runOnIdle { assertEquals(1, shown) }
     }
 
     private fun show(

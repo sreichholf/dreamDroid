@@ -1,6 +1,6 @@
 # AutoTimer (plan)
 
-**Status:** planned. API researched from source and on a real box; test data captured (`app/test/resources/web/autotimer/`). No app code yet. The design was compared against three independent alternatives (§8).
+**Status:** phases 1–7 implemented on phone (§5); the operator's box checks are open. API researched from source and on a real box; test data captured (`app/test/resources/web/autotimer/`). The design was compared against three independent alternatives (§8).
 **Target API:** the opendreambox **AutoTimer** plugin's web API (`/autotimer`, API version 1.6, plugin 4.3.2, config version 8). Not the OpenWebif AutoTimer fork. We do not patch the plugin.
 **Reference (read-only):** [opendreambox/enigma2-plugins `autotimer`](https://github.com/opendreambox/enigma2-plugins/tree/master/autotimer), mainly `src/AutoTimerResource.py` (the web API), `src/AutoTimerConfiguration.py` (list XML), `src/AutoTimer.py` (matching), `src/AutoTimerEditor.py` (on-box editor and "AutoTimer from event"), `src/web-data/autotimereditor.js` (the plugin's own web editor).
 **Architecture:** new code follows [`modernize-dreamdroid.md`](modernize-dreamdroid.md#target-architecture) and [`AGENTS.md`](../AGENTS.md): one `AutoTimerRepository`, `@HiltViewModel`s with `SavedStateHandle` and one `StateFlow` UI state, `UiText` titles and messages, type-safe routes, `SavedTextField` for text input.
@@ -28,10 +28,10 @@ An AutoTimer is a saved EPG search on the receiver. When the plugin runs, it add
 | List | Name, match, targets summary (first two, then "+N"), time window, days, enabled switch. Tap → preview; row menu: Edit, Delete. FAB: new. |
 | Enable/disable | Row switch. A one-group write; flips optimistically, reverts with the box's message on failure. |
 | Preview | `test?id=N` for one AutoTimer: upcoming matches and skipped events with the plugin's reason. A disabled AutoTimer shows "The box only previews enabled AutoTimers" and an **Enable** button, without a request. |
-| Create / edit | One screen. Always open: match, name, search type and case, channels and bouquets, record or zap, enabled. Collapsed sections with a one-line summary: **When** (time window, days, date window), later **Filters** (include/exclude title, short description, description) and **Recording** (offset, max duration, location, tags, after event, duplicates). |
+| Create / edit | One scrolling screen of sections: the search (match, name, search type and case, enabled, zap only), **Channels** (removable chips, Add channels), **When** (time window, days, date window), **Filters** (include/exclude title, short description, description, added through one field and a choice of list) and **Recording** (margins, max duration, location, tags, after event, set end time, duplicates). The sections stay open; collapsing them was dropped as not worth its state. |
 | Record series | EPG detail sheet action, only when the plugin is present: match = name = event title, contains, channel = event service, other settings as the plugin's defaults (no duplicate check). The on-box importer's "event time ±1 h" window is a one-tap suggestion chip, not applied silently. |
 | Delete | Confirm dialog ("Timers it already added stay"), then reload; `remove` always replies success. |
-| Run now | `parse`: runs the plugin's EPG search for all enabled AutoTimers now and adds timers for new matches, as a run on the box does. Behind a confirm dialog, since it adds real timers and can take minutes. |
+| Run now | `parse`: runs the plugin's EPG search for all enabled AutoTimers now and adds timers for new matches, as a run on the box does. A top-bar action on the list, behind a confirm dialog, since it adds real timers and can take minutes. The plugin's multi-line summary is shown in a dialog. |
 
 ### Phone layout sketch
 
@@ -248,7 +248,9 @@ One PR each. Each runs the PR job (`./gradlew -Pci spotlessCheck :app:testGoogle
 | 6 | Record series in the EPG sheet | Action only when `Present`; prefill mapping; suggestion chip applies ±1 h (`AutoTimerEditor.py:1489-1491`). |
 | 7 | Run now | Streamed reply with `<ignore />` before the result (synthetic, labelled); long timeout; another screen's request does not cancel it; confirm dialog UI test. |
 
-Box checks by the operator before merging phases 2, 4 and 7: toggle, delete, create and edit on a real box; one match containing `%` (proves or disproves the double decoding); one "Run now" with an AutoTimer that matches something harmless.
+All seven phases are on `claude/gracious-goodall-glejeu`, one commit each; the PR job (spotless, unit tests, instrumented test compile, lint) passes on each. The instrumented tests compile but have not run on an emulator in this environment.
+
+Box checks by the operator before merging: toggle, delete, create and edit on a real box; one match containing `%` (proves or disproves the double decoding); one "Run now" with an AutoTimer that matches something harmless.
 
 ## 6. Risks
 

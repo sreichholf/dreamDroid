@@ -51,6 +51,10 @@ data class AutoTimerListUiState(
     val pending: Boolean = false,
     val menu: RowMenuState<AutoTimerRowAction>? = null,
     val deleting: AutoTimerEntry? = null,
+    /** Run now asks first; while it [running], writes wait; [runResult] is the box's summary. */
+    val confirmRun: Boolean = false,
+    val running: Boolean = false,
+    val runResult: UiText? = null,
     val userMessage: UiText? = null
 ) {
     val title: UiText
@@ -58,7 +62,8 @@ data class AutoTimerListUiState(
 
     /** Whether the list takes a write now. */
     val editable: Boolean
-        get() = content is AutoTimerListContent.Ready && !blocked && !pending && !refreshing
+        get() = content is AutoTimerListContent.Ready && !blocked && !pending && !refreshing &&
+            !running
 }
 
 /**
@@ -186,6 +191,44 @@ class AutoTimerListViewModel @Inject constructor(
         write(shown = { entries -> entries - entry }, reportDone = true) {
             autoTimers.remove(entry)
         }
+    }
+
+    fun requestRun() {
+        if (_uiState.value.editable) {
+            _uiState.update { it.copy(confirmRun = true) }
+        }
+    }
+
+    fun dismissRun() {
+        _uiState.update { it.copy(confirmRun = false) }
+    }
+
+    /** Runs the AutoTimers on the box, then lists them again for their counters. */
+    fun confirmRun() {
+        dismissRun()
+        if (!_uiState.value.editable) {
+            return
+        }
+        _uiState.update { it.copy(running = true, menu = null) }
+        viewModelScope.launch {
+            val result = autoTimers.runNow()
+            val listed = fetch()
+            _uiState.update {
+                when (result) {
+                    is AutoTimerWriteResult.Done ->
+                        it.copy(running = false, content = listed, runResult = result.message)
+
+                    is AutoTimerWriteResult.Failed ->
+                        it.copy(running = false, content = listed, userMessage = result.message)
+
+                    AutoTimerWriteResult.Conflict -> it.copy(running = false, content = listed)
+                }
+            }
+        }
+    }
+
+    fun onRunResultShown() {
+        _uiState.update { it.copy(runResult = null) }
     }
 
     fun onMessageShown() {

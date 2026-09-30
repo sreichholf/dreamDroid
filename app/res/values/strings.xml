@@ -511,4 +511,6 @@
     <string name="autotimer_compare_all">Title and all descriptions</string>
     <string name="autotimer_record_series">Record series</string>
     <string name="autotimer_suggested_window">Only between %1$s and %2$s</string>
+    <string name="autotimer_run">Run now</string>
+    <string name="autotimer_run_confirm">Search the EPG for all enabled AutoTimers now? The receiver adds timers for new matches. This can take a few minutes.</string>
 </resources>

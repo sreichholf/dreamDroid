@@ -180,6 +180,32 @@ class AutoTimerListViewModelTest {
         assertEquals(1, receiver.requestsTo(LIST).size)
     }
 
+    @Test
+    fun runNowAsksFirstBlocksWritesAndShowsTheSummary() = runBlocking<Unit> {
+        receiver.respond(
+            PARSE,
+            simpleResult(true, "Found a total of 4 matching Events.")
+        )
+        val viewModel = viewModel()
+        val entry = viewModel.ready().single() as AutoTimerEntry.Readable
+
+        viewModel.requestRun()
+        assertTrue(viewModel.uiState.value.confirmRun)
+        assertTrue(receiver.requestsTo(PARSE).isEmpty())
+        val hold = receiver.hold(PARSE)
+        viewModel.confirmRun()
+        assertTrue(hold.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+
+        viewModel.setEnabled(entry, true)
+        assertFalse(viewModel.uiState.value.pending)
+        hold.release()
+        val done = withTimeout(TIMEOUT) { viewModel.uiState.first { it.runResult != null } }
+
+        assertEquals(UiText.Raw("Found a total of 4 matching Events."), done.runResult)
+        assertFalse(done.running)
+        assertTrue(receiver.requestsTo(EDIT).isEmpty())
+    }
+
     private fun viewModel() = AutoTimerListViewModel(autoTimers, sessions).also { viewModels += it }
 
     private suspend fun AutoTimerListViewModel.ready(): List<AutoTimerEntry> =
@@ -198,6 +224,7 @@ class AutoTimerListViewModelTest {
         const val TIMEOUT = 5_000L
         const val EDIT = "/autotimer/edit"
         const val REMOVE = "/autotimer/remove"
+        const val PARSE = "/autotimer/parse"
         const val EXTERNALS = "/web/external"
         const val LIST = "/autotimer"
     }
