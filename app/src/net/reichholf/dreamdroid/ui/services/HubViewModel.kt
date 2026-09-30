@@ -9,6 +9,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -49,7 +50,8 @@ data class HubUiState(
 
 /**
  * Hub mode, selected row, and bouquet or location tabs for [HubDestination]. The bouquet
- * strip loads again on each session change; loads run on [viewModelScope], so leaving the
+ * strip loads again on each session change and after each bouquet edit
+ * ([ServiceRepository.bouquetsEpoch]); loads run on [viewModelScope], so leaving the
  * destination and popping back keeps the strip. Child lists use their own ViewModels on
  * this same back-stack entry.
  */
@@ -91,7 +93,10 @@ class HubViewModel @Inject constructor(
         )
         uiState = _uiState.asStateFlow()
         viewModelScope.launch {
-            sessions.status.map { it.session }.distinctUntilChanged().collect {
+            combine(
+                sessions.status.map { it.session }.distinctUntilChanged(),
+                services.bouquetsEpoch
+            ) { session, epoch -> session to epoch }.collect {
                 bouquetJob?.cancel()
                 bouquetJob = launch { loadBouquets() }
             }

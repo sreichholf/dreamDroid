@@ -63,6 +63,9 @@ class HubViewModelTest {
     private val viewModels = mutableListOf<HubViewModel>()
     private val main = DelayCountingDispatcher(UnconfinedTestDispatcher())
 
+    @Volatile
+    private var tvBouquets = listOf(FAVOURITES, SPORTS)
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(main)
@@ -155,6 +158,20 @@ class HubViewModelTest {
         receiver.sessions.onSuccess()
 
         receiver.awaitRequestsTo(GET_SERVICES, before + 2)
+    }
+
+    @Test
+    fun bouquetEditLoadsTheBouquetsAgain() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.loaded()
+        tvBouquets = listOf(SPORTS)
+
+        receiver.services.onBouquetsEdited(listOf(TV_ROOTS[0]))
+
+        val state = withTimeout(5_000L) {
+            viewModel.uiState.first { it.tvBouquets == listOf(SPORTS) }
+        }
+        assertEquals(listOf(RADIO), state.radioBouquets)
     }
 
     @Test
@@ -311,7 +328,7 @@ class HubViewModelTest {
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
             GET_SERVICES -> when (request.requestUrl?.queryParameter("sRef")) {
-                TV_ROOTS[0] -> serviceList(FAVOURITES, SPORTS)
+                TV_ROOTS[0] -> serviceList(*tvBouquets.toTypedArray())
                 RADIO_ROOTS[0] -> serviceList(RADIO)
                 else -> MockResponse().setResponseCode(404)
             }

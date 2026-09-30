@@ -342,4 +342,21 @@
     <string name="setup_name_body">Dieser Name erscheint in der Profilliste.</string>
     <string name="setup_test_body">dreamDroid kontaktiert den Receiver, bevor das Profil gespeichert wird.</string>
     <string name="setup_connected">Der Receiver hat geantwortet.</string>
+
+    <string name="bouquets">Bouquets</string>
+    <string name="bouquet_add">Bouquet hinzufügen</string>
+    <string name="bouquet_rename">Bouquet umbenennen</string>
+    <string name="bouquet_remove">Bouquet entfernen</string>
+    <string name="bouquet_remove_confirm">Das Bouquet \"%1$s\" vom Receiver entfernen?</string>
+    <string name="bouquet_name_empty">Bitte einen Namen eingeben.</string>
+    <string name="bouquet_name_exists">Ein Bouquet mit diesem Namen gibt es bereits.</string>
+    <string name="bouquet_editor_not_installed">Zum Bearbeiten von Bouquets braucht es das Plugin WebBouquetEditor für das Webinterface des Receivers (Paket enigma2-plugin-extensions-webbouqueteditor). Auf diesem Receiver ist es nicht installiert. Installiere es auf dem Receiver und tippe dann auf „Neu laden“.</string>
+    <string name="bouquet_backup_saved">Bouquets auf dem Receiver gesichert als /tmp/%1$s</string>
+    <string name="bouquet_backup_failed">Der Receiver konnte seine Bouquets nicht sichern. Die Bearbeitung geht ohne Sicherung weiter.</string>
+    <string name="bouquet_drag">Ziehen zum Umsortieren</string>
+    <string name="rename">Umbenennen</string>
+    <string name="remove">Entfernen</string>
+    <string name="move_up">Nach oben</string>
+    <string name="move_down">Nach unten</string>
+    <string name="more_options">Weitere Optionen</string>
 </resources>

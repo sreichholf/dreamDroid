@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 
 /**
  * TV settings subset matching [R.xml.preferences] on television
@@ -135,7 +136,7 @@ fun TvSettingsScreen(
     }
 
     if (syncPiconsPathDraft != null) {
-        EditTextPreferenceDialog(
+        TextInputDialog(
             title = stringResource(R.string.sync_picons_path),
             state = syncPiconsPathDraft,
             onDismiss = onDismissSyncPiconsPath,
