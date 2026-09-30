@@ -104,18 +104,17 @@ class MovieRepository @Inject constructor(
     /** Copies the recording at [remotePath] into the app cache, with the profile's login. */
     suspend fun downloadToCache(remotePath: String): MovieDownload {
         val profile = profiles.requireCurrent()
-        val out = File(context.cacheDir, movieCacheFileName(remotePath))
         val params = listOf(NameValuePair("file", remotePath))
-        val fetched = withContext(Dispatchers.IO) {
-            clients.http(profile).downloadToFile(URIStore.FILE, params, out)
-        }
-        return when (fetched) {
-            is EnigmaHttpResult.Failure -> {
-                out.delete()
-                MovieDownload.Failed(fetched.error)
-            }
+        return withContext(Dispatchers.IO) {
+            val out = File(context.cacheDir, movieCacheFileName(remotePath))
+            when (val fetched = clients.http(profile).downloadToFile(URIStore.FILE, params, out)) {
+                is EnigmaHttpResult.Failure -> {
+                    out.delete()
+                    MovieDownload.Failed(fetched.error)
+                }
 
-            is EnigmaHttpResult.Success -> MovieDownload.Ready(out)
+                is EnigmaHttpResult.Success -> MovieDownload.Ready(out)
+            }
         }
     }
 
