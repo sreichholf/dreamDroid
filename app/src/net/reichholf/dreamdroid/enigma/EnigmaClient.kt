@@ -200,6 +200,13 @@ class EnigmaClient(private val http: EnigmaHttp) {
     suspend fun backupBouquets(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.BOUQUET_EDITOR_BACKUP, params)
 
+    // AutoTimer plugin (/autotimer). Remove answers True even for an unknown id.
+    suspend fun editAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.AUTOTIMER_EDIT, params)
+
+    suspend fun removeAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.AUTOTIMER_REMOVE, params)
+
     private suspend fun simpleResult(
         uri: String,
         params: List<NameValuePair> = emptyList()

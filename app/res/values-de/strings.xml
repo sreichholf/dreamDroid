@@ -380,4 +380,7 @@
     <string name="autotimer_unreadable">dreamDroid kann diesen AutoTimer nicht lesen.</string>
     <string name="autotimer_weekdays">Werktags</string>
     <string name="autotimer_weekend">Wochenende</string>
+    <string name="autotimer_delete">AutoTimer löschen</string>
+    <string name="autotimer_delete_confirm">AutoTimer \"%1$s\" löschen? Timer, die er schon angelegt hat, bleiben.</string>
+    <string name="autotimer_changed">Die AutoTimer wurden auf dem Receiver geändert. Die Liste zeigt sie jetzt, wie sie sind.</string>
 </resources>

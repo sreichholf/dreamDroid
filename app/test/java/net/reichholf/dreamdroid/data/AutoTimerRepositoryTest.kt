@@ -6,7 +6,10 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -114,6 +117,98 @@ class AutoTimerRepositoryTest {
         )
     }
 
+    @Test
+    fun theSwitchSendsOnlyItsGroupAfterTheGuard() = runBlocking<Unit> {
+        receiver.respond(
+            EDIT,
+            TestReceiver.simpleResult(true, "AutoTimer wurde erfolgreich geändert")
+        )
+        val wilsberg = loaded()
+
+        val result = repository.setEnabled(wilsberg, enabled = false)
+
+        assertEquals(
+            AutoTimerWriteResult.Done(UiText.Raw("AutoTimer wurde erfolgreich geändert")),
+            result
+        )
+        val edit = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals(
+            listOf("id", "match", "name", "enabled"),
+            edit.queryParameterNames.toList()
+        )
+        assertEquals("2", edit.queryParameter("id"))
+        assertEquals("0", edit.queryParameter("enabled"))
+        // The guard listed the AutoTimers right before the write.
+        assertEquals(
+            listOf(LIST, EDIT),
+            receiver.requests.takeLast(2).map { it.requestUrl!!.encodedPath }
+        )
+    }
+
+    @Test
+    fun aPercentSignReachesThePluginEscapedOnce() = runBlocking<Unit> {
+        receiver.respond(EDIT, TestReceiver.simpleResult(true, "ok"))
+        val wilsberg = loaded()
+
+        repository.save(
+            AutoTimerWrite.Change(wilsberg, wilsberg.settings.copy(match = "50%20"))
+        )
+
+        // The web server decodes once, the plugin once more: 50%2520 -> 50%20.
+        val edit = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals("50%2520", edit.queryParameter("match"))
+    }
+
+    @Test
+    fun aRenumberedListIsAConflictAndWritesNothing() = runBlocking<Unit> {
+        val wilsberg = loaded()
+        receiver.respond(
+            LIST,
+            loadWebFixture("autotimer/list_disabled_full.xml").replace(
+                "id=\"1\"",
+                "id=\"2\""
+            )
+        )
+
+        assertEquals(AutoTimerWriteResult.Conflict, repository.setEnabled(wilsberg, false))
+        assertEquals(
+            AutoTimerWriteResult.Conflict,
+            repository.remove(AutoTimerEntry.Readable(wilsberg))
+        )
+        assertEquals(emptyList<Any>(), receiver.requestsTo(EDIT) + receiver.requestsTo(REMOVE))
+    }
+
+    @Test
+    fun removeSendsTheIdAfterTheGuard() = runBlocking<Unit> {
+        receiver.respond(REMOVE, loadWebFixture("autotimer/result_remove.xml"))
+        val entry = AutoTimerEntry.Readable(loaded())
+
+        val result = repository.remove(entry)
+
+        assertEquals(AutoTimerWriteResult.Done(UiText.Raw("AutoTimer wurde entfernt")), result)
+        assertEquals("2", receiver.requestsTo(REMOVE).single().requestUrl!!.queryParameter("id"))
+    }
+
+    @Test
+    fun aRejectedWriteFailsWithTheBoxText() = runBlocking<Unit> {
+        receiver.respond(
+            EDIT,
+            TestReceiver.simpleResult(false, "autotimers need a match attribute")
+        )
+
+        val result = repository.setEnabled(loaded(), enabled = false)
+
+        assertEquals(
+            AutoTimerWriteResult.Failed(UiText.Raw("autotimers need a match attribute")),
+            result
+        )
+    }
+
+    private suspend fun loaded(): AutoTimer {
+        val ready = repository.list() as AutoTimerLoad.Ready
+        return (ready.entries.single() as AutoTimerEntry.Readable).autoTimer
+    }
+
     private fun externals(vararg paths: String): String =
         "<e2webifexternals>" + paths.joinToString("") {
             "<e2webifexternal><e2path>$it</e2path></e2webifexternal>"
@@ -124,5 +219,7 @@ class AutoTimerRepositoryTest {
         const val OTHER_PROFILE_ID = 8
         const val EXTERNALS = "/web/external"
         const val LIST = "/autotimer"
+        const val EDIT = "/autotimer/edit"
+        const val REMOVE = "/autotimer/remove"
     }
 }

@@ -1,7 +1,11 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -26,6 +30,7 @@ import net.reichholf.dreamdroid.enigma.autotimer.Filters
 import net.reichholf.dreamdroid.enigma.autotimer.RecordMode
 import net.reichholf.dreamdroid.enigma.autotimer.SearchType
 import net.reichholf.dreamdroid.enigma.autotimer.Target
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -80,7 +85,10 @@ class AutoTimerListScreenTest {
     @Test
     fun missingPluginExplainsWhyAndOffersAReload() {
         var reloads = 0
-        show(AutoTimerListUiState(content = AutoTimerListContent.PluginMissing)) { reloads++ }
+        show(
+            AutoTimerListUiState(content = AutoTimerListContent.PluginMissing),
+            onRefresh = { reloads++ }
+        )
 
         composeRule.onNodeWithText(
             "AutoTimer needs the AutoTimer plugin on the receiver (package " +
@@ -99,10 +107,83 @@ class AutoTimerListScreenTest {
         composeRule.onNodeWithText("Nope").assertIsDisplayed()
     }
 
-    private fun show(state: AutoTimerListUiState, onRefresh: () -> Unit = {}) {
+    @Test
+    fun theSwitchReportsTheNewState() {
+        val changes = mutableListOf<Pair<AutoTimerEntry.Readable, Boolean>>()
+        show(ready(WILSBERG), onEnabledChange = { entry, on -> changes += entry to on })
+
+        composeRule.onNode(isToggleable()).assertIsOn().performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf(WILSBERG to false), changes) }
+    }
+
+    @Test
+    fun aRunningWriteDisablesTheRowControls() {
+        show(ready(WILSBERG).copy(pending = true))
+
+        composeRule.onNode(isToggleable()).assertIsNotEnabled()
+        composeRule.onNodeWithContentDescription("More options").assertIsNotEnabled()
+    }
+
+    @Test
+    fun theRowMenuOffersDelete() {
+        val actions = mutableListOf<Pair<AutoTimerEntry, AutoTimerRowAction>>()
+        val menus = mutableListOf<AutoTimerEntry>()
+        show(
+            ready(WILSBERG).copy(
+                menu = RowMenuState(WILSBERG.id.value, AutoTimerRowAction.entries)
+            ),
+            onMenu = { menus += it },
+            onMenuAction = { entry, action -> actions += entry to action }
+        )
+
+        composeRule.onNodeWithText("Delete").performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(listOf(WILSBERG to AutoTimerRowAction.Delete), actions)
+        }
+        composeRule.onNodeWithContentDescription("More options").performClick()
+        composeRule.runOnIdle { assertEquals(listOf(WILSBERG), menus) }
+    }
+
+    @Test
+    fun deleteAsksWithTheName() {
+        var confirmed = 0
         composeRule.setContent {
             DreamDroidTheme {
-                AutoTimerListScreen(state = state, onRefresh = onRefresh)
+                AutoTimerListDialogs(
+                    state = ready(WILSBERG).copy(deleting = WILSBERG),
+                    onConfirmDelete = { confirmed++ },
+                    onDismiss = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText(
+            "Delete the AutoTimer \"Wilsberg\"? Timers it already added stay."
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("Delete").performClick()
+
+        composeRule.runOnIdle { assertEquals(1, confirmed) }
+    }
+
+    private fun show(
+        state: AutoTimerListUiState,
+        onRefresh: () -> Unit = {},
+        onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit = { _, _ -> },
+        onMenu: (AutoTimerEntry) -> Unit = {},
+        onMenuAction: (AutoTimerEntry, AutoTimerRowAction) -> Unit = { _, _ -> }
+    ) {
+        composeRule.setContent {
+            DreamDroidTheme {
+                AutoTimerListScreen(
+                    state = state,
+                    onRefresh = onRefresh,
+                    onEnabledChange = onEnabledChange,
+                    onMenu = onMenu,
+                    onMenuAction = onMenuAction,
+                    onMenuDismiss = {}
+                )
             }
         }
     }

@@ -8,10 +8,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
+import net.reichholf.dreamdroid.enigma.autotimer.toParams
 import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.enigma.userMessageText
+import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** Whether the active profile's receiver has the AutoTimer plugin. */
@@ -31,6 +39,17 @@ sealed interface AutoTimerLoad {
     data class Failed(val message: UiText) : AutoTimerLoad
 }
 
+/** How a write went. */
+sealed interface AutoTimerWriteResult {
+    /** The box took it; [message] is its (localized) reply. */
+    data class Done(val message: UiText) : AutoTimerWriteResult
+
+    /** The id no longer names the AutoTimer that was loaded; nothing was written. */
+    data object Conflict : AutoTimerWriteResult
+
+    data class Failed(val message: UiText) : AutoTimerWriteResult
+}
+
 /**
  * The AutoTimer plugin of the active profile's receiver (`/autotimer`). Online only: the box
  * changes its AutoTimers itself, so nothing is cached but whether the plugin is there.
@@ -40,6 +59,8 @@ class AutoTimerRepository @Inject constructor(
     private val clients: EnigmaClientFactory,
     private val profiles: ProfileRepository
 ) {
+    private val writes = Mutex()
+
     /** Plugin presence per profile id; the last answer stays while a receiver is offline. */
     private val known = MutableStateFlow<Map<Int, PluginPresence>>(emptyMap())
 
@@ -70,6 +91,50 @@ class AutoTimerRepository @Inject constructor(
         return response.value?.let { AutoTimerLoad.Ready(it) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
     }
+
+    /**
+     * Writes [write] unless the box renumbered its AutoTimers since they were loaded. One
+     * write runs at a time.
+     */
+    suspend fun save(write: AutoTimerWrite): AutoTimerWriteResult = writes.withLock {
+        when (write) {
+            is AutoTimerWrite.Change -> {
+                guard(AutoTimerEntry.Readable(write.loaded))?.let { return it }
+                result(clients.current().editAutoTimer(write.toParams()))
+            }
+        }
+    }
+
+    suspend fun setEnabled(autoTimer: AutoTimer, enabled: Boolean): AutoTimerWriteResult =
+        save(AutoTimerWrite.Change(autoTimer, autoTimer.settings.copy(enabled = enabled)))
+
+    /** Removes [entry] unless its id names another AutoTimer by now. */
+    suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = writes.withLock {
+        guard(entry)?.let { return it }
+        result(
+            clients.current()
+                .removeAutoTimer(listOf(NameValuePair("id", entry.id.value.toString())))
+        )
+    }
+
+    /**
+     * Null when the box still lists [expected] under its id. The box numbers its AutoTimers
+     * anew whenever its config file changed, so an id alone may name another one.
+     */
+    private suspend fun guard(expected: AutoTimerEntry): AutoTimerWriteResult? {
+        val response = clients.current().getAutoTimers()
+        val entries = response.value
+            ?: return AutoTimerWriteResult.Failed(response.error.contentErrorText())
+        val current = entries.firstOrNull { it.id == expected.id }
+        return if (current == expected) null else AutoTimerWriteResult.Conflict
+    }
+
+    private fun result(response: EnigmaResponse<SimpleResult>): AutoTimerWriteResult =
+        if (response.value != null && response.error == null) {
+            AutoTimerWriteResult.Done(response.userMessageText())
+        } else {
+            AutoTimerWriteResult.Failed(response.userMessageText())
+        }
 
     private fun currentPresence(): PluginPresence =
         profiles.current.value?.id?.let { known.value[it] } ?: PluginPresence.Unknown

@@ -2,16 +2,25 @@ package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
@@ -25,18 +34,31 @@ import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.RowMenu
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.text.asString
 
-/** The AutoTimer list with pull to refresh. */
+/**
+ * The AutoTimer list with pull to refresh. A row's switch enables or pauses it; its menu
+ * offers the other actions.
+ */
 @Composable
 fun AutoTimerListScreen(
     state: AutoTimerListUiState,
     onRefresh: () -> Unit,
+    onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit,
+    onMenu: (AutoTimerEntry) -> Unit,
+    onMenuAction: (AutoTimerEntry, AutoTimerRowAction) -> Unit,
+    onMenuDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        DreamDroidPullRefresh(refreshing = state.refreshing, onRefresh = onRefresh) {
+        DreamDroidPullRefresh(
+            refreshing = state.refreshing,
+            onRefresh = onRefresh,
+            enabled = !state.pending
+        ) {
             when (val content = state.content) {
                 AutoTimerListContent.Loading -> ListEmptyState(loading = true, message = null)
 
@@ -60,21 +82,61 @@ fun AutoTimerListScreen(
                 } else {
                     LazyColumn(modifier = Modifier.fillMaxSize()) {
                         items(content.entries, key = { it.id.value }) { entry ->
-                            AutoTimerRow(entry)
+                            Box {
+                                AutoTimerRow(
+                                    entry = entry,
+                                    writable = !state.pending,
+                                    onEnabledChange = onEnabledChange,
+                                    onMenu = { onMenu(entry) }
+                                )
+                                RowMenu(
+                                    rowKey = entry.id.value,
+                                    state = state.menu,
+                                    onAction = { onMenuAction(entry, it) },
+                                    onDismiss = onMenuDismiss
+                                )
+                            }
                         }
                     }
                 }
             }
         }
+        if (state.pending) {
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+        }
     }
 }
 
+/** The delete confirmation for [AutoTimerListUiState.deleting]. */
 @Composable
-private fun AutoTimerRow(entry: AutoTimerEntry) {
+fun AutoTimerListDialogs(
+    state: AutoTimerListUiState,
+    onConfirmDelete: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val entry = state.deleting ?: return
+    ConfirmAlertDialog(
+        title = stringResource(R.string.autotimer_delete),
+        message = stringResource(R.string.autotimer_delete_confirm, entry.title()),
+        onDismiss = onDismiss,
+        onConfirm = onConfirmDelete,
+        confirmLabel = stringResource(R.string.delete),
+        destructive = true
+    )
+}
+
+@Composable
+private fun AutoTimerRow(
+    entry: AutoTimerEntry,
+    writable: Boolean,
+    onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit,
+    onMenu: () -> Unit
+) {
     val lines = when (entry) {
         is AutoTimerEntry.Readable -> summaryLines(entry.autoTimer.settings)
         is AutoTimerEntry.Unreadable -> listOf(stringResource(R.string.autotimer_unreadable))
     }
+    val enabledLabel = stringResource(R.string.enabled)
     ListRowSurface {
         ListItem(
             headlineContent = {
@@ -91,6 +153,26 @@ private fun AutoTimerRow(entry: AutoTimerEntry) {
                             text = line,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            },
+            trailingContent = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (entry is AutoTimerEntry.Readable) {
+                        Switch(
+                            checked = entry.autoTimer.settings.enabled,
+                            onCheckedChange = { onEnabledChange(entry, it) },
+                            enabled = writable,
+                            modifier = Modifier.semantics {
+                                contentDescription = enabledLabel
+                            }
+                        )
+                    }
+                    IconButton(onClick = onMenu, enabled = writable) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_more_vert),
+                            contentDescription = stringResource(R.string.more_options)
                         )
                     }
                 }

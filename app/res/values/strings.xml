@@ -434,4 +434,7 @@
     <string name="autotimer_unreadable">dreamDroid cannot read this AutoTimer.</string>
     <string name="autotimer_weekdays">Weekdays</string>
     <string name="autotimer_weekend">Weekend</string>
+    <string name="autotimer_delete">Delete AutoTimer</string>
+    <string name="autotimer_delete_confirm">Delete the AutoTimer \"%1$s\"? Timers it already added stay.</string>
+    <string name="autotimer_changed">The AutoTimers changed on the receiver. The list shows them as they are now.</string>
 </resources>

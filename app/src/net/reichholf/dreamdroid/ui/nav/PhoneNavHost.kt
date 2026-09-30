@@ -232,7 +232,7 @@ private fun PhoneNavHostGraph(
             BouquetAddServicesDestination(handle = handle)
         }
         composable<AutoTimers> {
-            AutoTimerListDestination()
+            AutoTimerListDestination(handle = handle)
         }
         dialog<About> {
             AboutDialog(onDismiss = { navController.popBackStack() })
