@@ -6,6 +6,7 @@
 * NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
 * NEU: Startbildschirm wählbar (Einstellungen → Startbildschirm)
 * NEU: Werkzeuge-Hub bündelt Screenshot, Geräte-Info und Signal Meter mit gemeinsamer Leiste
+* NEU: Bouquet-Editor unter Werkzeuge: Bouquets und Sender hinzufügen, umbenennen, sortieren und entfernen (benötigt das WebBouquetEditor-Plugin auf dem Receiver)
 * NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist; auch die EPG-Suche funktioniert offline
 * NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
 * NEU: Android TV kann denselben externen Videoplayer nutzen wie das Telefon (gleicher Einstellungs-Schalter)

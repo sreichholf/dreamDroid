@@ -6,6 +6,7 @@
 * NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
 * NEW: Choose which screen opens when the app starts (Settings → Start screen)
 * NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
+* NEW: Bouquet editor under Tools: add, rename, reorder, and remove bouquets and channels (needs the WebBouquetEditor plugin on the receiver)
 * NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable; EPG search works offline too
 * NEW: Settings option to reset the offline cache (current profile or all profiles)
 * NEW: Android TV can use an external video player (same Settings toggle as phone)
