@@ -91,15 +91,27 @@ interface EpgDao {
         fromSec: Long
     ): List<EpgEventEntity>
 
-    /** The programme of [serviceRef] starting at [start], from any cached bouquet. */
+    /**
+     * Programmes of [serviceRef] that overlap [beginSec] to [endSec], soonest first. One row
+     * per programme, even when several bouquets cached it.
+     */
     @Query(
         """
         SELECT * FROM epg_event
-        WHERE profileId = :profileId AND serviceRef = :serviceRef AND start = :start
-        LIMIT 1
+        WHERE profileId = :profileId
+          AND serviceRef = :serviceRef
+          AND start < :endSec
+          AND (start + duration) > :beginSec
+        GROUP BY eventId
+        ORDER BY start ASC
         """
     )
-    suspend fun eventAt(profileId: Int, serviceRef: String, start: Long): EpgEventEntity?
+    suspend fun serviceEventsOverlapping(
+        profileId: Int,
+        serviceRef: String,
+        beginSec: Long,
+        endSec: Long
+    ): List<EpgEventEntity>
 
     @Query(
         """

@@ -135,27 +135,40 @@ class EpgRepository @Inject constructor(
         }
 
     /**
-     * The programme of [serviceRef] that starts at [beginSec]: from the MultiEPG cache when a
-     * cached bouquet holds it, else from the receiver unless the session is Offline. Null
-     * when neither has it, as when the EPG changed, or the receiver did not answer.
+     * The programme a timer on [serviceRef] from [beginSec] to [endSec] records. That window
+     * holds the recording margins, so it starts before the programme and ends after it: the
+     * programme is the one called [title] in it, else the one that fills most of it. The
+     * MultiEPG cache answers when it holds [title]; otherwise the receiver does, unless the
+     * session is Offline. Null when neither has a programme there.
      */
-    suspend fun event(serviceRef: String, beginSec: Long): Event? {
+    suspend fun recordedProgramme(
+        serviceRef: String,
+        title: String,
+        beginSec: Long,
+        endSec: Long
+    ): Event? {
         profiles.requireCurrent().id?.let { profileId ->
-            database.epgDao().eventAt(profileId, serviceRef, beginSec)?.let { return it.toEvent() }
+            val cached = database.epgDao()
+                .serviceEventsOverlapping(profileId, serviceRef, beginSec, endSec)
+                .map { it.toEvent() }
+            programmeInWindow(cached, title, beginSec, endSec)
+                ?.takeIf { it.title == title }
+                ?.let { return it }
         }
         if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
             return null
         }
-        // The box answers `time` plus one minute with the programme running then.
+        // The box answers `time` and a length in minutes with the programmes running then.
+        val minutes = (endSec - beginSec + SECONDS_PER_MINUTE - 1) / SECONDS_PER_MINUTE
         val events = clients.current().getEvents(
             listOf(
                 NameValuePair("sRef", serviceRef),
                 NameValuePair("time", beginSec.toString()),
-                NameValuePair("endTime", "1")
+                NameValuePair("endTime", minutes.coerceAtLeast(1).toString())
             ),
             URIStore.EPG_SERVICE
-        ).value
-        return events?.firstOrNull { it.start == beginSec.toString() }
+        ).value ?: return null
+        return programmeInWindow(events, title, beginSec, endSec)
     }
 
     /** The newest recent EPG searches first. */
@@ -302,12 +315,34 @@ class EpgRepository @Inject constructor(
     }
 
     private companion object {
+        const val SECONDS_PER_MINUTE = 60L
+
         /** Upper bound of one cached search result list. */
         const val SEARCH_LIMIT = 256
 
         /** How many recent searches are kept. */
         const val RECENT_SEARCHES = 10
     }
+}
+
+/**
+ * Of [events], the one called [title] that overlaps [beginSec] to [endSec], else the one that
+ * overlaps it longest.
+ */
+internal fun programmeInWindow(
+    events: List<Event>,
+    title: String,
+    beginSec: Long,
+    endSec: Long
+): Event? {
+    val overlaps = events.mapNotNull { event ->
+        val start = event.start.toLongOrNull() ?: return@mapNotNull null
+        val duration = event.duration.toLongOrNull() ?: return@mapNotNull null
+        val overlap = minOf(endSec, start + duration) - maxOf(beginSec, start)
+        if (overlap > 0) event to overlap else null
+    }
+    return overlaps.firstOrNull { it.first.title == title }?.first
+        ?: overlaps.maxByOrNull { it.second }?.first
 }
 
 /**

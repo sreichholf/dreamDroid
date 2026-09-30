@@ -135,26 +135,23 @@ class AutoTimerPreviewViewModelTest {
     }
 
     @Test
-    fun anUpcomingEventOpensWithItsProgrammeFromTheEpg() = runBlocking<Unit> {
+    fun anUpcomingEventOpensWithTheProgrammeItRecords() = runBlocking<Unit> {
+        receiver.respond(TEST, loadWebFixture("autotimer/test.xml"))
+        receiver.respond(EPG_SERVICE, loadWebFixture("autotimer/epgservice_match_window.xml"))
         val viewModel = viewModel(id = 2)
+        // Five minutes of margin on either side of the programme.
         val match = viewModel.ready().upcoming.first()
-        receiver.respond(
-            EPG_SERVICE,
-            loadWebFixture("autotimer/epgservice_one_event.xml")
-                .replace("1790792100", match.begin.epochSecond.toString())
-        )
+        assertEquals("Wilsberg - In Treu und Glauben", match.title)
 
         viewModel.openMatch(match)
-        assertEquals(match, viewModel.uiState.value.detail?.match)
+        assertEquals(AutoTimerMatchDetail(match), viewModel.uiState.value.detail)
         val detail = withTimeout(TIMEOUT) {
             viewModel.uiState.first { it.detail?.epg != MatchEpg.Loading }
         }.detail
 
-        val found = detail?.epg as MatchEpg.Found
-        assertEquals("Die Jagd nach dem Hammermörder", found.event.description)
-        val url = receiver.requestsTo(EPG_SERVICE).single().requestUrl!!
-        assertEquals(match.serviceRef, url.queryParameter("sRef"))
-        assertEquals(match.begin.epochSecond.toString(), url.queryParameter("time"))
+        val found = (detail?.epg as MatchEpg.Found).event
+        assertEquals("1790792100", found.start)
+        assertTrue(found.descriptionExtended.startsWith("Krimireihe, Deutschland 2016"))
 
         viewModel.dismissMatch()
         assertNull(viewModel.uiState.value.detail)
@@ -162,7 +159,7 @@ class AutoTimerPreviewViewModelTest {
 
     @Test
     fun anEventTheEpgDoesNotHaveIsMissing() = runBlocking<Unit> {
-        receiver.respond(EPG_SERVICE, loadWebFixture("autotimer/epgservice_one_event.xml"))
+        receiver.respond(EPG_SERVICE, "<e2eventlist></e2eventlist>")
         val viewModel = viewModel(id = 2)
         val match = viewModel.ready().upcoming.first()
 

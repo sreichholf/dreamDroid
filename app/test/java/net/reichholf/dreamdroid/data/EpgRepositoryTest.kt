@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.CHANNEL
@@ -329,59 +330,99 @@ class EpgRepositoryTest {
     private fun EventListLoad.events() = (this as EventListLoad.Events).events
 
     @Test
-    fun eventAsksTheReceiverForTheMinuteAtItsStart() = runBlocking<Unit> {
-        receiver.answer = { MockResponse().setBody(loadWebFixture(ONE_EVENT)) }
+    fun theRecordedProgrammeIsTheOneInsideTheMargins() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
 
-        val event = repository.event(ZDF, ONE_EVENT_START)
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
 
-        assertEquals("XY history", event?.title)
-        assertEquals("Die Jagd nach dem Hammermörder", event?.description)
+        assertEquals(WILSBERG, event?.title)
+        assertEquals("1790792100", event?.start)
+        assertTrue(event!!.descriptionExtended.startsWith("Krimireihe, Deutschland 2016"))
         val url = receiver.server.takeRequest().requestUrl!!
         assertEquals("/web/epgservice", url.encodedPath)
-        assertEquals(ZDF, url.queryParameter("sRef"))
-        assertEquals(ONE_EVENT_START.toString(), url.queryParameter("time"))
-        assertEquals("1", url.queryParameter("endTime"))
+        assertEquals(NEO, url.queryParameter("sRef"))
+        assertEquals(MATCH_BEGIN.toString(), url.queryParameter("time"))
+        assertEquals("100", url.queryParameter("endTime"))
     }
 
     @Test
-    fun aCachedEventNeedsNoReceiver() = runBlocking<Unit> {
+    fun anotherTitleIsTheProgrammeThatFillsTheWindow() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
+
+        val event = repository.recordedProgramme(NEO, "Wilsberg", MATCH_BEGIN, MATCH_END)
+
+        assertEquals(WILSBERG, event?.title)
+    }
+
+    @Test
+    fun aShortProgrammeIsFoundByTitleBetweenLongMargins() {
+        val news = Event(title = "heute", start = "1000", duration = "300")
+        val before = Event(title = "Before", start = "0", duration = "1000")
+        val after = Event(title = "After", start = "1300", duration = "3600")
+
+        assertEquals(news, programmeInWindow(listOf(before, news, after), "heute", 100, 2500))
+        assertEquals(after, programmeInWindow(listOf(before, news, after), "gone", 100, 2500))
+    }
+
+    @Test
+    fun aCachedProgrammeNeedsNoReceiver() = runBlocking<Unit> {
         receiver.writeChunk(
             BOUQUET,
-            ONE_EVENT_START,
+            MATCH_BEGIN,
             listOf(
-                event("XY history", ONE_EVENT_START, service = ZDF)
+                event(WILSBERG, 1_790_792_100L, duration = 5400, service = NEO)
                     .copy(descriptionExtended = "Aus dem Cache")
             )
         )
 
-        val event = repository.event(ZDF, ONE_EVENT_START)
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
 
         assertEquals("Aus dem Cache", event?.descriptionExtended)
         assertEquals(0, receiver.server.requestCount)
     }
 
     @Test
-    fun aProgrammeStartingAtAnotherTimeIsNotTheEvent() = runBlocking<Unit> {
-        receiver.answer = { MockResponse().setBody(loadWebFixture(ONE_EVENT)) }
+    fun aCacheWithoutTheTitleAsksTheReceiver() = runBlocking<Unit> {
+        receiver.writeChunk(
+            BOUQUET,
+            MATCH_BEGIN,
+            listOf(event("Bares für Rares", 1_790_788_800L, duration = 6000, service = NEO))
+        )
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
 
-        assertNull(repository.event(ZDF, ONE_EVENT_START + 600))
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
+
+        assertEquals(WILSBERG, event?.title)
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun noProgrammeInTheWindowIsNull() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody("<e2eventlist></e2eventlist>") }
+
+        assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
     }
 
     @Test
     fun anOfflineSessionOnlyLooksInTheCache() = runBlocking<Unit> {
         receiver.goOffline()
 
-        assertNull(repository.event(ZDF, ONE_EVENT_START))
+        assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
         assertEquals(0, receiver.server.requestCount)
     }
 
     private fun titles(load: EventListLoad) = load.events().map { it.title }
 
     private companion object {
-        /** `/web/epgservice` of a dm900 for one programme, `time` at its start. */
-        const val ONE_EVENT = "autotimer/epgservice_one_event.xml"
-        const val ONE_EVENT_START = 1_790_792_100L
-        const val ZDF = "1:0:19:2B66:3F3:1:C00000:0:0:0:"
+        /**
+         * `/web/epgservice` of a dm900 for the window of the first match in
+         * `autotimer/test.xml`: the programme with five minutes of margin on either side.
+         */
+        const val MATCH_WINDOW = "autotimer/epgservice_match_window.xml"
+        const val MATCH_BEGIN = 1_790_791_800L
+        const val MATCH_END = 1_790_797_800L
+        const val NEO = "1:0:19:2B7A:3F3:1:C00000:0:0:0:"
+        const val WILSBERG = "Wilsberg - In Treu und Glauben"
         const val NOW = 1_893_456_000L
         const val OTHER = "1:0:1:6DCB:44C:1:C00000:0:0:0:"
         const val OTHER_BOUQUET =

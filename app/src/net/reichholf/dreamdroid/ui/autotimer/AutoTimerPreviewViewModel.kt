@@ -54,7 +54,7 @@ sealed interface MatchEpg {
 
     data class Found(val event: Event) : MatchEpg
 
-    /** Neither the cache nor the receiver has a programme starting then. */
+    /** Neither the cache nor the receiver has a programme in the match's window. */
     data object Missing : MatchEpg
 }
 
@@ -186,7 +186,12 @@ class AutoTimerPreviewViewModel @Inject constructor(
         detailJob?.cancel()
         _uiState.update { it.copy(detail = AutoTimerMatchDetail(match)) }
         detailJob = viewModelScope.launch {
-            val event = epg.event(match.serviceRef, match.begin.epochSecond)
+            val event = epg.recordedProgramme(
+                match.serviceRef,
+                match.title,
+                match.begin.epochSecond,
+                match.end.epochSecond
+            )
             val loaded =
                 AutoTimerMatchDetail(match, event?.let(MatchEpg::Found) ?: MatchEpg.Missing)
             _uiState.update { if (it.detail?.match == match) it.copy(detail = loaded) else it }
