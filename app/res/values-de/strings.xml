@@ -383,8 +383,15 @@
     <string name="autotimer_delete">AutoTimer löschen</string>
     <string name="autotimer_delete_confirm">AutoTimer \"%1$s\" löschen? Timer, die er schon angelegt hat, bleiben.</string>
     <string name="autotimer_changed">Die AutoTimer wurden auf dem Receiver geändert. Die Liste zeigt sie jetzt, wie sie sind.</string>
+    <string name="autotimer_edit_changed">Dieser AutoTimer wurde auf dem Receiver geändert, seit Sie ihn geöffnet haben, darum wurde nichts gespeichert. Neu laden zeigt ihn, wie er jetzt ist; Ihre Änderungen hier gehen verloren.</string>
+    <string name="autotimer_edit_other_receiver">Jetzt ist ein anderer Receiver aktiv. Dieser AutoTimer gehört zum vorigen; wechseln Sie zurück, um weiterzumachen.</string>
+    <string name="autotimer_edit_saved_unlisted">Der Receiver listet den gespeicherten AutoTimer noch nicht. Zurück zur Liste, um ihn zu sehen.</string>
+    <string name="autotimer_date_reversed">„Endet vor“ muss nach dem ersten Tag liegen.</string>
+    <string name="autotimer_targets_skipped">Sender, deren Referenz ein Komma enthält, kann ein AutoTimer nicht nutzen; sie wurden weggelassen.</string>
     <string name="autotimer_upcoming">Demnächst (%1$d)</string>
     <string name="autotimer_skipped">Übersprungen (%1$d)</string>
+    <string name="autotimer_reason_shown">Grund angezeigt</string>
+    <string name="autotimer_reason_hidden">Grund ausgeblendet</string>
     <string name="autotimer_no_matches">Im EPG passt gerade nichts.</string>
     <string name="autotimer_no_epg">Das EPG des Receivers hat keine Details zu dieser Sendung.</string>
     <string name="autotimer_gone">Dieser AutoTimer wurde auf dem Receiver geändert. Zurück zur Liste, um ihn so zu sehen, wie er jetzt ist.</string>

@@ -135,7 +135,12 @@ class AutoTimerWriteTest {
             name = "100%",
             tags = listOf("a%b"),
             location = "/media/100%/",
-            exclude = Filters(title = listOf("x%y"))
+            exclude = Filters(title = listOf("x%y")),
+            include = full.settings.include.copy(shortDescription = listOf("5%")),
+            targets = listOf(
+                Target.Channel("4097:0:1:0:0:0:0:0:0:0:http%3a//tv/1:IPTV", "IPTV"),
+                Target.Bouquet("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"100%.tv\"", "100%")
+            )
         )
 
         val pairs = AutoTimerWrite.Change(full, edited).pairs().toMap()
@@ -145,6 +150,19 @@ class AutoTimerWriteTest {
         assertEquals("a%25b", pairs["tag"])
         assertEquals("/media/100%/", pairs["location"])
         assertEquals("x%25y", pairs["!title"])
+        assertEquals("5%25", pairs["shortdescription"])
+        assertEquals("4097:0:1:0:0:0:0:0:0:0:http%253a//tv/1:IPTV", pairs["services"])
+        assertEquals("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"100%25.tv\"", pairs["bouquets"])
+    }
+
+    @Test
+    fun zappingSendsJustplayAndTheEndTimeSetting() {
+        val write = AutoTimerWrite.Change(
+            full,
+            full.settings.copy(recordMode = RecordMode.Zap(setEndTime = true))
+        )
+
+        assertEquals(listOf("justplay" to "1", "setEndtime" to "1"), write.pairs().drop(3))
     }
 
     @Test

@@ -1,11 +1,18 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.lifecycle.SavedStateHandle
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
 import java.time.DayOfWeek
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -14,6 +21,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.enigma.Event
@@ -374,20 +382,168 @@ class AutoTimerEditViewModelTest {
     }
 
     @Test
-    fun processDeathKeepsTheDraftWithoutAskingTheBox() = runBlocking<Unit> {
+    fun processDeathKeepsTheDraftAndSavesItAsAnEdit() = runBlocking<Unit> {
         val handle = handle(id = 1, name = "dreamDroid test Wilsberg")
         val viewModel = viewModel(handle)
         viewModel.editing()
         viewModel.setCaseSensitive(true)
         viewModel.match.set("Wilsberg!")
-        val requests = receiver.requests.size
+        val lists = receiver.requestsTo(LIST).size
+        viewModel.cancelAndJoin()
 
-        val restored = viewModel(handle)
+        // What a Bundle keeps: every value written and read back as Serializable.
+        val restored = viewModel(throughBundle(handle))
 
         assertEquals(AutoTimerEditContent.Editing, restored.uiState.value.content)
         assertTrue(restored.uiState.value.draft.caseSensitive)
         assertEquals("Wilsberg!", restored.match.text)
-        assertEquals(requests, receiver.requests.size)
+        restored.save()
+        assertEquals(AutoTimerPreview(1, "dreamDroid test Wilsberg"), restored.saved())
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals("1", query.queryParameter("id"))
+        assertEquals("Wilsberg!", query.queryParameter("match"))
+        // The restore asked nothing: the only lists since are the save's guard and locate.
+        assertEquals(lists + 2, receiver.requestsTo(LIST).size)
+    }
+
+    @Test
+    fun aCreateTheBoxDoesNotListIsDoneWithoutASecondSave() = runBlocking<Unit> {
+        val viewModel = create()
+        viewModel.editing()
+        receiver.respond(EDIT, loadWebFixture("autotimer/result_add.xml"))
+        viewModel.match.set("Tatort")
+
+        viewModel.save()
+        val done = withTimeout(TIMEOUT) {
+            viewModel.uiState.first { it.content is AutoTimerEditContent.Saved }
+        }
+        viewModel.save()
+
+        assertEquals(
+            AutoTimerEditContent.Saved(UiText.Raw("AutoTimer wurde erfolgreich hinzugefügt")),
+            done.content
+        )
+        assertNull(done.saved)
+        assertEquals(1, receiver.requestsTo(EDIT).size)
+    }
+
+    @Test
+    fun anotherReceiverEndsTheFormUntilItsOwnIsBack() = runBlocking<Unit> {
+        val viewModel = create()
+        viewModel.editing()
+        viewModel.match.set("Tatort")
+        val home = receiver.repository.requireCurrent()
+
+        receiver.repository.setCurrent(otherProfile(home))
+        withTimeout(TIMEOUT) {
+            viewModel.uiState.first { it.content == AutoTimerEditContent.OtherReceiver }
+        }
+        viewModel.save()
+        assertTrue(receiver.requestsTo(EDIT).isEmpty())
+
+        receiver.repository.setCurrent(home)
+        viewModel.editing()
+        assertEquals("Tatort", viewModel.match.text)
+    }
+
+    @Test
+    fun aDateWindowThatEndsOnItsFirstDayIsNotSaved() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+        viewModel.setDateWindow(true)
+        val window = viewModel.uiState.value.draft.dateWindow!!
+        viewModel.openPicker(AutoTimerEditPick.DateBefore)
+        viewModel.onDatePicked(utcMillis(window.after))
+
+        assertTrue(viewModel.uiState.value.dateWindowInvalid)
+        viewModel.save()
+        viewModel.setDateWindow(false)
+        viewModel.save()
+
+        assertEquals(AutoTimerPreview(1, "dreamDroid test Wilsberg"), viewModel.saved())
+        assertTrue(receiver.requestsTo(EDIT).isEmpty())
+    }
+
+    @Test
+    fun aPickedDayIsLocalMidnightInAnyZone() = runBlocking<Unit> {
+        val zones = listOf("Pacific/Kiritimati", "America/Los_Angeles")
+        val default = TimeZone.getDefault()
+        try {
+            zones.forEach { zone ->
+                TimeZone.setDefault(TimeZone.getTimeZone(zone))
+                val viewModel = edit()
+                viewModel.editing()
+                viewModel.setDateWindow(true)
+                val today = LocalDate.now(ZoneId.of(zone))
+                assertEquals(
+                    today.atStartOfDay(ZoneId.of(zone)).toInstant(),
+                    viewModel.uiState.value.draft.dateWindow?.after
+                )
+
+                val day = LocalDate.of(2026, 10, 3)
+                viewModel.openPicker(AutoTimerEditPick.DateAfter)
+                // The Material date picker hands over midnight UTC of the picked day.
+                viewModel.onDatePicked(day.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli())
+
+                assertEquals(
+                    day.atStartOfDay(ZoneId.of(zone)).toInstant(),
+                    viewModel.uiState.value.draft.dateWindow?.after,
+                    zone
+                )
+                viewModel.cancelAndJoin()
+            }
+        } finally {
+            TimeZone.setDefault(default)
+        }
+    }
+
+    @Test
+    fun pickedTimesSetTheWindowsEnds() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+        viewModel.setTimeWindow(false)
+
+        viewModel.openPicker(AutoTimerEditPick.TimeFrom)
+        viewModel.onTimePicked(21, 15)
+        viewModel.openPicker(AutoTimerEditPick.TimeTo)
+        viewModel.onTimePicked(0, 30)
+
+        assertEquals(
+            ClockWindow(LocalTime.of(21, 15), LocalTime.of(0, 30)),
+            viewModel.uiState.value.draft.timeWindow
+        )
+        assertNull(viewModel.uiState.value.picker)
+    }
+
+    @Test
+    fun filterTextLeftInTheFieldIsSaved() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+        viewModel.setFilterKind(FilterKind.ExcludeTitle)
+        viewModel.filterText.set(" Wiederholung ")
+
+        viewModel.save()
+        viewModel.saved()
+
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals(listOf("Vorschau", "Wiederholung"), query.queryParameterValues("!title"))
+        assertEquals("", viewModel.filterText.text)
+    }
+
+    @Test
+    fun aChannelWithACommaIsLeftOutAndSaidSo() = runBlocking<Unit> {
+        val viewModel = edit()
+        val before = viewModel.editing().draft.targets
+        val iptv = Target.Channel("4097:0:1:0:0:0:0:0:0:0:http%3a//tv/a,b:IPTV", "IPTV")
+        val extra = Target.Channel("1:0:19:283D:3FB:1:C00000:0:0:0:", "Das Erste HD")
+
+        viewModel.addTargets(listOf(iptv, extra))
+
+        assertEquals(before + extra, viewModel.uiState.value.draft.targets)
+        assertEquals(
+            UiText.Resource(R.string.autotimer_targets_skipped),
+            viewModel.uiState.value.userMessage
+        )
     }
 
     private fun edit(name: String = "dreamDroid test Wilsberg") = viewModel(handle(1, name))
@@ -397,6 +553,26 @@ class AutoTimerEditViewModelTest {
     private fun handle(id: Int, name: String) = SavedStateHandle(
         mapOf(AutoTimerEdit::id.name to id, AutoTimerEdit::name.name to name)
     )
+
+    private fun otherProfile(home: Profile) = Profile().apply {
+        id = 8
+        name = "other"
+        host = home.host
+        port = home.port
+    }
+
+    private fun utcMillis(localMidnight: Instant): Long =
+        localMidnight.atZone(ZoneId.systemDefault()).toLocalDate().atStartOfDay(ZoneOffset.UTC)
+            .toInstant().toEpochMilli()
+
+    private fun throughBundle(handle: SavedStateHandle): SavedStateHandle =
+        SavedStateHandle(handle.keys().associateWith { key -> roundTrip(handle.get<Any>(key)) })
+
+    private fun roundTrip(value: Any?): Any? {
+        val bytes = ByteArrayOutputStream()
+        ObjectOutputStream(bytes).use { it.writeObject(value) }
+        return ObjectInputStream(ByteArrayInputStream(bytes.toByteArray())).use { it.readObject() }
+    }
 
     private fun viewModel(handle: SavedStateHandle) =
         AutoTimerEditViewModel(handle, autoTimers, timers, sessions).also { viewModels += it }

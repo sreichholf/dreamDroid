@@ -9,6 +9,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.AutoTimerWriteResult
@@ -106,7 +107,7 @@ class AutoTimerListViewModelTest {
 
     @Test
     fun theSwitchWritesQuietlyAndListsAgain() = runBlocking<Unit> {
-        receiver.respond(EDIT, simpleResult(true, "AutoTimer wurde erfolgreich geändert"))
+        receiver.respond(EDIT, loadWebFixture("autotimer/result_change.xml"))
         val viewModel = viewModel()
         val entry = viewModel.ready().single() as AutoTimerEntry.Readable
 
@@ -252,6 +253,60 @@ class AutoTimerListViewModelTest {
         assertEquals(UiText.Raw("Found a total of 4 matching Events."), done.runResult)
         assertFalse(done.running)
         assertTrue(receiver.requestsTo(EDIT).isEmpty())
+    }
+
+    @Test
+    fun aWriteElsewhereWhileTheListLoadsAfterItsOwnIsListedToo() = runBlocking<Unit> {
+        receiver.respond(REMOVE, loadWebFixture("autotimer/result_remove.xml"))
+        receiver.respond(PARSE, simpleResult(true, "Found a total of 0 matching Events."))
+        val viewModel = viewModel()
+        val entry = viewModel.ready().single()
+        viewModel.onMenuAction(entry, AutoTimerRowAction.Delete)
+        val removing = receiver.hold(REMOVE)
+        viewModel.confirmDelete()
+        assertTrue(removing.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+
+        // The list after the removal is on its way when another screen writes.
+        val listing = receiver.hold(LIST)
+        removing.release()
+        assertTrue(listing.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+        autoTimers.runNow()
+        val again = receiver.hold(LIST)
+        listing.release()
+
+        assertTrue(again.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+        again.release()
+        // The first list, the guard's, the one after the removal, and this one.
+        assertEquals(4, receiver.requestsTo(LIST).size)
+    }
+
+    @Test
+    fun aProfileSwitchDropsTheRunningRun() = runBlocking<Unit> {
+        receiver.respond(PARSE, simpleResult(true, "Found a total of 4 matching Events."))
+        val viewModel = viewModel()
+        viewModel.ready()
+        val run = receiver.hold(PARSE)
+        viewModel.requestRun()
+        viewModel.confirmRun()
+        assertTrue(run.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+        val current = receiver.repository.requireCurrent()
+
+        receiver.repository.setCurrent(
+            Profile().apply {
+                id = 8
+                name = "other"
+                host = current.host
+                port = current.port
+            }
+        )
+        viewModel.ready()
+        assertFalse(viewModel.uiState.value.running)
+        run.release()
+        // A later list: by then the dropped run would have reported.
+        viewModel.reload()
+        viewModel.ready()
+
+        assertNull(viewModel.uiState.value.runResult)
     }
 
     private fun viewModel() = AutoTimerListViewModel(autoTimers, sessions).also { viewModels += it }

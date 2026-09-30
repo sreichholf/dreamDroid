@@ -41,14 +41,15 @@ fun AutoTimerListDestination(
                 id = ACTION_RUN,
                 label = stringResource(R.string.autotimer_run),
                 enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending &&
-                    !uiState.running,
+                    !uiState.running && !uiState.refreshing,
                 onClick = { online(viewModel::requestRun) }
             ),
             ShellTopBarAction(
                 id = ACTION_ADD,
                 label = stringResource(R.string.autotimer_new),
                 iconRes = R.drawable.ic_action_fab_add,
-                enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending,
+                enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending &&
+                    !uiState.running,
                 onClick = { online { handle.navigateToAutoTimerEdit(AutoTimerEdit()) } }
             )
         )

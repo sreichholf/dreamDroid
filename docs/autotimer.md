@@ -70,7 +70,9 @@ Illustrative; the upcoming rows are from the box capture (`test.xml`), the skipp
 | Plugin missing | Reached only by a stale back stack or a profile switch: "AutoTimer is not installed on this receiver", no FAB | same |
 | Offline | Error with Retry; switches, FAB and delete use `onlineOnlyLook` (`SessionConnectionHolder.status.blocksMutations`) | Save blocked the same way |
 | Box says no | `e2state` False: `e2statetext` in the Snackbar as is (localized) | same |
-| Changed on the box | Reload | Editor: "Changed on the receiver", Reload discards the draft |
+| Changed on the box | Reload | Editor: says nothing was saved and that Reload discards the draft |
+| Saved but not listed | — | Editor: the box's reply and "go back to the list"; the form is done, so a second Save cannot create the AutoTimer twice |
+| Other receiver | List and preview start over for the new profile | Editor: "belongs to the previous receiver", nothing is sent; switching back resumes the draft. Preview: back on its profile it loads again |
 | Unreadable entry | Row "dreamDroid cannot read this AutoTimer": delete only | — |
 | Plugin failed | — | Preview shows the `<exception>` text, not a connection error |
 
@@ -132,6 +134,9 @@ One `<timer>` per AutoTimer. Settings are attributes; lists are child elements. 
 - **Values are decoded twice.** `edit` runs `unquote()` on `match`, `name`, `services`, `bouquets`, filters and tags after Twisted already decoded the query (`AutoTimerResource.py:311-467`). For `match` and `name` it does so on the stored value when the parameter is missing. A client must escape `%` as `%25` in those values and always send `match` and `name`. A service ref containing `,` cannot be sent, because the list is split after decoding. From source only; not yet tried on a box.
 - **A broken preview loses the plugin's message.** `parseEnigmaXml` runs the parser in strict mode and rejects the document (`enigma/XmlPull.kt`), so the rows before `<exception>` are not salvaged, but the exception text is lost with them. The preview parser reads `<exception>` from the raw text first.
 - **Dead endpoint:** the web editor calls `/autotimer/clone`, which the plugin never registers.
+- **Plugin bug: service refs are not escaped in the list.** The webif branch of `buildConfig` writes `<e2servicereference>` without `stringToXML` (the name is escaped). An IPTV ref with a raw `&` in its URL makes the whole list unparsable, so every AutoTimer screen shows the parse failure. From source only; not worked around in the app.
+- **Date window ends.** "First day" and "Ends before" are local midnights; events must begin in between (`checkTimeframe`). Equal ends mean "from that day on" to the plugin, so the editor refuses a window that ends on or before its first day (unless the box already had it).
+- **Run now rewrites the config.** `parse` changes counters and may renumber, so it takes the same write lock as edits; the list offers no write during a run.
 
 ### Box evidence (2026-09-30)
 
@@ -232,7 +237,7 @@ Each call takes a fresh client from `clients.current()` (`EnigmaClientFactory.kt
 
 **Target picker.** A new multi-select destination over `ServiceRepository`: bouquet rows have a checkbox (whole bouquet → `Target.Bouquet`) and open on tap for single channels. The result goes to the editor's back-stack `SavedStateHandle`, not through the `Intent` bridge the timer picker uses (`PhoneNavigator.deliverPickResult`). `TimerServicePick` stays as it is.
 
-**ViewModels** (`ui/autotimer/`): `AutoTimerListViewModel`, `AutoTimerPreviewViewModel`, `AutoTimerEditViewModel`, `AutoTimerTargetPickViewModel`; each takes the repository, `SessionConnectionHolder` and `SavedStateHandle`. The editor keeps the loaded `AutoTimer` and the draft in `SavedStateHandle` so the change set survives process death; name, match, filter and tag inputs are `SavedTextField`s. Form → `AutoTimerSettings` is a pure function returning the settings or per-field errors (blank match, window with only one end, reversed date window). The EPG sheet reads `presence` through `EpgEventDetailViewModel`.
+**ViewModels** (`ui/autotimer/`): `AutoTimerListViewModel`, `AutoTimerPreviewViewModel`, `AutoTimerEditViewModel`, `AutoTimerTargetPickViewModel`; each takes the repository, `SessionConnectionHolder` and `SavedStateHandle`. The editor keeps the loaded `AutoTimer` and the draft in `SavedStateHandle` so the change set survives process death; name, match, filter and tag inputs are `SavedTextField`s. Form → `AutoTimerSettings` is a pure function returning the settings or per-field errors (blank match, invalid minutes, a date window that ends on or before its first day). Text left in the filter field is added on Save, as if Add had been tapped. The editor belongs to the profile it opened on. The EPG sheet reads `presence` through `EpgEventDetailViewModel`.
 
 ## 5. Phases
 
@@ -263,6 +268,7 @@ Box checks by the operator before merging: toggle, delete, create and edit on a 
 | Query too long for many targets and filters | Bouquet refs are about 90 characters, so realistic AutoTimers stay small. If a box or proxy rejects one, add a form-body POST for `edit` only (the plugin accepts it, verified). |
 | `parse` exceeds normal timeouts | Own client and a long timeout (phase 7). |
 | Configs the model cannot read | `Unreadable` entries can be deleted, not edited; the model grows when real configs need it. |
+| The drawer entry appears late | Presence is asked after each successful profile check and kept in memory per profile. After installing the plugin, or on a cold start with the receiver offline, AutoTimer (and Record series) show only after the next successful check. Accepted: the entry must not offer a plugin the box may not have. |
 
 ## 7. Decisions (operator, 2026-09-30)
 

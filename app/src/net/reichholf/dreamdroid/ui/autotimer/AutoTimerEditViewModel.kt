@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -101,6 +102,15 @@ sealed interface AutoTimerEditContent {
     data object PluginMissing : AutoTimerEditContent
 
     data class Failed(val message: UiText) : AutoTimerEditContent
+
+    /**
+     * The box took the save but does not list the AutoTimer as sent, so there is no preview
+     * to open. The form is done; saving again could create it twice.
+     */
+    data class Saved(val message: UiText) : AutoTimerEditContent
+
+    /** The active profile is another receiver than the one this form came from. */
+    data object OtherReceiver : AutoTimerEditContent
 }
 
 /**
@@ -135,6 +145,14 @@ data class AutoTimerEditUiState(
 
     val editable: Boolean
         get() = content == AutoTimerEditContent.Editing && !saving
+
+    /**
+     * The date window ends on or before its first day, so nothing would match. One the box
+     * already had is left alone.
+     */
+    val dateWindowInvalid: Boolean
+        get() = draft.dateWindow != base.dateWindow &&
+            draft.dateWindow?.let { !it.before.isAfter(it.after) } == true
 }
 
 /**
@@ -193,6 +211,9 @@ class AutoTimerEditViewModel @Inject constructor(
 
     private var loadJob: Job? = null
 
+    /** The profile this form belongs to; the first id [AutoTimerRepository.profileId] gives. */
+    private var homeProfile: Int? = null
+
     /** The API carries no time zone; days are taken in the phone's. */
     private val zone: ZoneId = ZoneId.systemDefault()
 
@@ -204,6 +225,9 @@ class AutoTimerEditViewModel @Inject constructor(
         }
         if (!restore()) {
             reload()
+        }
+        viewModelScope.launch {
+            autoTimers.profileId.filterNotNull().collect { id -> onProfile(id) }
         }
         viewModelScope.launch {
             val choices = timers.locationsAndTags()
@@ -271,9 +295,20 @@ class AutoTimerEditViewModel @Inject constructor(
 
     override fun removeTarget(target: Target) = edit { copy(targets = targets - target) }
 
-    /** Adds the picker's bouquets and channels that the AutoTimer does not have yet. */
-    fun addTargets(picked: List<Target>) = edit {
-        copy(targets = targets + picked.filter { new -> targets.none { it.ref == new.ref } })
+    /**
+     * Adds the picker's bouquets and channels that the AutoTimer does not have yet. One whose
+     * reference has a comma cannot be sent, so it is left out and the user is told.
+     */
+    fun addTargets(picked: List<Target>) {
+        val (sendable, unsendable) = picked.partition { ',' !in it.ref }
+        edit {
+            copy(targets = targets + sendable.filter { new -> targets.none { it.ref == new.ref } })
+        }
+        if (unsendable.isNotEmpty()) {
+            _uiState.update {
+                it.copy(userMessage = UiText.Resource(R.string.autotimer_targets_skipped))
+            }
+        }
     }
 
     override fun setTimeWindow(on: Boolean) = edit {
@@ -442,8 +477,13 @@ class AutoTimerEditViewModel @Inject constructor(
     }
 
     fun save() {
+        if (!_uiState.value.editable || _uiState.value.blocked) {
+            return
+        }
+        // Text left in the filter field counts, as if Add had been tapped.
+        addFilter()
         val state = _uiState.value
-        if (!state.editable || state.blocked) {
+        if (state.dateWindowInvalid) {
             return
         }
         val matchText = match.text
@@ -496,13 +536,17 @@ class AutoTimerEditViewModel @Inject constructor(
                 is AutoTimerWriteResult.Done -> {
                     val saved = autoTimers.locate(edited, loaded?.id)
                     _uiState.update {
-                        it.copy(
-                            saving = false,
-                            saved = saved?.let { at ->
-                                AutoTimerPreview(at.id.value, at.settings.name)
-                            },
-                            userMessage = if (saved == null) result.message else it.userMessage
-                        )
+                        if (saved != null) {
+                            it.copy(
+                                saving = false,
+                                saved = AutoTimerPreview(saved.id.value, saved.settings.name)
+                            )
+                        } else {
+                            it.copy(
+                                saving = false,
+                                content = AutoTimerEditContent.Saved(result.message)
+                            )
+                        }
                     }
                 }
 
@@ -553,6 +597,30 @@ class AutoTimerEditViewModel @Inject constructor(
                 draft = draft,
                 matchError = null
             )
+        }
+    }
+
+    /**
+     * Another receiver than the form's ends the form, with nothing sent to it; back on the
+     * form's receiver, the form goes on.
+     */
+    private fun onProfile(id: Int) {
+        val home = homeProfile
+        if (home == null) {
+            homeProfile = id
+            return
+        }
+        val content = _uiState.value.content
+        if (id != home) {
+            if (content is AutoTimerEditContent.Saved) {
+                return
+            }
+            loadJob?.cancel()
+            _uiState.update {
+                it.copy(content = AutoTimerEditContent.OtherReceiver, saving = false, picker = null)
+            }
+        } else if (content == AutoTimerEditContent.OtherReceiver && !restore()) {
+            reload()
         }
     }
 

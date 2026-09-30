@@ -218,6 +218,29 @@ class AutoTimerRepositoryTest {
     }
 
     @Test
+    fun anIdTheBoxNoLongerListsIsNotRemoved() = runBlocking<Unit> {
+        // The box answers True for any id, even one it does not have.
+        receiver.respond(REMOVE, loadWebFixture("autotimer/result_remove_missing_id.xml"))
+        val entry = AutoTimerEntry.Readable(loaded())
+        receiver.respond(LIST, loadWebFixture("autotimer/list_empty.xml"))
+
+        assertEquals(AutoTimerWriteResult.Conflict, repository.remove(entry))
+        assertEquals(emptyList<Any>(), receiver.requestsTo(REMOVE))
+    }
+
+    @Test
+    fun aGuardThatCannotListFailsAndCountsTheWrite() = runBlocking<Unit> {
+        val wilsberg = loaded()
+        receiver.fail(LIST)
+
+        val result = repository.setEnabled(wilsberg, enabled = false)
+
+        assertTrue(result is AutoTimerWriteResult.Failed)
+        assertEquals(emptyList<Any>(), receiver.requestsTo(EDIT))
+        assertEquals(1, repository.revision.value)
+    }
+
+    @Test
     fun aRejectedWriteFailsWithTheBoxText() = runBlocking<Unit> {
         receiver.respond(
             EDIT,
@@ -282,6 +305,20 @@ class AutoTimerRepositoryTest {
         assertEquals("Wilsberg", edit.queryParameter("match"))
         assertEquals(emptyList<Any>(), receiver.requestsTo(LIST))
         assertEquals(AutoTimerId(2), repository.locate(edited, id = null)?.id)
+    }
+
+    @Test
+    fun locateAfterACreateTakesTheNewestOfTheSameName() = runBlocking<Unit> {
+        val settings = loaded().settings
+        val xml = loadWebFixture("autotimer/list_enabled.xml")
+        val timer = Regex("<timer .*?</timer>", RegexOption.DOT_MATCHES_ALL).find(xml)!!.value
+        // The same AutoTimer twice, the later one at a higher id.
+        receiver.respond(
+            LIST,
+            xml.replace(timer, timer + timer.replace("id=\"2\"", "id=\"5\""))
+        )
+
+        assertEquals(AutoTimerId(5), repository.locate(settings, null)?.id)
     }
 
     @Test

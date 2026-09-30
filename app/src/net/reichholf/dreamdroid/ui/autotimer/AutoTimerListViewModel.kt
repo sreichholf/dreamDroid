@@ -84,16 +84,22 @@ class AutoTimerListViewModel @Inject constructor(
     val uiState: StateFlow<AutoTimerListUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
+    private var runJob: Job? = null
 
     init {
         viewModelScope.launch {
             autoTimers.profileId.collect { id ->
                 loadJob?.cancel()
+                // The run goes on on the old receiver; its summary is not this one's.
+                runJob?.cancel()
                 _uiState.update {
                     it.copy(
                         content = AutoTimerListContent.Loading,
                         refreshing = false,
                         pending = false,
+                        running = false,
+                        confirmRun = false,
+                        runResult = null,
                         menu = null,
                         deleting = null
                     )
@@ -112,7 +118,8 @@ class AutoTimerListViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            // A write of this list, or Run now, lists the AutoTimers itself afterwards.
+            // A write of this list, or Run now, lists the AutoTimers itself afterwards, and
+            // again if another write came in meanwhile (see listAfterBusy).
             autoTimers.revision.drop(1).collect { reload() }
         }
     }
@@ -216,8 +223,9 @@ class AutoTimerListViewModel @Inject constructor(
             return
         }
         _uiState.update { it.copy(running = true, menu = null) }
-        viewModelScope.launch {
+        runJob = viewModelScope.launch {
             val result = autoTimers.runNow()
+            val seen = autoTimers.revision.value
             val listed = fetch()
             _uiState.update {
                 when (result) {
@@ -230,6 +238,7 @@ class AutoTimerListViewModel @Inject constructor(
                     AutoTimerWriteResult.Conflict -> it.copy(running = false, content = listed)
                 }
             }
+            listAfterBusy(seen)
         }
     }
 
@@ -270,6 +279,7 @@ class AutoTimerListViewModel @Inject constructor(
                 AutoTimerWriteResult.Conflict -> UiText.Resource(R.string.autotimer_changed)
                 is AutoTimerWriteResult.Failed -> result.message
             }
+            val seen = autoTimers.revision.value
             val listed = fetch()
             _uiState.update {
                 it.copy(
@@ -278,6 +288,17 @@ class AutoTimerListViewModel @Inject constructor(
                     userMessage = message ?: it.userMessage
                 )
             }
+            listAfterBusy(seen)
+        }
+    }
+
+    /**
+     * Lists again if another screen wrote after [seen], while the list after this list's own
+     * write or run was loading: [reload] skipped that write's signal then.
+     */
+    private fun listAfterBusy(seen: Int) {
+        if (autoTimers.revision.value != seen) {
+            reload()
         }
     }
 

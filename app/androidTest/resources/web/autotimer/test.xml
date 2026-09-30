@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<e2autotimersimulate api_version="1.6">
+<e2simulatedtimer>
+   <e2servicereference>1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>zdf_neo HD</e2servicename>
+   <e2name>Wilsberg - In Treu und Glauben</e2name>
+   <e2timebegin>1790791800</e2timebegin>
+   <e2timeend>1790797800</e2timeend>
+   <e2autotimername>dreamDroid test Wilsberg</e2autotimername>
+   <e2state>OK</e2state>
+   <e2message>&amp;#13;&amp;#10;possible epgmatch Wilsberg - In Treu und Glauben&amp;#13;&amp;#10;Serviceref 1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2message>
+</e2simulatedtimer>
+<e2simulatedtimer>
+   <e2servicereference>1:0:19:2B66:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>ZDF HD</e2servicename>
+   <e2name>Wilsberg - Einfach weg</e2name>
+   <e2timebegin>1791051000</e2timebegin>
+   <e2timeend>1791057000</e2timeend>
+   <e2autotimername>dreamDroid test Wilsberg</e2autotimername>
+   <e2state>OK</e2state>
+   <e2message>&amp;#13;&amp;#10;possible epgmatch Wilsberg - Einfach weg&amp;#13;&amp;#10;Serviceref 1:0:19:2B66:3F3:1:C00000:0:0:0:</e2message>
+</e2simulatedtimer>
+<e2simulatedtimer>
+   <e2servicereference>1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>zdf_neo HD</e2servicename>
+   <e2name>Wilsberg - Die fünfte Gewalt</e2name>
+   <e2timebegin>1791396600</e2timebegin>
+   <e2timeend>1791402600</e2timeend>
+   <e2autotimername>dreamDroid test Wilsberg</e2autotimername>
+   <e2state>OK</e2state>
+   <e2message>&amp;#13;&amp;#10;possible epgmatch Wilsberg - Die fünfte Gewalt&amp;#13;&amp;#10;Serviceref 1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2message>
+</e2simulatedtimer>
+<e2simulatedtimer>
+   <e2servicereference>1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>zdf_neo HD</e2servicename>
+   <e2name>Wilsberg - MünsterLeaks</e2name>
+   <e2timebegin>1792001400</e2timebegin>
+   <e2timeend>1792007400</e2timeend>
+   <e2autotimername>dreamDroid test Wilsberg</e2autotimername>
+   <e2state>OK</e2state>
+   <e2message>&amp;#13;&amp;#10;possible epgmatch Wilsberg - MünsterLeaks&amp;#13;&amp;#10;Serviceref 1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2message>
+</e2simulatedtimer>
+</e2autotimersimulate>

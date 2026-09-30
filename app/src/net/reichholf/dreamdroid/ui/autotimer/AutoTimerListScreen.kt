@@ -25,13 +25,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
-import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
 import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -89,7 +86,8 @@ fun AutoTimerListScreen(
                             Box {
                                 AutoTimerRow(
                                     entry = entry,
-                                    writable = !state.pending && !state.running,
+                                    writable = !state.pending && !state.running &&
+                                        !state.refreshing,
                                     onOpen = onOpen,
                                     onEnabledChange = onEnabledChange,
                                     onMenu = { onMenu(entry) }
@@ -165,7 +163,6 @@ private fun AutoTimerRow(
         is AutoTimerEntry.Readable -> summaryLines(entry.autoTimer.settings)
         is AutoTimerEntry.Unreadable -> listOf(stringResource(R.string.autotimer_unreadable))
     }
-    val enabledLabel = stringResource(R.string.enabled)
     val open = if (entry is AutoTimerEntry.Readable) {
         Modifier.clickable { onOpen(entry) }
     } else {
@@ -198,8 +195,9 @@ private fun AutoTimerRow(
                             checked = entry.autoTimer.settings.enabled,
                             onCheckedChange = { onEnabledChange(entry, it) },
                             enabled = writable,
+                            // Read with its on/off state, so it names the AutoTimer.
                             modifier = Modifier.semantics {
-                                contentDescription = enabledLabel
+                                contentDescription = entry.title()
                             }
                         )
                     }
@@ -230,8 +228,9 @@ internal fun summaryLines(settings: AutoTimerSettings): List<String> {
         stringResource(R.string.autotimer_match, settings.match),
         targetsSummary(settings.targets)
     ).joinToString(SEPARATOR)
+    val clock = rememberClockFormat()
     val whenParts = listOfNotNull(
-        settings.timeWindow?.let(::formatWindow),
+        settings.timeWindow?.let { "${it.from.format(clock)}–${it.to.format(clock)}" },
         daysSummary(settings.include.days),
         stringResource(R.string.autotimer_paused).takeUnless { settings.enabled }
     )
@@ -263,11 +262,6 @@ private fun daysSummary(days: List<DayFilter>): String? {
             DayFilter.Weekend -> weekend
         }
     }
-}
-
-private fun formatWindow(window: ClockWindow): String {
-    val format = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
-    return "${window.from.format(format)}–${window.to.format(format)}"
 }
 
 private const val SEPARATOR = " · "

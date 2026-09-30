@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ListItem
@@ -26,7 +26,7 @@ import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * Bouquets with a checkbox each (the whole bouquet) that open on a tap, or a bouquet's
- * channels, which a tap picks. Markers show as headers.
+ * channels, which a tap picks. Markers of the bouquet list show as headers.
  */
 @Composable
 fun AutoTimerTargetPickScreen(
@@ -49,7 +49,7 @@ fun AutoTimerTargetPickScreen(
         } else {
             val pickBouquet = stringResource(R.string.autotimer_pick_bouquet)
             LazyColumn {
-                items(state.rows, key = { it.reference }) { row ->
+                itemsIndexed(state.rows, key = ::rowKey) { _, row ->
                     when {
                         ServiceKeys.isMarker(row.reference) -> ListSectionHeader(row.name)
 
@@ -110,4 +110,11 @@ private fun TargetRow(
             colors = listRowItemColors()
         )
     }
+}
+
+/** Two markers may share their text, and with it their reference. */
+private fun rowKey(index: Int, row: Service): String = if (ServiceKeys.isMarker(row.reference)) {
+    "$index:${row.reference}"
+} else {
+    row.reference
 }

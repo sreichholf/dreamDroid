@@ -1,7 +1,12 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -93,6 +98,35 @@ class AutoTimerPreviewScreenTest {
 
         composeRule.onNodeWithText("The receiver's EPG has no details for this event.")
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun aSkippedEventWithoutAReasonOpensIt() {
+        val opened = mutableListOf<PreviewMatch>()
+        val toggled = mutableListOf<PreviewMatch>()
+        val silent = SKIPPED.copy(log = "")
+        show(
+            ready(skipped = listOf(silent)),
+            onToggleLog = { toggled += it },
+            onOpenMatch = { opened += it }
+        )
+
+        composeRule.onNodeWithText(silent.title).performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(listOf(silent), opened)
+            assertEquals(emptyList<PreviewMatch>(), toggled)
+        }
+    }
+
+    @Test
+    fun aSkippedEventSaysWhetherItsReasonShows() {
+        show(ready(skipped = listOf(SKIPPED)))
+
+        composeRule.onNode(hasText(SKIPPED.title, substring = true) and hasClickAction())
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Reason hidden")
+            )
     }
 
     @Test

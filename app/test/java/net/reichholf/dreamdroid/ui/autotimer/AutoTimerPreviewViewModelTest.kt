@@ -67,12 +67,22 @@ class AutoTimerPreviewViewModelTest {
 
     @Test
     fun splitsUpcomingAndSkippedSoonestFirst() = runBlocking<Unit> {
+        // The box's order reversed, so the preview has to sort.
+        val rows = Regex("<e2simulatedtimer>.*?</e2simulatedtimer>", RegexOption.DOT_MATCHES_ALL)
+        val xml = loadWebFixture("autotimer/test.xml")
+        val reversed = rows.findAll(xml).map { it.value }.toList().reversed().joinToString("\n")
+        receiver.respond(
+            TEST,
+            "<e2autotimersimulate api_version=\"1.6\">$reversed</e2autotimersimulate>"
+                .replaceFirst("<e2state>OK</e2state>", "<e2state>Skip</e2state>")
+        )
         val viewModel = viewModel(id = 2)
 
         val ready = viewModel.ready()
 
         assertEquals(3, ready.upcoming.size)
         assertEquals(ready.upcoming.sortedBy { it.begin }, ready.upcoming)
+        assertTrue(ready.upcoming.first().begin < ready.upcoming.last().begin)
         assertEquals(listOf(Verdict.Skip), ready.skipped.map { it.verdict })
         assertEquals("dreamDroid test Wilsberg", viewModel.uiState.value.autoTimer?.settings?.name)
     }
@@ -121,6 +131,31 @@ class AutoTimerPreviewViewModelTest {
         withTimeout(TIMEOUT) {
             viewModel.uiState.first { it.content == AutoTimerPreviewContent.Gone }
         }
+    }
+
+    @Test
+    fun backOnItsProfileTheAutoTimerIsPreviewedAgain() = runBlocking<Unit> {
+        val viewModel = viewModel(id = 2)
+        viewModel.ready()
+        val home = receiver.repository.requireCurrent()
+        receiver.repository.setCurrent(
+            Profile().apply {
+                id = 8
+                name = "other"
+                host = home.host
+                port = home.port
+            }
+        )
+        withTimeout(TIMEOUT) {
+            viewModel.uiState.first { it.content == AutoTimerPreviewContent.Gone }
+        }
+        viewModel.reload()
+        assertEquals(1, receiver.requestsTo(TEST).size)
+
+        receiver.repository.setCurrent(home)
+
+        assertEquals(3, viewModel.ready().upcoming.size)
+        assertEquals(2, receiver.requestsTo(TEST).size)
     }
 
     @Test

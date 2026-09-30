@@ -279,14 +279,20 @@ class ShellViewModelTest {
 
     @Test
     fun aFailedCheckDoesNotAskForThePlugin() = runBlocking<Unit> {
+        hasAutoTimer = true
         isReceiver = false
         val viewModel = viewModel()
 
         viewModel.checkActiveProfile()
         viewModel.awaitState { it.profileCheckOutcome != null }
-
-        assertTrue(receiver.requestsTo("/web/external").isEmpty())
         assertFalse(viewModel.uiState.value.autoTimerInDrawer)
+        viewModel.onProfileCheckOutcomeHandled()
+
+        // A later check that succeeds asks once; the failed one asked nothing before it.
+        isReceiver = true
+        viewModel.recheck()
+        viewModel.awaitState { it.autoTimerInDrawer }
+        assertEquals(1, receiver.requestsTo("/web/external").size)
     }
 
     @Test

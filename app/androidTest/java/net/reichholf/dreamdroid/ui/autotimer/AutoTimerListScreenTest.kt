@@ -1,9 +1,11 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
+import android.text.format.DateFormat
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -15,7 +17,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import java.time.DayOfWeek
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
@@ -58,7 +59,11 @@ class AutoTimerListScreenTest {
         composeRule.onNodeWithText("Wilsberg").assertIsDisplayed()
         composeRule.onNodeWithText("“Wilsberg” · ZDF HD, zdf_neo HD +1")
             .assertIsDisplayed()
-        val format = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val format = DateTimeFormatter.ofPattern(
+            if (DateFormat.is24HourFormat(context)) "HH:mm" else "h:mm a",
+            context.resources.configuration.locales[0]
+        )
         val window = "${LocalTime.of(20, 0).format(format)}–" +
             LocalTime.of(23, 0).format(format)
         val days = listOf(DayOfWeek.SATURDAY, DayOfWeek.SUNDAY)
@@ -127,6 +132,21 @@ class AutoTimerListScreenTest {
         composeRule.onNode(isToggleable()).assertIsOn().performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(WILSBERG to false), changes) }
+    }
+
+    @Test
+    fun theSwitchIsNamedAfterItsAutoTimer() {
+        show(ready(WILSBERG))
+
+        composeRule.onNode(isToggleable() and hasContentDescription("Wilsberg")).assertIsOn()
+    }
+
+    @Test
+    fun aRefreshDisablesTheRowControls() {
+        show(ready(WILSBERG).copy(refreshing = true))
+
+        composeRule.onNode(isToggleable()).assertIsNotEnabled()
+        composeRule.onNodeWithContentDescription("More options").assertIsNotEnabled()
     }
 
     @Test

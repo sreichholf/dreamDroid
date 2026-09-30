@@ -326,8 +326,9 @@ class EpgRepository @Inject constructor(
 }
 
 /**
- * Of [events], the one called [title] that overlaps [beginSec] to [endSec], else the one that
- * overlaps it longest.
+ * Of [events], the one that overlaps [beginSec] to [endSec] longest, preferring those called
+ * [title]. The window holds the margins, so a same-titled programme right before or after the
+ * recorded one overlaps it too, by less.
  */
 internal fun programmeInWindow(
     events: List<Event>,
@@ -341,8 +342,8 @@ internal fun programmeInWindow(
         val overlap = minOf(endSec, start + duration) - maxOf(beginSec, start)
         if (overlap > 0) event to overlap else null
     }
-    return overlaps.firstOrNull { it.first.title == title }?.first
-        ?: overlaps.maxByOrNull { it.second }?.first
+    val titled = overlaps.filter { it.first.title == title }
+    return (titled.ifEmpty { overlaps }).maxByOrNull { it.second }?.first
 }
 
 /**

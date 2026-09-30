@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
+import android.text.format.DateFormat
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
@@ -10,9 +12,10 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import java.time.DayOfWeek
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
@@ -22,8 +25,10 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
+import net.reichholf.dreamdroid.enigma.autotimer.DateWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
 import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
 import net.reichholf.dreamdroid.enigma.autotimer.DuplicateScope
 import net.reichholf.dreamdroid.enigma.autotimer.Extras
 import net.reichholf.dreamdroid.enigma.autotimer.Filters
@@ -58,7 +63,7 @@ class AutoTimerEditScreenTest {
         composeRule.onNodeWithText("Title contains").assertIsDisplayed()
         composeRule.onNodeWithText("ZDF HD").assertIsDisplayed()
         composeRule.onNodeWithText("Favourites (TV)").assertIsDisplayed()
-        val format = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+        val format = clockFormat()
         composeRule.onNodeWithText(LocalTime.of(20, 0).format(format)).performScrollTo()
             .assertIsDisplayed()
         composeRule.onNodeWithText(LocalTime.of(23, 0).format(format)).assertIsDisplayed()
@@ -68,7 +73,7 @@ class AutoTimerEditScreenTest {
     fun theWindowAroundTheEventIsOfferedWhileThereIsNone() {
         val suggested = ClockWindow(LocalTime.of(19, 10), LocalTime.of(22, 50))
         show(editing(DRAFT.copy(timeWindow = null)).copy(suggestedWindow = suggested))
-        val format = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+        val format = clockFormat()
 
         composeRule.onNodeWithText(
             "Only between ${suggested.from.format(format)} and ${suggested.to.format(format)}"
@@ -170,18 +175,92 @@ class AutoTimerEditScreenTest {
     }
 
     @Test
+    fun marginFieldsHideWhenOff() {
+        show(editing(DRAFT.copy(offset = null)))
+
+        composeRule.onNodeWithText("Own margins").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("10").assertDoesNotExist()
+    }
+
+    @Test
     fun theCompareModeShowsOnlyWithADuplicateCheck() {
         show(editing(DRAFT))
         composeRule.onNodeWithText("Compare").assertDoesNotExist()
     }
 
     @Test
-    fun aChangeOnTheReceiverOffersAReload() {
+    fun theCompareModeShowsWithADuplicateCheck() {
+        show(
+            editing(
+                DRAFT.copy(
+                    duplicates = DuplicateCheck.On(
+                        DuplicateScope.SameService,
+                        DescriptionCompare.All
+                    )
+                )
+            )
+        )
+
+        composeRule.onNodeWithText("Compare").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun aChangeOnTheReceiverSaysTheEditsGoAndOffersAReload() {
         show(AutoTimerEditUiState(isCreate = false, content = AutoTimerEditContent.Changed))
 
+        composeRule.onNodeWithText(
+            "This AutoTimer changed on the receiver since you opened it, so nothing was " +
+                "saved. Reload shows it as it is now; your changes here are lost."
+        ).assertIsDisplayed()
         composeRule.onNodeWithText("Reload").performClick()
 
         composeRule.runOnIdle { assertEquals(listOf("reload"), actions.calls) }
+    }
+
+    @Test
+    fun aSaveTheReceiverDoesNotListYetEndsTheForm() {
+        show(
+            AutoTimerEditUiState(
+                isCreate = true,
+                content = AutoTimerEditContent.Saved(UiText.Raw("AutoTimer wurde hinzugefügt"))
+            )
+        )
+
+        composeRule.onNodeWithText(
+            "AutoTimer wurde hinzugefügt\n\nThe receiver does not list the saved AutoTimer " +
+                "yet. Go back to the list to see it."
+        ).assertIsDisplayed()
+        composeRule.onNodeWithText("Wilsberg").assertDoesNotExist()
+    }
+
+    @Test
+    fun anotherReceiverEndsTheForm() {
+        show(AutoTimerEditUiState(isCreate = true, content = AutoTimerEditContent.OtherReceiver))
+
+        composeRule.onNodeWithText(
+            "Another receiver is active now. This AutoTimer belongs to the previous one; " +
+                "switch back to go on."
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    fun aDateWindowEndingOnItsFirstDayIsMarked() {
+        val day = LocalDate.of(2026, 10, 3).atStartOfDay(ZoneId.systemDefault()).toInstant()
+        show(
+            editing(DRAFT).copy(
+                draft = DRAFT.copy(dateWindow = DateWindow(after = day, before = day))
+            )
+        )
+
+        composeRule.onNodeWithText("Ends before has to be after the first day.")
+            .performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun channelsCannotBeAddedWhileSaving() {
+        show(editing(DRAFT).copy(saving = true))
+
+        composeRule.onNodeWithText("Add channels").performScrollTo().assertIsNotEnabled()
     }
 
     private fun show(state: AutoTimerEditUiState, match: String = "Wilsberg") {
@@ -202,6 +281,13 @@ class AutoTimerEditScreenTest {
                 )
             }
         }
+    }
+
+    /** The editor's clock times: the phone's 12/24-hour setting. */
+    private fun clockFormat(): DateTimeFormatter {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val pattern = if (DateFormat.is24HourFormat(context)) "HH:mm" else "h:mm a"
+        return DateTimeFormatter.ofPattern(pattern, context.resources.configuration.locales[0])
     }
 
     private fun editing(draft: AutoTimerSettings) = AutoTimerEditUiState(

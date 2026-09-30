@@ -176,12 +176,12 @@ class AutoTimerRepository @Inject constructor(
 
     /**
      * Searches the EPG for all enabled AutoTimers now and adds timers for new matches, as a
-     * run on the box does. It gets its own client with a long timeout, so other requests do
-     * not cancel it.
+     * run on the box does, which rewrites the box's AutoTimers: writes wait for it. It gets its
+     * own client with a long timeout, so other requests do not cancel it.
      */
     suspend fun runNow(): AutoTimerWriteResult {
         val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
-        return counted { result(EnigmaClient(http).runAutoTimers()) }
+        return counted { writes.withLock { result(EnigmaClient(http).runAutoTimers()) } }
     }
 
     /**

@@ -133,7 +133,11 @@ class AutoTimerTargetPickViewModel @Inject constructor(
         startLoading()
         loadJob = viewModelScope.launch {
             when (val load = services.services(ref)) {
-                is ServiceListLoad.Services -> show(ZapListMapper.rowsFrom(load.services))
+                // Without markers; a channel the bouquet lists twice is one target.
+                is ServiceListLoad.Services -> show(
+                    ZapListMapper.rowsFrom(load.services).distinctBy { it.reference }
+                )
+
                 is ServiceListLoad.Failed -> fail(load.error.contentErrorText())
             }
         }

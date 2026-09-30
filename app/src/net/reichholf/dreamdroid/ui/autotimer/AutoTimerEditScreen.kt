@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.dp
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -43,7 +42,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
-import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
 import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
 import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
@@ -127,6 +125,17 @@ fun AutoTimerEditScreen(
 
             AutoTimerEditContent.Changed -> ChangedOnReceiver(onReload = actions::reload)
 
+            is AutoTimerEditContent.Saved -> ListEmptyState(
+                loading = false,
+                message = content.message.asString() + "\n\n" +
+                    stringResource(R.string.autotimer_edit_saved_unlisted)
+            )
+
+            AutoTimerEditContent.OtherReceiver -> ListEmptyState(
+                loading = false,
+                message = stringResource(R.string.autotimer_edit_other_receiver)
+            )
+
             AutoTimerEditContent.Gone -> ListEmptyState(
                 loading = false,
                 message = stringResource(R.string.autotimer_gone)
@@ -159,7 +168,7 @@ private fun ChangedOnReceiver(onReload: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(R.string.autotimer_changed),
+            text = stringResource(R.string.autotimer_edit_changed),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 16.dp)
         )
@@ -213,8 +222,13 @@ private fun AutoTimerEditForm(
                 label = stringResource(R.string.autotimer_zap)
             )
         }
-        TargetsSection(draft = draft, actions = actions, onPickTargets = onPickTargets)
-        WhenSection(draft = draft, suggested = state.suggestedWindow, actions = actions)
+        TargetsSection(
+            draft = draft,
+            editable = state.editable,
+            actions = actions,
+            onPickTargets = onPickTargets
+        )
+        WhenSection(state = state, actions = actions)
         FiltersSection(state = state, filter = fields.filter, actions = actions)
         RecordingSection(state = state, fields = fields, actions = actions)
         state.loaded?.extras?.let { ExtrasNote(it) }
@@ -224,6 +238,7 @@ private fun AutoTimerEditForm(
 @Composable
 private fun TargetsSection(
     draft: AutoTimerSettings,
+    editable: Boolean,
     actions: AutoTimerEditActions,
     onPickTargets: () -> Unit
 ) {
@@ -246,7 +261,7 @@ private fun TargetsSection(
             }
         }
         if (sendable) {
-            OutlinedButton(onClick = onPickTargets) {
+            OutlinedButton(onClick = onPickTargets, enabled = editable) {
                 Text(stringResource(R.string.autotimer_add_channels))
             }
         } else {
@@ -260,11 +275,10 @@ private fun TargetsSection(
 }
 
 @Composable
-private fun WhenSection(
-    draft: AutoTimerSettings,
-    suggested: ClockWindow?,
-    actions: AutoTimerEditActions
-) {
+private fun WhenSection(state: AutoTimerEditUiState, actions: AutoTimerEditActions) {
+    val draft = state.draft
+    val suggested = state.suggestedWindow
+    val clock = rememberClockFormat()
     EditFormSection(title = stringResource(R.string.autotimer_when)) {
         EditSwitchRow(
             checked = draft.timeWindow != null,
@@ -278,8 +292,8 @@ private fun WhenSection(
                     Text(
                         stringResource(
                             R.string.autotimer_suggested_window,
-                            formatClock(suggested.from),
-                            formatClock(suggested.to)
+                            suggested.from.format(clock),
+                            suggested.to.format(clock)
                         )
                     )
                 }
@@ -288,13 +302,13 @@ private fun WhenSection(
         draft.timeWindow?.let { window ->
             EditPairedRow {
                 EditPickField(
-                    value = formatClock(window.from),
+                    value = window.from.format(clock),
                     label = stringResource(R.string.autotimer_from),
                     onClick = { actions.openPicker(AutoTimerEditPick.TimeFrom) },
                     modifier = Modifier.weight(1f)
                 )
                 EditPickField(
-                    value = formatClock(window.to),
+                    value = window.to.format(clock),
                     label = stringResource(R.string.autotimer_to),
                     onClick = { actions.openPicker(AutoTimerEditPick.TimeTo) },
                     modifier = Modifier.weight(1f)
@@ -325,6 +339,13 @@ private fun WhenSection(
                     label = stringResource(R.string.autotimer_date_before),
                     onClick = { actions.openPicker(AutoTimerEditPick.DateBefore) },
                     modifier = Modifier.weight(1f)
+                )
+            }
+            if (state.dateWindowInvalid) {
+                Text(
+                    text = stringResource(R.string.autotimer_date_reversed),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error
                 )
             }
         }
@@ -637,9 +658,6 @@ private val SearchType.label: Int
         SearchType.Exact -> R.string.autotimer_search_exact
         SearchType.Description -> R.string.autotimer_search_description
     }
-
-private fun formatClock(time: LocalTime): String =
-    time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))
 
 private fun formatDay(day: Instant): String =
     day.atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))

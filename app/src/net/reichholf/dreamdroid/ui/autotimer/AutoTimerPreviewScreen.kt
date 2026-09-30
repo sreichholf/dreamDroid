@@ -18,14 +18,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
-import java.util.Locale
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
@@ -83,7 +85,8 @@ fun AutoTimerPreviewScreen(
                             header = R.string.autotimer_skipped,
                             matches = content.skipped,
                             expanded = state.expanded,
-                            onClick = onToggleLog
+                            // A skipped event without a reason opens like an upcoming one.
+                            onClick = { if (it.log.isEmpty()) onOpenMatch(it) else onToggleLog(it) }
                         )
                     }
                 }
@@ -225,14 +228,37 @@ private fun LazyListScope.matches(
         MatchRow(
             match = match,
             showLog = match.key in expanded,
+            logState = if (match.log.isEmpty() || header != R.string.autotimer_skipped) {
+                null
+            } else {
+                stringResource(
+                    if (match.key in expanded) {
+                        R.string.autotimer_reason_shown
+                    } else {
+                        R.string.autotimer_reason_hidden
+                    }
+                )
+            },
             onClick = { onClick(match) }
         )
     }
 }
 
 @Composable
-private fun MatchRow(match: PreviewMatch, showLog: Boolean, onClick: () -> Unit) {
-    ListRowSurface(modifier = Modifier.clickable(role = Role.Button, onClick = onClick)) {
+private fun MatchRow(
+    match: PreviewMatch,
+    showLog: Boolean,
+    logState: String?,
+    onClick: () -> Unit
+) {
+    val described = if (logState != null) {
+        Modifier.semantics { stateDescription = logState }
+    } else {
+        Modifier
+    }
+    ListRowSurface(
+        modifier = Modifier.clickable(role = Role.Button, onClick = onClick).then(described)
+    ) {
         ListItem(
             overlineContent = {
                 Text("${formatBegin(match.begin)} · ${match.serviceName}")
@@ -255,10 +281,12 @@ private fun MatchRow(match: PreviewMatch, showLog: Boolean, onClick: () -> Unit)
     }
 }
 
+@Composable
 private fun formatBegin(begin: Instant): String {
     val zoned = begin.atZone(ZoneId.systemDefault())
-    val weekday = DateTimeFormatter.ofPattern("EEE", Locale.getDefault()).format(zoned)
-    val dateTime = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+    val locale = LocalConfiguration.current.locales[0]
+    val weekday = DateTimeFormatter.ofPattern("EEE", locale).format(zoned)
+    val date = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM).withLocale(locale)
         .format(zoned)
-    return "$weekday, $dateTime"
+    return "$weekday, $date, ${zoned.format(rememberClockFormat())}"
 }

@@ -10,7 +10,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -109,11 +108,24 @@ class AutoTimerPreviewViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var detailJob: Job? = null
 
+    /** The active profile is not the one the route came from. */
+    private var away = false
+
     init {
         viewModelScope.launch {
-            autoTimers.profileId.drop(1).collect {
+            // The route's id belongs to the first profile; on another one it names nothing,
+            // back on the first it is previewed again.
+            var home: Int? = null
+            var first = true
+            autoTimers.profileId.collect { id ->
+                if (first) {
+                    first = false
+                    home = id
+                    return@collect
+                }
                 loadJob?.cancel()
                 detailJob?.cancel()
+                away = id != home
                 _uiState.update {
                     it.copy(
                         autoTimer = null,
@@ -122,6 +134,9 @@ class AutoTimerPreviewViewModel @Inject constructor(
                         pending = false,
                         detail = null
                     )
+                }
+                if (!away) {
+                    reload()
                 }
             }
         }
@@ -138,7 +153,7 @@ class AutoTimerPreviewViewModel @Inject constructor(
 
     fun reload() {
         val state = _uiState.value
-        if (state.pending || state.content == AutoTimerPreviewContent.Gone) {
+        if (state.pending || away) {
             return
         }
         loadJob?.cancel()

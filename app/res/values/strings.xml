@@ -437,8 +437,15 @@
     <string name="autotimer_delete">Delete AutoTimer</string>
     <string name="autotimer_delete_confirm">Delete the AutoTimer \"%1$s\"? Timers it already added stay.</string>
     <string name="autotimer_changed">The AutoTimers changed on the receiver. The list shows them as they are now.</string>
+    <string name="autotimer_edit_changed">This AutoTimer changed on the receiver since you opened it, so nothing was saved. Reload shows it as it is now; your changes here are lost.</string>
+    <string name="autotimer_edit_other_receiver">Another receiver is active now. This AutoTimer belongs to the previous one; switch back to go on.</string>
+    <string name="autotimer_edit_saved_unlisted">The receiver does not list the saved AutoTimer yet. Go back to the list to see it.</string>
+    <string name="autotimer_date_reversed">Ends before has to be after the first day.</string>
+    <string name="autotimer_targets_skipped">Channels whose reference contains a comma cannot be used in an AutoTimer and were left out.</string>
     <string name="autotimer_upcoming">Upcoming (%1$d)</string>
     <string name="autotimer_skipped">Skipped (%1$d)</string>
+    <string name="autotimer_reason_shown">Reason shown</string>
+    <string name="autotimer_reason_hidden">Reason hidden</string>
     <string name="autotimer_no_matches">Nothing in the EPG matches right now.</string>
     <string name="autotimer_no_epg">The receiver\'s EPG has no details for this event.</string>
     <string name="autotimer_gone">This AutoTimer changed on the receiver. Go back to the list to see it as it is now.</string>
