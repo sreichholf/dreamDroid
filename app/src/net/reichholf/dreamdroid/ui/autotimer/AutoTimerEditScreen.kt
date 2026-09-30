@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import java.time.DayOfWeek
 import java.time.Instant
@@ -38,8 +39,13 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
+import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateScope
 import net.reichholf.dreamdroid.enigma.autotimer.Extras
 import net.reichholf.dreamdroid.enigma.autotimer.RecordMode
 import net.reichholf.dreamdroid.enigma.autotimer.SearchType
@@ -53,11 +59,22 @@ import net.reichholf.dreamdroid.ui.compose.EditPairedRow
 import net.reichholf.dreamdroid.ui.compose.EditPickField
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
 import net.reichholf.dreamdroid.ui.text.asString
 
-/** Changes of the editor form; the match and name are edited through their text fields. */
+/** The editor's text fields, which the ViewModel owns. */
+class AutoTimerEditFields(
+    val match: TextFieldState,
+    val name: TextFieldState,
+    val filter: TextFieldState,
+    val offsetBefore: TextFieldState,
+    val offsetAfter: TextFieldState,
+    val maxDuration: TextFieldState
+)
+
+/** Changes of the editor form; text is edited through [AutoTimerEditFields]. */
 interface AutoTimerEditActions {
     fun setSearchType(type: SearchType)
     fun setCaseSensitive(sensitive: Boolean)
@@ -71,6 +88,17 @@ interface AutoTimerEditActions {
     fun dismissPicker()
     fun onTimePicked(hour: Int, minute: Int)
     fun onDatePicked(utcDateMillis: Long)
+    fun setFilterKind(kind: FilterKind)
+    fun addFilter()
+    fun removeFilter(kind: FilterKind, value: String)
+    fun setOffset(on: Boolean)
+    fun setMaxDuration(on: Boolean)
+    fun setLocation(location: String?)
+    fun onTagsPicked(tags: List<String>)
+    fun setAfterEvent(action: AfterEventAction?)
+    fun setSetEndTime(setEndTime: Boolean)
+    fun setDuplicateScope(scope: DuplicateScope?)
+    fun setDuplicateCompare(compare: DescriptionCompare)
     fun reload()
 }
 
@@ -78,8 +106,7 @@ interface AutoTimerEditActions {
 @Composable
 fun AutoTimerEditScreen(
     state: AutoTimerEditUiState,
-    match: TextFieldState,
-    name: TextFieldState,
+    fields: AutoTimerEditFields,
     actions: AutoTimerEditActions,
     onPickTargets: () -> Unit,
     modifier: Modifier = Modifier
@@ -90,8 +117,7 @@ fun AutoTimerEditScreen(
 
             AutoTimerEditContent.Editing -> AutoTimerEditForm(
                 state = state,
-                match = match,
-                name = name,
+                fields = fields,
                 actions = actions,
                 onPickTargets = onPickTargets
             )
@@ -143,8 +169,7 @@ private fun ChangedOnReceiver(onReload: () -> Unit) {
 @Composable
 private fun AutoTimerEditForm(
     state: AutoTimerEditUiState,
-    match: TextFieldState,
-    name: TextFieldState,
+    fields: AutoTimerEditFields,
     actions: AutoTimerEditActions,
     onPickTargets: () -> Unit
 ) {
@@ -152,13 +177,13 @@ private fun AutoTimerEditForm(
     EditFormColumn {
         EditFormSection {
             EditOutlinedTextField(
-                state = match,
+                state = fields.match,
                 label = stringResource(R.string.autotimer_match_label),
                 isError = state.matchError != null,
                 supportingText = state.matchError?.asString()
             )
             EditOutlinedTextField(
-                state = name,
+                state = fields.name,
                 label = stringResource(R.string.autotimer_name_label),
                 supportingText = stringResource(R.string.autotimer_name_hint)
             )
@@ -187,6 +212,8 @@ private fun AutoTimerEditForm(
         }
         TargetsSection(draft = draft, actions = actions, onPickTargets = onPickTargets)
         WhenSection(draft = draft, actions = actions)
+        FiltersSection(state = state, filter = fields.filter, actions = actions)
+        RecordingSection(state = state, fields = fields, actions = actions)
         state.loaded?.extras?.let { ExtrasNote(it) }
     }
 }
@@ -208,21 +235,10 @@ private fun TargetsSection(
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             draft.targets.forEach { target ->
-                val label = target.name.ifBlank { target.ref }
-                val remove = stringResource(R.string.autotimer_remove_target, label)
-                InputChip(
-                    selected = false,
-                    onClick = { if (sendable) actions.removeTarget(target) },
-                    enabled = sendable,
-                    label = { Text(label) },
-                    trailingIcon = {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_action_close),
-                            contentDescription = null,
-                            modifier = Modifier.size(InputChipDefaults.IconSize)
-                        )
-                    },
-                    modifier = Modifier.semantics { contentDescription = remove }
+                RemovableChip(
+                    label = target.name.ifBlank { target.ref },
+                    onRemove = { actions.removeTarget(target) },
+                    enabled = sendable
                 )
             }
         }
@@ -324,6 +340,182 @@ private fun DayChips(selected: List<DayFilter>, onToggle: (DayFilter) -> Unit) {
 }
 
 @Composable
+private fun FiltersSection(
+    state: AutoTimerEditUiState,
+    filter: TextFieldState,
+    actions: AutoTimerEditActions
+) {
+    EditFormSection(title = stringResource(R.string.autotimer_filters)) {
+        FilterKind.entries.forEach { kind ->
+            val values = kind.values(state.draft)
+            if (values.isNotEmpty()) {
+                Text(
+                    text = stringResource(kind.label),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    values.forEach { value ->
+                        RemovableChip(label = value, onRemove = {
+                            actions.removeFilter(kind, value)
+                        })
+                    }
+                }
+            }
+        }
+        val kinds = FilterKind.entries
+        EditDropdownField(
+            options = kinds.map { stringResource(it.label) },
+            selectedIndex = kinds.indexOf(state.filterKind),
+            onSelected = { actions.setFilterKind(kinds[it]) },
+            label = stringResource(R.string.autotimer_filter_kind)
+        )
+        EditOutlinedTextField(
+            state = filter,
+            label = stringResource(R.string.autotimer_filter_text)
+        )
+        OutlinedButton(onClick = actions::addFilter) {
+            Text(stringResource(R.string.autotimer_filter_add))
+        }
+    }
+}
+
+@Composable
+private fun RecordingSection(
+    state: AutoTimerEditUiState,
+    fields: AutoTimerEditFields,
+    actions: AutoTimerEditActions
+) {
+    val draft = state.draft
+    val minutes = stringResource(R.string.autotimer_minutes_suffix)
+    EditFormSection(title = stringResource(R.string.autotimer_recording)) {
+        EditSwitchRow(
+            checked = draft.offset != null,
+            onCheckedChange = actions::setOffset,
+            label = stringResource(R.string.autotimer_offset)
+        )
+        if (draft.offset != null) {
+            EditPairedRow {
+                EditOutlinedTextField(
+                    state = fields.offsetBefore,
+                    label = stringResource(R.string.autotimer_offset_before),
+                    keyboardType = KeyboardType.Number,
+                    suffix = minutes,
+                    isError = state.offsetError != null,
+                    modifier = Modifier.weight(1f)
+                )
+                EditOutlinedTextField(
+                    state = fields.offsetAfter,
+                    label = stringResource(R.string.autotimer_offset_after),
+                    keyboardType = KeyboardType.Number,
+                    suffix = minutes,
+                    isError = state.offsetError != null,
+                    supportingText = state.offsetError?.asString(),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+        EditSwitchRow(
+            checked = draft.maxDurationMinutes != null,
+            onCheckedChange = actions::setMaxDuration,
+            label = stringResource(R.string.autotimer_max_duration)
+        )
+        if (draft.maxDurationMinutes != null) {
+            EditOutlinedTextField(
+                state = fields.maxDuration,
+                label = stringResource(R.string.autotimer_max_duration),
+                keyboardType = KeyboardType.Number,
+                suffix = minutes,
+                isError = state.maxDurationError != null,
+                supportingText = state.maxDurationError?.asString()
+            )
+        }
+        val locations = listOf(null) + (state.locations + listOfNotNull(draft.location)).distinct()
+        EditDropdownField(
+            options = locations.map { it ?: stringResource(R.string.autotimer_receiver_default) },
+            selectedIndex = locations.indexOf(draft.location),
+            onSelected = { actions.setLocation(locations[it]) },
+            label = stringResource(R.string.location)
+        )
+        EditPickField(
+            value = draft.tags.joinToString(" ").ifEmpty { stringResource(R.string.none) },
+            label = stringResource(R.string.tags),
+            onClick = { actions.openPicker(AutoTimerEditPick.Tags) }
+        )
+        AfterEventField(draft = draft, actions = actions)
+        val zap = draft.recordMode as? RecordMode.Zap
+        if (zap != null) {
+            EditSwitchRow(
+                checked = zap.setEndTime,
+                onCheckedChange = actions::setSetEndTime,
+                label = stringResource(R.string.autotimer_set_end_time)
+            )
+        }
+        DuplicatesFields(draft = draft, actions = actions)
+    }
+}
+
+@Composable
+private fun AfterEventField(draft: AutoTimerSettings, actions: AutoTimerEditActions) {
+    val afterEvent = draft.afterEvent
+    if (afterEvent is AfterEvent.Several) {
+        Text(
+            text = stringResource(R.string.autotimer_after_event_several),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        return
+    }
+    val options = listOf(null) + AfterEventAction.entries
+    EditDropdownField(
+        options = options.map { stringResource(it.label) },
+        selectedIndex = options.indexOf((afterEvent as? AfterEvent.Fixed)?.action),
+        onSelected = { actions.setAfterEvent(options[it]) },
+        label = stringResource(R.string.autotimer_after_event)
+    )
+}
+
+@Composable
+private fun DuplicatesFields(draft: AutoTimerSettings, actions: AutoTimerEditActions) {
+    val check = draft.duplicates as? DuplicateCheck.On
+    val scopes = listOf(null) + DuplicateScope.entries
+    EditDropdownField(
+        options = scopes.map { stringResource(it.label) },
+        selectedIndex = scopes.indexOf(check?.scope),
+        onSelected = { actions.setDuplicateScope(scopes[it]) },
+        label = stringResource(R.string.autotimer_duplicates)
+    )
+    if (check != null) {
+        val compares = DescriptionCompare.entries
+        EditDropdownField(
+            options = compares.map { stringResource(it.label) },
+            selectedIndex = compares.indexOf(check.compare),
+            onSelected = { actions.setDuplicateCompare(compares[it]) },
+            label = stringResource(R.string.autotimer_duplicates_compare)
+        )
+    }
+}
+
+@Composable
+private fun RemovableChip(label: String, onRemove: () -> Unit, enabled: Boolean = true) {
+    val remove = stringResource(R.string.autotimer_remove_target, label)
+    InputChip(
+        selected = false,
+        onClick = { if (enabled) onRemove() },
+        enabled = enabled,
+        label = { Text(label) },
+        trailingIcon = {
+            Icon(
+                painter = painterResource(R.drawable.ic_action_close),
+                contentDescription = null,
+                modifier = Modifier.size(InputChipDefaults.IconSize)
+            )
+        },
+        modifier = Modifier.semantics { contentDescription = remove }
+    )
+}
+
+@Composable
 private fun ExtrasNote(extras: Extras) {
     val names = listOfNotNull(
         stringResource(R.string.autotimer_extra_counter).takeIf { extras.counter },
@@ -367,9 +559,56 @@ private fun AutoTimerEditPickers(state: AutoTimerEditUiState, actions: AutoTimer
             )
         }
 
+        AutoTimerEditPick.Tags -> {
+            val choices = (state.tagChoices + state.draft.tags).distinct()
+            MultiChoiceAlertDialog(
+                title = stringResource(R.string.choose_tags),
+                items = choices,
+                initialChecked = BooleanArray(choices.size) { choices[it] in state.draft.tags },
+                onDismiss = actions::dismissPicker,
+                onConfirm = { indices ->
+                    actions.onTagsPicked(indices.sorted().map { choices[it] })
+                }
+            )
+        }
+
         null -> Unit
     }
 }
+
+private val FilterKind.label: Int
+    get() = when (this) {
+        FilterKind.IncludeTitle -> R.string.autotimer_filter_include_title
+        FilterKind.IncludeShortDescription -> R.string.autotimer_filter_include_short
+        FilterKind.IncludeDescription -> R.string.autotimer_filter_include_description
+        FilterKind.ExcludeTitle -> R.string.autotimer_filter_exclude_title
+        FilterKind.ExcludeShortDescription -> R.string.autotimer_filter_exclude_short
+        FilterKind.ExcludeDescription -> R.string.autotimer_filter_exclude_description
+    }
+
+private val AfterEventAction?.label: Int
+    get() = when (this) {
+        null -> R.string.autotimer_receiver_default
+        AfterEventAction.Nothing -> R.string.autotimer_after_event_nothing
+        AfterEventAction.Standby -> R.string.autotimer_after_event_standby
+        AfterEventAction.DeepStandby -> R.string.autotimer_after_event_deep_standby
+        AfterEventAction.Auto -> R.string.autotimer_after_event_auto
+    }
+
+private val DuplicateScope?.label: Int
+    get() = when (this) {
+        null -> R.string.autotimer_duplicates_off
+        DuplicateScope.SameService -> R.string.autotimer_duplicates_same_service
+        DuplicateScope.AnyService -> R.string.autotimer_duplicates_any_service
+        DuplicateScope.AnyServiceOrRecording -> R.string.autotimer_duplicates_any_recording
+    }
+
+private val DescriptionCompare.label: Int
+    get() = when (this) {
+        DescriptionCompare.Title -> R.string.autotimer_compare_title
+        DescriptionCompare.TitleAndShort -> R.string.autotimer_compare_short
+        DescriptionCompare.All -> R.string.autotimer_compare_all
+    }
 
 private val SearchType.label: Int
     get() = when (this) {

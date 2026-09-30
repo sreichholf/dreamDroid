@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.lifecycle.SavedStateHandle
 import java.time.DayOfWeek
+import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -12,7 +13,12 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
+import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
+import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateScope
 import net.reichholf.dreamdroid.enigma.autotimer.RecordMode
 import net.reichholf.dreamdroid.enigma.autotimer.SearchType
 import net.reichholf.dreamdroid.enigma.autotimer.Target
@@ -38,6 +44,7 @@ class AutoTimerEditViewModelTest {
     private val sessions = receiver.profiles.sessions
     private val autoTimers =
         AutoTimerRepository(enigmaClients(receiver.repository), receiver.repository)
+    private val timers = receiver.timerRepository()
     private val viewModels = mutableListOf<AutoTimerEditViewModel>()
 
     @BeforeEach
@@ -48,6 +55,12 @@ class AutoTimerEditViewModelTest {
         receiver.respond(EXTERNALS, loadWebFixture("bouqueteditor/web_external.xml"))
         receiver.respond(LIST, loadWebFixture("autotimer/list_disabled_full.xml"))
         receiver.respond(EDIT, simpleResult(true, "AutoTimer wurde erfolgreich geändert"))
+        receiver.respond(
+            LOCATIONS,
+            "<e2locations><e2location>/media/hdd/movie/</e2location>" +
+                "<e2location>/media/hdd/series/</e2location></e2locations>"
+        )
+        receiver.respond(TAGS, "<e2tags><e2tag>Krimi</e2tag><e2tag>News</e2tag></e2tags>")
     }
 
     @AfterEach
@@ -174,6 +187,116 @@ class AutoTimerEditViewModelTest {
     }
 
     @Test
+    fun filtersAreAddedToTheChosenListAndRemoved() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+
+        viewModel.setFilterKind(FilterKind.ExcludeTitle)
+        viewModel.filterText.set(" Wiederholung ")
+        viewModel.addFilter()
+        viewModel.removeFilter(FilterKind.ExcludeTitle, "Vorschau")
+
+        assertEquals(listOf("Wiederholung"), viewModel.uiState.value.draft.exclude.title)
+        assertEquals("", viewModel.filterText.text)
+        viewModel.save()
+        viewModel.saved()
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals(listOf("Wiederholung"), query.queryParameterValues("!title"))
+        assertEquals(listOf("Wiederholung"), query.queryParameterValues("!description"))
+    }
+
+    @Test
+    fun marginsAndLengthAreReadFromTheirFieldsOnSave() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+        assertEquals("5", viewModel.offsetBefore.text)
+        assertEquals("10", viewModel.offsetAfter.text)
+        assertEquals("120", viewModel.maxDuration.text)
+
+        viewModel.offsetAfter.set("x")
+        viewModel.save()
+        assertEquals(
+            UiText.Resource(R.string.autotimer_minutes_invalid),
+            viewModel.uiState.value.offsetError
+        )
+        assertTrue(receiver.requestsTo(EDIT).isEmpty())
+
+        viewModel.offsetAfter.set("15")
+        viewModel.maxDuration.set("90")
+        viewModel.save()
+        viewModel.saved()
+
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals("5,15", query.queryParameter("offset"))
+        assertEquals("90", query.queryParameter("maxduration"))
+    }
+
+    @Test
+    fun turningMarginsOffClearsThemOnTheBox() = runBlocking<Unit> {
+        val viewModel = edit()
+        viewModel.editing()
+
+        viewModel.setOffset(false)
+        viewModel.setMaxDuration(false)
+        viewModel.save()
+        viewModel.saved()
+
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals("", query.queryParameter("offset"))
+        assertEquals("", query.queryParameter("maxduration"))
+    }
+
+    @Test
+    fun recordingChoicesComeFromTheReceiver() = runBlocking<Unit> {
+        val viewModel = edit()
+        val state = withTimeout(TIMEOUT) {
+            viewModel.uiState.first {
+                it.content == AutoTimerEditContent.Editing &&
+                    it.locations.size == 2
+            }
+        }
+        assertEquals(listOf("Krimi", "News"), state.tagChoices)
+
+        viewModel.setLocation("/media/hdd/series/")
+        viewModel.onTagsPicked(listOf("Krimi"))
+        viewModel.setAfterEvent(AfterEventAction.DeepStandby)
+        viewModel.setDuplicateScope(DuplicateScope.AnyService)
+        viewModel.setDuplicateCompare(DescriptionCompare.Title)
+        viewModel.save()
+        viewModel.saved()
+
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals("/media/hdd/series/", query.queryParameter("location"))
+        assertEquals(listOf("Krimi"), query.queryParameterValues("tag"))
+        assertEquals("deepstandby", query.queryParameter("afterevent"))
+        assertEquals("2", query.queryParameter("avoidDuplicateDescription"))
+        assertEquals("0", query.queryParameter("searchForDuplicateDescription"))
+    }
+
+    @Test
+    fun anotherAfterEventActionKeepsItsTimeWindow() = runBlocking<Unit> {
+        receiver.respond(
+            LIST,
+            loadWebFixture("autotimer/list_disabled_full.xml").replace(
+                "<afterevent>standby</afterevent>",
+                "<afterevent from=\"22:00\" to=\"06:00\">standby</afterevent>"
+            )
+        )
+        val viewModel = edit()
+        viewModel.editing()
+
+        viewModel.setAfterEvent(AfterEventAction.Auto)
+
+        assertEquals(
+            AfterEvent.Fixed(
+                AfterEventAction.Auto,
+                ClockWindow(LocalTime.of(22, 0), LocalTime.of(6, 0))
+            ),
+            viewModel.uiState.value.draft.afterEvent
+        )
+    }
+
+    @Test
     fun processDeathKeepsTheDraftWithoutAskingTheBox() = runBlocking<Unit> {
         val handle = handle(id = 1, name = "dreamDroid test Wilsberg")
         val viewModel = viewModel(handle)
@@ -199,7 +322,7 @@ class AutoTimerEditViewModelTest {
     )
 
     private fun viewModel(handle: SavedStateHandle) =
-        AutoTimerEditViewModel(handle, autoTimers, sessions).also { viewModels += it }
+        AutoTimerEditViewModel(handle, autoTimers, timers, sessions).also { viewModels += it }
 
     private suspend fun AutoTimerEditViewModel.editing(): AutoTimerEditUiState =
         withTimeout(TIMEOUT) { uiState.first { it.content == AutoTimerEditContent.Editing } }
@@ -209,6 +332,8 @@ class AutoTimerEditViewModelTest {
 
     private companion object {
         const val TIMEOUT = 5_000L
+        const val LOCATIONS = "/web/getlocations"
+        const val TAGS = "/web/gettags"
         const val EXTERNALS = "/web/external"
         const val LIST = "/autotimer"
         const val EDIT = "/autotimer/edit"

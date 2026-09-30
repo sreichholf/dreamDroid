@@ -22,6 +22,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerLoad
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.AutoTimerWriteResult
+import net.reichholf.dreamdroid.data.TimerRepository
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
@@ -29,6 +32,10 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DateWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
+import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateScope
+import net.reichholf.dreamdroid.enigma.autotimer.Offset
 import net.reichholf.dreamdroid.enigma.autotimer.RecordMode
 import net.reichholf.dreamdroid.enigma.autotimer.SearchType
 import net.reichholf.dreamdroid.enigma.autotimer.Target
@@ -44,7 +51,40 @@ enum class AutoTimerEditPick {
     TimeFrom,
     TimeTo,
     DateAfter,
-    DateBefore
+    DateBefore,
+    Tags
+}
+
+/** Which filter list the filter field adds to. */
+enum class FilterKind(val include: Boolean) {
+    IncludeTitle(true),
+    IncludeShortDescription(true),
+    IncludeDescription(true),
+    ExcludeTitle(false),
+    ExcludeShortDescription(false),
+    ExcludeDescription(false);
+
+    fun values(settings: AutoTimerSettings): List<String> {
+        val filters = if (include) settings.include else settings.exclude
+        return when (this) {
+            IncludeTitle, ExcludeTitle -> filters.title
+            IncludeShortDescription, ExcludeShortDescription -> filters.shortDescription
+            IncludeDescription, ExcludeDescription -> filters.description
+        }
+    }
+
+    fun with(settings: AutoTimerSettings, values: List<String>): AutoTimerSettings {
+        val filters = if (include) settings.include else settings.exclude
+        val next = when (this) {
+            IncludeTitle, ExcludeTitle -> filters.copy(title = values)
+
+            IncludeShortDescription, ExcludeShortDescription ->
+                filters.copy(shortDescription = values)
+
+            IncludeDescription, ExcludeDescription -> filters.copy(description = values)
+        }
+        return if (include) settings.copy(include = next) else settings.copy(exclude = next)
+    }
 }
 
 sealed interface AutoTimerEditContent {
@@ -79,6 +119,12 @@ data class AutoTimerEditUiState(
     val saving: Boolean = false,
     val picker: AutoTimerEditPick? = null,
     val matchError: UiText? = null,
+    val offsetError: UiText? = null,
+    val maxDurationError: UiText? = null,
+    val filterKind: FilterKind = FilterKind.IncludeTitle,
+    /** Recording locations and tags the receiver offers; empty until it answered. */
+    val locations: List<String> = emptyList(),
+    val tagChoices: List<String> = emptyList(),
     val userMessage: UiText? = null,
     val saved: AutoTimerPreview? = null
 ) {
@@ -98,6 +144,7 @@ data class AutoTimerEditUiState(
 class AutoTimerEditViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val autoTimers: AutoTimerRepository,
+    private val timers: TimerRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel(),
     AutoTimerEditActions {
@@ -117,6 +164,20 @@ class AutoTimerEditViewModel @Inject constructor(
     }
     val name = SavedTextField(viewModelScope, savedStateHandle, KEY_NAME)
 
+    /** A filter text to add to the [AutoTimerEditUiState.filterKind] list. */
+    val filterText = SavedTextField(viewModelScope, savedStateHandle, KEY_FILTER)
+
+    /** Margins and maximum duration in minutes; used while their switch is on. */
+    val offsetBefore = SavedTextField(viewModelScope, savedStateHandle, KEY_OFFSET_BEFORE) {
+        _uiState.update { it.copy(offsetError = null) }
+    }
+    val offsetAfter = SavedTextField(viewModelScope, savedStateHandle, KEY_OFFSET_AFTER) {
+        _uiState.update { it.copy(offsetError = null) }
+    }
+    val maxDuration = SavedTextField(viewModelScope, savedStateHandle, KEY_MAX_DURATION) {
+        _uiState.update { it.copy(maxDurationError = null) }
+    }
+
     private var loadJob: Job? = null
 
     /** The API carries no time zone; days are taken in the phone's. */
@@ -130,6 +191,12 @@ class AutoTimerEditViewModel @Inject constructor(
         }
         if (!restore()) {
             reload()
+        }
+        viewModelScope.launch {
+            val choices = timers.locationsAndTags()
+            _uiState.update {
+                it.copy(locations = choices.locations, tagChoices = choices.tags)
+            }
         }
     }
 
@@ -219,6 +286,94 @@ class AutoTimerEditViewModel @Inject constructor(
         )
     }
 
+    override fun setFilterKind(kind: FilterKind) {
+        _uiState.update { it.copy(filterKind = kind) }
+    }
+
+    /** Adds the filter field's text to the chosen list, then clears the field. */
+    override fun addFilter() {
+        val text = filterText.text.trim()
+        val kind = _uiState.value.filterKind
+        if (text.isEmpty() || !_uiState.value.editable) {
+            return
+        }
+        edit { kind.with(this, (kind.values(this) - text) + text) }
+        filterText.set("")
+    }
+
+    override fun removeFilter(kind: FilterKind, value: String) =
+        edit { kind.with(this, kind.values(this) - value) }
+
+    override fun setOffset(on: Boolean) {
+        if (on) {
+            fillIfEmpty(offsetBefore, DEFAULT_OFFSET_MINUTES)
+            fillIfEmpty(offsetAfter, DEFAULT_OFFSET_MINUTES)
+        }
+        edit {
+            copy(
+                offset = if (on) {
+                    offset ?: Offset(DEFAULT_OFFSET_MINUTES, DEFAULT_OFFSET_MINUTES)
+                } else {
+                    null
+                }
+            )
+        }
+    }
+
+    override fun setMaxDuration(on: Boolean) {
+        if (on) {
+            fillIfEmpty(maxDuration, DEFAULT_MAX_DURATION_MINUTES)
+        }
+        edit {
+            copy(
+                maxDurationMinutes = if (on) {
+                    maxDurationMinutes ?: DEFAULT_MAX_DURATION_MINUTES
+                } else {
+                    null
+                }
+            )
+        }
+    }
+
+    /** Null records to the receiver's default location. */
+    override fun setLocation(location: String?) = edit { copy(location = location) }
+
+    override fun onTagsPicked(tags: List<String>) {
+        dismissPicker()
+        edit { copy(tags = tags) }
+    }
+
+    /** Null is the receiver's own setting. A time window of the old action stays. */
+    override fun setAfterEvent(action: AfterEventAction?) = edit {
+        val window = (afterEvent as? AfterEvent.Fixed)?.window
+        copy(
+            afterEvent = action?.let { AfterEvent.Fixed(it, window) } ?: AfterEvent.ReceiverDefault
+        )
+    }
+
+    override fun setSetEndTime(setEndTime: Boolean) = edit {
+        copy(
+            recordMode = if (recordMode is RecordMode.Zap) {
+                RecordMode.Zap(
+                    setEndTime
+                )
+            } else {
+                recordMode
+            }
+        )
+    }
+
+    /** Null turns the duplicate check off. */
+    override fun setDuplicateScope(scope: DuplicateScope?) = edit {
+        val compare = (duplicates as? DuplicateCheck.On)?.compare ?: DescriptionCompare.All
+        copy(duplicates = scope?.let { DuplicateCheck.On(it, compare) } ?: DuplicateCheck.Off)
+    }
+
+    override fun setDuplicateCompare(compare: DescriptionCompare) = edit {
+        val check = duplicates as? DuplicateCheck.On ?: return@edit this
+        copy(duplicates = check.copy(compare = compare))
+    }
+
     override fun openPicker(pick: AutoTimerEditPick) {
         if (_uiState.value.editable) {
             _uiState.update { it.copy(picker = pick) }
@@ -279,7 +434,31 @@ class AutoTimerEditViewModel @Inject constructor(
             }
             return
         }
-        val edited = state.draft.copy(match = matchText, name = name.text.trim())
+        val offset = state.draft.offset?.let {
+            val before = minutes(offsetBefore.text, allowZero = true)
+            val after = minutes(offsetAfter.text, allowZero = true)
+            if (before == null || after == null) {
+                _uiState.update {
+                    it.copy(offsetError = UiText.Resource(R.string.autotimer_minutes_invalid))
+                }
+                return
+            }
+            Offset(before, after)
+        }
+        val maxDurationMinutes = state.draft.maxDurationMinutes?.let {
+            minutes(maxDuration.text, allowZero = false) ?: run {
+                _uiState.update {
+                    it.copy(maxDurationError = UiText.Resource(R.string.autotimer_minutes_invalid))
+                }
+                return
+            }
+        }
+        val edited = state.draft.copy(
+            match = matchText,
+            name = name.text.trim(),
+            offset = offset,
+            maxDurationMinutes = maxDurationMinutes
+        )
         val loaded = state.loaded
         val write = if (loaded != null) {
             AutoTimerWrite.Change(loaded, edited)
@@ -333,6 +512,9 @@ class AutoTimerEditViewModel @Inject constructor(
         savedStateHandle[KEY_DRAFT] = base
         match.set(base.match)
         name.set(if (loaded != null) base.name else "")
+        offsetBefore.set(base.offset?.beforeMinutes?.toString().orEmpty())
+        offsetAfter.set(base.offset?.afterMinutes?.toString().orEmpty())
+        maxDuration.set(base.maxDurationMinutes?.toString().orEmpty())
         _uiState.update {
             it.copy(
                 content = AutoTimerEditContent.Editing,
@@ -358,6 +540,15 @@ class AutoTimerEditViewModel @Inject constructor(
         return true
     }
 
+    private fun fillIfEmpty(field: SavedTextField, minutes: Int) {
+        if (field.text.isBlank()) {
+            field.set(minutes.toString())
+        }
+    }
+
+    private fun minutes(text: String, allowZero: Boolean): Int? =
+        text.trim().toIntOrNull()?.takeIf { it > 0 || (allowZero && it == 0) }
+
     private fun edit(change: AutoTimerSettings.() -> AutoTimerSettings) {
         if (!_uiState.value.editable) {
             return
@@ -378,5 +569,11 @@ class AutoTimerEditViewModel @Inject constructor(
         private const val KEY_LOADED = "autotimer_edit_loaded"
         private const val KEY_BASE = "autotimer_edit_base"
         private const val KEY_DRAFT = "autotimer_edit_draft"
+        private const val KEY_FILTER = "autotimer_edit_filter"
+        private const val KEY_OFFSET_BEFORE = "autotimer_edit_offset_before"
+        private const val KEY_OFFSET_AFTER = "autotimer_edit_offset_after"
+        private const val KEY_MAX_DURATION = "autotimer_edit_max_duration"
+        private const val DEFAULT_OFFSET_MINUTES = 5
+        private const val DEFAULT_MAX_DURATION_MINUTES = 120
     }
 }

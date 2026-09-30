@@ -16,12 +16,18 @@ import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
+import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
+import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
+import net.reichholf.dreamdroid.enigma.autotimer.DuplicateScope
 import net.reichholf.dreamdroid.enigma.autotimer.Extras
+import net.reichholf.dreamdroid.enigma.autotimer.Filters
+import net.reichholf.dreamdroid.enigma.autotimer.Offset
 import net.reichholf.dreamdroid.enigma.autotimer.SearchType
 import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -114,6 +120,49 @@ class AutoTimerEditScreenTest {
     }
 
     @Test
+    fun filtersAreListedByKindAndRemovable() {
+        show(editing(DRAFT.copy(exclude = Filters(title = listOf("Vorschau")))))
+
+        composeRule.onNodeWithText(
+            "Not if the title contains"
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("Remove Vorschau").performScrollTo().performClick()
+
+        composeRule.runOnIdle {
+            assertEquals(listOf("removeFilter ExcludeTitle Vorschau"), actions.calls)
+        }
+    }
+
+    @Test
+    fun marginsShowTheirFieldsWhenOn() {
+        show(editing(DRAFT.copy(offset = Offset(5, 10))))
+
+        composeRule.onNodeWithText("Own margins").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("10").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun severalAfterEventRulesAreKeptNotEdited() {
+        val several = AfterEvent.Several(
+            listOf(
+                AfterEvent.Fixed(AfterEventAction.Auto),
+                AfterEvent.Fixed(AfterEventAction.Standby)
+            )
+        )
+        show(editing(DRAFT.copy(afterEvent = several)))
+
+        composeRule.onNodeWithText("Several rules by time of day. dreamDroid keeps them.")
+            .performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("After the recording").assertDoesNotExist()
+    }
+
+    @Test
+    fun theCompareModeShowsOnlyWithADuplicateCheck() {
+        show(editing(DRAFT))
+        composeRule.onNodeWithText("Compare").assertDoesNotExist()
+    }
+
+    @Test
     fun aChangeOnTheReceiverOffersAReload() {
         show(AutoTimerEditUiState(isCreate = false, content = AutoTimerEditContent.Changed))
 
@@ -127,8 +176,14 @@ class AutoTimerEditScreenTest {
             DreamDroidTheme {
                 AutoTimerEditScreen(
                     state = state,
-                    match = TextFieldState(match),
-                    name = TextFieldState(""),
+                    fields = AutoTimerEditFields(
+                        match = TextFieldState(match),
+                        name = TextFieldState(""),
+                        filter = TextFieldState(""),
+                        offsetBefore = TextFieldState("5"),
+                        offsetAfter = TextFieldState("10"),
+                        maxDuration = TextFieldState("")
+                    ),
                     actions = actions,
                     onPickTargets = {}
                 )
@@ -192,6 +247,50 @@ class AutoTimerEditScreenTest {
 
         override fun onDatePicked(utcDateMillis: Long) {
             calls += "onDatePicked $utcDateMillis"
+        }
+
+        override fun setFilterKind(kind: FilterKind) {
+            calls += "setFilterKind $kind"
+        }
+
+        override fun addFilter() {
+            calls += "addFilter"
+        }
+
+        override fun removeFilter(kind: FilterKind, value: String) {
+            calls += "removeFilter $kind $value"
+        }
+
+        override fun setOffset(on: Boolean) {
+            calls += "setOffset $on"
+        }
+
+        override fun setMaxDuration(on: Boolean) {
+            calls += "setMaxDuration $on"
+        }
+
+        override fun setLocation(location: String?) {
+            calls += "setLocation $location"
+        }
+
+        override fun onTagsPicked(tags: List<String>) {
+            calls += "onTagsPicked $tags"
+        }
+
+        override fun setAfterEvent(action: AfterEventAction?) {
+            calls += "setAfterEvent $action"
+        }
+
+        override fun setSetEndTime(setEndTime: Boolean) {
+            calls += "setSetEndTime $setEndTime"
+        }
+
+        override fun setDuplicateScope(scope: DuplicateScope?) {
+            calls += "setDuplicateScope $scope"
+        }
+
+        override fun setDuplicateCompare(compare: DescriptionCompare) {
+            calls += "setDuplicateCompare $compare"
         }
 
         override fun reload() {

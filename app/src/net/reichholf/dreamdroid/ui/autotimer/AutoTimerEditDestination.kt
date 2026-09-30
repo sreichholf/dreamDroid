@@ -64,8 +64,14 @@ fun AutoTimerEditDestination(
 
     AutoTimerEditScreen(
         state = uiState,
-        match = viewModel.match.state,
-        name = viewModel.name.state,
+        fields = AutoTimerEditFields(
+            match = viewModel.match.state,
+            name = viewModel.name.state,
+            filter = viewModel.filterText.state,
+            offsetBefore = viewModel.offsetBefore.state,
+            offsetAfter = viewModel.offsetAfter.state,
+            maxDuration = viewModel.maxDuration.state
+        ),
         actions = viewModel,
         onPickTargets = { handle.navigateToAutoTimerTargetPick() },
         modifier = modifier
