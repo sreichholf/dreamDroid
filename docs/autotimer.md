@@ -7,7 +7,7 @@
 
 An AutoTimer is a saved EPG search on the receiver. When the plugin runs, it adds a regular timer for every event that matches. dreamDroid lists, creates, edits, enables/disables and deletes AutoTimers and previews what they would record.
 
-### Decision brief (proposed, needs operator sign-off)
+### Decision brief (accepted 2026-09-30)
 
 | | |
 | --- | --- |
@@ -29,9 +29,9 @@ An AutoTimer is a saved EPG search on the receiver. When the plugin runs, it add
 | Enable/disable | Row switch. A one-group write; flips optimistically, reverts with the box's message on failure. |
 | Preview | `test?id=N` for one AutoTimer: upcoming matches and skipped events with the plugin's reason. A disabled AutoTimer shows "The box only previews enabled AutoTimers" and an **Enable** button, without a request. |
 | Create / edit | One screen. Always open: match, name, search type and case, channels and bouquets, record or zap, enabled. Collapsed sections with a one-line summary: **When** (time window, days, date window), later **Filters** (include/exclude title, short description, description) and **Recording** (offset, max duration, location, tags, after event, duplicates). |
-| Record series | EPG detail sheet action, only when the plugin is present: match = name = event title, contains, channel = event service. The on-box importer's "event time ±1 h" window is a one-tap suggestion chip, not applied silently. |
+| Record series | EPG detail sheet action, only when the plugin is present: match = name = event title, contains, channel = event service, other settings as the plugin's defaults (no duplicate check). The on-box importer's "event time ±1 h" window is a one-tap suggestion chip, not applied silently. |
 | Delete | Confirm dialog ("Timers it already added stay"), then reload; `remove` always replies success. |
-| Run now | Last, optional phase: `parse` behind a confirm dialog, since it adds real timers and can take minutes. |
+| Run now | `parse`: runs the plugin's EPG search for all enabled AutoTimers now and adds timers for new matches, as a run on the box does. Behind a confirm dialog, since it adds real timers and can take minutes. |
 
 ### Phone layout sketch
 
@@ -129,7 +129,7 @@ One `<timer>` per AutoTimer. Settings are attributes; lists are child elements. 
 - **Ids are positions, not identities.** `readXml()` re-parses the config whenever the file's mtime changed and renumbers every AutoTimer `1…n` in file order (`AutoTimer.py:139-162`). The list endpoint calls it on every request. After the file changes on the box (on-box editor, another client with `always_write_config`), an id the app holds can name a different AutoTimer, and `remove` by that id reports success either way.
 - **Web edits may not reach disk.** `always_write_config` defaults to off (`__init__.py:38`). Then edits live in memory and are written only at a clean enigma2 shutdown (`plugin.py:58-71`); a crash or power cut loses them. `/autotimer/set` has no key for this setting.
 - **Values are decoded twice.** `edit` runs `unquote()` on `match`, `name`, `services`, `bouquets`, filters and tags after Twisted already decoded the query (`AutoTimerResource.py:311-467`). For `match` and `name` it does so on the stored value when the parameter is missing. A client must escape `%` as `%25` in those values and always send `match` and `name`. A service ref containing `,` cannot be sent, because the list is split after decoding. From source only; not yet tried on a box.
-- **The app's XML parser can hide a preview failure.** `parseEnigmaXml` retries with aggressive sanitizing on a relaxed parser (`enigma/XmlPull.kt:23-24`), so it may recover the rows before `<exception>`. The preview parser checks the raw text for `<exception>` first.
+- **A broken preview loses the plugin's message.** `parseEnigmaXml` runs the parser in strict mode and rejects the document (`enigma/XmlPull.kt`), so the rows before `<exception>` are not salvaged, but the exception text is lost with them. The preview parser reads `<exception>` from the raw text first.
 - **Dead endpoint:** the web editor calls `/autotimer/clone`, which the plugin never registers.
 
 ### Box evidence (2026-09-30)
@@ -246,7 +246,7 @@ One PR each. Each runs the PR job (`./gradlew -Pci spotlessCheck :app:testGoogle
 | 4 | Editor (always-open block and When), target picker, create; after save the user lands on the preview | ViewModel: load → edit → save emits the expected write; empty change makes no request; `Conflict` → Reload; process-death restore. New-id resolution after create (reply has no id): reload and take the highest id whose `match` equals ours. Editor and picker UI tests, picked bouquet lands in targets. |
 | 5 | Editor sections Filters and Recording | Encoder table extended; section UI tests; `Several` shown read-only. |
 | 6 | Record series in the EPG sheet | Action only when `Present`; prefill mapping; suggestion chip applies ±1 h (`AutoTimerEditor.py:1489-1491`). |
-| 7 (optional) | Run now | Streamed reply with `<ignore />` before the result (synthetic, labelled); long timeout; another screen's request does not cancel it; confirm dialog UI test. |
+| 7 | Run now | Streamed reply with `<ignore />` before the result (synthetic, labelled); long timeout; another screen's request does not cancel it; confirm dialog UI test. |
 
 Box checks by the operator before merging phases 2, 4 and 7: toggle, delete, create and edit on a real box; one match containing `%` (proves or disproves the double decoding); one "Run now" with an AutoTimer that matches something harmless.
 
@@ -255,19 +255,19 @@ Box checks by the operator before merging phases 2, 4 and 7: toggle, delete, cre
 | Risk | Mitigation |
 | --- | --- |
 | A stale id deletes or edits another AutoTimer | Stale guard before every write; the remaining window is one round trip. |
-| Edits lost on a box crash (`always_write_config` off) | Not fixable from the app. Open decision whether to say so in the editor. |
+| Edits lost on a box crash (`always_write_config` off) | Not fixable from the app; known behaviour on these boxes, not surfaced in the UI. |
 | Double decoding changes values with `%` | Escape and always send `match`/`name`; verify on a box in phase 2. |
 | Query too long for many targets and filters | Bouquet refs are about 90 characters, so realistic AutoTimers stay small. If a box or proxy rejects one, add a form-body POST for `edit` only (the plugin accepts it, verified). |
-| `parse` exceeds normal timeouts | Own client and timeout; last, optional phase. |
+| `parse` exceeds normal timeouts | Own client and a long timeout (phase 7). |
 | Configs the model cannot read | `Unreadable` entries can be deleted, not edited; the model grows when real configs need it. |
 
-## 7. Open decisions for the operator
+## 7. Decisions (operator, 2026-09-30)
 
-1. Drawer position: after EPG (proposed) or after Tools.
-2. Default duplicate check for Record series. The plugin default is off; "Any channel, compare title and short description" avoids reruns but skips real episodes when the EPG has no episode text.
-3. Tell the user in the editor that the box may lose edits on a crash unless "Always write config" is on.
-4. Ship Run now at all.
-5. Offline read-only list from a Room snapshot, like timers. Proposed: not in v1.
+1. Drawer entry after EPG.
+2. Record series uses the plugin's defaults; no duplicate check preset.
+3. No warning about unsaved config: losing edits on a crash without "Always write config" is known behaviour on these boxes.
+4. Run now ships (phase 7).
+5. Online only; no Room snapshot. The config changes on the box too often for a copy to be useful.
 
 ## 8. Alternatives considered
 
