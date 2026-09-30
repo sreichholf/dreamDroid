@@ -14,12 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.FloatingWindow
 import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.dialog
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
@@ -102,9 +102,11 @@ fun PhoneNavHost(
                 }
             }
         }
-        val backStackEntry by navController.currentBackStackEntryAsState()
+        // A dialog floats over the screen below it; that screen decides the viewport.
+        val visibleEntries by navController.visibleEntries.collectAsState()
+        val screenEntry = visibleEntries.lastOrNull { it.destination !is FloatingWindow }
         val shellBarVisible = PhoneNavRoutes.showsShellDestinationBar(
-            backStackEntry?.destination?.route
+            screenEntry?.destination?.route
         )
         PhoneNavHostGraph(
             handle = handle,

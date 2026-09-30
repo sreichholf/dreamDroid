@@ -24,6 +24,9 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.services.TvMoviesDestinationRail
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
@@ -330,7 +333,9 @@ private fun TabletShellNavContent(
 }
 
 /**
- * Publishes [content] to the shell Coordinator bar while this leaf is composed.
+ * Publishes [content] to the shell Coordinator bar while this leaf is composed, and again
+ * each time its back stack entry resumes: the shell may have hidden the bar in between while
+ * the leaf stayed composed.
  * Clears only if we still own the slot (so rapid hub→hub swaps do not blank a successor).
  */
 @Composable
@@ -340,9 +345,17 @@ fun RegisterShellDestinationBar(content: ShellDestinationBarContent) {
             "ShellDestinationBarController not provided — wrap PhoneNavHost in " +
                 "ProvideShellDestinationBar"
         )
-    DisposableEffect(controller, content) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(controller, content, lifecycleOwner) {
         controller.content = content
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                controller.content = content
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
         onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
             if (controller.content == content) {
                 controller.content = ShellDestinationBarContent.Hidden
             }

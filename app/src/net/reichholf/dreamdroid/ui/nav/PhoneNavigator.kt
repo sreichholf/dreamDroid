@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import androidx.lifecycle.LifecycleOwner
+import androidx.navigation.FloatingWindow
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
@@ -71,6 +72,7 @@ class PhoneNavigator(
             val activity = lifecycleOwner as? Activity
             applyShellDestinationBarForRoute(
                 dest.route,
+                dest is FloatingWindow,
                 shellDestinationBarController,
                 activity?.findViewById(R.id.shell_destination_nav),
                 activity?.findViewById(R.id.shell_destination_rail)

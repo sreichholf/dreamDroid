@@ -65,14 +65,16 @@ fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean, bottomInset: 
  * as soon as the current route is not a hub.
  * Hub [RegisterShellDestinationBar] only clears on dispose, which runs after the
  * first frame of timer/profile edit.
+ * A [floating] (dialog) destination floats over the hub, which stays composed, so the bar stays.
  */
 fun applyShellDestinationBarForRoute(
     route: String?,
+    floating: Boolean,
     controller: ShellDestinationBarController?,
     shellNav: View?,
     shellRail: View? = null
 ) {
-    if (PhoneNavRoutes.showsShellDestinationBar(route)) {
+    if (floating || PhoneNavRoutes.showsShellDestinationBar(route)) {
         return
     }
     if (controller != null) {
