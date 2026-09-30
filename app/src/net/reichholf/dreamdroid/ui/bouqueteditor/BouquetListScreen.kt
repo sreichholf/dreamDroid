@@ -53,7 +53,7 @@ const val BOUQUET_DRAG_HANDLE_TAG = "bouquet_drag_handle"
 
 /**
  * TV / Radio switch above the bouquet index. A drag moves rows here; [onMove] gets the
- * dropped row's final 0-based position once, on drop. [onOpenBouquet] makes rows clickable.
+ * dropped row's final 0-based position once, on drop. A tap on a row opens the bouquet.
  */
 @Composable
 fun BouquetListScreen(
@@ -64,8 +64,8 @@ fun BouquetListScreen(
     onMenuAction: (BouquetEntry, BouquetRowAction) -> Unit,
     onMenuDismiss: () -> Unit,
     onMove: (ref: String, position: Int) -> Unit,
-    modifier: Modifier = Modifier,
-    onOpenBouquet: ((BouquetEntry) -> Unit)? = null
+    onOpenBouquet: (BouquetEntry) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         ModeSwitch(
@@ -192,7 +192,7 @@ private fun BouquetRows(
     onMenuAction: (BouquetEntry, BouquetRowAction) -> Unit,
     onMenuDismiss: () -> Unit,
     onMove: (ref: String, position: Int) -> Unit,
-    onOpenBouquet: ((BouquetEntry) -> Unit)?
+    onOpenBouquet: (BouquetEntry) -> Unit
 ) {
     // The drag reorders this copy; the ViewModel hears of the drop only.
     var rows by remember(bouquets) { mutableStateOf(bouquets) }
@@ -224,7 +224,7 @@ private fun BouquetRows(
                 ) {
                     BouquetRow(
                         bouquet = bouquet,
-                        onClick = onOpenBouquet?.let { open -> { open(bouquet) } },
+                        onClick = { onOpenBouquet(bouquet) },
                         onMenu = { onMenu(bouquet) },
                         dragHandle = {
                             Icon(
@@ -260,13 +260,11 @@ private fun BouquetRows(
 @Composable
 private fun BouquetRow(
     bouquet: BouquetEntry,
-    onClick: (() -> Unit)?,
+    onClick: () -> Unit,
     onMenu: () -> Unit,
     dragHandle: @Composable () -> Unit
 ) {
-    ListRowSurface(
-        modifier = if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier
-    ) {
+    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
         ListItem(
             headlineContent = {
                 Text(

@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.bouqueteditor
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -13,18 +14,23 @@ import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
-private const val ACTION_ADD_BOUQUET = 1
+private const val ACTION_ADD_SERVICES = 1
+private const val ACTION_ADD_MARKER = 2
 
 /**
- * The bouquet editor's index as a Tools hub tab. While the session blocks edits, a tap on
- * an edit explains that it needs the receiver.
+ * One bouquet's entries as a pushed destination; the route is read by the ViewModel. While
+ * the session blocks edits, a tap on an edit explains that it needs the receiver.
  */
 @Composable
-fun BouquetListDestination(
+fun BouquetContentDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: BouquetListViewModel = hiltViewModel()
+    viewModel: BouquetContentViewModel = hiltViewModel()
 ) {
+    // Compose BackHandler so system Back pops to the bouquets before the leave-confirm.
+    BackHandler {
+        handle.popNavBackStack()
+    }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
@@ -33,37 +39,45 @@ fun BouquetListDestination(
         if (uiState.blocked) handle.requestNeedsReceiver() else action()
     }
 
+    val ready = uiState.content is BouquetContentList.Ready && !uiState.pending
     BindShellTopBarActions(
         listOf(
             ShellTopBarAction(
-                id = ACTION_ADD_BOUQUET,
-                label = stringResource(R.string.bouquet_add),
+                id = ACTION_ADD_MARKER,
+                label = stringResource(R.string.bouquet_marker_add),
+                iconRes = R.drawable.ic_bookmark_add,
+                enabled = ready,
+                onClick = { online { viewModel.openAddMarker() } }
+            ),
+            ShellTopBarAction(
+                id = ACTION_ADD_SERVICES,
+                label = stringResource(R.string.bouquet_add_services),
                 iconRes = R.drawable.ic_action_fab_add,
-                enabled = uiState.content is BouquetListContent.Ready && !uiState.pending,
-                onClick = { online(viewModel::openAdd) }
+                enabled = ready,
+                onClick = {
+                    online {
+                        handle.navigateToBouquetAddServices(uiState.bouquetRef, uiState.mode)
+                    }
+                }
             )
         )
     )
 
-    BouquetListScreen(
+    BouquetContentScreen(
         state = uiState,
-        onModeChange = viewModel::setMode,
         onRefresh = viewModel::reload,
         onMenu = viewModel::onItemMenu,
-        onMenuAction = { bouquet, action -> online { viewModel.onMenuAction(bouquet, action) } },
+        onMenuAction = { row, action -> online { viewModel.onMenuAction(row, action) } },
         onMenuDismiss = viewModel::onMenuDismiss,
         onMove = viewModel::move,
-        onOpenBouquet = { bouquet ->
-            handle.navigateToBouquetContent(bouquet.reference, bouquet.name, uiState.mode)
-        },
         modifier = modifier
     )
 
-    BouquetListDialogs(
+    BouquetContentDialogs(
         state = uiState,
         nameState = viewModel.name.state,
-        onConfirmAdd = viewModel::confirmAdd,
         onConfirmRename = viewModel::confirmRename,
+        onConfirmAddMarker = viewModel::confirmAddMarker,
         onConfirmRemove = viewModel::confirmRemove,
         onDismiss = viewModel::dismissDialog
     )

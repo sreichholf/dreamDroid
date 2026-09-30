@@ -288,6 +288,15 @@ class HubServiceListViewModelTest {
     }
 
     @Test
+    fun bouquetEditLoadsAgain() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        services.onBouquetsEdited(listOf(TAB))
+        receiver.awaitRequestsTo(GET_SERVICES, 2)
+    }
+
+    @Test
     fun rowMenuOffersNextEventOnlyWithNowNext() = runBlocking {
         val viewModel = viewModel()
         viewModel.settled()

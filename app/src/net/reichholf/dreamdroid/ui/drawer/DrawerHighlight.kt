@@ -24,7 +24,9 @@ object DrawerHighlight {
             PhoneNavRoutes.TOOLS,
             PhoneNavRoutes.DEVICE_INFO,
             PhoneNavRoutes.SIGNAL,
-            PhoneNavRoutes.SCREENSHOT -> R.id.menu_navigation_tools
+            PhoneNavRoutes.SCREENSHOT,
+            PhoneNavRoutes.BOUQUET_CONTENT,
+            PhoneNavRoutes.BOUQUET_ADD_SERVICES -> R.id.menu_navigation_tools
 
             PhoneNavRoutes.REMOTE -> R.id.menu_navigation_remote
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.helpers.Python
@@ -71,6 +72,12 @@ interface PhoneNavHandle {
     fun popNavBackStack(): Boolean
     fun navigateToTimerEdit(timer: Timer, create: Boolean): Boolean
     fun navigateToTimerServicePick(): Boolean
+    fun navigateToBouquetContent(
+        bouquetRef: String,
+        bouquetName: String,
+        mode: BouquetMode
+    ): Boolean
+    fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)
     fun dispatchPendingComposeActivityResult()
     fun onActiveProfileChanged()

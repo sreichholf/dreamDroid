@@ -53,6 +53,16 @@ class BouquetListScreenTest {
     }
 
     @Test
+    fun tapOpensTheBouquet() {
+        val opened = mutableListOf<BouquetEntry>()
+        show(ready(), onOpenBouquet = { opened += it })
+
+        composeRule.onNodeWithText("Sports (TV)").performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf(SPORTS), opened) }
+    }
+
+    @Test
     fun missingPluginExplainsWhyAndOffersAReload() {
         var reloads = 0
         show(BouquetListUiState(content = BouquetListContent.NotInstalled), onRefresh = {
@@ -97,7 +107,8 @@ class BouquetListScreenTest {
                     },
                     onMenuAction = { bouquet, action -> picked += bouquet to action },
                     onMenuDismiss = { state = state.copy(menu = null) },
-                    onMove = { _, _ -> }
+                    onMove = { _, _ -> },
+                    onOpenBouquet = {}
                 )
             }
         }
@@ -179,7 +190,8 @@ class BouquetListScreenTest {
     private fun show(
         state: BouquetListUiState,
         onRefresh: () -> Unit = {},
-        onMove: (String, Int) -> Unit = { _, _ -> }
+        onMove: (String, Int) -> Unit = { _, _ -> },
+        onOpenBouquet: (BouquetEntry) -> Unit = {}
     ) {
         composeRule.setContent {
             DreamDroidTheme {
@@ -190,7 +202,8 @@ class BouquetListScreenTest {
                     onMenu = {},
                     onMenuAction = { _, _ -> },
                     onMenuDismiss = {},
-                    onMove = onMove
+                    onMove = onMove,
+                    onOpenBouquet = onOpenBouquet
                 )
             }
         }
