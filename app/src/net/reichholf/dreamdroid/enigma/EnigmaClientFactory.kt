@@ -21,6 +21,9 @@ class EnigmaClientFactory @Inject constructor(
     private val profiles: ProfileRepository,
     private val okHttp: EnigmaOkHttp
 ) {
+    // Resolved on first dump, which runs on the fetch thread: getCacheDir() touches the disk.
+    private val xmlDumpDir = lazy { File(context.cacheDir, XML_DUMP_DIR) }
+
     /** A client for the active profile. */
     fun current(): EnigmaClient = EnigmaClient(currentHttp())
 
@@ -34,7 +37,7 @@ class EnigmaClientFactory @Inject constructor(
     fun http(profile: Profile): EnigmaHttp = EnigmaHttp(
         profile = profile,
         okHttp = okHttp,
-        xmlDumpDir = if (profiles.dumpXml()) File(context.cacheDir, XML_DUMP_DIR) else null
+        xmlDumpDir = xmlDumpDir.takeIf { profiles.dumpXml() }
     )
 
     private companion object {
