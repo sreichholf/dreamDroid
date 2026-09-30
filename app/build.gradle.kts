@@ -172,7 +172,13 @@ android {
         abi {
             // -Pci: one fat APK (unit/androidTest jobs).
             // -Parm64Apk: ABI-split arm64-only (CI artifact upload).
-            isEnable = project.hasProperty("arm64Apk") || !project.hasProperty("ci")
+            // A bundle splits by ABI itself; with ABI splits on, resource shrinking leaves one
+            // shrunk-resources file per split and bundling fails
+            // (https://issuetracker.google.com/402800800).
+            val bundling = gradle.startParameter.taskNames.any {
+                it.substringAfterLast(':').startsWith("bundle")
+            }
+            isEnable = !bundling && (project.hasProperty("arm64Apk") || !project.hasProperty("ci"))
             reset()
             if (project.hasProperty("arm64Apk")) {
                 include("arm64-v8a")
