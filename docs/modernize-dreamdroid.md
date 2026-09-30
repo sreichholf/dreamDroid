@@ -1,6 +1,6 @@
 # Modernize dreamDroid
 
-dreamDroid 2.0 is a Compose Material 3 Enigma2 remote for phone and a Compose (`androidx.tv`) hub for TV, written in Kotlin with coroutines. UI is proven by instrumented Compose tests, ViewModels and data code by JVM tests. Rewrite trunk is `main` (`master` is 1.15; do not merge them). Floor: minSdk 26, compileSdk / targetSdk 37, JDK 25 (bytecode Java 17). Agent rules: [`AGENTS.md`](../AGENTS.md). Related: [`multiepg.md`](multiepg.md), [`offline-and-errors.md`](offline-and-errors.md).
+dreamDroid 2.0 is a Compose Material 3 Enigma2 remote for phone and a Compose (`androidx.tv`) hub for TV, written in Kotlin with coroutines. UI is proven by instrumented Compose tests, ViewModels and data code by JVM tests. Rewrite trunk is `main` (`master` is 1.15; do not merge them). Floor: minSdk 26, compileSdk / targetSdk 37, JDK 25 (bytecode Java 17). Agent rules: [`AGENTS.md`](../AGENTS.md). Related: [`multiepg.md`](multiepg.md), [`offline-and-errors.md`](offline-and-errors.md), [`autotimer.md`](autotimer.md).
 
 ## Done
 

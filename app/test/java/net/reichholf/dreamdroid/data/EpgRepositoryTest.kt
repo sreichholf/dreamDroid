@@ -5,14 +5,18 @@ import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.CHANNEL
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
+import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -326,9 +330,170 @@ class EpgRepositoryTest {
 
     private fun EventListLoad.events() = (this as EventListLoad.Events).events
 
+    @Test
+    fun theRecordedProgrammeIsTheOneInsideTheMargins() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
+
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
+
+        assertEquals(WILSBERG, event?.title)
+        assertEquals("1790792100", event?.start)
+        assertTrue(event!!.descriptionExtended.startsWith("Krimireihe, Deutschland 2016"))
+        val url = receiver.server.takeRequest().requestUrl!!
+        assertEquals("/web/epgservice", url.encodedPath)
+        assertEquals(NEO, url.queryParameter("sRef"))
+        assertEquals(MATCH_BEGIN.toString(), url.queryParameter("time"))
+        assertEquals("100", url.queryParameter("endTime"))
+    }
+
+    @Test
+    fun anotherTitleIsTheProgrammeThatFillsTheWindow() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
+
+        val event = repository.recordedProgramme(NEO, "Wilsberg", MATCH_BEGIN, MATCH_END)
+
+        assertEquals(WILSBERG, event?.title)
+    }
+
+    @Test
+    fun aShortProgrammeIsFoundByTitleBetweenLongMargins() {
+        val news = Event(title = "heute", start = "1000", duration = "300")
+        val before = Event(title = "Before", start = "0", duration = "1000")
+        val after = Event(title = "After", start = "1300", duration = "3600")
+
+        assertEquals(news, programmeInWindow(listOf(before, news, after), "heute", 100, 2500))
+        assertEquals(after, programmeInWindow(listOf(before, news, after), "gone", 100, 2500))
+    }
+
+    @Test
+    fun theSameTitleRightBeforeIsNotTheRecordedEpisode() {
+        // A double episode: the first ends where the recorded one starts, inside the margin.
+        val first = Event(title = "Die Simpsons", start = "1000", duration = "1500")
+        val second = Event(title = "Die Simpsons", start = "2500", duration = "1500")
+
+        assertEquals(second, programmeInWindow(listOf(first, second), "Die Simpsons", 2200, 4300))
+    }
+
+    @Test
+    fun aProgrammeThatOnlyTouchesTheWindowIsNotInIt() {
+        val before = Event(title = "Before", start = "0", duration = "1000")
+
+        assertNull(programmeInWindow(listOf(before), "Before", 1000, 2000))
+    }
+
+    @Test
+    fun anOfflineSessionStillFindsACachedProgramme() = runBlocking<Unit> {
+        receiver.writeChunk(
+            BOUQUET,
+            MATCH_BEGIN,
+            listOf(event(WILSBERG, 1_790_792_100L, duration = 5400, service = NEO))
+        )
+        receiver.goOffline()
+
+        assertEquals(
+            WILSBERG,
+            repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)?.title
+        )
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun theCacheOfAnotherProfileIsNotAsked() = runBlocking<Unit> {
+        receiver.profiles.database.epgDao().replaceChunk(
+            EpgChunkMetaEntity(OTHER_PROFILE, BOUQUET, MATCH_BEGIN, MATCH_END, 1L),
+            listOf(
+                event(WILSBERG, 1_790_792_100L, duration = 5400, service = NEO)
+                    .copy(profileId = OTHER_PROFILE, descriptionExtended = "Other box")
+            )
+        )
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
+
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
+
+        assertTrue(event!!.descriptionExtended.startsWith("Krimireihe"))
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun aProgrammeCachedByTwoBouquetsIsOne() = runBlocking<Unit> {
+        val programme = event(WILSBERG, 1_790_792_100L, duration = 5400, service = NEO)
+        receiver.writeChunk(BOUQUET, MATCH_BEGIN, listOf(programme))
+        receiver.writeChunk(
+            OTHER_BOUQUET,
+            MATCH_BEGIN,
+            listOf(programme.copy(bouquetRef = OTHER_BOUQUET))
+        )
+
+        val rows = receiver.profiles.database.epgDao().serviceEventsOverlapping(
+            EpgTestReceiver.PROFILE_ID,
+            NEO,
+            MATCH_BEGIN,
+            MATCH_END
+        )
+
+        assertEquals(listOf(WILSBERG), rows.map { it.title })
+    }
+
+    @Test
+    fun aCachedProgrammeNeedsNoReceiver() = runBlocking<Unit> {
+        receiver.writeChunk(
+            BOUQUET,
+            MATCH_BEGIN,
+            listOf(
+                event(WILSBERG, 1_790_792_100L, duration = 5400, service = NEO)
+                    .copy(descriptionExtended = "Aus dem Cache")
+            )
+        )
+
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
+
+        assertEquals("Aus dem Cache", event?.descriptionExtended)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun aCacheWithoutTheTitleAsksTheReceiver() = runBlocking<Unit> {
+        receiver.writeChunk(
+            BOUQUET,
+            MATCH_BEGIN,
+            listOf(event("Bares für Rares", 1_790_788_800L, duration = 6000, service = NEO))
+        )
+        receiver.answer = { MockResponse().setBody(loadWebFixture(MATCH_WINDOW)) }
+
+        val event = repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END)
+
+        assertEquals(WILSBERG, event?.title)
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun noProgrammeInTheWindowIsNull() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody("<e2eventlist></e2eventlist>") }
+
+        assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
+    }
+
+    @Test
+    fun anOfflineSessionOnlyLooksInTheCache() = runBlocking<Unit> {
+        receiver.goOffline()
+
+        assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
+        assertEquals(0, receiver.server.requestCount)
+    }
+
     private fun titles(load: EventListLoad) = load.events().map { it.title }
 
     private companion object {
+        /**
+         * `/web/epgservice` of a dm900 for the window of the first match in
+         * `autotimer/test.xml`: the programme with five minutes of margin on either side.
+         */
+        const val MATCH_WINDOW = "autotimer/epgservice_match_window.xml"
+        const val MATCH_BEGIN = 1_790_791_800L
+        const val MATCH_END = 1_790_797_800L
+        const val OTHER_PROFILE = 8
+        const val NEO = "1:0:19:2B7A:3F3:1:C00000:0:0:0:"
+        const val WILSBERG = "Wilsberg - In Treu und Glauben"
         const val NOW = 1_893_456_000L
         const val OTHER = "1:0:1:6DCB:44C:1:C00000:0:0:0:"
         const val OTHER_BOUQUET =

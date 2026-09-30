@@ -124,7 +124,9 @@ fun EpgDetailScreen(
     /** The session blocks timer writes: the timer actions look online-only. */
     timerWritesBlocked: Boolean = false,
     /** Phone bottom sheet caps body height; TV fullscreen passes null. */
-    bodyHeightCap: Dp? = 360.dp
+    bodyHeightCap: Dp? = 360.dp,
+    /** Opens a new AutoTimer for this event; null hides the action. */
+    onRecordSeries: (() -> Unit)? = null
 ) {
     // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
     Column(modifier = modifier.fillMaxWidth()) {
@@ -173,6 +175,16 @@ fun EpgDetailScreen(
                         .onlineOnlyLook(timerWritesBlocked)
                 ) {
                     Text(stringResource(R.string.edit_timer))
+                }
+                if (onRecordSeries != null) {
+                    TextButton(
+                        onClick = onRecordSeries,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onlineOnlyLook(timerWritesBlocked)
+                    ) {
+                        Text(stringResource(R.string.autotimer_record_series))
+                    }
                 }
                 TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.imdb))

@@ -1,0 +1,310 @@
+package net.reichholf.dreamdroid.ui.autotimer
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AutoTimerLoad
+import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.AutoTimerWriteResult
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.ui.compose.RowMenuAction
+import net.reichholf.dreamdroid.ui.compose.RowMenuState
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
+import net.reichholf.dreamdroid.ui.text.UiText
+
+enum class AutoTimerRowAction(override val label: Int) : RowMenuAction {
+    Edit(R.string.edit),
+    Delete(R.string.delete)
+}
+
+/** What the list area shows. */
+sealed interface AutoTimerListContent {
+    data object Loading : AutoTimerListContent
+
+    /** The receiver does not list the AutoTimer plugin. */
+    data object PluginMissing : AutoTimerListContent
+
+    data class Failed(val message: UiText) : AutoTimerListContent
+
+    data class Ready(val entries: List<AutoTimerEntry>) : AutoTimerListContent
+}
+
+/**
+ * The receiver's AutoTimers. [blocked] mirrors the session's `blocksMutations`; [pending] is
+ * true while a write (and the list after it) runs; [refreshing] while a shown list loads
+ * again. [deleting] is the entry the delete dialog asks about.
+ */
+data class AutoTimerListUiState(
+    val content: AutoTimerListContent = AutoTimerListContent.Loading,
+    val refreshing: Boolean = false,
+    val blocked: Boolean = false,
+    val pending: Boolean = false,
+    val menu: RowMenuState<AutoTimerRowAction>? = null,
+    val deleting: AutoTimerEntry? = null,
+    /** Run now asks first; while it [running], writes wait; [runResult] is the box's summary. */
+    val confirmRun: Boolean = false,
+    val running: Boolean = false,
+    val runResult: UiText? = null,
+    val userMessage: UiText? = null
+) {
+    val title: UiText
+        get() = UiText.Resource(R.string.autotimer)
+
+    /** Whether the list takes a write now. */
+    val editable: Boolean
+        get() = content is AutoTimerListContent.Ready && !blocked && !pending && !refreshing &&
+            !running
+}
+
+/**
+ * The AutoTimers of the active profile's receiver, read from the box on every load. A profile
+ * change lists the new receiver's AutoTimers; a failed list loads again once the session
+ * takes requests. Every write lists the AutoTimers again, since the box may renumber them;
+ * that includes a write from the preview or the editor while the list waits below them.
+ */
+@HiltViewModel
+class AutoTimerListViewModel @Inject constructor(
+    private val autoTimers: AutoTimerRepository,
+    private val sessions: SessionConnectionHolder
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(
+        AutoTimerListUiState(blocked = sessions.status.value.blocksMutations)
+    )
+    val uiState: StateFlow<AutoTimerListUiState> = _uiState.asStateFlow()
+
+    private var loadJob: Job? = null
+    private var runJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            autoTimers.profileId.collect { id ->
+                loadJob?.cancel()
+                // The run goes on on the old receiver; its summary is not this one's.
+                runJob?.cancel()
+                _uiState.update {
+                    it.copy(
+                        content = AutoTimerListContent.Loading,
+                        refreshing = false,
+                        pending = false,
+                        running = false,
+                        confirmRun = false,
+                        runResult = null,
+                        menu = null,
+                        deleting = null
+                    )
+                }
+                if (id != null) {
+                    reload()
+                }
+            }
+        }
+        viewModelScope.launch {
+            sessions.status.map { it.blocksMutations }.distinctUntilChanged().collect { blocked ->
+                _uiState.update { it.copy(blocked = blocked) }
+                if (!blocked && _uiState.value.content is AutoTimerListContent.Failed) {
+                    reload()
+                }
+            }
+        }
+        viewModelScope.launch {
+            // A write of this list, or Run now, lists the AutoTimers itself afterwards, and
+            // again if another write came in meanwhile (see listAfterBusy).
+            autoTimers.revision.drop(1).collect { reload() }
+        }
+    }
+
+    fun reload() {
+        if (_uiState.value.pending || _uiState.value.running) {
+            return
+        }
+        loadJob?.cancel()
+        _uiState.update {
+            if (it.content is AutoTimerListContent.Ready) {
+                it.copy(refreshing = true)
+            } else {
+                it.copy(content = AutoTimerListContent.Loading)
+            }
+        }
+        loadJob = viewModelScope.launch {
+            val content = fetch()
+            _uiState.update { it.copy(content = content, refreshing = false, menu = null) }
+        }
+    }
+
+    /** Enables or pauses [entry]; the switch shows the new state while the box answers. */
+    fun setEnabled(entry: AutoTimerEntry.Readable, enabled: Boolean) {
+        if (entry.autoTimer.settings.enabled == enabled) {
+            return
+        }
+        write(
+            shown = { entries ->
+                entries.map {
+                    if (it == entry) {
+                        AutoTimerEntry.Readable(
+                            entry.autoTimer.copy(
+                                settings = entry.autoTimer.settings.copy(enabled = enabled)
+                            )
+                        )
+                    } else {
+                        it
+                    }
+                }
+            },
+            reportDone = false
+        ) { autoTimers.setEnabled(entry.autoTimer, enabled) }
+    }
+
+    fun onItemMenu(entry: AutoTimerEntry) {
+        val state = _uiState.value
+        if (state.content !is AutoTimerListContent.Ready || state.pending) {
+            return
+        }
+        // An entry dreamDroid cannot read can only be deleted.
+        val actions = if (entry is AutoTimerEntry.Readable) {
+            AutoTimerRowAction.entries
+        } else {
+            listOf(AutoTimerRowAction.Delete)
+        }
+        _uiState.update { it.copy(menu = RowMenuState(entry.id.value, actions)) }
+    }
+
+    fun onMenuDismiss() {
+        _uiState.update { it.copy(menu = null) }
+    }
+
+    /** Delete asks first. Edit is navigation, which the destination handles. */
+    fun onMenuAction(entry: AutoTimerEntry, action: AutoTimerRowAction) {
+        when (action) {
+            AutoTimerRowAction.Edit -> Unit
+
+            AutoTimerRowAction.Delete -> if (_uiState.value.editable) {
+                _uiState.update { it.copy(deleting = entry, menu = null) }
+            }
+        }
+    }
+
+    fun dismissDelete() {
+        _uiState.update { it.copy(deleting = null) }
+    }
+
+    fun confirmDelete() {
+        val entry = _uiState.value.deleting ?: return
+        dismissDelete()
+        write(shown = { entries -> entries - entry }, reportDone = true) {
+            autoTimers.remove(entry)
+        }
+    }
+
+    fun requestRun() {
+        if (_uiState.value.editable) {
+            _uiState.update { it.copy(confirmRun = true) }
+        }
+    }
+
+    fun dismissRun() {
+        _uiState.update { it.copy(confirmRun = false) }
+    }
+
+    /** Runs the AutoTimers on the box, then lists them again for their counters. */
+    fun confirmRun() {
+        dismissRun()
+        if (!_uiState.value.editable) {
+            return
+        }
+        _uiState.update { it.copy(running = true, menu = null) }
+        runJob = viewModelScope.launch {
+            val result = autoTimers.runNow()
+            val seen = autoTimers.revision.value
+            val listed = fetch()
+            _uiState.update {
+                when (result) {
+                    is AutoTimerWriteResult.Done ->
+                        it.copy(running = false, content = listed, runResult = result.message)
+
+                    is AutoTimerWriteResult.Failed ->
+                        it.copy(running = false, content = listed, userMessage = result.message)
+
+                    AutoTimerWriteResult.Conflict -> it.copy(running = false, content = listed)
+                }
+            }
+            listAfterBusy(seen)
+        }
+    }
+
+    fun onRunResultShown() {
+        _uiState.update { it.copy(runResult = null) }
+    }
+
+    fun onMessageShown() {
+        _uiState.update { it.copy(userMessage = null) }
+    }
+
+    /**
+     * Runs [call] as the one pending write while the list shows [shown], then lists the
+     * AutoTimers again. The box's reply is shown for a failure, and for success when
+     * [reportDone].
+     */
+    private fun write(
+        shown: (List<AutoTimerEntry>) -> List<AutoTimerEntry>,
+        reportDone: Boolean,
+        call: suspend () -> AutoTimerWriteResult
+    ) {
+        val state = _uiState.value
+        val content = state.content
+        if (!state.editable || content !is AutoTimerListContent.Ready) {
+            return
+        }
+        loadJob?.cancel()
+        _uiState.update {
+            it.copy(
+                pending = true,
+                menu = null,
+                content = AutoTimerListContent.Ready(shown(content.entries))
+            )
+        }
+        loadJob = viewModelScope.launch {
+            val message = when (val result = call()) {
+                is AutoTimerWriteResult.Done -> result.message.takeIf { reportDone }
+                AutoTimerWriteResult.Conflict -> UiText.Resource(R.string.autotimer_changed)
+                is AutoTimerWriteResult.Failed -> result.message
+            }
+            val seen = autoTimers.revision.value
+            val listed = fetch()
+            _uiState.update {
+                it.copy(
+                    pending = false,
+                    content = listed,
+                    userMessage = message ?: it.userMessage
+                )
+            }
+            listAfterBusy(seen)
+        }
+    }
+
+    /**
+     * Lists again if another screen wrote after [seen], while the list after this list's own
+     * write or run was loading: [reload] skipped that write's signal then.
+     */
+    private fun listAfterBusy(seen: Int) {
+        if (autoTimers.revision.value != seen) {
+            reload()
+        }
+    }
+
+    private suspend fun fetch(): AutoTimerListContent = when (val load = autoTimers.list()) {
+        is AutoTimerLoad.Ready -> AutoTimerListContent.Ready(load.entries)
+        AutoTimerLoad.PluginMissing -> AutoTimerListContent.PluginMissing
+        is AutoTimerLoad.Failed -> AutoTimerListContent.Failed(load.message)
+    }
+}

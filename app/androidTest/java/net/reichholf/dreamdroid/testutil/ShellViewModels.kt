@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.testutil
 
 import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -22,6 +23,7 @@ fun testShellViewModel(profiles: ProfileRepository): ShellViewModel {
     val sessions = SessionConnectionHolder()
     return ShellViewModel(
         ReceiverRepository(clients, profiles),
+        AutoTimerRepository(clients, profiles),
         profiles,
         ReceiverProfileCheckRepository(profiles, clients),
         ServiceRepository(context, clients, profiles, AppDatabase.inMemory(context), sessions),

@@ -14,6 +14,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
@@ -64,6 +65,10 @@ class ShellViewModelTest {
     @Volatile
     private var deviceInfoUnauthorized = false
 
+    /** Whether `/web/external` lists the AutoTimer plugin. */
+    @Volatile
+    private var hasAutoTimer = false
+
     /** While set, `/web/vol` holds its answer until the latch opens. */
     @Volatile
     private var volumeHold: CountDownLatch? = null
@@ -84,6 +89,12 @@ class ShellViewModelTest {
                 )
 
                 "/web/message" -> MockResponse().setBody(simpleResult(true, "Sent"))
+
+                "/web/external" -> MockResponse().setBody(
+                    "<e2webifexternals><e2webifexternal><e2path>" +
+                        (if (hasAutoTimer) "autotimer" else "bouqueteditor") +
+                        "</e2path></e2webifexternal></e2webifexternals>"
+                )
 
                 "/web/deviceinfo" -> if (deviceInfoUnauthorized) {
                     MockResponse().setResponseCode(401)
@@ -255,6 +266,36 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun aSuccessfulCheckListsAutoTimerInTheDrawerWhenTheReceiverHasThePlugin() = runBlocking<Unit> {
+        hasAutoTimer = true
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.autoTimerInDrawer)
+
+        viewModel.checkActiveProfile()
+
+        viewModel.awaitState { it.autoTimerInDrawer }
+        assertEquals(1, receiver.requestsTo("/web/external").size)
+    }
+
+    @Test
+    fun aFailedCheckDoesNotAskForThePlugin() = runBlocking<Unit> {
+        hasAutoTimer = true
+        isReceiver = false
+        val viewModel = viewModel()
+
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        assertFalse(viewModel.uiState.value.autoTimerInDrawer)
+        viewModel.onProfileCheckOutcomeHandled()
+
+        // A later check that succeeds asks once; the failed one asked nothing before it.
+        isReceiver = true
+        viewModel.recheck()
+        viewModel.awaitState { it.autoTimerInDrawer }
+        assertEquals(1, receiver.requestsTo("/web/external").size)
+    }
+
+    @Test
     fun aSuccessfulRecheckAfterAFailureLeavesForTheStartRoute() = runBlocking<Unit> {
         settings.firstStart = false
         isReceiver = false
@@ -404,6 +445,7 @@ class ShellViewModelTest {
 
     private fun viewModel(): ShellViewModel = ShellViewModel(
         ReceiverRepository(clients, profiles),
+        AutoTimerRepository(clients, profiles),
         profiles,
         ReceiverProfileCheckRepository(profiles, clients),
         receiver.services,

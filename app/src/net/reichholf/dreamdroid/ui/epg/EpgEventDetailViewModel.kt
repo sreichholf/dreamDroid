@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.PluginPresence
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.userMessageText
@@ -27,7 +29,9 @@ data class EpgEventDetailUiState(
     val event: Event? = null,
     val saving: Boolean = false,
     val userMessage: UiText? = null,
-    val timerWritesBlocked: Boolean = false
+    val timerWritesBlocked: Boolean = false,
+    /** The receiver has the AutoTimer plugin, so the sheet offers Record series. */
+    val autoTimerAvailable: Boolean = false
 )
 
 /**
@@ -39,14 +43,18 @@ data class EpgEventDetailUiState(
 class EpgEventDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val timers: TimerRepository,
+    autoTimers: AutoTimerRepository,
     sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         EpgEventDetailUiState(event = savedStateHandle.get<Event>(KEY_EVENT))
     )
     val uiState: StateFlow<EpgEventDetailUiState> =
-        combine(_uiState, sessions.status) { state, connection ->
-            state.copy(timerWritesBlocked = connection.blocksMutations)
+        combine(_uiState, sessions.status, autoTimers.presence) { state, connection, presence ->
+            state.copy(
+                timerWritesBlocked = connection.blocksMutations,
+                autoTimerAvailable = presence == PluginPresence.Present
+            )
         }.stateIn(
             viewModelScope,
             SharingStarted.Eagerly,

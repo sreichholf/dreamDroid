@@ -16,6 +16,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -139,6 +140,34 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText(composeRule.activity.getString(R.string.saving))
             .assertIsDisplayed()
         composeRule.onNodeWithTag(MUTATION_PROGRESS_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    fun recordSeriesShowsOnlyWithTheAutoTimerPlugin() {
+        var available by mutableStateOf(false)
+        val recorded = mutableListOf<Event>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheet(
+                    state = EpgEventDetailUiState(
+                        event = tagesschau(),
+                        autoTimerAvailable = available
+                    ),
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = {},
+                    onSimilar = {},
+                    onRecordSeries = { recorded += it }
+                )
+            }
+        }
+        composeRule.onNodeWithText("Record series").assertDoesNotExist()
+
+        available = true
+        composeRule.onNodeWithText("Record series").performScrollTo().performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf(tagesschau()), recorded) }
     }
 
     @Test

@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.drawer
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -53,6 +56,25 @@ class DrawerScreenTest {
         composeRule.onNodeWithText("About").assertDoesNotExist()
         composeRule.onNodeWithText("Backup").assertDoesNotExist()
         composeRule.onNodeWithText("Changelog").assertDoesNotExist()
+    }
+
+    @Test
+    fun autoTimerRowFollowsThePlugin() {
+        var available by mutableStateOf(false)
+        composeRule.setContent {
+            DreamDroidTheme {
+                DrawerScreen(
+                    state = DrawerListState(),
+                    onItemClick = {},
+                    autoTimerAvailable = available
+                )
+            }
+        }
+        composeRule.onNodeWithText("AutoTimer").assertDoesNotExist()
+
+        available = true
+
+        composeRule.onNodeWithText("AutoTimer").assertIsDisplayed()
     }
 
     @Test

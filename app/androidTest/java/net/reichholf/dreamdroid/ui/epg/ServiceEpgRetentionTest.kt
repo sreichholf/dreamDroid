@@ -18,6 +18,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
@@ -114,7 +115,12 @@ class ServiceEpgRetentionTest {
                             ServiceEpgViewModel(createSavedStateHandle(), repository, sessions)
                         }
                         val detail = viewModel {
-                            EpgEventDetailViewModel(createSavedStateHandle(), timers, sessions)
+                            EpgEventDetailViewModel(
+                                createSavedStateHandle(),
+                                timers,
+                                AutoTimerRepository(clients, profiles),
+                                sessions
+                            )
                         }
                         viewModels += viewModel
                         ServiceEpgDestination(

@@ -26,7 +26,9 @@ fun EpgDetailModalSheet(
     /** The session blocks timer writes: the timer actions look online-only. */
     timerWritesBlocked: Boolean = false,
     /** Phone bottom sheet caps body height; TV overlay/fullscreen passes null. */
-    bodyHeightCap: Dp? = 360.dp
+    bodyHeightCap: Dp? = 360.dp,
+    /** Opens a new AutoTimer for this event; null hides the action. */
+    onRecordSeries: (() -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -54,6 +56,12 @@ fun EpgDetailModalSheet(
             showActions = showActions,
             timerWritesBlocked = timerWritesBlocked,
             bodyHeightCap = bodyHeightCap,
+            onRecordSeries = onRecordSeries?.let { record ->
+                {
+                    record()
+                    onDismiss()
+                }
+            },
             modifier = Modifier.padding(bottom = 16.dp)
         )
     }

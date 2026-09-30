@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+<autotimer version="8">
+
+ <defaults id="-1">
+ </defaults>
+
+ <timer name="dreamDroid test Wilsberg" match="Wilsberg" enabled="no" id="1" maxduration="120" offset="3" avoidDuplicateDescription="1">
+  <e2service>
+   <e2servicereference>1:0:19:2B66:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>ZDF HD</e2servicename>
+  </e2service>
+  <e2service>
+   <e2servicereference>1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>zdf_neo HD</e2servicename>
+  </e2service>
+  <e2service>
+   <e2servicereference>1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "userbouquet.favourites.tv" ORDER BY bouquet</e2servicereference>
+   <e2servicename>Favourites (TV)</e2servicename>
+  </e2service>
+  <afterevent>standby</afterevent>
+  <exclude where="title">Vorschau</exclude>
+  <exclude where="description">Wiederholung</exclude>
+  <include where="dayofweek">5</include>
+  <include where="dayofweek">6</include>
+  <e2tags>dreamdroid-post</e2tags>
+ </timer>
+
+</autotimer>

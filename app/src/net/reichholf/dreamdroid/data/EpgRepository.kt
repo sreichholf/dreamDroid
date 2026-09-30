@@ -134,6 +134,43 @@ class EpgRepository @Inject constructor(
             )
         }
 
+    /**
+     * The programme a timer on [serviceRef] from [beginSec] to [endSec] records. That window
+     * holds the recording margins, so it starts before the programme and ends after it: the
+     * programme is the one called [title] in it, else the one that fills most of it. The
+     * MultiEPG cache answers when it holds [title]; otherwise the receiver does, unless the
+     * session is Offline. Null when neither has a programme there.
+     */
+    suspend fun recordedProgramme(
+        serviceRef: String,
+        title: String,
+        beginSec: Long,
+        endSec: Long
+    ): Event? {
+        profiles.requireCurrent().id?.let { profileId ->
+            val cached = database.epgDao()
+                .serviceEventsOverlapping(profileId, serviceRef, beginSec, endSec)
+                .map { it.toEvent() }
+            programmeInWindow(cached, title, beginSec, endSec)
+                ?.takeIf { it.title == title }
+                ?.let { return it }
+        }
+        if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
+            return null
+        }
+        // The box answers `time` and a length in minutes with the programmes running then.
+        val minutes = (endSec - beginSec + SECONDS_PER_MINUTE - 1) / SECONDS_PER_MINUTE
+        val events = clients.current().getEvents(
+            listOf(
+                NameValuePair("sRef", serviceRef),
+                NameValuePair("time", beginSec.toString()),
+                NameValuePair("endTime", minutes.coerceAtLeast(1).toString())
+            ),
+            URIStore.EPG_SERVICE
+        ).value ?: return null
+        return programmeInWindow(events, title, beginSec, endSec)
+    }
+
     /** The newest recent EPG searches first. */
     fun recentSearches(): Flow<List<String>> =
         database.epgDao().recentSearches(RECENT_SEARCHES).map { rows -> rows.map { it.query } }
@@ -278,12 +315,35 @@ class EpgRepository @Inject constructor(
     }
 
     private companion object {
+        const val SECONDS_PER_MINUTE = 60L
+
         /** Upper bound of one cached search result list. */
         const val SEARCH_LIMIT = 256
 
         /** How many recent searches are kept. */
         const val RECENT_SEARCHES = 10
     }
+}
+
+/**
+ * Of [events], the one that overlaps [beginSec] to [endSec] longest, preferring those called
+ * [title]. The window holds the margins, so a same-titled programme right before or after the
+ * recorded one overlaps it too, by less.
+ */
+internal fun programmeInWindow(
+    events: List<Event>,
+    title: String,
+    beginSec: Long,
+    endSec: Long
+): Event? {
+    val overlaps = events.mapNotNull { event ->
+        val start = event.start.toLongOrNull() ?: return@mapNotNull null
+        val duration = event.duration.toLongOrNull() ?: return@mapNotNull null
+        val overlap = minOf(endSec, start + duration) - maxOf(beginSec, start)
+        if (overlap > 0) event to overlap else null
+    }
+    val titled = overlaps.filter { it.first.title == title }
+    return (titled.ifEmpty { overlaps }).maxByOrNull { it.second }?.first
 }
 
 /**

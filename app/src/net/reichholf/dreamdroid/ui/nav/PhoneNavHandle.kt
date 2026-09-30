@@ -8,6 +8,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -78,6 +79,15 @@ interface PhoneNavHandle {
         mode: BouquetMode
     ): Boolean
     fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean
+    fun navigateToAutoTimerPreview(id: Int, name: String): Boolean
+    fun navigateToAutoTimerEdit(route: AutoTimerEdit): Boolean
+    fun navigateToAutoTimerTargetPick(): Boolean
+
+    /** Hands the picked targets to the AutoTimer editor below and closes the picker. */
+    fun deliverAutoTimerTargets(targets: List<Target>): Boolean
+
+    /** Closes the editor and shows the saved AutoTimer instead of a stale preview. */
+    fun showAutoTimerAfterSave(id: Int, name: String): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)
     fun dispatchPendingComposeActivityResult()
     fun onActiveProfileChanged()

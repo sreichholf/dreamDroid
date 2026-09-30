@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.BouquetMode
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
 
 /**
@@ -39,6 +40,10 @@ object PhoneNavRoutes {
     const val TIMER_SERVICE_PICK = "timer_service_pick"
     const val BOUQUET_CONTENT = "bouquet_content"
     const val BOUQUET_ADD_SERVICES = "bouquet_add_services"
+    const val AUTOTIMERS = "autotimers"
+    const val AUTOTIMER_PREVIEW = "autotimer_preview"
+    const val AUTOTIMER_EDIT = "autotimer_edit"
+    const val AUTOTIMER_TARGET_PICK = "autotimer_target_pick"
 
     /** Absent [Epg.timeSec] / [MultiEpg.timeSec]. Zero is a real instant. */
     const val ABSENT_TIME_SEC = -1L
@@ -71,7 +76,8 @@ private val startRouteIds = setOf(
     PhoneNavRoutes.SETTINGS,
     PhoneNavRoutes.HUB,
     PhoneNavRoutes.TOOLS,
-    PhoneNavRoutes.PROFILE_CHECK
+    PhoneNavRoutes.PROFILE_CHECK,
+    PhoneNavRoutes.AUTOTIMERS
 )
 
 /** NavHost destination for a saved id. Unknown ids become [Hub]. */
@@ -103,6 +109,10 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.EPG_SEARCH -> EpgSearch()
     PhoneNavRoutes.BOUQUET_CONTENT -> BouquetContent(bouquetRef = "")
     PhoneNavRoutes.BOUQUET_ADD_SERVICES -> BouquetAddServices(bouquetRef = "")
+    PhoneNavRoutes.AUTOTIMERS -> AutoTimers
+    PhoneNavRoutes.AUTOTIMER_PREVIEW -> AutoTimerPreview(id = -1, name = "")
+    PhoneNavRoutes.AUTOTIMER_EDIT -> AutoTimerEdit()
+    PhoneNavRoutes.AUTOTIMER_TARGET_PICK -> AutoTimerTargetPick
     else -> Hub
 }
 
@@ -145,6 +155,10 @@ fun routeId(route: Any): String {
         ProfileCheck -> PhoneNavRoutes.PROFILE_CHECK
         PickService -> PhoneNavRoutes.PICK_SERVICE
         TimerServicePick -> PhoneNavRoutes.TIMER_SERVICE_PICK
+        AutoTimers -> PhoneNavRoutes.AUTOTIMERS
+        is AutoTimerPreview -> PhoneNavRoutes.AUTOTIMER_PREVIEW
+        is AutoTimerEdit -> PhoneNavRoutes.AUTOTIMER_EDIT
+        AutoTimerTargetPick -> PhoneNavRoutes.AUTOTIMER_TARGET_PICK
         is ServiceEpg -> PhoneNavRoutes.SERVICE_EPG
         is EpgSearch -> PhoneNavRoutes.EPG_SEARCH
         is Epg -> PhoneNavRoutes.EPG
@@ -229,6 +243,50 @@ data object PickService
 @Serializable
 @SerialName(PhoneNavRoutes.TIMER_SERVICE_PICK)
 data object TimerServicePick
+
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMERS)
+data object AutoTimers
+
+/** What the AutoTimer [id] called [name] would record; see `AutoTimerRepository.preview`. */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_PREVIEW)
+data class AutoTimerPreview(val id: Int, val name: String)
+
+/**
+ * Edits the AutoTimer [id] called [name]; a negative [id] creates one. A create may start
+ * from an EPG event: [title] on [serviceRef], beginning at [beginSec] for [durationSec].
+ */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_EDIT)
+data class AutoTimerEdit(
+    val id: Int = -1,
+    val name: String = "",
+    val title: String = "",
+    val serviceRef: String = "",
+    val serviceName: String = "",
+    val beginSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC,
+    val durationSec: Long = 0
+) {
+    companion object {
+        /** A new AutoTimer for every broadcast of [event]'s title on its channel. */
+        fun recordSeries(event: Event) = AutoTimerEdit(
+            title = event.title,
+            serviceRef = event.serviceReference,
+            serviceName = event.serviceName,
+            beginSec = event.start.toLongOrNull() ?: PhoneNavRoutes.ABSENT_TIME_SEC,
+            durationSec = event.duration.toLongOrNull() ?: 0
+        )
+    }
+}
+
+/** Bouquets and channels for the AutoTimer editor, handed back under [AUTOTIMER_PICKED_TARGETS]. */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_TARGET_PICK)
+data object AutoTimerTargetPick
+
+/** Key of the editor entry's `savedStateHandle` that receives the picked targets. */
+const val AUTOTIMER_PICKED_TARGETS = "autotimer_picked_targets"
 
 @Serializable
 @SerialName(PhoneNavRoutes.SERVICE_EPG)

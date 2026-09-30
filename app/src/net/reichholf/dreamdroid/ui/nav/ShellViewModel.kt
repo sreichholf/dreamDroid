@@ -13,6 +13,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.PluginPresence
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -47,7 +49,9 @@ data class ShellUiState(
     val profileName: String = "",
     val profileCheck: ProfileCheckUi = CHECKING,
     val profileCheckStarted: ProfileCheckStart? = null,
-    val profileCheckOutcome: ProfileCheckOutcome? = null
+    val profileCheckOutcome: ProfileCheckOutcome? = null,
+    /** The receiver has the AutoTimer plugin, so the drawer lists AutoTimer. */
+    val autoTimerInDrawer: Boolean = false
 )
 
 /** A profile check started. [showGate]: open the gate, which shows Checking. */
@@ -84,6 +88,7 @@ private val CHECKING = ProfileCheckUi.Checking(UiText.Resource(R.string.checking
 @HiltViewModel
 class ShellViewModel @Inject constructor(
     private val receiver: ReceiverRepository,
+    private val autoTimers: AutoTimerRepository,
     private val profiles: ProfileRepository,
     private val checks: ProfileCheckRepository,
     private val services: ServiceRepository,
@@ -108,6 +113,13 @@ class ShellViewModel @Inject constructor(
         viewModelScope.launch {
             profiles.current.collect { profile ->
                 _uiState.update { it.copy(profileName = profile?.name.orEmpty()) }
+            }
+        }
+        viewModelScope.launch {
+            autoTimers.presence.collect { presence ->
+                _uiState.update {
+                    it.copy(autoTimerInDrawer = presence == PluginPresence.Present)
+                }
             }
         }
     }
@@ -321,6 +333,7 @@ class ShellViewModel @Inject constructor(
                 ProfileCheckOutcome.Leave(offGateToo = false, firstStart = firstStart)
             }
         } else {
+            viewModelScope.launch { autoTimers.refreshPresence() }
             val openStart = openStartOnSuccess
             openStartOnSuccess = false
             ProfileCheckOutcome.Leave(offGateToo = openStart || firstStart, firstStart = firstStart)

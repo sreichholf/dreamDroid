@@ -27,6 +27,14 @@ class DrawerHighlightTest {
     }
 
     @Test
+    fun autoTimerHighlightsAutoTimer() {
+        assertEquals(
+            R.id.menu_navigation_autotimer,
+            DrawerHighlight.itemIdForRoute(PhoneNavRoutes.AUTOTIMERS)
+        )
+    }
+
+    @Test
     fun backFromZapHighlightsZap() {
         assertEquals(
             R.id.menu_navigation_zap,

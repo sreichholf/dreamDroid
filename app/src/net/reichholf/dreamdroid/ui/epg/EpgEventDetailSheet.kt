@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
+import net.reichholf.dreamdroid.ui.nav.AutoTimerEdit
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
@@ -32,7 +33,12 @@ fun EpgEventDetailHost(handle: PhoneNavHandle, viewModel: EpgEventDetailViewMode
             handle.runOnlineOnly { handle.navigateToTimerEdit(Timer.createByEvent(event), true) }
         },
         onImdb = { event -> IntentFactory.queryIMDb(context, event) },
-        onSimilar = { event -> handle.navigateToEpgSearch(event.title) }
+        onSimilar = { event -> handle.navigateToEpgSearch(event.title) },
+        onRecordSeries = { event ->
+            handle.runOnlineOnly {
+                handle.navigateToAutoTimerEdit(AutoTimerEdit.recordSeries(event))
+            }
+        }
     )
 }
 
@@ -44,7 +50,9 @@ fun EpgEventDetailSheet(
     onSetTimer: (Event) -> Unit,
     onEditTimer: (Event) -> Unit,
     onImdb: (Event) -> Unit,
-    onSimilar: (Event) -> Unit
+    onSimilar: (Event) -> Unit,
+    /** Offered while [EpgEventDetailUiState.autoTimerAvailable]. */
+    onRecordSeries: (Event) -> Unit = {}
 ) {
     val event = state.event
     if (event != null) {
@@ -59,7 +67,12 @@ fun EpgEventDetailSheet(
             onEditTimer = { onEditTimer(event) },
             onImdb = { onImdb(event) },
             onSimilar = { onSimilar(event) },
-            timerWritesBlocked = state.timerWritesBlocked
+            timerWritesBlocked = state.timerWritesBlocked,
+            onRecordSeries = if (state.autoTimerAvailable) {
+                { onRecordSeries(event) }
+            } else {
+                null
+            }
         )
     }
     val progress = if (state.saving) {
