@@ -2,7 +2,10 @@ package net.reichholf.dreamdroid.ui.autotimer
 
 import androidx.lifecycle.SavedStateHandle
 import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -13,6 +16,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
@@ -297,6 +301,79 @@ class AutoTimerEditViewModelTest {
     }
 
     @Test
+    fun recordSeriesRouteCarriesTheEvent() {
+        val route = AutoTimerEdit.recordSeries(
+            Event(
+                title = "Wilsberg - Einfach weg",
+                start = "1791051000",
+                duration = "6000",
+                serviceReference = ZDF,
+                serviceName = "ZDF HD"
+            )
+        )
+
+        assertEquals(
+            AutoTimerEdit(
+                title = "Wilsberg - Einfach weg",
+                serviceRef = ZDF,
+                serviceName = "ZDF HD",
+                beginSec = 1791051000,
+                durationSec = 6000
+            ),
+            route
+        )
+    }
+
+    @Test
+    fun recordSeriesSearchesTheTitleOnTheEventsChannel() = runBlocking<Unit> {
+        receiver.respond(EDIT, loadWebFixture("autotimer/result_add.xml"))
+        val viewModel = viewModel(
+            SavedStateHandle(
+                mapOf(
+                    AutoTimerEdit::id.name to AutoTimerEditViewModel.NEW_ID,
+                    AutoTimerEdit::name.name to "",
+                    AutoTimerEdit::title.name to "Wilsberg",
+                    AutoTimerEdit::serviceRef.name to ZDF,
+                    AutoTimerEdit::serviceName.name to "ZDF HD",
+                    AutoTimerEdit::beginSec.name to 1791051000L,
+                    AutoTimerEdit::durationSec.name to 6000L
+                )
+            )
+        )
+
+        val state = viewModel.editing()
+
+        assertEquals("Wilsberg", viewModel.match.text)
+        assertEquals(listOf(Target.Channel(ZDF, "ZDF HD")), state.draft.targets)
+        assertNull(state.draft.timeWindow)
+        val zone = ZoneId.systemDefault()
+        val suggested = ClockWindow(
+            Instant.ofEpochSecond(1791051000L - 3600).atZone(zone).toLocalTime(),
+            Instant.ofEpochSecond(1791051000L + 6000 + 3600).atZone(zone).toLocalTime()
+        )
+        assertEquals(suggested, state.suggestedWindow)
+
+        // The box names an AutoTimer without a name after its match.
+        receiver.respond(
+            LIST,
+            loadWebFixture("autotimer/list_disabled_full.xml")
+                .replace("name=\"dreamDroid test Wilsberg\"", "name=\"Wilsberg\"")
+        )
+        viewModel.applySuggestedWindow()
+        viewModel.save()
+        assertEquals(AutoTimerPreview(1, "Wilsberg"), viewModel.saved())
+
+        val query = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertNull(query.queryParameter("id"))
+        assertEquals("Wilsberg", query.queryParameter("match"))
+        assertEquals(ZDF, query.queryParameter("services"))
+        assertEquals(
+            suggested.from.format(DateTimeFormatter.ofPattern("HH:mm")),
+            query.queryParameter("timespanFrom")
+        )
+    }
+
+    @Test
     fun processDeathKeepsTheDraftWithoutAskingTheBox() = runBlocking<Unit> {
         val handle = handle(id = 1, name = "dreamDroid test Wilsberg")
         val viewModel = viewModel(handle)
@@ -332,6 +409,7 @@ class AutoTimerEditViewModelTest {
 
     private companion object {
         const val TIMEOUT = 5_000L
+        const val ZDF = "1:0:19:2B66:3F3:1:C00000:0:0:0:"
         const val LOCATIONS = "/web/getlocations"
         const val TAGS = "/web/gettags"
         const val EXTERNALS = "/web/external"

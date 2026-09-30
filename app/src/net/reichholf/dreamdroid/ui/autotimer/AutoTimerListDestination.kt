@@ -7,7 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.ui.autotimer.AutoTimerEditViewModel.Companion.NEW_ID
+import net.reichholf.dreamdroid.ui.nav.AutoTimerEdit
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
@@ -41,7 +41,7 @@ fun AutoTimerListDestination(
                 label = stringResource(R.string.autotimer_new),
                 iconRes = R.drawable.ic_action_fab_add,
                 enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending,
-                onClick = { online { handle.navigateToAutoTimerEdit(NEW_ID, "") } }
+                onClick = { online { handle.navigateToAutoTimerEdit(AutoTimerEdit()) } }
             )
         )
     )
@@ -54,7 +54,7 @@ fun AutoTimerListDestination(
         onMenu = viewModel::onItemMenu,
         onMenuAction = { entry, action ->
             if (action == AutoTimerRowAction.Edit) {
-                online { handle.navigateToAutoTimerEdit(entry.id.value, entry.name) }
+                online { handle.navigateToAutoTimerEdit(AutoTimerEdit(entry.id.value, entry.name)) }
             } else {
                 online { viewModel.onMenuAction(entry, action) }
             }

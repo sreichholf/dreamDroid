@@ -65,6 +65,19 @@ class AutoTimerEditScreenTest {
     }
 
     @Test
+    fun theWindowAroundTheEventIsOfferedWhileThereIsNone() {
+        val suggested = ClockWindow(LocalTime.of(19, 10), LocalTime.of(22, 50))
+        show(editing(DRAFT.copy(timeWindow = null)).copy(suggestedWindow = suggested))
+        val format = DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)
+
+        composeRule.onNodeWithText(
+            "Only between ${suggested.from.format(format)} and ${suggested.to.format(format)}"
+        ).performScrollTo().performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf("applySuggestedWindow"), actions.calls) }
+    }
+
+    @Test
     fun aBlankMatchShowsItsError() {
         show(editing(DRAFT).copy(matchError = UiText.Raw("Enter what to search for.")), match = "")
 
@@ -231,6 +244,10 @@ class AutoTimerEditScreenTest {
 
         override fun setDateWindow(on: Boolean) {
             calls += "setDateWindow $on"
+        }
+
+        override fun applySuggestedWindow() {
+            calls += "applySuggestedWindow"
         }
 
         override fun openPicker(pick: AutoTimerEditPick) {

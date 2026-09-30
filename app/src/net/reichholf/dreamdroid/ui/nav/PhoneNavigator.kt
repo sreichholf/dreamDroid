@@ -471,9 +471,9 @@ class PhoneNavigator(
         return true
     }
 
-    override fun navigateToAutoTimerEdit(id: Int, name: String): Boolean {
+    override fun navigateToAutoTimerEdit(route: AutoTimerEdit): Boolean {
         val controller = navController ?: return false
-        controller.navigate(AutoTimerEdit(id, name)) {
+        controller.navigate(route) {
             launchSingleTop = true
         }
         return true

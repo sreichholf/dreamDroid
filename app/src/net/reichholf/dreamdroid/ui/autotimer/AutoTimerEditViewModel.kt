@@ -125,6 +125,8 @@ data class AutoTimerEditUiState(
     /** Recording locations and tags the receiver offers; empty until it answered. */
     val locations: List<String> = emptyList(),
     val tagChoices: List<String> = emptyList(),
+    /** The time around the event a new AutoTimer came from, offered with one tap. */
+    val suggestedWindow: ClockWindow? = null,
     val userMessage: UiText? = null,
     val saved: AutoTimerPreview? = null
 ) {
@@ -150,11 +152,22 @@ class AutoTimerEditViewModel @Inject constructor(
     AutoTimerEditActions {
     private val routeId = savedStateHandle.get<Int>(AutoTimerEdit::id.name) ?: NEW_ID
     private val routeName = savedStateHandle.get<String>(AutoTimerEdit::name.name).orEmpty()
+    private val seriesTitle = savedStateHandle.get<String>(AutoTimerEdit::title.name).orEmpty()
+    private val seriesService = savedStateHandle.get<String>(AutoTimerEdit::serviceRef.name)
+        .orEmpty()
+        .takeIf { it.isNotEmpty() }
+        ?.let { ref ->
+            Target.Channel(
+                ref,
+                savedStateHandle.get<String>(AutoTimerEdit::serviceName.name).orEmpty()
+            )
+        }
 
     private val _uiState = MutableStateFlow(
         AutoTimerEditUiState(
             isCreate = routeId == NEW_ID,
-            blocked = sessions.status.value.blocksMutations
+            blocked = sessions.status.value.blocksMutations,
+            suggestedWindow = suggestedWindow(savedStateHandle)
         )
     )
     val uiState: StateFlow<AutoTimerEditUiState> = _uiState.asStateFlow()
@@ -216,7 +229,8 @@ class AutoTimerEditViewModel @Inject constructor(
                 return@launch
             }
             if (_uiState.value.isCreate) {
-                start(loaded = null, base = load.defaults ?: AutoTimerSettings.NEW)
+                val defaults = load.defaults ?: AutoTimerSettings.NEW
+                start(loaded = null, base = defaults, draft = seriesDraft(defaults))
             } else {
                 val loaded = (
                     load.entries.firstOrNull { it.id.value == routeId }
@@ -227,7 +241,7 @@ class AutoTimerEditViewModel @Inject constructor(
                 if (loaded == null) {
                     _uiState.update { it.copy(content = AutoTimerEditContent.Gone) }
                 } else {
-                    start(loaded, loaded.settings)
+                    start(loaded, loaded.settings, loaded.settings)
                 }
             }
         }
@@ -284,6 +298,11 @@ class AutoTimerEditViewModel @Inject constructor(
                 null
             }
         )
+    }
+
+    override fun applySuggestedWindow() {
+        val window = _uiState.value.suggestedWindow ?: return
+        edit { copy(timeWindow = window) }
     }
 
     override fun setFilterKind(kind: FilterKind) {
@@ -506,21 +525,32 @@ class AutoTimerEditViewModel @Inject constructor(
         _uiState.update { it.copy(userMessage = null) }
     }
 
-    private fun start(loaded: AutoTimer?, base: AutoTimerSettings) {
+    /** A new AutoTimer from an EPG event searches its title on its channel. */
+    private fun seriesDraft(defaults: AutoTimerSettings): AutoTimerSettings {
+        if (seriesTitle.isBlank()) {
+            return defaults
+        }
+        return defaults.copy(
+            match = seriesTitle,
+            targets = listOfNotNull(seriesService).ifEmpty { defaults.targets }
+        )
+    }
+
+    private fun start(loaded: AutoTimer?, base: AutoTimerSettings, draft: AutoTimerSettings) {
         savedStateHandle[KEY_LOADED] = loaded
         savedStateHandle[KEY_BASE] = base
-        savedStateHandle[KEY_DRAFT] = base
-        match.set(base.match)
-        name.set(if (loaded != null) base.name else "")
-        offsetBefore.set(base.offset?.beforeMinutes?.toString().orEmpty())
-        offsetAfter.set(base.offset?.afterMinutes?.toString().orEmpty())
-        maxDuration.set(base.maxDurationMinutes?.toString().orEmpty())
+        savedStateHandle[KEY_DRAFT] = draft
+        match.set(draft.match)
+        name.set(if (loaded != null) draft.name else "")
+        offsetBefore.set(draft.offset?.beforeMinutes?.toString().orEmpty())
+        offsetAfter.set(draft.offset?.afterMinutes?.toString().orEmpty())
+        maxDuration.set(draft.maxDurationMinutes?.toString().orEmpty())
         _uiState.update {
             it.copy(
                 content = AutoTimerEditContent.Editing,
                 loaded = loaded,
                 base = base,
-                draft = base,
+                draft = draft,
                 matchError = null
             )
         }
@@ -561,6 +591,25 @@ class AutoTimerEditViewModel @Inject constructor(
     companion object {
         /** [AutoTimerEdit.id] of a new AutoTimer. */
         const val NEW_ID = -1
+
+        /**
+         * An hour around the event, as the plugin's own "AutoTimer from event" proposes it;
+         * null without an event.
+         */
+        private fun suggestedWindow(handle: SavedStateHandle): ClockWindow? {
+            val begin = handle.get<Long>(AutoTimerEdit::beginSec.name)?.takeIf { it >= 0 }
+                ?: return null
+            val duration = handle.get<Long>(AutoTimerEdit::durationSec.name) ?: 0
+            val zone = ZoneId.systemDefault()
+            val from = Instant.ofEpochSecond(begin - SUGGESTION_MARGIN_SEC).atZone(zone)
+            val to = Instant.ofEpochSecond(begin + duration + SUGGESTION_MARGIN_SEC).atZone(zone)
+            return ClockWindow(
+                from.toLocalTime().withSecond(0).withNano(0),
+                to.toLocalTime().withSecond(0).withNano(0)
+            )
+        }
+
+        private const val SUGGESTION_MARGIN_SEC = 3600L
 
         private val DEFAULT_TIME_WINDOW = ClockWindow(LocalTime.of(20, 0), LocalTime.of(23, 0))
         private const val DEFAULT_DATE_DAYS = 30L

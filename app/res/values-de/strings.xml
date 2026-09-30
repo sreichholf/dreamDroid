@@ -455,4 +455,6 @@
     <string name="autotimer_compare_title">Titel</string>
     <string name="autotimer_compare_short">Titel und Kurzbeschreibung</string>
     <string name="autotimer_compare_all">Titel und alle Beschreibungen</string>
+    <string name="autotimer_record_series">Serie aufnehmen</string>
+    <string name="autotimer_suggested_window">Nur zwischen %1$s und %2$s</string>
 </resources>

@@ -80,7 +80,7 @@ interface PhoneNavHandle {
     ): Boolean
     fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean
     fun navigateToAutoTimerPreview(id: Int, name: String): Boolean
-    fun navigateToAutoTimerEdit(id: Int, name: String): Boolean
+    fun navigateToAutoTimerEdit(route: AutoTimerEdit): Boolean
     fun navigateToAutoTimerTargetPick(): Boolean
 
     /** Hands the picked targets to the AutoTimer editor below and closes the picker. */

@@ -18,6 +18,7 @@ import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -42,6 +43,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
+import net.reichholf.dreamdroid.enigma.autotimer.ClockWindow
 import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
 import net.reichholf.dreamdroid.enigma.autotimer.DescriptionCompare
 import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
@@ -84,6 +86,7 @@ interface AutoTimerEditActions {
     fun setTimeWindow(on: Boolean)
     fun toggleDay(day: DayFilter)
     fun setDateWindow(on: Boolean)
+    fun applySuggestedWindow()
     fun openPicker(pick: AutoTimerEditPick)
     fun dismissPicker()
     fun onTimePicked(hour: Int, minute: Int)
@@ -211,7 +214,7 @@ private fun AutoTimerEditForm(
             )
         }
         TargetsSection(draft = draft, actions = actions, onPickTargets = onPickTargets)
-        WhenSection(draft = draft, actions = actions)
+        WhenSection(draft = draft, suggested = state.suggestedWindow, actions = actions)
         FiltersSection(state = state, filter = fields.filter, actions = actions)
         RecordingSection(state = state, fields = fields, actions = actions)
         state.loaded?.extras?.let { ExtrasNote(it) }
@@ -257,13 +260,31 @@ private fun TargetsSection(
 }
 
 @Composable
-private fun WhenSection(draft: AutoTimerSettings, actions: AutoTimerEditActions) {
+private fun WhenSection(
+    draft: AutoTimerSettings,
+    suggested: ClockWindow?,
+    actions: AutoTimerEditActions
+) {
     EditFormSection(title = stringResource(R.string.autotimer_when)) {
         EditSwitchRow(
             checked = draft.timeWindow != null,
             onCheckedChange = actions::setTimeWindow,
             label = stringResource(R.string.autotimer_time_window)
         )
+        if (draft.timeWindow == null && suggested != null) {
+            SuggestionChip(
+                onClick = actions::applySuggestedWindow,
+                label = {
+                    Text(
+                        stringResource(
+                            R.string.autotimer_suggested_window,
+                            formatClock(suggested.from),
+                            formatClock(suggested.to)
+                        )
+                    )
+                }
+            )
+        }
         draft.timeWindow?.let { window ->
             EditPairedRow {
                 EditPickField(

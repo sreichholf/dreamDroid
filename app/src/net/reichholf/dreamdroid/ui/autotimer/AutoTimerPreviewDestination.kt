@@ -7,6 +7,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.nav.AutoTimerEdit
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
@@ -39,7 +40,9 @@ fun AutoTimerPreviewDestination(
                         if (uiState.blocked) {
                             handle.requestNeedsReceiver()
                         } else {
-                            handle.navigateToAutoTimerEdit(it.id.value, it.settings.name)
+                            handle.navigateToAutoTimerEdit(
+                                AutoTimerEdit(it.id.value, it.settings.name)
+                            )
                         }
                     }
                 )

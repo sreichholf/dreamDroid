@@ -4,6 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.BouquetMode
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
 
 /**
@@ -252,10 +253,32 @@ data object AutoTimers
 @SerialName(PhoneNavRoutes.AUTOTIMER_PREVIEW)
 data class AutoTimerPreview(val id: Int, val name: String)
 
-/** Edits the AutoTimer [id] called [name]; a negative [id] creates one. */
+/**
+ * Edits the AutoTimer [id] called [name]; a negative [id] creates one. A create may start
+ * from an EPG event: [title] on [serviceRef], beginning at [beginSec] for [durationSec].
+ */
 @Serializable
 @SerialName(PhoneNavRoutes.AUTOTIMER_EDIT)
-data class AutoTimerEdit(val id: Int = -1, val name: String = "")
+data class AutoTimerEdit(
+    val id: Int = -1,
+    val name: String = "",
+    val title: String = "",
+    val serviceRef: String = "",
+    val serviceName: String = "",
+    val beginSec: Long = PhoneNavRoutes.ABSENT_TIME_SEC,
+    val durationSec: Long = 0
+) {
+    companion object {
+        /** A new AutoTimer for every broadcast of [event]'s title on its channel. */
+        fun recordSeries(event: Event) = AutoTimerEdit(
+            title = event.title,
+            serviceRef = event.serviceReference,
+            serviceName = event.serviceName,
+            beginSec = event.start.toLongOrNull() ?: PhoneNavRoutes.ABSENT_TIME_SEC,
+            durationSec = event.duration.toLongOrNull() ?: 0
+        )
+    }
+}
 
 /** Bouquets and channels for the AutoTimer editor, handed back under [AUTOTIMER_PICKED_TARGETS]. */
 @Serializable

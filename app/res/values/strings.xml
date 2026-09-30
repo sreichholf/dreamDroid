@@ -509,4 +509,6 @@
     <string name="autotimer_compare_title">Title</string>
     <string name="autotimer_compare_short">Title and short description</string>
     <string name="autotimer_compare_all">Title and all descriptions</string>
+    <string name="autotimer_record_series">Record series</string>
+    <string name="autotimer_suggested_window">Only between %1$s and %2$s</string>
 </resources>

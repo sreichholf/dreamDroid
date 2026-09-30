@@ -12,6 +12,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -33,6 +34,10 @@ import org.junit.jupiter.api.Test
 class EpgEventDetailViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<EpgEventDetailViewModel>()
+    private val autoTimers = AutoTimerRepository(
+        enigmaClients(receiver.profiles.repository),
+        receiver.profiles.repository
+    )
 
     @BeforeEach
     fun setUp() {
@@ -140,6 +145,26 @@ class EpgEventDetailViewModelTest {
         assertEquals(1, receiver.server.requestCount)
     }
 
+    @Test
+    fun recordSeriesFollowsTheAutoTimerPlugin() = runBlocking<Unit> {
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == "/web/external") {
+                MockResponse().setBody(
+                    "<e2webifexternals><e2webifexternal><e2path>autotimer</e2path>" +
+                        "</e2webifexternal></e2webifexternals>"
+                )
+            } else {
+                MockResponse().setResponseCode(404)
+            }
+        }
+        val viewModel = viewModel()
+        assertFalse(viewModel.uiState.value.autoTimerAvailable)
+
+        autoTimers.refreshPresence()
+
+        withTimeout(5_000L) { viewModel.uiState.first { it.autoTimerAvailable } }
+    }
+
     private fun result(state: String, text: String) =
         "<e2simplexmlresult><e2state>$state</e2state><e2statetext>$text</e2statetext>" +
             "</e2simplexmlresult>"
@@ -151,6 +176,7 @@ class EpgEventDetailViewModelTest {
             receiver.profiles.repository,
             receiver.profiles.database
         ),
+        autoTimers,
         receiver.sessions
     ).also { viewModels += it }
 
