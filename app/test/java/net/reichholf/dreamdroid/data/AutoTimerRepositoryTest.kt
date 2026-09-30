@@ -195,6 +195,29 @@ class AutoTimerRepositoryTest {
     }
 
     @Test
+    fun everyWriteCountsWhateverItsOutcome() = runBlocking<Unit> {
+        receiver.respond(EDIT, TestReceiver.simpleResult(true, "ok"))
+        receiver.respond(PARSE, RUN_REPLY)
+        val wilsberg = loaded()
+        assertEquals(0, repository.revision.value)
+
+        repository.setEnabled(wilsberg, enabled = false)
+        repository.runNow()
+        receiver.respond(
+            LIST,
+            loadWebFixture("autotimer/list_enabled.xml").replace("id=\"2\"", "id=\"1\"")
+        )
+        assertEquals(
+            AutoTimerWriteResult.Conflict,
+            repository.remove(AutoTimerEntry.Readable(wilsberg))
+        )
+
+        assertEquals(3, repository.revision.value)
+        repository.list()
+        assertEquals(3, repository.revision.value)
+    }
+
+    @Test
     fun aRejectedWriteFailsWithTheBoxText() = runBlocking<Unit> {
         receiver.respond(
             EDIT,

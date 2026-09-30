@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.AutoTimerWriteResult
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.testutil.TestReceiver
@@ -117,6 +118,53 @@ class AutoTimerListViewModelTest {
         // The first list, the guard's, and the one after the write.
         assertEquals(3, receiver.requestsTo(LIST).size)
         assertNull(viewModel.uiState.value.userMessage)
+    }
+
+    @Test
+    fun aWriteFromAnotherScreenListsAgain() = runBlocking<Unit> {
+        receiver.respond(EDIT, simpleResult(true, "AutoTimer wurde erfolgreich geändert"))
+        val viewModel = viewModel()
+        val entry = viewModel.ready().single() as AutoTimerEntry.Readable
+        // The guard still sees the AutoTimer as loaded; the box then lists it enabled.
+        receiver.respondOnce(LIST, loadWebFixture("autotimer/list_disabled_full.xml"))
+        receiver.respond(
+            LIST,
+            loadWebFixture("autotimer/list_disabled_full.xml")
+                .replace("enabled=\"no\"", "enabled=\"yes\"")
+        )
+
+        // The preview's Enable, while the list waits below it.
+        assertEquals(
+            AutoTimerWriteResult.Done(UiText.Raw("AutoTimer wurde erfolgreich geändert")),
+            autoTimers.setEnabled(entry.autoTimer, true)
+        )
+
+        val listed = withTimeout(TIMEOUT) {
+            viewModel.uiState.first { state ->
+                (state.content as? AutoTimerListContent.Ready)?.entries?.any {
+                    (it as AutoTimerEntry.Readable).autoTimer.settings.enabled
+                } == true
+            }
+        }
+        assertFalse(listed.refreshing)
+        // The first list, the guard's, and the one after the write.
+        assertEquals(3, receiver.requestsTo(LIST).size)
+    }
+
+    @Test
+    fun theListsOwnWriteListsOnce() = runBlocking<Unit> {
+        receiver.respond(REMOVE, loadWebFixture("autotimer/result_remove.xml"))
+        val viewModel = viewModel()
+        val entry = viewModel.ready().single()
+        receiver.respondOnce(LIST, loadWebFixture("autotimer/list_disabled_full.xml"))
+        receiver.respond(LIST, loadWebFixture("autotimer/list_empty.xml"))
+
+        viewModel.onMenuAction(entry, AutoTimerRowAction.Delete)
+        viewModel.confirmDelete()
+        viewModel.settled()
+
+        assertFalse(viewModel.uiState.value.refreshing)
+        assertEquals(3, receiver.requestsTo(LIST).size)
     }
 
     @Test

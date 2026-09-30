@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -69,7 +70,8 @@ data class AutoTimerListUiState(
 /**
  * The AutoTimers of the active profile's receiver, read from the box on every load. A profile
  * change lists the new receiver's AutoTimers; a failed list loads again once the session
- * takes requests. Every write lists the AutoTimers again, since the box may renumber them.
+ * takes requests. Every write lists the AutoTimers again, since the box may renumber them;
+ * that includes a write from the preview or the editor while the list waits below them.
  */
 @HiltViewModel
 class AutoTimerListViewModel @Inject constructor(
@@ -109,10 +111,14 @@ class AutoTimerListViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            // A write of this list, or Run now, lists the AutoTimers itself afterwards.
+            autoTimers.revision.drop(1).collect { reload() }
+        }
     }
 
     fun reload() {
-        if (_uiState.value.pending) {
+        if (_uiState.value.pending || _uiState.value.running) {
             return
         }
         loadJob?.cancel()

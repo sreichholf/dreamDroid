@@ -4,6 +4,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -95,6 +97,14 @@ class AutoTimerRepository @Inject constructor(
             profile?.id?.let { known[it] } ?: PluginPresence.Unknown
         }.distinctUntilChanged()
 
+    private val _revision = MutableStateFlow(0)
+
+    /**
+     * Counts the writes sent to the box, whatever their outcome, so a screen that shows
+     * AutoTimers knows to list them again after a write made elsewhere.
+     */
+    val revision: StateFlow<Int> = _revision.asStateFlow()
+
     /** Emits the active profile's id, and again each time the active profile changes. */
     val profileId: Flow<Int?> = profiles.current.map { it?.id }.distinctUntilChanged()
 
@@ -151,14 +161,16 @@ class AutoTimerRepository @Inject constructor(
      * Writes [write] unless the box renumbered its AutoTimers since they were loaded. One
      * write runs at a time.
      */
-    suspend fun save(write: AutoTimerWrite): AutoTimerWriteResult = writes.withLock {
-        when (write) {
-            is AutoTimerWrite.Change -> {
-                guard(AutoTimerEntry.Readable(write.loaded))?.let { return it }
-                result(clients.current().editAutoTimer(write.toParams()))
-            }
+    suspend fun save(write: AutoTimerWrite): AutoTimerWriteResult = counted {
+        writes.withLock {
+            when (write) {
+                is AutoTimerWrite.Change ->
+                    guard(AutoTimerEntry.Readable(write.loaded))
+                        ?: result(clients.current().editAutoTimer(write.toParams()))
 
-            is AutoTimerWrite.Create -> result(clients.current().editAutoTimer(write.toParams()))
+                is AutoTimerWrite.Create ->
+                    result(clients.current().editAutoTimer(write.toParams()))
+            }
         }
     }
 
@@ -169,7 +181,7 @@ class AutoTimerRepository @Inject constructor(
      */
     suspend fun runNow(): AutoTimerWriteResult {
         val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
-        return result(EnigmaClient(http).runAutoTimers())
+        return counted { result(EnigmaClient(http).runAutoTimers()) }
     }
 
     /**
@@ -191,12 +203,23 @@ class AutoTimerRepository @Inject constructor(
         save(AutoTimerWrite.Change(autoTimer, autoTimer.settings.copy(enabled = enabled)))
 
     /** Removes [entry] unless its id names another AutoTimer by now. */
-    suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = writes.withLock {
-        guard(entry)?.let { return it }
-        result(
-            clients.current()
-                .removeAutoTimer(listOf(NameValuePair("id", entry.id.value.toString())))
-        )
+    suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = counted {
+        writes.withLock {
+            guard(entry) ?: result(
+                clients.current()
+                    .removeAutoTimer(listOf(NameValuePair("id", entry.id.value.toString())))
+            )
+        }
+    }
+
+    /**
+     * Runs [write], then counts it in [revision]. A refused write counts too: its conflict
+     * means a shown list is out of date.
+     */
+    private inline fun counted(write: () -> AutoTimerWriteResult): AutoTimerWriteResult = try {
+        write()
+    } finally {
+        _revision.update { it + 1 }
     }
 
     /**
