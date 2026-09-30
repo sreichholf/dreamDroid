@@ -30,6 +30,7 @@ fun AutoTimerListDestination(
     AutoTimerListScreen(
         state = uiState,
         onRefresh = viewModel::reload,
+        onOpen = { handle.navigateToAutoTimerPreview(it.id.value, it.name) },
         onEnabledChange = { entry, enabled -> online { viewModel.setEnabled(entry, enabled) } },
         onMenu = viewModel::onItemMenu,
         onMenuAction = { entry, action -> online { viewModel.onMenuAction(entry, action) } },

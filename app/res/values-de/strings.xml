@@ -383,4 +383,11 @@
     <string name="autotimer_delete">AutoTimer löschen</string>
     <string name="autotimer_delete_confirm">AutoTimer \"%1$s\" löschen? Timer, die er schon angelegt hat, bleiben.</string>
     <string name="autotimer_changed">Die AutoTimer wurden auf dem Receiver geändert. Die Liste zeigt sie jetzt, wie sie sind.</string>
+    <string name="autotimer_upcoming">Demnächst (%1$d)</string>
+    <string name="autotimer_skipped">Übersprungen (%1$d)</string>
+    <string name="autotimer_no_matches">Im EPG passt gerade nichts.</string>
+    <string name="autotimer_gone">Dieser AutoTimer wurde auf dem Receiver geändert. Zurück zur Liste, um ihn so zu sehen, wie er jetzt ist.</string>
+    <string name="autotimer_plugin_failed">AutoTimer ist fehlgeschlagen: %1$s</string>
+    <string name="autotimer_preview_disabled">Der Receiver zeigt nur für aktive AutoTimer eine Vorschau.</string>
+    <string name="autotimer_enable">Aktivieren</string>
 </resources>

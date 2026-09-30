@@ -78,6 +78,7 @@ interface PhoneNavHandle {
         mode: BouquetMode
     ): Boolean
     fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean
+    fun navigateToAutoTimerPreview(id: Int, name: String): Boolean
     fun deliverPickResult(resultCode: Int, data: Intent?)
     fun dispatchPendingComposeActivityResult()
     fun onActiveProfileChanged()

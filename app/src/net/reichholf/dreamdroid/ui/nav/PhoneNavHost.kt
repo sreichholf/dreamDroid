@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.ui.about.AboutDialog
 import net.reichholf.dreamdroid.ui.autotimer.AutoTimerListDestination
+import net.reichholf.dreamdroid.ui.autotimer.AutoTimerPreviewDestination
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetAddServicesDestination
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetContentDestination
@@ -233,6 +234,9 @@ private fun PhoneNavHostGraph(
         }
         composable<AutoTimers> {
             AutoTimerListDestination(handle = handle)
+        }
+        composable<AutoTimerPreview> {
+            AutoTimerPreviewDestination(handle = handle)
         }
         dialog<About> {
             AboutDialog(onDismiss = { navController.popBackStack() })

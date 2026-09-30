@@ -45,4 +45,5 @@ object URIStore {
     const val AUTOTIMER_LIST: String = "/autotimer"
     const val AUTOTIMER_EDIT: String = "/autotimer/edit?"
     const val AUTOTIMER_REMOVE: String = "/autotimer/remove?"
+    const val AUTOTIMER_TEST: String = "/autotimer/test?"
 }

@@ -40,6 +40,7 @@ object PhoneNavRoutes {
     const val BOUQUET_CONTENT = "bouquet_content"
     const val BOUQUET_ADD_SERVICES = "bouquet_add_services"
     const val AUTOTIMERS = "autotimers"
+    const val AUTOTIMER_PREVIEW = "autotimer_preview"
 
     /** Absent [Epg.timeSec] / [MultiEpg.timeSec]. Zero is a real instant. */
     const val ABSENT_TIME_SEC = -1L
@@ -106,6 +107,7 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.BOUQUET_CONTENT -> BouquetContent(bouquetRef = "")
     PhoneNavRoutes.BOUQUET_ADD_SERVICES -> BouquetAddServices(bouquetRef = "")
     PhoneNavRoutes.AUTOTIMERS -> AutoTimers
+    PhoneNavRoutes.AUTOTIMER_PREVIEW -> AutoTimerPreview(id = -1, name = "")
     else -> Hub
 }
 
@@ -149,6 +151,7 @@ fun routeId(route: Any): String {
         PickService -> PhoneNavRoutes.PICK_SERVICE
         TimerServicePick -> PhoneNavRoutes.TIMER_SERVICE_PICK
         AutoTimers -> PhoneNavRoutes.AUTOTIMERS
+        is AutoTimerPreview -> PhoneNavRoutes.AUTOTIMER_PREVIEW
         is ServiceEpg -> PhoneNavRoutes.SERVICE_EPG
         is EpgSearch -> PhoneNavRoutes.EPG_SEARCH
         is Epg -> PhoneNavRoutes.EPG
@@ -237,6 +240,11 @@ data object TimerServicePick
 @Serializable
 @SerialName(PhoneNavRoutes.AUTOTIMERS)
 data object AutoTimers
+
+/** What the AutoTimer [id] called [name] would record; see `AutoTimerRepository.preview`. */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_PREVIEW)
+data class AutoTimerPreview(val id: Int, val name: String)
 
 @Serializable
 @SerialName(PhoneNavRoutes.SERVICE_EPG)

@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPreviewParser
+import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
@@ -199,6 +201,13 @@ class EnigmaClient(private val http: EnigmaHttp) {
 
     suspend fun backupBouquets(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.BOUQUET_EDITOR_BACKUP, params)
+
+    /** What the AutoTimer [id] would record now; the plugin skips disabled ones. */
+    suspend fun testAutoTimer(id: Int): EnigmaResponse<PreviewOutcome> =
+        withContext(Dispatchers.IO) {
+            http.fetch(URIStore.AUTOTIMER_TEST, listOf(NameValuePair("id", id.toString())))
+                .mapParsed { xml -> AutoTimerPreviewParser.parse(xml) }
+        }
 
     // AutoTimer plugin (/autotimer). Remove answers True even for an unknown id.
     suspend fun editAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =

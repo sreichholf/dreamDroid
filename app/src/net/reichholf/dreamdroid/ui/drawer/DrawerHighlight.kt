@@ -32,7 +32,8 @@ object DrawerHighlight {
 
             PhoneNavRoutes.ZAP -> R.id.menu_navigation_zap
 
-            PhoneNavRoutes.AUTOTIMERS -> R.id.menu_navigation_autotimer
+            PhoneNavRoutes.AUTOTIMERS,
+            PhoneNavRoutes.AUTOTIMER_PREVIEW -> R.id.menu_navigation_autotimer
 
             PhoneNavRoutes.EPG,
             PhoneNavRoutes.SERVICE_EPG,

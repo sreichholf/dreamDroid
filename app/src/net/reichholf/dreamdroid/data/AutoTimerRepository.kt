@@ -10,12 +10,16 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
+import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
+import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.enigma.autotimer.toParams
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
@@ -48,6 +52,25 @@ sealed interface AutoTimerWriteResult {
     data object Conflict : AutoTimerWriteResult
 
     data class Failed(val message: UiText) : AutoTimerWriteResult
+}
+
+/** A preview of one AutoTimer, or why there is none. */
+sealed interface AutoTimerPreviewLoad {
+    data class Ready(val autoTimer: AutoTimer, val matches: List<PreviewMatch>) :
+        AutoTimerPreviewLoad
+
+    /** The box previews enabled AutoTimers only. */
+    data class Disabled(val autoTimer: AutoTimer) : AutoTimerPreviewLoad
+
+    /** The id names no AutoTimer called that any more, or one dreamDroid cannot read. */
+    data object Gone : AutoTimerPreviewLoad
+
+    data object PluginMissing : AutoTimerPreviewLoad
+
+    /** The plugin failed while searching. */
+    data class PluginFailed(val autoTimer: AutoTimer, val message: String) : AutoTimerPreviewLoad
+
+    data class Failed(val message: UiText) : AutoTimerPreviewLoad
 }
 
 /**
@@ -90,6 +113,35 @@ class AutoTimerRepository @Inject constructor(
         val response = clients.current().getAutoTimers()
         return response.value?.let { AutoTimerLoad.Ready(it) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
+    }
+
+    /**
+     * What the AutoTimer [id] called [name] would record. The fresh list first confirms the id
+     * still names it; a disabled one is not sent to the box, which would answer with nothing.
+     */
+    suspend fun preview(id: AutoTimerId, name: String): AutoTimerPreviewLoad {
+        val entries = when (val load = list()) {
+            is AutoTimerLoad.Ready -> load.entries
+            AutoTimerLoad.PluginMissing -> return AutoTimerPreviewLoad.PluginMissing
+            is AutoTimerLoad.Failed -> return AutoTimerPreviewLoad.Failed(load.message)
+        }
+        val autoTimer = (entries.firstOrNull { it.id == id } as? AutoTimerEntry.Readable)
+            ?.autoTimer
+            ?.takeIf { it.settings.name == name }
+            ?: return AutoTimerPreviewLoad.Gone
+        if (!autoTimer.settings.enabled) {
+            return AutoTimerPreviewLoad.Disabled(autoTimer)
+        }
+        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(PREVIEW_TIMEOUT_MS) }
+        val response = EnigmaClient(http).testAutoTimer(id.value)
+        return when (val outcome = response.value) {
+            is PreviewOutcome.Matches -> AutoTimerPreviewLoad.Ready(autoTimer, outcome.matches)
+
+            is PreviewOutcome.PluginFailed ->
+                AutoTimerPreviewLoad.PluginFailed(autoTimer, outcome.message)
+
+            null -> AutoTimerPreviewLoad.Failed(response.error.contentErrorText())
+        }
     }
 
     /**
@@ -152,5 +204,8 @@ class AutoTimerRepository @Inject constructor(
     private companion object {
         /** The plugin's API; `autotimereditor` is its web page. */
         const val PLUGIN_PATH = "autotimer"
+
+        /** The box searches the whole EPG for a preview; that can take a while. */
+        const val PREVIEW_TIMEOUT_MS = 60_000
     }
 }

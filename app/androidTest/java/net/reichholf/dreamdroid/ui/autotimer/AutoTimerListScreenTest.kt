@@ -68,6 +68,16 @@ class AutoTimerListScreenTest {
     }
 
     @Test
+    fun aTapOpensTheAutoTimer() {
+        val opened = mutableListOf<AutoTimerEntry.Readable>()
+        show(ready(WILSBERG), onOpen = { opened += it })
+
+        composeRule.onNodeWithText("Wilsberg").performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf(WILSBERG), opened) }
+    }
+
+    @Test
     fun anUnreadableEntryIsNamedAndExplained() {
         show(ready(AutoTimerEntry.Unreadable(AutoTimerId(5), "Odd", "afterevent: hibernate")))
 
@@ -170,6 +180,7 @@ class AutoTimerListScreenTest {
     private fun show(
         state: AutoTimerListUiState,
         onRefresh: () -> Unit = {},
+        onOpen: (AutoTimerEntry.Readable) -> Unit = {},
         onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit = { _, _ -> },
         onMenu: (AutoTimerEntry) -> Unit = {},
         onMenuAction: (AutoTimerEntry, AutoTimerRowAction) -> Unit = { _, _ -> }
@@ -179,6 +190,7 @@ class AutoTimerListScreenTest {
                 AutoTimerListScreen(
                     state = state,
                     onRefresh = onRefresh,
+                    onOpen = onOpen,
                     onEnabledChange = onEnabledChange,
                     onMenu = onMenu,
                     onMenuAction = onMenuAction,

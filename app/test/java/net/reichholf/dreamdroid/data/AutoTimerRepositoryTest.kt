@@ -204,6 +204,37 @@ class AutoTimerRepositoryTest {
         )
     }
 
+    @Test
+    fun previewAsksTheBoxForTheListedAutoTimer() = runBlocking<Unit> {
+        receiver.respond(TEST, loadWebFixture("autotimer/test.xml"))
+
+        val preview = repository.preview(AutoTimerId(2), "dreamDroid test Wilsberg")
+
+        val ready = preview as AutoTimerPreviewLoad.Ready
+        assertEquals(4, ready.matches.size)
+        assertEquals("2", receiver.requestsTo(TEST).single().requestUrl!!.queryParameter("id"))
+    }
+
+    @Test
+    fun aDisabledAutoTimerIsNotSentForAPreview() = runBlocking<Unit> {
+        receiver.respond(LIST, loadWebFixture("autotimer/list_disabled_full.xml"))
+
+        val preview = repository.preview(AutoTimerId(1), "dreamDroid test Wilsberg")
+
+        assertEquals(true, preview is AutoTimerPreviewLoad.Disabled)
+        assertEquals(emptyList<Any>(), receiver.requestsTo(TEST))
+    }
+
+    @Test
+    fun anIdThatNamesAnotherAutoTimerIsGone() = runBlocking<Unit> {
+        assertEquals(AutoTimerPreviewLoad.Gone, repository.preview(AutoTimerId(2), "Tatort"))
+        assertEquals(
+            AutoTimerPreviewLoad.Gone,
+            repository.preview(AutoTimerId(9), "dreamDroid test Wilsberg")
+        )
+        assertEquals(emptyList<Any>(), receiver.requestsTo(TEST))
+    }
+
     private suspend fun loaded(): AutoTimer {
         val ready = repository.list() as AutoTimerLoad.Ready
         return (ready.entries.single() as AutoTimerEntry.Readable).autoTimer
@@ -221,5 +252,6 @@ class AutoTimerRepositoryTest {
         const val LIST = "/autotimer"
         const val EDIT = "/autotimer/edit"
         const val REMOVE = "/autotimer/remove"
+        const val TEST = "/autotimer/test"
     }
 }

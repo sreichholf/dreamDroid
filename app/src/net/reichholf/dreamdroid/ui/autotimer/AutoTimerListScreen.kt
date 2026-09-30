@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -40,13 +41,14 @@ import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
- * The AutoTimer list with pull to refresh. A row's switch enables or pauses it; its menu
- * offers the other actions.
+ * The AutoTimer list with pull to refresh. A tap on a row opens its preview; its switch
+ * enables or pauses it; its menu offers the other actions.
  */
 @Composable
 fun AutoTimerListScreen(
     state: AutoTimerListUiState,
     onRefresh: () -> Unit,
+    onOpen: (AutoTimerEntry.Readable) -> Unit,
     onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit,
     onMenu: (AutoTimerEntry) -> Unit,
     onMenuAction: (AutoTimerEntry, AutoTimerRowAction) -> Unit,
@@ -86,6 +88,7 @@ fun AutoTimerListScreen(
                                 AutoTimerRow(
                                     entry = entry,
                                     writable = !state.pending,
+                                    onOpen = onOpen,
                                     onEnabledChange = onEnabledChange,
                                     onMenu = { onMenu(entry) }
                                 )
@@ -129,6 +132,7 @@ fun AutoTimerListDialogs(
 private fun AutoTimerRow(
     entry: AutoTimerEntry,
     writable: Boolean,
+    onOpen: (AutoTimerEntry.Readable) -> Unit,
     onEnabledChange: (AutoTimerEntry.Readable, Boolean) -> Unit,
     onMenu: () -> Unit
 ) {
@@ -137,7 +141,12 @@ private fun AutoTimerRow(
         is AutoTimerEntry.Unreadable -> listOf(stringResource(R.string.autotimer_unreadable))
     }
     val enabledLabel = stringResource(R.string.enabled)
-    ListRowSurface {
+    val open = if (entry is AutoTimerEntry.Readable) {
+        Modifier.clickable { onOpen(entry) }
+    } else {
+        Modifier
+    }
+    ListRowSurface(modifier = open) {
         ListItem(
             headlineContent = {
                 Text(

@@ -462,6 +462,14 @@ class PhoneNavigator(
         return true
     }
 
+    override fun navigateToAutoTimerPreview(id: Int, name: String): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(AutoTimerPreview(id, name)) {
+            launchSingleTop = true
+        }
+        return true
+    }
+
     override fun navigateToBouquetAddServices(bouquetRef: String, mode: BouquetMode): Boolean {
         val controller = navController ?: return false
         controller.navigate(BouquetAddServices(bouquetRef, mode.name)) {
