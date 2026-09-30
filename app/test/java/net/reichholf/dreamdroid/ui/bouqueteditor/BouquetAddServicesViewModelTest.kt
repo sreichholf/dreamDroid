@@ -75,9 +75,10 @@ class BouquetAddServicesViewModelTest {
         receiver.respond(GET_SERVICES, serviceList(DAS_ERSTE, ARTE, PHOENIX))
         viewModel.openFolder(satellites[0])
         viewModel.ready()
-        assertEquals(
-            satellites[0].reference,
-            receiver.requestsTo(GET_SERVICES).last().query("sRef")
+        // The bouquet's own entries load concurrently (init), so the folder's request need
+        // not be the last one.
+        assertTrue(
+            receiver.requestsTo(GET_SERVICES).any { it.query("sRef") == satellites[0].reference }
         )
         assertEquals(UiText.Raw("19.2 O - Kanäle"), viewModel.uiState.value.title)
 
