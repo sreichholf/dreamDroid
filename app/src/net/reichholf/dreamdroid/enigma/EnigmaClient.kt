@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.enigma
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPreviewParser
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
@@ -136,16 +136,15 @@ class EnigmaClient(private val http: EnigmaHttp) {
      * The AutoTimer plugin's list. A config the box cannot load comes back as a simple result;
      * its text becomes a [EnigmaFailure.BoxRejected].
      */
-    suspend fun getAutoTimers(): EnigmaResponse<List<AutoTimerEntry>> =
-        withContext(Dispatchers.IO) {
-            when (val fetched = http.fetch(URIStore.AUTOTIMER_LIST)) {
-                is EnigmaHttpResult.Success -> AutoTimerListParser.parse(fetched.text)
-                    ?.let { EnigmaResponse(it) }
-                    ?: EnigmaResponse(null, rejection(fetched.text))
+    suspend fun getAutoTimers(): EnigmaResponse<AutoTimerList> = withContext(Dispatchers.IO) {
+        when (val fetched = http.fetch(URIStore.AUTOTIMER_LIST)) {
+            is EnigmaHttpResult.Success -> AutoTimerListParser.parse(fetched.text)
+                ?.let { EnigmaResponse(it) }
+                ?: EnigmaResponse(null, rejection(fetched.text))
 
-                is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
-            }
+            is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
         }
+    }
 
     // Mutations below: a rejected command has a value and a BoxRejected error.
     suspend fun zap(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =

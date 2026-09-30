@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.enigma.autotimer
 
+import java.io.Serializable
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
@@ -12,7 +13,8 @@ import java.time.LocalTime
 value class AutoTimerId(val value: Int)
 
 /** One `<timer>` of `/autotimer`. */
-data class AutoTimer(val id: AutoTimerId, val settings: AutoTimerSettings, val extras: Extras)
+data class AutoTimer(val id: AutoTimerId, val settings: AutoTimerSettings, val extras: Extras) :
+    Serializable
 
 /** An entry of the list; one the model cannot represent is [Unreadable]. */
 sealed interface AutoTimerEntry {
@@ -50,7 +52,30 @@ data class AutoTimerSettings(
     val afterEvent: AfterEvent,
     val recordMode: RecordMode,
     val duplicates: DuplicateCheck
-)
+) : Serializable {
+    companion object {
+        /** A new AutoTimer as the plugin creates one without defaults. */
+        val NEW = AutoTimerSettings(
+            name = "",
+            match = "",
+            enabled = true,
+            searchType = SearchType.Partial,
+            caseSensitive = false,
+            targets = emptyList(),
+            timeWindow = null,
+            dateWindow = null,
+            offset = null,
+            maxDurationMinutes = null,
+            location = null,
+            tags = emptyList(),
+            include = Filters(),
+            exclude = Filters(),
+            afterEvent = AfterEvent.ReceiverDefault,
+            recordMode = RecordMode.Record,
+            duplicates = DuplicateCheck.Off
+        )
+    }
+}
 
 /** Settings the list shows that dreamDroid never writes, so an edit keeps them. */
 data class Extras(
@@ -58,7 +83,7 @@ data class Extras(
     val vps: Boolean = false,
     val seriesPlugin: Boolean = false,
     val overrideAlternatives: Boolean = false
-)
+) : Serializable
 
 enum class SearchType(val token: String) {
     Partial("partial"),
@@ -67,7 +92,7 @@ enum class SearchType(val token: String) {
 }
 
 /** A channel or a whole bouquet the AutoTimer searches. */
-sealed interface Target {
+sealed interface Target : Serializable {
     val ref: String
     val name: String
 
@@ -84,26 +109,26 @@ sealed interface Target {
 }
 
 /** Daily clock window; [to] before [from] wraps midnight. */
-data class ClockWindow(val from: LocalTime, val to: LocalTime)
+data class ClockWindow(val from: LocalTime, val to: LocalTime) : Serializable
 
-data class DateWindow(val after: Instant, val before: Instant)
+data class DateWindow(val after: Instant, val before: Instant) : Serializable
 
 /** Margins around a recording; null in [AutoTimerSettings] means the receiver's default. */
-data class Offset(val beforeMinutes: Int, val afterMinutes: Int)
+data class Offset(val beforeMinutes: Int, val afterMinutes: Int) : Serializable
 
 data class Filters(
     val title: List<String> = emptyList(),
     val shortDescription: List<String> = emptyList(),
     val description: List<String> = emptyList(),
     val days: List<DayFilter> = emptyList()
-) {
+) : Serializable {
     val isEmpty: Boolean
         get() = title.isEmpty() && shortDescription.isEmpty() && description.isEmpty() &&
             days.isEmpty()
 }
 
 /** A `dayofweek` filter value: `0` (Monday) to `6`, `weekday`, or `weekend`. */
-sealed interface DayFilter {
+sealed interface DayFilter : Serializable {
     val token: String
 
     data class On(val day: DayOfWeek) : DayFilter {
@@ -143,7 +168,7 @@ enum class AfterEventAction(val listToken: String, val editToken: String) {
     }
 }
 
-sealed interface AfterEvent {
+sealed interface AfterEvent : Serializable {
     /** No `<afterevent>`: the receiver's setting applies. */
     data object ReceiverDefault : AfterEvent
 
@@ -153,13 +178,13 @@ sealed interface AfterEvent {
     data class Several(val entries: List<Fixed>) : AfterEvent
 }
 
-sealed interface RecordMode {
+sealed interface RecordMode : Serializable {
     data object Record : RecordMode
 
     data class Zap(val setEndTime: Boolean) : RecordMode
 }
 
-sealed interface DuplicateCheck {
+sealed interface DuplicateCheck : Serializable {
     data object Off : DuplicateCheck
 
     data class On(val scope: DuplicateScope, val compare: DescriptionCompare) : DuplicateCheck

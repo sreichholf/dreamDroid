@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
 enum class AutoTimerRowAction(override val label: Int) : RowMenuAction {
+    Edit(R.string.edit),
     Delete(R.string.delete)
 }
 
@@ -151,17 +152,24 @@ class AutoTimerListViewModel @Inject constructor(
         if (state.content !is AutoTimerListContent.Ready || state.pending) {
             return
         }
-        _uiState.update {
-            it.copy(menu = RowMenuState(entry.id.value, AutoTimerRowAction.entries))
+        // An entry dreamDroid cannot read can only be deleted.
+        val actions = if (entry is AutoTimerEntry.Readable) {
+            AutoTimerRowAction.entries
+        } else {
+            listOf(AutoTimerRowAction.Delete)
         }
+        _uiState.update { it.copy(menu = RowMenuState(entry.id.value, actions)) }
     }
 
     fun onMenuDismiss() {
         _uiState.update { it.copy(menu = null) }
     }
 
+    /** Delete asks first. Edit is navigation, which the destination handles. */
     fun onMenuAction(entry: AutoTimerEntry, action: AutoTimerRowAction) {
         when (action) {
+            AutoTimerRowAction.Edit -> Unit
+
             AutoTimerRowAction.Delete -> if (_uiState.value.editable) {
                 _uiState.update { it.copy(deleting = entry, menu = null) }
             }

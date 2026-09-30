@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
@@ -36,7 +37,9 @@ enum class PluginPresence {
 
 /** The AutoTimer list, or why there is none. */
 sealed interface AutoTimerLoad {
-    data class Ready(val entries: List<AutoTimerEntry>) : AutoTimerLoad
+    /** [defaults] are the settings the box gives a new AutoTimer; null if unreadable. */
+    data class Ready(val entries: List<AutoTimerEntry>, val defaults: AutoTimerSettings?) :
+        AutoTimerLoad
 
     data object PluginMissing : AutoTimerLoad
 
@@ -111,7 +114,7 @@ class AutoTimerRepository @Inject constructor(
             }
         }
         val response = clients.current().getAutoTimers()
-        return response.value?.let { AutoTimerLoad.Ready(it) }
+        return response.value?.let { AutoTimerLoad.Ready(it.entries, it.defaults) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
     }
 
@@ -154,7 +157,24 @@ class AutoTimerRepository @Inject constructor(
                 guard(AutoTimerEntry.Readable(write.loaded))?.let { return it }
                 result(clients.current().editAutoTimer(write.toParams()))
             }
+
+            is AutoTimerWrite.Create -> result(clients.current().editAutoTimer(write.toParams()))
         }
+    }
+
+    /**
+     * The AutoTimer the box lists for [settings] after a save: the one with that id when
+     * [id] is set, else the newest one with that match and name. The box does not answer a
+     * create with the new id.
+     */
+    suspend fun locate(settings: AutoTimerSettings, id: AutoTimerId?): AutoTimer? {
+        val entries = (list() as? AutoTimerLoad.Ready)?.entries ?: return null
+        val name = settings.name.ifBlank { settings.match }
+        return entries.filterIsInstance<AutoTimerEntry.Readable>()
+            .map { it.autoTimer }
+            .filter { if (id != null) it.id == id else it.settings.match == settings.match }
+            .filter { it.settings.name == name }
+            .maxByOrNull { it.id.value }
     }
 
     suspend fun setEnabled(autoTimer: AutoTimer, enabled: Boolean): AutoTimerWriteResult =
@@ -175,7 +195,7 @@ class AutoTimerRepository @Inject constructor(
      */
     private suspend fun guard(expected: AutoTimerEntry): AutoTimerWriteResult? {
         val response = clients.current().getAutoTimers()
-        val entries = response.value
+        val entries = response.value?.entries
             ?: return AutoTimerWriteResult.Failed(response.error.contentErrorText())
         val current = entries.firstOrNull { it.id == expected.id }
         return if (current == expected) null else AutoTimerWriteResult.Conflict

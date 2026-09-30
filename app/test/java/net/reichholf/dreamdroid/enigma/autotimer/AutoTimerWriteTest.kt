@@ -171,11 +171,35 @@ class AutoTimerWriteTest {
         assertFalse(FieldGroup.Targets in AutoTimerWrite.Change(full, edited).groups)
     }
 
+    @Test
+    fun aCreateSendsWhatDiffersFromTheDefaultsAndNoId() {
+        val defaults = AutoTimerSettings.NEW.copy(offset = Offset(5, 10))
+        val edited = defaults.copy(
+            match = "Tatort",
+            name = "",
+            include = Filters(days = listOf(DayFilter.On(DayOfWeek.SUNDAY)))
+        )
+
+        val write = AutoTimerWrite.Create(defaults, edited)
+
+        assertEquals(
+            listOf(
+                "match" to "Tatort",
+                "name" to "",
+                "title" to "",
+                "shortdescription" to "",
+                "description" to "",
+                "dayofweek" to "6"
+            ),
+            write.pairs()
+        )
+    }
+
     private fun AutoTimerWrite.pairs(): List<Pair<String, String>> =
         toParams().map { it.key to it.value() }
 
     private fun load(fixture: String): AutoTimer = (
-        AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!.single()
+        AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!.entries.single()
             as AutoTimerEntry.Readable
         ).autoTimer
 }

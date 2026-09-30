@@ -3,11 +3,18 @@ package net.reichholf.dreamdroid.ui.autotimer
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.autotimer.AutoTimerEditViewModel.Companion.NEW_ID
+import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
+import net.reichholf.dreamdroid.ui.nav.ShellTopBarAction
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+
+private const val ACTION_ADD = 1
 
 /**
  * The drawer's AutoTimer destination. While the session blocks writes, a write explains that
@@ -27,13 +34,31 @@ fun AutoTimerListDestination(
         if (uiState.blocked) handle.requestNeedsReceiver() else action()
     }
 
+    BindShellTopBarActions(
+        listOf(
+            ShellTopBarAction(
+                id = ACTION_ADD,
+                label = stringResource(R.string.autotimer_new),
+                iconRes = R.drawable.ic_action_fab_add,
+                enabled = uiState.content is AutoTimerListContent.Ready && !uiState.pending,
+                onClick = { online { handle.navigateToAutoTimerEdit(NEW_ID, "") } }
+            )
+        )
+    )
+
     AutoTimerListScreen(
         state = uiState,
         onRefresh = viewModel::reload,
         onOpen = { handle.navigateToAutoTimerPreview(it.id.value, it.name) },
         onEnabledChange = { entry, enabled -> online { viewModel.setEnabled(entry, enabled) } },
         onMenu = viewModel::onItemMenu,
-        onMenuAction = { entry, action -> online { viewModel.onMenuAction(entry, action) } },
+        onMenuAction = { entry, action ->
+            if (action == AutoTimerRowAction.Edit) {
+                online { handle.navigateToAutoTimerEdit(entry.id.value, entry.name) }
+            } else {
+                online { viewModel.onMenuAction(entry, action) }
+            }
+        },
         onMenuDismiss = viewModel::onMenuDismiss,
         modifier = modifier
     )

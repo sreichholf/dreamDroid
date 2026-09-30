@@ -8,12 +8,18 @@ import net.reichholf.dreamdroid.enigma.parseEnigmaXml
 import org.xmlpull.v1.XmlPullParser
 
 /**
+ * The AutoTimers and the settings the box gives a new one ([defaults]); null [defaults] when
+ * the box's cannot be read, which leaves the plugin's own.
+ */
+data class AutoTimerList(val entries: List<AutoTimerEntry>, val defaults: AutoTimerSettings?)
+
+/**
  * `/autotimer` (`webif=true`, the default): the plugin's `<autotimer>` config with an `id`
- * per `<timer>` and channels and bouquets in one `<e2service>` list. `<defaults>` is skipped.
- * Null when the reply is not such a list.
+ * per `<timer>` and channels and bouquets in one `<e2service>` list. Null when the reply is
+ * not such a list.
  */
 object AutoTimerListParser {
-    fun parse(xml: String): List<AutoTimerEntry>? =
+    fun parse(xml: String): AutoTimerList? =
         parseEnigmaXml(xml, emptyResult = null, onFail = null) { parser -> parseList(parser) }
 }
 
@@ -25,9 +31,10 @@ private class RawTimer(val attributes: Map<String, String>) {
     val tags = ArrayList<String>()
 }
 
-private fun parseList(parser: XmlPullParser): List<AutoTimerEntry>? {
+private fun parseList(parser: XmlPullParser): AutoTimerList? {
     var sawRoot = false
     val entries = ArrayList<AutoTimerEntry>()
+    var defaults: AutoTimerSettings? = null
     var timer: RawTimer? = null
     var serviceRef = StringBuilder()
     var serviceName = StringBuilder()
@@ -42,7 +49,7 @@ private fun parseList(parser: XmlPullParser): List<AutoTimerEntry>? {
                 when (parser.localTag()) {
                     "autotimer" -> sawRoot = true
 
-                    "timer" -> timer = RawTimer(parser.attributeMap())
+                    "timer", "defaults" -> timer = RawTimer(parser.attributeMap())
 
                     "e2service" -> {
                         serviceRef = StringBuilder()
@@ -87,6 +94,11 @@ private fun parseList(parser: XmlPullParser): List<AutoTimerEntry>? {
                             current.toEntry()?.let { entries += it }
                             timer = null
                         }
+
+                        "defaults" -> {
+                            defaults = current.defaults()
+                            timer = null
+                        }
                     }
                 }
                 text.setLength(0)
@@ -94,7 +106,7 @@ private fun parseList(parser: XmlPullParser): List<AutoTimerEntry>? {
         }
         event = parser.next()
     }
-    return entries.takeIf { sawRoot }
+    return if (sawRoot) AutoTimerList(entries, defaults) else null
 }
 
 private fun XmlPullParser.attributeMap(): Map<String, String> =
@@ -109,6 +121,13 @@ private fun RawTimer.toEntry(): AutoTimerEntry? {
     } catch (e: UnreadableValue) {
         AutoTimerEntry.Unreadable(id, name, e.message.orEmpty())
     }
+}
+
+/** The defaults carry no name, match, or enabled state; a new AutoTimer starts enabled. */
+private fun RawTimer.defaults(): AutoTimerSettings? = try {
+    settings().copy(name = "", match = "", enabled = true)
+} catch (_: UnreadableValue) {
+    null
 }
 
 private class UnreadableValue(message: String) : Exception(message)

@@ -18,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
@@ -25,7 +26,6 @@ import androidx.compose.ui.semantics.semantics
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
-import java.util.Locale
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
@@ -230,9 +230,10 @@ private fun daysSummary(days: List<DayFilter>): String? {
     }
     val weekdays = stringResource(R.string.autotimer_weekdays)
     val weekend = stringResource(R.string.autotimer_weekend)
+    val locale = LocalConfiguration.current.locales[0]
     return days.joinToString(", ") { day ->
         when (day) {
-            is DayFilter.On -> day.day.getDisplayName(TextStyle.SHORT, Locale.getDefault())
+            is DayFilter.On -> day.day.getDisplayName(TextStyle.SHORT, locale)
             DayFilter.Weekdays -> weekdays
             DayFilter.Weekend -> weekend
         }

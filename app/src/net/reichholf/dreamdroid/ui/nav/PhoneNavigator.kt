@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.drawer.DrawerRouteHighlighter
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -467,6 +468,34 @@ class PhoneNavigator(
         controller.navigate(AutoTimerPreview(id, name)) {
             launchSingleTop = true
         }
+        return true
+    }
+
+    override fun navigateToAutoTimerEdit(id: Int, name: String): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(AutoTimerEdit(id, name)) {
+            launchSingleTop = true
+        }
+        return true
+    }
+
+    override fun navigateToAutoTimerTargetPick(): Boolean {
+        val controller = navController ?: return false
+        controller.navigate(AutoTimerTargetPick) {
+            launchSingleTop = true
+        }
+        return true
+    }
+
+    override fun deliverAutoTimerTargets(targets: List<Target>): Boolean {
+        val controller = navController ?: return false
+        controller.deliverAutoTimerTargets(targets)
+        return true
+    }
+
+    override fun showAutoTimerAfterSave(id: Int, name: String): Boolean {
+        val controller = navController ?: return false
+        controller.showAutoTimerAfterSave(id, name)
         return true
     }
 

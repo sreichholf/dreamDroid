@@ -41,6 +41,8 @@ object PhoneNavRoutes {
     const val BOUQUET_ADD_SERVICES = "bouquet_add_services"
     const val AUTOTIMERS = "autotimers"
     const val AUTOTIMER_PREVIEW = "autotimer_preview"
+    const val AUTOTIMER_EDIT = "autotimer_edit"
+    const val AUTOTIMER_TARGET_PICK = "autotimer_target_pick"
 
     /** Absent [Epg.timeSec] / [MultiEpg.timeSec]. Zero is a real instant. */
     const val ABSENT_TIME_SEC = -1L
@@ -108,6 +110,8 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.BOUQUET_ADD_SERVICES -> BouquetAddServices(bouquetRef = "")
     PhoneNavRoutes.AUTOTIMERS -> AutoTimers
     PhoneNavRoutes.AUTOTIMER_PREVIEW -> AutoTimerPreview(id = -1, name = "")
+    PhoneNavRoutes.AUTOTIMER_EDIT -> AutoTimerEdit()
+    PhoneNavRoutes.AUTOTIMER_TARGET_PICK -> AutoTimerTargetPick
     else -> Hub
 }
 
@@ -152,6 +156,8 @@ fun routeId(route: Any): String {
         TimerServicePick -> PhoneNavRoutes.TIMER_SERVICE_PICK
         AutoTimers -> PhoneNavRoutes.AUTOTIMERS
         is AutoTimerPreview -> PhoneNavRoutes.AUTOTIMER_PREVIEW
+        is AutoTimerEdit -> PhoneNavRoutes.AUTOTIMER_EDIT
+        AutoTimerTargetPick -> PhoneNavRoutes.AUTOTIMER_TARGET_PICK
         is ServiceEpg -> PhoneNavRoutes.SERVICE_EPG
         is EpgSearch -> PhoneNavRoutes.EPG_SEARCH
         is Epg -> PhoneNavRoutes.EPG
@@ -245,6 +251,19 @@ data object AutoTimers
 @Serializable
 @SerialName(PhoneNavRoutes.AUTOTIMER_PREVIEW)
 data class AutoTimerPreview(val id: Int, val name: String)
+
+/** Edits the AutoTimer [id] called [name]; a negative [id] creates one. */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_EDIT)
+data class AutoTimerEdit(val id: Int = -1, val name: String = "")
+
+/** Bouquets and channels for the AutoTimer editor, handed back under [AUTOTIMER_PICKED_TARGETS]. */
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMER_TARGET_PICK)
+data object AutoTimerTargetPick
+
+/** Key of the editor entry's `savedStateHandle` that receives the picked targets. */
+const val AUTOTIMER_PICKED_TARGETS = "autotimer_picked_targets"
 
 @Serializable
 @SerialName(PhoneNavRoutes.SERVICE_EPG)

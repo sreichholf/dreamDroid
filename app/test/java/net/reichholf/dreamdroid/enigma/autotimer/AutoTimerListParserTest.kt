@@ -115,7 +115,7 @@ class AutoTimerListParserTest {
                 timer(id = 1, children = "<afterevent>hibernate</afterevent>") +
                     timer(id = 2)
             )
-        )!!
+        )!!.entries
 
         val unreadable = entries[0] as AutoTimerEntry.Unreadable
         assertEquals(AutoTimerId(1), unreadable.id)
@@ -127,7 +127,7 @@ class AutoTimerListParserTest {
     fun aTimerWithoutIdIsSkipped() {
         val xml = list("""<timer name="T" match="T" enabled="yes"></timer>""")
 
-        assertEquals(emptyList<AutoTimerEntry>(), AutoTimerListParser.parse(xml))
+        assertEquals(emptyList<AutoTimerEntry>(), AutoTimerListParser.parse(xml)!!.entries)
     }
 
     @Test
@@ -147,7 +147,7 @@ class AutoTimerListParserTest {
                         "<e2tags>a b</e2tags>"
                 )
             )
-        )!!.single()
+        )!!.entries.single()
         val autoTimer = readable(entry)
         val settings = autoTimer.settings
 
@@ -179,10 +179,46 @@ class AutoTimerListParserTest {
                 """enabled="yes" id="4"></timer>"""
         )
 
-        val settings = readable(AutoTimerListParser.parse(xml)!!.single()).settings
+        val settings = readable(AutoTimerListParser.parse(xml)!!.entries.single()).settings
 
         assertEquals("Tom & Jerry", settings.name)
         assertEquals("\"Tom\" <3", settings.match)
+    }
+
+    @Test
+    fun emptyDefaultsAreThePluginsOwn() {
+        val list = AutoTimerListParser.parse(loadWebFixture("autotimer/list_empty.xml"))!!
+
+        assertEquals(AutoTimerSettings.NEW, list.defaults)
+    }
+
+    @Test
+    fun defaultsCarryTheirSettings() {
+        val xml = """<?xml version="1.0" ?><autotimer version="8">""" +
+            """<defaults id="-1" from="16:30" to="23:15" offset="5,10">""" +
+            "<e2service><e2servicereference>1:7:1:0:0:0:0:0:0:0:FROM BOUQUET</e2servicereference>" +
+            "<e2servicename>Favourites (TV)</e2servicename></e2service>" +
+            "</defaults></autotimer>"
+
+        val defaults = AutoTimerListParser.parse(xml)!!.defaults
+
+        assertEquals(
+            AutoTimerSettings.NEW.copy(
+                timeWindow = ClockWindow(LocalTime.of(16, 30), LocalTime.of(23, 15)),
+                offset = Offset(5, 10),
+                targets = listOf(
+                    Target.Bouquet("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", "Favourites (TV)")
+                )
+            ),
+            defaults
+        )
+    }
+
+    @Test
+    fun unreadableDefaultsAreNull() {
+        val xml = """<autotimer version="8"><defaults id="-1" offset="x"></defaults></autotimer>"""
+
+        assertNull(AutoTimerListParser.parse(xml)!!.defaults)
     }
 
     @Test
@@ -194,14 +230,15 @@ class AutoTimerListParserTest {
     }
 
     private fun parse(fixture: String): List<AutoTimerEntry> =
-        AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!
+        AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!.entries
 
     private fun readable(entry: AutoTimerEntry): AutoTimer =
         (entry as AutoTimerEntry.Readable).autoTimer
 
-    private fun single(children: String): AutoTimerSettings =
-        readable(AutoTimerListParser.parse(list(timer(id = 1, children = children)))!!.single())
-            .settings
+    private fun single(children: String): AutoTimerSettings = readable(
+        AutoTimerListParser.parse(list(timer(id = 1, children = children)))!!.entries.single()
+    )
+        .settings
 
     private fun timer(id: Int, attributes: String = "", children: String = ""): String =
         """<timer name="T" match="T" enabled="yes" id="$id"$attributes>$children</timer>"""

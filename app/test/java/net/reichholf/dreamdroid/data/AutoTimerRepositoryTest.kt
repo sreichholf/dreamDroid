@@ -9,6 +9,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.enigmaClients
@@ -233,6 +234,36 @@ class AutoTimerRepositoryTest {
             repository.preview(AutoTimerId(9), "dreamDroid test Wilsberg")
         )
         assertEquals(emptyList<Any>(), receiver.requestsTo(TEST))
+    }
+
+    @Test
+    fun aCreateIsSentWithoutIdOrGuardAndLocatedAfterwards() = runBlocking<Unit> {
+        receiver.respond(EDIT, loadWebFixture("autotimer/result_add.xml"))
+        val edited = AutoTimerSettings.NEW.copy(
+            match = "Wilsberg",
+            name = "dreamDroid test Wilsberg"
+        )
+
+        val result = repository.save(AutoTimerWrite.Create(AutoTimerSettings.NEW, edited))
+
+        assertEquals(
+            AutoTimerWriteResult.Done(UiText.Raw("AutoTimer wurde erfolgreich hinzugefügt")),
+            result
+        )
+        val edit = receiver.requestsTo(EDIT).single().requestUrl!!
+        assertEquals(null, edit.queryParameter("id"))
+        assertEquals("Wilsberg", edit.queryParameter("match"))
+        assertEquals(emptyList<Any>(), receiver.requestsTo(LIST))
+        assertEquals(AutoTimerId(2), repository.locate(edited, id = null)?.id)
+    }
+
+    @Test
+    fun locateAfterAnEditGoesByIdAndName() = runBlocking<Unit> {
+        val edited = AutoTimerSettings.NEW.copy(match = "Other", name = "dreamDroid test Wilsberg")
+
+        assertEquals(AutoTimerId(2), repository.locate(edited, AutoTimerId(2))?.id)
+        assertEquals(null, repository.locate(edited, AutoTimerId(3)))
+        assertEquals(null, repository.locate(edited.copy(name = "Renamed"), AutoTimerId(2)))
     }
 
     private suspend fun loaded(): AutoTimer {

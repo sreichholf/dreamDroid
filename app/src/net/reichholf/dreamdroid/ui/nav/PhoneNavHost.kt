@@ -14,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
+import androidx.navigation.NavDestination.Companion.hasRoute
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -24,9 +25,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
+import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.ui.about.AboutDialog
+import net.reichholf.dreamdroid.ui.autotimer.AutoTimerEditDestination
 import net.reichholf.dreamdroid.ui.autotimer.AutoTimerListDestination
 import net.reichholf.dreamdroid.ui.autotimer.AutoTimerPreviewDestination
+import net.reichholf.dreamdroid.ui.autotimer.AutoTimerTargetPickDestination
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetAddServicesDestination
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetContentDestination
@@ -238,6 +242,19 @@ private fun PhoneNavHostGraph(
         composable<AutoTimerPreview> {
             AutoTimerPreviewDestination(handle = handle)
         }
+        composable<AutoTimerEdit> { entry ->
+            AutoTimerEditDestination(
+                handle = handle,
+                pickedTargets = entry.savedStateHandle
+                    .getStateFlow<ArrayList<Target>?>(AUTOTIMER_PICKED_TARGETS, null),
+                onPickedTargetsHandled = {
+                    entry.savedStateHandle.remove<ArrayList<Target>>(AUTOTIMER_PICKED_TARGETS)
+                }
+            )
+        }
+        composable<AutoTimerTargetPick> {
+            AutoTimerTargetPickDestination(handle = handle)
+        }
         dialog<About> {
             AboutDialog(onDismiss = { navController.popBackStack() })
         }
@@ -283,6 +300,28 @@ inline fun <reified T : Any> NavHostController.replaceRoute(route: T) {
     navigate(route) {
         popUpTo<T> { inclusive = true }
         launchSingleTop = true
+    }
+}
+
+/** Pops the target picker and hands [targets] to the AutoTimer editor below it. */
+fun NavHostController.deliverAutoTimerTargets(targets: List<Target>) {
+    previousBackStackEntry?.savedStateHandle?.set(AUTOTIMER_PICKED_TARGETS, ArrayList(targets))
+    popBackStack()
+}
+
+/**
+ * Pops the AutoTimer editor and shows the saved AutoTimer. A preview it was opened from is
+ * replaced, so back does not lead to the stale one.
+ */
+fun NavHostController.showAutoTimerAfterSave(id: Int, name: String) {
+    popBackStack()
+    val route = AutoTimerPreview(id, name)
+    if (currentDestination?.hasRoute<AutoTimerPreview>() == true) {
+        replaceRoute(route)
+    } else {
+        navigate(route) {
+            launchSingleTop = true
+        }
     }
 }
 

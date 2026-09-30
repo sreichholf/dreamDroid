@@ -11,6 +11,13 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 sealed interface AutoTimerWrite {
     /** [edited] replaces [loaded]'s settings on the box. */
     data class Change(val loaded: AutoTimer, val edited: AutoTimerSettings) : AutoTimerWrite
+
+    /**
+     * A new AutoTimer. The plugin starts it as a copy of its defaults, so only what [edited]
+     * changes against [defaults] is sent.
+     */
+    data class Create(val defaults: AutoTimerSettings, val edited: AutoTimerSettings) :
+        AutoTimerWrite
 }
 
 /** What the plugin updates together. A changed group sends all of its keys. */
@@ -73,16 +80,25 @@ fun changedGroups(base: AutoTimerSettings, edited: AutoTimerSettings): Set<Field
 val AutoTimerSettings.targetsSendable: Boolean
     get() = targets.none { ',' in it.ref }
 
-val AutoTimerWrite.Change.groups: Set<FieldGroup>
-    get() = changedGroups(loaded.settings, edited)
+val AutoTimerWrite.groups: Set<FieldGroup>
+    get() = when (this) {
+        is AutoTimerWrite.Change -> changedGroups(loaded.settings, edited)
+        is AutoTimerWrite.Create -> changedGroups(defaults, edited)
+    }
 
 /**
  * The `edit` parameters. `match` and `name` always go along: the plugin decodes the stored
  * values again when they are missing (`AutoTimerResource.py`).
  */
-fun AutoTimerWrite.toParams(): List<NameValuePair> = when (this) {
-    is AutoTimerWrite.Change -> buildList {
-        add(NameValuePair("id", loaded.id.value.toString()))
+fun AutoTimerWrite.toParams(): List<NameValuePair> {
+    val edited = when (this) {
+        is AutoTimerWrite.Change -> edited
+        is AutoTimerWrite.Create -> edited
+    }
+    return buildList {
+        if (this@toParams is AutoTimerWrite.Change) {
+            add(NameValuePair("id", loaded.id.value.toString()))
+        }
         add(NameValuePair("match", escape(edited.match)))
         add(NameValuePair("name", escape(edited.name)))
         groups.forEach { addAll(it.params(edited)) }
