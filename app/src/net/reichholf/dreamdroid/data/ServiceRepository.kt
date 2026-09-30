@@ -88,14 +88,24 @@ class ServiceRepository @Inject constructor(
      */
     val excludedTabRefs: Set<String> by lazy { LinkedHashSet(tvRoots + radioRoots) }
 
-    private val bouquetsEpochState = MutableStateFlow(0)
+    private val bouquetEditsState = MutableStateFlow<Map<String, Int>>(emptyMap())
 
-    /** Counts bouquet edits on the receiver; the hub reloads its bouquets when it moves. */
-    val bouquetsEpoch: StateFlow<Int> = bouquetsEpochState.asStateFlow()
+    /**
+     * For each container a bouquet edit touched, the number of the last edit that did. A
+     * list reloads when the entry of its own container moves; the aggregate bouquet index
+     * ([tvRoots] / [radioRoots] first) moves when bouquets are added, removed, moved, or
+     * renamed.
+     */
+    val bouquetEdits: StateFlow<Map<String, Int>> = bouquetEditsState.asStateFlow()
+
+    /** The bouquet indexes the hub tab strips come from. */
+    val bouquetIndexRefs: List<String>
+        get() = listOf(tvRoots[0], radioRoots[0])
 
     /**
      * The receiver's bouquets changed: drops the active profile's Room rosters of the edited
-     * containers [refs] and bumps [bouquetsEpoch]. The tab strips stay until the hub reloads.
+     * containers [refs] and moves their [bouquetEdits] entries. The tab strips stay until the
+     * hub reloads.
      */
     suspend fun onBouquetsEdited(refs: Collection<String>) {
         profiles.current.value?.id?.let { profileId ->
@@ -105,7 +115,10 @@ class ServiceRepository @Inject constructor(
                 dao.deleteRosterContainer(profileId, ref)
             }
         }
-        bouquetsEpochState.update { it + 1 }
+        bouquetEditsState.update { edits ->
+            val edit = (edits.values.maxOrNull() ?: 0) + 1
+            edits + refs.associateWith { edit }
+        }
     }
 
     /** The user bouquet tabs among [bouquets]: no dedicated root and no provider path. */

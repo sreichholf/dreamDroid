@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.bouqueteditor
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -32,6 +33,12 @@ fun BouquetContentDestination(
         handle.popNavBackStack()
     }
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    // The profile changed: the bouquet is the old receiver's.
+    LaunchedEffect(uiState.closed) {
+        if (uiState.closed) {
+            handle.popNavBackStack()
+        }
+    }
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 

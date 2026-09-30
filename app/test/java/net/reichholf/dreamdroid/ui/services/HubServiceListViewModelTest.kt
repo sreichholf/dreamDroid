@@ -24,6 +24,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
+import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.jobs
@@ -294,6 +295,22 @@ class HubServiceListViewModelTest {
 
         services.onBouquetsEdited(listOf(TAB))
         receiver.awaitRequestsTo(GET_SERVICES, 2)
+    }
+
+    @Test
+    fun editOfAnotherBouquetDoesNotLoadAgain() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        services.onBouquetsEdited(listOf(FAVOURITES, TV_ROOTS[0]))
+        // The collector runs on the unconfined main dispatcher: a reload would have begun.
+        assertFalse(viewModel.uiState.value.refreshing)
+        services.onBouquetsEdited(listOf(TAB))
+        receiver.awaitRequestsTo(GET_SERVICES, 2)
+        viewModel.settled()
+
+        viewModel.cancelAndJoin()
+        assertEquals(listOf(TAB, TAB), receiver.requestsTo(GET_SERVICES).map { it.sRef() })
     }
 
     @Test

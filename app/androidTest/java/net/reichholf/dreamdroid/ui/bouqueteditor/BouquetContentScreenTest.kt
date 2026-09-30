@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -26,6 +27,7 @@ import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -113,6 +115,27 @@ class BouquetContentScreenTest {
     }
 
     @Test
+    fun dragByTheHandleMovesTheRowOnDrop() {
+        val moves = mutableListOf<Pair<Int, Int>>()
+        show(ready(), onMove = { key, position -> moves += key to position })
+
+        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG)
+        val from = handles[0].fetchSemanticsNode().boundsInRoot.center
+        val to = handles[2].fetchSemanticsNode().boundsInRoot.center
+        handles[0].performTouchInput {
+            down(center)
+            repeat(DRAG_STEPS) { moveBy((to - from) / DRAG_STEPS.toFloat()) }
+            up()
+        }
+
+        composeRule.runOnIdle { assertEquals(listOf(ROWS[0].key to 2), moves) }
+        // The fake did not take the move, so the rows are back in their order.
+        val first = composeRule.onNodeWithText("Das Erste HD").fetchSemanticsNode()
+        val stream = composeRule.onNodeWithText("RBTV").fetchSemanticsNode()
+        assertTrue(first.boundsInRoot.top < stream.boundsInRoot.top)
+    }
+
+    @Test
     fun blockedListOffersNoMoves() {
         show(ready().copy(blocked = true))
 
@@ -185,6 +208,8 @@ class BouquetContentScreenTest {
     private fun ready() = state().copy(content = BouquetContentList.Ready(ROWS))
 
     private companion object {
+        const val DRAG_STEPS = 10
+
         val ROWS = listOf(
             BouquetEntry(
                 "1:0:19:283D:3FB:1:C00000:0:0:0:",

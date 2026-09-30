@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.data
 
+import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -225,17 +228,71 @@ class BouquetEditorRepositoryTest {
     }
 
     @Test
-    fun successfulEditDropsTheRosterAndBumpsTheEpoch() = runBlocking {
+    fun successfulEditDropsTheRosterAndSignalsTheBouquet() = runBlocking {
         writeRoster(FAVOURITES)
         writeRoster(OTHER)
-        val epoch = services.bouquetsEpoch.value
 
         assertTrue(repository.removeService(FAVOURITES, ERSTE).succeeded)
 
         assertEquals(0, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
         assertTrue(rosterDao.getRoster(PROFILE_ID, FAVOURITES).isEmpty())
         assertEquals(1, rosterDao.rosterContainerCount(PROFILE_ID, OTHER))
-        assertEquals(epoch + 1, services.bouquetsEpoch.value)
+        assertEquals(setOf(FAVOURITES), services.bouquetEdits.value.keys)
+    }
+
+    @Test
+    fun bouquetIndexEditsSignalTheIndex() = runBlocking {
+        repository.moveBouquet(BouquetMode.Tv, FAVOURITES, 1)
+        val afterMove = services.bouquetEdits.value
+        repository.removeBouquet(BouquetMode.Tv, OTHER)
+
+        assertEquals(setOf(TV_ROOTS[0]), afterMove.keys)
+        val edits = services.bouquetEdits.value
+        assertEquals(setOf(TV_ROOTS[0], OTHER), edits.keys)
+        assertTrue(edits.getValue(TV_ROOTS[0]) > afterMove.getValue(TV_ROOTS[0]))
+    }
+
+    @Test
+    fun partlyRejectedAddDropsTheRosterAndReportsTheRejection() = runBlocking {
+        // The first is rejected as a duplicate, the second goes in.
+        receiver.respondOnce(ADD_SERVICE, fixture("result_addservice_duplicate.xml"))
+        writeRoster(FAVOURITES)
+
+        val result = repository.addServices(FAVOURITES, listOf(ERSTE, ZDF))
+
+        assertFalse(result.succeeded)
+        assertTrue(result.response.error?.failure is EnigmaFailure.BoxRejected)
+        assertEquals(2, receiver.requestsTo(ADD_SERVICE).size)
+        assertEquals(0, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
+        assertEquals(setOf(FAVOURITES), services.bouquetEdits.value.keys)
+    }
+
+    @Test
+    fun cancelledEditStillDropsTheRoster() = runBlocking {
+        writeRoster(FAVOURITES)
+        val remove = receiver.hold(REMOVE_SERVICE)
+        val job = launch(Dispatchers.IO) { repository.removeService(FAVOURITES, ERSTE) }
+        assertTrue(remove.arrived.await(TIMEOUT_SECONDS, TimeUnit.SECONDS))
+
+        // Back while the box works on it: the edit may still land.
+        job.cancel()
+        remove.release()
+        job.join()
+
+        assertTrue(job.isCancelled)
+        assertEquals(0, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
+        assertEquals(setOf(FAVOURITES), services.bouquetEdits.value.keys)
+    }
+
+    @Test
+    fun unansweredEditDropsTheRoster() = runBlocking {
+        receiver.fail(REMOVE_SERVICE)
+        writeRoster(FAVOURITES)
+
+        assertFalse(repository.removeService(FAVOURITES, ERSTE).succeeded)
+
+        assertEquals(0, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
+        assertEquals(setOf(FAVOURITES), services.bouquetEdits.value.keys)
     }
 
     @Test
@@ -248,17 +305,16 @@ class BouquetEditorRepositoryTest {
     }
 
     @Test
-    fun rejectedEditKeepsTheRosterAndTheEpoch() = runBlocking {
+    fun rejectedEditKeepsTheRosterAndSignalsNothing() = runBlocking {
         receiver.respond(REMOVE_SERVICE, fixture("result_removeservice_missing.xml"))
         writeRoster(FAVOURITES)
-        val epoch = services.bouquetsEpoch.value
 
         val result = repository.removeService(FAVOURITES, ERSTE)
 
         assertFalse(result.succeeded)
         assertTrue(result.response.error?.failure is EnigmaFailure.BoxRejected)
         assertEquals(1, rosterDao.rosterContainerCount(PROFILE_ID, FAVOURITES))
-        assertEquals(epoch, services.bouquetsEpoch.value)
+        assertTrue(services.bouquetEdits.value.isEmpty())
     }
 
     private suspend fun writeRoster(ref: String) {
@@ -282,6 +338,7 @@ class BouquetEditorRepositoryTest {
     private fun fixture(name: String): String = loadWebFixture("bouqueteditor/$name")
 
     private companion object {
+        const val TIMEOUT_SECONDS = 5L
         const val GET_SERVICES = "/web/getservices"
         const val EXTERNALS = "/web/external"
         const val SATELLITES = "/bouqueteditor/web/satelliteslist"

@@ -53,6 +53,13 @@ fun BouquetAddServicesDestination(
         }
     }
 
+    // The profile changed: the bouquet is the old receiver's.
+    LaunchedEffect(uiState.closed) {
+        if (uiState.closed) {
+            handle.popNavBackStack()
+        }
+    }
+
     BindShellTopBarActions(
         if (uiState.source == null) {
             emptyList()

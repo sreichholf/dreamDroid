@@ -89,6 +89,30 @@ class BouquetAddServicesViewModelTest {
     }
 
     @Test
+    fun profileChangeClosesThePickerAndAddsNothing() = runBlocking {
+        val viewModel = presentLoaded()
+        receiver.respond(GET_SERVICES, serviceList(DAS_ERSTE, ARTE))
+        viewModel.openSource(ServiceSource.All)
+        val arte = viewModel.ready()[1]
+        viewModel.toggle(arte)
+        val other = TestReceiver(receiver.profiles)
+
+        try {
+            other.start()
+            withTimeout(TIMEOUT) { viewModel.uiState.first { it.closed } }
+            viewModel.add()
+
+            assertFalse(viewModel.uiState.value.canAdd)
+            assertNull(viewModel.uiState.value.finished)
+            viewModel.cancelAndJoin()
+            assertTrue(other.requests.isEmpty())
+            assertTrue(receiver.requestsTo(ADD_SERVICE).isEmpty())
+        } finally {
+            other.shutdown()
+        }
+    }
+
+    @Test
     fun servicesTheBouquetHasAreNotOffered() = runBlocking {
         val viewModel = presentLoaded()
         receiver.respond(GET_SERVICES, serviceList(DAS_ERSTE, ZDF, ARTE))

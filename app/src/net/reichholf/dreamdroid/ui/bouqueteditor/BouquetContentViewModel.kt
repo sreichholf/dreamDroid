@@ -61,7 +61,9 @@ sealed interface BouquetContentDialog {
 
 /**
  * The entries of one bouquet. [blocked] mirrors the session's `blocksMutations`; [pending]
- * is true while an edit (and the reload after it) runs.
+ * is true while an edit (and the reload after it) runs; [refreshing] while the list loads
+ * again, which an edit would cut short. [closed] once the active profile changed: the
+ * bouquet belongs to the old receiver, so the destination leaves.
  */
 data class BouquetContentUiState(
     val bouquetRef: String,
@@ -74,7 +76,8 @@ data class BouquetContentUiState(
     val menu: RowMenuState<BouquetEntryAction>? = null,
     val dialog: BouquetContentDialog? = null,
     val nameError: UiText? = null,
-    val userMessage: UiText? = null
+    val userMessage: UiText? = null,
+    val closed: Boolean = false
 ) {
     val title: UiText
         get() = if (bouquetName.isEmpty()) {
@@ -85,14 +88,19 @@ data class BouquetContentUiState(
 
     /** Whether the list takes an edit now. */
     val editable: Boolean
-        get() = content is BouquetContentList.Ready && !blocked && !pending
+        get() = content is BouquetContentList.Ready &&
+            !blocked &&
+            !pending &&
+            !refreshing &&
+            !closed
 }
 
 /**
  * The entries of the [BouquetContent] route's bouquet. One edit runs at a time. Moves and
  * removals show at once; renames and new markers change references on the box, so the
- * list loads again after them. A bouquet edit made elsewhere (adding services) loads the
- * list again too.
+ * list loads again after them, as after any edit of an entry whose reference the bouquet
+ * holds more than once (the box acts on the first). An edit of this bouquet made elsewhere
+ * (adding services) loads the list again too. A profile change closes the list.
  */
 @HiltViewModel
 class BouquetContentViewModel @Inject constructor(
@@ -121,10 +129,14 @@ class BouquetContentViewModel @Inject constructor(
 
     private var loadJob: Job? = null
 
-    /** The last [ServiceRepository.bouquetsEpoch] this list accounts for. */
-    private var seenEpoch = services.bouquetsEpoch.value
+    /** The last [ServiceRepository.bouquetEdits] entry of this bouquet the list accounts for. */
+    private var seenEdit = services.bouquetEdits.value[_uiState.value.bouquetRef]
+
+    /** The receiver the bouquet belongs to. */
+    private val receiver = editor.currentReceiver()
 
     init {
+        viewModelScope.launch { editor.receiver.collect { receiverChanged() } }
         viewModelScope.launch {
             sessions.status.map { it.blocksMutations }.distinctUntilChanged().collect { blocked ->
                 _uiState.update { it.copy(blocked = blocked) }
@@ -134,19 +146,20 @@ class BouquetContentViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            services.bouquetsEpoch.collect { epoch ->
-                // Own edits note their epoch when they finish, and run while pending.
-                if (epoch != seenEpoch && !_uiState.value.pending) {
-                    seenEpoch = epoch
-                    reload()
+            services.bouquetEdits.map { it[_uiState.value.bouquetRef] }.distinctUntilChanged()
+                .collect { edit ->
+                    // Own edits note theirs when they finish, and run while pending.
+                    if (edit != seenEdit && !_uiState.value.pending) {
+                        seenEdit = edit
+                        reload()
+                    }
                 }
-            }
         }
         reload()
     }
 
     fun reload() {
-        if (_uiState.value.pending) {
+        if (_uiState.value.pending || _uiState.value.closed) {
             return
         }
         loadJob?.cancel()
@@ -255,7 +268,7 @@ class BouquetContentViewModel @Inject constructor(
         if (!state.editable) {
             return
         }
-        edit(reloadAfter = false, shown = { rows -> rows - row }) {
+        edit(reloadAfter = rows().hasTwice(row.entry.reference), shown = { rows -> rows - row }) {
             editor.removeService(state.bouquetRef, row.entry.reference)
         }
     }
@@ -270,7 +283,7 @@ class BouquetContentViewModel @Inject constructor(
         }
         val row = rows[from]
         edit(
-            reloadAfter = false,
+            reloadAfter = rows.hasTwice(row.entry.reference),
             shown = { list -> list.toMutableList().apply { add(position, removeAt(from)) } }
         ) {
             editor.moveService(state.mode, state.bouquetRef, row.entry.reference, position)
@@ -291,6 +304,18 @@ class BouquetContentViewModel @Inject constructor(
         return typed
     }
 
+    /** Closes the list when the active profile's receiver is no longer the bouquet's. */
+    private fun receiverChanged(): Boolean {
+        if (editor.currentReceiver() == receiver) {
+            return false
+        }
+        loadJob?.cancel()
+        _uiState.update {
+            it.copy(closed = true, pending = false, refreshing = false, menu = null, dialog = null)
+        }
+        return true
+    }
+
     private fun openDialog(dialog: BouquetContentDialog) {
         if (!_uiState.value.editable) {
             return
@@ -307,7 +332,9 @@ class BouquetContentViewModel @Inject constructor(
         shown: ((List<BouquetContentRow>) -> List<BouquetContentRow>)? = null,
         call: suspend () -> BouquetEditResult
     ) {
-        loadJob?.cancel()
+        if (receiverChanged() || !_uiState.value.editable) {
+            return
+        }
         _uiState.update { state ->
             val content = state.content
             state.copy(
@@ -323,7 +350,7 @@ class BouquetContentViewModel @Inject constructor(
         }
         loadJob = viewModelScope.launch {
             val result = call()
-            seenEpoch = services.bouquetsEpoch.value
+            seenEdit = services.bouquetEdits.value[_uiState.value.bouquetRef]
             val message = result.userMessage()
             val content = if (reloadAfter || !result.succeeded) fetch() else null
             _uiState.update {
@@ -347,6 +374,18 @@ class BouquetContentViewModel @Inject constructor(
 
     private fun rows(): List<BouquetContentRow>? =
         (_uiState.value.content as? BouquetContentList.Ready)?.rows
+
+    /**
+     * Whether more than one row has [ref], names aside: the box compares references without
+     * the name and acts on the first match, which need not be the row on screen.
+     */
+    private fun List<BouquetContentRow>?.hasTwice(ref: String): Boolean {
+        if (ref.isEmpty()) {
+            return false
+        }
+        val key = presenceKey(ref)
+        return orEmpty().count { presenceKey(it.entry.reference) == key } > 1
+    }
 
     private companion object {
         const val KEY_NAME = "bouquet_content_name"

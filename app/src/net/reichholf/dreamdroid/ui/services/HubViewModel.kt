@@ -50,8 +50,8 @@ data class HubUiState(
 
 /**
  * Hub mode, selected row, and bouquet or location tabs for [HubDestination]. The bouquet
- * strip loads again on each session change and after each bouquet edit
- * ([ServiceRepository.bouquetsEpoch]); loads run on [viewModelScope], so leaving the
+ * strip loads again on each session change and after each edit of a bouquet index
+ * ([ServiceRepository.bouquetEdits]); loads run on [viewModelScope], so leaving the
  * destination and popping back keeps the strip. Child lists use their own ViewModels on
  * this same back-stack entry.
  */
@@ -95,8 +95,10 @@ class HubViewModel @Inject constructor(
         viewModelScope.launch {
             combine(
                 sessions.status.map { it.session }.distinctUntilChanged(),
-                services.bouquetsEpoch
-            ) { session, epoch -> session to epoch }.collect {
+                services.bouquetEdits
+                    .map { edits -> services.bouquetIndexRefs.map { edits[it] } }
+                    .distinctUntilChanged()
+            ) { session, edits -> session to edits }.collect {
                 bouquetJob?.cancel()
                 bouquetJob = launch { loadBouquets() }
             }

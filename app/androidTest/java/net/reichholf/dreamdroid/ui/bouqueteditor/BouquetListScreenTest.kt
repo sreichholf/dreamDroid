@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onAllNodesWithContentDescription
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -26,6 +27,7 @@ import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -139,6 +141,27 @@ class BouquetListScreenTest {
     }
 
     @Test
+    fun dragByTheHandleMovesTheRowOnDrop() {
+        val moves = mutableListOf<Pair<String, Int>>()
+        show(ready(), onMove = { ref, position -> moves += ref to position })
+
+        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG)
+        val from = handles[1].fetchSemanticsNode().boundsInRoot.center
+        val to = handles[0].fetchSemanticsNode().boundsInRoot.center
+        handles[1].performTouchInput {
+            down(center)
+            repeat(DRAG_STEPS) { moveBy((to - from) / DRAG_STEPS.toFloat()) }
+            up()
+        }
+
+        composeRule.runOnIdle { assertEquals(listOf(SPORTS.reference to 0), moves) }
+        // The fake did not take the move, so the rows are back in their order.
+        val favourites = composeRule.onNodeWithText("Favourites (TV)").fetchSemanticsNode()
+        val sports = composeRule.onNodeWithText("Sports (TV)").fetchSemanticsNode()
+        assertTrue(favourites.boundsInRoot.top < sports.boundsInRoot.top)
+    }
+
+    @Test
     fun removeAsksFirst() {
         var removed = 0
         var dismissed = 0
@@ -215,6 +238,8 @@ class BouquetListScreenTest {
     )
 
     private companion object {
+        const val DRAG_STEPS = 10
+
         val FAVOURITES = BouquetEntry(
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
             "Favourites (TV)",

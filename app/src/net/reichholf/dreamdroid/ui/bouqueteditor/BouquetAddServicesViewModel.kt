@@ -47,7 +47,8 @@ sealed interface AddServicesList {
  * lists the source, or the folders opened under it ([path]). [present] are the references
  * the bouquet has already; [selected] are the picked ones of the list on screen.
  * [finished] is the outcome to show once this destination has left. [present] holds
- * [presenceKey]s: a renamed entry keeps its service, not its reference.
+ * [presenceKey]s: a renamed entry keeps its service, not its reference. [closed] once the
+ * active profile changed: the bouquet belongs to the old receiver, so the picker leaves.
  */
 data class BouquetAddServicesUiState(
     val bouquetRef: String,
@@ -60,7 +61,8 @@ data class BouquetAddServicesUiState(
     val blocked: Boolean = false,
     val pending: Boolean = false,
     val userMessage: UiText? = null,
-    val finished: UiText? = null
+    val finished: UiText? = null,
+    val closed: Boolean = false
 ) {
     val title: UiText
         get() {
@@ -74,7 +76,7 @@ data class BouquetAddServicesUiState(
 
     /** Whether the add action takes the selection now. */
     val canAdd: Boolean
-        get() = selected.isNotEmpty() && !blocked && !pending
+        get() = selected.isNotEmpty() && !blocked && !pending && !closed
 
     /** Whether [entry] can be picked: a service or stream the bouquet does not have yet. */
     fun selectable(entry: BouquetEntry): Boolean =
@@ -109,7 +111,11 @@ class BouquetAddServicesViewModel @Inject constructor(
 
     private var loadJob: Job? = null
 
+    /** The receiver the bouquet belongs to. */
+    private val receiver = editor.currentReceiver()
+
     init {
+        viewModelScope.launch { editor.receiver.collect { receiverChanged() } }
         viewModelScope.launch {
             sessions.status.map { it.blocksMutations }.distinctUntilChanged().collect { blocked ->
                 _uiState.update { it.copy(blocked = blocked) }
@@ -123,6 +129,9 @@ class BouquetAddServicesViewModel @Inject constructor(
     fun reload() {
         val state = _uiState.value
         val source = state.source ?: return
+        if (state.closed) {
+            return
+        }
         loadJob?.cancel()
         _uiState.update { it.copy(content = AddServicesList.Loading) }
         val folder = state.path.lastOrNull()
@@ -179,7 +188,7 @@ class BouquetAddServicesViewModel @Inject constructor(
     fun add() {
         val state = _uiState.value
         val entries = (state.content as? AddServicesList.Ready)?.entries ?: return
-        if (!state.canAdd) {
+        if (receiverChanged() || !state.canAdd) {
             return
         }
         val refs = entries.map { it.reference }.filter { it in state.selected }
@@ -205,7 +214,8 @@ class BouquetAddServicesViewModel @Inject constructor(
             }
             val outcome = result.userMessage()
                 ?: UiText.Resource(R.string.bouquet_services_added, listOf(refs.size))
-            _uiState.update { it.copy(pending = false, finished = outcome) }
+            // A closed picker leaves on its own.
+            _uiState.update { if (it.closed) it else it.copy(pending = false, finished = outcome) }
         }
     }
 
@@ -215,6 +225,16 @@ class BouquetAddServicesViewModel @Inject constructor(
 
     fun onMessageShown() {
         _uiState.update { it.copy(userMessage = null) }
+    }
+
+    /** Closes the picker when the active profile's receiver is no longer the bouquet's. */
+    private fun receiverChanged(): Boolean {
+        if (editor.currentReceiver() == receiver) {
+            return false
+        }
+        loadJob?.cancel()
+        _uiState.update { it.copy(closed = true, pending = false) }
+        return true
     }
 
     private fun show(source: ServiceSource?, path: List<BouquetEntry>) {

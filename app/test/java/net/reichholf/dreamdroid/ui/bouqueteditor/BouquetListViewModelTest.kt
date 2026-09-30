@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.bouqueteditor
 
 import androidx.lifecycle.SavedStateHandle
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -25,6 +26,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -41,6 +43,7 @@ class BouquetListViewModelTest {
         receiver.profiles.services
     )
     private val viewModels = mutableListOf<BouquetListViewModel>()
+    private val others = mutableListOf<TestReceiver>()
 
     @BeforeEach
     fun setUp() {
@@ -56,6 +59,7 @@ class BouquetListViewModelTest {
     @AfterEach
     fun tearDown() {
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
+        others.forEach { it.shutdown() }
         receiver.shutdown()
         Dispatchers.resetMain()
     }
@@ -216,6 +220,59 @@ class BouquetListViewModelTest {
         assertNull(viewModel.settled().userMessage)
         assertEquals(1, receiver.requestsTo(BACKUP).size)
         assertEquals(2, receiver.requestsTo(MOVE_BOUQUET).size)
+    }
+
+    @Test
+    fun noEditWhileTheListLoadsAgain() = runBlocking {
+        val viewModel = radioViewModel()
+        val sky = viewModel.bouquets()[1]
+        val list = receiver.hold(GET_SERVICES)
+
+        viewModel.reload()
+        assertTrue(list.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+        val refreshing = viewModel.uiState.value
+        viewModel.move(sky.reference, 0)
+        viewModel.openAdd()
+        list.release()
+        viewModel.ready()
+
+        assertFalse(refreshing.editable)
+        assertNull(viewModel.uiState.value.dialog)
+        assertEquals(listOf("Favourites (Radio)", "SKY (Radio)"), viewModel.bouquets().names())
+        assertTrue(receiver.requestsTo(MOVE_BOUQUET).isEmpty())
+    }
+
+    @Test
+    fun profileChangeListsTheNewReceiver() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.ready()
+        viewModel.openAdd()
+        val other = TestReceiver(receiver.profiles).also { others += it }
+        other.respond(EXTERNALS, fixture("web_external.xml"))
+        other.respond(GET_SERVICES, fixture("getservices_roots_radio.xml"))
+        other.respond(BACKUP, fixture("result_backup.xml"))
+        other.respond(MOVE_BOUQUET, simpleResult(true, "Done."))
+
+        other.start()
+
+        val bouquets = withTimeout(TIMEOUT) {
+            viewModel.uiState.first { state ->
+                (state.content as? BouquetListContent.Ready)?.bouquets?.size == 2 &&
+                    !state.refreshing
+            }
+        }.let { (it.content as BouquetListContent.Ready).bouquets }
+        assertNull(viewModel.uiState.value.dialog)
+        assertEquals(1, other.requestsTo(EXTERNALS).size)
+
+        viewModel.move(bouquets[1].reference, 0)
+        viewModel.settled()
+
+        assertEquals(
+            bouquets[1].reference,
+            other.requestsTo(MOVE_BOUQUET).single().query("sBouquetRef")
+        )
+        assertTrue(receiver.requestsTo(MOVE_BOUQUET).isEmpty())
+        assertTrue(receiver.requestsTo(ADD_BOUQUET).isEmpty())
     }
 
     private fun viewModel() = BouquetListViewModel(SavedStateHandle(), editor, sessions)

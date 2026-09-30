@@ -191,6 +191,8 @@ private fun EntryRows(
                                                 it.key == row.key
                                             }
                                             onMove(row.key, position)
+                                            // An accepted move shows in the next list.
+                                            shown = rows
                                         }
                                     )
                                     .testTag(BOUQUET_DRAG_HANDLE_TAG)

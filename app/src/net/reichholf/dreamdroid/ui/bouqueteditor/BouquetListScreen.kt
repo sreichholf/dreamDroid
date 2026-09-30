@@ -238,6 +238,8 @@ private fun BouquetRows(
                                                 it.reference == bouquet.reference
                                             }
                                             onMove(bouquet.reference, position)
+                                            // An accepted move shows in the next list.
+                                            rows = bouquets
                                         }
                                     )
                                     .testTag(BOUQUET_DRAG_HANDLE_TAG)

@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.testutil
 
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import net.reichholf.dreamdroid.Profile
@@ -19,6 +20,7 @@ import okhttp3.mockwebserver.RecordedRequest
 class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
     private val server = MockWebServer()
     private val routes = ConcurrentHashMap<String, MockResponse>()
+    private val once = ConcurrentHashMap<String, ConcurrentLinkedQueue<MockResponse>>()
     private val holds = ConcurrentHashMap<String, Hold>()
     private val recorded = Collections.synchronizedList(mutableListOf<RecordedRequest>())
 
@@ -38,7 +40,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
                     hold.arrived.countDown()
                     hold.released.await(HOLD_TIMEOUT_SECONDS, TimeUnit.SECONDS)
                 }
-                return routes[path] ?: MockResponse().setResponseCode(404)
+                return once[path]?.poll() ?: routes[path] ?: MockResponse().setResponseCode(404)
             }
         }
         server.start()
@@ -64,6 +66,11 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
 
     fun respond(path: String, response: MockResponse) {
         routes[path] = response
+    }
+
+    /** Answers the next request to [path] with [body]; later ones get what [respond] set. */
+    fun respondOnce(path: String, body: String) {
+        once.getOrPut(path) { ConcurrentLinkedQueue() }.add(MockResponse().setBody(body))
     }
 
     /**

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.bouqueteditor
 
 import androidx.lifecycle.SavedStateHandle
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -13,6 +14,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetEditorRepository
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
@@ -22,6 +24,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -39,6 +42,7 @@ class BouquetContentViewModelTest {
         services
     )
     private val viewModels = mutableListOf<BouquetContentViewModel>()
+    private val others = mutableListOf<TestReceiver>()
 
     @BeforeEach
     fun setUp() {
@@ -53,6 +57,7 @@ class BouquetContentViewModelTest {
     @AfterEach
     fun tearDown() {
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
+        others.forEach { it.shutdown() }
         receiver.shutdown()
         Dispatchers.resetMain()
     }
@@ -263,6 +268,121 @@ class BouquetContentViewModelTest {
         }
     }
 
+    @Test
+    fun editOfAnotherBouquetKeepsTheList() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.ready()
+
+        services.onBouquetsEdited(listOf(OTHER, TV_ROOTS[0]))
+
+        // The collector runs on the unconfined main dispatcher: a reload would have begun.
+        assertFalse(viewModel.uiState.value.refreshing)
+        viewModel.cancelAndJoin()
+        assertEquals(1, receiver.requestsTo(GET_SERVICES).size)
+    }
+
+    @Test
+    fun noEditWhileTheListLoadsAgain() = runBlocking {
+        val viewModel = viewModel()
+        val rows = viewModel.ready()
+        val list = receiver.hold(GET_SERVICES)
+
+        viewModel.reload()
+        assertTrue(list.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
+        val refreshing = viewModel.uiState.value
+        viewModel.move(rows[1].key, 0)
+        viewModel.openAddMarker()
+        list.release()
+        viewModel.ready()
+
+        assertTrue(refreshing.refreshing)
+        assertFalse(refreshing.editable)
+        assertNull(viewModel.uiState.value.dialog)
+        assertEquals(rows, viewModel.rows())
+        assertTrue(receiver.requestsTo(MOVE_SERVICE).isEmpty())
+    }
+
+    @Test
+    fun moveOfARepeatedReferenceLoadsTheBoxOrder() = runBlocking {
+        receiver.respond(
+            GET_SERVICES,
+            serviceList(
+                ERSTE to "Das Erste HD",
+                SPACER to "Spacer",
+                ZDF to "ZDF HD",
+                SPACER to "Spacer"
+            )
+        )
+        val viewModel = viewModel()
+        val rows = viewModel.ready()
+        // The box moves the first spacer, not the one dragged.
+        receiver.respond(
+            GET_SERVICES,
+            serviceList(
+                SPACER to "Spacer",
+                ERSTE to "Das Erste HD",
+                ZDF to "ZDF HD",
+                SPACER to "Spacer"
+            )
+        )
+
+        viewModel.move(rows[3].key, 0)
+        viewModel.settled()
+
+        assertEquals(SPACER, receiver.requestsTo(MOVE_SERVICE).single().query("sRef"))
+        assertEquals(2, receiver.requestsTo(GET_SERVICES).size)
+        assertEquals(
+            listOf(SPACER, ERSTE, ZDF, SPACER),
+            viewModel.rows().map { it.entry.reference }
+        )
+    }
+
+    @Test
+    fun removeOfARepeatedMarkerLoadsTheBoxOrder() = runBlocking {
+        val marker = "1:64:1:0:0:0:0:0:0:0::"
+        receiver.respond(
+            GET_SERVICES,
+            serviceList("${marker}News" to "News", ERSTE to "Das Erste HD", "${marker}Old" to "Old")
+        )
+        val viewModel = viewModel()
+        val rows = viewModel.ready()
+        viewModel.onMenuAction(rows[2], BouquetEntryAction.Remove)
+
+        viewModel.confirmRemove()
+        viewModel.settled()
+
+        assertEquals(2, receiver.requestsTo(GET_SERVICES).size)
+    }
+
+    @Test
+    fun profileChangeClosesTheListAndSendsNothing() = runBlocking {
+        val viewModel = viewModel()
+        val rows = viewModel.ready()
+        viewModel.openAddMarker()
+
+        val other = TestReceiver(receiver.profiles).also { others += it }
+        other.start()
+
+        val state = withTimeout(TIMEOUT) { viewModel.uiState.first { it.closed } }
+        assertNull(state.dialog)
+        assertFalse(state.editable)
+        viewModel.move(rows[1].key, 0)
+        viewModel.reload()
+        viewModel.cancelAndJoin()
+        assertTrue(other.requests.isEmpty())
+        assertTrue(receiver.requestsTo(MOVE_SERVICE).isEmpty())
+    }
+
+    private fun serviceList(vararg entries: Pair<String, String>): String =
+        entries.joinToString("", "<e2servicelist>", "</e2servicelist>") { (ref, name) ->
+            val marker = if (ref.startsWith("1:64:") || ref.startsWith("1:832:")) 1 else 0
+            "<e2service><e2servicereference>$ref</e2servicereference>" +
+                "<e2servicename>$name</e2servicename><e2serviceisgroup>0</e2serviceisgroup>" +
+                "<e2serviceismarker>$marker</e2serviceismarker>" +
+                "<e2serviceisprotected>0</e2serviceisprotected>" +
+                "<e2serviceisstream>0</e2serviceisstream></e2service>"
+        }
+
     private fun viewModel() = BouquetContentViewModel(
         SavedStateHandle(
             mapOf("bouquetRef" to BOUQUET, "bouquetName" to "Favourites (TV)", "mode" to "Tv")
@@ -291,6 +411,11 @@ class BouquetContentViewModelTest {
         const val TIMEOUT = 5_000L
         const val BOUQUET =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
+        const val OTHER =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.other.tv\" ORDER BY bouquet"
+        const val ERSTE = "1:0:19:283D:3FB:1:C00000:0:0:0:"
+        const val ZDF = "1:0:19:2B66:3F3:1:C00000:0:0:0:"
+        const val SPACER = "1:832:D:0:0:0:0:0:0:0:"
         const val GET_SERVICES = "/web/getservices"
         const val BACKUP = "/bouqueteditor/web/backup"
         const val MOVE_SERVICE = "/bouqueteditor/web/moveservice"

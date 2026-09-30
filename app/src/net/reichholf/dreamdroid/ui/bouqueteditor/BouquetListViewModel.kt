@@ -54,7 +54,8 @@ sealed interface BouquetListDialog {
 
 /**
  * The bouquet index of [mode]. [blocked] mirrors the session's `blocksMutations`; [pending]
- * is true while an edit (and the reload after it) runs. [nameError] rejects the text of the
+ * is true while an edit (and the reload after it) runs; [refreshing] while the list loads
+ * again, which an edit would cut short. [nameError] rejects the text of the
  * open add or rename dialog.
  */
 data class BouquetListUiState(
@@ -73,13 +74,14 @@ data class BouquetListUiState(
 
     /** Whether the list takes an edit now. */
     val editable: Boolean
-        get() = content is BouquetListContent.Ready && !blocked && !pending
+        get() = content is BouquetListContent.Ready && !blocked && !pending && !refreshing
 }
 
 /**
  * The receiver's TV or radio bouquets through the WebBouquetEditor plugin. Creating it starts
  * an editor session: the first edit backs up the box. One edit runs at a time. Moves and
- * removals show at once; a failed edit loads the list again.
+ * removals show at once; a failed edit loads the list again. A profile change drops the
+ * list, the open dialog, and the plugin check, and lists the new receiver's bouquets.
  */
 @HiltViewModel
 class BouquetListViewModel @Inject constructor(
@@ -105,8 +107,12 @@ class BouquetListViewModel @Inject constructor(
     private var available = false
     private var loadJob: Job? = null
 
+    /** The receiver the list came from. */
+    private var receiver = editor.currentReceiver()
+
     init {
         editor.resetBackup()
+        viewModelScope.launch { editor.receiver.collect { receiverChanged() } }
         viewModelScope.launch {
             sessions.status.map { it.blocksMutations }.distinctUntilChanged().collect { blocked ->
                 _uiState.update { it.copy(blocked = blocked) }
@@ -277,6 +283,34 @@ class BouquetListViewModel @Inject constructor(
         _uiState.update { it.copy(userMessage = null) }
     }
 
+    /**
+     * Whether the active profile's receiver is no longer the one the list came from. If so,
+     * drops what came from the old one and lists the new one's bouquets.
+     */
+    private fun receiverChanged(): Boolean {
+        val current = editor.currentReceiver()
+        if (current == receiver) {
+            return false
+        }
+        receiver = current
+        loadJob?.cancel()
+        available = false
+        _uiState.update {
+            it.copy(
+                content = BouquetListContent.Loading,
+                refreshing = false,
+                pending = false,
+                menu = null,
+                dialog = null,
+                nameError = null
+            )
+        }
+        if (current != null) {
+            reload()
+        }
+        return true
+    }
+
     private fun openDialog(dialog: BouquetListDialog) {
         if (!_uiState.value.editable) {
             return
@@ -293,7 +327,9 @@ class BouquetListViewModel @Inject constructor(
         shown: ((List<BouquetEntry>) -> List<BouquetEntry>)? = null,
         call: suspend () -> BouquetEditResult
     ) {
-        loadJob?.cancel()
+        if (receiverChanged() || !_uiState.value.editable) {
+            return
+        }
         val mode = _uiState.value.mode
         _uiState.update { state ->
             val content = state.content

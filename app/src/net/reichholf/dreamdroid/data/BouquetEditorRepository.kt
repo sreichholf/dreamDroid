@@ -3,8 +3,15 @@ package net.reichholf.dreamdroid.data
 import java.util.Collections
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.cancellation.CancellationException
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.BouquetEntry
 import net.reichholf.dreamdroid.enigma.EnigmaClient
 import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
@@ -18,6 +25,9 @@ enum class BouquetMode(val param: String) {
     Tv("0"),
     Radio("1")
 }
+
+/** The receiver edits go to: the active profile's id and address. */
+data class BouquetReceiver(val profileId: Int?, val host: String?, val port: Int)
 
 /**
  * One edit on the receiver. [backup] is the box-side backup this edit ran first, or null
@@ -35,7 +45,9 @@ data class BouquetEditResult(
  * Bouquet editing through the optional WebBouquetEditor plugin (`/bouqueteditor`). Lists
  * come from `/web/getservices`. Edits reach the box one at a time, in call order. The first
  * edit of an editor session ([resetBackup]) per profile writes a backup to the box's `/tmp`.
- * A successful edit drops the Room rosters it touched ([ServiceRepository.onBouquetsEdited]).
+ * Unless the box rejected it, an edit drops the Room rosters it touched
+ * ([ServiceRepository.onBouquetsEdited]): one cancelled or cut off after it was sent may
+ * still have reached the box.
  */
 @Singleton
 class BouquetEditorRepository @Inject constructor(
@@ -45,6 +57,13 @@ class BouquetEditorRepository @Inject constructor(
 ) {
     private val editMutex = Mutex()
     private val backedUpProfiles = Collections.synchronizedSet(HashSet<Int?>())
+
+    /** The receiver edits go to now; null without an active profile. */
+    fun currentReceiver(): BouquetReceiver? = profiles.current.value?.receiver()
+
+    /** Emits the receiver edits go to, and again each time the active profile changes it. */
+    val receiver: Flow<BouquetReceiver?> =
+        profiles.current.map { it?.receiver() }.distinctUntilChanged()
 
     /** Whether the receiver lists the plugin in `/web/external`. Null value on failure. */
     suspend fun isAvailable(): EnigmaResponse<Boolean> {
@@ -130,20 +149,23 @@ class BouquetEditorRepository @Inject constructor(
             val backup = backupOnce(client)
             var rejected: EnigmaResponse<SimpleResult>? = null
             var last = EnigmaResponse<SimpleResult>(null)
-            var added = false
-            for (ref in refs) {
-                last = client.addServiceToBouquet(
-                    params("sBouquetRef" to bouquetRef, "sRef" to ref, "sRefBefore" to "")
-                )
-                if (last.succeeded) {
-                    added = true
-                } else if (last.value != null) {
-                    rejected = rejected ?: last
-                } else {
-                    break
+            var touched = false
+            invalidatingOnCancel(listOf(bouquetRef)) {
+                for (ref in refs) {
+                    last = client.addServiceToBouquet(
+                        params("sBouquetRef" to bouquetRef, "sRef" to ref, "sRefBefore" to "")
+                    )
+                    if (!last.rejected) {
+                        touched = true
+                    } else {
+                        rejected = rejected ?: last
+                    }
+                    if (last.value == null) {
+                        break
+                    }
                 }
             }
-            if (added) {
+            if (touched) {
                 services.onBouquetsEdited(listOf(bouquetRef))
             }
             val result = if (last.value == null) last else rejected ?: last
@@ -206,12 +228,21 @@ class BouquetEditorRepository @Inject constructor(
     ): BouquetEditResult = editMutex.withLock {
         val client = clients.current()
         val backup = backupOnce(client)
-        val response = client.call()
-        if (response.succeeded) {
+        val response = invalidatingOnCancel(editedRefs) { client.call() }
+        if (!response.rejected) {
             services.onBouquetsEdited(editedRefs)
         }
         BouquetEditResult(response, backup)
     }
+
+    /** Runs [request]; if it is cancelled once sent, drops the caches of [refs] all the same. */
+    private suspend fun <T> invalidatingOnCancel(refs: List<String>, request: suspend () -> T): T =
+        try {
+            request()
+        } catch (e: CancellationException) {
+            withContext(NonCancellable) { services.onBouquetsEdited(refs) }
+            throw e
+        }
 
     /** Runs under [editMutex]. Tried once per profile and session, whatever the outcome. */
     private suspend fun backupOnce(client: EnigmaClient): EnigmaResponse<SimpleResult>? {
@@ -250,3 +281,9 @@ class BouquetEditorRepository @Inject constructor(
 
 private val EnigmaResponse<SimpleResult>.succeeded: Boolean
     get() = value != null && error == null
+
+/** The box answered and turned the edit down, so nothing changed. */
+private val EnigmaResponse<SimpleResult>.rejected: Boolean
+    get() = value != null && error != null
+
+private fun Profile.receiver() = BouquetReceiver(id, host, port)

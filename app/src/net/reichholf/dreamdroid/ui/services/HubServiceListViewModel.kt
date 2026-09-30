@@ -91,7 +91,8 @@ data class HubServiceListUiState(
  * The service list of one hub bouquet tab. Keyed by the tab's ref on the hub back-stack
  * entry, so a tab change keeps the loaded list and the opened folder; the folder survives
  * process death with one back step to the tab. Loads follow the session: each change of the
- * connection, and each bouquet edit ([ServiceRepository.bouquetsEpoch]), loads again. A
+ * connection, and each edit of the tab's bouquet ([ServiceRepository.bouquetEdits]), loads
+ * again. A
  * live answer fills the Room EPG chunk of a cacheable list.
  */
 @HiltViewModel(assistedFactory = HubServiceListViewModel.Factory::class)
@@ -141,8 +142,8 @@ class HubServiceListViewModel @AssistedInject constructor(
         viewModelScope.launch {
             combine(
                 sessions.status.map { it.session }.distinctUntilChanged(),
-                services.bouquetsEpoch
-            ) { session, epoch -> session to epoch }.collect { reload() }
+                services.bouquetEdits.map { it[rootRef] }.distinctUntilChanged()
+            ) { session, edit -> session to edit }.collect { reload() }
         }
     }
 
