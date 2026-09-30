@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2servicelist>
+
+	<e2service>
+		<e2servicereference>1:7:1:0:0:0:0:0:0:0:FROM BOUQUET "userbouquet.favourites.tv" ORDER BY bouquet</e2servicereference>
+		<e2servicename>Favourites (TV)</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>1</e2serviceisstream>
+	</e2service>
+	
+</e2servicelist>	

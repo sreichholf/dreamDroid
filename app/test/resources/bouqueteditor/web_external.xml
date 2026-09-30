@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2webifexternals>
+	<e2webifexternal>
+		<e2path>autotimer</e2path>
+		<e2name>AutoTimer-Plugin</e2name>
+		<e2externalversion>1.6</e2externalversion>
+		<e2hasgui>False</e2hasgui>
+		<e2guitarget>_blank</e2guitarget>
+	</e2webifexternal>
+	<e2webifexternal>
+		<e2path>autotimereditor</e2path>
+		<e2name>AutoTimer</e2name>
+		<e2externalversion>1</e2externalversion>
+		<e2hasgui>True</e2hasgui>
+		<e2guitarget>_blank</e2guitarget>
+	</e2webifexternal>
+	<e2webifexternal>
+		<e2path>bouqueteditor</e2path>
+		<e2name>BouquetEditor</e2name>
+		<e2externalversion>1</e2externalversion>
+		<e2hasgui>True</e2hasgui>
+		<e2guitarget>_blank</e2guitarget>
+	</e2webifexternal>
+	<e2webifexternal>
+		<e2path>epgrefresh</e2path>
+		<e2name>EPGRefresh-Plugin</e2name>
+		<e2externalversion>1.4</e2externalversion>
+		<e2hasgui>False</e2hasgui>
+		<e2guitarget>_blank</e2guitarget>
+	</e2webifexternal>
+</e2webifexternals>

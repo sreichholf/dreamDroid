@@ -1,0 +1,544 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2servicelist>
+
+	<e2service>
+		<e2servicereference>1:0:19:283D:3FB:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Das Erste HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2B66:3F3:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ZDF HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2855:401:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>BR Fernsehen Süd HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2B7A:3F3:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>zdf_neo HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF74:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SAT.1 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF10:421:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>RTL HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF75:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ProSieben HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF15:421:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>RTLZWEI HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF11:421:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>VOX HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF76:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>kabel eins HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2EAF:411:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>NITRO HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:1519:455:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>TELE 5 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF77:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SIXX HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:EF78:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Pro7 MAXX HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2F30:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>RTLup</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2E9B:411:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SUPER RTL HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:157C:41F:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Disney Channel HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:332F:45B:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>DOKUSAT SD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:157F:41F:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Deluxe Music HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2777:409:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>.</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:32DD:45D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ntv Austria_ALT</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:64:1:0:0:0:0:0:0:0::Doku</e2servicereference>
+		<e2servicename>Doku</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>1</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:3F:21:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>DMAX</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:5274:41D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>WELT HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:64:2:0:0:0:0:0:0:0::Sport</e2servicereference>
+		<e2servicename>Sport</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>1</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:30D6:413:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Eurosport 1 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:26:F:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>HGTV</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2774:409:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>TLC HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:1581:41F:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SPORT1 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:64:3:0:0:0:0:0:0:0::Old</e2servicereference>
+		<e2servicename>Old</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>1</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:283E:3FB:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>arte HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2B8E:3F2:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>3sat HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2BA2:3F2:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ZDFinfo HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2857:401:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>NDR FS NDS HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:6EB5:3FD:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>WDR HD Siegen</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:6E46:431:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Crime Time</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:1332:3EF:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>DF1 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2F3A:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ntv</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2779:409:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>QVC STYLE HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:5270:41D:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>HSE HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2B98:3F2:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>KiKA HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2887:40F:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>tagesschau24 HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:19:2888:40F:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ONE HD</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>8193:0:0:0:0:0:0:0:0:0:yt%3a//live/rocketbeanstv:RBTV</e2servicereference>
+		<e2servicename>RBTV</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>1</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>8193:256:0:0:0:0:0:0:0:0:tw%3a//dota2ti:DotA2ti</e2servicereference>
+		<e2servicename>DotA2ti</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>1</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:445C:453:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SAT.1</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2EE3:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>RTL Television</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:445D:453:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ProSieben</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2EF4:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>RTLZWEI</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:445E:453:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>kabel eins</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2F1C:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>VOX</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:4461:453:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>Pro7 MAXX</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:304:5:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>TLC</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:308:5:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>DMF</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:445F:453:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>WELT</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:33:21:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>TELE 5</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:384:21:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SPORT1</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2F1D:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>NITRO</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:2F08:441:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SUPER RTL</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+	<e2service>
+		<e2servicereference>1:0:1:41:7:85:C00000:0:0:0:</e2servicereference>
+		<e2servicename>DELUXE MUSIC</e2servicename>
+		<e2serviceisgroup>0</e2serviceisgroup>
+		<e2serviceismarker>0</e2serviceismarker>
+		<e2serviceisprotected>0</e2serviceisprotected>
+		<e2serviceisstream>0</e2serviceisstream>
+	</e2service>
+	
+</e2servicelist>	
