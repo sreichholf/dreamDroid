@@ -158,4 +158,21 @@ class XmlPullSpecialCasesTest {
     fun serviceParseFailureIsEmptyList() {
         assertEquals(0, ServiceParser.parse("<e2servicelist><e2service>").size)
     }
+
+    @Test
+    fun fallbackParserReadsAttributesOfStartTagsOnly() {
+        val parser = EnigmaXmlPullParser()
+        parser.setInput(StringReader("<a x=\"1 &amp; 2\" y='&quot;q&quot;'/><b>t</b>"))
+
+        assertEquals(XmlPullParser.START_TAG, parser.next())
+        assertEquals(2, parser.attributeCount)
+        assertEquals("x", parser.getAttributeName(0))
+        assertEquals("1 & 2", parser.getAttributeValue(null, "x"))
+        assertEquals("\"q\"", parser.getAttributeValue(1))
+        assertNull(parser.getAttributeValue(null, "z"))
+        assertEquals(XmlPullParser.END_TAG, parser.next())
+        assertEquals(-1, parser.attributeCount)
+        assertEquals(XmlPullParser.START_TAG, parser.next())
+        assertEquals(0, parser.attributeCount)
+    }
 }

@@ -138,6 +138,7 @@ class NavigationHelper(activity: MainActivity, private val drawerState: DrawerLi
             put(R.id.menu_navigation_settings, Settings)
             put(R.id.menu_navigation_profiles, Profiles)
             put(R.id.menu_navigation_zap, Zap)
+            put(R.id.menu_navigation_autotimer, AutoTimers)
         }
     }
 }

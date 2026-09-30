@@ -39,6 +39,7 @@ object PhoneNavRoutes {
     const val TIMER_SERVICE_PICK = "timer_service_pick"
     const val BOUQUET_CONTENT = "bouquet_content"
     const val BOUQUET_ADD_SERVICES = "bouquet_add_services"
+    const val AUTOTIMERS = "autotimers"
 
     /** Absent [Epg.timeSec] / [MultiEpg.timeSec]. Zero is a real instant. */
     const val ABSENT_TIME_SEC = -1L
@@ -71,7 +72,8 @@ private val startRouteIds = setOf(
     PhoneNavRoutes.SETTINGS,
     PhoneNavRoutes.HUB,
     PhoneNavRoutes.TOOLS,
-    PhoneNavRoutes.PROFILE_CHECK
+    PhoneNavRoutes.PROFILE_CHECK,
+    PhoneNavRoutes.AUTOTIMERS
 )
 
 /** NavHost destination for a saved id. Unknown ids become [Hub]. */
@@ -103,6 +105,7 @@ fun routeForId(id: String): Any = when (routeKey(id)) {
     PhoneNavRoutes.EPG_SEARCH -> EpgSearch()
     PhoneNavRoutes.BOUQUET_CONTENT -> BouquetContent(bouquetRef = "")
     PhoneNavRoutes.BOUQUET_ADD_SERVICES -> BouquetAddServices(bouquetRef = "")
+    PhoneNavRoutes.AUTOTIMERS -> AutoTimers
     else -> Hub
 }
 
@@ -145,6 +148,7 @@ fun routeId(route: Any): String {
         ProfileCheck -> PhoneNavRoutes.PROFILE_CHECK
         PickService -> PhoneNavRoutes.PICK_SERVICE
         TimerServicePick -> PhoneNavRoutes.TIMER_SERVICE_PICK
+        AutoTimers -> PhoneNavRoutes.AUTOTIMERS
         is ServiceEpg -> PhoneNavRoutes.SERVICE_EPG
         is EpgSearch -> PhoneNavRoutes.EPG_SEARCH
         is Epg -> PhoneNavRoutes.EPG
@@ -229,6 +233,10 @@ data object PickService
 @Serializable
 @SerialName(PhoneNavRoutes.TIMER_SERVICE_PICK)
 data object TimerServicePick
+
+@Serializable
+@SerialName(PhoneNavRoutes.AUTOTIMERS)
+data object AutoTimers
 
 @Serializable
 @SerialName(PhoneNavRoutes.SERVICE_EPG)

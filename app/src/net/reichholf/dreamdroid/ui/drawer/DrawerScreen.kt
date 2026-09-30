@@ -67,6 +67,11 @@ object DrawerDestinations {
         ),
         DrawerMenuItem(R.id.menu_navigation_epg, R.string.epg, R.attr.ic_menu_epg),
         DrawerMenuItem(
+            R.id.menu_navigation_autotimer,
+            R.string.autotimer,
+            R.attr.ic_menu_timer
+        ),
+        DrawerMenuItem(
             R.id.menu_navigation_remote,
             R.string.virtual_remote,
             R.attr.ic_menu_remote
@@ -96,6 +101,12 @@ class DrawerListState {
         selectedItemId = R.id.menu_none
     }
 }
+
+/** Destinations the drawer should show. AutoTimer needs the plugin on the receiver. */
+internal fun drawerDestinations(autoTimerAvailable: Boolean): List<DrawerMenuItem> =
+    DrawerDestinations.destinations.filter { item ->
+        item.id != R.id.menu_navigation_autotimer || autoTimerAvailable
+    }
 
 /** Box actions the drawer should show. Sleep timer follows the profile feature flag. */
 internal fun drawerBoxActions(sleepTimerAvailable: Boolean): List<DrawerMenuItem> =
@@ -187,7 +198,8 @@ fun DrawerScreen(
     state: DrawerListState,
     onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    boxActionsBlocked: Boolean = false
+    boxActionsBlocked: Boolean = false,
+    autoTimerAvailable: Boolean = false
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         DrawerBoxActions(
@@ -202,7 +214,7 @@ fun DrawerScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 12.dp, vertical = 8.dp)
         ) {
-            DrawerDestinations.destinations.forEach { item ->
+            drawerDestinations(autoTimerAvailable).forEach { item ->
                 DrawerDestinationItem(
                     item = item,
                     selected = state.selectedItemId == item.id,

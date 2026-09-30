@@ -372,4 +372,12 @@
     <string name="bouquet_entry_remove_confirm">\"%1$s\" aus diesem Bouquet entfernen?</string>
     <string name="bouquet_entry_stream">Stream</string>
     <string name="bouquet_entry_alternative">Alternativen-Gruppe. Bearbeiten auf dem Receiver.</string>
+    <string name="autotimer">AutoTimer</string>
+    <string name="autotimer_not_installed">Für AutoTimer braucht es das AutoTimer-Plugin auf dem Receiver (Paket enigma2-plugin-extensions-autotimer). Auf diesem Receiver ist es nicht installiert. Installiere es auf dem Receiver und tippe dann auf „Neu laden“.</string>
+    <string name="autotimer_empty">Noch keine AutoTimer.</string>
+    <string name="autotimer_all_channels">Alle Sender</string>
+    <string name="autotimer_paused">Pausiert</string>
+    <string name="autotimer_unreadable">dreamDroid kann diesen AutoTimer nicht lesen.</string>
+    <string name="autotimer_weekdays">Werktags</string>
+    <string name="autotimer_weekend">Wochenende</string>
 </resources>

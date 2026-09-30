@@ -9,6 +9,7 @@
     <item name="menu_navigation_remote" type="id"/>
     <item name="menu_navigation_current" type="id"/>
     <item name="menu_navigation_zap" type="id"/>
+    <item name="menu_navigation_autotimer" type="id"/>
     <item name="menu_navigation_tools" type="id"/>
     <item name="menu_navigation_settings" type="id"/>
     <item name="menu_navigation_profiles" type="id"/>

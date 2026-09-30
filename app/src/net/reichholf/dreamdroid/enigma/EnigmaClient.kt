@@ -3,7 +3,10 @@ package net.reichholf.dreamdroid.enigma
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
@@ -127,6 +130,21 @@ class EnigmaClient(private val http: EnigmaHttp) {
         }
     }
 
+    /**
+     * The AutoTimer plugin's list. A config the box cannot load comes back as a simple result;
+     * its text becomes a [EnigmaFailure.BoxRejected].
+     */
+    suspend fun getAutoTimers(): EnigmaResponse<List<AutoTimerEntry>> =
+        withContext(Dispatchers.IO) {
+            when (val fetched = http.fetch(URIStore.AUTOTIMER_LIST)) {
+                is EnigmaHttpResult.Success -> AutoTimerListParser.parse(fetched.text)
+                    ?.let { EnigmaResponse(it) }
+                    ?: EnigmaResponse(null, rejection(fetched.text))
+
+                is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
+            }
+        }
+
     // Mutations below: a rejected command has a value and a BoxRejected error.
     suspend fun zap(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.ZAP, params)
@@ -187,6 +205,13 @@ class EnigmaClient(private val http: EnigmaHttp) {
         params: List<NameValuePair> = emptyList()
     ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
         simpleResultFromFetch(http.fetch(uri, params), SimpleResultParser::parse)
+    }
+
+    private fun rejection(xml: String): EnigmaHttpError {
+        val text = SimpleResultParser.parse(xml)?.stateText
+        return EnigmaHttpError(
+            if (text.isNullOrBlank()) EnigmaFailure.Parse else EnigmaFailure.BoxRejected(text)
+        )
     }
 
     private fun <T> EnigmaHttpResult.mapParsed(parse: (String) -> T?): EnigmaResponse<T> =

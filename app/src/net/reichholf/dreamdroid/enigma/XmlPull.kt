@@ -97,6 +97,7 @@ internal class EnigmaXmlPullParser : XmlPullParser {
     private var line: Int = 1
     private var column: Int = 1
     private val tagStack = ArrayList<String>()
+    private val attributes = ArrayList<Pair<String, String>>()
 
     override fun setFeature(name: String?, state: Boolean) {
         // Namespaces stay off; FEATURE_PROCESS_NAMESPACES is ignored.
@@ -124,6 +125,7 @@ internal class EnigmaXmlPullParser : XmlPullParser {
         line = 1
         column = 1
         tagStack.clear()
+        attributes.clear()
         if (data.startsWith("\uFEFF")) {
             pos = 1
         }
@@ -176,11 +178,12 @@ internal class EnigmaXmlPullParser : XmlPullParser {
 
     override fun getName(): String? = tagName
 
-    override fun getAttributeCount(): Int = 0
+    override fun getAttributeCount(): Int =
+        if (event == XmlPullParser.START_TAG) attributes.size else -1
 
-    override fun getAttributeNamespace(index: Int): String? = null
+    override fun getAttributeNamespace(index: Int): String? = XmlPullParser.NO_NAMESPACE
 
-    override fun getAttributeName(index: Int): String? = null
+    override fun getAttributeName(index: Int): String? = attributes.getOrNull(index)?.first
 
     override fun getAttributePrefix(index: Int): String? = null
 
@@ -188,9 +191,10 @@ internal class EnigmaXmlPullParser : XmlPullParser {
 
     override fun isAttributeDefault(index: Int): Boolean = false
 
-    override fun getAttributeValue(index: Int): String? = null
+    override fun getAttributeValue(index: Int): String? = attributes.getOrNull(index)?.second
 
-    override fun getAttributeValue(namespace: String?, name: String?): String? = null
+    override fun getAttributeValue(namespace: String?, name: String?): String? =
+        attributes.firstOrNull { it.first == name }?.second
 
     override fun getEventType(): Int = event
 
@@ -200,6 +204,7 @@ internal class EnigmaXmlPullParser : XmlPullParser {
         if (event == XmlPullParser.END_DOCUMENT) {
             return event
         }
+        attributes.clear()
         if (pendingEndTag) {
             pendingEndTag = false
             emptyElement = false
@@ -290,7 +295,7 @@ internal class EnigmaXmlPullParser : XmlPullParser {
     private fun parseStartTag() {
         consume('<')
         tagName = readName()
-        skipAttributes()
+        readAttributes()
         textValue = null
         event = XmlPullParser.START_TAG
         tagStack.add(tagName!!)
@@ -382,7 +387,7 @@ internal class EnigmaXmlPullParser : XmlPullParser {
         pos = at + token.length
     }
 
-    private fun skipAttributes() {
+    private fun readAttributes() {
         while (pos < data.length) {
             skipWhitespace()
             if (pos >= data.length) {
@@ -392,15 +397,15 @@ internal class EnigmaXmlPullParser : XmlPullParser {
             if (ch == '>' || ch == '/') {
                 return
             }
-            readName()
+            val name = readName()
             skipWhitespace()
             consume('=')
             skipWhitespace()
-            skipQuoted()
+            attributes.add(name to readQuoted())
         }
     }
 
-    private fun skipQuoted() {
+    private fun readQuoted(): String {
         if (pos >= data.length) {
             throw XmlPullParserException("unterminated attribute")
         }
@@ -409,10 +414,17 @@ internal class EnigmaXmlPullParser : XmlPullParser {
             throw XmlPullParserException("attribute is not quoted")
         }
         advance()
+        val value = StringBuilder()
         while (pos < data.length && data[pos] != quote) {
-            advance()
+            if (data[pos] == '&') {
+                value.append(readEntity())
+            } else {
+                value.append(data[pos])
+                advance()
+            }
         }
         consume(quote)
+        return value.toString()
     }
 
     private fun readName(): String {

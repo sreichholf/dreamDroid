@@ -403,6 +403,7 @@ class MainActivity :
                     profileName = shellUiState.profileName,
                     connectionLabel = stringResource(status.chipLabelRes()),
                     boxActionsBlocked = status.blocksMutations,
+                    autoTimerInDrawer = shellUiState.autoTimerInDrawer,
                     onProfileClick = {
                         checkNavigationHelper()
                         navigationHelper?.navigateTo(R.id.menu_navigation_profiles)

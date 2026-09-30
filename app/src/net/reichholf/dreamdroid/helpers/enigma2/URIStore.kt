@@ -42,4 +42,5 @@ object URIStore {
     const val BOUQUET_EDITOR_ADD_MARKER: String = "/bouqueteditor/web/addmarkertobouquet?"
     const val BOUQUET_EDITOR_SATELLITES: String = "/bouqueteditor/web/satelliteslist?"
     const val BOUQUET_EDITOR_BACKUP: String = "/bouqueteditor/web/backup?"
+    const val AUTOTIMER_LIST: String = "/autotimer"
 }
