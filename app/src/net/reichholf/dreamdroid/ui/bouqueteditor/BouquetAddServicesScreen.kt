@@ -106,14 +106,9 @@ private fun ServiceRow(
     enabled: Boolean,
     onToggle: () -> Unit
 ) {
-    ListRowSurface(
-        modifier = Modifier.toggleable(
-            value = checked || present,
-            enabled = enabled && !present,
-            role = Role.Checkbox,
-            onValueChange = { onToggle() }
-        )
-    ) {
+    // The toggle sits on ListItem, which merges its content, so the row reads as one
+    // checkbox with the service name.
+    ListRowSurface {
         ListItem(
             leadingContent = {
                 Checkbox(
@@ -135,7 +130,14 @@ private fun ServiceRow(
                 null
             },
             colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleable(
+                    value = checked || present,
+                    enabled = enabled && !present,
+                    role = Role.Checkbox,
+                    onValueChange = { onToggle() }
+                )
         )
     }
 }

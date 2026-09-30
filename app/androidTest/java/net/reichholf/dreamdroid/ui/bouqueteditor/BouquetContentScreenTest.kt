@@ -54,7 +54,10 @@ class BouquetContentScreenTest {
         composeRule.onNodeWithText("Stream").assertIsDisplayed()
         composeRule.onNodeWithText("Alternatives group. Edit it on the receiver.")
             .assertIsDisplayed()
-        composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG).assertCountEquals(4)
+        composeRule.onAllNodesWithTag(
+            BOUQUET_DRAG_HANDLE_TAG,
+            useUnmergedTree = true
+        ).assertCountEquals(4)
     }
 
     @Test
@@ -119,12 +122,15 @@ class BouquetContentScreenTest {
         val moves = mutableListOf<Pair<Int, Int>>()
         show(ready(), onMove = { key, position -> moves += key to position })
 
-        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG)
+        // ListItem merges its content, so the handles live in the unmerged tree.
+        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG, useUnmergedTree = true)
         val from = handles[0].fetchSemanticsNode().boundsInRoot.center
         val to = handles[2].fetchSemanticsNode().boundsInRoot.center
         handles[0].performTouchInput {
             down(center)
             repeat(DRAG_STEPS) { moveBy((to - from) / DRAG_STEPS.toFloat()) }
+            // Hold before lifting, so the list lays out the last swap first.
+            advanceEventTime(HOLD_MILLIS)
             up()
         }
 
@@ -209,6 +215,7 @@ class BouquetContentScreenTest {
 
     private companion object {
         const val DRAG_STEPS = 10
+        const val HOLD_MILLIS = 200L
 
         val ROWS = listOf(
             BouquetEntry(

@@ -51,7 +51,10 @@ class BouquetListScreenTest {
         composeRule.onNodeWithText("Radio").assertIsDisplayed()
         composeRule.onNodeWithText("Favourites (TV)").assertIsDisplayed()
         composeRule.onNodeWithText("Sports (TV)").assertIsDisplayed()
-        composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG).assertCountEquals(2)
+        composeRule.onAllNodesWithTag(
+            BOUQUET_DRAG_HANDLE_TAG,
+            useUnmergedTree = true
+        ).assertCountEquals(2)
     }
 
     @Test
@@ -145,12 +148,15 @@ class BouquetListScreenTest {
         val moves = mutableListOf<Pair<String, Int>>()
         show(ready(), onMove = { ref, position -> moves += ref to position })
 
-        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG)
+        // ListItem merges its content, so the handles live in the unmerged tree.
+        val handles = composeRule.onAllNodesWithTag(BOUQUET_DRAG_HANDLE_TAG, useUnmergedTree = true)
         val from = handles[1].fetchSemanticsNode().boundsInRoot.center
         val to = handles[0].fetchSemanticsNode().boundsInRoot.center
         handles[1].performTouchInput {
             down(center)
             repeat(DRAG_STEPS) { moveBy((to - from) / DRAG_STEPS.toFloat()) }
+            // Hold before lifting, so the list lays out the last swap first.
+            advanceEventTime(HOLD_MILLIS)
             up()
         }
 
@@ -239,6 +245,7 @@ class BouquetListScreenTest {
 
     private companion object {
         const val DRAG_STEPS = 10
+        const val HOLD_MILLIS = 200L
 
         val FAVOURITES = BouquetEntry(
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
