@@ -5,7 +5,11 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -83,6 +87,26 @@ class ServiceRepository @Inject constructor(
      * Services. They are never a user bouquet tab and never persist.
      */
     val excludedTabRefs: Set<String> by lazy { LinkedHashSet(tvRoots + radioRoots) }
+
+    private val bouquetsEpochState = MutableStateFlow(0)
+
+    /** Counts bouquet edits on the receiver; the hub reloads its bouquets when it moves. */
+    val bouquetsEpoch: StateFlow<Int> = bouquetsEpochState.asStateFlow()
+
+    /**
+     * The receiver's bouquets changed: drops the active profile's Room rosters of the edited
+     * containers [refs] and bumps [bouquetsEpoch]. The tab strips stay until the hub reloads.
+     */
+    suspend fun onBouquetsEdited(refs: Collection<String>) {
+        profiles.current.value?.id?.let { profileId ->
+            val dao = database.rosterDao()
+            refs.forEach { ref ->
+                dao.deleteRosterRows(profileId, ref)
+                dao.deleteRosterContainer(profileId, ref)
+            }
+        }
+        bouquetsEpochState.update { it + 1 }
+    }
 
     /** The user bouquet tabs among [bouquets]: no dedicated root and no provider path. */
     fun userBouquetTabs(bouquets: List<Service>): List<Service> =

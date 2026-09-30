@@ -1,0 +1,252 @@
+package net.reichholf.dreamdroid.data
+
+import java.util.Collections
+import javax.inject.Inject
+import javax.inject.Singleton
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import net.reichholf.dreamdroid.enigma.BouquetEntry
+import net.reichholf.dreamdroid.enigma.EnigmaClient
+import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.toBouquetEntry
+import net.reichholf.dreamdroid.helpers.NameValuePair
+
+/** The receiver's TV or radio bouquets; [param] is the plugin's `mode`. */
+enum class BouquetMode(val param: String) {
+    Tv("0"),
+    Radio("1")
+}
+
+/**
+ * One edit on the receiver. [backup] is the box-side backup this edit ran first, or null
+ * when the editor session had already backed up. A failed backup did not stop the edit.
+ */
+data class BouquetEditResult(
+    val response: EnigmaResponse<SimpleResult>,
+    val backup: EnigmaResponse<SimpleResult>? = null
+) {
+    val succeeded: Boolean
+        get() = response.succeeded
+}
+
+/**
+ * Bouquet editing through the optional WebBouquetEditor plugin (`/bouqueteditor`). Lists
+ * come from `/web/getservices`. Edits reach the box one at a time, in call order. The first
+ * edit of an editor session ([resetBackup]) per profile writes a backup to the box's `/tmp`.
+ * A successful edit drops the Room rosters it touched ([ServiceRepository.onBouquetsEdited]).
+ */
+@Singleton
+class BouquetEditorRepository @Inject constructor(
+    private val clients: EnigmaClientFactory,
+    private val profiles: ProfileRepository,
+    private val services: ServiceRepository
+) {
+    private val editMutex = Mutex()
+    private val backedUpProfiles = Collections.synchronizedSet(HashSet<Int?>())
+
+    /** Whether the receiver lists the plugin in `/web/external`. Null value on failure. */
+    suspend fun isAvailable(): EnigmaResponse<Boolean> {
+        val response = clients.current().getWebExternals()
+        return EnigmaResponse(response.value?.contains(PLUGIN_PATH), response.error)
+    }
+
+    /** The bouquets of the [mode] index, in the box's order. */
+    suspend fun bouquets(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
+        list(root(mode), atRoot = true)
+
+    /** The rows of [ref]: a bouquet's entries, or a source folder's services. */
+    suspend fun entries(ref: String): EnigmaResponse<List<BouquetEntry>> = list(ref, atRoot = false)
+
+    /** Satellite folders to add services from. */
+    suspend fun satellites(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> {
+        val response = clients.current()
+            .getBouquetEditorSatellites(listOf(NameValuePair("mode", mode.param)))
+        return EnigmaResponse(
+            response.value?.map {
+                it.toBouquetEntry(atRoot = false)
+            },
+            response.error
+        )
+    }
+
+    /** Provider folders to add services from; [entries] of one lists its services. */
+    suspend fun providers(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
+        entries(roots(mode)[PROVIDERS])
+
+    /** Every service of [mode], by name. */
+    suspend fun allServices(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
+        entries(roots(mode)[ALL_SERVICES])
+
+    /** Starts a new editor session: the next edit backs up again. */
+    fun resetBackup() {
+        backedUpProfiles.clear()
+    }
+
+    /** Adds bouquet [name]; the box appends " (TV)" or " (Radio)" and allows duplicates. */
+    suspend fun addBouquet(mode: BouquetMode, name: String): BouquetEditResult =
+        edit(listOf(root(mode))) {
+            addBouquet(params("name" to name, "mode" to mode.param))
+        }
+
+    suspend fun removeBouquet(mode: BouquetMode, bouquetRef: String): BouquetEditResult =
+        edit(listOf(root(mode), bouquetRef)) {
+            removeBouquet(params("sBouquetRef" to bouquetRef, "mode" to mode.param))
+        }
+
+    /** Moves [bouquetRef] to the 0-based [position] of the index. */
+    suspend fun moveBouquet(
+        mode: BouquetMode,
+        bouquetRef: String,
+        position: Int
+    ): BouquetEditResult = edit(listOf(root(mode))) {
+        moveBouquet(
+            params(
+                "sBouquetRef" to bouquetRef,
+                "mode" to mode.param,
+                "position" to position.toString()
+            )
+        )
+    }
+
+    /** Renames [bouquetRef] in place; its reference stays. */
+    suspend fun renameBouquet(
+        mode: BouquetMode,
+        bouquetRef: String,
+        newName: String
+    ): BouquetEditResult = edit(listOf(root(mode))) {
+        renameBouquetEntry(params("sRef" to bouquetRef, "mode" to mode.param, "newName" to newName))
+    }
+
+    /**
+     * Appends [refs] to [bouquetRef] in order. A rejected one (already in the bouquet) does
+     * not stop the rest; the result is the first rejection, else the last answer. A request
+     * the box did not answer stops the batch.
+     */
+    suspend fun addServices(bouquetRef: String, refs: List<String>): BouquetEditResult =
+        editMutex.withLock {
+            val client = clients.current()
+            val backup = backupOnce(client)
+            var rejected: EnigmaResponse<SimpleResult>? = null
+            var last = EnigmaResponse<SimpleResult>(null)
+            var added = false
+            for (ref in refs) {
+                last = client.addServiceToBouquet(
+                    params("sBouquetRef" to bouquetRef, "sRef" to ref, "sRefBefore" to "")
+                )
+                if (last.succeeded) {
+                    added = true
+                } else if (last.value != null) {
+                    rejected = rejected ?: last
+                } else {
+                    break
+                }
+            }
+            if (added) {
+                services.onBouquetsEdited(listOf(bouquetRef))
+            }
+            val result = if (last.value == null) last else rejected ?: last
+            BouquetEditResult(result, backup)
+        }
+
+    suspend fun removeService(bouquetRef: String, ref: String): BouquetEditResult =
+        edit(listOf(bouquetRef)) {
+            removeBouquetService(params("sBouquetRef" to bouquetRef, "sRef" to ref))
+        }
+
+    /** Moves [ref] to the 0-based [position] of [bouquetRef]; markers count. */
+    suspend fun moveService(
+        mode: BouquetMode,
+        bouquetRef: String,
+        ref: String,
+        position: Int
+    ): BouquetEditResult = edit(listOf(bouquetRef)) {
+        moveBouquetService(
+            params(
+                "sBouquetRef" to bouquetRef,
+                "sRef" to ref,
+                "position" to position.toString(),
+                "mode" to mode.param
+            )
+        )
+    }
+
+    /**
+     * Renames [ref] in [bouquetRef]. The box replaces the entry, so its reference changes;
+     * [sRefBefore] is the next entry's reference ("" for the last) to keep its position.
+     */
+    suspend fun renameService(
+        bouquetRef: String,
+        ref: String,
+        sRefBefore: String,
+        newName: String
+    ): BouquetEditResult = edit(listOf(bouquetRef)) {
+        renameBouquetEntry(
+            params(
+                "sBouquetRef" to bouquetRef,
+                "sRef" to ref,
+                "sRefBefore" to sRefBefore,
+                "newName" to newName
+            )
+        )
+    }
+
+    /** Adds marker [name] before [sRefBefore] ("" appends). */
+    suspend fun addMarker(bouquetRef: String, name: String, sRefBefore: String): BouquetEditResult =
+        edit(listOf(bouquetRef)) {
+            addBouquetMarker(
+                params("sBouquetRef" to bouquetRef, "Name" to name, "sRefBefore" to sRefBefore)
+            )
+        }
+
+    private suspend fun edit(
+        editedRefs: List<String>,
+        call: suspend EnigmaClient.() -> EnigmaResponse<SimpleResult>
+    ): BouquetEditResult = editMutex.withLock {
+        val client = clients.current()
+        val backup = backupOnce(client)
+        val response = client.call()
+        if (response.succeeded) {
+            services.onBouquetsEdited(editedRefs)
+        }
+        BouquetEditResult(response, backup)
+    }
+
+    /** Runs under [editMutex]. Tried once per profile and session, whatever the outcome. */
+    private suspend fun backupOnce(client: EnigmaClient): EnigmaResponse<SimpleResult>? {
+        if (!backedUpProfiles.add(profiles.requireCurrent().id)) {
+            return null
+        }
+        val name = BACKUP_PREFIX + System.currentTimeMillis() / 1000L
+        return client.backupBouquets(params("Filename" to name))
+    }
+
+    private suspend fun list(ref: String, atRoot: Boolean): EnigmaResponse<List<BouquetEntry>> {
+        val response = clients.current().getServices(listOf(NameValuePair("sRef", ref)))
+        return EnigmaResponse(response.value?.map { it.toBouquetEntry(atRoot) }, response.error)
+    }
+
+    private fun roots(mode: BouquetMode): List<String> = when (mode) {
+        BouquetMode.Tv -> services.tvRoots
+        BouquetMode.Radio -> services.radioRoots
+    }
+
+    private fun root(mode: BouquetMode): String = roots(mode)[BOUQUETS]
+
+    private fun params(vararg pairs: Pair<String, String>): List<NameValuePair> =
+        pairs.map { (name, value) -> NameValuePair(name, value) }
+
+    private companion object {
+        const val PLUGIN_PATH = "bouqueteditor"
+        const val BACKUP_PREFIX = "dreamdroid_"
+
+        // Indexes into R.array.servicerefstv / servicerefsradio.
+        const val BOUQUETS = 0
+        const val PROVIDERS = 1
+        const val ALL_SERVICES = 2
+    }
+}
+
+private val EnigmaResponse<SimpleResult>.succeeded: Boolean
+    get() = value != null && error == null
