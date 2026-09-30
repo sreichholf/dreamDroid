@@ -91,6 +91,16 @@ interface EpgDao {
         fromSec: Long
     ): List<EpgEventEntity>
 
+    /** The programme of [serviceRef] starting at [start], from any cached bouquet. */
+    @Query(
+        """
+        SELECT * FROM epg_event
+        WHERE profileId = :profileId AND serviceRef = :serviceRef AND start = :start
+        LIMIT 1
+        """
+    )
+    suspend fun eventAt(profileId: Int, serviceRef: String, start: Long): EpgEventEntity?
+
     @Query(
         """
         SELECT COUNT(*) FROM epg_event

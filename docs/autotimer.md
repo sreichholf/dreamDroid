@@ -27,7 +27,7 @@ An AutoTimer is a saved EPG search on the receiver. When the plugin runs, it add
 | --- | --- |
 | List | Name, match, targets summary (first two, then "+N"), time window, days, enabled switch. Tap → preview; row menu: Edit, Delete. FAB: new. |
 | Enable/disable | Row switch. A one-group write; flips optimistically, reverts with the box's message on failure. |
-| Preview | `test?id=N` for one AutoTimer: upcoming matches and skipped events with the plugin's reason. A disabled AutoTimer shows "The box only previews enabled AutoTimers" and an **Enable** button, without a request. |
+| Preview | `test?id=N` for one AutoTimer: upcoming matches and skipped events with the plugin's reason. A disabled AutoTimer shows "The box only previews enabled AutoTimers" and an **Enable** button, without a request. A tap on an upcoming match opens the EPG detail sheet without its actions; a tap on a skipped one shows the plugin's reason. |
 | Create / edit | One scrolling screen of sections: the search (match, name, search type and case, enabled, zap only), **Channels** (removable chips, Add channels), **When** (time window, days, date window), **Filters** (include/exclude title, short description, description, added through one field and a choice of list) and **Recording** (margins, max duration, location, tags, after event, set end time, duplicates). The sections stay open; collapsing them was dropped as not worth its state. |
 | Record series | EPG detail sheet action, only when the plugin is present: match = name = event title, contains, channel = event service, other settings as the plugin's defaults (no duplicate check). The on-box importer's "event time ±1 h" window is a one-tap suggestion chip, not applied silently. |
 | Delete | Confirm dialog ("Timers it already added stay"), then reload; `remove` always replies success. |
@@ -121,6 +121,7 @@ One `<timer>` per AutoTimer. Settings are attributes; lists are child elements. 
 - **Localized results.** `e2statetext` is in the box's language ("AutoTimer wurde erfolgreich hinzugefügt"). Decide on `e2state`; show the text as is.
 - **Remove always succeeds.** `remove?id=99` replies `True`. Reload the list after a delete.
 - **Empty defaults block.** An empty list still contains `<defaults id="-1"></defaults>`.
+- **A match carries no EPG text.** `test` rows have service, title, begin and end, but no event id or description. The sheet looks the programme up by service and begin (`EpgRepository.event`): the MultiEPG Room cache first, then `/web/epgservice?sRef=…&time=<begin>&endTime=1`, which answers with the one programme running at that minute (checked on a dm900). A programme with another start is not the match; without one the sheet shows the match itself and says the EPG has no details. An Offline session only looks in the cache.
 - **Preview skips disabled AutoTimers.** `test` and `simulate` iterate `getEnabledTimerList()` (`AutoTimer.py:785`); a disabled AutoTimer previews empty.
 - **`e2message` is escaped twice.** After XML parsing it still contains the text `&#13;&#10;`; turn those into line breaks.
 - **Preview failure is broken XML on purpose.** An exception ends the stream with `<exception>…</exception><|PURPOSEFULLYBROKENXML<`. A parse failure of a preview is "AutoTimer failed", not a connection error.

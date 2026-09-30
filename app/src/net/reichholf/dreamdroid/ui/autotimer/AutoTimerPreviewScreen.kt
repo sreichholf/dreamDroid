@@ -27,6 +27,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.util.Locale
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -35,11 +36,14 @@ import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * What an AutoTimer would record: its summary, then the upcoming events and the skipped ones.
- * A tap on a skipped event shows the plugin's reason.
+ * A tap on an upcoming event opens its EPG sheet; a tap on a skipped one shows the plugin's
+ * reason.
  */
 @Composable
 fun AutoTimerPreviewScreen(
@@ -47,6 +51,8 @@ fun AutoTimerPreviewScreen(
     onRefresh: () -> Unit,
     onEnable: () -> Unit,
     onToggleLog: (PreviewMatch) -> Unit,
+    onOpenMatch: (PreviewMatch) -> Unit,
+    onDismissMatch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(modifier = modifier.fillMaxSize()) {
@@ -69,14 +75,15 @@ fun AutoTimerPreviewScreen(
                     matches(
                         header = R.string.autotimer_upcoming,
                         matches = content.upcoming,
-                        empty = R.string.autotimer_no_matches
+                        empty = R.string.autotimer_no_matches,
+                        onClick = onOpenMatch
                     )
                     if (content.skipped.isNotEmpty()) {
                         matches(
                             header = R.string.autotimer_skipped,
                             matches = content.skipped,
                             expanded = state.expanded,
-                            onToggleLog = onToggleLog
+                            onClick = onToggleLog
                         )
                     }
                 }
@@ -109,7 +116,45 @@ fun AutoTimerPreviewScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
     }
+    state.detail?.let { AutoTimerMatchSheet(detail = it, onDismiss = onDismissMatch) }
 }
+
+/**
+ * The EPG sheet of an upcoming match, without its actions. It shows what the match itself
+ * says until the EPG lookup is done.
+ */
+@Composable
+fun AutoTimerMatchSheet(detail: AutoTimerMatchDetail, onDismiss: () -> Unit) {
+    val event = when (val epg = detail.epg) {
+        is MatchEpg.Found -> epg.event
+
+        MatchEpg.Loading -> detail.match.toEvent(description = "")
+
+        MatchEpg.Missing ->
+            detail.match.toEvent(description = stringResource(R.string.autotimer_no_epg))
+    }
+    EpgDetailModalSheet(
+        content = event.toEpgDetailContentOrUnavailable(
+            stringResource(R.string.minutes_short),
+            stringResource(R.string.not_available)
+        ),
+        onDismiss = onDismiss,
+        onSetTimer = {},
+        onEditTimer = {},
+        onImdb = {},
+        onSimilar = {},
+        showActions = false
+    )
+}
+
+private fun PreviewMatch.toEvent(description: String) = Event(
+    title = title,
+    start = begin.epochSecond.toString(),
+    duration = (end.epochSecond - begin.epochSecond).toString(),
+    description = description,
+    serviceReference = serviceRef,
+    serviceName = serviceName
+)
 
 @Composable
 private fun DisabledPreview(autoTimer: AutoTimer?, enabled: Boolean, onEnable: () -> Unit) {
@@ -162,7 +207,7 @@ private fun LazyListScope.matches(
     matches: List<PreviewMatch>,
     empty: Int? = null,
     expanded: Set<String> = emptySet(),
-    onToggleLog: ((PreviewMatch) -> Unit)? = null
+    onClick: (PreviewMatch) -> Unit
 ) {
     item(key = "header-$header") {
         ListSectionHeader(text = stringResource(header, matches.size))
@@ -180,19 +225,14 @@ private fun LazyListScope.matches(
         MatchRow(
             match = match,
             showLog = match.key in expanded,
-            onClick = onToggleLog?.let { toggle -> { toggle(match) } }
+            onClick = { onClick(match) }
         )
     }
 }
 
 @Composable
-private fun MatchRow(match: PreviewMatch, showLog: Boolean, onClick: (() -> Unit)?) {
-    val clickable = if (onClick != null) {
-        Modifier.clickable(role = Role.Button, onClick = onClick)
-    } else {
-        Modifier
-    }
-    ListRowSurface(modifier = clickable) {
+private fun MatchRow(match: PreviewMatch, showLog: Boolean, onClick: () -> Unit) {
+    ListRowSurface(modifier = Modifier.clickable(role = Role.Button, onClick = onClick)) {
         ListItem(
             overlineContent = {
                 Text("${formatBegin(match.begin)} · ${match.serviceName}")

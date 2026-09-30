@@ -134,6 +134,30 @@ class EpgRepository @Inject constructor(
             )
         }
 
+    /**
+     * The programme of [serviceRef] that starts at [beginSec]: from the MultiEPG cache when a
+     * cached bouquet holds it, else from the receiver unless the session is Offline. Null
+     * when neither has it, as when the EPG changed, or the receiver did not answer.
+     */
+    suspend fun event(serviceRef: String, beginSec: Long): Event? {
+        profiles.requireCurrent().id?.let { profileId ->
+            database.epgDao().eventAt(profileId, serviceRef, beginSec)?.let { return it.toEvent() }
+        }
+        if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
+            return null
+        }
+        // The box answers `time` plus one minute with the programme running then.
+        val events = clients.current().getEvents(
+            listOf(
+                NameValuePair("sRef", serviceRef),
+                NameValuePair("time", beginSec.toString()),
+                NameValuePair("endTime", "1")
+            ),
+            URIStore.EPG_SERVICE
+        ).value
+        return events?.firstOrNull { it.start == beginSec.toString() }
+    }
+
     /** The newest recent EPG searches first. */
     fun recentSearches(): Flow<List<String>> =
         database.epgDao().recentSearches(RECENT_SEARCHES).map { rows -> rows.map { it.query } }

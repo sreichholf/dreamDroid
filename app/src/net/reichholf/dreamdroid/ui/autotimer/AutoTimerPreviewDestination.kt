@@ -55,6 +55,8 @@ fun AutoTimerPreviewDestination(
         onRefresh = viewModel::reload,
         onEnable = { if (uiState.blocked) handle.requestNeedsReceiver() else viewModel.enable() },
         onToggleLog = viewModel::toggleLog,
+        onOpenMatch = viewModel::openMatch,
+        onDismissMatch = viewModel::dismissMatch,
         modifier = modifier
     )
 }

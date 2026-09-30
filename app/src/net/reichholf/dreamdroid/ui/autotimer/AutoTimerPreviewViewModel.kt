@@ -18,6 +18,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerPreviewLoad
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.AutoTimerWriteResult
+import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
@@ -46,9 +48,23 @@ sealed interface AutoTimerPreviewContent {
     data class Failed(val message: UiText) : AutoTimerPreviewContent
 }
 
+/** The EPG for a match the sheet shows. */
+sealed interface MatchEpg {
+    data object Loading : MatchEpg
+
+    data class Found(val event: Event) : MatchEpg
+
+    /** Neither the cache nor the receiver has a programme starting then. */
+    data object Missing : MatchEpg
+}
+
+/** The match an EPG sheet shows, and its programme once the lookup is done. */
+data class AutoTimerMatchDetail(val match: PreviewMatch, val epg: MatchEpg = MatchEpg.Loading)
+
 /**
  * The preview of one AutoTimer. [autoTimer] is the one the box listed for it; [expanded] are
- * the keys of skipped rows that show the plugin's log.
+ * the keys of skipped rows that show the plugin's log; [detail] is the upcoming match whose
+ * EPG sheet is open.
  */
 data class AutoTimerPreviewUiState(
     val name: String,
@@ -58,6 +74,7 @@ data class AutoTimerPreviewUiState(
     val blocked: Boolean = false,
     val pending: Boolean = false,
     val expanded: Set<String> = emptySet(),
+    val detail: AutoTimerMatchDetail? = null,
     val userMessage: UiText? = null
 ) {
     val title: UiText
@@ -76,6 +93,7 @@ val PreviewMatch.key: String
 class AutoTimerPreviewViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val autoTimers: AutoTimerRepository,
+    private val epg: EpgRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val id = AutoTimerId(savedStateHandle.get<Int>(AutoTimerPreview::id.name) ?: -1)
@@ -89,17 +107,20 @@ class AutoTimerPreviewViewModel @Inject constructor(
     val uiState: StateFlow<AutoTimerPreviewUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
+    private var detailJob: Job? = null
 
     init {
         viewModelScope.launch {
             autoTimers.profileId.drop(1).collect {
                 loadJob?.cancel()
+                detailJob?.cancel()
                 _uiState.update {
                     it.copy(
                         autoTimer = null,
                         content = AutoTimerPreviewContent.Gone,
                         refreshing = false,
-                        pending = false
+                        pending = false,
+                        detail = null
                     )
                 }
             }
@@ -158,6 +179,23 @@ class AutoTimerPreviewViewModel @Inject constructor(
             val key = match.key
             it.copy(expanded = if (key in it.expanded) it.expanded - key else it.expanded + key)
         }
+    }
+
+    /** Opens the EPG sheet of [match] and looks up its programme. */
+    fun openMatch(match: PreviewMatch) {
+        detailJob?.cancel()
+        _uiState.update { it.copy(detail = AutoTimerMatchDetail(match)) }
+        detailJob = viewModelScope.launch {
+            val event = epg.event(match.serviceRef, match.begin.epochSecond)
+            val loaded =
+                AutoTimerMatchDetail(match, event?.let(MatchEpg::Found) ?: MatchEpg.Missing)
+            _uiState.update { if (it.detail?.match == match) it.copy(detail = loaded) else it }
+        }
+    }
+
+    fun dismissMatch() {
+        detailJob?.cancel()
+        _uiState.update { it.copy(detail = null) }
     }
 
     fun onMessageShown() {

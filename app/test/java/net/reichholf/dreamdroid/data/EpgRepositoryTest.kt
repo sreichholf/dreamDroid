@@ -9,10 +9,12 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.CHANNEL
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
+import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -326,9 +328,60 @@ class EpgRepositoryTest {
 
     private fun EventListLoad.events() = (this as EventListLoad.Events).events
 
+    @Test
+    fun eventAsksTheReceiverForTheMinuteAtItsStart() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(ONE_EVENT)) }
+
+        val event = repository.event(ZDF, ONE_EVENT_START)
+
+        assertEquals("XY history", event?.title)
+        assertEquals("Die Jagd nach dem Hammermörder", event?.description)
+        val url = receiver.server.takeRequest().requestUrl!!
+        assertEquals("/web/epgservice", url.encodedPath)
+        assertEquals(ZDF, url.queryParameter("sRef"))
+        assertEquals(ONE_EVENT_START.toString(), url.queryParameter("time"))
+        assertEquals("1", url.queryParameter("endTime"))
+    }
+
+    @Test
+    fun aCachedEventNeedsNoReceiver() = runBlocking<Unit> {
+        receiver.writeChunk(
+            BOUQUET,
+            ONE_EVENT_START,
+            listOf(
+                event("XY history", ONE_EVENT_START, service = ZDF)
+                    .copy(descriptionExtended = "Aus dem Cache")
+            )
+        )
+
+        val event = repository.event(ZDF, ONE_EVENT_START)
+
+        assertEquals("Aus dem Cache", event?.descriptionExtended)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun aProgrammeStartingAtAnotherTimeIsNotTheEvent() = runBlocking<Unit> {
+        receiver.answer = { MockResponse().setBody(loadWebFixture(ONE_EVENT)) }
+
+        assertNull(repository.event(ZDF, ONE_EVENT_START + 600))
+    }
+
+    @Test
+    fun anOfflineSessionOnlyLooksInTheCache() = runBlocking<Unit> {
+        receiver.goOffline()
+
+        assertNull(repository.event(ZDF, ONE_EVENT_START))
+        assertEquals(0, receiver.server.requestCount)
+    }
+
     private fun titles(load: EventListLoad) = load.events().map { it.title }
 
     private companion object {
+        /** `/web/epgservice` of a dm900 for one programme, `time` at its start. */
+        const val ONE_EVENT = "autotimer/epgservice_one_event.xml"
+        const val ONE_EVENT_START = 1_790_792_100L
+        const val ZDF = "1:0:19:2B66:3F3:1:C00000:0:0:0:"
         const val NOW = 1_893_456_000L
         const val OTHER = "1:0:1:6DCB:44C:1:C00000:0:0:0:"
         const val OTHER_BOUQUET =

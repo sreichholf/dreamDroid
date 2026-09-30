@@ -386,6 +386,7 @@
     <string name="autotimer_upcoming">Demnächst (%1$d)</string>
     <string name="autotimer_skipped">Übersprungen (%1$d)</string>
     <string name="autotimer_no_matches">Im EPG passt gerade nichts.</string>
+    <string name="autotimer_no_epg">Das EPG des Receivers hat keine Details zu dieser Sendung.</string>
     <string name="autotimer_gone">Dieser AutoTimer wurde auf dem Receiver geändert. Zurück zur Liste, um ihn so zu sehen, wie er jetzt ist.</string>
     <string name="autotimer_plugin_failed">AutoTimer ist fehlgeschlagen: %1$s</string>
     <string name="autotimer_preview_disabled">Der Receiver zeigt nur für aktive AutoTimer eine Vorschau.</string>

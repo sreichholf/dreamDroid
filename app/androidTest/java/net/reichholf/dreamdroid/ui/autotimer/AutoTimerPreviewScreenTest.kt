@@ -9,6 +9,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import java.time.Instant
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.enigma.autotimer.Verdict
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -47,6 +48,51 @@ class AutoTimerPreviewScreenTest {
         composeRule.onNodeWithText("Wilsberg - Einfach weg").performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(SKIPPED), toggled) }
+    }
+
+    @Test
+    fun aTapOnAnUpcomingEventOpensIt() {
+        val opened = mutableListOf<PreviewMatch>()
+        show(ready(upcoming = listOf(UPCOMING)), onOpenMatch = { opened += it })
+
+        composeRule.onNodeWithText(UPCOMING.title).performClick()
+
+        composeRule.runOnIdle { assertEquals(listOf(UPCOMING), opened) }
+    }
+
+    @Test
+    fun theSheetShowsTheProgrammeWithoutActions() {
+        val event = Event(
+            title = UPCOMING.title,
+            start = UPCOMING.begin.epochSecond.toString(),
+            duration = "6000",
+            description = "Krimi",
+            descriptionExtended = "Georg Wilsberg ermittelt.",
+            serviceReference = UPCOMING.serviceRef,
+            serviceName = UPCOMING.serviceName
+        )
+        show(
+            ready(upcoming = listOf(UPCOMING)).copy(
+                detail = AutoTimerMatchDetail(UPCOMING, MatchEpg.Found(event))
+            )
+        )
+
+        composeRule.onNodeWithText("Georg Wilsberg ermittelt.").assertIsDisplayed()
+        composeRule.onNodeWithText("Krimi").assertIsDisplayed()
+        composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
+        composeRule.onNodeWithText("Similar").assertDoesNotExist()
+    }
+
+    @Test
+    fun theSheetSaysWhenTheEpgHasNoDetails() {
+        show(
+            ready(upcoming = listOf(UPCOMING)).copy(
+                detail = AutoTimerMatchDetail(UPCOMING, MatchEpg.Missing)
+            )
+        )
+
+        composeRule.onNodeWithText("The receiver's EPG has no details for this event.")
+            .assertIsDisplayed()
     }
 
     @Test
@@ -103,7 +149,8 @@ class AutoTimerPreviewScreenTest {
     private fun show(
         state: AutoTimerPreviewUiState,
         onEnable: () -> Unit = {},
-        onToggleLog: (PreviewMatch) -> Unit = {}
+        onToggleLog: (PreviewMatch) -> Unit = {},
+        onOpenMatch: (PreviewMatch) -> Unit = {}
     ) {
         composeRule.setContent {
             DreamDroidTheme {
@@ -111,7 +158,9 @@ class AutoTimerPreviewScreenTest {
                     state = state,
                     onRefresh = {},
                     onEnable = onEnable,
-                    onToggleLog = onToggleLog
+                    onToggleLog = onToggleLog,
+                    onOpenMatch = onOpenMatch,
+                    onDismissMatch = {}
                 )
             }
         }
