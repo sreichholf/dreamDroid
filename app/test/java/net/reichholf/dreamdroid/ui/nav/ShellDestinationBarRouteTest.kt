@@ -11,6 +11,7 @@ class ShellDestinationBarRouteTest {
         controller.content = ShellDestinationBarContent.TvMovies(TvMoviesHubState())
         applyShellDestinationBarForRoute(
             PhoneNavRoutes.TIMER_EDIT,
+            floating = false,
             controller,
             shellNav = null,
             shellRail = null
@@ -24,6 +25,21 @@ class ShellDestinationBarRouteTest {
         controller.content = ShellDestinationBarContent.TvMovies(TvMoviesHubState())
         applyShellDestinationBarForRoute(
             PhoneNavRoutes.HUB,
+            floating = false,
+            controller,
+            shellNav = null,
+            shellRail = null
+        )
+        assertTrue(controller.content is ShellDestinationBarContent.TvMovies)
+    }
+
+    @Test
+    fun dialogOverHubLeavesPublishedChrome() {
+        val controller = ShellDestinationBarController()
+        controller.content = ShellDestinationBarContent.TvMovies(TvMoviesHubState())
+        applyShellDestinationBarForRoute(
+            PhoneNavRoutes.CHANGELOG,
+            floating = true,
             controller,
             shellNav = null,
             shellRail = null

@@ -14,3 +14,6 @@
 # Same for MediaLibrary
 -keep class org.videolan.medialibrary.** { *; }
 
+
+# WorkManager's WorkDatabase_Impl (Room 2.x) is created by reflection through its no-arg constructor.
+-keep class * extends androidx.room.RoomDatabase { <init>(); }

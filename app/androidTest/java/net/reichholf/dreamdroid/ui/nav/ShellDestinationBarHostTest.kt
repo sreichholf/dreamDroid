@@ -11,6 +11,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LifecycleRegistry
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -105,6 +109,38 @@ class ShellDestinationBarHostTest {
             )
         }
     }
+
+    @Test
+    fun resumeRepublishesAfterShellHidBar() {
+        val state = ToolsHubState()
+        val owner = TestLifecycleOwner()
+        lateinit var controller: ShellDestinationBarController
+        composeRule.runOnUiThread { owner.registry.currentState = Lifecycle.State.RESUMED }
+        composeRule.setContent {
+            DreamDroidTheme {
+                CompositionLocalProvider(LocalLifecycleOwner provides owner) {
+                    ProvideShellDestinationBarForTest { c ->
+                        controller = c
+                        RegisterShellDestinationBar(ShellDestinationBarContent.Tools(state))
+                        Text("hub body")
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithText("hub body").assertIsDisplayed()
+        composeRule.runOnIdle {
+            // Something over the hub hid the bar; the hub stayed composed.
+            owner.registry.currentState = Lifecycle.State.STARTED
+            controller.content = ShellDestinationBarContent.Hidden
+            owner.registry.currentState = Lifecycle.State.RESUMED
+            assertTrue(controller.content is ShellDestinationBarContent.Tools)
+        }
+    }
+}
+
+private class TestLifecycleOwner : LifecycleOwner {
+    val registry = LifecycleRegistry(this)
+    override val lifecycle: Lifecycle get() = registry
 }
 
 /**
