@@ -31,7 +31,7 @@ const val LIST_ROW_TAG = "list_row"
  *
  * The tile is the [ListItem] itself. [ListItem] merges its own semantics, so [onClick],
  * [onLongClick], and a toggle or selection passed in [modifier] all land on the node that
- * carries the row's label.
+ * carries the row's label. [onLongClick] and [enabled] only apply together with [onClick].
  *
  * Material 3 1.4 has no interactive [ListItem]. The Material 3 Expressive overloads in the
  * 1.5 alphas (`ListItem(onClick, …)`, `ListItem(checked, onCheckedChange, …)`,

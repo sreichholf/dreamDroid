@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.compose
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Text
@@ -121,8 +120,8 @@ class ListRowTest {
         composeRule.setContent {
             DreamDroidTheme {
                 Column {
-                    ListRow(headlineContent = { Text("One") }, modifier = Modifier.clickable {})
-                    ListRow(headlineContent = { Text("Two") }, modifier = Modifier.clickable {})
+                    ListRow(headlineContent = { Text("One") })
+                    ListRow(headlineContent = { Text("Two") })
                 }
             }
         }
@@ -132,6 +131,7 @@ class ListRowTest {
         tiles[0].assertLeftPositionInRootIsEqualTo(ListRowHorizontalInset)
         val first = tiles[0].getBoundsInRoot()
         val second = tiles[1].getBoundsInRoot()
-        assertEquals(ListRowVerticalInset * 2, second.top - first.bottom)
+        // Padding snaps to whole pixels, so allow the same 0.5dp as the position assertions.
+        assertEquals((ListRowVerticalInset * 2).value, (second.top - first.bottom).value, 0.5f)
     }
 }
