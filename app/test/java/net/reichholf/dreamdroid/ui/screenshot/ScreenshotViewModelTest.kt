@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.screenshot
 
 import androidx.lifecycle.viewModelScope
+import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.cancelAndJoin
@@ -80,6 +81,7 @@ class ScreenshotViewModelTest {
         val request = server.takeRequest().requestUrl
         assertEquals("/grab", request?.encodedPath)
         assertEquals("jpg", request?.queryParameter("format"))
+        assertEquals(1, server.requestCount)
     }
 
     @Test
@@ -90,13 +92,45 @@ class ScreenshotViewModelTest {
     }
 
     @Test
-    fun nonImageBodyShowsError() = runTest {
+    fun emptyGrabFallsBackToWebScreenshot() = runTest {
+        server.enqueue(MockResponse())
+        server.enqueue(image(JPEG))
+
+        val state = viewModel().settled()
+
+        assertArrayEquals(JPEG, state.image)
+        assertNull(state.userMessage)
+        assertEquals("/grab", nextRequest()?.encodedPath)
+        val fallback = nextRequest()
+        assertEquals("/screenshot", fallback?.encodedPath)
+        assertEquals("jpg", fallback?.queryParameter("format"))
+        assertEquals("1", fallback?.queryParameter("osd"))
+        assertEquals("1", fallback?.queryParameter("video"))
+    }
+
+    @Test
+    fun nonImageBodiesShowError() = runTest {
+        server.enqueue(MockResponse().setBody("<html><body>401 Unauthorized</body></html>"))
         server.enqueue(MockResponse().setBody("<html><body>401 Unauthorized</body></html>"))
 
         val state = viewModel().settled()
 
         assertNull(state.image)
         assertEquals(UiText.Resource(R.string.error), state.userMessage)
+        assertEquals(2, server.requestCount)
+    }
+
+    @Test
+    fun missingWebScreenshotKeepsGrabError() = runTest {
+        server.enqueue(MockResponse())
+        server.enqueue(MockResponse().setResponseCode(404))
+
+        val state = viewModel().settled()
+
+        assertNull(state.image)
+        assertEquals(UiText.Resource(R.string.error), state.userMessage)
+        assertEquals("/grab", nextRequest()?.encodedPath)
+        assertEquals("/screenshot", nextRequest()?.encodedPath)
     }
 
     @Test
@@ -110,6 +144,7 @@ class ScreenshotViewModelTest {
             EnigmaFailure.fromHttpStatus(500, "Server Error").userMessageText(),
             state.userMessage
         )
+        assertEquals(1, server.requestCount)
     }
 
     @Test
@@ -169,6 +204,8 @@ class ScreenshotViewModelTest {
 
     private suspend fun ScreenshotViewModel.settled(): ScreenshotUiState =
         uiState.first { !it.loading }
+
+    private fun nextRequest() = server.takeRequest(5, TimeUnit.SECONDS)?.requestUrl
 
     private fun image(bytes: ByteArray) = MockResponse().setBody(Buffer().write(bytes))
 

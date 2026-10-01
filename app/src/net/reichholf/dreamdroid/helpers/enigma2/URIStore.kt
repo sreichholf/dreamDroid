@@ -26,6 +26,7 @@ object URIStore {
     const val TIMER_DELETE: String = "/web/timerdelete?"
     const val MESSAGE: String = "/web/message?"
     const val SCREENSHOT: String = "/grab?"
+    const val SCREENSHOT_WEB: String = "/screenshot?"
     const val SESSION: String = "/web/session"
     const val SLEEPTIMER: String = "/web/sleeptimer?"
     const val FILE: String = "/file?"
