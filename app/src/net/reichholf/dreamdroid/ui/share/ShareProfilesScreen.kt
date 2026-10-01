@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.share
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -93,6 +92,7 @@ private fun ShareProfileRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         },
-        modifier = Modifier.clickable(enabled = clicksEnabled, onClick = onClick)
+        onClick = onClick,
+        enabled = clicksEnabled
     )
 }

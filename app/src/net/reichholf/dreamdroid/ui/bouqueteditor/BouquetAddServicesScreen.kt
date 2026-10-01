@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.bouqueteditor
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -89,7 +88,7 @@ private fun PlainRow(text: String, onClick: () -> Unit) {
                 color = MaterialTheme.colorScheme.onSurface
             )
         },
-        modifier = Modifier.clickable(onClick = onClick)
+        onClick = onClick
     )
 }
 

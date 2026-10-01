@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.profiles
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -71,7 +70,7 @@ private fun ProfileRow(profile: ProfileListItem, onClick: () -> Unit, onEdit: ()
                 )
             }
         },
-        modifier = Modifier.clickable(onClick = onClick),
+        onClick = onClick,
         color = tileColor
     )
 }

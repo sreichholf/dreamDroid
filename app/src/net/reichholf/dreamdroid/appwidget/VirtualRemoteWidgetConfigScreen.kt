@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.appwidget
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -97,7 +96,7 @@ fun VirtualRemoteWidgetConfigScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
-                    modifier = Modifier.clickable { onProfileClick(profile) }
+                    onClick = { onProfileClick(profile) }
                 )
             }
         }

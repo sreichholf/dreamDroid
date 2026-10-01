@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.bouqueteditor
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -283,6 +282,6 @@ private fun BouquetRow(
                 dragHandle()
             }
         },
-        modifier = Modifier.clickable(onClick = onClick)
+        onClick = onClick
     )
 }

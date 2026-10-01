@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.services
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -60,8 +59,8 @@ private fun TimerRow(item: TimerListItem, onClick: () -> Unit) {
                 )
             }
         },
+        onClick = onClick,
         modifier = Modifier
-            .clickable(onClick = onClick)
             .drawWithContent {
                 drawContent()
                 drawRect(stateColor, size = Size(TimerStateBarWidth.toPx(), size.height))

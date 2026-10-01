@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -107,6 +106,6 @@ private fun ServiceEpgRow(event: Event, onClick: () -> Unit, showDate: Boolean) 
                 }
             }
         },
-        modifier = Modifier.clickable(onClick = onClick)
+        onClick = onClick
     )
 }

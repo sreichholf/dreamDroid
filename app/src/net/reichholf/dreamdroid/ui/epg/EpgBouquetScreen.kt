@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.epg
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -269,6 +268,6 @@ internal fun EpgBouquetRow(
             } else {
                 null
             },
-        modifier = Modifier.clickable(onClick = onClick)
+        onClick = onClick
     )
 }

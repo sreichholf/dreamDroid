@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.compose
 
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,31 +29,56 @@ const val LIST_ROW_TAG = "list_row"
  * Gmail-style list tile: slightly brighter than the canvas, rounded, with a small
  * gutter left/right and between rows. The gutter (not a hairline) is the separator.
  *
- * The tile is the [ListItem] itself. [ListItem] merges its own semantics, so a click, toggle
- * or selection passed in [modifier] lands on the node that carries the row's label.
+ * The tile is the [ListItem] itself. [ListItem] merges its own semantics, so [onClick],
+ * [onLongClick], and a toggle or selection passed in [modifier] all land on the node that
+ * carries the row's label.
+ *
+ * Material 3 1.4 has no interactive [ListItem]. The Material 3 Expressive overloads in the
+ * 1.5 alphas (`ListItem(onClick, …)`, `ListItem(checked, onCheckedChange, …)`,
+ * `ListItem(selected, onClick, …)`, and `SegmentedListItem`) replace the modifier approach.
+ * Move this onto them once they ship in a stable release.
  */
 @Composable
 fun ListRow(
     headlineContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
+    enabled: Boolean = true,
     overlineContent: (@Composable () -> Unit)? = null,
     supportingContent: (@Composable () -> Unit)? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
     color: Color = MaterialTheme.colorScheme.surfaceContainerHigh
 ) {
-    ListItem(
-        headlineContent = headlineContent,
-        modifier = Modifier
-            .listRowTile()
-            .clip(MaterialTheme.shapes.medium)
-            .then(modifier),
-        overlineContent = overlineContent,
-        supportingContent = supportingContent,
-        leadingContent = leadingContent,
-        trailingContent = trailingContent,
-        colors = ListItemDefaults.colors(containerColor = color)
-    )
+    // The gutter sits on a plain parent: ListItem's merged node takes its bounds from the start
+    // of the ListItem modifier, so padding there would widen the row's node into the gutter.
+    Box(modifier = Modifier.listRowGutter()) {
+        ListItem(
+            headlineContent = headlineContent,
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag(LIST_ROW_TAG)
+                .clip(MaterialTheme.shapes.medium)
+                .then(
+                    if (onClick != null) {
+                        Modifier.combinedClickable(
+                            enabled = enabled,
+                            onLongClick = onLongClick,
+                            onClick = onClick
+                        )
+                    } else {
+                        Modifier
+                    }
+                )
+                .then(modifier),
+            overlineContent = overlineContent,
+            supportingContent = supportingContent,
+            leadingContent = leadingContent,
+            trailingContent = trailingContent,
+            colors = ListItemDefaults.colors(containerColor = color)
+        )
+    }
 }
 
 /**
@@ -63,7 +90,8 @@ fun ListRow(
 fun ListRowSurface(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     Surface(
         modifier = Modifier
-            .listRowTile()
+            .listRowGutter()
+            .testTag(LIST_ROW_TAG)
             .then(modifier),
         color = MaterialTheme.colorScheme.surfaceContainerHigh,
         shape = MaterialTheme.shapes.medium,
@@ -71,6 +99,5 @@ fun ListRowSurface(modifier: Modifier = Modifier, content: @Composable ColumnSco
     )
 }
 
-private fun Modifier.listRowTile(): Modifier = fillMaxWidth()
+private fun Modifier.listRowGutter(): Modifier = fillMaxWidth()
     .padding(horizontal = ListRowHorizontalInset, vertical = ListRowVerticalInset)
-    .testTag(LIST_ROW_TAG)

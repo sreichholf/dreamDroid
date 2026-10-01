@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.autotimer
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -161,11 +160,6 @@ private fun AutoTimerRow(
         is AutoTimerEntry.Readable -> summaryLines(entry.autoTimer.settings)
         is AutoTimerEntry.Unreadable -> listOf(stringResource(R.string.autotimer_unreadable))
     }
-    val open = if (entry is AutoTimerEntry.Readable) {
-        Modifier.clickable { onOpen(entry) }
-    } else {
-        Modifier
-    }
     ListRow(
         headlineContent = {
             Text(
@@ -206,7 +200,11 @@ private fun AutoTimerRow(
                 }
             }
         },
-        modifier = open
+        onClick = if (entry is AutoTimerEntry.Readable) {
+            { onOpen(entry) }
+        } else {
+            null
+        }
     )
 }
 
