@@ -10,6 +10,7 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithContentDescription
@@ -62,7 +63,7 @@ class BouquetListScreenTest {
         val opened = mutableListOf<BouquetEntry>()
         show(ready(), onOpenBouquet = { opened += it })
 
-        composeRule.onNodeWithText("Sports (TV)").performClick()
+        composeRule.onNode(hasText("Sports (TV)") and hasClickAction()).performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(SPORTS), opened) }
     }

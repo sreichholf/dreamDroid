@@ -14,7 +14,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -39,10 +38,9 @@ import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.RowMenu
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 import net.reichholf.dreamdroid.ui.text.asString
@@ -266,28 +264,25 @@ private fun BouquetRow(
     onMenu: () -> Unit,
     dragHandle: @Composable () -> Unit
 ) {
-    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = bouquet.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            trailingContent = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onMenu) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_more_vert),
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
-                    dragHandle()
+    ListRow(
+        headlineContent = {
+            Text(
+                text = bouquet.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onMenu) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_vert),
+                        contentDescription = stringResource(R.string.more_options)
+                    )
                 }
-            },
-            colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+                dragHandle()
+            }
+        },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
 }

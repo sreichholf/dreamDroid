@@ -12,7 +12,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -33,9 +32,8 @@ import net.reichholf.dreamdroid.enigma.autotimer.DayFilter
 import net.reichholf.dreamdroid.enigma.autotimer.Target
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.RowMenu
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.text.asString
 
@@ -168,51 +166,48 @@ private fun AutoTimerRow(
     } else {
         Modifier
     }
-    ListRowSurface(modifier = open) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = entry.title(),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            supportingContent = {
-                Column {
-                    lines.forEach { line ->
-                        Text(
-                            text = line,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
+    ListRow(
+        headlineContent = {
+            Text(
+                text = entry.title(),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = {
+            Column {
+                lines.forEach { line ->
+                    Text(
+                        text = line,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
-            },
-            trailingContent = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    if (entry is AutoTimerEntry.Readable) {
-                        Switch(
-                            checked = entry.autoTimer.settings.enabled,
-                            onCheckedChange = { onEnabledChange(entry, it) },
-                            enabled = writable,
-                            // Read with its on/off state, so it names the AutoTimer.
-                            modifier = Modifier.semantics {
-                                contentDescription = entry.title()
-                            }
-                        )
-                    }
-                    IconButton(onClick = onMenu, enabled = writable) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_more_vert),
-                            contentDescription = stringResource(R.string.more_options)
-                        )
-                    }
+            }
+        },
+        trailingContent = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (entry is AutoTimerEntry.Readable) {
+                    Switch(
+                        checked = entry.autoTimer.settings.enabled,
+                        onCheckedChange = { onEnabledChange(entry, it) },
+                        enabled = writable,
+                        // Read with its on/off state, so it names the AutoTimer.
+                        modifier = Modifier.semantics {
+                            contentDescription = entry.title()
+                        }
+                    )
                 }
-            },
-            colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+                IconButton(onClick = onMenu, enabled = writable) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_more_vert),
+                        contentDescription = stringResource(R.string.more_options)
+                    )
+                }
+            }
+        },
+        modifier = open
+    )
 }
 
 /** The box fills an empty name with the match; an unreadable entry may have neither. */

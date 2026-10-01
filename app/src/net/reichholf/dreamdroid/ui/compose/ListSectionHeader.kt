@@ -13,7 +13,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /**
- * Section header in a list of [ListRowSurface] tiles, meant for a `stickyHeader`: opaque so
+ * Section header in a list of [ListRow] tiles, meant for a `stickyHeader`: opaque so
  * rows scroll under it, text in line with the tiles' content.
  */
 @Composable

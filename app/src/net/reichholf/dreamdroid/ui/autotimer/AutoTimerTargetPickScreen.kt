@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,9 +18,8 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceKeys
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
@@ -87,31 +85,27 @@ private fun TargetRow(
     checkboxLabel: String?,
     modifier: Modifier
 ) {
-    // ListItem merges its own semantics, so the row action goes on it to share the label.
-    ListRowSurface {
-        ListItem(
-            leadingContent = {
-                Checkbox(
-                    checked = checked,
-                    onCheckedChange = onCheckedChange,
-                    modifier = if (checkboxLabel != null) {
-                        Modifier.semantics { contentDescription = "$checkboxLabel ${row.name}" }
-                    } else {
-                        Modifier
-                    }
-                )
-            },
-            headlineContent = {
-                Text(
-                    text = row.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            colors = listRowItemColors(),
-            modifier = modifier
-        )
-    }
+    ListRow(
+        leadingContent = {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+                modifier = if (checkboxLabel != null) {
+                    Modifier.semantics { contentDescription = "$checkboxLabel ${row.name}" }
+                } else {
+                    Modifier
+                }
+            )
+        },
+        headlineContent = {
+            Text(
+                text = row.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        modifier = modifier
+    )
 }
 
 /** Two markers may share their text, and with it their reference. */

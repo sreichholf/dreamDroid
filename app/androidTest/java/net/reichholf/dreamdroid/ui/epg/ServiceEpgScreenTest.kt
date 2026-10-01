@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -67,7 +69,9 @@ class ServiceEpgScreenTest {
             .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
         composeRule.onNodeWithText("Mon, 01.01. 20:00").assertDoesNotExist()
-        composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
+        composeRule.onNode(
+            hasText("Wetter") and hasClickAction()
+        ).assertIsDisplayed().performClick()
         assertEquals(second, clicked)
     }
 

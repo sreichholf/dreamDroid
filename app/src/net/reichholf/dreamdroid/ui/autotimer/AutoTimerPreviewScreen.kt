@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,10 +33,9 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.text.asString
@@ -256,31 +254,26 @@ private fun MatchRow(
     } else {
         Modifier
     }
-    // ListItem merges its own semantics, so the row action goes on it to share the label.
-    ListRowSurface {
-        ListItem(
-            overlineContent = {
-                Text("${formatBegin(match.begin)} · ${match.serviceName}")
-            },
-            headlineContent = {
-                Text(
-                    text = match.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            supportingContent = if (showLog && match.log.isNotEmpty()) {
-                { Text(match.log, style = MaterialTheme.typography.bodySmall) }
-            } else {
-                null
-            },
-            colors = listRowItemColors(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable(role = Role.Button, onClick = onClick)
-                .then(described)
-        )
-    }
+    ListRow(
+        overlineContent = {
+            Text("${formatBegin(match.begin)} · ${match.serviceName}")
+        },
+        headlineContent = {
+            Text(
+                text = match.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = if (showLog && match.log.isNotEmpty()) {
+            { Text(match.log, style = MaterialTheme.typography.bodySmall) }
+        } else {
+            null
+        },
+        modifier = Modifier
+            .clickable(role = Role.Button, onClick = onClick)
+            .then(described)
+    )
 }
 
 @Composable

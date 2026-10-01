@@ -15,7 +15,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,8 +31,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.compose.ListRow
 
 const val EPG_TIME_JUMP_DATE_CHIP_TAG = "epg_time_jump_date_chip"
 const val EPG_TIME_JUMP_TIME_CHIP_TAG = "epg_time_jump_time_chip"
@@ -204,76 +202,73 @@ internal fun EpgBouquetRow(
     onClick: () -> Unit,
     showDate: Boolean = true
 ) {
-    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
-        ListItem(
-            headlineContent = {
+    ListRow(
+        headlineContent = {
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        supportingContent = {
+            Column {
                 Text(
-                    text = event.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
+                    text = event.serviceName,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-            },
-            supportingContent = {
-                Column {
+                Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
                     Text(
-                        text = event.serviceName,
+                        text = if (showDate || event.startTimeReadable.isEmpty()) {
+                            event.startReadable
+                        } else {
+                            event.startTimeReadable
+                        },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        modifier = Modifier.weight(1f)
                     )
-                    Row(modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                        Text(
-                            text = if (showDate || event.startTimeReadable.isEmpty()) {
-                                event.startReadable
-                            } else {
-                                event.startTimeReadable
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Text(
-                            text = event.durationReadable,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.End,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                    if (event.descriptionExtended.isNotEmpty()) {
-                        Text(
-                            text = event.descriptionExtended,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            maxLines = 2,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                        )
-                    }
+                    Text(
+                        text = event.durationReadable,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier.weight(1f)
+                    )
                 }
+                if (event.descriptionExtended.isNotEmpty()) {
+                    Text(
+                        text = event.descriptionExtended,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp)
+                    )
+                }
+            }
+        },
+        leadingContent =
+            if (piconsEnabled) {
+                {
+                    PiconImage(
+                        reference = event.serviceReference,
+                        name = event.serviceName,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .width(57.dp)
+                            .height(36.dp)
+                    )
+                }
+            } else {
+                null
             },
-            leadingContent =
-                if (piconsEnabled) {
-                    {
-                        PiconImage(
-                            reference = event.serviceReference,
-                            name = event.serviceName,
-                            contentDescription = null,
-                            modifier = Modifier
-                                .width(57.dp)
-                                .height(36.dp)
-                        )
-                    }
-                } else {
-                    null
-                },
-            colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+        modifier = Modifier.clickable(onClick = onClick)
+    )
 }

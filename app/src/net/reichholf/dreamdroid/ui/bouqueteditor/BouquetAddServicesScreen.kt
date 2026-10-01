@@ -9,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,8 +19,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.BouquetEntry
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
@@ -83,19 +81,16 @@ fun BouquetAddServicesScreen(
 
 @Composable
 private fun PlainRow(text: String, onClick: () -> Unit) {
-    ListRowSurface(modifier = Modifier.clickable(onClick = onClick)) {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = text,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ListRow(
+        headlineContent = {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
 }
 
 @Composable
@@ -106,38 +101,32 @@ private fun ServiceRow(
     enabled: Boolean,
     onToggle: () -> Unit
 ) {
-    // The toggle sits on ListItem, which merges its content, so the row reads as one
-    // checkbox with the service name.
-    ListRowSurface {
-        ListItem(
-            leadingContent = {
-                Checkbox(
-                    checked = checked || present,
-                    onCheckedChange = null,
-                    enabled = enabled && !present
-                )
-            },
-            headlineContent = {
-                Text(
-                    text = entry.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            supportingContent = if (present) {
-                { Text(stringResource(R.string.bouquet_service_present)) }
-            } else {
-                null
-            },
-            colors = listRowItemColors(),
-            modifier = Modifier
-                .fillMaxWidth()
-                .toggleable(
-                    value = checked || present,
-                    enabled = enabled && !present,
-                    role = Role.Checkbox,
-                    onValueChange = { onToggle() }
-                )
-        )
-    }
+    ListRow(
+        leadingContent = {
+            Checkbox(
+                checked = checked || present,
+                onCheckedChange = null,
+                enabled = enabled && !present
+            )
+        },
+        headlineContent = {
+            Text(
+                text = entry.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = if (present) {
+            { Text(stringResource(R.string.bouquet_service_present)) }
+        } else {
+            null
+        },
+        modifier = Modifier
+            .toggleable(
+                value = checked || present,
+                enabled = enabled && !present,
+                role = Role.Checkbox,
+                onValueChange = { onToggle() }
+            )
+    )
 }

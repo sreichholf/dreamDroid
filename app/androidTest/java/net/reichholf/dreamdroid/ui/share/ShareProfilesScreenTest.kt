@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.ui.share
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
@@ -13,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
@@ -54,9 +56,11 @@ class ShareProfilesScreenTest {
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("dm7080.local").assertIsDisplayed()
-        composeRule.onNodeWithText("Bedroom").assertIsDisplayed().performClick()
+        composeRule.onNode(
+            hasText("Bedroom") and hasClickAction()
+        ).assertIsDisplayed().performClick()
         assertEquals(second, clicked)
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG).assertCountEquals(2)
     }
 
     @Test

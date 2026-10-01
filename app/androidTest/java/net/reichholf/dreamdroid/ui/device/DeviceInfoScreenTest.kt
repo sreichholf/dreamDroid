@@ -14,7 +14,7 @@ import net.reichholf.dreamdroid.enigma.DeviceFrontend
 import net.reichholf.dreamdroid.enigma.DeviceHdd
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.DeviceNic
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -74,7 +74,7 @@ class DeviceInfoScreenTest {
         composeRule.onNodeWithText("Hard disks").assertIsDisplayed()
         composeRule.onNodeWithText("ATA Disk").assertIsDisplayed()
         composeRule.onNodeWithText("1.82 TB (1405 GB free)").assertIsDisplayed()
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
     }
 

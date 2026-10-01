@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -67,8 +67,8 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
         composeRule.onNodeWithText("Export settings").assertIsOff()
         composeRule.onNodeWithText("Include receiver passwords").assertIsOn()
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(4)
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG).assertCountEquals(4)
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
         val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
             .getBoundsInRoot()
