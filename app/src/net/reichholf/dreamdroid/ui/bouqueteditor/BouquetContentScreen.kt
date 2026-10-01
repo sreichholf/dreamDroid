@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,10 +33,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
-import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.compose.RowMenu
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 import net.reichholf.dreamdroid.ui.text.asString
@@ -245,19 +243,15 @@ private fun EntryRow(row: BouquetContentRow, trailing: @Composable () -> Unit) {
         BouquetEntryKind.Alternative -> R.string.bouquet_entry_alternative
         else -> null
     }
-    ListRowSurface {
-        ListItem(
-            headlineContent = {
-                Text(
-                    text = row.entry.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            },
-            supportingContent = note?.let { { Text(stringResource(it)) } },
-            trailingContent = trailing,
-            colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
-        )
-    }
+    ListRow(
+        headlineContent = {
+            Text(
+                text = row.entry.name,
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        },
+        supportingContent = note?.let { { Text(stringResource(it)) } },
+        trailingContent = trailing
+    )
 }

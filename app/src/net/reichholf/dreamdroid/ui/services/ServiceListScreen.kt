@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,7 +36,6 @@ import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
 import net.reichholf.dreamdroid.ui.compose.RowMenu
 import net.reichholf.dreamdroid.ui.compose.RowMenuAction
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
-import net.reichholf.dreamdroid.ui.compose.listRowItemColors
 
 enum class ServiceRowAction(override val label: Int, val onlineOnly: Boolean) : RowMenuAction {
     CurrentEvent(R.string.current_event, onlineOnly = false),
@@ -118,9 +118,9 @@ internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick:
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
-    ListRowSurface(
-        modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
-    ) {
+    // The strip sits on the tile above the ListItem. ListItem merges its own semantics, so
+    // the click goes on it, next to the label.
+    ListRowSurface {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
             LinearProgressIndicator(
@@ -175,7 +175,8 @@ internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick:
                 } else {
                     null
                 },
-            colors = listRowItemColors()
+            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+            modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
         )
     }
 }

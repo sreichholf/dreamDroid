@@ -4,6 +4,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -13,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -54,7 +56,7 @@ class ProfilesScreenTest {
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(24.dp)
         composeRule.onNodeWithText("dreamdroid.org").assertIsDisplayed()
-        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)
+        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_TAG)
         tiles.assertCountEquals(1)
         tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
     }
@@ -79,7 +81,7 @@ class ProfilesScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("Demo", useUnmergedTree = true).performClick()
+        composeRule.onNode(hasText("Demo") and hasClickAction()).performClick()
         composeRule.waitForIdle()
         assertEquals(1, clickedId)
         assertEquals(-1, editedId)
@@ -114,7 +116,7 @@ class ProfilesScreenTest {
                 )
             }
         }
-        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)
+        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_TAG)
         tiles.assertCountEquals(2)
         tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
         val gap = tiles[1].getBoundsInRoot().top - tiles[0].getBoundsInRoot().bottom

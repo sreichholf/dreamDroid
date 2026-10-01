@@ -29,7 +29,7 @@ import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -64,7 +64,7 @@ class SettingsScreenTest {
         composeRule.onNodeWithText("Integrated video player", useUnmergedTree = true)
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(24.dp)
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)[0]
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
         composeRule.onNodeWithText("Useability").assertIsDisplayed()
         composeRule.onNodeWithText("Start screen").performScrollTo().assertIsDisplayed()

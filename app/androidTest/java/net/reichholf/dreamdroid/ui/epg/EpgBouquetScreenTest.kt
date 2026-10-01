@@ -7,6 +7,8 @@ import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -18,7 +20,7 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -76,12 +78,14 @@ class EpgBouquetScreenTest {
         composeRule.onNodeWithText("20:00").assertIsDisplayed()
         composeRule.onNodeWithText("15").assertIsDisplayed()
         composeRule.onNodeWithText("Die Nachrichten.").assertIsDisplayed()
-        composeRule.onNodeWithText("Wetter").assertIsDisplayed().performClick()
+        composeRule.onNode(
+            hasText("Wetter") and hasClickAction()
+        ).assertIsDisplayed().performClick()
         assertEquals(second, clicked)
         composeRule.onAllNodesWithTag(EPG_TIME_JUMP_DATE_CHIP_TAG).assertCountEquals(0)
         composeRule.onAllNodesWithTag(EPG_TIME_JUMP_TIME_CHIP_TAG).assertCountEquals(0)
         composeRule.onAllNodesWithTag(EPG_PICK_BOUQUET_CHIP_TAG).assertCountEquals(0)
-        composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG).assertCountEquals(2)
+        composeRule.onAllNodesWithTag(LIST_ROW_TAG).assertCountEquals(2)
     }
 
     @Test

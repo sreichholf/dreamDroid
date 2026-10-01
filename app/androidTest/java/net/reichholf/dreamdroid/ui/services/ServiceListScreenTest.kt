@@ -12,6 +12,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isHeading
@@ -26,7 +27,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.ui.compose.LIST_ROW_SURFACE_TAG
+import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -216,7 +217,7 @@ class ServiceListScreenTest {
                 )
             }
         }
-        composeRule.onNodeWithText("ZDF").performClick()
+        composeRule.onNode(hasText("ZDF") and hasClickAction()).performClick()
         // The menu is its own popup window, so compare on-screen positions.
         val zdfTop = composeRule.onNodeWithText("ZDF", useUnmergedTree = true)
             .fetchSemanticsNode().positionOnScreen.y
@@ -255,7 +256,7 @@ class ServiceListScreenTest {
                 )
             }
         }
-        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_SURFACE_TAG)
+        val tiles = composeRule.onAllNodesWithTag(LIST_ROW_TAG)
         tiles.assertCountEquals(2)
         tiles[0].assertLeftPositionInRootIsEqualTo(8.dp)
         val first = tiles[0].getBoundsInRoot()

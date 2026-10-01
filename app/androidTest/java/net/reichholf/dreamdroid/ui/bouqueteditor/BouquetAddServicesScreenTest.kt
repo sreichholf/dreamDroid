@@ -4,6 +4,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -43,7 +44,7 @@ class BouquetAddServicesScreenTest {
 
         composeRule.onNodeWithText("Satellites").assertIsDisplayed()
         composeRule.onNodeWithText("Providers").assertIsDisplayed()
-        composeRule.onNodeWithText("All services").performClick()
+        composeRule.onNode(hasText("All services") and hasClickAction()).performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(ServiceSource.All), sources) }
     }

@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.ui.pick
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.hasClickAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -51,7 +53,9 @@ class PickServiceScreenTest {
         composeRule.onNodeWithText("Favourites (TV)", useUnmergedTree = true)
             .assertIsDisplayed()
             .assertLeftPositionInRootIsEqualTo(24.dp)
-        composeRule.onNodeWithText("All Radio").assertIsDisplayed().performClick()
+        composeRule.onNode(
+            hasText("All Radio") and hasClickAction()
+        ).assertIsDisplayed().performClick()
         assertEquals(radio, clicked)
     }
 

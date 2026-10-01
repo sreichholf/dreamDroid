@@ -79,7 +79,7 @@ class AutoTimerListScreenTest {
         val opened = mutableListOf<AutoTimerEntry.Readable>()
         show(ready(WILSBERG), onOpen = { opened += it })
 
-        composeRule.onNodeWithText("Wilsberg").performClick()
+        composeRule.onNode(hasText("Wilsberg") and hasClickAction()).performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(WILSBERG), opened) }
     }
