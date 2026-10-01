@@ -87,7 +87,8 @@ private fun TargetRow(
     checkboxLabel: String?,
     modifier: Modifier
 ) {
-    ListRowSurface(modifier = modifier) {
+    // ListItem merges its own semantics, so the row action goes on it to share the label.
+    ListRowSurface {
         ListItem(
             leadingContent = {
                 Checkbox(
@@ -107,7 +108,8 @@ private fun TargetRow(
                     color = MaterialTheme.colorScheme.onSurface
                 )
             },
-            colors = listRowItemColors()
+            colors = listRowItemColors(),
+            modifier = modifier
         )
     }
 }

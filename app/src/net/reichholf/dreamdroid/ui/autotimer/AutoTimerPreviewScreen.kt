@@ -256,9 +256,8 @@ private fun MatchRow(
     } else {
         Modifier
     }
-    ListRowSurface(
-        modifier = Modifier.clickable(role = Role.Button, onClick = onClick).then(described)
-    ) {
+    // ListItem merges its own semantics, so the row action goes on it to share the label.
+    ListRowSurface {
         ListItem(
             overlineContent = {
                 Text("${formatBegin(match.begin)} · ${match.serviceName}")
@@ -276,7 +275,10 @@ private fun MatchRow(
                 null
             },
             colors = listRowItemColors(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(role = Role.Button, onClick = onClick)
+                .then(described)
         )
     }
 }

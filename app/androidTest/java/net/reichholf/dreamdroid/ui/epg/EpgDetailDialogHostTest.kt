@@ -16,7 +16,6 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.compose.ui.test.performScrollTo
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -165,7 +164,7 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Record series").assertDoesNotExist()
 
         available = true
-        composeRule.onNodeWithText("Record series").performScrollTo().performClick()
+        composeRule.onNodeWithText("Record series").assertIsDisplayed().performClick()
 
         composeRule.runOnIdle { assertEquals(listOf(tagesschau()), recorded) }
     }
