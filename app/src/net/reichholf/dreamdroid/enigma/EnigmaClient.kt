@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.enigma
 
 import java.util.ArrayList
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
@@ -71,15 +72,27 @@ class EnigmaClient(private val http: EnigmaHttp) {
         }
     }
 
-    /** Image bytes of `/grab`; a body that is not a JPEG or PNG reads as no value. */
-    suspend fun getScreenshot(params: List<NameValuePair>): EnigmaResponse<ByteArray> =
+    /**
+     * Image bytes of `/grab` with [grabParams]. When `/grab` answers with something that is not
+     * a JPEG or PNG (an empty body on Dreambox Two with Gemini Project, whose grab binary does
+     * not know the box), asks `/screenshot` for video and OSD. A body that is still not an image
+     * reads as no value.
+     */
+    suspend fun getScreenshot(grabParams: List<NameValuePair>): EnigmaResponse<ByteArray> =
         withContext(Dispatchers.IO) {
-            when (val result = http.fetch(URIStore.SCREENSHOT, ArrayList(params))) {
-                is EnigmaHttpResult.Success ->
-                    EnigmaResponse(result.bytes.takeIf(::looksLikeScreenshotImage))
+            val grab = fetchImage(URIStore.SCREENSHOT, grabParams)
+            if (grab.value != null || grab.error != null) return@withContext grab
+            ensureActive()
+            val web = fetchImage(URIStore.SCREENSHOT_WEB, SCREENSHOT_WEB_PARAMS)
+            if (web.value != null) web else grab
+        }
 
-                is EnigmaHttpResult.Failure -> EnigmaResponse(null, result.error)
-            }
+    private fun fetchImage(uri: String, params: List<NameValuePair>): EnigmaResponse<ByteArray> =
+        when (val result = http.fetch(uri, ArrayList(params))) {
+            is EnigmaHttpResult.Success ->
+                EnigmaResponse(result.bytes.takeIf(::looksLikeScreenshotImage))
+
+            is EnigmaHttpResult.Failure -> EnigmaResponse(null, result.error)
         }
 
     suspend fun getTimers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
@@ -242,3 +255,9 @@ class EnigmaClient(private val http: EnigmaHttp) {
             is EnigmaHttpResult.Failure -> EnigmaResponse(null, error)
         }
 }
+
+private val SCREENSHOT_WEB_PARAMS = listOf(
+    NameValuePair("format", "jpg"),
+    NameValuePair("osd", "1"),
+    NameValuePair("video", "1")
+)

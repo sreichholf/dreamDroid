@@ -13,8 +13,8 @@ private val PNG_MAGIC = byteArrayOf(
 )
 
 /**
- * True when [bytes] start with JPEG SOI or a PNG signature. `/grab` answers some failures
- * with HTTP 200 and an HTML or XML body.
+ * True when [bytes] start with JPEG SOI or a PNG signature. `/grab` and `/screenshot` answer
+ * some failures with HTTP 200 and an empty, HTML or XML body.
  */
 internal fun looksLikeScreenshotImage(bytes: ByteArray): Boolean =
     hasMagic(bytes, JPEG_MAGIC) || hasMagic(bytes, PNG_MAGIC)

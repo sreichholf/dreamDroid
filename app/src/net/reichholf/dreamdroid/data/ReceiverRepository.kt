@@ -49,8 +49,8 @@ class ReceiverRepository @Inject constructor(
     suspend fun signal(): EnigmaResponse<Signal> = clients.current().getSignal()
 
     /**
-     * A JPEG of video and OSD at the receiver's resolution. The receiver writes the grab to
-     * a timestamped file under `/tmp` first.
+     * A JPEG of video and OSD at the receiver's resolution, from `/grab` (which writes it to a
+     * timestamped file under `/tmp` first), or from `/screenshot` when `/grab` returns no image.
      */
     suspend fun screenshot(): EnigmaResponse<ByteArray> = clients.current().getScreenshot(
         listOf(

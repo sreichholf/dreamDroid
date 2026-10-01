@@ -21,6 +21,7 @@
 * UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer / playlist browser
+* FIX: Screenshots on receivers whose /grab returns no image (e.g. Dreambox Two with Gemini Project) use /screenshot instead
 * FIX: Android TV movie cards no longer clip a partial last line of text
 * FIX: multiple smaller issues
 
