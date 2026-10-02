@@ -262,15 +262,14 @@ class ServiceRepository @Inject constructor(
     /**
      * `/web/getservices` order is the roster; `/web/epgnownext` only adds now/next to it
      * (see [mergeBouquetNowNext]). A failed roster fails; a failed now/next leaves the rows
-     * without events. `epgnownext` takes a `1:7:` bouquet as `bRef`, anything else as `sRef`.
+     * without events. `epgnownext` reads only `bRef` and lists any container ref there.
      */
     suspend fun receiverNowNext(ref: String): EnigmaResponse<List<ServiceNowNext>> {
         val client = clients.current()
         val roster = client.getServices(listOf(NameValuePair("sRef", ref)))
         val services = roster.value ?: return EnigmaResponse(null, roster.error)
-        val param = if (EnigmaService.isBouquet(ref)) "bRef" else "sRef"
         val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
-        val epg = client.getEpgNowNext(listOf(NameValuePair(param, ref)), uri).value.orEmpty()
+        val epg = client.getEpgNowNext(listOf(NameValuePair("bRef", ref)), uri).value.orEmpty()
         return EnigmaResponse(mergeBouquetNowNext(services, epg))
     }
 
@@ -386,7 +385,7 @@ class ServiceRepository @Inject constructor(
     }
 
     private suspend fun fetchTvBouquets(): EnigmaResponse<List<Service>> =
-        clients.current().getServices(listOf(NameValuePair("bRef", BOUQUETS_TV)))
+        clients.current().getServices(listOf(NameValuePair("sRef", tvRoots[0])))
 
     private suspend fun tabStrip(profileId: Int, kind: String): List<Service> =
         database.rosterDao().getTabStrip(profileId, kind).map { Service(it.serviceRef, it.name) }
@@ -419,14 +418,6 @@ class ServiceRepository @Inject constructor(
     private companion object {
         const val KIND_TV = "TV"
         const val KIND_RADIO = "RADIO"
-
-        /**
-         * The TV hub's bouquet query (`bRef`), formerly on RootBrowseFragment. Its quotes
-         * are escaped, unlike the `servicerefstv` index the phone hub asks with `sRef`.
-         */
-        const val BOUQUETS_TV =
-            "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || " +
-                "(type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet"
     }
 }
 

@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
+import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.enigmaClients
@@ -386,7 +387,7 @@ class TvHubViewModelTest {
     private fun TvHubUiState.rowRefs(): List<String> = bouquetRows.map { it.bouquet.reference }
 
     private fun RecordedRequest.isBouquetIndex(): Boolean =
-        requestUrl?.queryParameter("bRef")?.contains("bouquets.tv") == true
+        requestUrl?.queryParameter("sRef") == TV_ROOTS[0]
 
     private fun RecordedRequest.dirname(): String? = requestUrl?.queryParameter("dirname")
 

@@ -35,6 +35,12 @@ class ServiceDirectoryTest {
         context().resources.getStringArray(R.array.servicerefstv)[2]
 
     @Test
+    fun aggregateTvRootDecodesToPlainQuotes() {
+        assertTrue(aggregateTv().endsWith("FROM BOUQUET \"bouquets.tv\" ORDER BY bouquet"))
+        assertFalse(aggregateTv().contains('\\'))
+    }
+
+    @Test
     fun directoryFlagBitIsDirectory() {
         assertTrue(Service.isDirectory("1:1:1:0:0:0:0:0:0:0:"))
     }
