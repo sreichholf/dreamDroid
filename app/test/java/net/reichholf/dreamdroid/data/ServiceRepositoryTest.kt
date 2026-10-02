@@ -41,7 +41,7 @@ class ServiceRepositoryTest {
     private val database = receiver.profiles.database
     private val rosterDao = database.rosterDao()
 
-    /** `/web/getservices` answers by `sRef` (or `bRef`); others get `getservices.xml`. */
+    /** `/web/getservices` answers by `sRef`; others get `getservices.xml`. */
     private val lists = HashMap<String, String>()
 
     @BeforeEach
@@ -157,7 +157,9 @@ class ServiceRepositoryTest {
         val bouquets = services.tvBouquets()
 
         assertTrue(bouquets.isNotEmpty())
-        assertTrue(receiver.requestsTo(GET_SERVICES).single().bRef()!!.contains("bouquets.tv"))
+        val request = receiver.requestsTo(GET_SERVICES).single()
+        assertEquals(TV_ROOTS[0], request.sRef())
+        assertNull(request.bRef())
         assertTrue(strip("TV").isEmpty())
     }
 
@@ -173,7 +175,7 @@ class ServiceRepositoryTest {
     @Test
     fun tvHubBouquetsReplaceTheTvStrip() = runBlocking {
         writeStrip("TV", OTHER to "Other")
-        lists[BOUQUETS_TV] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[2] to "All")
+        lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[2] to "All")
 
         val bouquets = services.tvBouquetTabs().value!!
 
@@ -234,14 +236,14 @@ class ServiceRepositoryTest {
     }
 
     @Test
-    fun nowNextOfANonBouquetListAsksEpgBySRef() = runBlocking {
+    fun nowNextOfANonBouquetContainerAsksEpgByBRef() = runBlocking {
         val list = "1:0:1:0:0:0:0:0:0:0:FROM PROVIDERS"
         services.receiverNowNext(list)
 
         assertEquals(list, receiver.requestsTo(GET_SERVICES).single().sRef())
         val epg = receiver.requestsTo(EPG_NOW_NEXT).single()
-        assertEquals(list, epg.sRef())
-        assertNull(epg.bRef())
+        assertEquals(list, epg.bRef())
+        assertNull(epg.sRef())
     }
 
     @Test
@@ -517,7 +519,7 @@ class ServiceRepositoryTest {
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
             GET_SERVICES -> MockResponse().setBody(
-                lists[request.sRef() ?: request.bRef()] ?: loadWebFixture("getservices.xml")
+                lists[request.sRef()] ?: loadWebFixture("getservices.xml")
             )
 
             EPG_NOW_NEXT -> MockResponse().setBody(loadWebFixture("epgnownext.xml"))
@@ -551,9 +553,6 @@ class ServiceRepositoryTest {
             "1:7:2:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.radio\" ORDER BY bouquet"
         const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
         const val CHANNEL = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
-        const val BOUQUETS_TV =
-            "1:7:1:0:0:0:0:0:0:0:(type == 1) || (type == 17) || (type == 195) || " +
-                "(type == 25) FROM BOUQUET \\\"bouquets.tv\\\" ORDER BY bouquet"
         const val GET_SERVICES = "/web/getservices"
         const val EPG_NOW_NEXT = "/web/epgnownext"
     }
