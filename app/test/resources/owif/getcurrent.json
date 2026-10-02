@@ -1,0 +1,53 @@
+{
+ "info": {
+  "result": true,
+  "name": "A&amp;E",
+  "namespace": 12582912,
+  "aspect": 3,
+  "provider": "A&E Networks",
+  "width": 1280,
+  "height": 720,
+  "apid": 5122,
+  "vpid": 5101,
+  "pcrpid": 5101,
+  "pmtpid": 5100,
+  "txtpid": 5104,
+  "tsid": 1019,
+  "onid": 1,
+  "sid": 10301,
+  "ref": "1:0:19:7C:6:85:FFFF0000:0:0:0:",
+  "iswidescreen": true,
+  "bqref": "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.favourites.tv%22 ORDER BY bouquet",
+  "bqname": "Favourites (TV)"
+ },
+ "now": {
+  "id": 301,
+  "begin_timestamp": 1699999400,
+  "duration_sec": 3600,
+  "title": "Crime &amp; Punishment",
+  "shortdesc": "S01E01",
+  "longdesc": "",
+  "sref": "1:0:19:7C:6:85:FFFF0000:0:0:0:",
+  "sname": "A&amp;E",
+  "now_timestamp": 1700000000,
+  "remaining": 3000,
+  "genre": "",
+  "genreid": 0,
+  "provider": "A&E Networks"
+ },
+ "next": {
+  "id": 302,
+  "begin_timestamp": 1700003000,
+  "duration_sec": 3600,
+  "title": "Storage Wars",
+  "shortdesc": "",
+  "longdesc": "",
+  "sref": "1:0:19:7C:6:85:FFFF0000:0:0:0:",
+  "sname": "A&amp;E",
+  "now_timestamp": 1700000000,
+  "remaining": 6600,
+  "genre": "",
+  "genreid": 0,
+  "provider": "A&E Networks"
+ }
+}

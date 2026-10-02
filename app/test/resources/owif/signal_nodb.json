@@ -1,0 +1,9 @@
+{
+ "tunertype": "DVB-C",
+ "tunernumber": 1,
+ "snr": 81,
+ "snr_db": 81,
+ "agc": 90,
+ "ber": 0,
+ "inStandby": "false"
+}

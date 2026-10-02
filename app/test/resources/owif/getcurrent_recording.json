@@ -1,0 +1,53 @@
+{
+ "info": {
+  "result": true,
+  "name": "Tom &amp; Jerry",
+  "namespace": 12582912,
+  "aspect": 3,
+  "provider": "",
+  "width": 1280,
+  "height": 720,
+  "apid": 5122,
+  "vpid": 5101,
+  "pcrpid": 5101,
+  "pmtpid": 5100,
+  "txtpid": 5104,
+  "tsid": 1019,
+  "onid": 1,
+  "sid": 10301,
+  "ref": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/20231114 2015 - Das Erste HD - Tom & Jerry.ts",
+  "iswidescreen": true,
+  "bqref": "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.favourites.tv%22 ORDER BY bouquet",
+  "bqname": "Favourites (TV)"
+ },
+ "now": {
+  "id": 1,
+  "begin_timestamp": 1699996400,
+  "duration_sec": 1800,
+  "title": "Tom & Jerry",
+  "shortdesc": "Q&amp;A <live>",
+  "longdesc": "",
+  "sref": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/20231114 2015 - Das Erste HD - Tom & Jerry.ts",
+  "sname": "Tom &amp; Jerry",
+  "now_timestamp": 0,
+  "remaining": 1800,
+  "genre": "",
+  "genreid": 0,
+  "provider": ""
+ },
+ "next": {
+  "id": 0,
+  "begin_timestamp": 0,
+  "duration_sec": 0,
+  "title": "",
+  "shortdesc": "",
+  "longdesc": "",
+  "sref": "",
+  "sname": "",
+  "now_timestamp": 0,
+  "remaining": 0,
+  "provider": "",
+  "genre": "",
+  "genreid": 0
+ }
+}

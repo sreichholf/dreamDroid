@@ -1,0 +1,45 @@
+{
+ "events": [
+  {
+   "id": 4711,
+   "sref": "1:0:19:283D:3FB:1:C00000:0:0:0:",
+   "picon": "/picon/1_0_19_283D_3FB_1_C00000_0_0_0.png",
+   "date": "Tue 14.11.2023",
+   "begin": "23:13",
+   "begin_timestamp": 1700000000,
+   "duration": 15,
+   "duration_sec": 900,
+   "end": "23:28",
+   "title": "Tagesschau",
+   "shortdesc": "Nachrichten",
+   "longdesc": "Line one\nLine &lt;two&gt;",
+   "sname": "Das Erste HD",
+   "now_timestamp": 0,
+   "genre": "News",
+   "genreid": 32,
+   "tleft": 15,
+   "progress": 0
+  },
+  {
+   "id": 4712,
+   "sref": "1:0:19:283D:3FB:1:C00000:0:0:0:",
+   "picon": "/picon/1_0_19_283D_3FB_1_C00000_0_0_0.png",
+   "date": "Tue 14.11.2023",
+   "begin": "23:13",
+   "begin_timestamp": 1700000900,
+   "duration": 90,
+   "duration_sec": 5400,
+   "end": "23:28",
+   "title": "Tatort",
+   "shortdesc": "Krimi",
+   "longdesc": "",
+   "sname": "Das Erste HD",
+   "now_timestamp": 0,
+   "genre": "News",
+   "genreid": 32,
+   "tleft": 15,
+   "progress": 0
+  }
+ ],
+ "result": true
+}

@@ -1,0 +1,53 @@
+{
+ "info": {
+  "result": true,
+  "name": "Live &amp; Radio",
+  "namespace": 12582912,
+  "aspect": 3,
+  "provider": "N/A",
+  "width": 1280,
+  "height": 720,
+  "apid": 5122,
+  "vpid": 5101,
+  "pcrpid": 5101,
+  "pmtpid": 5100,
+  "txtpid": 5104,
+  "tsid": 1019,
+  "onid": 1,
+  "sid": 10301,
+  "ref": "4097:0:1:0:0:0:0:0:0:0:http%253a//192.168.0.5%253a8001/stream:Live & Radio",
+  "iswidescreen": true,
+  "bqref": "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET %22userbouquet.favourites.tv%22 ORDER BY bouquet",
+  "bqname": "Favourites (TV)"
+ },
+ "now": {
+  "id": null,
+  "begin_timestamp": 0,
+  "duration_sec": 0,
+  "title": "N/A",
+  "shortdesc": "",
+  "longdesc": "",
+  "sref": "4097:0:1:0:0:0:0:0:0:0:http%3a//192.168.0.5%3a8001/stream:Live & Radio",
+  "sname": "Live & Radio",
+  "now_timestamp": 0,
+  "remaining": 0,
+  "genre": "",
+  "genreid": 0,
+  "provider": "N/A"
+ },
+ "next": {
+  "id": null,
+  "begin_timestamp": 0,
+  "duration_sec": 0,
+  "title": "N/A",
+  "shortdesc": "",
+  "longdesc": "",
+  "sref": "4097:0:1:0:0:0:0:0:0:0:http%3a//192.168.0.5%3a8001/stream:Live & Radio",
+  "sname": "Live & Radio",
+  "now_timestamp": 0,
+  "remaining": 0,
+  "genre": "",
+  "genreid": 0,
+  "provider": "N/A"
+ }
+}
