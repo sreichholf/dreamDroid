@@ -22,8 +22,7 @@ object VideoPlayback {
         return if (current == 0) size - 1 else current - 1
     }
 
-    fun shouldTogglePause(isPlaying: Boolean, rate: Float, sameMedia: Boolean): Boolean =
-        sameMedia && isPlaying && rate == 1.0f
+    fun shouldTogglePause(isPlaying: Boolean, rate: Float): Boolean = isPlaying && rate == 1.0f
 
     /**
      * [org.videolan.libvlc.interfaces.IVLCVout.detachViews] is not idempotent.

@@ -68,19 +68,23 @@ import org.videolan.libvlc.interfaces.IVLCVout
 class VideoActivity :
     AppCompatActivity(),
     IVLCVout.OnNewVideoLayoutListener,
-    IVLCVout.Callback,
     DialogActionListener,
     MediaPlayer.EventListener {
 
     var surfaceFrame: FrameLayout? = null
     var surfaceView: SurfaceView? = null
     lateinit var subtitlesSurfaceView: SurfaceView
-    var player: VLCPlayer? = null
     var overlay: VideoOverlayController? = null
     private val playbackViewModel: VideoPlaybackViewModel by viewModels()
 
     @Inject
     lateinit var sessions: SessionConnectionHolder
+
+    @Inject
+    lateinit var player: VLCPlayer
+
+    /** Views, vout callback, and event listener are on [player] between onStart and onStop. */
+    private var playerAttached: Boolean = false
 
     var onLayoutChangeListener: View.OnLayoutChangeListener? = null
 
@@ -238,7 +242,7 @@ class VideoActivity :
     override fun onStop() {
         if (!tvStreamingRejected) {
             cleanup()
-            VLCPlayer.release()
+            player.release()
             surfaceFrameAddLayoutListener(false)
         }
         super.onStop()
@@ -273,7 +277,7 @@ class VideoActivity :
         setIntent(intent)
         if (Intent.ACTION_VIEW != intent.action) return
         overlay?.applyPlaybackExtras(intent.extras)
-        val player = this.player ?: return
+        if (!playerAttached) return
         val data = intent.data ?: return
         val accel =
             Integer.parseInt(
@@ -298,7 +302,6 @@ class VideoActivity :
 
     private fun initialize() {
         cleanup()
-        player = VLCPlayer.get(this)
 
         surfaceFrame = findViewById(R.id.player_surface_frame)
         surfaceView = findViewById(R.id.player_surface)
@@ -306,10 +309,9 @@ class VideoActivity :
         subtitlesSurfaceView.setZOrderMediaOverlay(true)
         subtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
 
-        player!!.attach(this, surfaceView, subtitlesSurfaceView)
-
-        VLCPlayer.getMediaPlayer(this)!!.vlcVout.addCallback(this)
-        VLCPlayer.getMediaPlayer(this)!!.setEventListener(this)
+        player.attach(this, surfaceView, subtitlesSurfaceView)
+        player.setEventListener(this)
+        playerAttached = true
 
         handleIntent(intent)
         setFullScreen()
@@ -318,36 +320,25 @@ class VideoActivity :
     private fun initializeOverlay() {
         val controller =
             overlay
-                ?: VideoOverlayController(this, playbackViewModel, sessions).also { overlay = it }
+                ?: VideoOverlayController(this, playbackViewModel, sessions, player)
+                    .also { overlay = it }
         controller.attach(intent.extras)
     }
 
     private fun cleanup() {
-        cleanup(false)
-    }
-
-    private fun cleanup(force: Boolean) {
-        if (player == null && force) player = VLCPlayer.get(this)
-        if (player == null) return
-        player!!.detach()
-        player = null
+        if (!playerAttached) return
+        playerAttached = false
+        player.detach()
         surfaceView = null
-        VLCPlayer.getMediaPlayer(this)!!.vlcVout.removeCallback(this)
-        VLCPlayer.getMediaPlayer(this)!!.setEventListener(null)
+        player.setEventListener(null)
     }
 
     private fun onMediaPlaying() {
-        if (videoWidth * videoHeight == 0) {
-            videoHeight = player!!.getVideoHeight()
-            videoWidth = player!!.getVideoWidth()
-            videoVisibleWidth = videoWidth
-            videoVisibleHeight = videoHeight
-        }
         setPictureInPictureParams(getPipParams())
     }
 
     private fun changeSurfaceLayout() {
-        if (player == null) return
+        if (!playerAttached) return
         var sw: Int
         var sh: Int
 
@@ -369,24 +360,14 @@ class VideoActivity :
             Log.e(TAG, "Invalid surface size")
             return
         }
-        val player = VLCPlayer.getMediaPlayer(this)
-        if (player != null) {
-            val vlcVout = player.vlcVout
-            vlcVout.setWindowSize(sw, sh)
-        }
+        player.setWindowSize(sw, sh)
 
         val surface = surfaceView!!
         val subtitlesSurface = subtitlesSurfaceView
         val surfaceFrame = this.surfaceFrame!!
         var lp = surface.layoutParams
 
-        if (videoWidth * videoHeight == 0) {
-            videoHeight = this.player!!.getVideoHeight()
-            videoWidth = this.player!!.getVideoWidth()
-            videoVisibleWidth = videoWidth
-            videoVisibleHeight = videoHeight
-        }
-
+        // Size comes from onNewVideoLayout; until then the surface fills the frame.
         if (videoWidth * videoHeight == 0 || isInPictureInPictureMode) {
             /* Case of OpenGL vouts: handles the placement of the video using MediaPlayer API */
             lp.width = LayoutParams.MATCH_PARENT
@@ -396,17 +377,15 @@ class VideoActivity :
             lp.width = LayoutParams.MATCH_PARENT
             lp.height = LayoutParams.MATCH_PARENT
             surfaceFrame.layoutParams = lp
-            if (player != null && videoWidth * videoHeight == 0) {
-                player.setAspectRatio(null)
-                player.setScale(0f)
+            if (videoWidth * videoHeight == 0) {
+                player.resetScale()
             }
             return
         }
 
-        if (player != null && lp.width == lp.height && lp.width == LayoutParams.MATCH_PARENT) {
+        if (lp.width == lp.height && lp.width == LayoutParams.MATCH_PARENT) {
             /* We handle the placement of the video using Android View LayoutParams */
-            player.setAspectRatio(null)
-            player.setScale(0f)
+            player.resetScale()
         }
 
         // compute the aspect ratio
@@ -507,13 +486,10 @@ class VideoActivity :
         this.sarNum = sarNum
         this.sarDen = sarDen
         changeSurfaceLayout()
-    }
-
-    override fun onSurfacesCreated(vlcVout: IVLCVout) {
-        val mediaPlayer = VLCPlayer.getMediaPlayer(this)!!
-        mediaPlayer.setAspectRatio(null)
-        mediaPlayer.setScale(0f)
-        mediaPlayer.setVideoTrackEnabled(true)
+        if (playerAttached) {
+            // The size arrives after Playing; PiP needs it for the aspect ratio.
+            setPictureInPictureParams(getPipParams())
+        }
     }
 
     override fun onPictureInPictureModeChanged(
@@ -524,8 +500,6 @@ class VideoActivity :
         changeSurfaceLayout()
         overlay?.onPictureInPictureModeChanged()
     }
-
-    override fun onSurfacesDestroyed(vlcVout: IVLCVout) {}
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         overlay?.onDialogAction(action, details, dialogTag)
@@ -541,7 +515,6 @@ class VideoActivity :
             playbackAlreadyStarted = true
         }
         val chrome = overlay ?: return
-        chrome.onUpdateButtons()
         when (event.type) {
             MediaPlayer.Event.Playing -> {
                 onMediaPlaying()
