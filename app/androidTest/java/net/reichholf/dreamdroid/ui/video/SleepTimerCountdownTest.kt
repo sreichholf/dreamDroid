@@ -4,6 +4,9 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
@@ -20,17 +23,30 @@ class SleepTimerCountdownTest {
 
     @Test
     fun countdownShowsSecondsLeftAndExtendIsFocused() {
+        var showCountdown by mutableStateOf(false)
         var closing by mutableStateOf(SleepTimer.Closing(10))
         var extends = 0
         var cancels = 0
+        lateinit var inputModeManager: InputModeManager
         composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
             DreamDroidTheme(forceDark = true) {
-                SleepTimerCountdown(
-                    closing = closing,
-                    onExtend = { extends++ },
-                    onCancel = { cancels++ }
-                )
+                if (showCountdown) {
+                    SleepTimerCountdown(
+                        closing = closing,
+                        onExtend = { extends++ },
+                        onCancel = { cancels++ }
+                    )
+                }
             }
+        }
+        // Buttons take focus only outside touch mode. The countdown appears while a remote,
+        // not a touchscreen, drives the player. The request's result only says whether the
+        // root took focus, which it cannot while nothing focusable is composed.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle {
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
+            showCountdown = true
         }
 
         composeRule.onNodeWithText("Closing the player in 10 s").assertIsDisplayed()
