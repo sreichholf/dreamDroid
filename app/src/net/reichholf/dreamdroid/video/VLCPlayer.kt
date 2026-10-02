@@ -7,11 +7,14 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
@@ -30,20 +33,23 @@ data class PlayerState(
  * The process's libVLC [MediaPlayer].
  *
  * Call it from the main thread. Video views and the event listener are main-thread work.
- * Every [MediaPlayer] call goes through [commands], so a stream that is slow to close never
- * blocks input. Read the stream's time, length, and tracks from [state], not from libVLC.
+ * [MediaPlayer] calls go through [commands], so a stream that is slow to close never blocks
+ * input. As in VLC for Android, [playUri] starts the stream with play() on the main thread
+ * once setMedia has returned. Read the stream's time, length, and tracks from [state], not from libVLC.
  */
 @Singleton
 class VLCPlayer @Inject constructor(@param:ApplicationContext private val context: Context) {
     private val commands = PlayerCommandQueue(Dispatchers.IO)
+    private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     // Written on the main thread; read by queued commands to drop a released player's results.
     @Volatile
     private var mediaPlayer: MediaPlayer? = null
 
     /**
-     * Counts streams: [playUri] and [release] start a new one on the main thread. Events and
-     * queued results tagged with an older value belong to a stream that is gone.
+     * Counts streams on the main thread: [playUri] starts one, [detach] and [release] end it.
+     * Events, queued results, and a pending play() tagged with an older value belong to a
+     * stream that is gone.
      */
     @Volatile
     private var generation: Int = 0
@@ -78,6 +84,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
             return
         }
+        generation++
         vlcVout.detachViews()
         commands.post { mp.stop() }
     }
@@ -125,15 +132,20 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         stateFlow.value = PlayerState()
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
-        commands.post {
-            val media = Media(VLCInstance.get(context), uri)
-            media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-            // Like VLC for Android: the old stream's teardown events must not reach the
-            // overlay. setMedia joins the old stream's threads, so it must stay off main.
-            mp.setEventListener(null)
-            mp.media = media
+        // VLC for Android's PlayerController.startPlayback: setMedia off main, then listener
+        // and play() on main. setMedia joins the old stream's threads, which can take long.
+        mainScope.launch {
+            commands.call {
+                val media = Media(VLCInstance.get(context), uri)
+                media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
+                // The old stream's teardown events must not reach the overlay.
+                mp.setEventListener(null)
+                mp.media = media
+                media.release()
+            }
+            // A zap, detach, or release since then owns the player now.
+            if (gen != generation) return@launch
             mp.setEventListener(eventListener(mp, gen))
-            media.release()
             mp.rate = 1.0f
             mp.play()
         }
