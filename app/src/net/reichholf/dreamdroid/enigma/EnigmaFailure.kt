@@ -31,6 +31,13 @@ sealed class EnigmaFailure {
 
     data object Auth : EnigmaFailure()
 
+    /**
+     * The receiver refuses this client's address and asks for no login: OpenWebif with
+     * authentication off answers clients outside its network with 403
+     * (plugin/httpserver.py:386-388 at e46534f). Turning authentication on lets them log in.
+     */
+    data object IpRejected : EnigmaFailure()
+
     data class Http(val code: Int, val message: String? = null) : EnigmaFailure()
 
     data object Parse : EnigmaFailure()
@@ -58,6 +65,8 @@ sealed class EnigmaFailure {
             )
 
         is Auth -> UiText.Resource(R.string.auth_error)
+
+        is IpRejected -> UiText.Resource(R.string.ip_rejected_error)
 
         is Http -> UiText.Raw(message.orEmpty())
 

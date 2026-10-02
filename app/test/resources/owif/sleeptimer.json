@@ -1,0 +1,7 @@
+{
+ "enabled": true,
+ "minutes": 90,
+ "action": "shutdown",
+ "remaining": 4980,
+ "message": "Sleeptimer is enabled"
+}

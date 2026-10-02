@@ -8,11 +8,14 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.DeviceNic
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.PowerState
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.Volume
 import net.reichholf.dreamdroid.enigma.buildEvent
 import net.reichholf.dreamdroid.enigma.buildMovie
 import net.reichholf.dreamdroid.enigma.buildTimer
@@ -209,6 +212,22 @@ internal fun OwifMovies.toMovies(): List<Movie> = movies.map { dto ->
         fileSizeRaw = dto.filesize
     )
 }
+
+/** As `/web/vol` writes it: Python's `True` and `False`. */
+internal fun OwifVolume.toVolume(): Volume =
+    Volume(result = Python.TRUE, current = current, muted = muted?.toPython())
+
+internal fun OwifPowerState.toPowerState(): PowerState = PowerState(isRunning = inStandby?.not())
+
+/** As `/web/sleeptimer` writes it. */
+internal fun OwifSleepTimer.toSleepTimer(): SleepTimer = SleepTimer(
+    enabled = enabled?.toPython(),
+    minutes = minutes,
+    action = action,
+    text = message
+)
+
+private fun Boolean.toPython(): String = if (this) Python.TRUE else Python.FALSE
 
 /**
  * The event, or null for a row without one (`begin_timestamp` 0 or null). In `/api` answers

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.enigma
 
 import java.io.File
+import java.net.HttpURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
@@ -18,11 +19,14 @@ import net.reichholf.dreamdroid.enigma.openwebif.OwifDeviceInfo
 import net.reichholf.dreamdroid.enigma.openwebif.OwifEvents
 import net.reichholf.dreamdroid.enigma.openwebif.OwifLocations
 import net.reichholf.dreamdroid.enigma.openwebif.OwifMovies
+import net.reichholf.dreamdroid.enigma.openwebif.OwifPowerState
 import net.reichholf.dreamdroid.enigma.openwebif.OwifResult
 import net.reichholf.dreamdroid.enigma.openwebif.OwifServices
 import net.reichholf.dreamdroid.enigma.openwebif.OwifSignal
+import net.reichholf.dreamdroid.enigma.openwebif.OwifSleepTimer
 import net.reichholf.dreamdroid.enigma.openwebif.OwifTags
 import net.reichholf.dreamdroid.enigma.openwebif.OwifTimers
+import net.reichholf.dreamdroid.enigma.openwebif.OwifVolume
 import net.reichholf.dreamdroid.enigma.openwebif.owifJson
 import net.reichholf.dreamdroid.enigma.openwebif.toCurrentService
 import net.reichholf.dreamdroid.enigma.openwebif.toDeviceInfo
@@ -30,10 +34,13 @@ import net.reichholf.dreamdroid.enigma.openwebif.toEvents
 import net.reichholf.dreamdroid.enigma.openwebif.toEventsAt
 import net.reichholf.dreamdroid.enigma.openwebif.toMovies
 import net.reichholf.dreamdroid.enigma.openwebif.toNowNext
+import net.reichholf.dreamdroid.enigma.openwebif.toPowerState
 import net.reichholf.dreamdroid.enigma.openwebif.toServices
 import net.reichholf.dreamdroid.enigma.openwebif.toSignal
 import net.reichholf.dreamdroid.enigma.openwebif.toSimpleResult
+import net.reichholf.dreamdroid.enigma.openwebif.toSleepTimer
 import net.reichholf.dreamdroid.enigma.openwebif.toTimers
+import net.reichholf.dreamdroid.enigma.openwebif.toVolume
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
@@ -51,6 +58,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
  * [EnigmaFailure.Parse]; a handler that returns nothing or throws answers with an HTML 404 or 500
  * (base.py:106-117,211-213), which [EnigmaHttp] reports as [EnigmaFailure.Http]. `result: false`
  * with a `message`, as for a missing parameter (web.py:81-96), is [EnigmaFailure.BoxRejected].
+ * A 403 is [EnigmaFailure.IpRejected].
  */
 class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     /** Without `hidden=1`, so hidden services are left out (models/services.py:606). */
@@ -138,9 +146,35 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
         vararg params: NameValuePair,
         map: (D) -> T?
     ): EnigmaResponse<T> = withContext(Dispatchers.IO) {
-        when (val fetched = http.fetch(path, params.toList())) {
-            is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
-            is EnigmaHttpResult.Success -> decode(fetched.text, deserializer, map)
+        answer(fetch(path, params.toList()), deserializer, map)
+    }
+
+    private fun <D, T> answer(
+        fetched: EnigmaHttpResult,
+        deserializer: DeserializationStrategy<D>,
+        map: (D) -> T?
+    ): EnigmaResponse<T> = when (fetched) {
+        is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
+        is EnigmaHttpResult.Success -> decode(fetched.text, deserializer, map)
+    }
+
+    private fun fetch(path: String, params: List<NameValuePair>): EnigmaHttpResult =
+        http.fetch(path, params).ipRejected()
+
+    /**
+     * A 403 is [EnigmaFailure.IpRejected]: the plugin's only 403 is the rejected client address
+     * (plugin/httpserver.py:386-388). Twisted's static file can also answer 403 for a file it
+     * cannot open under `/file` (file.py:81-82; Twisted is not in the tree), which then reads as
+     * the rejection too.
+     */
+    private fun EnigmaHttpResult.ipRejected(): EnigmaHttpResult {
+        val failure = (this as? EnigmaHttpResult.Failure)?.error?.failure
+        return if (failure is EnigmaFailure.Http &&
+            failure.code == HttpURLConnection.HTTP_FORBIDDEN
+        ) {
+            EnigmaHttpResult.Failure(EnigmaHttpError(EnigmaFailure.IpRejected))
+        } else {
+            this
         }
     }
 
@@ -182,35 +216,51 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     private suspend fun command(
         path: String,
         params: List<NameValuePair> = emptyList()
-    ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
-        when (val fetched = http.fetch(path, params)) {
-            is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
+    ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) { exchange(path, params).first }
 
-            is EnigmaHttpResult.Success -> {
-                val result = try {
-                    (owifJson.parseToJsonElement(fetched.text) as? JsonObject)
-                        ?.let { owifJson.decodeFromJsonElement(OwifResult.serializer(), it) }
-                        ?.toSimpleResult()
-                } catch (_: SerializationException) {
-                    null
-                } catch (_: IllegalArgumentException) {
-                    null
-                }
-                when {
-                    result == null -> failure(EnigmaFailure.Parse)
-
-                    result.state == Python.FALSE -> EnigmaResponse(
-                        result,
-                        EnigmaHttpError(EnigmaFailure.BoxRejected(result.stateText.orEmpty()))
-                    )
-
-                    else -> EnigmaResponse(result)
-                }
-            }
+    /** [command]'s response, with the answer it came from when the body was one. */
+    private fun exchange(
+        path: String,
+        params: List<NameValuePair>
+    ): Pair<EnigmaResponse<SimpleResult>, OwifResult?> {
+        val fetched = fetch(path, params)
+        if (fetched is EnigmaHttpResult.Failure) {
+            return EnigmaResponse<SimpleResult>(null, fetched.error) to null
         }
+        val answer = try {
+            (owifJson.parseToJsonElement((fetched as EnigmaHttpResult.Success).text) as? JsonObject)
+                ?.let { owifJson.decodeFromJsonElement(OwifResult.serializer(), it) }
+        } catch (_: SerializationException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
+        }
+        val result = answer?.toSimpleResult()
+        val response = when {
+            result == null -> failure(EnigmaFailure.Parse)
+
+            result.state == Python.FALSE -> EnigmaResponse(
+                result,
+                EnigmaHttpError(EnigmaFailure.BoxRejected(result.stateText.orEmpty()))
+            )
+
+            else -> EnigmaResponse(result)
+        }
+        return response to answer
     }
 
-    override suspend fun screenshot(): EnigmaResponse<ByteArray> = notYet()
+    /**
+     * `/grab` as a JPEG of video and OSD (models/grab.py:43-46). It takes no `filename` and has
+     * no `/screenshot` to fall back to; a body that is not an image reads as no value.
+     */
+    override suspend fun screenshot(): EnigmaResponse<ByteArray> = withContext(Dispatchers.IO) {
+        when (val fetched = fetch(URIStore.SCREENSHOT, listOf(NameValuePair("format", "jpg")))) {
+            is EnigmaHttpResult.Success ->
+                EnigmaResponse(fetched.bytes.takeIf(::looksLikeScreenshotImage))
+
+            is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
+        }
+    }
 
     override suspend fun timers(): EnigmaResponse<List<Timer>> =
         get("/api/timerlist", OwifTimers.serializer()) { it.toTimers() }
@@ -264,11 +314,12 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
      */
     override suspend fun downloadRecording(path: String, destination: File): EnigmaHttpError? =
         withContext(Dispatchers.IO) {
-            when (val fetched = http.downloadToFile(URIStore.FILE, fileParams(path), destination)) {
-                is EnigmaHttpResult.Failure -> fetched.error
+            val fetched = http.downloadToFile(URIStore.FILE, fileParams(path), destination)
+            when (val answer = fetched.ipRejected()) {
+                is EnigmaHttpResult.Failure -> answer.error
 
                 is EnigmaHttpResult.Success ->
-                    if (fetched.headers["Content-Disposition"] != null) {
+                    if (answer.headers["Content-Disposition"] != null) {
                         null
                     } else {
                         notAFile(destination)
@@ -289,35 +340,127 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
 
     private fun fileParams(path: String) = listOf(NameValuePair("file", path))
 
-    override suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume> = notYet()
+    /** `vol` with `set` `up`, `down` or `mute`; the answer has the new level (models/volume.py). */
+    override suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume> {
+        val set = when (command) {
+            VolumeCommand.Up -> "up"
+            VolumeCommand.Down -> "down"
+            VolumeCommand.Mute -> "mute"
+        }
+        return get("/api/vol", OwifVolume.serializer(), NameValuePair("set", set)) {
+            it.toVolume()
+        }
+    }
 
-    override suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState> = notYet()
+    /**
+     * `powerstate` with enigma2's `newstate` code. Its answer is the standby state from before
+     * the action (models/control.py:208,232-235: `inStandby` is imported first), so a toggle
+     * asks again. *Inference:* leaving standby closes the screen on the next main loop turn,
+     * which runs before the box serves the second request. Shutdown, reboot and restart take
+     * the box down, so their answer is kept rather than asked again.
+     */
+    override suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState> {
+        val newState = when (command) {
+            PowerCommand.ToggleStandby -> "0"
+            PowerCommand.Shutdown -> "1"
+            PowerCommand.Reboot -> "2"
+            PowerCommand.RestartGui -> "3"
+        }
+        val changed = get(
+            "/api/powerstate",
+            OwifPowerState.serializer(),
+            NameValuePair("newstate", newState)
+        ) { it.toPowerState() }
+        if (command != PowerCommand.ToggleStandby || changed.error != null) {
+            return changed
+        }
+        return get("/api/powerstate", OwifPowerState.serializer()) { it.toPowerState() }
+    }
 
-    override suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = notYet()
+    /**
+     * Without `cmd` the box reads the timer. On images whose sleep timer is a power timer, no
+     * such timer returns nothing, which is an HTML 404 (models/timers.py:912-935,
+     * base.py:210-213): a sleep timer that is off. `minutes` is the configured time on images
+     * with an InfoBar sleep timer (models/timers.py:878-900), not the time left.
+     */
+    override suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = withContext(Dispatchers.IO) {
+        val fetched = fetch("/api/sleeptimer", emptyList())
+        val failure = (fetched as? EnigmaHttpResult.Failure)?.error?.failure
+        if (failure is EnigmaFailure.Http && failure.code == HttpURLConnection.HTTP_NOT_FOUND) {
+            EnigmaResponse(SleepTimer(enabled = Python.FALSE))
+        } else {
+            answer(fetched, OwifSleepTimer.serializer()) { it.toSleepTimer() }
+        }
+    }
 
+    /**
+     * `cmd=set`; `enabled` is Python's `True` or `False`, which the box also accepts
+     * (web.py:2117-2122). No `time` is sent for null [minutes]: an empty one is no number.
+     *
+     * A refusal is the unchanged timer with a message starting `ERROR`, and no `result`
+     * (web.py:2124-2136, models/timers.py:944-946): it keeps that timer and is a
+     * [EnigmaFailure.BoxRejected]. On images whose sleep timer is a power timer every change
+     * fails with "SleepTimer error" (models/timers.py:1027,1069 call the `time` argument).
+     */
     override suspend fun setSleepTimer(
         minutes: String?,
         action: String?,
         enabled: Boolean
-    ): EnigmaResponse<SleepTimer> = notYet()
+    ): EnigmaResponse<SleepTimer> = withContext(Dispatchers.IO) {
+        val params = listOfNotNull(
+            NameValuePair("cmd", "set"),
+            minutes?.let { NameValuePair("time", it) },
+            action?.let { NameValuePair("action", it) },
+            NameValuePair("enabled", if (enabled) Python.TRUE else Python.FALSE)
+        )
+        val answered = answer(fetch("/api/sleeptimer", params), OwifSleepTimer.serializer()) {
+            it.toSleepTimer()
+        }
+        val refusal = answered.value?.text?.takeIf { it.startsWith(SLEEP_TIMER_ERROR) }
+        if (refusal != null) {
+            EnigmaResponse(answered.value, EnigmaHttpError(EnigmaFailure.BoxRejected(refusal)))
+        } else {
+            answered
+        }
+    }
 
     override suspend fun hasPlugin(plugin: ReceiverPlugin): EnigmaResponse<Boolean> = notYet()
 
     override suspend fun autoTimers(): EnigmaResponse<AutoTimerList> = notYet()
 
-    override suspend fun zap(reference: String): EnigmaResponse<SimpleResult> = notYet()
+    override suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
+        command("/api/zap", listOf(NameValuePair("sRef", reference)))
 
+    /**
+     * As on the Dreambox: `rcu` `standard` or `advanced` picks the remote, `type=long` holds the
+     * key (web.py:323-358, models/control.py:169-205).
+     */
     override suspend fun remoteCommand(
         keyCode: Int,
         simpleRemote: Boolean,
         longPress: Boolean
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> = command(
+        "/api/remotecontrol",
+        listOfNotNull(
+            NameValuePair("command", keyCode.toString()),
+            NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"),
+            if (longPress) NameValuePair("type", "long") else null
+        )
+    )
 
+    /** `text` and `type` are mandatory; a `timeout` that is no number is none (web.py:723-743). */
     override suspend fun sendMessage(
         text: String?,
         type: String?,
         timeout: String?
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> = command(
+        "/api/message",
+        listOf(
+            NameValuePair("text", text),
+            NameValuePair("type", type),
+            NameValuePair("timeout", timeout)
+        )
+    )
 
     /** `mediaplayerplay` answers "Mediaplayer not installed" without the plugin. */
     override suspend fun playMedia(reference: String): EnigmaResponse<SimpleResult> =
@@ -356,6 +499,29 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
             NameValuePair("endOld", old.end)
         )
     )
+
+    /**
+     * `timertogglestatus` flips only `disabled` and refuses an enable that conflicts
+     * (web.py:1270-1302, models/timers.py:519-561). It toggles, so when the box already had the
+     * other state the answer's `disabled` is wrong and the second toggle lands on [disabled].
+     */
+    override suspend fun setTimerDisabled(
+        timer: Timer,
+        disabled: Boolean
+    ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
+        val params = listOf(
+            NameValuePair("sRef", timer.reference),
+            NameValuePair("begin", timer.begin),
+            NameValuePair("end", timer.end)
+        )
+        val (response, answer) = exchange("/api/timertogglestatus", params)
+        val now = answer?.disabled?.trim()?.lowercase()?.let { it == "true" || it == "1" }
+        if (response.error == null && now == !disabled) {
+            exchange("/api/timertogglestatus", params).first
+        } else {
+            response
+        }
+    }
 
     /**
      * Found by service, begin and end. No `eit`: the box would delete the first timer of the
@@ -437,8 +603,8 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
 
     override suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> = notYet()
 
-    /** Unreachable until the factory builds this client (phase 3d). */
-    private fun notYet(): Nothing = throw NotImplementedError("phase 3c/4")
+    /** The AutoTimer and bouquet editor plugins come in phase 4. */
+    private fun notYet(): Nothing = throw NotImplementedError("phase 4")
 
     private companion object {
         const val SECONDS_PER_MINUTE = 60L
@@ -492,6 +658,8 @@ private fun owifDirname(path: String): String = buildString {
         }
     }
 }
+
+private const val SLEEP_TIMER_ERROR = "ERROR"
 
 private const val HEX = 16
 

@@ -364,6 +364,13 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
             )
         )
 
+    /** The Dreambox has no toggle: [editTimer] with only `disabled` changed. */
+    override suspend fun setTimerDisabled(
+        timer: Timer,
+        disabled: Boolean
+    ): EnigmaResponse<SimpleResult> =
+        editTimer(timer, timer.copy(disabled = if (disabled) "1" else "0"))
+
     override suspend fun deleteTimer(timer: Timer): EnigmaResponse<SimpleResult> = simpleResult(
         URIStore.TIMER_DELETE,
         listOf(

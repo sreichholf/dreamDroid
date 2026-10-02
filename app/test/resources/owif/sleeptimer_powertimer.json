@@ -1,0 +1,6 @@
+{
+ "enabled": false,
+ "minutes": "30",
+ "action": "standby",
+ "message": "Sleeptimer is disabled"
+}

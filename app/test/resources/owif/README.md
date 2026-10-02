@@ -17,7 +17,7 @@ with `ensure_ascii`. A real capture replaces its fixture (docs/openwebif.md §3)
 | `epgservice_empty.json` | `/api/epgservice` | `models/services.py:852-870` | the filler row for an event without id: `begin_timestamp` 0, title `N/A` |
 | `epgsearch.json` | `/api/epgsearch` | `web.py:1570-1600`, `models/services.py:1085-1139` | `now_timestamp` null; escaped `&` in a title |
 | `getcurrent.json` | `/api/getcurrent` | `web.py:1706-1801`, `models/services.py:133-180,996-1035` | `info.name` always escaped (`:162`) |
-| `getcurrent_iptv.json` | `/api/getcurrent` | same; `models/services.py:176,1020-1031`; `web.py:1749-1763` | IPTV ref quoted to `%253a`; `now` and `next` are `X` rows (`epg.py:226-230` asks with `IBDCTSERNWX`): `begin_timestamp` 0, title `N/A`, `id` null; `provider` `N/A` for a service without one (`models/services.py:126-128`) |
+| `getcurrent_iptv.json` | `/api/getcurrent` | same; `models/services.py:176,1020-1031`; `web.py:1749-1763` | IPTV ref quoted to `%253a`; `now` is an `X` row and `next` the handler's filler, both `begin_timestamp` 0; `id` null |
 | `getcurrent_recording.json` | `/api/getcurrent` | `web.py:1765-1777` | while a recording plays, `now` carries its own title and descriptions, not escaped: a literal `&amp;` stays |
 | `signal.json` | `/api/signal` | `base.py:187-190`, `web.py:202-218`, `models/info.py:661-702` | `snr_db` a dB string (`:694`) |
 | `signal_nodb.json` | `/api/signal` | `models/info.py:690-691` | `snr_db` repeats the percent as a number: no dB |
@@ -36,7 +36,7 @@ with `ensure_ascii`. A real capture replaces its fixture (docs/openwebif.md §3)
 | `getlocations.json` | `/api/getlocations` | `web.py:433-447`, `models/locations.py:15-20` | |
 | `gettags.json` | `/api/gettags` | `web.py:965-978`, `models/movies.py:753-773` | |
 | `mediaplayerplay_missing.json` | `/api/mediaplayerplay` | `web.py:1994-2000`, `models/mediaplayer.py:106-112` | the MediaPlayer plugin is missing |
-| `file_not_found.txt` | `/file?file=` | `file.py:58-59` | on Python 2 images: HTTP 200 text without `Content-Disposition`, which a real file has (`:80-83`). On Python 3 `render` returns `str`, which Twisted answers with HTTP 500 |
+| `file_not_found.txt` | `/file?file=` | `file.py:58-59` | HTTP 200 text without `Content-Disposition`, which a real file has (`:80-83`) |
 | `vol.json` | `/api/vol` | `web.py:220-256`, `models/volume.py:15-46` | `current` a number, `ismute` a JSON bool |
 | `powerstate_before.json`, `powerstate_after.json` | `/api/powerstate` | `web.py:360-379`, `models/control.py:207-243` | the answer to `newstate` is the state from before the action (`:208,232-235`); asking again gives the new one |
 | `zap.json` | `/api/zap` | `web.py:296-321`, `models/control.py:111-166` | |

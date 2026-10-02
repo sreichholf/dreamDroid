@@ -4,10 +4,12 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadOwifFixture
+import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.HttpUrl
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -521,6 +523,55 @@ class OpenWebifApiTest {
     }
 
     @Test
+    fun setTimerDisabledTogglesOnceWhenTheBoxLandsOnTheRequestedState() = runBlocking {
+        answer("timertogglestatus.json")
+
+        val response = api.setTimerDisabled(TATORT_TIMER, disabled = true)
+
+        assertRequest(
+            "/api/timertogglestatus",
+            "sRef" to DAS_ERSTE,
+            "begin" to (T + 900).toString(),
+            "end" to (T + 6300).toString()
+        )
+        val message = "The timer 'Tatort' has been disabled successfully"
+        assertEquals(SimpleResult("True", message), response.value)
+        assertNull(response.error)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun setTimerDisabledTogglesBackWhenTheBoxHadTheOtherState() = runBlocking {
+        answer("timertogglestatus_enabled.json")
+        answer("timertogglestatus.json")
+
+        val response = api.setTimerDisabled(TATORT_TIMER, disabled = true)
+
+        repeat(2) {
+            assertRequest(
+                "/api/timertogglestatus",
+                "sRef" to DAS_ERSTE,
+                "begin" to (T + 900).toString(),
+                "end" to (T + 6300).toString()
+            )
+        }
+        assertEquals("The timer 'Tatort' has been disabled successfully", response.value?.stateText)
+    }
+
+    @Test
+    fun aConflictingEnableIsABoxRejection() = runBlocking {
+        answer("timertogglestatus_conflict.json")
+
+        val response = api.setTimerDisabled(TATORT_TIMER, disabled = false)
+
+        assertEquals(
+            EnigmaFailure.BoxRejected("Timer 'Tatort' not enabled while Conflict"),
+            response.error?.failure
+        )
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
     fun aTimerConflictKeepsTheResultAndIsABoxRejection() = runBlocking {
         answer("timer_conflict.json")
 
@@ -710,6 +761,217 @@ class OpenWebifApiTest {
             error?.failure
         )
         assertFalse(out.exists())
+    }
+
+    @Test
+    fun setVolumeSendsTheCommandAndMapsTheNewLevel() = runBlocking {
+        answer("vol.json")
+        answer("vol.json")
+        answer("vol.json")
+
+        val volume = api.setVolume(VolumeCommand.Up).value
+        api.setVolume(VolumeCommand.Down)
+        api.setVolume(VolumeCommand.Mute)
+
+        assertRequest("/api/vol", "set" to "up")
+        assertRequest("/api/vol", "set" to "down")
+        assertRequest("/api/vol", "set" to "mute")
+        assertEquals(Volume(result = "True", current = "45", muted = "False"), volume)
+    }
+
+    @Test
+    fun toggleStandbyAsksTheStateAgainBecauseTheAnswerIsFromBefore() = runBlocking {
+        answer("powerstate_before.json")
+        answer("powerstate_after.json")
+
+        val state = api.setPowerState(PowerCommand.ToggleStandby)
+
+        assertRequest("/api/powerstate", "newstate" to "0")
+        assertRequest("/api/powerstate")
+        assertEquals(PowerState(isRunning = false), state.value)
+        assertNull(state.error)
+    }
+
+    @Test
+    fun rebootKeepsTheFirstAnswer() = runBlocking {
+        answer("powerstate_before.json")
+
+        val state = api.setPowerState(PowerCommand.Reboot)
+
+        assertRequest("/api/powerstate", "newstate" to "2")
+        assertEquals(PowerState(isRunning = true), state.value)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun aFailedToggleIsNotAskedAgain() = runBlocking {
+        answer("error404.html")
+
+        val state = api.setPowerState(PowerCommand.ToggleStandby)
+
+        assertEquals(EnigmaFailure.Parse, state.error?.failure)
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun zapSendsTheReference() = runBlocking {
+        answer("zap.json")
+
+        val response = api.zap(DAS_ERSTE)
+
+        assertRequest("/api/zap", "sRef" to DAS_ERSTE)
+        assertEquals("True", response.value?.state)
+    }
+
+    @Test
+    fun remoteCommandPicksTheRemoteAndHoldsALongPress() = runBlocking {
+        answer("remotecontrol.json")
+        answer("remotecontrol.json")
+
+        val response = api.remoteCommand(352, simpleRemote = true, longPress = false)
+        api.remoteCommand(352, simpleRemote = false, longPress = true)
+
+        assertRequest("/api/remotecontrol", "command" to "352", "rcu" to "standard")
+        assertRequest(
+            "/api/remotecontrol",
+            "command" to "352",
+            "rcu" to "advanced",
+            "type" to "long"
+        )
+        assertEquals(
+            SimpleResult("True", "RC command '352' has been issued"),
+            response.value
+        )
+    }
+
+    @Test
+    fun sendMessageSendsTextTypeAndTimeout() = runBlocking {
+        answer("message.json")
+
+        val response = api.sendMessage("Hallo & Tschüss", "1", "10")
+
+        assertRequest(
+            "/api/message",
+            "text" to "Hallo & Tschüss",
+            "type" to "1",
+            "timeout" to "10"
+        )
+        assertEquals(SimpleResult("True", "Message sent successfully!"), response.value)
+    }
+
+    @Test
+    fun sleepTimerReadsANumberOfMinutes() = runBlocking {
+        answer("sleeptimer.json")
+
+        val timer = api.sleepTimer().value
+
+        assertRequest("/api/sleeptimer")
+        assertEquals(SleepTimer("True", "90", "shutdown", "Sleeptimer is enabled"), timer)
+    }
+
+    @Test
+    fun sleepTimerReadsMinutesAsAString() = runBlocking {
+        answer("sleeptimer_powertimer.json")
+
+        assertEquals(
+            SleepTimer("False", "30", "standby", "Sleeptimer is disabled"),
+            api.sleepTimer().value
+        )
+    }
+
+    @Test
+    fun aSleepTimer404IsATimerThatIsOff() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody(loadOwifFixture("error404.html"))
+        )
+
+        val response = api.sleepTimer()
+
+        assertEquals(SleepTimer(enabled = "False"), response.value)
+        assertNull(response.error)
+    }
+
+    @Test
+    fun setSleepTimerSendsSetAndReadsTheStoredTimer() = runBlocking {
+        answer("sleeptimer_set.json")
+
+        val response = api.setSleepTimer("30", "standby", enabled = true)
+
+        assertRequest(
+            "/api/sleeptimer",
+            "cmd" to "set",
+            "time" to "30",
+            "action" to "standby",
+            "enabled" to "True"
+        )
+        assertEquals(
+            SleepTimer("True", "30", "standby", "Sleeptimer set to 30 minutes"),
+            response.value
+        )
+        assertNull(response.error)
+    }
+
+    @Test
+    fun aSleepTimerErrorMessageIsABoxRejection() = runBlocking {
+        answer("sleeptimer_standby.json")
+
+        val response = api.setSleepTimer("30", "standby", enabled = true)
+
+        val message = "ERROR: Cannot set SleepTimer while device is in Standby-Mode"
+        assertEquals(EnigmaFailure.BoxRejected(message), response.error?.failure)
+        assertEquals(SleepTimer("False", "90", "shutdown", message), response.value)
+    }
+
+    @Test
+    fun setSleepTimerLeavesOutAMissingTime() = runBlocking {
+        answer("sleeptimer.json")
+
+        api.setSleepTimer(null, null, enabled = false)
+
+        assertRequest("/api/sleeptimer", "cmd" to "set", "enabled" to "False")
+    }
+
+    @Test
+    fun screenshotGrabsAJpeg() = runBlocking {
+        val jpeg = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte())
+        server.enqueue(
+            MockResponse().setHeader("Content-Type", "image/jpeg").setBody(Buffer().write(jpeg))
+        )
+        server.enqueue(MockResponse())
+
+        val image = api.screenshot().value
+        val empty = api.screenshot()
+
+        assertRequest("/grab", "format" to "jpg")
+        assertArrayEquals(jpeg, image)
+        assertNull(empty.value)
+        assertNull(empty.error)
+    }
+
+    @Test
+    fun a403IsTheIpRejectedFailure(@TempDir dir: File) = runBlocking {
+        repeat(3) { forbidden() }
+
+        val read = api.currentService()
+        val command = api.zap(DAS_ERSTE)
+        val download = api.downloadRecording(AB, File(dir, "a.ts"))
+
+        assertEquals(EnigmaFailure.IpRejected, read.error?.failure)
+        assertEquals(EnigmaFailure.IpRejected, command.error?.failure)
+        assertEquals(EnigmaFailure.IpRejected, download?.failure)
+        assertEquals(
+            UiText.Resource(R.string.ip_rejected_error),
+            EnigmaFailure.IpRejected.userMessageText()
+        )
+    }
+
+    private fun forbidden() {
+        server.enqueue(
+            MockResponse()
+                .setResponseCode(403)
+                .setStatus("HTTP/1.1 403 Forbidden")
+                .setBody(loadOwifFixture("error403.html"))
+        )
     }
 
     private fun answer(fixture: String) {

@@ -296,6 +296,7 @@
     <string name="share">Share</string>
     <string name="host_not_found">Host not found</string>
     <string name="auth_error">Authorization failed (Check user/password?)</string>
+    <string name="ip_rejected_error">The receiver rejects connections from outside its own network without a login. Turn on authentication in OpenWebif\'s settings, then enter the user and password in this profile.</string>
     <string name="developer_settings_enable">Enable developer settings</string>
     <string name="multiepg_sync_test_no_bouquet">Set a default TV bouquet on the profile first</string>
     <string name="use_fake_picon">Use a fake picon</string>

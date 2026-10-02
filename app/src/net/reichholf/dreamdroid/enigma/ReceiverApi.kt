@@ -159,6 +159,9 @@ interface ReceiverApi {
     /** Replaces the timer [old], found by its service, begin and end, with [new]. */
     suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult>
 
+    /** Switches [timer], found by its service, begin and end, off when [disabled], else on. */
+    suspend fun setTimerDisabled(timer: Timer, disabled: Boolean): EnigmaResponse<SimpleResult>
+
     /** Deletes [timer], found by its service, begin and end. */
     suspend fun deleteTimer(timer: Timer): EnigmaResponse<SimpleResult>
 

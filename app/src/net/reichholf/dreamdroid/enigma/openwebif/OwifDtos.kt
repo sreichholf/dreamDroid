@@ -121,7 +121,12 @@ internal data class OwifSignal(
  * models/mediaplayer.py). [result] is null when the key is missing, which no command does.
  */
 @Serializable
-internal data class OwifResult(val result: Boolean? = null, val message: String = "")
+internal data class OwifResult(
+    val result: Boolean? = null,
+    val message: String = "",
+    /** `timertogglestatus` only: the timer's state after the toggle (models/timers.py:552-556). */
+    val disabled: String? = null
+)
 
 /** `getTimers` (models/timers.py:78-253). `logentries` is a list of lists and is not read. */
 @Serializable
@@ -186,3 +191,26 @@ internal data class OwifLocations(val locations: List<String> = emptyList())
 /** `getMovieInfo` without a recording (models/movies.py:753-773). */
 @Serializable
 internal data class OwifTags(val tags: List<String> = emptyList())
+
+/** `getVolumeStatus` (models/volume.py:15-22). */
+@Serializable
+internal data class OwifVolume(
+    val current: String = "",
+    @SerialName("ismute") val muted: Boolean? = null
+)
+
+/** `setPowerState` and `getStandbyState` (models/control.py:207-243). */
+@Serializable
+internal data class OwifPowerState(@SerialName("instandby") val inStandby: Boolean? = null)
+
+/**
+ * `getSleepTimer` and `setSleepTimer` (models/timers.py:860-1111). [minutes] is a number on two
+ * of the three image paths and a string on the power timer one (`:922`).
+ */
+@Serializable
+internal data class OwifSleepTimer(
+    val enabled: Boolean? = null,
+    val minutes: String? = null,
+    val action: String? = null,
+    val message: String? = null
+)

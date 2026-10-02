@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.enigma.WebIfCapabilities
@@ -14,6 +15,7 @@ import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.loadOwifFixture
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
+import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.SocketPolicy
 import org.junit.jupiter.api.AfterEach
@@ -115,6 +117,21 @@ class ProfileCheckRepositoryTest {
         assertEquals(R.string.connection_error, result.errorTextId)
         assertNotNull(result.failure)
         assertNull(profiles.deviceInfo(profile))
+        assertNull(profiles.flavor(profile))
+    }
+
+    @Test
+    fun aFirstCheckRejectedWith403IsTheIpRejection() = runBlocking {
+        receiver.respond(
+            DEVICE_INFO,
+            MockResponse().setResponseCode(403).setBody(loadOwifFixture("error403.html"))
+        )
+        val profile = profiles.requireCurrent()
+
+        val result = checks.check(profile)
+
+        assertEquals(EnigmaFailure.IpRejected, result.failure)
+        assertEquals(UiText.Resource(R.string.ip_rejected_error), result.errorText)
         assertNull(profiles.flavor(profile))
     }
 

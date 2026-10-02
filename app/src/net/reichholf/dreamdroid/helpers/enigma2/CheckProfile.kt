@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.helpers.enigma2
 
+import java.net.HttpURLConnection
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -71,7 +72,7 @@ object CheckProfile {
 
         val cached = profiles.deviceInfo(profile)
         val deviceInfo = cached ?: api.deviceInfo().let { fetched ->
-            fetched.error?.let { error -> return connectionError(error.failure) }
+            fetched.error?.let { error -> return connectionError(error.failure.ipRejected()) }
             fetched.value
         }
         if (deviceInfo == null || deviceInfo.isEmpty()) {
@@ -116,6 +117,19 @@ object CheckProfile {
         errorText = failure.userMessageText().takeUnless { it is UiText.Raw && it.text.isBlank() },
         failure = failure
     )
+
+    /**
+     * A 403 on the device info is OpenWebif refusing the address (plugin/httpserver.py:386-388
+     * at e46534f), also before the flavor is known and the Dreambox client asks. The Dreambox
+     * web interface sends no 403 of its own: it answers 401, 404 or 500 (opendreambox
+     * enigma2-plugins webinterface).
+     */
+    private fun EnigmaFailure.ipRejected(): EnigmaFailure =
+        if (this is EnigmaFailure.Http && code == HttpURLConnection.HTTP_FORBIDDEN) {
+            EnigmaFailure.IpRejected
+        } else {
+            this
+        }
 
     fun checkVersion(version: String): Int = checkVersion(version, REQUIRED_VERSION)
 
