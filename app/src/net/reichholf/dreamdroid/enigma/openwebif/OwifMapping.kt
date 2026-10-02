@@ -7,10 +7,15 @@ import net.reichholf.dreamdroid.enigma.DeviceHdd
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.DeviceNic
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.Signal
+import net.reichholf.dreamdroid.enigma.SimpleResult
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.buildEvent
+import net.reichholf.dreamdroid.enigma.buildMovie
+import net.reichholf.dreamdroid.enigma.buildTimer
 import net.reichholf.dreamdroid.enigma.stripCntrl
 import net.reichholf.dreamdroid.helpers.Python
 
@@ -128,6 +133,81 @@ internal fun OwifSignal.toSignal(): Signal? {
         agcRaw = agc.trim().withUnit("%")
     )
     return signal.takeUnless { it.isEmpty() }
+}
+
+/** A command's answer as the Dreambox's simple result; null without a `result`. */
+internal fun OwifResult.toSimpleResult(): SimpleResult? = result?.let { ok ->
+    SimpleResult(state = if (ok) Python.TRUE else Python.FALSE, stateText = message)
+}
+
+/**
+ * Text as sent: `getTimers` escapes nothing (models/timers.py:208-247). A timer without a folder
+ * has `dirname` `"None"` (`:123-126`), the app's empty location. `logentries` is a list, not
+ * text, and stays empty. Duplicates, auto-adjust and VPS are kept for [Timer]'s round trip.
+ */
+internal fun OwifTimers.toTimers(): List<Timer> = timers.map { dto ->
+    buildTimer(
+        reference = dto.reference.trim(),
+        serviceName = dto.serviceName,
+        eit = dto.eit.trim(),
+        name = dto.name.trim(),
+        description = dto.description,
+        descriptionExtended = dto.descriptionExtended,
+        disabled = dto.disabled.trim(),
+        beginRaw = dto.begin.trim(),
+        endRaw = dto.end.trim(),
+        durationRaw = dto.duration.trim(),
+        startPrepare = dto.startPrepare.trim(),
+        justPlay = dto.justPlay.trim(),
+        afterEvent = dto.afterEvent.trim(),
+        location = dto.dirname.trim().takeUnless { it == Python.NONE }.orEmpty(),
+        tags = dto.tags.trim(),
+        logEntries = "",
+        fileName = dto.filename.trim(),
+        backOff = dto.backOff.trim(),
+        nextActivation = dto.nextActivation.trim(),
+        firstTryPrepare = dto.firstTryPrepare.trim(),
+        state = dto.state.trim(),
+        repeated = dto.repeated.trim(),
+        dontSave = dto.dontSave.trim(),
+        canceled = dto.cancelled.trim(),
+        toggleDisabled = dto.toggleDisabled.trim()
+    ).copy(
+        allowDuplicate = dto.allowDuplicate?.let(::pythonFlag),
+        autoAdjust = dto.autoadjust?.let(::pythonFlag),
+        vpsEnabled = dto.vpsEnabled?.let(::pythonFlag),
+        vpsOverwrite = dto.vpsOverwrite?.let(::pythonFlag),
+        vpsTime = dto.vpsTime?.trim()?.takeUnless { it.isEmpty() || it == "-1" }
+    )
+}
+
+/**
+ * A Python bool or 0/1 as `timerchange` reads it back (`== "1"`), or null for anything else,
+ * such as `autoadjust` -1 when the image has no such setting (models/timers.py:117-121).
+ */
+private fun pythonFlag(value: String): String? = when (value.trim().lowercase()) {
+    "1", "true" -> "1"
+    "0", "false" -> "0"
+    else -> null
+}
+
+/**
+ * Text as sent. The `\xc2\x86` the box strips from names is a Python 2 byte string, so on
+ * Python 3 the DVB emphasis marks stay (models/movies.py:245-246); they are dropped here.
+ */
+internal fun OwifMovies.toMovies(): List<Movie> = movies.map { dto ->
+    buildMovie(
+        reference = dto.reference,
+        title = dto.title.replace(BAD_CHARS, ""),
+        description = dto.description,
+        descriptionExtended = dto.descriptionExtended,
+        serviceName = dto.serviceName.replace(BAD_CHARS, ""),
+        timeRaw = dto.recordingTime,
+        length = dto.length,
+        tags = dto.tags,
+        fileName = dto.filename,
+        fileSizeRaw = dto.filesize
+    )
 }
 
 /**

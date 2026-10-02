@@ -1,0 +1,4 @@
+{
+ "result": false,
+ "message": "The parameter 'name' can't be empty"
+}

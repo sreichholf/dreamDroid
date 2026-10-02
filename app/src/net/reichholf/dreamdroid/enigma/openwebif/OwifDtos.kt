@@ -114,3 +114,75 @@ internal data class OwifSignal(
     val agc: String = "",
     val ber: String = ""
 )
+
+/**
+ * The answer of a command: zap, remote control, message, timers, movie delete
+ * (models/control.py, models/timers.py, models/movies.py, models/message.py,
+ * models/mediaplayer.py). [result] is null when the key is missing, which no command does.
+ */
+@Serializable
+internal data class OwifResult(val result: Boolean? = null, val message: String = "")
+
+/** `getTimers` (models/timers.py:78-253). `logentries` is a list of lists and is not read. */
+@Serializable
+internal data class OwifTimers(val timers: List<OwifTimer> = emptyList())
+
+/** Numbers and Python bools arrive as JSON literals; the lenient parser reads them as text. */
+@Serializable
+internal data class OwifTimer(
+    @SerialName("serviceref") val reference: String = "",
+    @SerialName("servicename") val serviceName: String = "",
+    val eit: String = "",
+    val name: String = "",
+    val description: String = "",
+    @SerialName("descriptionextended") val descriptionExtended: String = "",
+    val disabled: String = "",
+    val begin: String = "",
+    val end: String = "",
+    val duration: String = "",
+    @SerialName("startprepare") val startPrepare: String = "",
+    @SerialName("justplay") val justPlay: String = "",
+    @SerialName("afterevent") val afterEvent: String = "",
+    val dirname: String = "",
+    val tags: String = "",
+    @SerialName("backoff") val backOff: String = "",
+    @SerialName("firsttryprepare") val firstTryPrepare: String = "",
+    val state: String = "",
+    val repeated: String = "",
+    @SerialName("dontsave") val dontSave: String = "",
+    val cancelled: String = "",
+    @SerialName("toggledisabled") val toggleDisabled: String = "",
+    val filename: String = "",
+    @SerialName("nextactivation") val nextActivation: String = "",
+    @SerialName("allow_duplicate") val allowDuplicate: String? = null,
+    val autoadjust: String? = null,
+    @SerialName("vpsplugin_enabled") val vpsEnabled: String? = null,
+    @SerialName("vpsplugin_overwrite") val vpsOverwrite: String? = null,
+    @SerialName("vpsplugin_time") val vpsTime: String? = null
+)
+
+/** `getMovieList` (models/movies.py:107-321). */
+@Serializable
+internal data class OwifMovies(val movies: List<OwifMovie> = emptyList())
+
+@Serializable
+internal data class OwifMovie(
+    @SerialName("serviceref") val reference: String = "",
+    @SerialName("eventname") val title: String = "",
+    val description: String = "",
+    val descriptionExtended: String = "",
+    @SerialName("servicename") val serviceName: String = "",
+    @SerialName("recordingtime") val recordingTime: String = "",
+    val length: String = "",
+    val tags: String = "",
+    val filename: String = "",
+    val filesize: String = ""
+)
+
+/** `getLocations` (models/locations.py:15-20). */
+@Serializable
+internal data class OwifLocations(val locations: List<String> = emptyList())
+
+/** `getMovieInfo` without a recording (models/movies.py:753-773). */
+@Serializable
+internal data class OwifTags(val tags: List<String> = emptyList())

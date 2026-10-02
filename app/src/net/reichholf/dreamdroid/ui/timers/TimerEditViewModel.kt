@@ -72,6 +72,11 @@ private fun SavedStateHandle.timerEditRoute(): TimerEdit {
         repeated = text("repeated"),
         dontSave = text("dontSave"),
         canceled = text("canceled"),
-        toggleDisabled = text("toggleDisabled")
+        toggleDisabled = text("toggleDisabled"),
+        allowDuplicate = get<String>("allowDuplicate"),
+        autoAdjust = get<String>("autoAdjust"),
+        vpsEnabled = get<String>("vpsEnabled"),
+        vpsOverwrite = get<String>("vpsOverwrite"),
+        vpsTime = get<String>("vpsTime")
     )
 }

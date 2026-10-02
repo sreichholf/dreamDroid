@@ -1,0 +1,43 @@
+{
+ "movies": [
+  {
+   "filename": "/media/hdd/movie/Filme \u00e4/20231114 2315 - Das Erste HD - Tatort.ts",
+   "filename_stripped": "20231114 2315 - Das Erste HD - Tatort.ts",
+   "serviceref": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/Filme \u00e4/20231114 2315 - Das Erste HD - Tatort.ts",
+   "length": "90:00",
+   "lastseen": 0,
+   "filesize_readable": "3.00 GB",
+   "recordingtime": 1700000120,
+   "begintime": "Tue 14.11.2023 23:15",
+   "eventname": "\u0086Tatort\u0087",
+   "servicename": "Das Erste HD",
+   "tags": "Krimi Serie",
+   "fullname": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/Filme \u00e4/20231114 2315 - Das Erste HD - Tatort.ts",
+   "descriptionExtended": "Kommissar & Co",
+   "description": "Krimi",
+   "filesize": 3221225472
+  },
+  {
+   "filename": "/media/hdd/movie/Filme \u00e4/20231113 2015 - ZDF HD - Der Alte.ts",
+   "filename_stripped": "20231113 2015 - ZDF HD - Der Alte.ts",
+   "serviceref": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/Filme \u00e4/20231113 2015 - ZDF HD - Der Alte.ts",
+   "length": "?:??",
+   "lastseen": 0,
+   "filesize_readable": "2.00 GB",
+   "recordingtime": 1699913600,
+   "begintime": "Tue 14.11.2023 23:15",
+   "eventname": "Der Alte",
+   "servicename": "ZDF \u0086HD\u0087",
+   "tags": "Krimi",
+   "fullname": "1:0:0:0:0:0:0:0:0:0:/media/hdd/movie/Filme \u00e4/20231113 2015 - ZDF HD - Der Alte.ts",
+   "descriptionExtended": "Kommissar & Co",
+   "description": "Krimi",
+   "filesize": 2147483648
+  }
+ ],
+ "bookmarks": [
+  "Serien"
+ ],
+ "directory": "/media/hdd/movie/Filme \u00e4/",
+ "recursive": false
+}

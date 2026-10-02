@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Credentials
+import okhttp3.Headers
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -31,7 +32,9 @@ data class EnigmaHttpError(val failure: EnigmaFailure) {
 }
 
 sealed class EnigmaHttpResult {
-    data class Success(val bytes: ByteArray) : EnigmaHttpResult() {
+    /** The body, empty for a download, and the answer's [headers]. */
+    data class Success(val bytes: ByteArray, val headers: Headers = Headers.headersOf()) :
+        EnigmaHttpResult() {
         val text: String
             get() = String(bytes)
     }
@@ -198,14 +201,14 @@ class EnigmaHttp(
                 destination.delete()
                 return cancelledResult()
             }
-            return EnigmaHttpResult.Success(ByteArray(0))
+            return EnigmaHttpResult.Success(ByteArray(0), response.headers)
         }
         val body = response.body.bytes()
         if (epoch != fetchEpoch.get()) {
             return cancelledResult()
         }
         xmlDumpDir?.let { dumpToFile(it.value, urlString, body) }
-        return EnigmaHttpResult.Success(body)
+        return EnigmaHttpResult.Success(body, response.headers)
     }
 
     private fun createSession() {
