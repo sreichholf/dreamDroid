@@ -11,6 +11,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.Metadata
@@ -74,6 +75,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {}
                 )
             }
@@ -90,6 +92,36 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithContentDescription("Subtitles").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Now").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Next").assertIsDisplayed()
+    }
+
+    @Test
+    fun sleepTimerButtonShowsMinutesLeftAndReportsClicks() {
+        val state = VideoOverlayUiState().apply { title = "Das Erste HD" }
+        var clicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayScreen(
+                    state = state,
+                    onPlay = {},
+                    onRewind = {},
+                    onForward = {},
+                    onInfo = {},
+                    onList = {},
+                    onAudio = {},
+                    onSubtitle = {},
+                    onSleepTimer = { clicks++ },
+                    onSeekChange = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("Sleep Timer").performClick()
+        composeRule.runOnIdle { assertEquals(1, clicks) }
+
+        state.sleepTimer = SleepTimer.Running(29)
+        composeRule.onNodeWithContentDescription("Sleep Timer: 29 min. left")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("29").assertIsDisplayed()
     }
 
     @Test
@@ -128,6 +160,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {}
                 )
             }
@@ -194,6 +227,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {}
                 )
             }
@@ -235,6 +269,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {},
                     uncappedDetailSheets = true
                 )
@@ -275,6 +310,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {}
                 )
             }
@@ -312,6 +348,7 @@ class VideoOverlayScreenTest {
                     onList = {},
                     onAudio = {},
                     onSubtitle = {},
+                    onSleepTimer = {},
                     onSeekChange = {},
                     uncappedDetailSheets = true
                 )

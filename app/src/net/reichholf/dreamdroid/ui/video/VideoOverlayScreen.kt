@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -73,6 +75,7 @@ class VideoOverlayUiState {
     var showSubtitleButton by mutableStateOf(false)
     var showListButton by mutableStateOf(false)
     var showInfoButton by mutableStateOf(false)
+    var sleepTimer by mutableStateOf<SleepTimer>(SleepTimer.Off)
 
     /** Zap rows for the Compose channel list (phone column and TV cards). */
     var zapServices by mutableStateOf<List<ServiceNowNext>>(emptyList())
@@ -118,6 +121,7 @@ fun VideoOverlayScreen(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
+    onSleepTimer: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
     firstControlFocusRequester: FocusRequester? = null,
@@ -238,7 +242,7 @@ fun VideoOverlayScreen(
             state.showInfoButton -> "info"
             state.showListButton -> "list"
             state.showSubtitleButton -> "subtitle"
-            else -> null
+            else -> "sleep"
         }
         Row(
             modifier = Modifier
@@ -312,6 +316,15 @@ fun VideoOverlayScreen(
                     )
                 }
             }
+            SleepTimerButton(
+                timer = state.sleepTimer,
+                onClick = onSleepTimer,
+                modifier = if (firstActionKey == "sleep") {
+                    Modifier.focusRequester(firstControlFocusRequester!!)
+                } else {
+                    Modifier
+                }
+            )
         }
     }
 
@@ -384,6 +397,36 @@ private fun RepeatIconButton(
     }
 }
 
+/** Opens the sleep timer choice; a running timer shows its minutes left as a badge. */
+@Composable
+private fun SleepTimerButton(
+    timer: SleepTimer,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val running = timer as? SleepTimer.Running
+    val label = if (running != null) {
+        stringResource(R.string.sleep_timer_left, running.minutesLeft)
+    } else {
+        stringResource(R.string.sleeptimer)
+    }
+    IconButton(onClick = onClick, modifier = modifier) {
+        BadgedBox(
+            badge = {
+                if (running != null) {
+                    Badge { Text(running.minutesLeft.toString()) }
+                }
+            }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_action_sleep_timer),
+                contentDescription = label,
+                tint = MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
 @Composable
 private fun EventRow(start: String, title: String, duration: String, rowDescription: String) {
     val onSurface = MaterialTheme.colorScheme.onSurface
@@ -425,6 +468,7 @@ fun ComposeView.bindVideoOverlayScreen(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
+    onSleepTimer: () -> Unit,
     onSeekChange: (Int) -> Unit,
     uncappedDetailSheets: Boolean = false
 ) {
@@ -444,6 +488,7 @@ fun ComposeView.bindVideoOverlayScreen(
                 onList = onList,
                 onAudio = onAudio,
                 onSubtitle = onSubtitle,
+                onSleepTimer = onSleepTimer,
                 onSeekChange = onSeekChange,
                 firstControlFocusRequester = firstControlFocus,
                 uncappedDetailSheets = uncappedDetailSheets,
