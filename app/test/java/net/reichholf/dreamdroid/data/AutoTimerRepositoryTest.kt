@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.testutil.TestReceiver
+import net.reichholf.dreamdroid.testutil.loadOwifFixture
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -356,6 +357,53 @@ class AutoTimerRepositoryTest {
         assertEquals(AutoTimerWriteResult.Done(UiText.Raw(RUN_SUMMARY)), run.await())
     }
 
+    @Test
+    fun aRunOnApi17IsStartedAndCountedAgainOnceTheBoxAnswers() = runBlocking<Unit> {
+        receiver.respond(EXTERNALS, EXTERNALS_17)
+        receiver.respond(PARSE, TestReceiver.simpleResult(true, RUN_SUMMARY))
+        val hold = receiver.hold(PARSE)
+
+        val result = repository.runNow()
+        val started = repository.revision.value
+
+        assertEquals(
+            AutoTimerWriteResult.Done(UiText.Resource(R.string.autotimer_run_started)),
+            result
+        )
+        assertTrue(hold.arrived.await(5, TimeUnit.SECONDS))
+        hold.release()
+        withTimeout(TIMEOUT) { repository.revision.first { it > started } }
+    }
+
+    @Test
+    fun aRunWithoutThePluginSendsNothing() = runBlocking<Unit> {
+        receiver.respond(EXTERNALS, externals("bouqueteditor"))
+
+        val result = repository.runNow()
+
+        assertEquals(
+            AutoTimerWriteResult.Failed(UiText.Resource(R.string.autotimer_not_installed)),
+            result
+        )
+        assertEquals(emptyList<Any>(), receiver.requestsTo(PARSE))
+    }
+
+    @Test
+    fun aSaveCarriesTheIdTheBoxGaveIt() = runBlocking<Unit> {
+        receiver.respond(EDIT, loadOwifFixture("autotimer/edit_17.xml"))
+        val edited = AutoTimerSettings.NEW.copy(match = "Tatort")
+
+        val result = repository.save(AutoTimerWrite.Create(AutoTimerSettings.NEW, edited))
+
+        assertEquals(
+            AutoTimerWriteResult.Done(
+                UiText.Raw("AutoTimer was added successfully"),
+                id = AutoTimerId(3)
+            ),
+            result
+        )
+    }
+
     private suspend fun loaded(): AutoTimer {
         val ready = repository.list() as AutoTimerLoad.Ready
         return (ready.entries.single() as AutoTimerEntry.Readable).autoTimer
@@ -375,6 +423,11 @@ class AutoTimerRepositoryTest {
         const val REMOVE = "/autotimer/remove"
         const val TEST = "/autotimer/test"
         const val PARSE = "/autotimer/parse"
+
+        /** oe-alliance's AutoTimer registers its api_version 1.7 (`plugin.py:127` there). */
+        const val EXTERNALS_17 = "<e2webifexternals><e2webifexternal>" +
+            "<e2path>autotimer</e2path><e2externalversion>1.7</e2externalversion>" +
+            "</e2webifexternal></e2webifexternals>"
         const val RUN_SUMMARY = "Found a total of 4 matching Events.\n1 Timer were added and\n" +
             "0 modified,\n0 conflicts encountered,\n0 similars added."
         const val RUN_REPLY = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?><e2simplexmlresult>" +

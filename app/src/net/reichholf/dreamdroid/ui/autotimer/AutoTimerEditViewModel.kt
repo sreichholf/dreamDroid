@@ -534,7 +534,7 @@ class AutoTimerEditViewModel @Inject constructor(
         loadJob = viewModelScope.launch {
             when (val result = autoTimers.save(write)) {
                 is AutoTimerWriteResult.Done -> {
-                    val saved = autoTimers.locate(edited, loaded?.id)
+                    val saved = autoTimers.locate(edited, result.id ?: loaded?.id)
                     _uiState.update {
                         if (saved != null) {
                             it.copy(

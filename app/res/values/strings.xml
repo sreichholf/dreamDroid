@@ -470,6 +470,7 @@
     <string name="autotimer_search_partial">Title contains</string>
     <string name="autotimer_search_exact">Exact title</string>
     <string name="autotimer_search_description">Description contains</string>
+    <string name="autotimer_search_start">Title starts with</string>
     <string name="autotimer_case_sensitive">Case-sensitive</string>
     <string name="autotimer_targets">Channels</string>
     <string name="autotimer_add_channels">Add channels</string>
@@ -491,6 +492,7 @@
     <string name="autotimer_extra_vps">VPS</string>
     <string name="autotimer_extra_series">SeriesPlugin</string>
     <string name="autotimer_extra_alternatives">alternatives</string>
+    <string name="autotimer_extra_always_zap">zap before recording</string>
     <string name="autotimer_filters">Filters</string>
     <string name="autotimer_filter_text">Text</string>
     <string name="autotimer_filter_kind">Where</string>
@@ -529,4 +531,5 @@
     <string name="autotimer_suggested_window">Only between %1$s and %2$s</string>
     <string name="autotimer_run">Run now</string>
     <string name="autotimer_run_confirm">Search the EPG for all enabled AutoTimers now? The receiver adds timers for new matches. This can take a few minutes.</string>
+    <string name="autotimer_run_started">The receiver is searching now. New timers show up in the timer list once it is done.</string>
 </resources>

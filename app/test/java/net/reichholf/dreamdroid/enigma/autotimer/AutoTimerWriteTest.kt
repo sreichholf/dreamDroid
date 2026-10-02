@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.enigma.autotimer
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
-import net.reichholf.dreamdroid.enigma.autoTimerEditParams
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse

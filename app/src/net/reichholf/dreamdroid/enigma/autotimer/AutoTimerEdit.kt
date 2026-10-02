@@ -1,21 +1,19 @@
-package net.reichholf.dreamdroid.enigma
+package net.reichholf.dreamdroid.enigma.autotimer
 
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
-import net.reichholf.dreamdroid.enigma.autotimer.DuplicateCheck
-import net.reichholf.dreamdroid.enigma.autotimer.FieldGroup
-import net.reichholf.dreamdroid.enigma.autotimer.Filters
-import net.reichholf.dreamdroid.enigma.autotimer.RecordMode
-import net.reichholf.dreamdroid.enigma.autotimer.Target
-import net.reichholf.dreamdroid.enigma.autotimer.groups
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /**
- * The `/autotimer/edit` parameters of [write]. `match` and `name` always go along: the
- * plugin decodes the stored values again when they are missing (`AutoTimerResource.py`).
+ * The `/autotimer/edit` parameters of [write], the same for every api_version. `match` and
+ * `name` always go along: the plugin decodes the stored values again when they are missing
+ * (`AutoTimerResource.py`).
+ *
+ * api_version 1.7 (oe-alliance) resets `always_zap` to 0 when the request lacks it
+ * (`AutoTimerResource.py:492-495` there); every other field it keeps, as 1.6 does. So
+ * `always_zap=1` goes along while the AutoTimer zaps and records and the edit keeps it
+ * recording. A list without `always_zap`, which 1.6 never writes, sends nothing more. A new
+ * AutoTimer starts without it, whatever the box's defaults say.
  */
 internal fun autoTimerEditParams(write: AutoTimerWrite): List<NameValuePair> {
     val edited = when (write) {
@@ -29,6 +27,11 @@ internal fun autoTimerEditParams(write: AutoTimerWrite): List<NameValuePair> {
         add(NameValuePair("match", escape(edited.match)))
         add(NameValuePair("name", escape(edited.name)))
         write.groups.forEach { addAll(it.params(edited)) }
+        if (write is AutoTimerWrite.Change && write.loaded.extras.alwaysZap &&
+            edited.recordMode == RecordMode.Record
+        ) {
+            add(NameValuePair("always_zap", "1"))
+        }
     }
 }
 

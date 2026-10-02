@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.enigma
 import java.io.File
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -114,8 +115,11 @@ interface ReceiverApi {
         enabled: Boolean
     ): EnigmaResponse<SleepTimer>
 
-    /** Whether the receiver has [plugin] installed. */
-    suspend fun hasPlugin(plugin: ReceiverPlugin): EnigmaResponse<Boolean>
+    /** Whether the receiver has the AutoTimer plugin, and which API it speaks. */
+    suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin>
+
+    /** Whether the receiver has the bouquet editor plugin. */
+    suspend fun hasBouquetEditor(): EnigmaResponse<Boolean>
 
     /** The AutoTimer plugin's list. A config the box cannot load is a box rejection. */
     suspend fun autoTimers(): EnigmaResponse<AutoTimerList>
@@ -169,6 +173,12 @@ interface ReceiverApi {
     suspend fun cleanupTimers(): EnigmaResponse<SimpleResult>
 
     // Bouquet editor plugin. The box applies each edit immediately.
+
+    /**
+     * Members of [containerRef] as the bouquet editor counts them for positions: hidden
+     * services included.
+     */
+    suspend fun bouquetEditorServices(containerRef: String): EnigmaResponse<List<Service>>
 
     /** Satellite folders of [mode] to add services from. */
     suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>>
@@ -237,12 +247,18 @@ interface ReceiverApi {
     /** What the AutoTimer [id] would record now; the plugin skips disabled ones. */
     suspend fun testAutoTimer(id: AutoTimerId): EnigmaResponse<PreviewOutcome>
 
-    /** Writes [write]: changes an AutoTimer or adds one. */
+    /**
+     * Writes [write]: changes an AutoTimer or adds one. The answer's [SimpleResult.id] names
+     * the AutoTimer written, when the plugin says (api_version 1.7).
+     */
     suspend fun saveAutoTimer(write: AutoTimerWrite): EnigmaResponse<SimpleResult>
 
     /** Removes the AutoTimer [id]. The plugin answers True even for an unknown id. */
     suspend fun removeAutoTimer(id: AutoTimerId): EnigmaResponse<SimpleResult>
 
-    /** Runs all enabled AutoTimers now; the reply is the plugin's summary. */
+    /**
+     * Runs all enabled AutoTimers now; the reply is the plugin's summary, which api_version 1.7
+     * sends only once the run is done.
+     */
     suspend fun runAutoTimers(): EnigmaResponse<SimpleResult>
 }

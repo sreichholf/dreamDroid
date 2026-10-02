@@ -35,6 +35,13 @@ internal fun OwifServices.toServices(): List<Service> = services.map { service -
     Service(service.reference, service.name.replace(BAD_CHARS, "").stripCntrl())
 }
 
+/**
+ * Each satellite's folders of services, as the box names them ("19.2E - Services", "… - New"),
+ * not escaped. Provider folders are left out (models/services.py:388-390).
+ */
+internal fun OwifSatellites.toServices(): List<Service> =
+    satellites.map { Service(it.reference, it.name) }
+
 /** Every event, in the box's order; rows without an event are dropped. */
 internal fun OwifEvents.toEvents(): List<Event> = events.mapNotNull { it.toEvent() }
 

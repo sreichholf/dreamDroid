@@ -168,7 +168,8 @@ private fun RawTimer.extras(): Extras = Extras(
     counter = attributes["counter"]?.let { it != "0" } ?: false,
     vps = attributes["vps_enabled"] == "yes",
     seriesPlugin = attributes["series_labeling"] == "yes",
-    overrideAlternatives = attributes["overrideAlternatives"]?.let { it != "0" } ?: false
+    overrideAlternatives = attributes["overrideAlternatives"]?.let { it != "0" } ?: false,
+    alwaysZap = attributes["always_zap"]?.let { it != "0" } ?: false
 )
 
 private fun int(what: String, value: String): Int = value.toIntOrNull() ?: unreadable(what, value)

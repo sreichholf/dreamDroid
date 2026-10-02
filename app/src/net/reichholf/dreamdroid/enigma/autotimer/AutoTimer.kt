@@ -82,13 +82,21 @@ data class Extras(
     val counter: Boolean = false,
     val vps: Boolean = false,
     val seriesPlugin: Boolean = false,
-    val overrideAlternatives: Boolean = false
+    val overrideAlternatives: Boolean = false,
+    /**
+     * oe-alliance's "zap and record" (`always_zap`, api_version 1.7): it records, and zaps to
+     * the channel first. Its list then has no `justplay`, so the record mode reads as Record.
+     */
+    val alwaysZap: Boolean = false
 ) : Serializable
 
 enum class SearchType(val token: String) {
     Partial("partial"),
     Exact("exact"),
-    Description("description")
+    Description("description"),
+
+    /** The title starts with the match; oe-alliance only (`AutoTimer.py:442` there). */
+    Start("start")
 }
 
 /** A channel or a whole bouquet the AutoTimer searches. */

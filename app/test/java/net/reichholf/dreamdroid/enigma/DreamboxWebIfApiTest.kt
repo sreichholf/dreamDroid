@@ -5,9 +5,11 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
@@ -415,15 +417,24 @@ class DreamboxWebIfApiTest {
     }
 
     @Test
-    fun hasPluginLooksForItsPathInWebExternals() = runBlocking {
+    fun pluginsAreLookedUpByTheirPathInWebExternals() = runBlocking {
         server.enqueue(MockResponse().setBody(EXTERNALS))
         server.enqueue(MockResponse().setBody(EXTERNALS))
 
-        assertEquals(false, api.hasPlugin(ReceiverPlugin.AutoTimer).value)
-        assertEquals(true, api.hasPlugin(ReceiverPlugin.BouquetEditor).value)
+        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
+        assertEquals(true, api.hasBouquetEditor().value)
 
         assertEquals("/web/external?", takePath())
         assertEquals("/web/external?", takePath())
+    }
+
+    @Test
+    fun theAutoTimerApiIsTheVersionItRegistered() = runBlocking {
+        server.enqueue(MockResponse().setBody(loadWebFixture("bouqueteditor/web_external.xml")))
+        server.enqueue(MockResponse().setBody(EXTERNALS_AUTOTIMER_17))
+
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
     }
 
     @Test
@@ -585,6 +596,11 @@ class DreamboxWebIfApiTest {
             "<e2webifexternal><e2path>autotimereditor</e2path></e2webifexternal>" +
             "<e2webifexternal><e2path>bouqueteditor</e2path></e2webifexternal>" +
             "</e2webifexternals>"
+
+        /** oe-alliance's AutoTimer under the Dreambox web interface. */
+        const val EXTERNALS_AUTOTIMER_17 = "<e2webifexternals><e2webifexternal>" +
+            "<e2path>autotimer</e2path><e2externalversion>1.7</e2externalversion>" +
+            "</e2webifexternal></e2webifexternals>"
 
         /** `/grab` writes to `/tmp/dreamDroid-<unix seconds>`. */
         val GRAB = Regex("/grab\\?format=jpg&filename=%2Ftmp%2FdreamDroid-\\d+")

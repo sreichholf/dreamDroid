@@ -408,6 +408,7 @@
     <string name="autotimer_search_partial">Titel enthält</string>
     <string name="autotimer_search_exact">Genauer Titel</string>
     <string name="autotimer_search_description">Beschreibung enthält</string>
+    <string name="autotimer_search_start">Titel beginnt mit</string>
     <string name="autotimer_case_sensitive">Groß-/Kleinschreibung beachten</string>
     <string name="autotimer_targets">Sender</string>
     <string name="autotimer_add_channels">Sender hinzufügen</string>
@@ -429,6 +430,7 @@
     <string name="autotimer_extra_vps">VPS</string>
     <string name="autotimer_extra_series">SeriesPlugin</string>
     <string name="autotimer_extra_alternatives">Alternativen</string>
+    <string name="autotimer_extra_always_zap">vor der Aufnahme umschalten</string>
     <string name="autotimer_filters">Filter</string>
     <string name="autotimer_filter_text">Text</string>
     <string name="autotimer_filter_kind">Wo</string>
@@ -467,4 +469,5 @@
     <string name="autotimer_suggested_window">Nur zwischen %1$s und %2$s</string>
     <string name="autotimer_run">Jetzt ausführen</string>
     <string name="autotimer_run_confirm">Jetzt den EPG für alle aktiven AutoTimer durchsuchen? Der Receiver legt für neue Treffer Timer an. Das kann einige Minuten dauern.</string>
+    <string name="autotimer_run_started">Der Receiver sucht jetzt. Neue Timer erscheinen in der Timerliste, sobald er fertig ist.</string>
 </resources>

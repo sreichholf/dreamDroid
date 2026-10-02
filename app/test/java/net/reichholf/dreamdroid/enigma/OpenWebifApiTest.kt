@@ -6,6 +6,13 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerApi
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadOwifFixture
@@ -964,6 +971,218 @@ class OpenWebifApiTest {
             EnigmaFailure.IpRejected.userMessageText()
         )
     }
+
+    @Test
+    fun theAutoTimerPluginAndItsApiComeFromAutoTimerGet() = runBlocking {
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_17.xml")))
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_16.xml")))
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody(loadOwifFixture("error404.html"))
+        )
+        forbidden()
+
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
+        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
+        assertEquals(EnigmaFailure.IpRejected, api.autoTimerPlugin().error?.failure)
+
+        repeat(4) { assertRequest("/autotimer/get") }
+    }
+
+    @Test
+    fun theBouquetEditorIsAlwaysThereWithoutAsking() = runBlocking {
+        assertEquals(true, api.hasBouquetEditor().value)
+        assertEquals(0, server.requestCount)
+    }
+
+    @Test
+    fun autoTimerCallsGoToThePluginsXml() = runBlocking {
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/list_17.xml")))
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+
+        val list = api.autoTimers().value!!
+        api.testAutoTimer(AutoTimerId(1))
+        api.removeAutoTimer(AutoTimerId(1))
+        api.runAutoTimers()
+
+        assertEquals(listOf(AutoTimerId(1), AutoTimerId(2)), list.entries.map { it.id })
+        assertRequest("/autotimer")
+        assertRequest("/autotimer/test", "id" to "1")
+        assertRequest("/autotimer/remove", "id" to "1")
+        assertRequest("/autotimer/parse")
+    }
+
+    @Test
+    fun theEnableSwitchAloneGoesToAutoTimerChange() = runBlocking {
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/change_17.xml")))
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/edit_17.xml")))
+        val tatort = autoTimer17(1)
+
+        val switched = api.saveAutoTimer(
+            AutoTimerWrite.Change(tatort, tatort.settings.copy(enabled = false))
+        )
+        api.saveAutoTimer(AutoTimerWrite.Change(tatort, tatort.settings.copy(name = "T")))
+
+        assertEquals("AutoTimer was changed successfully", switched.value?.stateText)
+        assertNull(switched.error)
+        assertRequest("/autotimer/change", "id" to "1", "enabled" to "0")
+        assertRequest(
+            "/autotimer/edit",
+            "id" to "1",
+            "match" to "Tatort",
+            "name" to "T",
+            "always_zap" to "1"
+        )
+    }
+
+    @Test
+    fun withoutAutoTimerChangeTheSwitchGoesToEdit() = runBlocking {
+        server.enqueue(
+            MockResponse().setResponseCode(404).setBody(loadOwifFixture("error404.html"))
+        )
+        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/edit_17.xml")))
+        val tatort = autoTimer17(1)
+
+        val switched = api.saveAutoTimer(
+            AutoTimerWrite.Change(tatort, tatort.settings.copy(enabled = false))
+        )
+
+        assertEquals("3", switched.value?.id)
+        assertRequest("/autotimer/change", "id" to "1", "enabled" to "0")
+        assertRequest(
+            "/autotimer/edit",
+            "id" to "1",
+            "match" to "Tatort",
+            "name" to "Tatort",
+            "enabled" to "0",
+            "always_zap" to "1"
+        )
+    }
+
+    @Test
+    fun theBouquetEditorListsHiddenServices() = runBlocking {
+        answer("getservices_hidden.json")
+
+        val services = api.bouquetEditorServices(FAVOURITES).value!!
+
+        assertRequest("/api/getservices", "sRef" to FAVOURITES, "hidden" to "1")
+        assertEquals(
+            listOf(DAS_ERSTE, "1:512:19:2B70:3F3:1:C00000:0:0:0:", ZDF),
+            services.map { it.reference }
+        )
+    }
+
+    @Test
+    fun satellitesComeFromGetSatellitesByServiceType() = runBlocking {
+        answer("getsatellites.json")
+        answer("getsatellites.json")
+
+        val tv = api.bouquetEditorSatellites(BouquetMode.Tv).value!!
+        api.bouquetEditorSatellites(BouquetMode.Radio)
+
+        assertRequest("/api/getsatellites", "stype" to "tv")
+        assertRequest("/api/getsatellites", "stype" to "radio")
+        assertEquals(
+            listOf(
+                "Astra 1KR/1L/1M/1N (19.2E) - Services",
+                "Astra 1KR/1L/1M/1N (19.2E) - New"
+            ),
+            tv.map { it.name }
+        )
+        assertTrue(tv.first().reference.startsWith("1:7:1:0:0:0:C00000:0:0:0:(satellitePosition"))
+        assertTrue(
+            tv.first().reference.endsWith("ORDER BY name:Astra 1KR/1L/1M/1N (19.2E) - Services")
+        )
+    }
+
+    @Test
+    fun bouquetEditsSendTheDreamboxParametersToTheApi() = runBlocking {
+        repeat(9) { answer("bouqueteditor_addbouquet.json") }
+
+        api.addBouquet(BouquetMode.Radio, "News")
+        api.removeBouquet(BouquetMode.Tv, FAVOURITES)
+        api.moveBouquet(BouquetMode.Tv, FAVOURITES, 2)
+        api.renameBouquet(BouquetMode.Tv, FAVOURITES, "Favs")
+        api.addServiceToBouquet(FAVOURITES, ZDF)
+        api.removeBouquetService(FAVOURITES, ZDF)
+        api.moveBouquetService(BouquetMode.Tv, FAVOURITES, ZDF, 0)
+        api.renameBouquetService(FAVOURITES, ZDF, DAS_ERSTE, "Zwei")
+        api.addBouquetMarker(FAVOURITES, "Sport", "")
+
+        val bq = "/bouqueteditor/api"
+        assertRequest("$bq/addbouquet", "name" to "News", "mode" to "1")
+        assertRequest("$bq/removebouquet", "sBouquetRef" to FAVOURITES, "mode" to "0")
+        assertRequest(
+            "$bq/movebouquet",
+            "sBouquetRef" to FAVOURITES,
+            "mode" to "0",
+            "position" to "2"
+        )
+        assertRequest("$bq/renameservice", "sRef" to FAVOURITES, "mode" to "0", "newName" to "Favs")
+        assertRequest(
+            "$bq/addservicetobouquet",
+            "sBouquetRef" to FAVOURITES,
+            "sRef" to ZDF,
+            "sRefBefore" to ""
+        )
+        assertRequest("$bq/removeservice", "sBouquetRef" to FAVOURITES, "sRef" to ZDF)
+        assertRequest(
+            "$bq/moveservice",
+            "sBouquetRef" to FAVOURITES,
+            "sRef" to ZDF,
+            "position" to "0",
+            "mode" to "0"
+        )
+        assertRequest(
+            "$bq/renameservice",
+            "sBouquetRef" to FAVOURITES,
+            "sRef" to ZDF,
+            "sRefBefore" to DAS_ERSTE,
+            "newName" to "Zwei"
+        )
+        assertRequest(
+            "$bq/addmarkertobouquet",
+            "sBouquetRef" to FAVOURITES,
+            "Name" to "Sport",
+            "sRefBefore" to ""
+        )
+    }
+
+    @Test
+    fun aBouquetEditAnswersWithItsResultPair() = runBlocking {
+        answer("bouqueteditor_addbouquet.json")
+        answer("bouqueteditor_addservice_duplicate.json")
+        answer("bouqueteditor_backup.json")
+        server.enqueue(MockResponse().setBody(loadOwifFixture("error404.html")))
+
+        val added = api.addBouquet(BouquetMode.Tv, "News & Sport")
+        val duplicate = api.addServiceToBouquet(FAVOURITES, SKY)
+        val backup = api.backupBouquets("dreamdroid_1700000000")
+        val html = api.removeBouquet(BouquetMode.Tv, FAVOURITES)
+
+        assertEquals(SimpleResult("True", "Bouquet News & Sport (TV) created."), added.value)
+        assertNull(added.error)
+        val refusal = "Service Sky <HD> & Co already exists in bouquet Favourites (TV)."
+        assertEquals(SimpleResult("False", refusal), duplicate.value)
+        assertEquals(EnigmaFailure.BoxRejected(refusal), duplicate.error?.failure)
+        assertEquals("dreamdroid_1700000000.tar", backup.value?.stateText)
+        assertNull(html.value)
+        assertEquals(EnigmaFailure.Parse, html.error?.failure)
+        assertRequest("/bouqueteditor/api/addbouquet", "name" to "News & Sport", "mode" to "0")
+        assertRequest(
+            "/bouqueteditor/api/addservicetobouquet",
+            "sBouquetRef" to FAVOURITES,
+            "sRef" to SKY,
+            "sRefBefore" to ""
+        )
+        assertRequest("/bouqueteditor/api/backup", "Filename" to "dreamdroid_1700000000")
+    }
+
+    private fun autoTimer17(id: Int): AutoTimer =
+        AutoTimerListParser.parse(loadOwifFixture("autotimer/list_17.xml"))!!.entries
+            .filterIsInstance<AutoTimerEntry.Readable>()
+            .single { it.id == AutoTimerId(id) }
+            .autoTimer
 
     private fun forbidden() {
         server.enqueue(

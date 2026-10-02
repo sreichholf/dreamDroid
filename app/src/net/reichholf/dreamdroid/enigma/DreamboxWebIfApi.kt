@@ -4,10 +4,11 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPreviewParser
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPluginApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
@@ -25,6 +26,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
  */
 class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: WebIfCapabilities) :
     ReceiverApi {
+    private val autoTimer = AutoTimerPluginApi(http::fetch)
+
     override suspend fun services(containerRef: String): EnigmaResponse<List<Service>> =
         fetchServices(NameValuePair("sRef", containerRef))
 
@@ -271,34 +274,28 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
             }
         }
 
-    /** Whether `/web/external` lists the plugin's path (`autotimer`, `bouqueteditor`). */
-    override suspend fun hasPlugin(plugin: ReceiverPlugin): EnigmaResponse<Boolean> {
-        val path = when (plugin) {
-            // The plugin's API; `autotimereditor` is its web page.
-            ReceiverPlugin.AutoTimer -> "autotimer"
-
-            ReceiverPlugin.BouquetEditor -> "bouqueteditor"
-        }
-        return withContext(Dispatchers.IO) {
+    /**
+     * Whether `/web/external` lists `autotimer`, the plugin's API (`autotimereditor` is its web
+     * page), and the `api_version` the plugin registered as its version.
+     */
+    override suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin> =
+        withContext(Dispatchers.IO) {
             http.fetch(URIStore.WEB_EXTERNALS).mapParsed { xml ->
-                StringListParser.parse(xml, "e2path")?.contains(path)
+                WebExternalsParser.parse(xml)?.let { externals ->
+                    externals["autotimer"]?.let { AutoTimerPlugin.Installed(AutoTimerApi.of(it)) }
+                        ?: AutoTimerPlugin.Missing
+                }
             }
         }
-    }
 
-    /**
-     * The AutoTimer plugin's list. A config the box cannot load comes back as a simple result;
-     * its text becomes a [EnigmaFailure.BoxRejected].
-     */
-    override suspend fun autoTimers(): EnigmaResponse<AutoTimerList> = withContext(Dispatchers.IO) {
-        when (val fetched = http.fetch(URIStore.AUTOTIMER_LIST)) {
-            is EnigmaHttpResult.Success -> AutoTimerListParser.parse(fetched.text)
-                ?.let { EnigmaResponse(it) }
-                ?: EnigmaResponse(null, rejection(fetched.text))
-
-            is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
+    /** Whether `/web/external` lists `bouqueteditor`. */
+    override suspend fun hasBouquetEditor(): EnigmaResponse<Boolean> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.WEB_EXTERNALS).mapParsed { xml ->
+            WebExternalsParser.parse(xml)?.containsKey("bouqueteditor")
         }
     }
+
+    override suspend fun autoTimers(): EnigmaResponse<AutoTimerList> = autoTimer.list()
 
     // Mutations below: a rejected command has a value and a BoxRejected error.
     override suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
@@ -383,7 +380,13 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
     override suspend fun cleanupTimers(): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.TIMER_CLEANUP)
 
-    // WebBouquetEditor plugin (/bouqueteditor). `mode` is 0 for TV, 1 for radio.
+    // WebBouquetEditor plugin (/bouqueteditor/web).
+
+    /** The same `/web/getservices` the editor has always listed with. */
+    override suspend fun bouquetEditorServices(
+        containerRef: String
+    ): EnigmaResponse<List<Service>> = services(containerRef)
+
     override suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>> =
         withContext(Dispatchers.IO) {
             http.fetch(URIStore.BOUQUET_EDITOR_SATELLITES, listOf(mode.param()))
@@ -391,142 +394,86 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
         }
 
     override suspend fun addBouquet(mode: BouquetMode, name: String): EnigmaResponse<SimpleResult> =
-        simpleResult(
-            URIStore.BOUQUET_EDITOR_ADD_BOUQUET,
-            listOf(NameValuePair("name", name), mode.param())
-        )
+        bouquetEdit(BouquetEditorCall.addBouquet(mode, name))
 
     override suspend fun removeBouquet(
         mode: BouquetMode,
         bouquetRef: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_REMOVE_BOUQUET,
-        listOf(NameValuePair("sBouquetRef", bouquetRef), mode.param())
-    )
+    ): EnigmaResponse<SimpleResult> = bouquetEdit(BouquetEditorCall.removeBouquet(mode, bouquetRef))
 
     override suspend fun moveBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         position: Int
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_MOVE_BOUQUET,
-        listOf(
-            NameValuePair("sBouquetRef", bouquetRef),
-            mode.param(),
-            NameValuePair("position", position.toString())
-        )
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.moveBouquet(mode, bouquetRef, position))
 
-    /** `renameservice` with the bouquet as `sRef` and no `sBouquetRef`. */
     override suspend fun renameBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         newName: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_RENAME_SERVICE,
-        listOf(NameValuePair("sRef", bouquetRef), mode.param(), NameValuePair("newName", newName))
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.renameBouquet(mode, bouquetRef, newName))
 
-    /** An empty `sRefBefore` appends. */
     override suspend fun addServiceToBouquet(
         bouquetRef: String,
         serviceRef: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_ADD_SERVICE,
-        listOf(
-            NameValuePair("sBouquetRef", bouquetRef),
-            NameValuePair("sRef", serviceRef),
-            NameValuePair("sRefBefore", "")
-        )
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.addService(bouquetRef, serviceRef))
 
     override suspend fun removeBouquetService(
         bouquetRef: String,
         serviceRef: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_REMOVE_SERVICE,
-        listOf(NameValuePair("sBouquetRef", bouquetRef), NameValuePair("sRef", serviceRef))
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.removeService(bouquetRef, serviceRef))
 
     override suspend fun moveBouquetService(
         mode: BouquetMode,
         bouquetRef: String,
         serviceRef: String,
         position: Int
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_MOVE_SERVICE,
-        listOf(
-            NameValuePair("sBouquetRef", bouquetRef),
-            NameValuePair("sRef", serviceRef),
-            NameValuePair("position", position.toString()),
-            mode.param()
-        )
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.moveService(mode, bouquetRef, serviceRef, position))
 
     override suspend fun renameBouquetService(
         bouquetRef: String,
         serviceRef: String,
         beforeRef: String,
         newName: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_RENAME_SERVICE,
-        listOf(
-            NameValuePair("sBouquetRef", bouquetRef),
-            NameValuePair("sRef", serviceRef),
-            NameValuePair("sRefBefore", beforeRef),
-            NameValuePair("newName", newName)
-        )
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.renameService(bouquetRef, serviceRef, beforeRef, newName))
 
     override suspend fun addBouquetMarker(
         bouquetRef: String,
         name: String,
         beforeRef: String
-    ): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.BOUQUET_EDITOR_ADD_MARKER,
-        listOf(
-            NameValuePair("sBouquetRef", bouquetRef),
-            NameValuePair("Name", name),
-            NameValuePair("sRefBefore", beforeRef)
-        )
-    )
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.addMarker(bouquetRef, name, beforeRef))
 
     override suspend fun backupBouquets(fileName: String): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.BOUQUET_EDITOR_BACKUP, listOf(NameValuePair("Filename", fileName)))
+        bouquetEdit(BouquetEditorCall.backup(fileName))
 
-    // AutoTimer plugin (/autotimer).
+    /** The plugin answers with the `/web` simple result. */
+    private suspend fun bouquetEdit(call: BouquetEditorCall): EnigmaResponse<SimpleResult> =
+        simpleResult("/bouqueteditor/web/${call.page}?", call.params)
+
+    // AutoTimer plugin (/autotimer), the same requests on every web interface.
     override suspend fun testAutoTimer(id: AutoTimerId): EnigmaResponse<PreviewOutcome> =
-        withContext(Dispatchers.IO) {
-            http.fetch(URIStore.AUTOTIMER_TEST, listOf(NameValuePair("id", id.value.toString())))
-                .mapParsed { xml -> AutoTimerPreviewParser.parse(xml) }
-        }
+        autoTimer.test(id)
 
-    /** `/autotimer/edit` with the changed field groups; see [autoTimerEditParams]. */
     override suspend fun saveAutoTimer(write: AutoTimerWrite): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.AUTOTIMER_EDIT, autoTimerEditParams(write))
+        autoTimer.edit(write)
 
     override suspend fun removeAutoTimer(id: AutoTimerId): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.AUTOTIMER_REMOVE, listOf(NameValuePair("id", id.value.toString())))
+        autoTimer.remove(id)
 
-    /**
-     * Runs all enabled AutoTimers now; the reply is the plugin's summary. The box writes
-     * `<ignore />` every 50 s while it searches, which the parser skips.
-     */
-    override suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.AUTOTIMER_PARSE)
+    override suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> = autoTimer.run()
 
     private suspend fun simpleResult(
         uri: String,
         params: List<NameValuePair> = emptyList()
     ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
         simpleResultFromFetch(http.fetch(uri, params), SimpleResultParser::parse)
-    }
-
-    private fun rejection(xml: String): EnigmaHttpError {
-        val text = SimpleResultParser.parse(xml)?.stateText
-        return EnigmaHttpError(
-            if (text.isNullOrBlank()) EnigmaFailure.Parse else EnigmaFailure.BoxRejected(text)
-        )
     }
 
     private fun <T> EnigmaHttpResult.mapParsed(parse: (String) -> T?): EnigmaResponse<T> =
@@ -537,14 +484,6 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
 }
 
 private const val SECONDS_PER_MINUTE = 60L
-
-private fun BouquetMode.param() = NameValuePair(
-    "mode",
-    when (this) {
-        BouquetMode.Tv -> "0"
-        BouquetMode.Radio -> "1"
-    }
-)
 
 /** The fields `/web/timerchange` stores for [timer], in the order the app always sent them. */
 private fun timerParams(timer: Timer): List<NameValuePair> = listOf(

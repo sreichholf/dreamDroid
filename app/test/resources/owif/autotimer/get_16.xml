@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<e2settings>
+	<e2setting>
+		<e2settingname>config.plugins.autotimer.autopoll</e2settingname>
+		<e2settingvalue>True</e2settingvalue>
+	</e2setting>
+	<e2setting>
+		<e2settingname>config.plugins.autotimer.interval</e2settingname>
+		<e2settingvalue>3</e2settingvalue>
+	</e2setting>
+	<e2setting>
+		<e2settingname>version</e2settingname>
+		<e2settingvalue>8</e2settingvalue>
+	</e2setting>
+	<e2setting>
+		<e2settingname>api_version</e2settingname>
+		<e2settingvalue>1.6</e2settingvalue>
+	</e2setting>
+	<e2setting>
+		<e2settingname>autotimer_version</e2settingname>
+		<e2settingvalue>4.3.2</e2settingvalue>
+	</e2setting>
+</e2settings>

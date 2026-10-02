@@ -115,6 +115,16 @@ internal data class OwifSignal(
     val ber: String = ""
 )
 
+/** `getSatellites` (models/services.py:370-410). */
+@Serializable
+internal data class OwifSatellites(val satellites: List<OwifSatellite> = emptyList())
+
+@Serializable
+internal data class OwifSatellite(
+    @SerialName("service") val reference: String = "",
+    val name: String = ""
+)
+
 /**
  * The answer of a command: zap, remote control, message, timers, movie delete
  * (models/control.py, models/timers.py, models/movies.py, models/message.py,

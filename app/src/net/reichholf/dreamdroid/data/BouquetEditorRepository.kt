@@ -17,7 +17,6 @@ import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.ReceiverApi
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
-import net.reichholf.dreamdroid.enigma.ReceiverPlugin
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.toBouquetEntry
 
@@ -37,9 +36,10 @@ data class BouquetEditResult(
 }
 
 /**
- * Bouquet editing through the optional WebBouquetEditor plugin (`/bouqueteditor`). Lists
- * come from `/web/getservices`. Edits reach the box one at a time, in call order. The first
- * edit of an editor session ([resetBackup]) per profile writes a backup to the box's `/tmp`.
+ * Bouquet editing through the receiver's bouquet editor plugin (`/bouqueteditor`). Lists
+ * come from [ReceiverApi.bouquetEditorServices]. Edits reach the box one at a time, in call
+ * order. The first edit of an editor session ([resetBackup]) per profile writes a backup to the
+ * box's `/tmp`.
  * Unless the box rejected it, an edit drops the Room rosters it touched
  * ([ServiceRepository.onBouquetsEdited]): one cancelled or cut off after it was sent may
  * still have reached the box.
@@ -61,8 +61,7 @@ class BouquetEditorRepository @Inject constructor(
         profiles.current.map { it?.receiver() }.distinctUntilChanged()
 
     /** Whether the receiver has the plugin. Null value on failure. */
-    suspend fun isAvailable(): EnigmaResponse<Boolean> =
-        clients.current().hasPlugin(ReceiverPlugin.BouquetEditor)
+    suspend fun isAvailable(): EnigmaResponse<Boolean> = clients.current().hasBouquetEditor()
 
     /** The bouquets of the [mode] index, in the box's order. */
     suspend fun bouquets(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
@@ -210,7 +209,7 @@ class BouquetEditorRepository @Inject constructor(
     }
 
     private suspend fun list(ref: String, atRoot: Boolean): EnigmaResponse<List<BouquetEntry>> {
-        val response = clients.current().services(ref)
+        val response = clients.current().bouquetEditorServices(ref)
         return EnigmaResponse(response.value?.map { it.toBouquetEntry(atRoot) }, response.error)
     }
 

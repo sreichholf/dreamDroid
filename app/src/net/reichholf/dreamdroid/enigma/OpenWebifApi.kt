@@ -6,14 +6,19 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.SerializationException
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPluginApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
+import net.reichholf.dreamdroid.enigma.autotimer.FieldGroup
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
+import net.reichholf.dreamdroid.enigma.autotimer.groups
 import net.reichholf.dreamdroid.enigma.openwebif.OwifCurrent
 import net.reichholf.dreamdroid.enigma.openwebif.OwifDeviceInfo
 import net.reichholf.dreamdroid.enigma.openwebif.OwifEvents
@@ -21,6 +26,7 @@ import net.reichholf.dreamdroid.enigma.openwebif.OwifLocations
 import net.reichholf.dreamdroid.enigma.openwebif.OwifMovies
 import net.reichholf.dreamdroid.enigma.openwebif.OwifPowerState
 import net.reichholf.dreamdroid.enigma.openwebif.OwifResult
+import net.reichholf.dreamdroid.enigma.openwebif.OwifSatellites
 import net.reichholf.dreamdroid.enigma.openwebif.OwifServices
 import net.reichholf.dreamdroid.enigma.openwebif.OwifSignal
 import net.reichholf.dreamdroid.enigma.openwebif.OwifSleepTimer
@@ -61,6 +67,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
  * A 403 is [EnigmaFailure.IpRejected].
  */
 class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
+    private val autoTimer = AutoTimerPluginApi(::fetch)
+
     /** Without `hidden=1`, so hidden services are left out (models/services.py:606). */
     override suspend fun services(containerRef: String): EnigmaResponse<List<Service>> =
         get("/api/getservices", OwifServices.serializer(), NameValuePair("sRef", containerRef)) {
@@ -424,9 +432,16 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
         }
     }
 
-    override suspend fun hasPlugin(plugin: ReceiverPlugin): EnigmaResponse<Boolean> = notYet()
+    /** `/autotimer/get`; see [AutoTimerPluginApi.plugin]. */
+    override suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin> = autoTimer.plugin()
 
-    override suspend fun autoTimers(): EnigmaResponse<AutoTimerList> = notYet()
+    /**
+     * OpenWebif always mounts its own bouquet editor (root.py:76, `BQE.py`, `BouquetEditor.py`),
+     * so this asks nothing.
+     */
+    override suspend fun hasBouquetEditor(): EnigmaResponse<Boolean> = EnigmaResponse(true)
+
+    override suspend fun autoTimers(): EnigmaResponse<AutoTimerList> = autoTimer.list()
 
     override suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
         command("/api/zap", listOf(NameValuePair("sRef", reference)))
@@ -539,72 +554,158 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     override suspend fun cleanupTimers(): EnigmaResponse<SimpleResult> =
         command("/api/timercleanup")
 
-    override suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>> =
-        notYet()
+    /**
+     * `getservices` with `hidden=1`: the editor's positions count hidden services
+     * (models/services.py:602-606), and moving or removing must see them.
+     */
+    override suspend fun bouquetEditorServices(
+        containerRef: String
+    ): EnigmaResponse<List<Service>> = get(
+        "/api/getservices",
+        OwifServices.serializer(),
+        NameValuePair("sRef", containerRef),
+        NameValuePair("hidden", "1")
+    ) { it.toServices() }
+
+    /** OpenWebif's bouquet editor has no `satelliteslist`; `getsatellites` (web.py:2203). */
+    override suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>> {
+        val type = when (mode) {
+            BouquetMode.Tv -> "tv"
+            BouquetMode.Radio -> "radio"
+        }
+        return get(
+            "/api/getsatellites",
+            OwifSatellites.serializer(),
+            NameValuePair("stype", type)
+        ) {
+            it.toServices()
+        }
+    }
 
     override suspend fun addBouquet(mode: BouquetMode, name: String): EnigmaResponse<SimpleResult> =
-        notYet()
+        bouquetEdit(BouquetEditorCall.addBouquet(mode, name))
 
     override suspend fun removeBouquet(
         mode: BouquetMode,
         bouquetRef: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> = bouquetEdit(BouquetEditorCall.removeBouquet(mode, bouquetRef))
 
     override suspend fun moveBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         position: Int
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.moveBouquet(mode, bouquetRef, position))
 
     override suspend fun renameBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         newName: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.renameBouquet(mode, bouquetRef, newName))
 
     override suspend fun addServiceToBouquet(
         bouquetRef: String,
         serviceRef: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.addService(bouquetRef, serviceRef))
 
     override suspend fun removeBouquetService(
         bouquetRef: String,
         serviceRef: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.removeService(bouquetRef, serviceRef))
 
     override suspend fun moveBouquetService(
         mode: BouquetMode,
         bouquetRef: String,
         serviceRef: String,
         position: Int
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.moveService(mode, bouquetRef, serviceRef, position))
 
     override suspend fun renameBouquetService(
         bouquetRef: String,
         serviceRef: String,
         beforeRef: String,
         newName: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.renameService(bouquetRef, serviceRef, beforeRef, newName))
 
     override suspend fun addBouquetMarker(
         bouquetRef: String,
         name: String,
         beforeRef: String
-    ): EnigmaResponse<SimpleResult> = notYet()
+    ): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.addMarker(bouquetRef, name, beforeRef))
 
-    override suspend fun backupBouquets(fileName: String): EnigmaResponse<SimpleResult> = notYet()
+    /** `backup` answers with the tar's name, `<fileName>.tar` (BouquetEditor.py:586-624). */
+    override suspend fun backupBouquets(fileName: String): EnigmaResponse<SimpleResult> =
+        bouquetEdit(BouquetEditorCall.backup(fileName))
 
-    override suspend fun testAutoTimer(id: AutoTimerId): EnigmaResponse<PreviewOutcome> = notYet()
+    /**
+     * `/bouqueteditor/api/<page>` answers `{"Result": [ok, text]}` (BQE.py:46-48,419-424), the
+     * text not escaped. A refusal keeps its value and carries a [EnigmaFailure.BoxRejected].
+     */
+    private suspend fun bouquetEdit(call: BouquetEditorCall): EnigmaResponse<SimpleResult> =
+        withContext(Dispatchers.IO) {
+            when (val fetched = fetch("/bouqueteditor/api/${call.page}", call.params)) {
+                is EnigmaHttpResult.Failure -> EnigmaResponse(null, fetched.error)
 
-    override suspend fun saveAutoTimer(write: AutoTimerWrite): EnigmaResponse<SimpleResult> =
-        notYet()
+                is EnigmaHttpResult.Success -> when (val result = bouquetResult(fetched.text)) {
+                    null -> failure(EnigmaFailure.Parse)
 
-    override suspend fun removeAutoTimer(id: AutoTimerId): EnigmaResponse<SimpleResult> = notYet()
+                    else -> if (result.state == Python.FALSE) {
+                        EnigmaResponse(
+                            result,
+                            EnigmaHttpError(EnigmaFailure.BoxRejected(result.stateText.orEmpty()))
+                        )
+                    } else {
+                        EnigmaResponse(result)
+                    }
+                }
+            }
+        }
 
-    override suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> = notYet()
+    private fun bouquetResult(body: String): SimpleResult? {
+        val result = try {
+            (owifJson.parseToJsonElement(body) as? JsonObject)?.get("Result") as? JsonArray
+        } catch (_: SerializationException) {
+            null
+        } catch (_: IllegalArgumentException) {
+            null
+        } ?: return null
+        val ok = (result.getOrNull(0) as? JsonPrimitive)?.booleanOrNull ?: return null
+        val text = (result.getOrNull(1) as? JsonPrimitive)?.contentOrNull.orEmpty()
+        return SimpleResult(state = if (ok) Python.TRUE else Python.FALSE, stateText = text)
+    }
 
-    /** The AutoTimer and bouquet editor plugins come in phase 4. */
-    private fun notYet(): Nothing = throw NotImplementedError("phase 4")
+    // AutoTimer plugin (/autotimer): the Dreambox's requests, but the enable switch goes to
+    // `/autotimer/change`.
+    override suspend fun testAutoTimer(id: AutoTimerId): EnigmaResponse<PreviewOutcome> =
+        autoTimer.test(id)
+
+    /**
+     * A write that only switches the AutoTimer on or off goes to `/autotimer/change`, which
+     * touches nothing else. Where that answers 404 (a plugin without it), it goes to `edit`.
+     */
+    override suspend fun saveAutoTimer(write: AutoTimerWrite): EnigmaResponse<SimpleResult> {
+        if (write is AutoTimerWrite.Change && write.groups == setOf(FieldGroup.Enabled)) {
+            val changed = autoTimer.change(write.loaded.id, write.edited.enabled)
+            val failure = changed.error?.failure
+            if (failure !is EnigmaFailure.Http ||
+                failure.code != HttpURLConnection.HTTP_NOT_FOUND
+            ) {
+                return changed
+            }
+        }
+        return autoTimer.edit(write)
+    }
+
+    override suspend fun removeAutoTimer(id: AutoTimerId): EnigmaResponse<SimpleResult> =
+        autoTimer.remove(id)
+
+    override suspend fun runAutoTimers(): EnigmaResponse<SimpleResult> = autoTimer.run()
 
     private companion object {
         const val SECONDS_PER_MINUTE = 60L
