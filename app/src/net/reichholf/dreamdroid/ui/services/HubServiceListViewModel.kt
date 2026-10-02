@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.LiveStream
@@ -204,7 +203,7 @@ class HubServiceListViewModel @AssistedInject constructor(
         val item = _uiState.value.items.getOrNull(index) ?: return
         menuRow = row
         val actions = ServiceRowAction.entries.filter {
-            it != ServiceRowAction.NextEvent || (DreamDroid.featureNowNext() && row.next != null)
+            it != ServiceRowAction.NextEvent || row.next != null
         }
         _uiState.update { it.copy(menu = RowMenuState(serviceRowKey(item), actions)) }
     }

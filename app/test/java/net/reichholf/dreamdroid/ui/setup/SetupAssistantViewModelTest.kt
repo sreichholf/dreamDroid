@@ -183,7 +183,8 @@ class SetupAssistantViewModelTest {
         profiles,
         ReceiverProfileCheckRepository(
             profiles,
-            receiverApis(profiles, testProfiles.context)
+            receiverApis(profiles, testProfiles.context, testProfiles.capabilities),
+            testProfiles.capabilities
         ),
         ReceiverDiscovery {
             searches++

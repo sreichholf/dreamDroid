@@ -81,6 +81,7 @@ fun PhoneShell(
     modifier: Modifier = Modifier,
     trailingTopBarActions: List<ShellTopBarAction> = emptyList(),
     autoTimerInDrawer: Boolean = false,
+    sleepTimerInDrawer: Boolean = true,
     usesRail: Boolean? = null,
     content: @Composable () -> Unit
 ) {
@@ -123,7 +124,8 @@ fun PhoneShell(
                         state = drawerListState,
                         onItemClick = onDrawerItemClick,
                         boxActionsBlocked = boxActionsBlocked,
-                        autoTimerAvailable = autoTimerInDrawer
+                        autoTimerAvailable = autoTimerInDrawer,
+                        sleepTimerAvailable = sleepTimerInDrawer
                     )
                 }
             }

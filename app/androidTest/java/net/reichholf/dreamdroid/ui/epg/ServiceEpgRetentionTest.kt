@@ -22,6 +22,7 @@ import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -67,7 +68,8 @@ class ServiceEpgRetentionTest {
     private val clients = ReceiverApiFactory(
         InstrumentationRegistry.getInstrumentation().targetContext,
         profiles,
-        EnigmaOkHttp()
+        EnigmaOkHttp(),
+        WebIfCapabilitiesRepository()
     )
     private val sessions = SessionConnectionHolder().apply { onSuccess() }
     private val repository = EpgRepository(

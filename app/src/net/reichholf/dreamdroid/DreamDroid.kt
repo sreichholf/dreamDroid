@@ -298,11 +298,6 @@ class DreamDroid : Application() {
 
         var DATE_LOCALE_WO: Boolean = false
 
-        private var sleepTimerEnabled: Boolean = true
-        private var nowNextEnabled: Boolean = true
-
-        private var postRequestEnabled: Boolean = true
-
         fun getVersionString(): String {
             var buildDate = "<build-no-date>"
             if (BuildConfig.BUILD_TIME > 0) {
@@ -318,32 +313,6 @@ class DreamDroid : Application() {
                 buildDate
             )
         }
-
-        fun disableNowNext() {
-            nowNextEnabled = false
-        }
-
-        fun enableNowNext() {
-            nowNextEnabled = true
-        }
-
-        fun featureNowNext(): Boolean = nowNextEnabled
-
-        fun featurePostRequest(): Boolean = postRequestEnabled
-
-        fun setFeaturePostRequest(enabled: Boolean) {
-            postRequestEnabled = enabled
-        }
-
-        fun disableSleepTimer() {
-            sleepTimerEnabled = false
-        }
-
-        fun enableSleepTimer() {
-            sleepTimerEnabled = true
-        }
-
-        fun featureSleepTimer(): Boolean = sleepTimerEnabled
 
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)

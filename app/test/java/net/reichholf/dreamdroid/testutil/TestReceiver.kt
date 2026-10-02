@@ -70,7 +70,11 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
 
     /** Answers the next request to [path] with [body]; later ones get what [respond] set. */
     fun respondOnce(path: String, body: String) {
-        once.getOrPut(path) { ConcurrentLinkedQueue() }.add(MockResponse().setBody(body))
+        respondOnce(path, MockResponse().setBody(body))
+    }
+
+    fun respondOnce(path: String, response: MockResponse) {
+        once.getOrPut(path) { ConcurrentLinkedQueue() }.add(response)
     }
 
     /**

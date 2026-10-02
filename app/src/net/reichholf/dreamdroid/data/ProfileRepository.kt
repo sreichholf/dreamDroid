@@ -18,6 +18,7 @@ import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
@@ -25,14 +26,18 @@ import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 /**
  * Room profiles and the active profile. [current] is the source of truth.
  * [switches] emits once when the active profile actually changes (settings differ
- * or the caller forces the event). Location lists, tag lists, and device info
- * live here and are cleared on that change.
+ * or the caller forces the event). Location lists, tag lists, and device info with the
+ * receiver's flavor live here and are cleared on that change. The [WebIfCapabilitiesRepository]
+ * entries the check derived from that device info are dropped with it.
  *
  * The constructor must not read [store]: Hilt builds this during `DreamDroid`'s
  * `super.onCreate()`, before the pre-Room profile import runs.
  */
 @Singleton
-class ProfileRepository @Inject constructor(private val store: ProfileStore) {
+class ProfileRepository @Inject constructor(
+    private val store: ProfileStore,
+    private val capabilities: WebIfCapabilitiesRepository
+) {
     private val _current = MutableStateFlow<Profile?>(null)
     val current: StateFlow<Profile?> = _current.asStateFlow()
 
@@ -65,6 +70,9 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
 
     private val deviceInfo = HashMap<Int, DeviceInfo>()
 
+    /** Kept with [deviceInfo]: an entry lives exactly as long as the device info it came from. */
+    private val flavors = HashMap<Int, ReceiverFlavor>()
+
     @Volatile
     private var xmlDump: Boolean = false
 
@@ -87,13 +95,23 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         return deviceInfo[id]
     }
 
+    /** The web interface [deviceInfo] was detected as; null when unknown or not cached. */
     @Synchronized
-    fun setDeviceInfo(profile: Profile, info: DeviceInfo?) {
+    fun flavor(profile: Profile): ReceiverFlavor? {
+        val id = profile.id ?: return null
+        return flavors[id]
+    }
+
+    /** Caches [info] and the [flavor] detected from it; null [info] drops both. */
+    @Synchronized
+    fun setDeviceInfo(profile: Profile, info: DeviceInfo?, flavor: ReceiverFlavor? = null) {
         val id = profile.id ?: return
         if (info == null) {
             deviceInfo.remove(id)
+            flavors.remove(id)
         } else {
             deviceInfo[id] = info
+            if (flavor == null) flavors.remove(id) else flavors[id] = flavor
         }
     }
 
@@ -116,7 +134,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     fun setCurrent(profile: Profile) {
         val previous = _current.value
         if (previous != null && !profile.hasSameSettings(previous)) {
-            setDeviceInfo(profile, null)
+            forget(profile)
         }
         _current.value = profile
         loaded.value = true
@@ -208,6 +226,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         val deletedId = profile.id
         val wasCurrent = deletedId != null && deletedId == current.value?.id
         store.delete(profile)
+        forget(profile)
         if (!wasCurrent) {
             return@withLock
         }
@@ -325,6 +344,15 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         locationsFromReceiver = false
         tagList.clear()
         deviceInfo.clear()
+        flavors.clear()
+        capabilities.clear()
+    }
+
+    /** Drops [profile]'s device info, its flavor and the capabilities checked from them. */
+    @Synchronized
+    private fun forget(profile: Profile) {
+        setDeviceInfo(profile, null)
+        capabilities.drop(profile)
     }
 }
 

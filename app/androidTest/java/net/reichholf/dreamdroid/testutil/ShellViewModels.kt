@@ -7,6 +7,7 @@ import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -19,15 +20,17 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
  */
 fun testShellViewModel(profiles: ProfileRepository): ShellViewModel {
     val context = InstrumentationRegistry.getInstrumentation().targetContext
-    val clients = ReceiverApiFactory(context, profiles, EnigmaOkHttp())
+    val capabilities = WebIfCapabilitiesRepository()
+    val clients = ReceiverApiFactory(context, profiles, EnigmaOkHttp(), capabilities)
     val sessions = SessionConnectionHolder()
     return ShellViewModel(
         ReceiverRepository(clients, profiles),
         AutoTimerRepository(clients, profiles),
         profiles,
-        ReceiverProfileCheckRepository(profiles, clients),
+        ReceiverProfileCheckRepository(profiles, clients, capabilities),
         ServiceRepository(context, clients, profiles, AppDatabase.inMemory(context), sessions),
         sessions,
-        SettingsRepository(context.getSharedPreferences("shell-test", 0))
+        SettingsRepository(context.getSharedPreferences("shell-test", 0)),
+        capabilities
     )
 }

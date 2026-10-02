@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -107,7 +108,10 @@ class DreamboxWebIfApiHttpFailTest {
         login = false
     }
 
-    private fun client() = DreamboxWebIfApi(EnigmaHttp(profileForServer(), EnigmaOkHttp()))
+    private fun client() = DreamboxWebIfApi(
+        EnigmaHttp(profileForServer(), EnigmaOkHttp(), WebIfCapabilitiesRepository()),
+        WebIfCapabilities()
+    )
 
     private companion object {
         const val REF = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\""

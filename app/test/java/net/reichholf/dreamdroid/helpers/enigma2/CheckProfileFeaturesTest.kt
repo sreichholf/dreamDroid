@@ -7,16 +7,16 @@ import org.junit.jupiter.api.Test
 class CheckProfileFeaturesTest {
     @Test
     fun version165EnablesSleepTimer() {
-        assertTrue(CheckProfile.webInterfaceFeatures("1.6.5").sleepTimer)
+        assertTrue(CheckProfile.dreamboxCapabilities("1.6.5").sleepTimer)
     }
 
     @Test
     fun version164DisablesSleepTimer() {
-        assertFalse(CheckProfile.webInterfaceFeatures("1.6.4").sleepTimer)
+        assertFalse(CheckProfile.dreamboxCapabilities("1.6.4").sleepTimer)
     }
 
     @Test
     fun emptyVersionDisablesSleepTimer() {
-        assertFalse(CheckProfile.webInterfaceFeatures("0").sleepTimer)
+        assertFalse(CheckProfile.dreamboxCapabilities("0").sleepTimer)
     }
 }

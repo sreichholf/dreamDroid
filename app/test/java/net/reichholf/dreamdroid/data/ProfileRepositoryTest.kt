@@ -13,6 +13,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.WebIfCapabilities
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -24,11 +25,13 @@ class ProfileRepositoryTest {
     fun switchingProfileEmitsOnceAndClearsCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val second = profile(2, "bedroom")
-        val repo = ProfileRepository(MemoryProfileStore(listOf(first, second)))
+        val capabilities = WebIfCapabilitiesRepository()
+        val repo = ProfileRepository(MemoryProfileStore(listOf(first, second)), capabilities)
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
         repo.tags().add("News")
         repo.setDeviceInfo(first, DEVICE_INFO)
+        capabilities.set(first, NOTHING)
         repo.setLocationsLoadedFromReceiver(true)
 
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -48,6 +51,7 @@ class ProfileRepositoryTest {
         assertFalse(repo.locationsLoadedFromReceiver())
         assertNull(repo.deviceInfo(first))
         assertNull(repo.deviceInfo(second))
+        assertEquals(WebIfCapabilities(), capabilities.of(first))
         scope.cancel()
     }
 
@@ -55,37 +59,43 @@ class ProfileRepositoryTest {
     fun replacingCurrentProfileKeepsPerProfileCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
         val edited = profile(1, "living-room").apply { name = "Living Room" }
-        val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
+        val capabilities = WebIfCapabilitiesRepository()
+        val repo = ProfileRepository(MemoryProfileStore(listOf(first)), capabilities)
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
         repo.setDeviceInfo(first, DEVICE_INFO)
+        capabilities.set(first, NOTHING)
 
         repo.setCurrent(edited)
 
         assertEquals("Living Room", repo.requireCurrent().name)
         assertEquals(listOf("/hdd/movie"), repo.locations())
         assertEquals(DEVICE_INFO, repo.deviceInfo(edited))
+        assertEquals(NOTHING, capabilities.of(edited))
     }
 
     @Test
     fun editingConnectionSettingsDropsDeviceInfoOnly() = runBlocking<Unit> {
         val first = profile(1, "living-room")
-        val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
+        val capabilities = WebIfCapabilitiesRepository()
+        val repo = ProfileRepository(MemoryProfileStore(listOf(first)), capabilities)
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
         repo.setDeviceInfo(first, DEVICE_INFO)
+        capabilities.set(first, NOTHING)
 
         repo.setCurrent(profile(1, "other-box"))
 
         assertEquals("other-box", repo.requireCurrent().host)
         assertNull(repo.deviceInfo(repo.requireCurrent()))
+        assertEquals(WebIfCapabilities(), capabilities.of(first))
         assertEquals(listOf("/hdd/movie"), repo.locations())
     }
 
     @Test
     fun switchesKeepLatestWhenCollectorIsBehind() {
         val profiles = (1..3).map { profile(it, "box-$it") }
-        val repo = ProfileRepository(MemoryProfileStore(profiles))
+        val repo = ProfileRepository(MemoryProfileStore(profiles), WebIfCapabilitiesRepository())
         val switchedIds = mutableListOf<Int>()
         runBlocking {
             val gate = CompletableDeferred<Unit>()
@@ -113,14 +123,14 @@ class ProfileRepositoryTest {
     @Test
     fun setCurrentRemembersTheActiveProfile() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "a"), profile(2, "b")))
-        val repo = ProfileRepository(store)
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
 
         assertTrue(repo.setCurrent(2))
         assertFalse(repo.setCurrent(9))
 
         assertEquals(2, store.remembered)
         assertEquals(2, repo.activeProfileId())
-        val restarted = ProfileRepository(store)
+        val restarted = ProfileRepository(store, WebIfCapabilitiesRepository())
         restarted.loadCurrent()
         assertEquals(2, restarted.requireCurrent().id)
     }
@@ -128,7 +138,7 @@ class ProfileRepositoryTest {
     @Test
     fun savingActiveProfileReplacesCurrentWithoutSwitch() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "living-room")))
-        val repo = ProfileRepository(store)
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
         assertTrue(repo.setCurrent(1, forceEvent = true))
         val switchedIds = mutableListOf<Int>()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -149,7 +159,7 @@ class ProfileRepositoryTest {
     @Test
     fun deletingActiveProfileActivatesAnother() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "keep"), profile(2, "gone")))
-        val repo = ProfileRepository(store)
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
         assertTrue(repo.setCurrent(2, forceEvent = true))
 
         repo.delete(store.profile(2)!!)
@@ -162,7 +172,7 @@ class ProfileRepositoryTest {
     @Test
     fun deletingLastProfileForgetsTheActiveOne() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "only")))
-        val repo = ProfileRepository(store)
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
         assertTrue(repo.setCurrent(1, forceEvent = true))
 
         repo.delete(store.profile(1)!!)
@@ -175,19 +185,27 @@ class ProfileRepositoryTest {
     @Test
     fun deletingAnotherProfileKeepsTheActiveOne() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "active"), profile(2, "other")))
-        val repo = ProfileRepository(store)
+        val capabilities = WebIfCapabilitiesRepository()
+        val repo = ProfileRepository(store, capabilities)
         assertTrue(repo.setCurrent(1, forceEvent = true))
+        val other = store.profile(2)!!
+        repo.setDeviceInfo(other, DEVICE_INFO)
+        capabilities.set(other, NOTHING)
+        capabilities.set(repo.requireCurrent(), NOTHING)
 
-        repo.delete(store.profile(2)!!)
+        repo.delete(other)
 
         assertEquals(1, repo.requireCurrent().id)
         assertEquals(1, store.remembered)
+        assertNull(repo.deviceInfo(other))
+        assertEquals(WebIfCapabilities(), capabilities.of(other))
+        assertEquals(NOTHING, capabilities.of(repo.requireCurrent()))
     }
 
     @Test
     fun anEditSavedDuringAnActivationIsNotOverwrittenByTheOlderRow() = runBlocking<Unit> {
         val store = MemoryProfileStore(listOf(profile(1, "old-box")))
-        val repo = ProfileRepository(store)
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
         assertTrue(repo.setCurrent(1, forceEvent = true))
         val gate = CompletableDeferred<Unit>()
         store.profileGate = gate
@@ -206,7 +224,11 @@ class ProfileRepositoryTest {
 
     @Test
     fun awaitLoadedWaitsUntilTheStartupLoadIsMarkedDone() = runBlocking<Unit> {
-        val repo = ProfileRepository(MemoryProfileStore(listOf(profile(1, "box"))))
+        val repo =
+            ProfileRepository(
+                MemoryProfileStore(listOf(profile(1, "box"))),
+                WebIfCapabilitiesRepository()
+            )
         val waiter = async(start = CoroutineStart.UNDISPATCHED) { repo.awaitLoaded() }
 
         repo.loadCurrent()
@@ -222,7 +244,7 @@ class ProfileRepositoryTest {
 
     @Test
     fun anInMemoryCurrentProfileCountsAsLoaded() = runBlocking<Unit> {
-        val repo = ProfileRepository(MemoryProfileStore(emptyList()))
+        val repo = ProfileRepository(MemoryProfileStore(emptyList()), WebIfCapabilitiesRepository())
 
         repo.setCurrent(profile(1, "box"))
 
@@ -232,6 +254,8 @@ class ProfileRepositoryTest {
 }
 
 private val DEVICE_INFO = DeviceInfo(deviceName = "dm920")
+
+private val NOTHING = WebIfCapabilities(nowNext = false, sleepTimer = false, postRequest = false)
 
 private fun profile(id: Int, host: String): Profile = Profile().apply {
     this.id = id

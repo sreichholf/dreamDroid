@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -85,7 +86,15 @@ class HubNowPlayingRetentionTest {
     @Test
     fun reenteringHubKeepsLoadedNowPlayingWithoutReload() {
         val receiver =
-            ReceiverRepository(ReceiverApiFactory(context, profiles, EnigmaOkHttp()), profiles)
+            ReceiverRepository(
+                ReceiverApiFactory(
+                    context,
+                    profiles,
+                    EnigmaOkHttp(),
+                    WebIfCapabilitiesRepository()
+                ),
+                profiles
+            )
         val settings = SettingsRepository(preferences)
         val handle = unusedNavHandle()
         val headlines = mutableListOf<String>()

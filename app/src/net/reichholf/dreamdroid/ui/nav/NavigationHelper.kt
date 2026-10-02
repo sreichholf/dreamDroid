@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.nav
 
 import android.util.SparseArray
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.MainActivity
 import net.reichholf.dreamdroid.helpers.Statics
@@ -110,10 +109,6 @@ class NavigationHelper(activity: MainActivity, private val drawerState: DrawerLi
      */
     private fun navigateToEpg() {
         getMainActivity().phoneNav.navigateToDrawerEpg()
-    }
-
-    fun setAvailableFeatures() {
-        drawerState.sleepTimerAvailable = DreamDroid.featureSleepTimer()
     }
 
     fun onDialogAction(action: Int) {

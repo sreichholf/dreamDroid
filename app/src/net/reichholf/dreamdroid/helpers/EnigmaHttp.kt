@@ -11,8 +11,8 @@ import java.net.HttpURLConnection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
@@ -45,14 +45,22 @@ sealed class EnigmaHttpResult {
  *
  * Built by `ReceiverApiFactory`. Response bodies are copied into [xmlDumpDir] when it is set
  * (the "dump XML" developer setting).
+ *
+ * Requests go out as POST or GET as [capabilities] says for [profile]. A 405 answer flips the
+ * method for this client and for the profile, and the request is sent again.
  */
 class EnigmaHttp(
     val profile: Profile,
     private val okHttp: EnigmaOkHttp,
+    private val capabilities: WebIfCapabilitiesRepository,
     private val xmlDumpDir: Lazy<File>? = null,
     private val timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
 ) {
     private var rememberedReturnCode: Int = 0
+
+    /** Set once a 405 flipped the method, so a draft profile without an id flips too. */
+    @Volatile
+    private var postRequest: Boolean? = null
 
     @Volatile
     private var inFlight: Call? = null
@@ -95,7 +103,8 @@ class EnigmaHttp(
             val urlString = EnigmaUrls.page(profile, path, requestParams)
             val requestBuilder = Request.Builder().url(urlString)
             authHeader()?.let { requestBuilder.header("Authorization", it) }
-            if (DreamDroid.featurePostRequest()) {
+            val post = postsRequests()
+            if (post) {
                 requestBuilder.post(ByteArray(0).toRequestBody(null))
             } else {
                 requestBuilder.get()
@@ -108,7 +117,15 @@ class EnigmaHttp(
                 throw InterruptedIOException()
             }
             executeInterruptibly(call).use { response ->
-                return handleResponse(path, parameters, urlString, response, epoch, destination)
+                return handleResponse(
+                    path,
+                    parameters,
+                    urlString,
+                    response,
+                    epoch,
+                    destination,
+                    post
+                )
             }
         } catch (e: Exception) {
             if (e is java.util.concurrent.CancellationException) {
@@ -140,14 +157,18 @@ class EnigmaHttp(
         urlString: String,
         response: Response,
         epoch: Int,
-        destination: File?
+        destination: File?,
+        sentPost: Boolean
     ): EnigmaHttpResult {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {
             if (code == HttpURLConnection.HTTP_BAD_METHOD &&
                 rememberedReturnCode != HttpURLConnection.HTTP_BAD_METHOD
             ) {
-                DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest())
+                // The other method than this request's: another request may have flipped it.
+                val post = !sentPost
+                postRequest = post
+                capabilities.setPostRequest(profile, post)
                 rememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD
                 return execute(uri, parameters, destination)
             }
@@ -188,7 +209,7 @@ class EnigmaHttp(
     }
 
     private fun createSession() {
-        val sessionHttp = EnigmaHttp(profile, okHttp, xmlDumpDir, timeoutMillis)
+        val sessionHttp = EnigmaHttp(profile, okHttp, capabilities, xmlDumpDir, timeoutMillis)
         when (val result = sessionHttp.fetch(URIStore.SESSION)) {
             is EnigmaHttpResult.Success -> {
                 val content = result.text.replace(Regex("\\<.*?\\>"), "").trim()
@@ -215,6 +236,8 @@ class EnigmaHttp(
             e.printStackTrace()
         }
     }
+
+    private fun postsRequests(): Boolean = postRequest ?: capabilities.of(profile).postRequest
 
     private fun isSessionLess(uri: String): Boolean = URIStore.SCREENSHOT == uri
 

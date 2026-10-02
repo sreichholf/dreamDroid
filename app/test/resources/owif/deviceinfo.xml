@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Synthetic OpenWebif /web/deviceinfo answer, not a capture from a real box. Built from
+  E2OpenPlugins/e2openplugin-OpenWebif at commit e46534f:
+  plugin/controllers/views/web/deviceinfo.tmpl (element order and names),
+  plugin/controllers/models/info.py getInfo() (values: webifver is OPENWEBIFVER from
+  plugin/controllers/defaults.py, "OWIF 1.5.2"; fp_version is None without a front processor;
+  dhcp is a Python bool; gw/mask come from formatIp).
+-->
+<e2deviceinfo>
+	<e2oeversion>OE-Alliance 5.4</e2oeversion>
+	<e2enigmaversion>2024-05-10</e2enigmaversion>
+	<e2distroversion>openatv</e2distroversion>
+	<e2imageversion>7.4.0</e2imageversion>
+	<e2driverdate>20231024</e2driverdate>
+	<e2webifversion>OWIF 1.5.2</e2webifversion>
+	<e2fpversion>None</e2fpversion>
+	<e2devicename>Vu+ Uno 4K SE</e2devicename>
+	<e2frontends>
+		<e2frontend>
+			<e2name>Tuner A</e2name>
+			<e2model>Vuplus DVB-S NIM(45308X FBC) (DVB-S2X)</e2model>
+		</e2frontend>
+	</e2frontends>
+	<e2network>
+		<e2interface>
+			<e2name>eth0</e2name>
+			<e2mac>00:1d:ec:12:34:56</e2mac>
+			<e2dhcp>True</e2dhcp>
+			<e2ip>192.168.0.20</e2ip>
+			<e2gateway>192.168.0.1</e2gateway>
+			<e2netmask>255.255.255.0</e2netmask>
+		</e2interface>
+	</e2network>
+	<e2hdds>
+		<e2hdd>
+			<e2model>ATA(ST2000LM015-2E81)</e2model>
+			<e2capacity>2.0 TB</e2capacity>
+			<e2free>1.2 TB</e2free>
+			<e2mount>/media/hdd</e2mount>
+		</e2hdd>
+	</e2hdds>
+</e2deviceinfo>

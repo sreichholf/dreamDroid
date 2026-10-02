@@ -4,7 +4,6 @@ import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
@@ -22,9 +21,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 /**
  * [ReceiverApi] over the Dreambox web interface (`/web` XML) and the WebBouquetEditor and
  * AutoTimer plugins, on one [EnigmaHttp]. Built by [ReceiverApiFactory]. Stream and file URLs
- * come from the profile of [http].
+ * come from the profile of [http]; [capabilities] are that profile's when the client was built.
  */
-class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
+class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: WebIfCapabilities) :
+    ReceiverApi {
     override suspend fun services(containerRef: String): EnigmaResponse<List<Service>> =
         fetchServices(NameValuePair("sRef", containerRef))
 
@@ -99,7 +99,7 @@ class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
      */
     private suspend fun fetchNowNext(param: NameValuePair): EnigmaResponse<List<ServiceNowNext>> =
         withContext(Dispatchers.IO) {
-            if (DreamDroid.featureNowNext()) {
+            if (capabilities.nowNext) {
                 http.fetch(URIStore.EPG_NOWNEXT, listOf(param)).mapParsed { xml ->
                     EpgNowNextParser.parse(xml)
                 }

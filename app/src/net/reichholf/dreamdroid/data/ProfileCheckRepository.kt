@@ -16,7 +16,10 @@ import net.reichholf.dreamdroid.helpers.enigma2.CheckProfile
  * docs/hilt-migration.md).
  */
 interface ProfileCheckRepository {
-    /** Asks [profile]'s receiver again; a cached device-info answer is dropped first. */
+    /**
+     * Asks [profile]'s receiver again; a cached device-info answer and the flavor detected
+     * from it are dropped first.
+     */
     suspend fun check(profile: Profile): ProfileCheckResult
 
     /** Like [check], but a device-info answer cached for [profile] stands in for asking. */
@@ -27,7 +30,8 @@ interface ProfileCheckRepository {
 @Singleton
 class ReceiverProfileCheckRepository @Inject constructor(
     private val profiles: ProfileRepository,
-    private val clients: ReceiverApiFactory
+    private val clients: ReceiverApiFactory,
+    private val capabilities: WebIfCapabilitiesRepository
 ) : ProfileCheckRepository {
     override suspend fun check(profile: Profile): ProfileCheckResult {
         profiles.setDeviceInfo(profile, null)
@@ -36,6 +40,12 @@ class ReceiverProfileCheckRepository @Inject constructor(
 
     override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
         withContext(Dispatchers.IO) {
-            CheckProfile.checkProfile(profile, clients.forProfile(profile), profiles)
+            CheckProfile.checkProfile(
+                profile,
+                clients.forProfile(profile),
+                clients.detector(profile),
+                profiles,
+                capabilities
+            )
         }
 }

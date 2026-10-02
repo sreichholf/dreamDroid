@@ -12,6 +12,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.ServiceRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -63,15 +64,17 @@ class TestProfiles(val context: TestContext = TestContext()) {
         runBlocking { it.profileDao().getProfiles() }
     }
     val sessions = SessionConnectionHolder()
+    val capabilities = WebIfCapabilitiesRepository()
     val repository = ProfileRepository(
         RoomProfileStore(database, PreferenceManager.getDefaultSharedPreferences(context)) {
             services
-        }
+        },
+        capabilities
     )
     val services: ServiceRepository by lazy {
         ServiceRepository(
             context,
-            receiverApis(repository, context),
+            receiverApis(repository, context, capabilities),
             repository,
             database,
             sessions
@@ -81,12 +84,14 @@ class TestProfiles(val context: TestContext = TestContext()) {
 
 /**
  * The app's [ReceiverApiFactory] for [profiles], with its own OkHttp clients. XML dumps,
- * when the profile settings ask for them, land in [context]'s cache directory.
+ * when the profile settings ask for them, land in [context]'s cache directory. Pass the
+ * [capabilities] a test sets or reads; the default is a fresh one.
  */
 fun receiverApis(
     profiles: ProfileRepository,
-    context: Context = TestContext()
-): ReceiverApiFactory = ReceiverApiFactory(context, profiles, EnigmaOkHttp())
+    context: Context = TestContext(),
+    capabilities: WebIfCapabilitiesRepository = WebIfCapabilitiesRepository()
+): ReceiverApiFactory = ReceiverApiFactory(context, profiles, EnigmaOkHttp(), capabilities)
 
 /** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
 class MemorySharedPreferences : SharedPreferences {

@@ -3,8 +3,8 @@ package net.reichholf.dreamdroid.enigma
 import java.nio.file.Files
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
@@ -32,17 +32,19 @@ import org.junit.jupiter.api.Test
 class DreamboxWebIfApiTest {
     private val server = MockWebServer()
 
-    private val api by lazy {
-        DreamboxWebIfApi(
-            EnigmaHttp(
-                Profile().apply {
-                    host = server.hostName
-                    port = server.port
-                },
-                EnigmaOkHttp()
-            )
-        )
-    }
+    private val api by lazy { api(WebIfCapabilities()) }
+
+    private fun api(capabilities: WebIfCapabilities) = DreamboxWebIfApi(
+        EnigmaHttp(
+            Profile().apply {
+                host = server.hostName
+                port = server.port
+            },
+            EnigmaOkHttp(),
+            WebIfCapabilitiesRepository()
+        ),
+        capabilities
+    )
 
     @BeforeEach
     fun setUp() {
@@ -51,7 +53,6 @@ class DreamboxWebIfApiTest {
 
     @AfterEach
     fun tearDown() {
-        DreamDroid.enableNowNext()
         server.shutdown()
     }
 
@@ -70,10 +71,9 @@ class DreamboxWebIfApiTest {
 
     @Test
     fun withoutNowNextEpgNowNextAsksEpgNowWithOneRowPerEvent() = runBlocking {
-        DreamDroid.disableNowNext()
         server.enqueue(MockResponse().setBody(loadWebFixture("epgservice.xml")))
 
-        val rows = api.epgNowNext(BOUQUET).value!!
+        val rows = api(WebIfCapabilities(nowNext = false)).epgNowNext(BOUQUET).value!!
 
         val url = takeUrl()
         assertEquals("/web/epgnow", url.encodedPath)
@@ -84,10 +84,9 @@ class DreamboxWebIfApiTest {
 
     @Test
     fun epgNowNextAsksAProviderByBRef() = runBlocking {
-        DreamDroid.disableNowNext()
         server.enqueue(MockResponse().setBody(loadWebFixture("epgservice.xml")))
 
-        api.epgNowNext(PROVIDERS)
+        api(WebIfCapabilities(nowNext = false)).epgNowNext(PROVIDERS)
 
         val url = takeUrl()
         assertEquals("/web/epgnow", url.encodedPath)
@@ -555,8 +554,10 @@ class DreamboxWebIfApiTest {
                 fileLogin = true
                 configure()
             },
-            EnigmaOkHttp()
-        )
+            EnigmaOkHttp(),
+            WebIfCapabilitiesRepository()
+        ),
+        WebIfCapabilities()
     )
 
     private fun takeUrl(): HttpUrl = server.takeRequest(5, TimeUnit.SECONDS)!!.requestUrl!!

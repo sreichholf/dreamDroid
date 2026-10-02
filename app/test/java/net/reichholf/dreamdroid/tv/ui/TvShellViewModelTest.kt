@@ -223,7 +223,8 @@ class TvShellViewModelTest {
         profiles,
         ReceiverProfileCheckRepository(
             profiles,
-            receiverApis(profiles, receiver.profiles.context)
+            receiverApis(profiles, receiver.profiles.context, receiver.profiles.capabilities),
+            receiver.profiles.capabilities
         ),
         receiver.services,
         sessions

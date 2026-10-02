@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.PowerCommand
+import net.reichholf.dreamdroid.enigma.WebIfCapabilities
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
@@ -53,7 +54,8 @@ import org.junit.jupiter.api.Test
 class ShellViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val clients = receiverApis(profiles)
+    private val capabilities = receiver.profiles.capabilities
+    private val clients = receiverApis(profiles, capabilities = capabilities)
     private val sessions = receiver.sessions
     private val preferences = MemorySharedPreferences()
     private val settings = SettingsRepository(preferences)
@@ -66,6 +68,10 @@ class ShellViewModelTest {
     /** While true, `/web/deviceinfo` answers 401. */
     @Volatile
     private var deviceInfoUnauthorized = false
+
+    /** The `e2webifversion` the receiver's `/web/deviceinfo` reports. */
+    @Volatile
+    private var webIfVersion = "1.7.4"
 
     /** Whether `/web/external` lists the AutoTimer plugin. */
     @Volatile
@@ -103,7 +109,10 @@ class ShellViewModelTest {
                 } else {
                     MockResponse().setBody(
                         if (isReceiver) {
-                            loadWebFixture("deviceinfo.xml")
+                            loadWebFixture("deviceinfo.xml").replace(
+                                "<e2webifversion>1.7.4</e2webifversion>",
+                                "<e2webifversion>$webIfVersion</e2webifversion>"
+                            )
                         } else {
                             "<html>no receiver</html>"
                         }
@@ -280,6 +289,40 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun aWebInterfaceWithoutTheSleepTimerTakesItOutOfTheDrawer() = runBlocking<Unit> {
+        webIfVersion = "1.6.4"
+        val viewModel = viewModel()
+        assertTrue(viewModel.uiState.value.sleepTimerInDrawer)
+
+        viewModel.checkActiveProfile()
+
+        viewModel.awaitState { !it.sleepTimerInDrawer }
+    }
+
+    @Test
+    fun theDrawerOffersTheSleepTimerOfTheActiveProfile() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        val other = Profile().apply { id = profiles.requireCurrent().id!! + 1 }
+
+        capabilities.set(other, WebIfCapabilities(sleepTimer = false))
+        // A rename of the active profile reaches the state after the change above.
+        val current = profiles.requireCurrent()
+        profiles.setCurrent(
+            Profile().apply {
+                id = current.id
+                name = "Renamed"
+                host = current.host
+                port = current.port
+            }
+        )
+        viewModel.awaitState { it.profileName == "Renamed" }
+        assertTrue(viewModel.uiState.value.sleepTimerInDrawer)
+
+        capabilities.set(profiles.requireCurrent(), WebIfCapabilities(sleepTimer = false))
+        viewModel.awaitState { !it.sleepTimerInDrawer }
+    }
+
+    @Test
     fun aFailedCheckDoesNotAskForThePlugin() = runBlocking<Unit> {
         hasAutoTimer = true
         isReceiver = false
@@ -452,10 +495,11 @@ class ShellViewModelTest {
         ReceiverRepository(clients, profiles),
         AutoTimerRepository(clients, profiles),
         profiles,
-        ReceiverProfileCheckRepository(profiles, clients),
+        ReceiverProfileCheckRepository(profiles, clients, capabilities),
         receiver.services,
         sessions,
-        settings
+        settings,
+        capabilities
     ).also { viewModels += it }
 
     private fun deviceInfoRequests(): Int = receiver.requestsTo("/web/deviceinfo").size
