@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.video
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import android.view.SurfaceView
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -34,25 +35,25 @@ data class PlayerState(
  *
  * Call it from the main thread. Video views and the event listener are main-thread work.
  * Calls that can wait for a stream to close (setMedia, stop, release, seeking, track and
- * scale changes) go through [commands], so they never block input. As in VLC for Android,
- * play(), pause, and the track getters run on the main thread, but only once setMedia has
- * returned (see [switching]). Read time, length, and track counts from [state].
+ * scale changes) go through [commands]. As in VLC for Android, play(), pause, and the track
+ * getters run on the main thread, but only once setMedia has returned (see [switching]).
+ * Read time, length, and track counts from [state].
+ *
+ * One wait is left, as in VLC for Android: detaching the views while a stream is still
+ * closing makes libVLC disable the video track on the main thread, and that waits too.
+ * Leaving the player in the middle of a stuck zap can still be slow.
  */
 @Singleton
 class VLCPlayer @Inject constructor(@param:ApplicationContext private val context: Context) {
     private val commands = PlayerCommandQueue(Dispatchers.IO)
     private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
-    // Written on the main thread; read by queued commands to drop a released player's results.
-    @Volatile
     private var mediaPlayer: MediaPlayer? = null
 
     /**
      * Counts streams on the main thread: [playUri] starts one, [detach] and [release] end it.
-     * Events, queued results, and a pending play() tagged with an older value belong to a
-     * stream that is gone.
+     * Events and a pending play() tagged with an older value belong to a stream that is gone.
      */
-    @Volatile
     private var generation: Int = 0
 
     /** The [generation] whose setMedia has returned; main thread only. */
@@ -115,14 +116,6 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         stateFlow.value = PlayerState()
     }
 
-    fun addVoutCallback(callback: IVLCVout.Callback) {
-        mediaPlayer().vlcVout.addCallback(callback)
-    }
-
-    fun removeVoutCallback(callback: IVLCVout.Callback) {
-        mediaPlayer?.vlcVout?.removeCallback(callback)
-    }
-
     fun setWindowSize(width: Int, height: Int) {
         mediaPlayer?.vlcVout?.setWindowSize(width, height)
     }
@@ -145,13 +138,21 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         // VLC for Android's PlayerController.startPlayback: setMedia off main, then listener
         // and play() on main. setMedia joins the old stream's threads, which can take long.
         mainScope.launch {
-            commands.call {
-                val media = Media(VLCInstance.get(context), uri)
-                media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-                // The old stream's teardown events must not reach the overlay.
-                mp.setEventListener(null)
-                mp.media = media
-                media.release()
+            try {
+                commands.call {
+                    val media = Media(VLCInstance.get(context), uri)
+                    try {
+                        media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
+                        // The old stream's teardown events must not reach the overlay.
+                        mp.setEventListener(null)
+                        mp.media = media
+                    } finally {
+                        media.release()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "Starting $uri failed", e)
+                return@launch
             }
             // A zap, detach, or release since then owns the player now.
             if (gen != generation) return@launch
@@ -166,7 +167,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     fun play() {
         val mp = mediaPlayer ?: return
         if (switching || !mp.hasMedia()) return
-        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia = true)) {
+        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate)) {
             mp.pause()
         } else {
             mp.play()
@@ -238,42 +239,34 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         if (gen != generation) return
         when (event.type) {
             MediaPlayer.Event.TimeChanged ->
-                updateState(gen) { it.copy(timeMs = event.timeChanged) }
+                stateFlow.update { it.copy(timeMs = event.timeChanged) }
 
             MediaPlayer.Event.PositionChanged ->
-                updateState(gen) { it.copy(position = event.positionChanged) }
+                stateFlow.update { it.copy(position = event.positionChanged) }
 
             MediaPlayer.Event.LengthChanged ->
-                updateState(gen) { it.copy(lengthMs = event.lengthChanged) }
+                stateFlow.update { it.copy(lengthMs = event.lengthChanged) }
 
             MediaPlayer.Event.SeekableChanged ->
-                updateState(gen) { it.copy(seekable = event.seekable) }
+                stateFlow.update { it.copy(seekable = event.seekable) }
 
             MediaPlayer.Event.Playing,
             MediaPlayer.Event.ESAdded,
-            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp, gen)
+            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp)
         }
         listener?.onEvent(event)
     }
 
-    private fun refreshTrackCounts(mp: MediaPlayer, gen: Int) {
+    private fun refreshTrackCounts(mp: MediaPlayer) {
         if (switching || !mp.hasMedia()) return
         val audio = mp.audioTracksCount
         val subtitles = mp.spuTracksCount
-        updateState(gen) { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
-    }
-
-    /**
-     * Applies [change] unless a newer stream started. [playUri] and [release] bump [generation]
-     * before they reset [state], so the check inside [MutableStateFlow.update] cannot write a
-     * stale value over the reset.
-     */
-    private inline fun updateState(gen: Int, crossinline change: (PlayerState) -> PlayerState) {
-        stateFlow.update { if (gen == generation) change(it) else it }
+        stateFlow.update { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
     }
 
     companion object {
-        const val MEDIA_HWACCEL_DISABLED = 0x00
+        private const val LOG_TAG = "VLCPlayer"
+
         const val MEDIA_HWACCEL_ENABLED = 0x01
         const val MEDIA_HWACCEL_FORCE = 0x02
     }

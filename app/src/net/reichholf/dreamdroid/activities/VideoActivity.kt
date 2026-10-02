@@ -68,7 +68,6 @@ import org.videolan.libvlc.interfaces.IVLCVout
 class VideoActivity :
     AppCompatActivity(),
     IVLCVout.OnNewVideoLayoutListener,
-    IVLCVout.Callback,
     DialogActionListener,
     MediaPlayer.EventListener {
 
@@ -311,7 +310,6 @@ class VideoActivity :
         subtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
 
         player.attach(this, surfaceView, subtitlesSurfaceView)
-        player.addVoutCallback(this)
         player.setEventListener(this)
         playerAttached = true
 
@@ -332,7 +330,6 @@ class VideoActivity :
         playerAttached = false
         player.detach()
         surfaceView = null
-        player.removeVoutCallback(this)
         player.setEventListener(null)
     }
 
@@ -495,8 +492,6 @@ class VideoActivity :
         }
     }
 
-    override fun onSurfacesCreated(vlcVout: IVLCVout) {}
-
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
         newConfig: Configuration
@@ -505,8 +500,6 @@ class VideoActivity :
         changeSurfaceLayout()
         overlay?.onPictureInPictureModeChanged()
     }
-
-    override fun onSurfacesDestroyed(vlcVout: IVLCVout) {}
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         overlay?.onDialogAction(action, details, dialogTag)

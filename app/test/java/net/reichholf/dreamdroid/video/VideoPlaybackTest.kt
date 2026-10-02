@@ -23,11 +23,10 @@ class VideoPlaybackTest {
     }
 
     @Test
-    fun playUriMustNotTogglePauseOnANewUri() {
-        assertFalse(VideoPlayback.shouldTogglePause(true, 1.0f, sameMedia = false))
-        assertTrue(VideoPlayback.shouldTogglePause(true, 1.0f, sameMedia = true))
-        assertFalse(VideoPlayback.shouldTogglePause(false, 1.0f, sameMedia = true))
-        assertFalse(VideoPlayback.shouldTogglePause(true, 2.0f, sameMedia = true))
+    fun pausesOnlyWhilePlayingAtNormalSpeed() {
+        assertTrue(VideoPlayback.shouldTogglePause(true, 1.0f))
+        assertFalse(VideoPlayback.shouldTogglePause(false, 1.0f))
+        assertFalse(VideoPlayback.shouldTogglePause(true, 2.0f))
     }
 
     @Test
