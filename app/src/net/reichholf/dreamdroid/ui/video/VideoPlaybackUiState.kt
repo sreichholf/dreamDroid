@@ -17,17 +17,27 @@ sealed interface VideoPlaying {
     data class Recording(val movie: Movie) : VideoPlaying
 }
 
-/** The player's sleep timer. [Expired] closes the player. */
+/**
+ * The player's sleep timer. [Running] counts minutes, [Closing] the last
+ * [SLEEP_TIMER_WARNING_SECONDS] before [Expired] closes the player.
+ */
 sealed interface SleepTimer {
     data object Off : SleepTimer
 
     data class Running(val minutesLeft: Int) : SleepTimer
+
+    data class Closing(val secondsLeft: Int) : SleepTimer
 
     data object Expired : SleepTimer
 }
 
 /** Durations the sleep timer offers. */
 val SLEEP_TIMER_MINUTES: List<Int> = listOf(15, 30, 45, 60, 90, 120)
+
+const val SLEEP_TIMER_WARNING_SECONDS: Int = 10
+
+/** What the countdown's extend button restarts the timer with. */
+const val SLEEP_TIMER_EXTEND_MINUTES: Int = 15
 
 /**
  * Zap list and playing item behind the player overlay. [services] is the now/next list

@@ -187,7 +187,13 @@ class VideoPlaybackViewModelTest {
         advanceTimeBy(MINUTE_MS + 1)
         assertEquals(SleepTimer.Running(1), viewModel.uiState.value.sleepTimer)
 
-        advanceTimeBy(MINUTE_MS)
+        advanceTimeBy(MINUTE_MS - 10 * SECOND_MS)
+        assertEquals(SleepTimer.Closing(10), viewModel.uiState.value.sleepTimer)
+
+        advanceTimeBy(SECOND_MS)
+        assertEquals(SleepTimer.Closing(9), viewModel.uiState.value.sleepTimer)
+
+        advanceTimeBy(9 * SECOND_MS)
         assertEquals(SleepTimer.Expired, viewModel.uiState.value.sleepTimer)
     }
 
@@ -199,6 +205,19 @@ class VideoPlaybackViewModelTest {
 
         viewModel.setSleepTimer(15)
         advanceTimeBy(MINUTE_MS / 2 + 1)
+
+        assertEquals(SleepTimer.Running(15), viewModel.uiState.value.sleepTimer)
+    }
+
+    @Test
+    fun extendingDuringTheClosingCountdownRestartsTheTimer() = runTest {
+        val viewModel = viewModel()
+        viewModel.setSleepTimer(1)
+        advanceTimeBy(MINUTE_MS - 5 * SECOND_MS + 1)
+        assertEquals(SleepTimer.Closing(5), viewModel.uiState.value.sleepTimer)
+
+        viewModel.setSleepTimer(SLEEP_TIMER_EXTEND_MINUTES)
+        advanceTimeBy(10 * SECOND_MS)
 
         assertEquals(SleepTimer.Running(15), viewModel.uiState.value.sleepTimer)
     }
@@ -244,7 +263,8 @@ class VideoPlaybackViewModelTest {
     private fun RecordedRequest.sRef(): String? = requestUrl?.queryParameter("sRef")
 
     private companion object {
-        const val MINUTE_MS = 60_000L
+        const val SECOND_MS = 1_000L
+        const val MINUTE_MS = 60 * SECOND_MS
         const val BOUQUET = EpgTestReceiver.BOUQUET
         const val ZDF = "1:0:1:6DCB:44D:1:C00000:0:0:0:"
         const val EPG_NOW_NEXT = "/web/epgnownext"

@@ -23,7 +23,11 @@ import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
@@ -46,6 +50,9 @@ import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.video.SLEEP_TIMER_EXTEND_MINUTES
+import net.reichholf.dreamdroid.ui.video.SleepTimer
+import net.reichholf.dreamdroid.ui.video.SleepTimerCountdown
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
@@ -118,7 +125,21 @@ class VideoActivity :
         findViewById<ComposeView>(R.id.video_snackbar_host).setContent {
             DreamDroidTheme(forceDark = true) {
                 val uiState by playbackViewModel.uiState.collectAsStateWithLifecycle()
-                VideoSnackbarHost(uiState.userMessage, playbackViewModel::onMessageShown)
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    (uiState.sleepTimer as? SleepTimer.Closing)?.let { closing ->
+                        SleepTimerCountdown(
+                            closing = closing,
+                            onExtend = {
+                                playbackViewModel.setSleepTimer(SLEEP_TIMER_EXTEND_MINUTES)
+                            },
+                            onCancel = { playbackViewModel.setSleepTimer(0) }
+                        )
+                    }
+                    VideoSnackbarHost(uiState.userMessage, playbackViewModel::onMessageShown)
+                }
             }
         }
         surfaceFrameAddLayoutListener(true)

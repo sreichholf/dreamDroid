@@ -447,7 +447,7 @@ class VideoOverlayController(
 
     /** Offers the durations, and Off while a timer runs (id 0). */
     private fun onSleepTimer() {
-        val ids = if (session.sleepTimer is SleepTimer.Running) {
+        val ids = if (session.sleepTimer != SleepTimer.Off) {
             listOf(0) + SLEEP_TIMER_MINUTES
         } else {
             SLEEP_TIMER_MINUTES

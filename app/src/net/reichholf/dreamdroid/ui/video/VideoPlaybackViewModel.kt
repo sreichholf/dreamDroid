@@ -144,7 +144,11 @@ class VideoPlaybackViewModel @Inject constructor(
         sleepJob = viewModelScope.launch {
             for (left in minutes downTo 1) {
                 _uiState.update { it.copy(sleepTimer = SleepTimer.Running(left)) }
-                delay(MINUTE_MS)
+                delay(if (left == 1) LAST_MINUTE_MS else MINUTE_MS)
+            }
+            for (left in SLEEP_TIMER_WARNING_SECONDS downTo 1) {
+                _uiState.update { it.copy(sleepTimer = SleepTimer.Closing(left)) }
+                delay(SECOND_MS)
             }
             _uiState.update { it.copy(sleepTimer = SleepTimer.Expired) }
         }
@@ -190,6 +194,10 @@ class VideoPlaybackViewModel @Inject constructor(
     }
 
     private companion object {
-        const val MINUTE_MS = 60_000L
+        const val SECOND_MS = 1_000L
+        const val MINUTE_MS = 60 * SECOND_MS
+
+        /** The last minute stops short of the [SleepTimer.Closing] countdown. */
+        const val LAST_MINUTE_MS = MINUTE_MS - SLEEP_TIMER_WARNING_SECONDS * SECOND_MS
     }
 }

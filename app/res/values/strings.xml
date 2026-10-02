@@ -344,6 +344,8 @@
     <string name="sleep_timer_left">Sleep Timer: %1$d min. left</string>
     <string name="sleep_timer_set">The player closes in %1$d min.</string>
     <string name="sleep_timer_cancelled">Sleep Timer off</string>
+    <string name="sleep_timer_extend">+%1$d min.</string>
+    <string name="sleep_timer_closing">Closing the player in %1$d s</string>
     <string name="play">Play</string>
     <string name="rewind">Rewind</string>
     <string name="forward">Forward</string>
