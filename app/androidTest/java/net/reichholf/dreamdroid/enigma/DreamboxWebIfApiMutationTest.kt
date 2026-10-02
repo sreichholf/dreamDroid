@@ -18,9 +18,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Typed [EnigmaClient] mutations hit the right endpoint and map the simple XML result. */
+/** Typed [DreamboxWebIfApi] mutations hit the right endpoint and map the simple XML result. */
 @RunWith(AndroidJUnit4::class)
-class EnigmaClientMutationTest {
+class DreamboxWebIfApiMutationTest {
     private lateinit var server: MockWebServer
 
     @Before
@@ -94,7 +94,7 @@ class EnigmaClientMutationTest {
         assertEquals("40", volume.current)
     }
 
-    private fun client() = EnigmaClient(
+    private fun client() = DreamboxWebIfApi(
         EnigmaHttp(
             Profile().apply {
                 host = "127.0.0.1"

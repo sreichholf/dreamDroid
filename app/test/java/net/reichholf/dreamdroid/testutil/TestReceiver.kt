@@ -88,7 +88,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         requests.filter { it.requestUrl?.encodedPath == path }
 
     fun timerRepository(): TimerRepository =
-        TimerRepository(enigmaClients(repository), repository, profiles.database)
+        TimerRepository(receiverApis(repository), repository, profiles.database)
 
     class Hold {
         val arrived = CountDownLatch(1)

@@ -7,7 +7,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.receiverApis
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** [EnigmaClientFactory]'s HTTP: the active profile and the "dump XML" setting. */
-class EnigmaClientFactoryTest {
+/** [ReceiverApiFactory]'s HTTP: the active profile and the "dump XML" setting. */
+class ReceiverApiFactoryTest {
     private val server = MockWebServer()
     private val profiles = TestProfiles()
     private val repository = profiles.repository
-    private val clients = enigmaClients(repository, profiles.context)
+    private val clients = receiverApis(repository, profiles.context)
     private val dumpDir = File(profiles.context.cacheDir, "xml")
 
     @BeforeEach

@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
@@ -154,7 +154,7 @@ class VirtualRemoteViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): VirtualRemoteViewModel =
         VirtualRemoteViewModel(
             handle,
-            ReceiverRepository(enigmaClients(profiles), profiles),
+            ReceiverRepository(receiverApis(profiles), profiles),
             profiles,
             receiver.sessions,
             SettingsRepository(preferences)

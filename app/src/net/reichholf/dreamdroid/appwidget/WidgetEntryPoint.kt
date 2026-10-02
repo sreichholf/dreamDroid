@@ -6,7 +6,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 
 /**
  * Dependencies of the Glance [VirtualRemoteWidget] and [WidgetRemoteRequest]. Neither is built
@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 interface WidgetEntryPoint {
     fun profileRepository(): ProfileRepository
 
-    fun enigmaClientFactory(): EnigmaClientFactory
+    fun receiverApiFactory(): ReceiverApiFactory
 
     companion object {
         fun get(context: Context): WidgetEntryPoint =

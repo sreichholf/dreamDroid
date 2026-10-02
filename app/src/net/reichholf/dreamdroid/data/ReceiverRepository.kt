@@ -8,9 +8,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.DeviceInfo
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.PowerState
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
@@ -41,7 +41,7 @@ sealed interface LiveStream {
 /** Receiver state and commands of the active profile. */
 @Singleton
 class ReceiverRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository
 ) {
     suspend fun deviceInfo(): EnigmaResponse<DeviceInfo> = clients.current().getDeviceInfo()

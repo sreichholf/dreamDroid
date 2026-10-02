@@ -7,7 +7,7 @@ package net.reichholf.dreamdroid.enigma
  * consecutive `<e2event>` elements are positional now/next pairs. A trailing odd event becomes a
  * now-only row.
  *
- * Do **not** use [parse] for flat `/web/epgnow` responses — [EnigmaClient.getEpgNowNext] maps those
+ * Do **not** use [parse] for flat `/web/epgnow` responses — [DreamboxWebIfApi] maps those
  * one event per row without pairing.
  */
 object EpgNowNextParser {

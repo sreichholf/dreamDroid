@@ -9,8 +9,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Test
 class ReceiverRepositoryTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val repository = ReceiverRepository(enigmaClients(profiles), profiles)
+    private val repository = ReceiverRepository(receiverApis(profiles), profiles)
 
     @BeforeEach
     fun setUp() {

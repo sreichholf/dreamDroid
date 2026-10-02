@@ -26,10 +26,10 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.jobs
 import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -558,7 +558,7 @@ class HubServiceListViewModelTest {
             services,
             receiver.repository,
             ReceiverRepository(
-                enigmaClients(receiver.profiles.repository),
+                receiverApis(receiver.profiles.repository),
                 receiver.profiles.repository
             ),
             receiver.profiles.repository,

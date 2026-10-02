@@ -26,10 +26,10 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.jobs
 import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -51,7 +51,7 @@ import org.junit.jupiter.api.Test
 class ShellViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val clients = enigmaClients(profiles)
+    private val clients = receiverApis(profiles)
     private val sessions = receiver.sessions
     private val preferences = MemorySharedPreferences()
     private val settings = SettingsRepository(preferences)

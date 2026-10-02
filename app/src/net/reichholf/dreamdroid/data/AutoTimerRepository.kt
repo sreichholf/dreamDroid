@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.enigma.DreamboxWebIfApi
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
@@ -84,7 +84,7 @@ sealed interface AutoTimerPreviewLoad {
  */
 @Singleton
 class AutoTimerRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository
 ) {
     private val writes = Mutex()
@@ -146,7 +146,7 @@ class AutoTimerRepository @Inject constructor(
             return AutoTimerPreviewLoad.Disabled(autoTimer)
         }
         val http = clients.currentHttp().apply { setConnectionTimeoutMillis(PREVIEW_TIMEOUT_MS) }
-        val response = EnigmaClient(http).testAutoTimer(id.value)
+        val response = DreamboxWebIfApi(http).testAutoTimer(id.value)
         return when (val outcome = response.value) {
             is PreviewOutcome.Matches -> AutoTimerPreviewLoad.Ready(autoTimer, outcome.matches)
 
@@ -181,7 +181,7 @@ class AutoTimerRepository @Inject constructor(
      */
     suspend fun runNow(): AutoTimerWriteResult {
         val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
-        return counted { writes.withLock { result(EnigmaClient(http).runAutoTimers()) } }
+        return counted { writes.withLock { result(DreamboxWebIfApi(http).runAutoTimers()) } }
     }
 
     /**

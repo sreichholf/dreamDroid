@@ -43,7 +43,7 @@ sealed class EnigmaHttpResult {
  * Per-request Enigma2 HTTP. Share [EnigmaOkHttp] under the hood; do not share
  * this type across concurrent fetches (a second [fetch] cancels the first).
  *
- * Built by `EnigmaClientFactory`. Response bodies are copied into [xmlDumpDir] when it is set
+ * Built by `ReceiverApiFactory`. Response bodies are copied into [xmlDumpDir] when it is set
  * (the "dump XML" developer setting).
  */
 class EnigmaHttp(

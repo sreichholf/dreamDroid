@@ -12,7 +12,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.ServiceRepository
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -71,7 +71,7 @@ class TestProfiles(val context: TestContext = TestContext()) {
     val services: ServiceRepository by lazy {
         ServiceRepository(
             context,
-            enigmaClients(repository, context),
+            receiverApis(repository, context),
             repository,
             database,
             sessions
@@ -80,13 +80,13 @@ class TestProfiles(val context: TestContext = TestContext()) {
 }
 
 /**
- * The app's [EnigmaClientFactory] for [profiles], with its own OkHttp clients. XML dumps,
+ * The app's [ReceiverApiFactory] for [profiles], with its own OkHttp clients. XML dumps,
  * when the profile settings ask for them, land in [context]'s cache directory.
  */
-fun enigmaClients(
+fun receiverApis(
     profiles: ProfileRepository,
     context: Context = TestContext()
-): EnigmaClientFactory = EnigmaClientFactory(context, profiles, EnigmaOkHttp())
+): ReceiverApiFactory = ReceiverApiFactory(context, profiles, EnigmaOkHttp())
 
 /** In-memory preferences. Listeners hear of each key an edit changed, like the platform's. */
 class MemorySharedPreferences : SharedPreferences {

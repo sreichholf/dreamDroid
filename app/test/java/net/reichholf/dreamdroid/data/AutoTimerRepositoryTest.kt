@@ -15,8 +15,8 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.testutil.TestReceiver
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Test
 class AutoTimerRepositoryTest {
     private val receiver = TestReceiver()
     private val repository =
-        AutoTimerRepository(enigmaClients(receiver.repository), receiver.repository)
+        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository)
 
     @BeforeEach
     fun setUp() {

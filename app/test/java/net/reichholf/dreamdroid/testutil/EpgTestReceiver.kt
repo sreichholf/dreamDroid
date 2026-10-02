@@ -29,7 +29,7 @@ class EpgTestReceiver {
     val sessions: SessionConnectionHolder = profiles.sessions
     val services = profiles.services
     val repository = EpgRepository(
-        enigmaClients(profiles.repository),
+        receiverApis(profiles.repository),
         profiles.repository,
         profiles.database,
         sessions,

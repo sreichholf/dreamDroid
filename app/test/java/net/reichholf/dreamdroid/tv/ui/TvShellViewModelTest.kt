@@ -15,8 +15,8 @@ import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -219,7 +219,7 @@ class TvShellViewModelTest {
         profiles,
         ReceiverProfileCheckRepository(
             profiles,
-            enigmaClients(profiles, receiver.profiles.context)
+            receiverApis(profiles, receiver.profiles.context)
         ),
         receiver.services,
         sessions

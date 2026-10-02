@@ -7,9 +7,9 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
@@ -48,7 +48,7 @@ sealed interface MovieDownload {
 @Singleton
 class MovieRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase
 ) {

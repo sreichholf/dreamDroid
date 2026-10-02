@@ -13,9 +13,9 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.BouquetEntry
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.ReceiverApi
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.toBouquetEntry
 import net.reichholf.dreamdroid.helpers.NameValuePair
@@ -51,7 +51,7 @@ data class BouquetEditResult(
  */
 @Singleton
 class BouquetEditorRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val services: ServiceRepository
 ) {
@@ -224,7 +224,7 @@ class BouquetEditorRepository @Inject constructor(
 
     private suspend fun edit(
         editedRefs: List<String>,
-        call: suspend EnigmaClient.() -> EnigmaResponse<SimpleResult>
+        call: suspend ReceiverApi.() -> EnigmaResponse<SimpleResult>
     ): BouquetEditResult = editMutex.withLock {
         val client = clients.current()
         val backup = backupOnce(client)
@@ -245,7 +245,7 @@ class BouquetEditorRepository @Inject constructor(
         }
 
     /** Runs under [editMutex]. Tried once per profile and session, whatever the outcome. */
-    private suspend fun backupOnce(client: EnigmaClient): EnigmaResponse<SimpleResult>? {
+    private suspend fun backupOnce(client: ReceiverApi): EnigmaResponse<SimpleResult>? {
         if (!backedUpProfiles.add(profiles.requireCurrent().id)) {
             return null
         }
@@ -254,7 +254,7 @@ class BouquetEditorRepository @Inject constructor(
     }
 
     private suspend fun list(ref: String, atRoot: Boolean): EnigmaResponse<List<BouquetEntry>> {
-        val response = clients.current().getServices(listOf(NameValuePair("sRef", ref)))
+        val response = clients.current().services(ref)
         return EnigmaResponse(response.value?.map { it.toBouquetEntry(atRoot) }, response.error)
     }
 

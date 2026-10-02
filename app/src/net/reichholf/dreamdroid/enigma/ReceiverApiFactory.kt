@@ -11,12 +11,12 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 
 /**
- * Builds an [EnigmaClient] per operation. A client wraps one [EnigmaHttp], which is bound
- * to one profile and cancels its in-flight call when a second fetch starts, so it must not
- * be shared across screens.
+ * Builds a [ReceiverApi] per operation. A client wraps one [EnigmaHttp], which is bound to one
+ * profile and cancels its in-flight call when a second fetch starts, so it must not be shared
+ * across screens. Every profile gets a [DreamboxWebIfApi] for now.
  */
 @Singleton
-class EnigmaClientFactory @Inject constructor(
+class ReceiverApiFactory @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val profiles: ProfileRepository,
     private val okHttp: EnigmaOkHttp
@@ -25,10 +25,10 @@ class EnigmaClientFactory @Inject constructor(
     private val xmlDumpDir = lazy { File(context.cacheDir, XML_DUMP_DIR) }
 
     /** A client for the active profile. */
-    fun current(): EnigmaClient = EnigmaClient(currentHttp())
+    fun current(): ReceiverApi = DreamboxWebIfApi(currentHttp())
 
     /** A client for [profile], which need not be the active one. */
-    fun forProfile(profile: Profile): EnigmaClient = EnigmaClient(http(profile))
+    fun forProfile(profile: Profile): ReceiverApi = DreamboxWebIfApi(http(profile))
 
     /** Raw HTTP for the active profile, for callers that parse the response themselves. */
     fun currentHttp(): EnigmaHttp = http(profiles.requireCurrent())

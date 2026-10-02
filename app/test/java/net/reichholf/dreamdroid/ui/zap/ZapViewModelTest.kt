@@ -22,10 +22,10 @@ import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.jobs
 import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -275,7 +275,7 @@ class ZapViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = ZapViewModel(
         handle,
         receiver.services,
-        ReceiverRepository(enigmaClients(profiles), profiles),
+        ReceiverRepository(receiverApis(profiles), profiles),
         receiver.sessions,
         profiles
     ).also { viewModels += it }

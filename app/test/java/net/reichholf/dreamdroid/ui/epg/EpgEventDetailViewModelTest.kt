@@ -17,7 +17,7 @@ import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.testutil.withRealTimeout
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -35,7 +35,7 @@ class EpgEventDetailViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<EpgEventDetailViewModel>()
     private val autoTimers = AutoTimerRepository(
-        enigmaClients(receiver.profiles.repository),
+        receiverApis(receiver.profiles.repository),
         receiver.profiles.repository
     )
 
@@ -172,7 +172,7 @@ class EpgEventDetailViewModelTest {
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()) = EpgEventDetailViewModel(
         handle,
         TimerRepository(
-            enigmaClients(receiver.profiles.repository),
+            receiverApis(receiver.profiles.repository),
             receiver.profiles.repository,
             receiver.profiles.database
         ),

@@ -5,9 +5,9 @@ import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.contentErrorText
@@ -40,7 +40,7 @@ data class TimerChoices(
  */
 @Singleton
 class TimerRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase
 ) {

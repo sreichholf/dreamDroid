@@ -10,19 +10,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.mergeBouquetNowNext
 import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaService
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.overlayNowNext
 import net.reichholf.dreamdroid.room.AppDatabase
@@ -67,7 +64,7 @@ sealed interface NowNextListLoad {
 @Singleton
 class ServiceRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
     private val sessions: SessionConnectionHolder
@@ -148,7 +145,7 @@ class ServiceRepository @Inject constructor(
     suspend fun bouquets(): BouquetListLoad {
         val client = clients.current()
         val profileId = profiles.requireCurrent().id
-        val tv = client.getServices(listOf(NameValuePair("sRef", tvRoots[0])))
+        val tv = client.services(tvRoots[0])
         val tvList = tv.value
         var error = tv.error
         var success = false
@@ -156,7 +153,7 @@ class ServiceRepository @Inject constructor(
         if (tvList != null) {
             live.tv.addAll(tvList)
             profileId?.let { replaceTabStrip(it, KIND_TV, tvList) }
-            val radio = client.getServices(listOf(NameValuePair("sRef", radioRoots[0])))
+            val radio = client.services(radioRoots[0])
             val radioList = radio.value
             if (radioList != null) {
                 live.radio.addAll(radioList)
@@ -202,9 +199,9 @@ class ServiceRepository @Inject constructor(
     suspend fun cachedTvBouquetTabs(): List<Service> =
         profiles.requireCurrent().id?.let { tabStrip(it, KIND_TV) }.orEmpty()
 
-    /** Members of [bouquetRef] from `/web/getservices`, the MultiEPG rows. Failures throw. */
+    /** Members of [bouquetRef] from the receiver, the MultiEPG rows. Failures throw. */
     suspend fun bouquetServices(bouquetRef: String): List<Service> =
-        clients.current().getServices(listOf(NameValuePair("sRef", bouquetRef))).valueOrThrow()
+        clients.current().services(bouquetRef).valueOrThrow()
 
     /** The roster of [bouquetRef] in Room, or null when it was never written. */
     suspend fun cachedBouquetServices(profileId: Int, bouquetRef: String): List<Service>? =
@@ -215,7 +212,7 @@ class ServiceRepository @Inject constructor(
      * if it was written. Does not write the roster.
      */
     suspend fun services(ref: String): ServiceListLoad {
-        val response = clients.current().getServices(listOf(NameValuePair("sRef", ref)))
+        val response = clients.current().services(ref)
         val live = response.value
         if (live != null) {
             return ServiceListLoad.Services(live, cached = false)
@@ -260,27 +257,24 @@ class ServiceRepository @Inject constructor(
     }
 
     /**
-     * `/web/getservices` order is the roster; `/web/epgnownext` only adds now/next to it
+     * The services of [ref] are the roster; the receiver's now/next only adds events to it
      * (see [mergeBouquetNowNext]). A failed roster fails; a failed now/next leaves the rows
-     * without events. `epgnownext` reads only `bRef` and lists any container ref there.
+     * without events.
      */
     suspend fun receiverNowNext(ref: String): EnigmaResponse<List<ServiceNowNext>> {
         val client = clients.current()
-        val roster = client.getServices(listOf(NameValuePair("sRef", ref)))
+        val roster = client.services(ref)
         val services = roster.value ?: return EnigmaResponse(null, roster.error)
-        val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
-        val epg = client.getEpgNowNext(listOf(NameValuePair("bRef", ref)), uri).value.orEmpty()
+        val epg = client.epgNowNext(ref).value.orEmpty()
         return EnigmaResponse(mergeBouquetNowNext(services, epg))
     }
 
     /**
-     * `/web/epgnownext` of [bouquetRef] without the roster: one row per service the receiver
-     * lists events for, so no markers or folders. The player zaps through these rows.
+     * Now/next of [bouquetRef] without the roster: one row per service the receiver lists
+     * events for, so no markers or folders. The player zaps through these rows.
      */
-    suspend fun bouquetNowNext(bouquetRef: String): EnigmaResponse<List<ServiceNowNext>> {
-        val uri = if (DreamDroid.featureNowNext()) URIStore.EPG_NOWNEXT else URIStore.EPG_NOW
-        return clients.current().getEpgNowNext(listOf(NameValuePair("bRef", bouquetRef)), uri)
-    }
+    suspend fun bouquetNowNext(bouquetRef: String): EnigmaResponse<List<ServiceNowNext>> =
+        clients.current().epgNowNext(bouquetRef)
 
     /**
      * The Room roster of [ref] with now/next from the Room EPG chunk at [nowSec], or null
@@ -385,7 +379,7 @@ class ServiceRepository @Inject constructor(
     }
 
     private suspend fun fetchTvBouquets(): EnigmaResponse<List<Service>> =
-        clients.current().getServices(listOf(NameValuePair("sRef", tvRoots[0])))
+        clients.current().services(tvRoots[0])
 
     private suspend fun tabStrip(profileId: Int, kind: String): List<Service> =
         database.rosterDao().getTabStrip(profileId, kind).map { Service(it.serviceRef, it.name) }

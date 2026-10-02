@@ -53,7 +53,7 @@ object WidgetRemoteRequest {
         val params = ArrayList<NameValuePair>()
         params.add(NameValuePair("command", intent.getStringExtra(KEY_KEYID)))
         params.add(NameValuePair("rcu", "advanced"))
-        val response = deps.enigmaClientFactory().forProfile(profile).remoteCommand(params)
+        val response = deps.receiverApiFactory().forProfile(profile).remoteCommand(params)
         val error = response.error
         val errorText = when {
             response.value == null && error != null -> error.resolve(context).orEmpty()

@@ -18,8 +18,8 @@ import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
@@ -37,7 +37,7 @@ class BouquetContentViewModelTest {
     private val sessions = receiver.profiles.sessions
     private val services = receiver.profiles.services
     private val editor = BouquetEditorRepository(
-        enigmaClients(receiver.repository),
+        receiverApis(receiver.repository),
         receiver.repository,
         services
     )
