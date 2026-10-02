@@ -14,7 +14,6 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -42,9 +41,11 @@ class SleepTimerCountdownTest {
             }
         }
         // Buttons take focus only outside touch mode. The countdown appears while a remote,
-        // not a touchscreen, drives the player.
+        // not a touchscreen, drives the player. The request's result only says whether the
+        // root took focus, which it cannot while nothing focusable is composed.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
         composeRule.runOnIdle {
-            assertTrue(inputModeManager.requestInputMode(InputMode.Keyboard))
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
             showCountdown = true
         }
 
