@@ -33,9 +33,10 @@ data class PlayerState(
  * The process's libVLC [MediaPlayer].
  *
  * Call it from the main thread. Video views and the event listener are main-thread work.
- * [MediaPlayer] calls go through [commands], so a stream that is slow to close never blocks
- * input. As in VLC for Android, [playUri] starts the stream with play() on the main thread
- * once setMedia has returned. Read the stream's time, length, and tracks from [state], not from libVLC.
+ * Calls that can wait for a stream to close (setMedia, stop, release, seeking, track and
+ * scale changes) go through [commands], so they never block input. As in VLC for Android,
+ * play(), pause, and the track getters run on the main thread, but only once setMedia has
+ * returned (see [switching]). Read time, length, and track counts from [state].
  */
 @Singleton
 class VLCPlayer @Inject constructor(@param:ApplicationContext private val context: Context) {
@@ -53,6 +54,15 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
      */
     @Volatile
     private var generation: Int = 0
+
+    /** The [generation] whose setMedia has returned; main thread only. */
+    private var startedGeneration: Int = -1
+
+    /**
+     * True while setMedia closes the previous stream. libVLC holds the input lock then, so a
+     * main-thread call would wait for it.
+     */
+    private val switching: Boolean get() = startedGeneration != generation
     private var listener: MediaPlayer.EventListener? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
@@ -145,6 +155,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
             }
             // A zap, detach, or release since then owns the player now.
             if (gen != generation) return@launch
+            startedGeneration = gen
             mp.setEventListener(eventListener(mp, gen))
             mp.rate = 1.0f
             mp.play()
@@ -154,15 +165,13 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     /** Pauses a stream playing at normal speed; otherwise plays at normal speed. */
     fun play() {
         val mp = mediaPlayer ?: return
-        commands.post {
-            if (!mp.hasMedia()) return@post
-            if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia = true)) {
-                mp.pause()
-            } else {
-                mp.play()
-            }
-            mp.rate = 1.0f
+        if (switching || !mp.hasMedia()) return
+        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia = true)) {
+            mp.pause()
+        } else {
+            mp.play()
         }
+        mp.rate = 1.0f
     }
 
     fun setPosition(position: Float) {
@@ -184,14 +193,18 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         }
     }
 
-    suspend fun audioTracks(): Array<MediaPlayer.TrackDescription>? {
+    /** Null while no stream plays or one is still switching. */
+    fun audioTracks(): Array<MediaPlayer.TrackDescription>? {
         val mp = mediaPlayer ?: return null
-        return commands.call { mp.audioTracks }
+        if (switching || !mp.hasMedia()) return null
+        return mp.audioTracks
     }
 
-    suspend fun subtitleTracks(): Array<MediaPlayer.TrackDescription>? {
+    /** Null while no stream plays or one is still switching. */
+    fun subtitleTracks(): Array<MediaPlayer.TrackDescription>? {
         val mp = mediaPlayer ?: return null
-        return commands.call { mp.spuTracks }
+        if (switching || !mp.hasMedia()) return null
+        return mp.spuTracks
     }
 
     fun setAudioTrack(id: Int) {
@@ -244,11 +257,10 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     }
 
     private fun refreshTrackCounts(mp: MediaPlayer, gen: Int) {
-        commands.post {
-            val audio = mp.audioTracksCount
-            val subtitles = mp.spuTracksCount
-            updateState(gen) { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
-        }
+        if (switching || !mp.hasMedia()) return
+        val audio = mp.audioTracksCount
+        val subtitles = mp.spuTracksCount
+        updateState(gen) { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
     }
 
     /**
