@@ -6,13 +6,11 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import java.util.ArrayList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 
 /**
@@ -49,11 +47,10 @@ object WidgetRemoteRequest {
             deps.profileRepository(),
             intent.getIntExtra(KEY_WIDGETID, -1)
         ) ?: return
+        val keyCode = intent.getStringExtra(KEY_KEYID)?.toIntOrNull() ?: return
 
-        val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("command", intent.getStringExtra(KEY_KEYID)))
-        params.add(NameValuePair("rcu", "advanced"))
-        val response = deps.receiverApiFactory().forProfile(profile).remoteCommand(params)
+        val response = deps.receiverApiFactory().forProfile(profile)
+            .remoteCommand(keyCode, simpleRemote = false, longPress = false)
         val error = response.error
         val errorText = when {
             response.value == null && error != null -> error.resolve(context).orEmpty()

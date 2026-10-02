@@ -19,6 +19,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.PowerCommand
 import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.testutil.testShellViewModel
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -87,7 +88,7 @@ class ShellPowerSurvivalTest {
     fun powerToggleResultArrivesAfterRecreate() {
         showShell()
         composeRule.runOnUiThread {
-            viewModel.setPowerState("0")
+            viewModel.setPowerState(PowerCommand.ToggleStandby)
         }
         composeRule.waitUntil(timeoutMillis = 5_000) { started.isCompleted }
 

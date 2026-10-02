@@ -8,7 +8,6 @@ object URIStore {
     const val EPG_BOUQUET: String = "/web/epgbouquet?"
     const val EPG_MULTI: String = "/web/epgmulti?"
     const val DEVICE_INFO: String = "/web/deviceinfo"
-    const val SETTINGS: String = "/web/settings"
     const val SIGNAL: String = "/web/signal"
     const val SERVICES: String = "/web/getservices?"
     const val VOLUME: String = "/web/vol?"

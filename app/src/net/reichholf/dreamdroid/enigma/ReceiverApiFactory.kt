@@ -24,20 +24,22 @@ class ReceiverApiFactory @Inject constructor(
     // Resolved on first dump, which runs on the fetch thread: getCacheDir() touches the disk.
     private val xmlDumpDir = lazy { File(context.cacheDir, XML_DUMP_DIR) }
 
-    /** A client for the active profile. */
-    fun current(): ReceiverApi = DreamboxWebIfApi(currentHttp())
+    /**
+     * A client for the active profile. [timeoutMillis] bounds each request; a long one suits
+     * a call the box takes long to answer.
+     */
+    fun current(timeoutMillis: Int = EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS): ReceiverApi =
+        DreamboxWebIfApi(http(profiles.requireCurrent(), timeoutMillis))
 
     /** A client for [profile], which need not be the active one. */
-    fun forProfile(profile: Profile): ReceiverApi = DreamboxWebIfApi(http(profile))
+    fun forProfile(profile: Profile): ReceiverApi =
+        DreamboxWebIfApi(http(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS))
 
-    /** Raw HTTP for the active profile, for callers that parse the response themselves. */
-    fun currentHttp(): EnigmaHttp = http(profiles.requireCurrent())
-
-    /** Raw HTTP for [profile], for downloads and other non-XML requests. */
-    fun http(profile: Profile): EnigmaHttp = EnigmaHttp(
+    private fun http(profile: Profile, timeoutMillis: Int): EnigmaHttp = EnigmaHttp(
         profile = profile,
         okHttp = okHttp,
-        xmlDumpDir = xmlDumpDir.takeIf { profiles.dumpXml() }
+        xmlDumpDir = xmlDumpDir.takeIf { profiles.dumpXml() },
+        timeoutMillis = timeoutMillis
     )
 
     private companion object {

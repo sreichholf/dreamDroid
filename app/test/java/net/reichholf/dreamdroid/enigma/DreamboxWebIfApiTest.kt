@@ -5,12 +5,18 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerListParser
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.HttpUrl
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
+import okio.Buffer
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -20,8 +26,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * The `/web` requests [DreamboxWebIfApi] sends for the services, EPG, timer, movie, location and
- * tag calls, and the stream and file URLs it builds.
+ * The requests [DreamboxWebIfApi] sends to `/web` and the WebBouquetEditor and AutoTimer
+ * plugins, and the stream and file URLs it builds.
  */
 class DreamboxWebIfApiTest {
     private val server = MockWebServer()
@@ -309,6 +315,232 @@ class DreamboxWebIfApiTest {
         )
     }
 
+    @Test
+    fun deviceInfoAsksDeviceInfo() = runBlocking {
+        server.enqueue(MockResponse().setBody(loadWebFixture("deviceinfo.xml")))
+
+        assertNotNull(api.deviceInfo().value)
+
+        assertEquals("/web/deviceinfo?", takePath())
+    }
+
+    @Test
+    fun zapSendsTheReference() = runBlocking {
+        server.enqueue(MockResponse().setBody(""))
+
+        api.zap(SERVICE)
+
+        assertEquals("/web/zap?sRef=$SERVICE_ENCODED", takePath())
+    }
+
+    @Test
+    fun remoteCommandSendsKeyRemoteAndLongPress() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+
+        api.remoteCommand(412, simpleRemote = false, longPress = true)
+        api.remoteCommand(113, simpleRemote = true, longPress = false)
+        api.remoteCommand(352, simpleRemote = false, longPress = false)
+
+        assertEquals("/web/remotecontrol?command=412&rcu=advanced&type=long", takePath())
+        assertEquals("/web/remotecontrol?command=113&rcu=standard", takePath())
+        assertEquals("/web/remotecontrol?command=352&rcu=advanced", takePath())
+    }
+
+    @Test
+    fun setVolumeSendsTheCommand() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+
+        VolumeCommand.entries.forEach { api.setVolume(it) }
+
+        assertEquals("/web/vol?set=up", takePath())
+        assertEquals("/web/vol?set=down", takePath())
+        assertEquals("/web/vol?set=mute", takePath())
+    }
+
+    @Test
+    fun setPowerStateSendsEnigmaStateCodes() = runBlocking {
+        repeat(4) { server.enqueue(MockResponse().setBody("")) }
+
+        api.setPowerState(PowerCommand.ToggleStandby)
+        api.setPowerState(PowerCommand.Shutdown)
+        api.setPowerState(PowerCommand.Reboot)
+        api.setPowerState(PowerCommand.RestartGui)
+
+        assertEquals("/web/powerstate?newstate=0", takePath())
+        assertEquals("/web/powerstate?newstate=1", takePath())
+        assertEquals("/web/powerstate?newstate=2", takePath())
+        assertEquals("/web/powerstate?newstate=3", takePath())
+    }
+
+    @Test
+    fun sendMessageSendsTextTypeAndTimeout() = runBlocking {
+        server.enqueue(MockResponse().setBody(""))
+
+        api.sendMessage("Hello & bye", "2", "10")
+
+        assertEquals("/web/message?text=Hello%20%26%20bye&type=2&timeout=10", takePath())
+    }
+
+    @Test
+    fun sleepTimerReadsWithoutParametersAndWritesWithSet() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+
+        api.sleepTimer()
+        api.setSleepTimer("30", "standby", enabled = true)
+        api.setSleepTimer("0", "shutdown", enabled = false)
+
+        assertEquals("/web/sleeptimer?", takePath())
+        assertEquals("/web/sleeptimer?cmd=set&time=30&action=standby&enabled=True", takePath())
+        assertEquals("/web/sleeptimer?cmd=set&time=0&action=shutdown&enabled=False", takePath())
+    }
+
+    @Test
+    fun screenshotGrabsAJpegIntoATimestampedFile() = runBlocking {
+        server.enqueue(MockResponse().setBody(Buffer().write(JPEG)))
+
+        assertTrue(api.screenshot().value!!.contentEquals(JPEG))
+
+        assertTrue(GRAB.matches(takePath()))
+        assertEquals(1, server.requestCount)
+    }
+
+    @Test
+    fun screenshotWithoutAnImageFromGrabAsksScreenshot() = runBlocking {
+        server.enqueue(MockResponse().setBody(""))
+        server.enqueue(MockResponse().setBody(Buffer().write(JPEG)))
+
+        assertTrue(api.screenshot().value!!.contentEquals(JPEG))
+
+        assertTrue(GRAB.matches(takePath()))
+        assertEquals("/screenshot?format=jpg&osd=1&video=1", takePath())
+    }
+
+    @Test
+    fun hasPluginLooksForItsPathInWebExternals() = runBlocking {
+        server.enqueue(MockResponse().setBody(EXTERNALS))
+        server.enqueue(MockResponse().setBody(EXTERNALS))
+
+        assertEquals(false, api.hasPlugin(ReceiverPlugin.AutoTimer).value)
+        assertEquals(true, api.hasPlugin(ReceiverPlugin.BouquetEditor).value)
+
+        assertEquals("/web/external?", takePath())
+        assertEquals("/web/external?", takePath())
+    }
+
+    @Test
+    fun bouquetEditorSatellitesSendTheMode() = runBlocking {
+        repeat(2) { server.enqueue(MockResponse().setBody("")) }
+
+        api.bouquetEditorSatellites(BouquetMode.Tv)
+        api.bouquetEditorSatellites(BouquetMode.Radio)
+
+        assertEquals("/bouqueteditor/web/satelliteslist?mode=0", takePath())
+        assertEquals("/bouqueteditor/web/satelliteslist?mode=1", takePath())
+    }
+
+    @Test
+    fun bouquetEditsSendThePluginParameters() = runBlocking {
+        repeat(5) { server.enqueue(MockResponse().setBody("")) }
+
+        api.addBouquet(BouquetMode.Tv, "News & Co")
+        api.removeBouquet(BouquetMode.Radio, FAVOURITES)
+        api.moveBouquet(BouquetMode.Tv, FAVOURITES, 2)
+        api.renameBouquet(BouquetMode.Radio, FAVOURITES, "Mine")
+        api.backupBouquets("dreamdroid_1700000000")
+
+        assertEquals("/bouqueteditor/web/addbouquet?name=News%20%26%20Co&mode=0", takePath())
+        assertEquals(
+            "/bouqueteditor/web/removebouquet?sBouquetRef=$FAVOURITES_ENCODED&mode=1",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/movebouquet?sBouquetRef=$FAVOURITES_ENCODED&mode=0&position=2",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/renameservice?sRef=$FAVOURITES_ENCODED&mode=1&newName=Mine",
+            takePath()
+        )
+        assertEquals("/bouqueteditor/web/backup?Filename=dreamdroid_1700000000", takePath())
+    }
+
+    @Test
+    fun bouquetServiceEditsSendThePluginParameters() = runBlocking {
+        repeat(6) { server.enqueue(MockResponse().setBody("")) }
+
+        api.addServiceToBouquet(FAVOURITES, ERSTE)
+        api.removeBouquetService(FAVOURITES, ERSTE)
+        api.moveBouquetService(BouquetMode.Radio, FAVOURITES, ERSTE, 3)
+        api.renameBouquetService(FAVOURITES, ERSTE, SERVICE, "ARD")
+        api.addBouquetMarker(FAVOURITES, "News", "")
+        api.addBouquetMarker(FAVOURITES, "News", SERVICE)
+
+        val bouquet = "sBouquetRef=$FAVOURITES_ENCODED"
+        assertEquals(
+            "/bouqueteditor/web/addservicetobouquet?$bouquet&sRef=$ERSTE_ENCODED&sRefBefore=",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/removeservice?$bouquet&sRef=$ERSTE_ENCODED",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/moveservice?$bouquet&sRef=$ERSTE_ENCODED&position=3&mode=1",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/renameservice?$bouquet&sRef=$ERSTE_ENCODED" +
+                "&sRefBefore=$SERVICE_ENCODED&newName=ARD",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/addmarkertobouquet?$bouquet&Name=News&sRefBefore=",
+            takePath()
+        )
+        assertEquals(
+            "/bouqueteditor/web/addmarkertobouquet?$bouquet&Name=News&sRefBefore=$SERVICE_ENCODED",
+            takePath()
+        )
+    }
+
+    @Test
+    fun autoTimerCallsSendTheirIds() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+
+        api.testAutoTimer(AutoTimerId(2))
+        api.removeAutoTimer(AutoTimerId(2))
+        api.runAutoTimers()
+
+        assertEquals("/autotimer/test?id=2", takePath())
+        assertEquals("/autotimer/remove?id=2", takePath())
+        assertEquals("/autotimer/parse?", takePath())
+    }
+
+    @Test
+    fun saveAutoTimerSendsTheChangedGroupsToEdit() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+        val loaded = (
+            AutoTimerListParser.parse(loadWebFixture("autotimer/list_enabled.xml"))!!
+                .entries.single() as AutoTimerEntry.Readable
+            ).autoTimer
+
+        api.saveAutoTimer(AutoTimerWrite.Change(loaded, loaded.settings.copy(enabled = false)))
+        api.saveAutoTimer(
+            AutoTimerWrite.Change(loaded, loaded.settings.copy(match = "50%20 & x"))
+        )
+        api.saveAutoTimer(
+            AutoTimerWrite.Create(
+                AutoTimerSettings.NEW,
+                AutoTimerSettings.NEW.copy(match = "Wilsberg", name = "W")
+            )
+        )
+
+        val name = "name=dreamDroid%20test%20Wilsberg"
+        assertEquals("/autotimer/edit?id=2&match=Wilsberg&$name&enabled=0", takePath())
+        assertEquals("/autotimer/edit?id=2&match=50%252520%20%26%20x&$name", takePath())
+        assertEquals("/autotimer/edit?match=Wilsberg&name=W", takePath())
+    }
+
     private fun urlClient(configure: Profile.() -> Unit = {}) = DreamboxWebIfApi(
         EnigmaHttp(
             Profile().apply {
@@ -329,6 +561,8 @@ class DreamboxWebIfApiTest {
 
     private fun takeUrl(): HttpUrl = server.takeRequest(5, TimeUnit.SECONDS)!!.requestUrl!!
 
+    private fun takePath(): String = server.takeRequest(5, TimeUnit.SECONDS)!!.path!!
+
     private companion object {
         const val BOUQUET = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\""
         const val PROVIDERS = "1:0:1:0:0:0:0:0:0:0:FROM PROVIDERS"
@@ -338,6 +572,22 @@ class DreamboxWebIfApiTest {
         const val RECORDING_PATH = "/media/hdd/movie/a b.ts"
         const val RECORDING_REF = "1:0:0:0:0:0:0:0:0:0:$RECORDING_PATH"
         const val RECORDING_ENCODED = "%2Fmedia%2Fhdd%2Fmovie%2Fa%20b.ts"
+        const val FAVOURITES =
+            "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
+        const val FAVOURITES_ENCODED = "1%3A7%3A1%3A0%3A0%3A0%3A0%3A0%3A0%3A0%3AFROM%20BOUQUET" +
+            "%20%22userbouquet.favourites.tv%22%20ORDER%20BY%20bouquet"
+        const val ERSTE = "1:0:19:283D:3FB:1:C00000:0:0:0:"
+        const val ERSTE_ENCODED = "1%3A0%3A19%3A283D%3A3FB%3A1%3AC00000%3A0%3A0%3A0%3A"
+
+        /** Lists the AutoTimer's web page, which is not the plugin's API. */
+        const val EXTERNALS = "<e2webifexternals>" +
+            "<e2webifexternal><e2path>autotimereditor</e2path></e2webifexternal>" +
+            "<e2webifexternal><e2path>bouqueteditor</e2path></e2webifexternal>" +
+            "</e2webifexternals>"
+
+        /** `/grab` writes to `/tmp/dreamDroid-<unix seconds>`. */
+        val GRAB = Regex("/grab\\?format=jpg&filename=%2Ftmp%2FdreamDroid-\\d+")
+        val JPEG = byteArrayOf(0xFF.toByte(), 0xD8.toByte(), 0xFF.toByte(), 0xE0.toByte())
 
         val TIMER = Timer(
             reference = SERVICE,

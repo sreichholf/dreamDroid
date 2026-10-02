@@ -10,11 +10,9 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
+import net.reichholf.dreamdroid.enigma.ReceiverApi
 import net.reichholf.dreamdroid.ui.text.UiText
 
 object CheckProfile {
@@ -29,13 +27,13 @@ object CheckProfile {
     val REQUIRED_VERSION: IntArray = intArrayOf(1, 6, 5)
 
     /**
-     * Asks [profile]'s receiver over [http] for its device info and applies the web
+     * Asks [profile]'s receiver through [api] for its device info and applies the web
      * interface features it reports. A device-info answer cached in [profiles] stands in
      * for asking.
      */
-    fun checkProfile(
+    suspend fun checkProfile(
         profile: Profile,
-        http: EnigmaHttp,
+        api: ReceiverApi,
         profiles: ProfileRepository
     ): ProfileCheckResult {
         val host = profile.host ?: return ProfileCheckResult()
@@ -61,20 +59,18 @@ object CheckProfile {
             )
         }
 
-        val xml = profiles.deviceInfo(profile)
-            ?: when (val fetched = http.fetch(URIStore.DEVICE_INFO)) {
-                is EnigmaHttpResult.Success -> fetched.text
-
-                is EnigmaHttpResult.Failure -> return ProfileCheckResult(
+        val deviceInfo = profiles.deviceInfo(profile) ?: api.deviceInfo().let { fetched ->
+            fetched.error?.let { error ->
+                return ProfileCheckResult(
                     hasError = true,
                     errorTextId = R.string.connection_error,
-                    errorText = fetched.error.failure.userMessageText()
+                    errorText = error.failure.userMessageText()
                         .takeUnless { it is UiText.Raw && it.text.isBlank() },
-                    failure = fetched.error.failure
+                    failure = error.failure
                 )
             }
-
-        val deviceInfo = DeviceInfoParser.parse(xml)
+            fetched.value
+        }
         if (deviceInfo == null || deviceInfo.isEmpty()) {
             profiles.setDeviceInfo(profile, null)
             return ProfileCheckResult(
@@ -83,7 +79,7 @@ object CheckProfile {
                 failure = EnigmaFailure.Parse
             )
         }
-        profiles.setDeviceInfo(profile, xml)
+        profiles.setDeviceInfo(profile, deviceInfo)
         val version = deviceInfo.interfaceVersion.ifEmpty { "0" }
         applyWebInterfaceFeatures(version)
         if (checkVersion(version) < 0) {

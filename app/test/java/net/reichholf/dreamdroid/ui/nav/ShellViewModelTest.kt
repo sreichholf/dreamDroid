@@ -18,7 +18,9 @@ import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.PowerCommand
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Statics
@@ -150,7 +152,7 @@ class ShellViewModelTest {
         receiver.answer = { MockResponse().setResponseCode(500) }
         val viewModel = viewModel()
 
-        viewModel.setPowerState("0")
+        viewModel.setPowerState(PowerCommand.ToggleStandby)
         val state = viewModel.awaitState { it.userMessage != null }
 
         assertEquals(
@@ -319,7 +321,10 @@ class ShellViewModelTest {
     @Test
     fun aCachedDeviceInfoAnswerIsReusedAndStaysOffTheGate() = runBlocking<Unit> {
         settings.firstStart = false
-        profiles.setDeviceInfo(profiles.requireCurrent(), loadWebFixture("deviceinfo.xml"))
+        profiles.setDeviceInfo(
+            profiles.requireCurrent(),
+            DeviceInfoParser.parse(loadWebFixture("deviceinfo.xml"))
+        )
         val viewModel = viewModel()
 
         viewModel.checkActiveProfile()

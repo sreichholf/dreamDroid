@@ -11,6 +11,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
+import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
@@ -106,7 +107,10 @@ class TvShellViewModelTest {
     @Test
     fun aProfileWithCachedDeviceInfoIsNotAskedAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
-        profiles.setDeviceInfo(profiles.requireCurrent(), loadWebFixture("deviceinfo.xml"))
+        profiles.setDeviceInfo(
+            profiles.requireCurrent(),
+            DeviceInfoParser.parse(loadWebFixture("deviceinfo.xml"))
+        )
 
         viewModel.start()
         awaitStatus { it.session == ConnectionStatus.Session.Online }

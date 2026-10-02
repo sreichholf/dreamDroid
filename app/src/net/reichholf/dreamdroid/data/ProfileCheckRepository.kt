@@ -36,6 +36,6 @@ class ReceiverProfileCheckRepository @Inject constructor(
 
     override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
         withContext(Dispatchers.IO) {
-            CheckProfile.checkProfile(profile, clients.http(profile), profiles)
+            CheckProfile.checkProfile(profile, clients.forProfile(profile), profiles)
         }
 }

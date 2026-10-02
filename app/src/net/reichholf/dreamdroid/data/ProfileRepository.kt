@@ -17,6 +17,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
@@ -24,7 +25,7 @@ import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 /**
  * Room profiles and the active profile. [current] is the source of truth.
  * [switches] emits once when the active profile actually changes (settings differ
- * or the caller forces the event). Location lists, tag lists, and device-info XML
+ * or the caller forces the event). Location lists, tag lists, and device info
  * live here and are cleared on that change.
  *
  * The constructor must not read [store]: Hilt builds this during `DreamDroid`'s
@@ -62,7 +63,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     @Volatile
     private var locationsFromReceiver: Boolean = false
 
-    private val deviceInfo = HashMap<Int, String>()
+    private val deviceInfo = HashMap<Int, DeviceInfo>()
 
     @Volatile
     private var xmlDump: Boolean = false
@@ -79,20 +80,20 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
 
     fun locationsLoadedFromReceiver(): Boolean = locationsFromReceiver
 
-    /** Device-info XML for a saved profile. Drafts with no id are never cached. */
+    /** Device info of a saved profile's receiver. Drafts with no id are never cached. */
     @Synchronized
-    fun deviceInfo(profile: Profile): String? {
+    fun deviceInfo(profile: Profile): DeviceInfo? {
         val id = profile.id ?: return null
         return deviceInfo[id]
     }
 
     @Synchronized
-    fun setDeviceInfo(profile: Profile, xml: String?) {
+    fun setDeviceInfo(profile: Profile, info: DeviceInfo?) {
         val id = profile.id ?: return
-        if (xml == null) {
+        if (info == null) {
             deviceInfo.remove(id)
         } else {
-            deviceInfo[id] = xml
+            deviceInfo[id] = info
         }
     }
 
@@ -106,7 +107,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
 
     /**
      * Replaces the in-memory current profile (the edit path). Locations and tags stay.
-     * Device-info XML is dropped when connection settings changed, so the next check
+     * Device info is dropped when connection settings changed, so the next check
      * talks to the edited receiver instead of reusing the old one's answer.
      * A profile set here is settled, so [awaitLoaded] returns; instrumented tests, which
      * skip `DreamDroid.onCreate`, rely on that.
@@ -140,7 +141,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     /**
      * Loads [id] from [store], publishes it on [current], and emits [switches] once
      * when the row differs from the active profile or [forceEvent] is true.
-     * That path clears locations, tags, and device-info XML.
+     * That path clears locations, tags, and device info.
      */
     internal suspend fun activate(id: Int, forceEvent: Boolean): Boolean =
         writes.withLock { activateLocked(id, forceEvent) }

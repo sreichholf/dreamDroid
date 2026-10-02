@@ -12,8 +12,8 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetEditorRepository
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS

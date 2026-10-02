@@ -9,3 +9,14 @@ import java.io.Serializable
  * XML `false` (not in standby) → `true`.
  */
 data class PowerState(val isRunning: Boolean? = null) : Serializable
+
+/** A power action on the receiver. */
+enum class PowerCommand {
+    /** Into standby, or out of it. */
+    ToggleStandby,
+    Shutdown,
+    Reboot,
+
+    /** Restarts enigma2 only. */
+    RestartGui
+}

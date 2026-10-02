@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.BouquetMode
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
 

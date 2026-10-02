@@ -21,12 +21,12 @@ import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.PowerCommand
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
 import net.reichholf.dreamdroid.helpers.enigma2.shouldConsumeVolumeKey
 import net.reichholf.dreamdroid.helpers.enigma2.volumeCommandForKey
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
@@ -208,20 +208,20 @@ class ShellViewModel @Inject constructor(
     }
 
     fun onPowerMenuAction(itemId: Int) {
-        val state = when (itemId) {
-            Statics.ITEM_TOGGLE_STANDBY -> PowerStateKeys.STATE_TOGGLE
-            Statics.ITEM_RESTART_GUI -> PowerStateKeys.STATE_GUI_RESTART
-            Statics.ITEM_REBOOT -> PowerStateKeys.STATE_SYSTEM_REBOOT
-            Statics.ITEM_SHUTDOWN -> PowerStateKeys.STATE_SHUTDOWN
+        val command = when (itemId) {
+            Statics.ITEM_TOGGLE_STANDBY -> PowerCommand.ToggleStandby
+            Statics.ITEM_RESTART_GUI -> PowerCommand.RestartGui
+            Statics.ITEM_REBOOT -> PowerCommand.Reboot
+            Statics.ITEM_SHUTDOWN -> PowerCommand.Shutdown
             else -> return
         }
-        setPowerState(state)
+        setPowerState(command)
     }
 
-    fun setPowerState(state: String) {
+    fun setPowerState(command: PowerCommand) {
         powerJob?.cancel()
         powerJob = viewModelScope.launch {
-            val response = receiver.setPowerState(state)
+            val response = receiver.setPowerState(command)
             val error = response.error
             _uiState.update {
                 it.copy(

@@ -16,9 +16,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetEditorRepository
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText

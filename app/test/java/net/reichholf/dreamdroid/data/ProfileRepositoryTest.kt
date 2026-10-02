@@ -12,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.enigma.DeviceInfo
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -27,7 +28,7 @@ class ProfileRepositoryTest {
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
         repo.tags().add("News")
-        repo.setDeviceInfo(first, "<deviceinfo/>")
+        repo.setDeviceInfo(first, DEVICE_INFO)
         repo.setLocationsLoadedFromReceiver(true)
 
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
@@ -57,13 +58,13 @@ class ProfileRepositoryTest {
         val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
-        repo.setDeviceInfo(first, "<deviceinfo/>")
+        repo.setDeviceInfo(first, DEVICE_INFO)
 
         repo.setCurrent(edited)
 
         assertEquals("Living Room", repo.requireCurrent().name)
         assertEquals(listOf("/hdd/movie"), repo.locations())
-        assertEquals("<deviceinfo/>", repo.deviceInfo(edited))
+        assertEquals(DEVICE_INFO, repo.deviceInfo(edited))
     }
 
     @Test
@@ -72,7 +73,7 @@ class ProfileRepositoryTest {
         val repo = ProfileRepository(MemoryProfileStore(listOf(first)))
         assertTrue(repo.activate(first.id!!, forceEvent = true))
         repo.locations().add("/hdd/movie")
-        repo.setDeviceInfo(first, "<deviceinfo/>")
+        repo.setDeviceInfo(first, DEVICE_INFO)
 
         repo.setCurrent(profile(1, "other-box"))
 
@@ -229,6 +230,8 @@ class ProfileRepositoryTest {
         assertTrue(repo.isLoaded())
     }
 }
+
+private val DEVICE_INFO = DeviceInfo(deviceName = "dm920")
 
 private fun profile(id: Int, host: String): Profile = Profile().apply {
     this.id = id

@@ -117,7 +117,6 @@ class EnigmaHttpOkHttpTest {
                 }
             }
         val client = clientForServer()
-        client.setConnectionTimeoutMillis(15_000)
         val finished = CountDownLatch(1)
         var ok = true
         var failure: EnigmaFailure? = null

@@ -10,9 +10,9 @@ import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.autotimer.Target

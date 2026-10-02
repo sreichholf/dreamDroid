@@ -50,18 +50,13 @@ class EnigmaHttp(
     val profile: Profile,
     private val okHttp: EnigmaOkHttp,
     private val xmlDumpDir: Lazy<File>? = null,
-    timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+    private val timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
 ) {
-    private var timeoutMillis: Int = timeoutMillis
     private var rememberedReturnCode: Int = 0
 
     @Volatile
     private var inFlight: Call? = null
     private val fetchEpoch = AtomicInteger(0)
-
-    fun setConnectionTimeoutMillis(millis: Int) {
-        timeoutMillis = millis
-    }
 
     fun connectionTimeoutMillis(): Int = timeoutMillis
 

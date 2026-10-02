@@ -1,18 +1,18 @@
 package net.reichholf.dreamdroid.enigma
 
 import java.io.File
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /**
  * One receiver's web interface, over one connection to one profile. Built per operation by
  * [ReceiverApiFactory]; see docs/openwebif.md for the per-webif implementations.
  *
- * The services, EPG, timer, movie, stream, location and tag calls take and return domain
- * types; how they map to requests and URLs is up to the implementation. The other calls still
- * take request parameters until their areas move behind this interface too.
+ * Every call takes and returns domain types; how they map to requests and URLs is up to the
+ * implementation.
  */
 interface ReceiverApi {
     /** Members of [containerRef]: a bouquet index, a bouquet, a provider, or a folder. */
@@ -47,14 +47,20 @@ interface ReceiverApi {
     /** Programmes whose title matches [query]. */
     suspend fun epgSearch(query: String): EnigmaResponse<List<Event>>
 
-    suspend fun getCurrent(): EnigmaResponse<CurrentService>
+    /** The service the receiver is tuned to, with its now and next event. */
+    suspend fun currentService(): EnigmaResponse<CurrentService>
 
-    suspend fun getDeviceInfo(): EnigmaResponse<DeviceInfo>
+    /** The receiver's hardware, image and web interface versions. */
+    suspend fun deviceInfo(): EnigmaResponse<DeviceInfo>
 
-    suspend fun getSignal(): EnigmaResponse<Signal>
+    /** The tuner's signal on the current service. */
+    suspend fun signal(): EnigmaResponse<Signal>
 
-    /** A screenshot's image bytes, or no value when the receiver sent no image. */
-    suspend fun getScreenshot(grabParams: List<NameValuePair>): EnigmaResponse<ByteArray>
+    /**
+     * A JPEG of video and OSD at the receiver's resolution, or no value when the receiver
+     * sent no image.
+     */
+    suspend fun screenshot(): EnigmaResponse<ByteArray>
 
     /** The receiver's timers. */
     suspend fun timers(): EnigmaResponse<List<Timer>>
@@ -89,29 +95,55 @@ interface ReceiverApi {
      */
     suspend fun downloadRecording(path: String, destination: File): EnigmaHttpError?
 
-    suspend fun setVolume(params: List<NameValuePair>): EnigmaResponse<Volume>
+    /** Runs the volume [command]; the answer carries the new level. */
+    suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume>
 
-    suspend fun setPowerState(params: List<NameValuePair>): EnigmaResponse<PowerState>
+    /** Runs the power [command]; the answer carries the new state. */
+    suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState>
 
-    suspend fun sleepTimer(params: List<NameValuePair>): EnigmaResponse<SleepTimer>
+    /** The sleep timer. */
+    suspend fun sleepTimer(): EnigmaResponse<SleepTimer>
 
-    /** The path of each web interface plugin. */
-    suspend fun getWebExternals(): EnigmaResponse<List<String>>
+    /**
+     * Sets the sleep timer to [minutes] from now and [action] (`standby` or `shutdown`),
+     * switched on or off by [enabled]; the answer carries the stored timer.
+     */
+    suspend fun setSleepTimer(
+        minutes: String?,
+        action: String?,
+        enabled: Boolean
+    ): EnigmaResponse<SleepTimer>
 
-    /** Satellite roots of the bouquet editor for `mode` (0 TV, 1 radio). */
-    suspend fun getBouquetEditorSatellites(
-        params: List<NameValuePair>
-    ): EnigmaResponse<List<Service>>
+    /** Whether the receiver has [plugin] installed. */
+    suspend fun hasPlugin(plugin: ReceiverPlugin): EnigmaResponse<Boolean>
 
     /** The AutoTimer plugin's list. A config the box cannot load is a box rejection. */
-    suspend fun getAutoTimers(): EnigmaResponse<AutoTimerList>
+    suspend fun autoTimers(): EnigmaResponse<AutoTimerList>
 
     // Mutations below: a rejected command has a value and a BoxRejected error.
-    suspend fun zap(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
 
-    suspend fun remoteCommand(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Zaps the receiver to [reference], a service or a recording. */
+    suspend fun zap(reference: String): EnigmaResponse<SimpleResult>
 
-    suspend fun sendMessage(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /**
+     * Presses the remote-control key [keyCode] (a Linux input key code) on the standard remote
+     * when [simpleRemote], else on the advanced one; held when [longPress].
+     */
+    suspend fun remoteCommand(
+        keyCode: Int,
+        simpleRemote: Boolean,
+        longPress: Boolean
+    ): EnigmaResponse<SimpleResult>
+
+    /**
+     * Shows [text] on the receiver's screen as a message of [type] (0 yes/no, 1 info,
+     * 2 warning, 3 error) for [timeout] seconds.
+     */
+    suspend fun sendMessage(
+        text: String?,
+        type: String?,
+        timeout: String?
+    ): EnigmaResponse<SimpleResult>
 
     /** Plays [reference], a media player service reference, on the receiver. */
     suspend fun playMedia(reference: String): EnigmaResponse<SimpleResult>
@@ -133,32 +165,80 @@ interface ReceiverApi {
     /** Removes the finished timers. */
     suspend fun cleanupTimers(): EnigmaResponse<SimpleResult>
 
-    // Bouquet editor. The box applies each edit immediately.
-    suspend fun addBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    // Bouquet editor plugin. The box applies each edit immediately.
 
-    suspend fun removeBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Satellite folders of [mode] to add services from. */
+    suspend fun bouquetEditorSatellites(mode: BouquetMode): EnigmaResponse<List<Service>>
 
-    suspend fun moveBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Adds bouquet [name] to the [mode] index; the box appends " (TV)" or " (Radio)". */
+    suspend fun addBouquet(mode: BouquetMode, name: String): EnigmaResponse<SimpleResult>
 
-    suspend fun addServiceToBouquet(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    suspend fun removeBouquet(mode: BouquetMode, bouquetRef: String): EnigmaResponse<SimpleResult>
 
-    suspend fun removeBouquetService(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Moves [bouquetRef] to the 0-based [position] of the [mode] index. */
+    suspend fun moveBouquet(
+        mode: BouquetMode,
+        bouquetRef: String,
+        position: Int
+    ): EnigmaResponse<SimpleResult>
 
-    suspend fun moveBouquetService(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Renames [bouquetRef] in place; its reference stays. */
+    suspend fun renameBouquet(
+        mode: BouquetMode,
+        bouquetRef: String,
+        newName: String
+    ): EnigmaResponse<SimpleResult>
 
-    suspend fun renameBouquetEntry(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Appends [serviceRef] to [bouquetRef]. */
+    suspend fun addServiceToBouquet(
+        bouquetRef: String,
+        serviceRef: String
+    ): EnigmaResponse<SimpleResult>
 
-    suspend fun addBouquetMarker(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    suspend fun removeBouquetService(
+        bouquetRef: String,
+        serviceRef: String
+    ): EnigmaResponse<SimpleResult>
 
-    suspend fun backupBouquets(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Moves [serviceRef] to the 0-based [position] of [bouquetRef]; markers count. */
+    suspend fun moveBouquetService(
+        mode: BouquetMode,
+        bouquetRef: String,
+        serviceRef: String,
+        position: Int
+    ): EnigmaResponse<SimpleResult>
+
+    /**
+     * Renames [serviceRef] in [bouquetRef]. The box replaces the entry, so its reference
+     * changes; it goes before [beforeRef] ("" appends).
+     */
+    suspend fun renameBouquetService(
+        bouquetRef: String,
+        serviceRef: String,
+        beforeRef: String,
+        newName: String
+    ): EnigmaResponse<SimpleResult>
+
+    /** Adds marker [name] to [bouquetRef] before [beforeRef] ("" appends). */
+    suspend fun addBouquetMarker(
+        bouquetRef: String,
+        name: String,
+        beforeRef: String
+    ): EnigmaResponse<SimpleResult>
+
+    /** Backs up the bouquets into the box-side file [fileName]. */
+    suspend fun backupBouquets(fileName: String): EnigmaResponse<SimpleResult>
+
+    // AutoTimer plugin.
 
     /** What the AutoTimer [id] would record now; the plugin skips disabled ones. */
-    suspend fun testAutoTimer(id: Int): EnigmaResponse<PreviewOutcome>
+    suspend fun testAutoTimer(id: AutoTimerId): EnigmaResponse<PreviewOutcome>
 
-    suspend fun editAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Writes [write]: changes an AutoTimer or adds one. */
+    suspend fun saveAutoTimer(write: AutoTimerWrite): EnigmaResponse<SimpleResult>
 
-    /** Removes an AutoTimer. The plugin answers True even for an unknown id. */
-    suspend fun removeAutoTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Removes the AutoTimer [id]. The plugin answers True even for an unknown id. */
+    suspend fun removeAutoTimer(id: AutoTimerId): EnigmaResponse<SimpleResult>
 
     /** Runs all enabled AutoTimers now; the reply is the plugin's summary. */
     suspend fun runAutoTimers(): EnigmaResponse<SimpleResult>

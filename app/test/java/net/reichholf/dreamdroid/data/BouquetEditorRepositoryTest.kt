@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.room.ServiceRosterEntity
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS

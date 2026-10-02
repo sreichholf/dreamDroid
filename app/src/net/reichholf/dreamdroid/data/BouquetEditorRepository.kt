@@ -13,18 +13,13 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.BouquetEntry
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.ReceiverApi
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
+import net.reichholf.dreamdroid.enigma.ReceiverPlugin
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.toBouquetEntry
-import net.reichholf.dreamdroid.helpers.NameValuePair
-
-/** The receiver's TV or radio bouquets; [param] is the plugin's `mode`. */
-enum class BouquetMode(val param: String) {
-    Tv("0"),
-    Radio("1")
-}
 
 /** The receiver edits go to: the active profile's id and address. */
 data class BouquetReceiver(val profileId: Int?, val host: String?, val port: Int)
@@ -65,11 +60,9 @@ class BouquetEditorRepository @Inject constructor(
     val receiver: Flow<BouquetReceiver?> =
         profiles.current.map { it?.receiver() }.distinctUntilChanged()
 
-    /** Whether the receiver lists the plugin in `/web/external`. Null value on failure. */
-    suspend fun isAvailable(): EnigmaResponse<Boolean> {
-        val response = clients.current().getWebExternals()
-        return EnigmaResponse(response.value?.contains(PLUGIN_PATH), response.error)
-    }
+    /** Whether the receiver has the plugin. Null value on failure. */
+    suspend fun isAvailable(): EnigmaResponse<Boolean> =
+        clients.current().hasPlugin(ReceiverPlugin.BouquetEditor)
 
     /** The bouquets of the [mode] index, in the box's order. */
     suspend fun bouquets(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
@@ -80,8 +73,7 @@ class BouquetEditorRepository @Inject constructor(
 
     /** Satellite folders to add services from. */
     suspend fun satellites(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> {
-        val response = clients.current()
-            .getBouquetEditorSatellites(listOf(NameValuePair("mode", mode.param)))
+        val response = clients.current().bouquetEditorSatellites(mode)
         return EnigmaResponse(
             response.value?.map {
                 it.toBouquetEntry(atRoot = false)
@@ -105,38 +97,24 @@ class BouquetEditorRepository @Inject constructor(
 
     /** Adds bouquet [name]; the box appends " (TV)" or " (Radio)" and allows duplicates. */
     suspend fun addBouquet(mode: BouquetMode, name: String): BouquetEditResult =
-        edit(listOf(root(mode))) {
-            addBouquet(params("name" to name, "mode" to mode.param))
-        }
+        edit(listOf(root(mode))) { addBouquet(mode, name) }
 
     suspend fun removeBouquet(mode: BouquetMode, bouquetRef: String): BouquetEditResult =
-        edit(listOf(root(mode), bouquetRef)) {
-            removeBouquet(params("sBouquetRef" to bouquetRef, "mode" to mode.param))
-        }
+        edit(listOf(root(mode), bouquetRef)) { removeBouquet(mode, bouquetRef) }
 
     /** Moves [bouquetRef] to the 0-based [position] of the index. */
     suspend fun moveBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         position: Int
-    ): BouquetEditResult = edit(listOf(root(mode))) {
-        moveBouquet(
-            params(
-                "sBouquetRef" to bouquetRef,
-                "mode" to mode.param,
-                "position" to position.toString()
-            )
-        )
-    }
+    ): BouquetEditResult = edit(listOf(root(mode))) { moveBouquet(mode, bouquetRef, position) }
 
     /** Renames [bouquetRef] in place; its reference stays. */
     suspend fun renameBouquet(
         mode: BouquetMode,
         bouquetRef: String,
         newName: String
-    ): BouquetEditResult = edit(listOf(root(mode))) {
-        renameBouquetEntry(params("sRef" to bouquetRef, "mode" to mode.param, "newName" to newName))
-    }
+    ): BouquetEditResult = edit(listOf(root(mode))) { renameBouquet(mode, bouquetRef, newName) }
 
     /**
      * Appends [refs] to [bouquetRef] in order. A rejected one (already in the bouquet) does
@@ -152,9 +130,7 @@ class BouquetEditorRepository @Inject constructor(
             var touched = false
             invalidatingOnCancel(listOf(bouquetRef)) {
                 for (ref in refs) {
-                    last = client.addServiceToBouquet(
-                        params("sBouquetRef" to bouquetRef, "sRef" to ref, "sRefBefore" to "")
-                    )
+                    last = client.addServiceToBouquet(bouquetRef, ref)
                     if (!last.rejected) {
                         touched = true
                     } else {
@@ -173,9 +149,7 @@ class BouquetEditorRepository @Inject constructor(
         }
 
     suspend fun removeService(bouquetRef: String, ref: String): BouquetEditResult =
-        edit(listOf(bouquetRef)) {
-            removeBouquetService(params("sBouquetRef" to bouquetRef, "sRef" to ref))
-        }
+        edit(listOf(bouquetRef)) { removeBouquetService(bouquetRef, ref) }
 
     /** Moves [ref] to the 0-based [position] of [bouquetRef]; markers count. */
     suspend fun moveService(
@@ -184,14 +158,7 @@ class BouquetEditorRepository @Inject constructor(
         ref: String,
         position: Int
     ): BouquetEditResult = edit(listOf(bouquetRef)) {
-        moveBouquetService(
-            params(
-                "sBouquetRef" to bouquetRef,
-                "sRef" to ref,
-                "position" to position.toString(),
-                "mode" to mode.param
-            )
-        )
+        moveBouquetService(mode, bouquetRef, ref, position)
     }
 
     /**
@@ -204,23 +171,12 @@ class BouquetEditorRepository @Inject constructor(
         sRefBefore: String,
         newName: String
     ): BouquetEditResult = edit(listOf(bouquetRef)) {
-        renameBouquetEntry(
-            params(
-                "sBouquetRef" to bouquetRef,
-                "sRef" to ref,
-                "sRefBefore" to sRefBefore,
-                "newName" to newName
-            )
-        )
+        renameBouquetService(bouquetRef, ref, sRefBefore, newName)
     }
 
     /** Adds marker [name] before [sRefBefore] ("" appends). */
     suspend fun addMarker(bouquetRef: String, name: String, sRefBefore: String): BouquetEditResult =
-        edit(listOf(bouquetRef)) {
-            addBouquetMarker(
-                params("sBouquetRef" to bouquetRef, "Name" to name, "sRefBefore" to sRefBefore)
-            )
-        }
+        edit(listOf(bouquetRef)) { addBouquetMarker(bouquetRef, name, sRefBefore) }
 
     private suspend fun edit(
         editedRefs: List<String>,
@@ -250,7 +206,7 @@ class BouquetEditorRepository @Inject constructor(
             return null
         }
         val name = BACKUP_PREFIX + System.currentTimeMillis() / 1000L
-        return client.backupBouquets(params("Filename" to name))
+        return client.backupBouquets(name)
     }
 
     private suspend fun list(ref: String, atRoot: Boolean): EnigmaResponse<List<BouquetEntry>> {
@@ -265,11 +221,7 @@ class BouquetEditorRepository @Inject constructor(
 
     private fun root(mode: BouquetMode): String = roots(mode)[BOUQUETS]
 
-    private fun params(vararg pairs: Pair<String, String>): List<NameValuePair> =
-        pairs.map { (name, value) -> NameValuePair(name, value) }
-
     private companion object {
-        const val PLUGIN_PATH = "bouqueteditor"
         const val BACKUP_PREFIX = "dreamdroid_"
 
         // Indexes into R.array.servicerefstv / servicerefsradio.

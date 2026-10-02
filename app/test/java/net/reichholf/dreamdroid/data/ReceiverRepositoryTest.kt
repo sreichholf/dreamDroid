@@ -6,6 +6,9 @@ import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.currentTime
 import kotlinx.coroutines.test.runTest
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.PowerCommand
+import net.reichholf.dreamdroid.enigma.VolumeCommand
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
@@ -70,7 +73,7 @@ class ReceiverRepositoryTest {
         advanceTimeBy(1_000L)
         assertFalse(waiting.isCompleted)
 
-        profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
+        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
         waiting.await()
 
         assertTrue(currentTime < 1_200L, "waited $currentTime ms")
@@ -96,7 +99,7 @@ class ReceiverRepositoryTest {
             }
         }
 
-        val volume = repository.setVolume("up").value
+        val volume = repository.setVolume(VolumeCommand.Up).value
 
         assertEquals("40", volume?.current)
         assertEquals("up", receiver.requests.single().requestUrl?.queryParameter("set"))
@@ -106,7 +109,7 @@ class ReceiverRepositoryTest {
     fun failedVolumeCarriesTheError() = runBlocking<Unit> {
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val response = repository.setVolume("up")
+        val response = repository.setVolume(VolumeCommand.Up)
 
         assertNull(response.value)
         assertNotNull(response.error)
@@ -124,7 +127,7 @@ class ReceiverRepositoryTest {
             }
         }
 
-        val state = repository.setPowerState("0")
+        val state = repository.setPowerState(PowerCommand.ToggleStandby)
 
         assertEquals(true, state.value?.isRunning)
         assertEquals("0", receiver.requests.single().requestUrl?.queryParameter("newstate"))

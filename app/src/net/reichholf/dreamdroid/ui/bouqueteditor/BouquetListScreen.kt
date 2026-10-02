@@ -33,8 +33,8 @@ import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.ListRow

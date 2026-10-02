@@ -12,9 +12,9 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.reichholf.dreamdroid.enigma.DreamboxWebIfApi
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
+import net.reichholf.dreamdroid.enigma.ReceiverPlugin
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
@@ -23,10 +23,8 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
-import net.reichholf.dreamdroid.enigma.autotimer.toParams
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** Whether the active profile's receiver has the AutoTimer plugin. */
@@ -109,7 +107,7 @@ class AutoTimerRepository @Inject constructor(
     val profileId: Flow<Int?> = profiles.current.map { it?.id }.distinctUntilChanged()
 
     /**
-     * Asks `/web/external` whether the plugin is installed. A failed request keeps the last
+     * Asks the receiver whether the plugin is installed. A failed request keeps the last
      * answer for the profile.
      */
     suspend fun refreshPresence(): PluginPresence = checkPresence().value ?: currentPresence()
@@ -123,7 +121,7 @@ class AutoTimerRepository @Inject constructor(
                 else -> Unit
             }
         }
-        val response = clients.current().getAutoTimers()
+        val response = clients.current().autoTimers()
         return response.value?.let { AutoTimerLoad.Ready(it.entries, it.defaults) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
     }
@@ -145,8 +143,7 @@ class AutoTimerRepository @Inject constructor(
         if (!autoTimer.settings.enabled) {
             return AutoTimerPreviewLoad.Disabled(autoTimer)
         }
-        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(PREVIEW_TIMEOUT_MS) }
-        val response = DreamboxWebIfApi(http).testAutoTimer(id.value)
+        val response = clients.current(PREVIEW_TIMEOUT_MS).testAutoTimer(id)
         return when (val outcome = response.value) {
             is PreviewOutcome.Matches -> AutoTimerPreviewLoad.Ready(autoTimer, outcome.matches)
 
@@ -166,10 +163,9 @@ class AutoTimerRepository @Inject constructor(
             when (write) {
                 is AutoTimerWrite.Change ->
                     guard(AutoTimerEntry.Readable(write.loaded))
-                        ?: result(clients.current().editAutoTimer(write.toParams()))
+                        ?: result(clients.current().saveAutoTimer(write))
 
-                is AutoTimerWrite.Create ->
-                    result(clients.current().editAutoTimer(write.toParams()))
+                is AutoTimerWrite.Create -> result(clients.current().saveAutoTimer(write))
             }
         }
     }
@@ -180,8 +176,8 @@ class AutoTimerRepository @Inject constructor(
      * own client with a long timeout, so other requests do not cancel it.
      */
     suspend fun runNow(): AutoTimerWriteResult {
-        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
-        return counted { writes.withLock { result(DreamboxWebIfApi(http).runAutoTimers()) } }
+        val client = clients.current(RUN_TIMEOUT_MS)
+        return counted { writes.withLock { result(client.runAutoTimers()) } }
     }
 
     /**
@@ -205,10 +201,7 @@ class AutoTimerRepository @Inject constructor(
     /** Removes [entry] unless its id names another AutoTimer by now. */
     suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = counted {
         writes.withLock {
-            guard(entry) ?: result(
-                clients.current()
-                    .removeAutoTimer(listOf(NameValuePair("id", entry.id.value.toString())))
-            )
+            guard(entry) ?: result(clients.current().removeAutoTimer(entry.id))
         }
     }
 
@@ -227,7 +220,7 @@ class AutoTimerRepository @Inject constructor(
      * anew whenever its config file changed, so an id alone may name another one.
      */
     private suspend fun guard(expected: AutoTimerEntry): AutoTimerWriteResult? {
-        val response = clients.current().getAutoTimers()
+        val response = clients.current().autoTimers()
         val entries = response.value?.entries
             ?: return AutoTimerWriteResult.Failed(response.error.contentErrorText())
         val current = entries.firstOrNull { it.id == expected.id }
@@ -247,17 +240,14 @@ class AutoTimerRepository @Inject constructor(
     /** The receiver's answer, remembered for the profile; no value when the request failed. */
     private suspend fun checkPresence(): EnigmaResponse<PluginPresence> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        val response = clients.forProfile(profile).getWebExternals()
-        val paths = response.value ?: return EnigmaResponse(null, response.error)
-        val presence = if (PLUGIN_PATH in paths) PluginPresence.Present else PluginPresence.Absent
+        val response = clients.forProfile(profile).hasPlugin(ReceiverPlugin.AutoTimer)
+        val installed = response.value ?: return EnigmaResponse(null, response.error)
+        val presence = if (installed) PluginPresence.Present else PluginPresence.Absent
         profile.id?.let { id -> known.update { it + (id to presence) } }
         return EnigmaResponse(presence)
     }
 
     private companion object {
-        /** The plugin's API; `autotimereditor` is its web page. */
-        const val PLUGIN_PATH = "autotimer"
-
         /** The box searches the whole EPG for a preview; that can take a while. */
         const val PREVIEW_TIMEOUT_MS = 60_000
 

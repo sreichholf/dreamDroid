@@ -5,7 +5,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.BouquetMode
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.autotimer.Target

@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -37,7 +36,7 @@ class DreamboxWebIfApiMutationTest {
     @Test
     fun zapSendsServiceReferenceAndSucceeds() = runBlocking {
         server.enqueue(MockResponse().setBody(simpleResult(Python.TRUE, "Active service is now")))
-        val response = client().zap(listOf(NameValuePair("sRef", "1:0:1:a")))
+        val response = client().zap("1:0:1:a")
         val request = server.takeRequest()
         assertEquals("/web/zap", request.requestUrl!!.encodedPath)
         assertEquals("1:0:1:a", request.requestUrl!!.queryParameter("sRef"))
@@ -75,7 +74,7 @@ class DreamboxWebIfApiMutationTest {
     @Test
     fun resultWithoutStateTextIsNotSuccess() = runBlocking {
         server.enqueue(MockResponse().setBody("<e2simplexmlresult><e2state>True</e2state>"))
-        val response = client().remoteCommand(listOf(NameValuePair("command", "352")))
+        val response = client().remoteCommand(352, simpleRemote = false, longPress = false)
         assertEquals("/web/remotecontrol", server.takeRequest().requestUrl!!.encodedPath)
         assertNull(response.value)
         assertNull(response.error)
@@ -89,7 +88,7 @@ class DreamboxWebIfApiMutationTest {
                     "<e2ismuted>False</e2ismuted></e2volume>"
             )
         )
-        val volume = client().setVolume(listOf(NameValuePair("set", "up"))).value!!
+        val volume = client().setVolume(VolumeCommand.Up).value!!
         assertEquals("/web/vol", server.takeRequest().requestUrl!!.encodedPath)
         assertEquals("40", volume.current)
     }

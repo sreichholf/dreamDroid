@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.helpers.enigma2
 
 import android.view.KeyEvent
+import net.reichholf.dreamdroid.enigma.VolumeCommand
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -33,9 +34,9 @@ class VolumeKeyTest {
     }
 
     @Test
-    fun commandsMatchVolumeConstants() {
-        assertEquals(Volume.CMD_UP, volumeCommandForKey(KeyEvent.KEYCODE_VOLUME_UP))
-        assertEquals(Volume.CMD_DOWN, volumeCommandForKey(KeyEvent.KEYCODE_VOLUME_DOWN))
+    fun volumeKeysMapToVolumeCommands() {
+        assertEquals(VolumeCommand.Up, volumeCommandForKey(KeyEvent.KEYCODE_VOLUME_UP))
+        assertEquals(VolumeCommand.Down, volumeCommandForKey(KeyEvent.KEYCODE_VOLUME_DOWN))
         assertNull(volumeCommandForKey(KeyEvent.KEYCODE_VOLUME_MUTE))
         assertNull(volumeCommandForKey(KeyEvent.KEYCODE_BACK))
     }

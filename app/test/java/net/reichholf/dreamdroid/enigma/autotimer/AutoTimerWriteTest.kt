@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.enigma.autotimer
 import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalTime
+import net.reichholf.dreamdroid.enigma.autoTimerEditParams
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -214,7 +215,7 @@ class AutoTimerWriteTest {
     }
 
     private fun AutoTimerWrite.pairs(): List<Pair<String, String>> =
-        toParams().map { it.key to it.value() }
+        autoTimerEditParams(this).map { it.key to it.value() }
 
     private fun load(fixture: String): AutoTimer = (
         AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!.entries.single()
