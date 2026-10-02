@@ -23,6 +23,8 @@
 * DEL: Built-in Mediaplayer / playlist browser
 * FIX: Screenshots on receivers whose /grab returns no image (e.g. Dreambox Two with Gemini Project) use /screenshot instead
 * FIX: Android TV movie cards no longer clip a partial last line of text
+* FIX: Switching channels in the player no longer freezes the app ("not responding") while the previous stream closes
+* UPD: libVLC 3.7.7
 * FIX: multiple smaller issues
 
 ## 1.15.460

@@ -26,6 +26,8 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
@@ -56,7 +58,8 @@ import org.videolan.libvlc.MediaPlayer
 class VideoOverlayController(
     private val activity: VideoActivity,
     private val playback: VideoPlaybackViewModel,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val player: VLCPlayer
 ) : MediaPlayer.EventListener,
     DialogActionListener {
 
@@ -92,6 +95,7 @@ class VideoOverlayController(
     private var servicesViewVisible: Boolean = false
 
     private var playbackJob: Job? = null
+    private var playerStateJob: Job? = null
     private var renderedEventKey: String? = null
     private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
@@ -188,6 +192,15 @@ class VideoOverlayController(
         playbackJob = activity.lifecycleScope.launch {
             playback.uiState.collect { onSessionChanged(it) }
         }
+        playerStateJob = activity.lifecycleScope.launch {
+            player.state
+                .map { (it.audioTracks > 0) to (it.subtitleTracks > 0) }
+                .distinctUntilChanged()
+                .collect { (audio, subtitles) ->
+                    overlayUiState.showAudioButton = audio
+                    overlayUiState.showSubtitleButton = subtitles
+                }
+        }
         autohide()
     }
 
@@ -224,6 +237,8 @@ class VideoOverlayController(
         tvSessionJob = null
         playbackJob?.cancel()
         playbackJob = null
+        playerStateJob?.cancel()
+        playerStateJob = null
         playback.cancelReload()
         tvZapListBound = false
         phoneZapListBound = false
@@ -405,44 +420,38 @@ class VideoOverlayController(
     }
 
     private fun onRewind() {
-        val p = VLCPlayer.get(activity)!!
-        p.setPosition(max(0.0f, p.getPosition() - seekStepSize))
+        player.setPosition(max(0.0f, player.state.value.position - seekStepSize))
         autohide()
     }
 
     private fun onForward() {
-        val p = VLCPlayer.get(activity)!!
-        p.setPosition(max(0.0f, p.getPosition() + seekStepSize))
+        player.setPosition(max(0.0f, player.state.value.position + seekStepSize))
         autohide()
     }
 
     private fun onPlay() {
-        VLCPlayer.get(activity)!!.play()
+        player.play()
         autohide()
     }
 
-    fun onUpdateButtons() {
-        val player = VLCPlayer.get(activity) ?: return
-        overlayUiState.showAudioButton = player.getAudioTracksCount() > 0
-        overlayUiState.showSubtitleButton = player.getSubtitleTracksCount() > 0
-    }
-
     private fun onSelectAudioTrack() {
-        val player = VLCPlayer.getMediaPlayer(activity)!!
-        showTrackSelection(
-            activity.getString(R.string.audio_tracks),
-            player.audioTracks,
-            DIALOG_TAG_AUDIO_TRACK
-        )
+        activity.lifecycleScope.launch {
+            showTrackSelection(
+                activity.getString(R.string.audio_tracks),
+                player.audioTracks(),
+                DIALOG_TAG_AUDIO_TRACK
+            )
+        }
     }
 
     private fun onSelectSubtitleTrack() {
-        val player = VLCPlayer.getMediaPlayer(activity)!!
-        showTrackSelection(
-            activity.getString(R.string.subtitles),
-            player.spuTracks,
-            DIALOG_TAG_SUBTITLE_TRACK
-        )
+        activity.lifecycleScope.launch {
+            showTrackSelection(
+                activity.getString(R.string.subtitles),
+                player.subtitleTracks(),
+                DIALOG_TAG_SUBTITLE_TRACK
+            )
+        }
     }
 
     /** Offers the durations, and Off while a timer runs (id 0). */
@@ -731,16 +740,15 @@ class VideoOverlayController(
     }
 
     private fun seek(pos: Int) {
-        val player = VLCPlayer.get(activity) ?: return
         val fpos = pos.toFloat()
-        var length = player.getLength()
+        var length = player.state.value.lengthMs
         length = if (length > 0) length / 1000 else FAKE_LENGTH.toLong()
         player.setPosition(fpos / length)
     }
 
     private fun isRecording(): Boolean {
         val isDreamboxRecording = movie != null
-        return VLCPlayer.get(activity)!!.isSeekable() || isDreamboxRecording
+        return player.state.value.seekable || isDreamboxRecording
     }
 
     private fun updateViews() {
@@ -748,8 +756,7 @@ class VideoOverlayController(
 
         val title = session.title
         overlayUiState.title = title ?: ""
-        val player = VLCPlayer.get(activity)
-        overlayUiState.showPvrControls = player != null && player.isSeekable()
+        overlayUiState.showPvrControls = player.state.value.seekable
 
         if (movie != null || currentService != null) {
             overlayUiState.showInfoButton = true
@@ -789,14 +796,14 @@ class VideoOverlayController(
     @SuppressLint("ClickableViewAccessibility")
     private fun updateProgress() {
         if (rootView == null) return
-        val player = VLCPlayer.get(activity)
-        val isSeekable = player != null && player.isSeekable()
+        val playerState = player.state.value
+        val isSeekable = playerState.seekable
         overlayUiState.seekable = isSeekable
         var len = -1L
         var cur = -1L
         if (movie != null || currentService != null) {
             if (isRecording()) {
-                var duration = if (player != null) player.getLength() / 1000 else 0L
+                var duration = playerState.lengthMs / 1000
                 if (duration <= 0) {
                     val textLen =
                         if (movie != null && !movie!!.length.isNullOrEmpty()) {
@@ -813,8 +820,8 @@ class VideoOverlayController(
                         Log.w(LOG_TAG, "parse failed", iobex)
                     }
                 }
-                if (duration > 0 && player != null) {
-                    val pos = (duration * player.getPosition()).toLong()
+                if (duration > 0) {
+                    val pos = (duration * playerState.position).toLong()
                     overlayUiState.nowStart = DateTime.minutesAndSeconds(pos.toInt())
                     overlayUiState.nowTitle = movie?.serviceName ?: ""
                     overlayUiState.nowDuration = DateTime.minutesAndSeconds(duration.toInt())
@@ -843,14 +850,14 @@ class VideoOverlayController(
                 }
             }
         }
-        if (player != null && len <= 0) {
-            len = player.getLength() / 1000
-            cur = player.getTime() / 1000
+        if (len <= 0) {
+            len = playerState.lengthMs / 1000
+            cur = playerState.timeMs / 1000
         }
 
-        if (player != null && len <= 0 && isSeekable) {
+        if (len <= 0 && isSeekable) {
             len = FAKE_LENGTH.toLong()
-            cur = (len * player.getPosition()).toLong()
+            cur = (len * playerState.position).toLong()
         }
 
         if (len > 0 && cur >= 0) {
@@ -999,8 +1006,8 @@ class VideoOverlayController(
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
         when (dialogTag) {
-            DIALOG_TAG_AUDIO_TRACK -> VLCPlayer.getMediaPlayer(activity)!!.setAudioTrack(action)
-            DIALOG_TAG_SUBTITLE_TRACK -> VLCPlayer.getMediaPlayer(activity)!!.setSpuTrack(action)
+            DIALOG_TAG_AUDIO_TRACK -> player.setAudioTrack(action)
+            DIALOG_TAG_SUBTITLE_TRACK -> player.setSubtitleTrack(action)
             DIALOG_TAG_SLEEP_TIMER -> playback.setSleepTimer(action)
         }
     }
@@ -1008,7 +1015,6 @@ class VideoOverlayController(
     fun onKeyDown(keyCode: Int): Boolean {
         var ret = false
         autohide()
-        val player = VLCPlayer.get(activity)!!
         when (keyCode) {
             KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B -> {
                 if (isOverlaysVisible()) {

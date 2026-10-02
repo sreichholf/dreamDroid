@@ -3,21 +3,52 @@ package net.reichholf.dreamdroid.video
 import android.content.Context
 import android.net.Uri
 import android.view.SurfaceView
+import dagger.hilt.android.qualifiers.ApplicationContext
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlin.math.max
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
 
-/**
- * Thin Kotlin port of the libVLC [MediaPlayer] singleton wrapper (Phase 2.5e).
- */
-class VLCPlayer(private val context: Context) {
-    private var currentMedia: Media? = null
+/** What the overlay shows of the playing stream, kept from libVLC's events. */
+data class PlayerState(
+    val seekable: Boolean = false,
+    val lengthMs: Long = 0,
+    val timeMs: Long = 0,
+    val position: Float = 0f,
+    val audioTracks: Int = 0,
+    val subtitleTracks: Int = 0
+)
 
-    fun deinit() {
-        detach()
-        vlcMediaPlayer?.release()
-        vlcMediaPlayer = null
+/**
+ * The process's libVLC [MediaPlayer].
+ *
+ * Call it from the main thread. Video views and the event listener are main-thread work.
+ * Every [MediaPlayer] call goes through [commands], so a stream that is slow to close never
+ * blocks input. Read the stream's time, length, and tracks from [state], not from libVLC.
+ */
+@Singleton
+class VLCPlayer @Inject constructor(@param:ApplicationContext private val context: Context) {
+    private val commands = PlayerCommandQueue(Dispatchers.IO)
+
+    // Written on the main thread; read by queued commands to drop a released player's results.
+    @Volatile
+    private var mediaPlayer: MediaPlayer? = null
+    private var mediaPlayerEvents: MediaPlayer.EventListener? = null
+    private var listener: MediaPlayer.EventListener? = null
+
+    private val stateFlow = MutableStateFlow(PlayerState())
+    val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
+
+    /** Receives libVLC's events on the main thread after [state] took them in. */
+    fun setEventListener(listener: MediaPlayer.EventListener?) {
+        this.listener = listener
     }
 
     fun attach(
@@ -25,7 +56,7 @@ class VLCPlayer(private val context: Context) {
         surfaceView: SurfaceView?,
         subtitleSurfaceView: SurfaceView?
     ) {
-        val vlcVout = getMediaPlayer(context)?.vlcVout ?: return
+        val vlcVout = mediaPlayer().vlcVout
         if (vlcVout.areViewsAttached()) {
             vlcVout.detachViews()
         }
@@ -34,136 +65,186 @@ class VLCPlayer(private val context: Context) {
         vlcVout.attachViews(newVideoLayoutListener)
     }
 
+    /** Detaches the views and stops the stream; [release] also frees the player. */
     fun detach() {
-        val mp = vlcMediaPlayer ?: return
+        val mp = mediaPlayer ?: return
         val vlcVout = mp.vlcVout
         if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
             return
         }
-        stop()
         vlcVout.detachViews()
+        commands.post { mp.stop() }
+    }
+
+    /** Frees the player. The next call creates a new one. */
+    fun release() {
+        val mp = mediaPlayer ?: return
+        mediaPlayer = null
+        mediaPlayerEvents = null
+        mp.setEventListener(null)
+        if (mp.vlcVout.areViewsAttached()) {
+            mp.vlcVout.detachViews()
+        }
+        commands.post {
+            mp.stop()
+            mp.release()
+        }
+        stateFlow.value = PlayerState()
+    }
+
+    fun addVoutCallback(callback: IVLCVout.Callback) {
+        mediaPlayer().vlcVout.addCallback(callback)
+    }
+
+    fun removeVoutCallback(callback: IVLCVout.Callback) {
+        mediaPlayer?.vlcVout?.removeCallback(callback)
     }
 
     fun setWindowSize(width: Int, height: Int) {
-        getMediaPlayer(context)!!.vlcVout.setWindowSize(width, height)
+        mediaPlayer?.vlcVout?.setWindowSize(width, height)
     }
 
-    fun playUri(uri: Uri, flags: Int) {
-        val previous = currentMedia
-        val media = Media(VLCInstance.get(context), uri)
-        val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
-        val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
-        media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
-        currentMedia = media
-        val mp = getMediaPlayer(context) ?: return
-        if (previous != null && previous !== media) {
-            previous.setEventListener(null)
-            previous.release()
-        }
-        mp.media = media
-        mp.rate = 1.0f
-        mp.play()
-    }
-
-    fun play() {
-        val media = currentMedia ?: return
-        val mp = getMediaPlayer(context)!!
-        val sameMedia = media == mp.media
-        if (!sameMedia) {
-            mp.media = media
-        }
-        if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia)) {
-            mp.pause()
-        } else {
-            mp.play()
-        }
-        mp.rate = 1.0f
-    }
-
-    fun getLength(): Long = getMediaPlayer(context)!!.length
-
-    fun getTime(): Long = getMediaPlayer(context)!!.time
-
-    fun getPosition(): Float = getMediaPlayer(context)!!.position
-
-    fun setPosition(position: Float) {
-        getMediaPlayer(context)!!.position = position
-    }
-
-    fun isSeekable(): Boolean = getMediaPlayer(context)!!.isSeekable
-
-    fun slower(): Boolean {
-        if (!isSeekable() || !getMediaPlayer(context)!!.isPlaying) return false
-        var rate = getMediaPlayer(context)!!.rate
-        if (rate == 1.0f) {
-            rate = -1.0f
-        }
-        rate = max(rate * 2, -64f)
-        getMediaPlayer(context)!!.rate = rate
-        return true
-    }
-
-    fun stop() {
-        val mp = vlcMediaPlayer ?: return
-        mp.stop()
-        val media = mp.media as Media?
-        if (media != null) {
-            media.setEventListener(null)
-            media.release()
+    /** Lets libVLC fit the video to the surface. */
+    fun resetScale() {
+        val mp = mediaPlayer ?: return
+        commands.post {
+            mp.setAspectRatio(null)
+            mp.setScale(0f)
         }
     }
 
-    fun getAudioTracksCount(): Int = getMediaPlayer(context)!!.audioTracksCount
-
-    fun getSubtitleTracksCount(): Int = getMediaPlayer(context)!!.spuTracksCount
-
-    fun getVideoWidth(): Int {
-        val track = getMediaPlayer(context)!!.currentVideoTrack ?: return 0
-        return track.width
-    }
-
-    fun getVideoHeight(): Int {
-        val track = getMediaPlayer(context)!!.currentVideoTrack ?: return 0
-        return track.height
-    }
-
-    companion object {
-        var player: VLCPlayer? = null
-
-        @Volatile
-        var vlcMediaPlayer: MediaPlayer? = null
-
-        const val MEDIA_HWACCEL_DISABLED = 0x00
-        const val MEDIA_HWACCEL_ENABLED = 0x01
-        const val MEDIA_HWACCEL_FORCE = 0x02
-
-        fun release() {
-            val current = player ?: return
-            current.deinit()
-            player = null
-        }
-
-        fun get(context: Context): VLCPlayer? {
-            if (player == null) {
-                player = VLCPlayer(context.applicationContext)
-            }
-            return player
-        }
-
-        private fun init(context: Context) {
-            val mp = MediaPlayer(VLCInstance.get(context))
+    fun onSurfacesCreated() {
+        val mp = mediaPlayer ?: return
+        commands.post {
             mp.setAspectRatio(null)
             mp.setScale(0f)
             mp.setVideoTrackEnabled(true)
-            mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0)
-            vlcMediaPlayer = mp
+        }
+    }
+
+    fun playUri(uri: Uri, flags: Int) {
+        val mp = mediaPlayer()
+        val events = mediaPlayerEvents
+        stateFlow.value = PlayerState()
+        val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
+        val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
+        commands.post {
+            val media = Media(VLCInstance.get(context), uri)
+            media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
+            // Like VLC for Android: the old stream's teardown events must not reach the
+            // overlay. setMedia joins the old stream's threads, so it must stay off main.
+            mp.setEventListener(null)
+            mp.media = media
+            mp.setEventListener(events)
+            media.release()
+            mp.rate = 1.0f
+            mp.play()
+        }
+    }
+
+    /** Pauses a stream playing at normal speed; otherwise plays at normal speed. */
+    fun play() {
+        val mp = mediaPlayer ?: return
+        commands.post {
+            if (!mp.hasMedia()) return@post
+            if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate, sameMedia = true)) {
+                mp.pause()
+            } else {
+                mp.play()
+            }
+            mp.rate = 1.0f
+        }
+    }
+
+    fun setPosition(position: Float) {
+        val mp = mediaPlayer ?: return
+        stateFlow.update { it.copy(position = position) }
+        commands.post { mp.position = position }
+    }
+
+    /** Rewinds faster each call, down to -64x, while a seekable stream plays. */
+    fun slower() {
+        val mp = mediaPlayer ?: return
+        commands.post {
+            if (!mp.isSeekable || !mp.isPlaying) return@post
+            var rate = mp.rate
+            if (rate == 1.0f) {
+                rate = -1.0f
+            }
+            mp.rate = max(rate * 2, -64f)
+        }
+    }
+
+    suspend fun audioTracks(): Array<MediaPlayer.TrackDescription>? {
+        val mp = mediaPlayer ?: return null
+        return commands.call { mp.audioTracks }
+    }
+
+    suspend fun subtitleTracks(): Array<MediaPlayer.TrackDescription>? {
+        val mp = mediaPlayer ?: return null
+        return commands.call { mp.spuTracks }
+    }
+
+    fun setAudioTrack(id: Int) {
+        val mp = mediaPlayer ?: return
+        commands.post { mp.setAudioTrack(id) }
+    }
+
+    fun setSubtitleTrack(id: Int) {
+        val mp = mediaPlayer ?: return
+        commands.post { mp.setSpuTrack(id) }
+    }
+
+    private fun mediaPlayer(): MediaPlayer = mediaPlayer ?: MediaPlayer(VLCInstance.get(context))
+        .also { mp ->
+            mediaPlayer = mp
+            val events = MediaPlayer.EventListener { event -> onEvent(mp, event) }
+            mediaPlayerEvents = events
+            mp.setEventListener(events)
+            commands.post {
+                mp.setAspectRatio(null)
+                mp.setScale(0f)
+                mp.setVideoTrackEnabled(true)
+                mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0)
+            }
         }
 
-        fun getMediaPlayer(context: Context): MediaPlayer? {
-            if (vlcMediaPlayer == null) {
-                init(context)
-            }
-            return vlcMediaPlayer
+    private fun onEvent(mp: MediaPlayer, event: MediaPlayer.Event) {
+        // Events queued before release() can still arrive.
+        if (mp !== mediaPlayer) return
+        when (event.type) {
+            MediaPlayer.Event.TimeChanged ->
+                stateFlow.update { it.copy(timeMs = event.timeChanged) }
+
+            MediaPlayer.Event.PositionChanged ->
+                stateFlow.update { it.copy(position = event.positionChanged) }
+
+            MediaPlayer.Event.LengthChanged ->
+                stateFlow.update { it.copy(lengthMs = event.lengthChanged) }
+
+            MediaPlayer.Event.SeekableChanged ->
+                stateFlow.update { it.copy(seekable = event.seekable) }
+
+            MediaPlayer.Event.Playing,
+            MediaPlayer.Event.ESAdded,
+            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp)
         }
+        listener?.onEvent(event)
+    }
+
+    private fun refreshTrackCounts(mp: MediaPlayer) {
+        commands.post {
+            val audio = mp.audioTracksCount
+            val subtitles = mp.spuTracksCount
+            if (mp === mediaPlayer) {
+                stateFlow.update { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
+            }
+        }
+    }
+
+    companion object {
+        const val MEDIA_HWACCEL_DISABLED = 0x00
+        const val MEDIA_HWACCEL_ENABLED = 0x01
+        const val MEDIA_HWACCEL_FORCE = 0x02
     }
 }
