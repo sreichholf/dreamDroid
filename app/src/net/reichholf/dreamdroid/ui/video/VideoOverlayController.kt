@@ -146,6 +146,7 @@ class VideoOverlayController(
             onList = { onList() },
             onAudio = { onSelectAudioTrack() },
             onSubtitle = { onSelectSubtitleTrack() },
+            onSleepTimer = { onSleepTimer() },
             onSeekChange = { progress -> seek(progress) },
             uncappedDetailSheets = tvOverlay
         )
@@ -444,6 +445,28 @@ class VideoOverlayController(
         )
     }
 
+    /** Offers the durations, and Off while a timer runs (id 0). */
+    private fun onSleepTimer() {
+        val ids = if (session.sleepTimer is SleepTimer.Running) {
+            listOf(0) + SLEEP_TIMER_MINUTES
+        } else {
+            SLEEP_TIMER_MINUTES
+        }
+        val labels = ids.map { minutes ->
+            if (minutes == 0) {
+                activity.getString(R.string.sleep_timer_off)
+            } else {
+                activity.getString(R.string.sleep_timer_minutes, minutes)
+            }
+        }
+        overlayUiState.showChoice(
+            activity.getString(R.string.sleeptimer),
+            labels,
+            ids.toIntArray(),
+            DIALOG_TAG_SLEEP_TIMER
+        )
+    }
+
     private fun onInfo() {
         if (movie == null && currentService == null) return
 
@@ -548,6 +571,12 @@ class VideoOverlayController(
     /** Paints load results the view model publishes after the fact. */
     private fun onSessionChanged(session: VideoPlaybackUiState) {
         if (!attached) return
+        if (session.sleepTimer == SleepTimer.Expired) {
+            // Closing the player stops the stream and lets the screen lock again.
+            activity.finish()
+            return
+        }
+        overlayUiState.sleepTimer = session.sleepTimer
         val stream = session.stream
         if (stream != null) {
             playback.onStreamStarted()
@@ -969,10 +998,10 @@ class VideoOverlayController(
     }
 
     override fun onDialogAction(action: Int, details: Any?, dialogTag: String?) {
-        val player = VLCPlayer.getMediaPlayer(activity)!!
         when (dialogTag) {
-            DIALOG_TAG_AUDIO_TRACK -> player.setAudioTrack(action)
-            DIALOG_TAG_SUBTITLE_TRACK -> player.setSpuTrack(action)
+            DIALOG_TAG_AUDIO_TRACK -> VLCPlayer.getMediaPlayer(activity)!!.setAudioTrack(action)
+            DIALOG_TAG_SUBTITLE_TRACK -> VLCPlayer.getMediaPlayer(activity)!!.setSpuTrack(action)
+            DIALOG_TAG_SLEEP_TIMER -> playback.setSleepTimer(action)
         }
     }
 
@@ -1045,6 +1074,7 @@ class VideoOverlayController(
 
         const val DIALOG_TAG_AUDIO_TRACK: String = "dialog_audio_track"
         const val DIALOG_TAG_SUBTITLE_TRACK: String = "dialog_subtitle_track"
+        const val DIALOG_TAG_SLEEP_TIMER: String = "dialog_sleep_timer"
 
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
         private const val FAKE_LENGTH: Int = 10000

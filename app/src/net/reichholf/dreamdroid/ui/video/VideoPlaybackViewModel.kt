@@ -6,11 +6,13 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import java.io.Serializable
 import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -42,6 +44,7 @@ class VideoPlaybackViewModel @Inject constructor(
     private var loadJob: Job? = null
     private var bouquetJob: Job? = null
     private var zapJob: Job? = null
+    private var sleepJob: Job? = null
 
     /** Returns whether the title or a ref changed. */
     fun applyExtras(
@@ -128,6 +131,25 @@ class VideoPlaybackViewModel @Inject constructor(
         _uiState.update { it.copy(stream = null) }
     }
 
+    /** Counts [minutes] down to [SleepTimer.Expired]; 0 turns the timer off. */
+    fun setSleepTimer(minutes: Int) {
+        sleepJob?.cancel()
+        sleepJob = null
+        if (minutes <= 0) {
+            _uiState.update { it.copy(sleepTimer = SleepTimer.Off) }
+            showMessage(UiText.Resource(R.string.sleep_timer_cancelled))
+            return
+        }
+        showMessage(UiText.Resource(R.string.sleep_timer_set, listOf(minutes)))
+        sleepJob = viewModelScope.launch {
+            for (left in minutes downTo 1) {
+                _uiState.update { it.copy(sleepTimer = SleepTimer.Running(left)) }
+                delay(MINUTE_MS)
+            }
+            _uiState.update { it.copy(sleepTimer = SleepTimer.Expired) }
+        }
+    }
+
     fun showMessage(message: UiText) {
         _uiState.update { it.copy(userMessage = message) }
     }
@@ -165,5 +187,9 @@ class VideoPlaybackViewModel @Inject constructor(
         _uiState.update { state ->
             if (state.movie != null) state else state.copy(bouquets = items)
         }
+    }
+
+    private companion object {
+        const val MINUTE_MS = 60_000L
     }
 }

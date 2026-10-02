@@ -17,6 +17,18 @@ sealed interface VideoPlaying {
     data class Recording(val movie: Movie) : VideoPlaying
 }
 
+/** The player's sleep timer. [Expired] closes the player. */
+sealed interface SleepTimer {
+    data object Off : SleepTimer
+
+    data class Running(val minutesLeft: Int) : SleepTimer
+
+    data object Expired : SleepTimer
+}
+
+/** Durations the sleep timer offers. */
+val SLEEP_TIMER_MINUTES: List<Int> = listOf(15, 30, 45, 60, 90, 120)
+
 /**
  * Zap list and playing item behind the player overlay. [services] is the now/next list
  * of [bouquetRef]; [serviceRef] is the zap position in it. [stream] is a zapped-to
@@ -30,6 +42,7 @@ data class VideoPlaybackUiState(
     val services: List<ServiceNowNext> = emptyList(),
     val bouquets: List<Service> = emptyList(),
     val stream: LiveStream.Ready? = null,
+    val sleepTimer: SleepTimer = SleepTimer.Off,
     val userMessage: UiText? = null
 ) {
     val movie: Movie? get() = (playing as? VideoPlaying.Recording)?.movie

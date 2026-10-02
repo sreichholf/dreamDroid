@@ -339,6 +339,11 @@
     <string name="audio_tracks">Audio Tracks</string>
     <string name="subtitles">Subtitles</string>
     <string name="no_tracks">No tracks available!</string>
+    <string name="sleep_timer_off">Off</string>
+    <string name="sleep_timer_minutes">%1$d min.</string>
+    <string name="sleep_timer_left">Sleep Timer: %1$d min. left</string>
+    <string name="sleep_timer_set">The player closes in %1$d min.</string>
+    <string name="sleep_timer_cancelled">Sleep Timer off</string>
     <string name="play">Play</string>
     <string name="rewind">Rewind</string>
     <string name="forward">Forward</string>
