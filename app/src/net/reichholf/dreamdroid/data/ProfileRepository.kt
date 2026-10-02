@@ -17,10 +17,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.enigma.StringListParser
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
@@ -289,37 +285,34 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     }
 
     /**
-     * Asks [profile]'s receiver over [http] for its movie locations; `/hdd/movie` when it
-     * does not answer. The request runs outside the lock so a slow receiver does not stall
-     * other callers, such as the main thread asking for [deviceInfo]. The answer is dropped
-     * when [profile] is no longer the current one.
+     * Keeps the movie locations [profile]'s receiver answered with, or `/hdd/movie` when
+     * [received] is null because it did not answer. The caller asks the receiver outside
+     * the lock, so a slow receiver does not stall other callers, such as the main thread
+     * asking for [deviceInfo]. The answer is dropped when [profile] is no longer the
+     * current one.
      */
-    fun loadLocations(profile: Profile, http: EnigmaHttp): Boolean {
-        val parsed = http.fetchStringList(URIStore.LOCATIONS, "e2location")
-        if (parsed == null) {
+    fun putLocations(profile: Profile, received: List<String>?) {
+        if (received == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
         }
         synchronized(this) {
             if (isCurrent(profile)) {
-                locationList = ArrayList(parsed ?: listOf("/hdd/movie"))
-                locationsFromReceiver = parsed != null
+                locationList = ArrayList(received ?: listOf("/hdd/movie"))
+                locationsFromReceiver = received != null
             }
         }
-        return parsed != null
     }
 
-    /** Asks for the timer tags like [loadLocations]; none when the receiver does not answer. */
-    fun loadTags(profile: Profile, http: EnigmaHttp): Boolean {
-        val parsed = http.fetchStringList(URIStore.TAGS, "e2tag")
-        if (parsed == null) {
+    /** Keeps the timer tags like [putLocations]; none when [received] is null. */
+    fun putTags(profile: Profile, received: List<String>?) {
+        if (received == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing Tags, no more Tags will be available")
         }
         synchronized(this) {
             if (isCurrent(profile)) {
-                tagList = ArrayList(parsed.orEmpty())
+                tagList = ArrayList(received.orEmpty())
             }
         }
-        return parsed != null
     }
 
     private fun isCurrent(profile: Profile): Boolean =
@@ -437,6 +430,3 @@ class RoomProfileStore @Inject constructor(
         )
     }
 }
-
-private fun EnigmaHttp.fetchStringList(uri: String, itemTag: String): List<String>? =
-    (fetch(uri) as? EnigmaHttpResult.Success)?.let { StringListParser.parse(it.text, itemTag) }

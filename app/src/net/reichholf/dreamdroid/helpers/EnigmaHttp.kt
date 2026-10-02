@@ -47,7 +47,7 @@ sealed class EnigmaHttpResult {
  * (the "dump XML" developer setting).
  */
 class EnigmaHttp(
-    private val profile: Profile,
+    val profile: Profile,
     private val okHttp: EnigmaOkHttp,
     private val xmlDumpDir: Lazy<File>? = null,
     timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS

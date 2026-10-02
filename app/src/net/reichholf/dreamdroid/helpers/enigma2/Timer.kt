@@ -13,10 +13,9 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer as TypedTimer
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /**
- * Timer XML field names, after-event enums, and request helpers. UI uses [TypedTimer].
+ * Timer XML field names, after-event enums, and new-timer defaults. UI uses [TypedTimer].
  */
 class Timer {
 
@@ -75,46 +74,6 @@ class Timer {
                 serviceName = event.serviceName,
                 reference = event.serviceReference
             )
-        }
-
-        fun getSaveParams(timer: TypedTimer, timerOld: TypedTimer?): ArrayList<NameValuePair> {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", timer.reference))
-            params.add(NameValuePair("begin", timer.begin))
-            params.add(NameValuePair("end", timer.end))
-            params.add(NameValuePair("name", timer.name))
-            params.add(NameValuePair("description", timer.description))
-            params.add(NameValuePair("dirname", timer.location))
-            params.add(NameValuePair("tags", timer.tags))
-            params.add(NameValuePair("eit", timer.eit))
-            params.add(NameValuePair("disabled", timer.disabled))
-            params.add(NameValuePair("justplay", timer.justPlay))
-            params.add(NameValuePair("afterevent", timer.afterEvent))
-            params.add(NameValuePair("repeated", timer.repeated))
-            if (timerOld != null) {
-                params.add(NameValuePair("channelOld", timerOld.reference))
-                params.add(NameValuePair("beginOld", timerOld.begin))
-                params.add(NameValuePair("endOld", timerOld.end))
-                params.add(NameValuePair("deleteOldOnSave", "1"))
-            } else {
-                params.add(NameValuePair("deleteOldOnSave", "0"))
-            }
-            return params
-        }
-
-        fun getEventIdParams(event: Event): ArrayList<NameValuePair> {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", event.serviceReference))
-            params.add(NameValuePair("eventid", event.eventId))
-            return params
-        }
-
-        fun getDeleteParams(timer: TypedTimer): ArrayList<NameValuePair> {
-            val params = ArrayList<NameValuePair>()
-            params.add(NameValuePair("sRef", timer.reference))
-            params.add(NameValuePair("begin", timer.begin))
-            params.add(NameValuePair("end", timer.end))
-            return params
         }
     }
 }

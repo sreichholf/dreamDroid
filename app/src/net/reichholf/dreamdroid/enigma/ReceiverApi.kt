@@ -1,16 +1,18 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.File
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
+import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
 /**
  * One receiver's web interface, over one connection to one profile. Built per operation by
  * [ReceiverApiFactory]; see docs/openwebif.md for the per-webif implementations.
  *
- * The services and EPG calls take and return domain types; how they map to requests is up to
- * the implementation. The other calls still take request parameters until their areas move
- * behind this interface too.
+ * The services, EPG, timer, movie, stream, location and tag calls take and return domain
+ * types; how they map to requests and URLs is up to the implementation. The other calls still
+ * take request parameters until their areas move behind this interface too.
  */
 interface ReceiverApi {
     /** Members of [containerRef]: a bouquet index, a bouquet, a provider, or a folder. */
@@ -54,9 +56,38 @@ interface ReceiverApi {
     /** A screenshot's image bytes, or no value when the receiver sent no image. */
     suspend fun getScreenshot(grabParams: List<NameValuePair>): EnigmaResponse<ByteArray>
 
-    suspend fun getTimers(): EnigmaResponse<List<Timer>>
+    /** The receiver's timers. */
+    suspend fun timers(): EnigmaResponse<List<Timer>>
 
-    suspend fun getMovies(params: List<NameValuePair> = emptyList()): EnigmaResponse<List<Movie>>
+    /**
+     * Recordings in [location], or in the receiver's default location when it is empty,
+     * filtered by [tags] unless that is empty.
+     */
+    suspend fun movies(location: String, tags: List<String>): EnigmaResponse<List<Movie>>
+
+    /** The folders the receiver records into. */
+    suspend fun locations(): EnigmaResponse<List<String>>
+
+    /** The tags the receiver knows for timers and recordings. */
+    suspend fun tags(): EnigmaResponse<List<String>>
+
+    /** The URL a player opens for the live service [serviceRef]. */
+    fun liveStreamUrl(serviceRef: String): String
+
+    /** The URL a player opens for the recording [movie]. */
+    fun recordingStreamUrl(movie: Movie): String
+
+    /**
+     * The web interface's URL of the recording file at [path], without credentials: only
+     * usable when the profile needs no login.
+     */
+    fun recordingFileUrl(path: String): String
+
+    /**
+     * Copies the recording file at [path] into [destination], with the profile's login. The
+     * failure, or null once [destination] holds the file.
+     */
+    suspend fun downloadRecording(path: String, destination: File): EnigmaHttpError?
 
     suspend fun setVolume(params: List<NameValuePair>): EnigmaResponse<Volume>
 
@@ -82,16 +113,24 @@ interface ReceiverApi {
 
     suspend fun sendMessage(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
 
-    suspend fun playMedia(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Plays [reference], a media player service reference, on the receiver. */
+    suspend fun playMedia(reference: String): EnigmaResponse<SimpleResult>
 
-    suspend fun deleteMovie(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult>
 
-    suspend fun addTimerByEventId(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Adds a timer for [event]; the receiver fills it in from its EPG. */
+    suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult>
 
-    suspend fun changeTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Adds [timer] as a new timer. */
+    suspend fun addTimer(timer: Timer): EnigmaResponse<SimpleResult>
 
-    suspend fun deleteTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult>
+    /** Replaces the timer [old], found by its service, begin and end, with [new]. */
+    suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult>
 
+    /** Deletes [timer], found by its service, begin and end. */
+    suspend fun deleteTimer(timer: Timer): EnigmaResponse<SimpleResult>
+
+    /** Removes the finished timers. */
     suspend fun cleanupTimers(): EnigmaResponse<SimpleResult>
 
     // Bouquet editor. The box applies each edit immediately.

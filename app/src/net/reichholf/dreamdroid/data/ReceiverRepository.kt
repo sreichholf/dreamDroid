@@ -16,7 +16,6 @@ import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Volume
 import net.reichholf.dreamdroid.enigma.userMessageText
-import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Message
@@ -78,7 +77,7 @@ class ReceiverRepository @Inject constructor(
                 return LiveStream.Failed(response.userMessageText())
             }
         }
-        return LiveStream.Ready(reference, EnigmaUrls.stream(profile, reference))
+        return LiveStream.Ready(reference, clients.forProfile(profile).liveStreamUrl(reference))
     }
 
     /** The service the receiver is tuned to, with its now and next event. */
@@ -104,7 +103,7 @@ class ReceiverRepository @Inject constructor(
 
     /** Plays [reference], a media player service ref, on the receiver of [profile]. */
     suspend fun playMedia(profile: Profile, reference: String): EnigmaResponse<SimpleResult> =
-        clients.forProfile(profile).playMedia(listOf(NameValuePair("file", reference)))
+        clients.forProfile(profile).playMedia(reference)
 
     /** Runs the volume [command] (`up`, `down`, `mute`); the answer carries the new level. */
     suspend fun setVolume(command: String): EnigmaResponse<Volume> =

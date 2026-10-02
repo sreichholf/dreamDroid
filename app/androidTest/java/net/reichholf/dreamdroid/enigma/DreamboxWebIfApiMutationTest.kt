@@ -48,7 +48,7 @@ class DreamboxWebIfApiMutationTest {
     @Test
     fun rejectedTimerChangeIsBoxRejected() = runBlocking {
         server.enqueue(MockResponse().setBody(simpleResult(Python.FALSE, "Conflicting timer")))
-        val response = client().changeTimer(listOf(NameValuePair("sRef", "1:0:1:a")))
+        val response = client().addTimer(Timer(reference = "1:0:1:a"))
         assertEquals("/web/timerchange", server.takeRequest().requestUrl!!.encodedPath)
         assertNotNull(response.value)
         assertEquals(EnigmaFailure.BoxRejected("Conflicting timer"), response.error!!.failure)
@@ -66,7 +66,7 @@ class DreamboxWebIfApiMutationTest {
     @Test
     fun httpFailureIsNotSuccess() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500))
-        val response = client().deleteMovie(listOf(NameValuePair("sRef", "1:0:0:m")))
+        val response = client().deleteMovie(Movie(reference = "1:0:0:m"))
         assertEquals("/web/moviedelete", server.takeRequest().requestUrl!!.encodedPath)
         assertNull(response.value)
         assertTrue(response.error!!.failure is EnigmaFailure.Http)

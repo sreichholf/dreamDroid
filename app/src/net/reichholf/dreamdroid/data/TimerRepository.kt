@@ -2,8 +2,6 @@ package net.reichholf.dreamdroid.data
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
@@ -11,7 +9,6 @@ import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.contentErrorText
-import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerRequests
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.toListEntity
 import net.reichholf.dreamdroid.room.toTimer
@@ -53,7 +50,7 @@ class TimerRepository @Inject constructor(
         if (preferSnapshot) {
             snapshot(profileId)?.let { return TimerListResult.Loaded(it) }
         }
-        val response = clients.current().getTimers()
+        val response = clients.current().timers()
         val live = response.value
         if (live != null) {
             if (profileId != null) {
@@ -70,8 +67,10 @@ class TimerRepository @Inject constructor(
     }
 
     /** Saves [timer]. With [original], the receiver replaces that timer instead of adding one. */
-    suspend fun save(timer: Timer, original: Timer?): EnigmaResponse<SimpleResult> =
-        clients.current().changeTimer(TimerRequests.getSaveParams(timer, original))
+    suspend fun save(timer: Timer, original: Timer?): EnigmaResponse<SimpleResult> {
+        val api = clients.current()
+        return if (original == null) api.addTimer(timer) else api.editTimer(original, timer)
+    }
 
     /** Enables a disabled [timer] and disables an enabled one. */
     suspend fun toggleEnabled(timer: Timer): EnigmaResponse<SimpleResult> =
@@ -79,10 +78,10 @@ class TimerRepository @Inject constructor(
 
     /** Adds a timer for [event] by its event id; the receiver fills in the rest. */
     suspend fun addByEvent(event: Event): EnigmaResponse<SimpleResult> =
-        clients.current().addTimerByEventId(TimerRequests.getEventIdParams(event))
+        clients.current().addTimerForEvent(event)
 
     suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> =
-        clients.current().deleteTimer(TimerRequests.getDeleteParams(timer))
+        clients.current().deleteTimer(timer)
 
     /** Removes finished timers on the receiver. */
     suspend fun cleanup(): EnigmaResponse<SimpleResult> = clients.current().cleanupTimers()
@@ -95,14 +94,12 @@ class TimerRepository @Inject constructor(
     suspend fun locationsAndTags(): TimerChoices {
         if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
             val profile = profiles.requireCurrent()
-            val http = clients.http(profile)
-            withContext(Dispatchers.IO) {
-                if (!profiles.locationsLoadedFromReceiver()) {
-                    profiles.loadLocations(profile, http)
-                }
-                if (profiles.tags().isEmpty()) {
-                    profiles.loadTags(profile, http)
-                }
+            val api = clients.forProfile(profile)
+            if (!profiles.locationsLoadedFromReceiver()) {
+                profiles.putLocations(profile, api.locations().value)
+            }
+            if (profiles.tags().isEmpty()) {
+                profiles.putTags(profile, api.tags().value)
             }
         }
         return TimerChoices(

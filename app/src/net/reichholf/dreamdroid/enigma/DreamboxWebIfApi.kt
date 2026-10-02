@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.enigma
 
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -11,12 +12,14 @@ import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
+import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 /**
  * [ReceiverApi] over the Dreambox web interface (`/web` XML) and the WebBouquetEditor and
- * AutoTimer plugins, on one [EnigmaHttp]. Built by [ReceiverApiFactory].
+ * AutoTimer plugins, on one [EnigmaHttp]. Built by [ReceiverApiFactory]. Stream and file URLs
+ * come from the profile of [http].
  */
 class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
     override suspend fun services(containerRef: String): EnigmaResponse<List<Service>> =
@@ -153,18 +156,63 @@ class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
             is EnigmaHttpResult.Failure -> EnigmaResponse(null, result.error)
         }
 
-    override suspend fun getTimers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
+    override suspend fun timers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
         http.fetch(URIStore.TIMER_LIST).mapParsed { xml ->
             TimerParser.parse(xml)
         }
     }
 
-    override suspend fun getMovies(params: List<NameValuePair>): EnigmaResponse<List<Movie>> =
-        withContext(Dispatchers.IO) {
-            http.fetch(URIStore.MOVIES, ArrayList(params)).mapParsed { xml ->
+    /** `tag` carries [tags] joined by spaces; `dirname` is left out for the default location. */
+    override suspend fun movies(location: String, tags: List<String>): EnigmaResponse<List<Movie>> {
+        val params = buildList {
+            if (location.isNotEmpty()) {
+                add(NameValuePair("dirname", location))
+            }
+            if (tags.isNotEmpty()) {
+                add(NameValuePair("tag", tags.joinToString(" ")))
+            }
+        }
+        return withContext(Dispatchers.IO) {
+            http.fetch(URIStore.MOVIES, params).mapParsed { xml ->
                 MovieParser.parse(xml)
             }
         }
+    }
+
+    override suspend fun locations(): EnigmaResponse<List<String>> =
+        fetchStrings(URIStore.LOCATIONS, "e2location")
+
+    override suspend fun tags(): EnigmaResponse<List<String>> = fetchStrings(URIStore.TAGS, "e2tag")
+
+    private suspend fun fetchStrings(uri: String, itemTag: String): EnigmaResponse<List<String>> =
+        withContext(Dispatchers.IO) {
+            http.fetch(uri).mapParsed { xml -> StringListParser.parse(xml, itemTag) }
+        }
+
+    /** The encoder's RTSP stream, or the stream port's HTTP stream, as the profile sets. */
+    override fun liveStreamUrl(serviceRef: String): String =
+        EnigmaUrls.stream(http.profile, serviceRef)
+
+    /**
+     * `/file` on the file port; a `1:` recording goes through the encoder when the profile
+     * streams through one.
+     */
+    override fun recordingStreamUrl(movie: Movie): String =
+        EnigmaUrls.fileStream(http.profile, movie.reference, movie.fileName)
+
+    /** `/file` on the web interface's own scheme and port. */
+    override fun recordingFileUrl(path: String): String =
+        EnigmaUrls.page(http.profile, URIStore.FILE, fileParams(path))
+
+    override suspend fun downloadRecording(path: String, destination: File): EnigmaHttpError? =
+        withContext(Dispatchers.IO) {
+            when (val fetched = http.downloadToFile(URIStore.FILE, fileParams(path), destination)) {
+                is EnigmaHttpResult.Success -> null
+                is EnigmaHttpResult.Failure -> fetched.error
+            }
+        }
+
+    private fun fileParams(path: String) = listOf(NameValuePair("file", path))
 
     override suspend fun setVolume(params: List<NameValuePair>): EnigmaResponse<Volume> =
         withContext(Dispatchers.IO) {
@@ -229,21 +277,47 @@ class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
     override suspend fun sendMessage(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.MESSAGE, params)
 
-    override suspend fun playMedia(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.MEDIA_PLAYER_PLAY, params)
+    override suspend fun playMedia(reference: String): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.MEDIA_PLAYER_PLAY, listOf(NameValuePair("file", reference)))
 
-    override suspend fun deleteMovie(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.MOVIE_DELETE, params)
+    override suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult> =
+        simpleResult(URIStore.MOVIE_DELETE, listOf(NameValuePair("sRef", movie.reference)))
 
-    override suspend fun addTimerByEventId(
-        params: List<NameValuePair>
-    ): EnigmaResponse<SimpleResult> = simpleResult(URIStore.TIMER_ADD_BY_EVENT_ID, params)
+    override suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult> =
+        simpleResult(
+            URIStore.TIMER_ADD_BY_EVENT_ID,
+            listOf(
+                NameValuePair("sRef", event.serviceReference),
+                NameValuePair("eventid", event.eventId)
+            )
+        )
 
-    override suspend fun changeTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.TIMER_CHANGE, params)
+    /** `/web/timerchange` with `deleteOldOnSave=0`, as the app has always added timers. */
+    override suspend fun addTimer(timer: Timer): EnigmaResponse<SimpleResult> = simpleResult(
+        URIStore.TIMER_CHANGE,
+        timerParams(timer) + NameValuePair("deleteOldOnSave", "0")
+    )
 
-    override suspend fun deleteTimer(params: List<NameValuePair>): EnigmaResponse<SimpleResult> =
-        simpleResult(URIStore.TIMER_DELETE, params)
+    /** `/web/timerchange` with the `*Old` keys of [old] and `deleteOldOnSave=1`. */
+    override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> =
+        simpleResult(
+            URIStore.TIMER_CHANGE,
+            timerParams(new) + listOf(
+                NameValuePair("channelOld", old.reference),
+                NameValuePair("beginOld", old.begin),
+                NameValuePair("endOld", old.end),
+                NameValuePair("deleteOldOnSave", "1")
+            )
+        )
+
+    override suspend fun deleteTimer(timer: Timer): EnigmaResponse<SimpleResult> = simpleResult(
+        URIStore.TIMER_DELETE,
+        listOf(
+            NameValuePair("sRef", timer.reference),
+            NameValuePair("begin", timer.begin),
+            NameValuePair("end", timer.end)
+        )
+    )
 
     override suspend fun cleanupTimers(): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.TIMER_CLEANUP)
@@ -325,6 +399,22 @@ class DreamboxWebIfApi(private val http: EnigmaHttp) : ReceiverApi {
 }
 
 private const val SECONDS_PER_MINUTE = 60L
+
+/** The fields `/web/timerchange` stores for [timer], in the order the app always sent them. */
+private fun timerParams(timer: Timer): List<NameValuePair> = listOf(
+    NameValuePair("sRef", timer.reference),
+    NameValuePair("begin", timer.begin),
+    NameValuePair("end", timer.end),
+    NameValuePair("name", timer.name),
+    NameValuePair("description", timer.description),
+    NameValuePair("dirname", timer.location),
+    NameValuePair("tags", timer.tags),
+    NameValuePair("eit", timer.eit),
+    NameValuePair("disabled", timer.disabled),
+    NameValuePair("justplay", timer.justPlay),
+    NameValuePair("afterevent", timer.afterEvent),
+    NameValuePair("repeated", timer.repeated)
+)
 
 private val SCREENSHOT_WEB_PARAMS = listOf(
     NameValuePair("format", "jpg"),
