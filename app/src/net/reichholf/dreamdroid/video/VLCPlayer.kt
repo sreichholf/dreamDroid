@@ -119,15 +119,6 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         }
     }
 
-    fun onSurfacesCreated() {
-        val mp = mediaPlayer ?: return
-        commands.post {
-            mp.setAspectRatio(null)
-            mp.setScale(0f)
-            mp.setVideoTrackEnabled(true)
-        }
-    }
-
     fun playUri(uri: Uri, flags: Int) {
         val mp = mediaPlayer()
         val gen = ++generation
@@ -205,10 +196,11 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         .also { mp ->
             mediaPlayer = mp
             mp.setEventListener(eventListener(mp, generation))
+            // No setVideoTrackEnabled: libVLC turns video on itself once the surfaces are
+            // ready. Queued, it would land while a stream starts and pick the track mid-start.
             commands.post {
                 mp.setAspectRatio(null)
                 mp.setScale(0f)
-                mp.setVideoTrackEnabled(true)
                 mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0)
             }
         }

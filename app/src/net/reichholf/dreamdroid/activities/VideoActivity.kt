@@ -495,9 +495,7 @@ class VideoActivity :
         }
     }
 
-    override fun onSurfacesCreated(vlcVout: IVLCVout) {
-        player.onSurfacesCreated()
-    }
+    override fun onSurfacesCreated(vlcVout: IVLCVout) {}
 
     override fun onPictureInPictureModeChanged(
         isInPictureInPictureMode: Boolean,
