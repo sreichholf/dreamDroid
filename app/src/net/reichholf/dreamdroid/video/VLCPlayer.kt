@@ -40,7 +40,13 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     // Written on the main thread; read by queued commands to drop a released player's results.
     @Volatile
     private var mediaPlayer: MediaPlayer? = null
-    private var mediaPlayerEvents: MediaPlayer.EventListener? = null
+
+    /**
+     * Counts streams: [playUri] and [release] start a new one on the main thread. Events and
+     * queued results tagged with an older value belong to a stream that is gone.
+     */
+    @Volatile
+    private var generation: Int = 0
     private var listener: MediaPlayer.EventListener? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
@@ -80,7 +86,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     fun release() {
         val mp = mediaPlayer ?: return
         mediaPlayer = null
-        mediaPlayerEvents = null
+        generation++
         mp.setEventListener(null)
         if (mp.vlcVout.areViewsAttached()) {
             mp.vlcVout.detachViews()
@@ -124,7 +130,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
 
     fun playUri(uri: Uri, flags: Int) {
         val mp = mediaPlayer()
-        val events = mediaPlayerEvents
+        val gen = ++generation
         stateFlow.value = PlayerState()
         val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
@@ -135,7 +141,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
             // overlay. setMedia joins the old stream's threads, so it must stay off main.
             mp.setEventListener(null)
             mp.media = media
-            mp.setEventListener(events)
+            mp.setEventListener(eventListener(mp, gen))
             media.release()
             mp.rate = 1.0f
             mp.play()
@@ -198,9 +204,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
     private fun mediaPlayer(): MediaPlayer = mediaPlayer ?: MediaPlayer(VLCInstance.get(context))
         .also { mp ->
             mediaPlayer = mp
-            val events = MediaPlayer.EventListener { event -> onEvent(mp, event) }
-            mediaPlayerEvents = events
-            mp.setEventListener(events)
+            mp.setEventListener(eventListener(mp, generation))
             commands.post {
                 mp.setAspectRatio(null)
                 mp.setScale(0f)
@@ -209,37 +213,47 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
             }
         }
 
-    private fun onEvent(mp: MediaPlayer, event: MediaPlayer.Event) {
-        // Events queued before release() can still arrive.
-        if (mp !== mediaPlayer) return
+    private fun eventListener(mp: MediaPlayer, gen: Int) =
+        MediaPlayer.EventListener { event -> onEvent(mp, gen, event) }
+
+    private fun onEvent(mp: MediaPlayer, gen: Int, event: MediaPlayer.Event) {
+        // The old stream's events still arrive after a zap or release() posted them.
+        if (gen != generation) return
         when (event.type) {
             MediaPlayer.Event.TimeChanged ->
-                stateFlow.update { it.copy(timeMs = event.timeChanged) }
+                updateState(gen) { it.copy(timeMs = event.timeChanged) }
 
             MediaPlayer.Event.PositionChanged ->
-                stateFlow.update { it.copy(position = event.positionChanged) }
+                updateState(gen) { it.copy(position = event.positionChanged) }
 
             MediaPlayer.Event.LengthChanged ->
-                stateFlow.update { it.copy(lengthMs = event.lengthChanged) }
+                updateState(gen) { it.copy(lengthMs = event.lengthChanged) }
 
             MediaPlayer.Event.SeekableChanged ->
-                stateFlow.update { it.copy(seekable = event.seekable) }
+                updateState(gen) { it.copy(seekable = event.seekable) }
 
             MediaPlayer.Event.Playing,
             MediaPlayer.Event.ESAdded,
-            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp)
+            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp, gen)
         }
         listener?.onEvent(event)
     }
 
-    private fun refreshTrackCounts(mp: MediaPlayer) {
+    private fun refreshTrackCounts(mp: MediaPlayer, gen: Int) {
         commands.post {
             val audio = mp.audioTracksCount
             val subtitles = mp.spuTracksCount
-            if (mp === mediaPlayer) {
-                stateFlow.update { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
-            }
+            updateState(gen) { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
         }
+    }
+
+    /**
+     * Applies [change] unless a newer stream started. [playUri] and [release] bump [generation]
+     * before they reset [state], so the check inside [MutableStateFlow.update] cannot write a
+     * stale value over the reset.
+     */
+    private inline fun updateState(gen: Int, crossinline change: (PlayerState) -> PlayerState) {
+        stateFlow.update { if (gen == generation) change(it) else it }
     }
 
     companion object {

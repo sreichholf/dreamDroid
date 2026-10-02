@@ -25,8 +25,9 @@ class PlayerCommandQueue(dispatcher: CoroutineDispatcher) {
                 val started = System.nanoTime()
                 try {
                     command()
-                } catch (e: Exception) {
-                    Log.w(LOG_TAG, "Player command failed", e)
+                } catch (t: Throwable) {
+                    // One failed call must not stop the queue; later calls would never run.
+                    Log.w(LOG_TAG, "Player command failed", t)
                 }
                 val tookMs = (System.nanoTime() - started) / 1_000_000
                 if (tookMs >= SLOW_COMMAND_MS) {
@@ -48,8 +49,8 @@ class PlayerCommandQueue(dispatcher: CoroutineDispatcher) {
         post {
             try {
                 result.complete(command())
-            } catch (e: Exception) {
-                result.completeExceptionally(e)
+            } catch (t: Throwable) {
+                result.completeExceptionally(t)
             }
         }
         return result.await()

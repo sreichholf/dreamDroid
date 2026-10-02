@@ -25,6 +25,7 @@ import java.io.Serializable
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -96,6 +97,7 @@ class VideoOverlayController(
 
     private var playbackJob: Job? = null
     private var playerStateJob: Job? = null
+    private var trackSelectionJob: Job? = null
     private var renderedEventKey: String? = null
     private var tvSessionJob: Job? = null
     private var tvZapListBound: Boolean = false
@@ -239,6 +241,8 @@ class VideoOverlayController(
         playbackJob = null
         playerStateJob?.cancel()
         playerStateJob = null
+        trackSelectionJob?.cancel()
+        trackSelectionJob = null
         playback.cancelReload()
         tvZapListBound = false
         phoneZapListBound = false
@@ -435,22 +439,34 @@ class VideoOverlayController(
     }
 
     private fun onSelectAudioTrack() {
-        activity.lifecycleScope.launch {
-            showTrackSelection(
-                activity.getString(R.string.audio_tracks),
-                player.audioTracks(),
-                DIALOG_TAG_AUDIO_TRACK
-            )
+        selectTrack(activity.getString(R.string.audio_tracks), DIALOG_TAG_AUDIO_TRACK) {
+            player.audioTracks()
         }
     }
 
     private fun onSelectSubtitleTrack() {
-        activity.lifecycleScope.launch {
-            showTrackSelection(
-                activity.getString(R.string.subtitles),
-                player.subtitleTracks(),
-                DIALOG_TAG_SUBTITLE_TRACK
-            )
+        selectTrack(activity.getString(R.string.subtitles), DIALOG_TAG_SUBTITLE_TRACK) {
+            player.subtitleTracks()
+        }
+    }
+
+    /** One track list at a time; it waits behind a stream that is still closing. */
+    private fun selectTrack(
+        title: String,
+        dialogTag: String,
+        tracks: suspend () -> Array<MediaPlayer.TrackDescription>?
+    ) {
+        trackSelectionJob?.cancel()
+        trackSelectionJob = activity.lifecycleScope.launch {
+            val descriptions = try {
+                tracks()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Log.w(LOG_TAG, "Reading tracks failed", e)
+                null
+            }
+            showTrackSelection(title, descriptions, dialogTag)
         }
     }
 

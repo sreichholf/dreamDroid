@@ -489,6 +489,10 @@ class VideoActivity :
         this.sarNum = sarNum
         this.sarDen = sarDen
         changeSurfaceLayout()
+        if (playerAttached) {
+            // The size arrives after Playing; PiP needs it for the aspect ratio.
+            setPictureInPictureParams(getPipParams())
+        }
     }
 
     override fun onSurfacesCreated(vlcVout: IVLCVout) {

@@ -55,6 +55,13 @@ class PlayerCommandQueueTest {
         assertEquals("next", withTimeout(TIMEOUT_MS) { queue.call { "next" } })
     }
 
+    @Test
+    fun anErrorDoesNotStopTheQueue() = runBlocking {
+        queue.post { throw UnsatisfiedLinkError("libvlc") }
+
+        assertEquals("next", withTimeout(TIMEOUT_MS) { queue.call { "next" } })
+    }
+
     private companion object {
         const val TIMEOUT_MS = 10_000L
     }
