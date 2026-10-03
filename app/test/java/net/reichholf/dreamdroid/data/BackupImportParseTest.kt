@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.data
 
 import com.google.gson.GsonBuilder
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -68,6 +69,34 @@ class BackupImportParseTest {
         assertEquals("42", settings["when"])
         assertEquals("1.5", settings["level"])
         assertEquals("box", settings["name"])
+    }
+
+    @Test
+    fun legacyEncoderFlagBecomesTheStreamMode() {
+        val json = """{"mProfiles":[
+            {"name":"Encoder","encoderStream":true},
+            {"name":"Plain","encoderStream":false},
+            {"name":"Unknown","streamMode":"Satellite"}
+        ]}"""
+        val profiles = checkNotNull(parseBackupImport(json)).profiles
+        assertEquals(StreamMode.Encoder, profiles[0].streamMode)
+        assertEquals(StreamMode.Direct, profiles[1].streamMode)
+        assertEquals(StreamMode.Direct, profiles[2].streamMode)
+        assertEquals(Profile.DEFAULT_TRANSCODE_PORT, profiles[0].transcodePort)
+    }
+
+    @Test
+    fun streamModeRoundTrips() {
+        val data = BackupData()
+        data.addProfile(
+            Profile.getDefault().apply {
+                streamMode = StreamMode.Transcoding
+                transcodePort = 8003
+            }
+        )
+        val imported = checkNotNull(parseBackupImport(GsonBuilder().create().toJson(data)))
+        assertEquals(StreamMode.Transcoding, imported.profiles.single().streamMode)
+        assertEquals(8003, imported.profiles.single().transcodePort)
     }
 
     private fun settingJson(type: String, value: String): String {

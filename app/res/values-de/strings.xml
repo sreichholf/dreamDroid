@@ -257,7 +257,6 @@
     <string name="tools">Werkzeuge</string>
     <string name="encoder_path">Stream Pfad</string>
     <string name="encoder_port">Stream Port</string>
-    <string name="use_encoder">Encoder zum Streamen nutzen</string>
     <string name="video_bitrate">Video Bitrate</string>
     <string name="audio_bitrate">Audio Bitrate</string>
     <string name="integrated_video_player">Integrierter Videoplayer</string>

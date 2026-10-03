@@ -2,9 +2,11 @@ package net.reichholf.dreamdroid.data
 
 import androidx.preference.PreferenceManager
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonParser
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import net.reichholf.dreamdroid.testutil.TestProfiles
@@ -123,6 +125,36 @@ class BackupRepositoryTest {
         assertEquals("", exported.profiles.single().pass)
         assertEquals(false, exported.passwordsIncluded)
         assertEquals("secret", data.profiles.single().pass)
+    }
+
+    @Test
+    fun exportKeepsTheEncoderFlagOfOlderVersions() = runBlocking<Unit> {
+        saved("Encoder", "10.0.0.1").also {
+            it.streamMode = StreamMode.Encoder
+            profiles.save(it)
+        }
+        saved("Transcoding", "10.0.0.2").also {
+            it.streamMode = StreamMode.Transcoding
+            profiles.save(it)
+        }
+
+        val exported = JsonParser.parseString(
+            backups.exportJson(backups.backupData(), includePasswords = true)
+        ).asJsonObject.getAsJsonArray("mProfiles").map { it.asJsonObject }
+
+        assertEquals(
+            listOf(
+                Triple("Encoder", "Encoder", true),
+                Triple("Transcoding", "Transcoding", false)
+            ),
+            exported.map {
+                Triple(
+                    it.get("name").asString,
+                    it.get("streamMode").asString,
+                    it.get("encoderStream").asBoolean
+                )
+            }.sortedBy { it.first }
+        )
     }
 
     private fun saved(name: String, host: String): Profile =

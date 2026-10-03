@@ -238,7 +238,6 @@
     <string name="use_fake_picon_long">Use un picon falso (picon_default.png) para evitar problemas de derechos de autor en las capturas de pantalla</string>
     <string name="host_unreach">No pudo conectar al servidor</string>
     <string name="next_event">Próximo evento</string>
-    <string name="use_encoder">Usar codificador para streaming</string>
     <string name="encoder_path">Ruta Stream</string>
     <string name="audio_bitrate">Audio Bitrate</string>
     <string name="video_bitrate">Video Bitrate</string>

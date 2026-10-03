@@ -2,12 +2,17 @@ package net.reichholf.dreamdroid.data
 
 import android.util.Log
 import com.google.gson.GsonBuilder
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonObject
 import com.google.gson.JsonParseException
+import com.google.gson.JsonParser
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 
@@ -36,10 +41,16 @@ class BackupRepository @Inject constructor(
 
     /**
      * JSON for a user-chosen file. Passwords are stripped on a copy when
-     * [includePasswords] is false; [data] and its profiles are left unchanged.
+     * [includePasswords] is false; [data] and its profiles are left unchanged. Each profile
+     * also carries the `encoderStream` flag of versions before [StreamMode], so they import
+     * an encoder profile as one.
      */
-    fun exportJson(data: BackupData, includePasswords: Boolean): String =
-        GsonBuilder().create().toJson(backupCopyForExport(data, includePasswords))
+    fun exportJson(data: BackupData, includePasswords: Boolean): String {
+        val gson = GsonBuilder().create()
+        val tree = gson.toJsonTree(backupCopyForExport(data, includePasswords))
+        writeLegacyEncoderStream(tree)
+        return gson.toJson(tree)
+    }
 
     /**
      * Imports [content]. A profile whose name is already saved replaces that row in
@@ -131,7 +142,9 @@ internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean):
  */
 internal fun parseBackupImport(content: String?): BackupData? {
     val backupData = try {
-        GsonBuilder().create().fromJson(content, BackupData::class.java)
+        val tree = JsonParser.parseString(content.orEmpty())
+        upgradeStreamMode(tree)
+        GsonBuilder().create().fromJson(tree, BackupData::class.java)
     } catch (e: JsonParseException) {
         null
     } ?: return null
@@ -139,6 +152,36 @@ internal fun parseBackupImport(content: String?): BackupData? {
         return null
     }
     return backupData
+}
+
+/**
+ * Files written before [StreamMode] carry the `encoderStream` flag. An unknown or missing
+ * `streamMode` would make Gson store null in a non-null field, so it becomes [StreamMode.Direct].
+ */
+private fun upgradeStreamMode(tree: JsonElement) {
+    val profiles = (tree as? JsonObject)?.get("mProfiles") as? JsonArray ?: return
+    for (profile in profiles.filterIsInstance<JsonObject>()) {
+        val mode = profile.get("streamMode")?.takeIf { it.isJsonPrimitive }?.asString
+        if (StreamMode.entries.any { it.name == mode }) {
+            continue
+        }
+        val encoder = profile.get("encoderStream")
+            ?.takeIf { it.isJsonPrimitive && it.asJsonPrimitive.isBoolean }
+            ?.asBoolean == true
+        profile.addProperty(
+            "streamMode",
+            if (encoder) StreamMode.Encoder.name else StreamMode.Direct.name
+        )
+    }
+}
+
+/** `encoderStream` next to `streamMode`: true exactly for [StreamMode.Encoder]. */
+private fun writeLegacyEncoderStream(tree: JsonElement) {
+    val profiles = (tree as? JsonObject)?.get("mProfiles") as? JsonArray ?: return
+    for (profile in profiles.filterIsInstance<JsonObject>()) {
+        val mode = profile.get("streamMode")?.takeIf { it.isJsonPrimitive }?.asString
+        profile.addProperty("encoderStream", mode == StreamMode.Encoder.name)
+    }
 }
 
 private fun settingsAreImportable(settings: MutableList<GenericSetting>?): Boolean {

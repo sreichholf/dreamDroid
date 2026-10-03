@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.helpers
 
 import java.net.URLEncoder
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -109,6 +110,48 @@ class EnigmaUrlsTest {
         assertTrue(url.contains("ref=1%3A0%3A1"))
     }
 
+    @Test
+    fun stream_directUsesTheStreamPort() {
+        val url = EnigmaUrls.stream(streamProfile(), "1:0:1")
+        assertEquals("http://box.local:8001/1%3A0%3A1", url)
+    }
+
+    @Test
+    fun stream_transcodingUsesTheTranscodePort() {
+        val profile = transcodingProfile()
+        assertEquals("http://box.local:8002/1%3A0%3A1", EnigmaUrls.stream(profile, "1:0:1"))
+    }
+
+    @Test
+    fun stream_transcodingHonorsStreamHostAndPort() {
+        val profile = transcodingProfile().apply {
+            streamHost = "stream.box"
+            transcodePort = 8001
+        }
+        assertEquals("http://stream.box:8001/1%3A0%3A1", EnigmaUrls.stream(profile, "1:0:1"))
+    }
+
+    @Test
+    fun fileStream_transcodingAsksTheTranscoderForTheFile() {
+        val profile = transcodingProfile().apply {
+            fileSsl = true
+            filePort = 443
+            fileLogin = true
+        }
+        val url = EnigmaUrls.fileStream(profile, "1:0:0:0:0:0:0:0:0:0:/hdd/a.ts", "/hdd/a.ts")
+        assertEquals("http://box.local:8002/file?file=%2Fhdd%2Fa.ts", url)
+    }
+
+    @Test
+    fun fileStream_directIgnoresTheTranscodePort() {
+        val url = EnigmaUrls.fileStream(fileProfile(), "1:0:1", "/tmp/a.ts")
+        assertEquals("http://box.local:80/file?file=%2Ftmp%2Fa.ts", url)
+    }
+
+    private fun transcodingProfile(): Profile = streamProfile().apply {
+        streamMode = StreamMode.Transcoding
+    }
+
     private fun httpProfile(login: Boolean = false, host: String = "box.local"): Profile =
         Profile().apply {
             this.host = host
@@ -131,7 +174,6 @@ class EnigmaUrlsTest {
             this.streamLogin = streamLogin
             this.streamHost = streamHost
             streamPort = 8001
-            encoderStream = false
         }
 
     private fun fileProfile(
@@ -142,11 +184,10 @@ class EnigmaUrlsTest {
         this.fileLogin = fileLogin
         this.fileSsl = fileSsl
         this.filePort = filePort
-        encoderStream = false
     }
 
     private fun encoderProfile(encoderLogin: Boolean = false): Profile = httpProfile().apply {
-        encoderStream = true
+        streamMode = StreamMode.Encoder
         this.encoderLogin = encoderLogin
         encoderUser = "enc"
         encoderPass = "pw"

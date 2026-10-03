@@ -177,7 +177,7 @@ object DatabaseHelper {
             c.stringOr(KEY_DEFAULT_REF_NAME),
             c.stringOr(KEY_DEFAULT_REF_2),
             c.stringOr(KEY_DEFAULT_REF_2_NAME),
-            c.boolOr(KEY_ENCODER_STREAM),
+            if (c.boolOr(KEY_ENCODER_STREAM)) StreamMode.Encoder else StreamMode.Direct,
             encoderPath,
             encoderPort,
             c.boolOr(KEY_ENCODER_LOGIN),

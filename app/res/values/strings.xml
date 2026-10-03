@@ -303,7 +303,11 @@
     <string name="use_fake_picon_long">Use a fake picon (picon_default.png) to avoid copyright problems on screenshots</string>
     <string name="host_unreach">Could not connect to host</string>
     <string name="next_event">Next Event</string>
-    <string name="use_encoder">Use encoder for streaming</string>
+    <string name="stream_mode">Stream mode</string>
+    <string name="stream_mode_direct">Direct</string>
+    <string name="stream_mode_encoder">Dreambox encoder (RTSP)</string>
+    <string name="stream_mode_transcoding">Transcoding (HTTP)</string>
+    <string name="transcode_port">Transcoding port</string>
     <string name="zap_and_stream">Zap and stream</string>
     <string name="zap_and_stream_summary">Tune the receiver to this service before playback. A single-tuner box can only stream a service on the current transponder, and this also changes the channel on the TV.</string>
     <string name="encoder_path">Stream path</string>

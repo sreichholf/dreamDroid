@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.setup
 
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 
 /**
  * The offline dreamdroid.org row inserted for an empty profile table.
@@ -25,7 +26,8 @@ fun Profile.matchesSeededDemo(): Boolean = name == SEEDED_DEMO_NAME &&
     defaultBouquetTvName.isNullOrEmpty() &&
     defaultParentBouquetTv.isNullOrEmpty() &&
     defaultParentBouquetTvName.isNullOrEmpty() &&
-    !encoderStream &&
+    streamMode == StreamMode.Direct &&
+    transcodePort == Profile.DEFAULT_TRANSCODE_PORT &&
     encoderPath == "stream" &&
     encoderPort == 554 &&
     !encoderLogin &&

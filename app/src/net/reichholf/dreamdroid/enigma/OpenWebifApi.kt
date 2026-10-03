@@ -301,8 +301,11 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
         get("/api/gettags", OwifTags.serializer()) { it.tags }
 
     /**
-     * Port 8001 is enigma2's own stream server, the same on every image; the encoder's RTSP
-     * stream is a Dreambox thing a profile can still ask for (docs/openwebif.md §1.1 item 13).
+     * By the profile's `StreamMode`: `Direct` is enigma2's own stream server on port 8001, the
+     * same on every image. `Transcoding` is the box's transcoding server on the profile's
+     * transcode port, 8002 by default, which OpenWebif's own stream links use
+     * (models/stream.py:83-90). `Encoder`, the Dreambox's RTSP encoder, a profile can still ask
+     * for (docs/openwebif.md §1.1 item 13).
      */
     override fun liveStreamUrl(serviceRef: String): String =
         EnigmaUrls.stream(http.profile, serviceRef)
