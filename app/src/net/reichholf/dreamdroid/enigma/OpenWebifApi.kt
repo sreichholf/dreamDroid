@@ -727,6 +727,8 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
  * - Empty `tags` are left out: the box would store one empty tag (web.py:1062-1064).
  * - No `eit`: the box reads it only as a number, which a query value never is, and looks the
  *   event up by time instead (web.py:1081-1088).
+ * - VPS goes as all three params when the timer's is known ([params]). Without them the box
+ *   turns VPS off (web.py:990-996, models/timers.py:416-419).
  */
 private fun timerParams(timer: Timer): List<NameValuePair> = listOfNotNull(
     NameValuePair("sRef", timer.reference),
@@ -741,11 +743,8 @@ private fun timerParams(timer: Timer): List<NameValuePair> = listOfNotNull(
     NameValuePair("afterevent", timer.afterEvent),
     NameValuePair("repeated", timer.repeated.ifBlank { "0" }),
     timer.allowDuplicate?.let { NameValuePair("allow_duplicate", it) },
-    timer.autoAdjust?.let { NameValuePair("autoadjust", it) },
-    timer.vpsEnabled?.let { NameValuePair("vpsplugin_enabled", it) },
-    timer.vpsOverwrite?.let { NameValuePair("vpsplugin_overwrite", it) },
-    timer.vpsTime?.let { NameValuePair("vpsplugin_time", it) }
-)
+    timer.autoAdjust?.let { NameValuePair("autoadjust", it) }
+) + timer.vps?.params().orEmpty()
 
 /**
  * [path] for `movielist`'s `dirname`. The box decodes that argument as Latin-1 and then turns

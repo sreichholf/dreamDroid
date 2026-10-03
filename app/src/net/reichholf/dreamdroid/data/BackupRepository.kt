@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 
@@ -144,6 +145,7 @@ internal fun parseBackupImport(content: String?): BackupData? {
     val backupData = try {
         val tree = JsonParser.parseString(content.orEmpty())
         upgradeStreamMode(tree)
+        upgradeVpsDefault(tree)
         GsonBuilder().create().fromJson(tree, BackupData::class.java)
     } catch (e: JsonParseException) {
         null
@@ -172,6 +174,21 @@ private fun upgradeStreamMode(tree: JsonElement) {
             "streamMode",
             if (encoder) StreamMode.Encoder.name else StreamMode.Direct.name
         )
+    }
+}
+
+/**
+ * Files written before the VPS default have no `vpsDefault`; one from a newer app may name a
+ * mode this one lacks. Either would make Gson store null in a non-null field, so it becomes
+ * [VpsMode.Off].
+ */
+private fun upgradeVpsDefault(tree: JsonElement) {
+    val profiles = (tree as? JsonObject)?.get("mProfiles") as? JsonArray ?: return
+    for (profile in profiles.filterIsInstance<JsonObject>()) {
+        val mode = profile.get("vpsDefault")?.takeIf { it.isJsonPrimitive }?.asString
+        if (VpsMode.entries.none { it.name == mode }) {
+            profile.addProperty("vpsDefault", VpsMode.Off.name)
+        }
     }
 }
 

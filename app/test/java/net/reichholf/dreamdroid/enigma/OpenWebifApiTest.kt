@@ -401,14 +401,12 @@ class OpenWebifApiTest {
         )
         assertTrue(tatort.beginReadable.isNotEmpty())
         assertEquals(
-            listOf("0", "1", "1", "1", T + 900),
-            with(tatort) {
-                listOf(allowDuplicate, autoAdjust, vpsEnabled, vpsOverwrite, vpsTime?.toLong())
-            }
+            listOf("0", "1", TimerVps(VpsMode.Overwrite, T + 900)),
+            with(tatort) { listOf(allowDuplicate, autoAdjust, vps) }
         )
         assertEquals(
-            listOf("1", null, "0", "0", null),
-            with(heute) { listOf(allowDuplicate, autoAdjust, vpsEnabled, vpsOverwrite, vpsTime) }
+            listOf("1", null, TimerVps(VpsMode.Off)),
+            with(heute) { listOf(allowDuplicate, autoAdjust, vps) }
         )
         assertEquals(
             listOf("", "1", "1", "0", "", "", "31", "N/A"),

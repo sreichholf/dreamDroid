@@ -15,6 +15,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.LOCATIONS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TAGS
@@ -78,21 +80,19 @@ class TimerEditViewModelTest {
             reference = REFERENCE,
             allowDuplicate = "0",
             autoAdjust = "1",
-            vpsEnabled = "1",
-            vpsOverwrite = "0",
-            vpsTime = "1893456000"
+            vps = TimerVps(VpsMode.Safe, 1893456000)
         )
         assertEquals(listed, TimerEdit.from(listed, create = false).toTimer())
 
         val handle = route(create = false).apply {
             set("allowDuplicate", "0")
-            set("vpsEnabled", "1")
+            set("vpsMode", "Overwrite")
         }
         val timer = viewModel(handle).ready().timer!!
 
         assertEquals(
-            listOf("0", null, "1"),
-            listOf(timer.allowDuplicate, timer.autoAdjust, timer.vpsEnabled)
+            listOf("0", null, TimerVps(VpsMode.Overwrite)),
+            listOf(timer.allowDuplicate, timer.autoAdjust, timer.vps)
         )
     }
 

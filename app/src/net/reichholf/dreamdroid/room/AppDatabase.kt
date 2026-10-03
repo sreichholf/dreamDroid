@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListEntity::class,
         EpgSearchRecentEntity::class
     ],
-    version = 10,
+    version = 11,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -361,6 +361,17 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Adds VPS to the timer snapshot and the profile's VPS default for new timers. */
+        val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE `timer_list` ADD COLUMN `vpsMode` TEXT")
+                connection.execSQL("ALTER TABLE `timer_list` ADD COLUMN `vpsTime` INTEGER")
+                connection.execSQL(
+                    "ALTER TABLE `profile` ADD COLUMN `vps_default` TEXT NOT NULL DEFAULT 'Off'"
+                )
+            }
+        }
+
         /**
          * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
          * building does not open the file.
@@ -379,7 +390,8 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_6_7,
                 MIGRATION_7_8,
                 MIGRATION_8_9,
-                MIGRATION_9_10
+                MIGRATION_9_10,
+                MIGRATION_10_11
             )
             .configureRoomDriver()
             .build()

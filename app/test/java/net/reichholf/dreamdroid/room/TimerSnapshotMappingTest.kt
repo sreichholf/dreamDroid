@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.room
 
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
@@ -35,9 +37,11 @@ class TimerSnapshotMappingTest {
             repeated = "0",
             dontSave = "0",
             canceled = "0",
-            toggleDisabled = "0"
+            toggleDisabled = "0",
+            vps = TimerVps(VpsMode.Safe, 1476644000)
         )
         assertEquals(timer, timer.toListEntity(7, 2).toTimer())
+        assertEquals(timer.copy(vps = null), timer.copy(vps = null).toListEntity(7, 2).toTimer())
         val entity = timer.toListEntity(7, 2)
         assertEquals(7, entity.profileId)
         assertEquals(2, entity.position)

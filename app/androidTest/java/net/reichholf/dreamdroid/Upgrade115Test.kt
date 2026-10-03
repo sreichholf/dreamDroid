@@ -7,6 +7,7 @@ import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.room.AppDatabase
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -108,6 +109,7 @@ class Upgrade115Test {
         assertEquals("UpgradeWifi", p.ssid)
         assertTrue(p.isDefaultProfileOnNoWifi)
         assertFalse(p.zapAndStream)
+        assertEquals(VpsMode.Off, p.vpsDefault)
     }
 
     private companion object {
