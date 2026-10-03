@@ -469,4 +469,10 @@
     <string name="autotimer_run">Jetzt ausführen</string>
     <string name="autotimer_run_confirm">Jetzt den EPG für alle aktiven AutoTimer durchsuchen? Der Receiver legt für neue Treffer Timer an. Das kann einige Minuten dauern.</string>
     <string name="autotimer_run_started">Der Receiver sucht jetzt. Neue Timer erscheinen in der Timerliste, sobald er fertig ist.</string>
+    <string name="ip_rejected_error">Der Receiver lehnt Verbindungen von außerhalb seines Netzwerks ohne Login ab. Aktiviere die Authentifizierung in den OpenWebif-Einstellungen und trage dann Benutzer und Passwort in diesem Profil ein.</string>
+    <string name="stream_mode">Stream-Modus</string>
+    <string name="stream_mode_direct">Direkt</string>
+    <string name="stream_mode_encoder">Dreambox-Encoder (RTSP)</string>
+    <string name="stream_mode_transcoding">Transcoding (HTTP)</string>
+    <string name="transcode_port">Transcoding-Port</string>
 </resources>
