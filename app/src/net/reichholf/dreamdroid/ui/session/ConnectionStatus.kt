@@ -81,7 +81,7 @@ fun shouldWaitForDeviceInfo(hasCache: Boolean): Boolean = !hasCache
 fun shouldShowProfileCheckCheckingUi(hasCache: Boolean): Boolean = !hasCache
 
 /**
- * Unreachable/Auth with cache stay Offline on the start route. Other kinds keep the
+ * Unreachable/Auth/IpRejected with cache stay Offline on the start route. Other kinds keep the
  * failed ProfileCheck gate even when cache exists.
  */
 fun shouldShowProfileCheckFailedUi(hasCache: Boolean, failure: EnigmaFailure?): Boolean {
@@ -92,11 +92,14 @@ fun shouldShowProfileCheckFailedUi(hasCache: Boolean, failure: EnigmaFailure?): 
 }
 
 /**
- * Unreachable (except illegal host/port) and Auth can browse cache as Offline.
+ * Unreachable (except illegal host/port), Auth and IpRejected can browse cache as Offline: the
+ * last two are a receiver that refuses this client, as when it is used away from home.
  * Illegal host/port has no useful cache. Other kinds stay on the ProfileCheck gate.
  */
 fun EnigmaFailure.allowsOfflineSession(): Boolean = when (this) {
     is EnigmaFailure.Auth -> true
+
+    is EnigmaFailure.IpRejected -> true
 
     is EnigmaFailure.Unreachable ->
         reason != EnigmaFailure.UnreachableReason.IllegalHost

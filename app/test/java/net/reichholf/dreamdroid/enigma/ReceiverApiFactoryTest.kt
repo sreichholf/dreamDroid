@@ -16,7 +16,10 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
-/** [ReceiverApiFactory]'s clients: the active profile and the "dump XML" setting. */
+/**
+ * [ReceiverApiFactory]'s clients: the active profile, its detected flavor, and the "dump XML"
+ * setting.
+ */
 class ReceiverApiFactoryTest {
     private val server = MockWebServer()
     private val profiles = TestProfiles()
@@ -63,7 +66,37 @@ class ReceiverApiFactoryTest {
         assertFalse(dumpDir.exists())
     }
 
-    private fun activate(xmlDebug: Boolean) = runBlocking<Unit> {
+    @Test
+    fun anOpenWebifProfileGetsTheOpenWebifClient() = runBlocking {
+        val profile = activate(xmlDebug = false)
+        server.enqueue(MockResponse().setBody("{}"))
+
+        repository.setDeviceInfo(profile, DeviceInfo(deviceName = "x"), ReceiverFlavor.OpenWebif)
+        clients.current().deviceInfo()
+        clients.forProfile(profile).deviceInfo()
+
+        assertEquals("/api/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
+        assertEquals("/api/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
+    }
+
+    @Test
+    fun aDreamboxOrUndetectedProfileGetsTheDreamboxClient() = runBlocking {
+        val profile = activate(xmlDebug = false)
+        server.enqueue(MockResponse().setBody(DEVICE_INFO))
+
+        clients.current().deviceInfo()
+        repository.setDeviceInfo(
+            profile,
+            DeviceInfo(deviceName = "x"),
+            ReceiverFlavor.DreamboxWebIf
+        )
+        clients.current().deviceInfo()
+
+        assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
+        assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
+    }
+
+    private fun activate(xmlDebug: Boolean) = runBlocking<Profile> {
         PreferenceManager.getDefaultSharedPreferences(profiles.context).edit()
             .putBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, xmlDebug)
             .commit()
@@ -74,6 +107,7 @@ class ReceiverApiFactoryTest {
         }
         repository.save(profile)
         assertTrue(repository.setCurrent(profile.id!!))
+        profile
     }
 
     private companion object {

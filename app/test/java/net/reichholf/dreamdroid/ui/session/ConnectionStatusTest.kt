@@ -100,6 +100,22 @@ class ConnectionStatusTest {
     }
 
     @Test
+    fun ipRejectedWithCacheIsOfflineLikeAuth() {
+        val holder = SessionConnectionHolder()
+        holder.onSuccess(nowMs = 65L)
+        holder.onFailure(EnigmaFailure.IpRejected, hasCache = true)
+        val status = holder.status.value
+        assertEquals(ConnectionStatus.Session.Offline, status.session)
+        assertEquals(EnigmaFailure.IpRejected, status.lastFailure)
+        assertFalse(
+            shouldShowProfileCheckFailedUi(hasCache = true, failure = EnigmaFailure.IpRejected)
+        )
+        assertTrue(
+            shouldShowProfileCheckFailedUi(hasCache = false, failure = EnigmaFailure.IpRejected)
+        )
+    }
+
+    @Test
     fun illegalHostNeverGoesOfflineEvenWithCache() {
         val holder = SessionConnectionHolder()
         holder.onSuccess(nowMs = 70L)

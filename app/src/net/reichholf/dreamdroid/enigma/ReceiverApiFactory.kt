@@ -14,8 +14,9 @@ import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 /**
  * Builds a [ReceiverApi] per operation. A client wraps one [EnigmaHttp], which is bound to one
  * profile and cancels its in-flight call when a second fetch starts, so it must not be shared
- * across screens. Every profile gets a [DreamboxWebIfApi] for now, whatever its
- * [ReceiverFlavor]. Each client sees its profile's [WebIfCapabilities].
+ * across screens. A profile detected as [ReceiverFlavor.OpenWebif] gets an [OpenWebifApi];
+ * every other one, an undetected one included, a [DreamboxWebIfApi]. Each client sees its
+ * profile's [WebIfCapabilities].
  */
 @Singleton
 class ReceiverApiFactory @Inject constructor(
@@ -42,8 +43,13 @@ class ReceiverApiFactory @Inject constructor(
     fun detector(profile: Profile): ReceiverDetector =
         ReceiverDetector(http(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS))
 
-    private fun client(profile: Profile, timeoutMillis: Int): ReceiverApi =
-        DreamboxWebIfApi(http(profile, timeoutMillis), capabilities.of(profile))
+    private fun client(profile: Profile, timeoutMillis: Int): ReceiverApi {
+        val http = http(profile, timeoutMillis)
+        return when (profiles.flavor(profile)) {
+            ReceiverFlavor.OpenWebif -> OpenWebifApi(http)
+            ReceiverFlavor.DreamboxWebIf, null -> DreamboxWebIfApi(http, capabilities.of(profile))
+        }
+    }
 
     private fun http(profile: Profile, timeoutMillis: Int): EnigmaHttp = EnigmaHttp(
         profile = profile,

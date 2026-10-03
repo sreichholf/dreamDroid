@@ -57,8 +57,8 @@ import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 /**
  * [ReceiverApi] over OpenWebif's `/api` JSON (docs/openwebif.md §2.2), on one [EnigmaHttp].
- * Not built by [ReceiverApiFactory] yet. Source citations are E2OpenPlugins/e2openplugin-OpenWebif
- * at commit e46534f, under plugin/controllers.
+ * [ReceiverApiFactory] builds it for a profile detected as OpenWebif. Source citations are
+ * E2OpenPlugins/e2openplugin-OpenWebif at commit e46534f, under plugin/controllers.
  *
  * Every answer is one JSON object (base.py:221-224). A body that is not one is a
  * [EnigmaFailure.Parse]; a handler that returns nothing or throws answers with an HTML 404 or 500
