@@ -535,17 +535,28 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     /**
      * `timerchange` edits the timer found by `channelOld`, `beginOld` and `endOld` in place
      * (models/timers.py:395-400); it has no `deleteOldOnSave`. It resets duplicates,
-     * auto-adjust and VPS unless they are sent (web.py:985-1011,1084-1089), so [new] carries
-     * them from the timer list.
+     * auto-adjust and VPS unless they are sent (web.py:985-1011,1084-1089,
+     * models/timers.py:416-419), so [new] carries them from the timer list. The list reports
+     * VPS for every timer, so only a snapshot row from before dreamDroid kept VPS lacks it:
+     * that one first reads the VPS the box lists for [old], and a failed read fails the edit.
      */
-    override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> = command(
-        "/api/timerchange",
-        timerParams(new) + listOf(
-            NameValuePair("channelOld", old.reference),
-            NameValuePair("beginOld", old.begin),
-            NameValuePair("endOld", old.end)
+    override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> {
+        val vps = new.vps ?: run {
+            val listed = timers()
+            val timers = listed.value ?: return EnigmaResponse(null, listed.error)
+            timers.firstOrNull {
+                it.reference == old.reference && it.begin == old.begin && it.end == old.end
+            }?.vps
+        }
+        return command(
+            "/api/timerchange",
+            timerParams(new.copy(vps = vps)) + listOf(
+                NameValuePair("channelOld", old.reference),
+                NameValuePair("beginOld", old.begin),
+                NameValuePair("endOld", old.end)
+            )
         )
-    )
+    }
 
     /**
      * `timertogglestatus` flips only `disabled` and refuses an enable that conflicts

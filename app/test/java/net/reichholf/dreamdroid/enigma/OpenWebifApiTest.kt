@@ -474,7 +474,7 @@ class OpenWebifApiTest {
         answer("timerchange.json")
 
         val old = TATORT_TIMER.copy(begin = T.toString(), end = (T + 5400).toString())
-        val response = api.editTimer(old, TATORT_TIMER)
+        val response = api.editTimer(old, TATORT_TIMER.copy(vps = TimerVps(VpsMode.Off)))
 
         assertRequest(
             "/api/timerchange",
@@ -489,11 +489,47 @@ class OpenWebifApiTest {
             "justplay" to "0",
             "afterevent" to "3",
             "repeated" to "0",
+            "vpsplugin_enabled" to "0",
+            "vpsplugin_overwrite" to "0",
+            "vpsplugin_time" to "-1",
             "channelOld" to DAS_ERSTE,
             "beginOld" to T.toString(),
             "endOld" to (T + 5400).toString()
         )
         assertEquals(SimpleResult("True", "Timer 'Tatort' changed"), response.value)
+    }
+
+    @Test
+    fun editTimerWithUnknownVpsSendsTheVpsTheBoxListsForIt() = runBlocking {
+        answer("timerlist.json")
+        answer("timerchange.json")
+
+        val response = api.editTimer(TATORT_TIMER, TATORT_TIMER.copy(name = "Tatort (neu)"))
+
+        assertRequest("/api/timerlist")
+        val query = takeQuery()
+        assertEquals("Tatort (neu)", query["name"])
+        assertEquals(
+            listOf("1", "1", (T + 900).toString()),
+            listOf(
+                query["vpsplugin_enabled"],
+                query["vpsplugin_overwrite"],
+                query["vpsplugin_time"]
+            )
+        )
+        assertEquals(SimpleResult("True", "Timer 'Tatort' changed"), response.value)
+    }
+
+    @Test
+    fun editTimerWithUnknownVpsChangesNothingWhenTheListFails() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val response = api.editTimer(TATORT_TIMER, TATORT_TIMER.copy(name = "Tatort (neu)"))
+
+        assertNull(response.value)
+        assertEquals(500, (response.error?.failure as? EnigmaFailure.Http)?.code)
+        assertRequest("/api/timerlist")
+        assertEquals(1, server.requestCount)
     }
 
     @Test
