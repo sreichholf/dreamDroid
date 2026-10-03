@@ -11,6 +11,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
@@ -33,6 +34,7 @@ import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
@@ -345,6 +347,44 @@ class ProfileEditScreenTest {
         assertTrue(profile.zapAndStream)
         val reloaded = ProfileForm.from(profile)
         assertTrue(reloaded.zapAndStream)
+    }
+
+    @Test
+    fun vpsDefaultStartsAtNoAndRoundTripsThroughTheProfile() {
+        show(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        val field = composeRule.onNodeWithContentDescription("VPS default for new timers")
+        field.performScrollTo().assertIsDisplayed().assertTextContains("No")
+        composeRule.onNodeWithText("Used when the receiver has the VPS plugin.")
+            .assertIsDisplayed()
+        field.performClick()
+        composeRule.onNodeWithText("Yes (safe mode)").performClick()
+
+        field.assertTextContains("Yes (safe mode)")
+        assertEquals(VpsMode.Safe, form.vpsDefault)
+        val profile = Profile.getDefault()
+        fields.applyTo(profile, form)
+        assertEquals(VpsMode.Safe, profile.vpsDefault)
+    }
+
+    @Test
+    fun editModeShowsTheSavedVpsDefault() {
+        show(Profile.getDefault().apply { vpsDefault = VpsMode.Overwrite })
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        composeRule.onNodeWithContentDescription("VPS default for new timers")
+            .performScrollTo()
+            .assertTextContains("Yes")
+        composeRule.onNodeWithText("Yes (safe mode)").assertDoesNotExist()
     }
 
     @Test

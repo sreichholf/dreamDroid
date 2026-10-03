@@ -5,6 +5,7 @@ import java.io.Serializable
 import kotlinx.coroutines.CoroutineScope
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 
 /**
@@ -22,7 +23,8 @@ data class ProfileForm(
     val defaultOnNoWifi: Boolean = false,
     val streamMode: StreamMode = StreamMode.Direct,
     val zapAndStream: Boolean = false,
-    val encoderLogin: Boolean = false
+    val encoderLogin: Boolean = false,
+    val vpsDefault: VpsMode = VpsMode.Off
 ) : Serializable {
     companion object {
         fun from(profile: Profile): ProfileForm = ProfileForm(
@@ -36,7 +38,8 @@ data class ProfileForm(
             defaultOnNoWifi = profile.isDefaultProfileOnNoWifi,
             streamMode = profile.streamMode,
             zapAndStream = profile.zapAndStream,
-            encoderLogin = profile.encoderLogin
+            encoderLogin = profile.encoderLogin,
+            vpsDefault = profile.vpsDefault
         )
     }
 }
@@ -113,6 +116,7 @@ class ProfileTextFields(
         profile.isDefaultProfileOnNoWifi = form.defaultOnNoWifi
         profile.streamMode = form.streamMode
         profile.zapAndStream = form.zapAndStream
+        profile.vpsDefault = form.vpsDefault
         profile.encoderPath = encoderPath.text
         profile.setEncoderPort(encoderPort.text)
         profile.encoderLogin = form.encoderLogin

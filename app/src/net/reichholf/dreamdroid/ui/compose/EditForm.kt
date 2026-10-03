@@ -399,7 +399,8 @@ fun EditDropdownField(
     onSelected: (Int) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    contentDescription: String = label
+    contentDescription: String = label,
+    supportingText: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
     val selected = options.getOrElse(selectedIndex) { "" }
@@ -413,6 +414,9 @@ fun EditDropdownField(
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
+            supportingText = supportingText?.let { message ->
+                { Text(message) }
+            },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)

@@ -16,11 +16,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
@@ -78,6 +80,13 @@ fun ProfileEditScreen(
                     checked = form.simpleRemote,
                     onCheckedChange = { onFormChange(form.copy(simpleRemote = it)) },
                     label = stringResource(R.string.simple_remote)
+                )
+                EditDropdownField(
+                    options = stringArrayResource(R.array.vps_modes).toList(),
+                    selectedIndex = form.vpsDefault.ordinal,
+                    onSelected = { onFormChange(form.copy(vpsDefault = VpsMode.entries[it])) },
+                    label = stringResource(R.string.vps_default),
+                    supportingText = stringResource(R.string.vps_default_hint)
                 )
             }
 

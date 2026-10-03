@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.setup
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.enigma.VpsMode
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -19,6 +20,13 @@ class SetupAssistantModelTest {
     fun seededDemoRejectsADifferentHost() {
         val profile = seededDemo()
         profile.host = "192.168.1.2"
+        assertFalse(profile.matchesSeededDemo())
+    }
+
+    @Test
+    fun seededDemoWithAVpsDefaultIsTheUsersProfile() {
+        val profile = seededDemo()
+        profile.vpsDefault = VpsMode.Safe
         assertFalse(profile.matchesSeededDemo())
     }
 

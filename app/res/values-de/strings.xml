@@ -13,6 +13,10 @@
         <item>Herunterfahren</item>
         <item>Automatisch</item>
     </string-array>
+    <string name="vps">VPS</string>
+    <string name="vps_note">Erfordert, dass VPS in den VPS-Einstellungen des Receivers aktiviert ist.</string>
+    <string name="vps_date">VPS-Datum</string>
+    <string name="vps_time">VPS-Zeit</string>
     <string name="begin_time">Startzeit</string>
     <string name="repeatings">Wiederholungen</string>
     <string name="end_time">Endzeit</string>
@@ -190,6 +194,8 @@
     <string name="show_now_playing_strip">Es-läuft-Leiste</string>
     <string name="show_now_playing_strip_long">Aktuelle Sendung als Leiste auf TV &amp; Movies anzeigen</string>
     <string name="simple_remote">Einfache Fernbedienung</string>
+    <string name="vps_default">VPS-Standard für neue Timer</string>
+    <string name="vps_default_hint">Gilt, wenn der Receiver das VPS-Plugin hat.</string>
     <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">Es ist kein Player für Videostreaming installiert!</string>
@@ -475,4 +481,10 @@
     <string name="stream_mode_encoder">Dreambox-Encoder (RTSP)</string>
     <string name="stream_mode_transcoding">Transcoding (HTTP)</string>
     <string name="transcode_port">Transcoding-Port</string>
+    <!-- VPS plugin choice, in VpsMode order: Off, Safe, Overwrite. -->
+    <string-array name="vps_modes">
+        <item>Nein</item>
+        <item>Ja (Sicherheitsmodus)</item>
+        <item>Ja</item>
+    </string-array>
 </resources>

@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.setup
 
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 
 /**
  * The offline dreamdroid.org row inserted for an empty profile table.
@@ -36,6 +37,7 @@ fun Profile.matchesSeededDemo(): Boolean = name == SEEDED_DEMO_NAME &&
     encoderVideoBitrate == 2500 &&
     encoderAudioBitrate == 128 &&
     !zapAndStream &&
+    vpsDefault == VpsMode.Off &&
     ssid.isNullOrEmpty() &&
     !isDefaultProfileOnNoWifi
 

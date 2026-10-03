@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -25,7 +26,8 @@ import net.reichholf.dreamdroid.ui.text.UiText
 /**
  * One timer being created or edited. [timer] is the working copy apart from its title and
  * description, which are [TimerFormViewModel.name] and [TimerFormViewModel.description];
- * it is null until an editor opens. [locations] and [tags] are what the receiver offers.
+ * it is null until an editor opens. [locations] and [tags] are what the receiver offers;
+ * [vpsPlugin] is whether it has the VPS plugin, which the VPS field needs.
  * [progress] names the running request, which blocks another. [finished] is set once a
  * save or delete went through.
  */
@@ -34,6 +36,7 @@ data class TimerEditUiState(
     val isCreate: Boolean = true,
     val locations: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
+    val vpsPlugin: Boolean = false,
     val progress: UiText? = null,
     val saveError: UiText? = null,
     val mutationsBlocked: Boolean = false,
@@ -42,8 +45,9 @@ data class TimerEditUiState(
     val title: UiText
         get() = UiText.Resource(R.string.timer)
 
-    val form: TimerEditForm?
-        get() = timer?.let { TimerEditForm.from(it, locations) }
+    /** The form of [timer]; [name] is the title as typed ([TimerFormViewModel.name]). */
+    fun form(name: CharSequence): TimerEditForm? =
+        timer?.let { TimerEditForm.from(it, locations, vpsPlugin, name) }
 }
 
 /**
@@ -149,6 +153,17 @@ abstract class TimerFormViewModel(
         withClock(isBegin, hourOfDay, minute)
     }
 
+    override fun onVpsModeChange(mode: VpsMode) {
+        val typedName = name.text
+        edit { withVpsMode(mode, typedName) }
+    }
+
+    override fun onVpsDatePicked(utcDateMillis: Long) = edit { withVpsDate(utcDateMillis) }
+
+    override fun onVpsTimePicked(hourOfDay: Int, minute: Int) = edit {
+        withVpsClock(hourOfDay, minute)
+    }
+
     fun onServicePicked(service: Service) = edit {
         copy(serviceName = service.name, reference = service.reference)
     }
@@ -158,7 +173,7 @@ abstract class TimerFormViewModel(
         val state = _uiState.value
         val timer = state.timer ?: return
         val edited = timer.copy(name = name.text, description = description.text)
-            .normalized(state.locations)
+            .normalized(state.locations, state.vpsPlugin)
         edit { edited }
         val replaced = original
         request(R.string.saving) { timers.save(edited, replaced) }
@@ -195,18 +210,27 @@ abstract class TimerFormViewModel(
     }
 
     /**
-     * Fetches locations and tags. Known ones answer without suspending, so the progress
-     * only shows while the receiver is asked.
+     * Fetches locations, tags and whether the receiver has the VPS plugin; a new timer without
+     * VPS then gets the profile's VPS default. Known ones answer without suspending, so the
+     * progress only shows while the receiver is asked.
      */
     private fun loadChoices() {
         var done = false
         choicesJob = viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
             val choices = timers.locationsAndTags()
+            val vpsPlugin = timers.hasVpsPlugin()
+            val state = _uiState.value
+            if (vpsPlugin && state.isCreate && state.timer?.vps == null) {
+                timers.vpsForNewTimer()?.let { vps ->
+                    edit { if (this.vps == null) copy(vps = vps) else this }
+                }
+            }
             done = true
             _uiState.update {
                 it.copy(
                     locations = choices.locations,
                     tags = choices.tags,
+                    vpsPlugin = vpsPlugin,
                     progress = null
                 )
             }

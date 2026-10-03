@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.ui.timers
 import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
+import java.util.Calendar
+import java.util.TimeZone
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -22,6 +24,8 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.LOCATIONS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TAGS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CHANGE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_DELETE
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.WEB_EXTERNALS
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.externals
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.nav.TimerEdit
@@ -71,7 +75,7 @@ class TimerEditViewModelTest {
         assertEquals(UiText.Resource(R.string.timer), state.title)
         assertEquals(listOf("/hdd/movie/", "/media/hdd/"), state.locations)
         assertEquals(listOf("News", "Sport"), state.tags)
-        assertEquals("Das Erste HD", state.form?.serviceName)
+        assertEquals("Das Erste HD", state.form(viewModel.name.text)?.serviceName)
     }
 
     @Test
@@ -112,7 +116,7 @@ class TimerEditViewModelTest {
         viewModel.cancelAndJoin()
 
         val restored = viewModel(handle)
-        val form = restored.ready().form!!
+        val form = restored.ready().form(restored.name.text)!!
 
         assertEquals("Typed", restored.name.text)
         assertTrue(restored.uiState.value.isCreate)
@@ -122,6 +126,101 @@ class TimerEditViewModelTest {
         assertEquals(listOf("News", "Sport"), form.tags)
         assertEquals(5, form.repeated)
         assertEquals("ZDF HD", form.serviceName)
+    }
+
+    @Test
+    fun vpsModeAndTimeEditsSurviveProcessDeath() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        val handle = route(create = false, vpsMode = VpsMode.Off)
+        val viewModel = viewModel(handle)
+        viewModel.ready()
+        assertEquals(
+            VpsForm(VpsMode.Off, time = null, manual = true),
+            viewModel.uiState.value.form(viewModel.name.text)?.vps
+        )
+
+        viewModel.onVpsModeChange(VpsMode.Overwrite)
+        assertEquals(TimerVps(VpsMode.Overwrite, BEGIN), viewModel.uiState.value.timer?.vps)
+        viewModel.onVpsDatePicked(utcDay(2030, Calendar.MARCH, 2))
+        viewModel.onVpsTimePicked(hourOfDay = 21, minute = 5)
+        viewModel.cancelAndJoin()
+
+        val restored = viewModel(handle)
+        val vps = restored.ready().form(restored.name.text)?.vps
+
+        val expected = Calendar.getInstance().apply {
+            clear()
+            set(2030, Calendar.MARCH, 2, 21, 5)
+        }.timeInMillis / 1000
+        assertEquals(VpsForm(VpsMode.Overwrite, expected.toInt(), manual = true), vps)
+    }
+
+    @Test
+    fun vpsNeedsATimeOnlyWhileTheTitleIsBlankOrThereIsNoEvent() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Off, eit = "4711"))
+        val state = viewModel.ready()
+        assertFalse(state.form(viewModel.name.text)!!.vps!!.manual)
+        viewModel.onVpsModeChange(VpsMode.Safe)
+        assertEquals(TimerVps(VpsMode.Safe), viewModel.uiState.value.timer?.vps)
+        viewModel.onVpsModeChange(VpsMode.Off)
+
+        type(viewModel.name, "")
+
+        assertTrue(state.form(viewModel.name.text)!!.vps!!.manual)
+        viewModel.onVpsModeChange(VpsMode.Overwrite)
+        assertEquals(TimerVps(VpsMode.Overwrite, BEGIN), viewModel.uiState.value.timer?.vps)
+    }
+
+    @Test
+    fun zapTimerSavesVpsOff() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(VPS_TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Safe))
+        viewModel.ready()
+
+        viewModel.onZapChange(true)
+        assertNull(viewModel.uiState.value.form(viewModel.name.text)?.vps)
+        viewModel.save()
+
+        val state = viewModel.uiState.first { it.finished }
+        assertEquals(TimerVps(VpsMode.Off), state.timer?.vps)
+    }
+
+    @Test
+    fun aListedTimerShowsNoVpsFieldWithoutThePluginAndKeepsItsVps() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("autotimer"))
+        receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Safe))
+
+        val state = viewModel.ready()
+        assertFalse(state.vpsPlugin)
+        assertNull(state.form(viewModel.name.text)?.vps)
+        viewModel.save()
+
+        assertEquals(TimerVps(VpsMode.Safe), viewModel.uiState.first { it.finished }.timer?.vps)
+    }
+
+    @Test
+    fun newTimerHasNoVpsFieldWithoutThePlugin() = runTest {
+        val viewModel = viewModel(route(create = true))
+
+        val state = viewModel.ready()
+
+        assertNull(state.timer?.vps)
+        assertNull(state.form(viewModel.name.text)?.vps)
+    }
+
+    @Test
+    fun newTimerTakesTheProfilesVpsDefaultWhenTheReceiverHasThePlugin() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.repository.requireCurrent().vpsDefault = VpsMode.Safe
+        val viewModel = viewModel(route(create = true))
+
+        val state = viewModel.uiState.first { it.timer?.vps != null && it.progress == null }
+
+        assertEquals(TimerVps(VpsMode.Safe), state.timer?.vps)
+        assertEquals(VpsMode.Safe, state.form(viewModel.name.text)?.vps?.mode)
     }
 
     @Test
@@ -225,29 +324,40 @@ class TimerEditViewModelTest {
     }
 
     /** The saved state of a [net.reichholf.dreamdroid.ui.nav.TimerEdit] back-stack entry. */
-    private fun route(create: Boolean) = SavedStateHandle(
-        mapOf(
-            "create" to create,
-            "reference" to REFERENCE,
-            "serviceName" to "Das Erste HD",
-            "name" to "Sample",
-            "description" to "Desc",
-            "disabled" to "0",
-            "begin" to "1893456000",
-            "end" to "1893459600",
-            "justPlay" to "0",
-            "afterEvent" to "3",
-            "location" to "/hdd/movie/",
-            "repeated" to "0",
-            "tags" to ""
+    private fun route(create: Boolean, vpsMode: VpsMode? = null, eit: String = "") =
+        SavedStateHandle(
+            mapOf(
+                "create" to create,
+                "eit" to eit,
+                "vpsMode" to vpsMode?.name,
+                "reference" to REFERENCE,
+                "serviceName" to "Das Erste HD",
+                "name" to "Sample",
+                "description" to "Desc",
+                "disabled" to "0",
+                "begin" to "1893456000",
+                "end" to "1893459600",
+                "justPlay" to "0",
+                "afterEvent" to "3",
+                "location" to "/hdd/movie/",
+                "repeated" to "0",
+                "tags" to ""
+            )
         )
-    )
+
+    private fun utcDay(year: Int, month: Int, day: Int): Long =
+        Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(year, month, day)
+        }.timeInMillis
 
     private companion object {
         const val REFERENCE = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
+        const val BEGIN = 1893456000L
         const val LOCATION_XML =
             "<e2locations><e2location>/hdd/movie/</e2location>" +
                 "<e2location>/media/hdd/</e2location></e2locations>"
         const val TAG_XML = "<e2tags><e2tag>News</e2tag><e2tag>Sport</e2tag></e2tags>"
+        const val VPS_TIMER_CHANGE = "/vpsplugin/web/timerchange"
     }
 }

@@ -28,6 +28,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
@@ -48,6 +49,8 @@ enum class TimerEditPick {
     BeginTime,
     EndDate,
     EndTime,
+    VpsDate,
+    VpsTime,
     Repeated,
     Service,
     Tags
@@ -68,7 +71,7 @@ fun TimerEditContent(
     showSaveFab: Boolean = false,
     onSave: () -> Unit = {}
 ) {
-    val form = uiState.form ?: return
+    val form = uiState.form(name.text) ?: return
     var picker by remember { mutableStateOf<TimerEditPick?>(null) }
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
 
@@ -135,6 +138,25 @@ fun TimerEditContent(
                 }
             )
         }
+
+        TimerEditPick.VpsDate -> EpgDatePickerDialog(
+            initialTimeSec = form.vpsTimeOrBegin(),
+            onDismiss = dismiss,
+            onConfirm = { utcDateMillis ->
+                actions.onVpsDatePicked(utcDateMillis)
+                dismiss()
+            }
+        )
+
+        TimerEditPick.VpsTime -> EpgTimePickerDialog(
+            initialTimeSec = form.vpsTimeOrBegin(),
+            is24Hour = is24Hour,
+            onDismiss = dismiss,
+            onConfirm = { hour, minute ->
+                actions.onVpsTimePicked(hour, minute)
+                dismiss()
+            }
+        )
 
         TimerEditPick.Service, null -> Unit
     }
@@ -268,6 +290,36 @@ fun TimerEditScreen(
                     onSelected = actions::onAfterEventChange,
                     label = stringResource(R.string.afterevent)
                 )
+                form.vps?.let { vps ->
+                    EditDropdownField(
+                        options = stringArrayResource(R.array.vps_modes).toList(),
+                        selectedIndex = vps.mode.ordinal,
+                        onSelected = { actions.onVpsModeChange(VpsMode.entries[it]) },
+                        label = stringResource(R.string.vps),
+                        supportingText = if (vps.mode != VpsMode.Off) {
+                            stringResource(R.string.vps_note)
+                        } else {
+                            null
+                        }
+                    )
+                    if (vps.showsTime) {
+                        val vpsTime = form.vpsTimeOrBegin()
+                        EditPairedRow {
+                            EditPickField(
+                                value = date(vpsTime),
+                                label = stringResource(R.string.vps_date),
+                                onClick = { onPick(TimerEditPick.VpsDate) },
+                                modifier = Modifier.weight(1f)
+                            )
+                            EditPickField(
+                                value = time(vpsTime),
+                                label = stringResource(R.string.vps_time),
+                                onClick = { onPick(TimerEditPick.VpsTime) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
                 EditDropdownField(
                     options = form.locations,
                     selectedIndex = form.locationIndex,
@@ -287,3 +339,6 @@ fun TimerEditScreen(
         }
     }
 }
+
+/** The VPS time the pickers show: the set one, else the begin it follows. */
+private fun TimerEditForm.vpsTimeOrBegin(): Int = vps?.time ?: begin
