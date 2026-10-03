@@ -2,6 +2,7 @@
 
 **Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–15 merged; the migration is complete. The **End state** holds on `main` since 14b. Progress is tracked in **Progress** below.
 **Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
+**Names since:** this record keeps the names of its time. With [`openwebif.md`](openwebif.md), `EnigmaClient` became `DreamboxWebIfApi` behind the `ReceiverApi` interface (next to `OpenWebifApi`), and `EnigmaClientFactory` became `ReceiverApiFactory`, which picks the client by the detected receiver flavor. Decision 1 holds for both.
 
 ## End state
 
@@ -208,7 +209,7 @@ An audit of `main` after PR 15 (2026-09-29) found the End state held, and fixed 
 
 Accepted by the operator 2026-09-28. Change one only with a note here saying why.
 
-1. **`EnigmaClient` is not a singleton.** `EnigmaClient` wraps one `EnigmaHttp`, which is bound to one profile and cancels its in-flight call when a second `fetch` starts. A process-wide client would serialize every screen's requests and freeze the profile at first injection. Inject a `@Singleton EnigmaClientFactory` (`current()`, `forProfile(profile)`); repositories create a client per operation. Making `EnigmaHttp` stateless is out of scope.
+1. **`EnigmaClient` is not a singleton.** `EnigmaClient` wraps one `EnigmaHttp`, which is bound to one profile and cancels its in-flight call when a second `fetch` starts. A process-wide client would serialize every screen's requests and freeze the profile at first injection. Inject a `@Singleton EnigmaClientFactory` (`current()`, `forProfile(profile)`); repositories create a client per operation. Making `EnigmaHttp` stateless is out of scope. (Still the rule for `ReceiverApiFactory`.)
 2. **Transitional direction: Hilt wraps the static.** While a static accessor has callers, a Hilt `@Provides` returns the existing static instance. It flips once the class gets an `@Inject` constructor (PR 3 for `ProfileRepository`, PR 8 for `MultiEpgSync`); the static is deleted with its last caller. This avoids an `EntryPoint` lookup from code that can run before injection.
 3. **User messages and titles are screen state.** The shell provides its `SnackbarHostState` through a `CompositionLocal`. A destination shows `uiState.userMessage` with it and then calls `viewModel.onMessageShown()`. Destinations report `uiState.title` to the shell, which stops reading `Activity.title` for migrated destinations. PR 1 sets the pattern. No injected message bus.
 4. **Hilt Gradle plugin, with a fallback.** PR 1 first checks that the Hilt Gradle plugin (Dagger 2.60.1, `androidx.hilt` 1.4.0) builds with AGP 9.4 built-in Kotlin and KSP 2.3.12. If it does not, use Hilt without the plugin (`@HiltAndroidApp(Application::class) class DreamDroid : Hilt_DreamDroid()`, likewise for activities) and record that here. Do not downgrade AGP.

@@ -1,0 +1,12 @@
+{
+ "satellites": [
+  {
+   "service": "1:7:1:0:0:0:C00000:0:0:0:(satellitePosition == 192) && (type == 1) || (type == 17) || (type == 22) || (type == 25) || (type == 31) || (type == 134) || (type == 195) || (type == 211) ORDER BY name:Astra 1KR/1L/1M/1N (19.2E) - Services",
+   "name": "Astra 1KR/1L/1M/1N (19.2E) - Services"
+  },
+  {
+   "service": "1:7:1:0:0:0:C00000:0:0:0:(satellitePosition == 192) && (flags == 64) && (type == 1) || (type == 17) || (type == 22) || (type == 25) || (type == 31) || (type == 134) || (type == 195) || (type == 211) ORDER BY name:Astra 1KR/1L/1M/1N (19.2E) - New",
+   "name": "Astra 1KR/1L/1M/1N (19.2E) - New"
+  }
+ ]
+}

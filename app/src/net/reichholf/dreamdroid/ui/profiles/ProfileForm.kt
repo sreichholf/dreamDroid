@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import java.io.Serializable
 import kotlinx.coroutines.CoroutineScope
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 
 /**
@@ -19,7 +20,7 @@ data class ProfileForm(
     val fileLogin: Boolean = false,
     val simpleRemote: Boolean = false,
     val defaultOnNoWifi: Boolean = false,
-    val encoderStream: Boolean = false,
+    val streamMode: StreamMode = StreamMode.Direct,
     val zapAndStream: Boolean = false,
     val encoderLogin: Boolean = false
 ) : Serializable {
@@ -33,7 +34,7 @@ data class ProfileForm(
             fileLogin = profile.fileLogin,
             simpleRemote = profile.simpleRemote,
             defaultOnNoWifi = profile.isDefaultProfileOnNoWifi,
-            encoderStream = profile.encoderStream,
+            streamMode = profile.streamMode,
             zapAndStream = profile.zapAndStream,
             encoderLogin = profile.encoderLogin
         )
@@ -68,6 +69,7 @@ class ProfileTextFields(
     val encoderPass = textField("encoder_pass")
     val encoderVideoBitrate = textField("encoder_video_bitrate")
     val encoderAudioBitrate = textField("encoder_audio_bitrate")
+    val transcodePort = textField("transcode_port")
 
     fun fill(profile: Profile) {
         name.set(profile.name.orEmpty())
@@ -85,6 +87,7 @@ class ProfileTextFields(
         encoderPass.set(profile.encoderPass.orEmpty())
         encoderVideoBitrate.set(profile.encoderVideoBitrate.toString())
         encoderAudioBitrate.set(profile.encoderAudioBitrate.toString())
+        transcodePort.set(profile.transcodePort.toString())
     }
 
     /** Switching https moves the port between 80 and 443. */
@@ -108,7 +111,7 @@ class ProfileTextFields(
         profile.simpleRemote = form.simpleRemote
         profile.ssid = ssid.text.trim()
         profile.isDefaultProfileOnNoWifi = form.defaultOnNoWifi
-        profile.encoderStream = form.encoderStream
+        profile.streamMode = form.streamMode
         profile.zapAndStream = form.zapAndStream
         profile.encoderPath = encoderPath.text
         profile.setEncoderPort(encoderPort.text)
@@ -117,5 +120,6 @@ class ProfileTextFields(
         profile.encoderPass = encoderPass.text
         profile.setEncoderAudioBitrate(encoderAudioBitrate.text)
         profile.setEncoderVideoBitrate(encoderVideoBitrate.text)
+        profile.setTranscodePort(transcodePort.text)
     }
 }

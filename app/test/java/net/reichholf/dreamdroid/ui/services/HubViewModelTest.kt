@@ -28,6 +28,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
+import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.contentErrorText
@@ -37,7 +38,7 @@ import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.activeJobs
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -54,7 +55,7 @@ import org.junit.jupiter.api.Test
 class HubViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
-    private val clients = enigmaClients(profiles)
+    private val clients = receiverApis(profiles)
     private val movies = MovieRepository(
         receiver.profiles.context,
         clients,
@@ -73,7 +74,7 @@ class HubViewModelTest {
         Dispatchers.setMain(main)
         receiver.answer = ::routes
         receiver.start()
-        profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
+        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
     }
 
     @AfterEach
@@ -119,7 +120,7 @@ class HubViewModelTest {
         // one that asks the receiver first has sent that request by now.
         withTimeout(5_000L) { main.delays.first { it >= 1 } }
         main.scheduler.advanceTimeBy(10_000L)
-        profiles.setDeviceInfo(profiles.requireCurrent(), "<e2deviceinfo/>")
+        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
         main.scheduler.advanceTimeBy(200L)
 
         assertEquals(listOf(FAVOURITES, SPORTS), viewModel.loaded().tvBouquets)

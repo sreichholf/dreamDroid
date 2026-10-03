@@ -30,11 +30,10 @@ import java.util.Date
 import java.util.GregorianCalendar
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.WifiSsid
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
@@ -46,7 +45,9 @@ import net.reichholf.dreamdroid.room.AppDatabase
 @HiltAndroidApp
 class DreamDroid : Application() {
 
-    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    @Inject
+    @ApplicationScope
+    lateinit var ioScope: CoroutineScope
 
     @Inject
     lateinit var profiles: ProfileRepository
@@ -69,8 +70,9 @@ class DreamDroid : Application() {
                     .build()
             )
         }
-        // Hilt injects here. Building ProfileRepository, EpgRepository, and AppDatabase does
-        // not open the database; the pre-Room import in loadProfiles() is the first read.
+        // Hilt injects here. Building ProfileRepository, EpgRepository, AppDatabase, and the
+        // application scope does not open the database; the pre-Room import in loadProfiles()
+        // is the first read.
         super.onCreate()
         val dynamicColors = PreferenceManager.getDefaultSharedPreferences(this)
             .getBoolean(PREFS_KEY_DYNAMIC_THEME_COLORS, false)
@@ -298,11 +300,6 @@ class DreamDroid : Application() {
 
         var DATE_LOCALE_WO: Boolean = false
 
-        private var sleepTimerEnabled: Boolean = true
-        private var nowNextEnabled: Boolean = true
-
-        private var postRequestEnabled: Boolean = true
-
         fun getVersionString(): String {
             var buildDate = "<build-no-date>"
             if (BuildConfig.BUILD_TIME > 0) {
@@ -318,32 +315,6 @@ class DreamDroid : Application() {
                 buildDate
             )
         }
-
-        fun disableNowNext() {
-            nowNextEnabled = false
-        }
-
-        fun enableNowNext() {
-            nowNextEnabled = true
-        }
-
-        fun featureNowNext(): Boolean = nowNextEnabled
-
-        fun featurePostRequest(): Boolean = postRequestEnabled
-
-        fun setFeaturePostRequest(enabled: Boolean) {
-            postRequestEnabled = enabled
-        }
-
-        fun disableSleepTimer() {
-            sleepTimerEnabled = false
-        }
-
-        fun enableSleepTimer() {
-            sleepTimerEnabled = true
-        }
-
-        fun featureSleepTimer(): Boolean = sleepTimerEnabled
 
         fun getThemeType(context: Context): Int {
             val sp = PreferenceManager.getDefaultSharedPreferences(context)

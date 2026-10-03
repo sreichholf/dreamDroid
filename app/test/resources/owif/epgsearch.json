@@ -1,0 +1,45 @@
+{
+ "events": [
+  {
+   "id": 4712,
+   "date": "Tue 14.11.2023",
+   "begin_timestamp": 1700000900,
+   "begin": "23:13",
+   "duration_sec": 5400,
+   "duration": 90,
+   "end": "23:28",
+   "title": "Tatort",
+   "shortdesc": "Krimi",
+   "longdesc": "",
+   "sref": "1:0:19:283D:3FB:1:C00000:0:0:0:",
+   "sname": "Das Erste HD",
+   "picon": "/picon/1_0_19_283D_3FB_1_C00000_0_0_0.png",
+   "now_timestamp": null,
+   "genre": "",
+   "genreid": 0,
+   "service_type": "HDTV",
+   "ns": "19.2\u00b0E"
+  },
+  {
+   "id": 5001,
+   "date": "Tue 14.11.2023",
+   "begin_timestamp": 1700086400,
+   "begin": "23:13",
+   "duration_sec": 5400,
+   "duration": 90,
+   "end": "23:28",
+   "title": "Tatort &amp; Polizeiruf",
+   "shortdesc": "",
+   "longdesc": "",
+   "sref": "1:0:19:2B66:3F3:1:C00000:0:0:0:",
+   "sname": "ZDF HD",
+   "picon": "/picon/1_0_19_283D_3FB_1_C00000_0_0_0.png",
+   "now_timestamp": null,
+   "genre": "",
+   "genreid": 0,
+   "service_type": "HDTV",
+   "ns": "19.2\u00b0E"
+  }
+ ],
+ "result": true
+}

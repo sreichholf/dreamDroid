@@ -3,7 +3,7 @@
 **Status:** **Shipped** on phone (phases 0–4, including timer clocks) and on TV (§9). Defaults accepted by the operator 2026-09-12 (“Defaults look good”). Still open: prime-time jump (polish), live `epgmulti` size measurements (§5), and the `epgservice` fallback (deferred until a box without `epgmulti` shows up).  
 **Architecture:** `MultiEpgSync` / Room access move behind `EpgRepository` with injected dependencies, and the MultiEPG ViewModels move to the target shape — see remediation B1, B4, C2 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The fetch, cache, and TTL rules in this doc do not change.  
 **Product reference:** on-box **GraphMultiEPG** (`enigma2-plugin-extensions-graphmultiepg` on DreamOS; same family as [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG)) — channel rows × time columns, prime time, zoom, timer clocks.  
-**Target API:** genuine Dreambox WebInterface only (not OpenWebif extensions). On-box GraphMultiEPG reads `eEPGCache` locally; dreamDroid must use `/web/epgmulti` over the network.  
+**Target API:** `epgmulti` over the network: `/web/epgmulti` on the Dreambox WebInterface (`DreamboxWebIfApi`), `/api/epgmulti` on OpenWebif (`OpenWebifApi`, see [`openwebif.md`](openwebif.md)); `endTime` is minutes on both. This doc was written when only the Dreambox WebInterface was in scope. On-box GraphMultiEPG reads `eEPGCache` locally.  
 **Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif. GraphMultiEPG plugin source (behaviour reference): Enigma2 `Plugins/Extensions/GraphMultiEPG/` (e.g. OpenPLi tree; DreamOS ships the same plugin package).
 
 Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished timeline UI removed in [#177](https://github.com/sreichholf/dreamDroid/pull/177), commented `EpgDatabase` dropped in [#293](https://github.com/sreichholf/dreamDroid/pull/293). Unused constant already exists: `URIStore.EPG_MULTI` (`/web/epgmulti?`).
@@ -113,7 +113,7 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 - `time` is a **unix timestamp** (start of window). `endTime` is **minutes of duration**, not a unix end (same 4th eEPGCache tuple arg GraphMultiEPG uses). Sending a unix end (~1.7e9) overflows `startTimeQuery` → **0 events**.
 - Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**. `EpgRepository.fetchEpgMulti` converts the unix window to minutes.
 
-OpenWebif’s wiki note that `epgmulti` is “not in Enigma2 WebInterface API” is **incorrect** for this Dreambox tree. dreamDroid will not rely on OpenWebif-only endpoints (`epgmultigz`, `/api/…`, etc.).
+OpenWebif’s wiki note that `epgmulti` is “not in Enigma2 WebInterface API” is **incorrect** for this Dreambox tree. When this was written, dreamDroid did not rely on OpenWebif-only endpoints. OpenWebif boxes now go through their own client, which uses `/api/epgmulti` ([`openwebif.md`](openwebif.md)); `epgmultigz` is still unused.
 
 ---
 
@@ -180,7 +180,7 @@ Target (after remediation B4 / C2 / D1 in [`docs/modernize-dreamdroid.md`](moder
 Hub top bar action or list EPG Timeline
   → nested MultiEpg route (type-safe, bouquet ref in the route)
   → MultiEpgDestination → MultiEpgViewModel (hiltViewModel, StateFlow<MultiEpgUiState>)
-       └── EpgRepository (single @Singleton MultiEpgSync, EnigmaClient EPG_MULTI, Room EpgDao)
+       └── EpgRepository (single @Singleton MultiEpgSync, ReceiverApi.epgMulti, Room EpgDao)
   → MultiEpgScreen (stateless grid)
        └── tap → EPG detail sheet / timer flow
        └── At this time → list EPG (pop if nested on EPG)
@@ -196,8 +196,8 @@ Hub top bar action or list EPG Timeline
 | NavHost | `ui/nav/PhoneNavHost.kt` — nested `composable(MULTI_EPG)` (back returns to hub or list EPG) |
 | Drawer | `ui/drawer/DrawerScreen.kt` — list EPG only; MultiEPG is not a drawer peer |
 | Drawer → EPG | `ui/nav/NavigationHelper.kt` (`menu_navigation_epg`) — list EPG. MultiEPG is `navigateToMultiEpg` nested from hub/list EPG |
-| HTTP | `enigma/EnigmaClient.getEvents(params, uri)` already takes a URI; pass `URIStore.EPG_MULTI` |
-| Params | Same style as `EpgBouquetDestination`: `NameValuePair("bRef", …)` plus `time` / `endTime` |
+| HTTP | `ReceiverApi.epgMulti(…)`: `DreamboxWebIfApi` sends `/web/epgmulti`, `OpenWebifApi` `/api/epgmulti`. Written as `EnigmaClient.getEvents(params, URIStore.EPG_MULTI)` before the `ReceiverApi` split. |
+| Params | `bRef`, `time` and `endTime` (minutes), built inside each client |
 | Parse | Reuse `EventParser` / typed `enigma.Event` (XML tags match `epgservice`) |
 | Detail / timer | Reuse `EpgEventDetailViewModel` + `EpgEventDetailHost` (`ui/epg/EpgEventDetailSheet.kt`) from bouquet/service EPG |
 | Room | `room/AppDatabase.kt` holds profiles plus the EPG event / chunk entities and the offline roster / snapshot tables |
@@ -285,7 +285,7 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 
 | Topic | Settlement |
 | --- | --- |
-| Box API | Genuine **Dreambox WebInterface** only; OpenWebif-only APIs out of scope |
+| Box API | Settled as **Dreambox WebInterface** only; superseded by [`openwebif.md`](openwebif.md), which adds an OpenWebif client behind the same `ReceiverApi` |
 | Webif source | [opendreambox webinterface](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) is **reference-only** — no patches |
 | Primary EPG fetch | `/web/epgmulti` (confirmed in official webif `EPG.py` / `epgmulti.xml`) |
 | UX metaphor | On-box **GraphMultiEPG** (horizontal grid), not stock web column MultiEPG |
@@ -339,7 +339,7 @@ This **planning** goal is complete when all of the following are true:
 ## 8. Explicit non-goals
 
 - Patching / forking Dreambox `webinterface` on the box.
-- Depending on OpenWebif-only APIs.
+- Depending on OpenWebif-only APIs in the Dreambox path. (OpenWebif boxes have their own client since [`openwebif.md`](openwebif.md).)
 - Reintroducing the 2014 N× unbounded `epgservice` full-bouquet sync as the happy path.
 - Replacing list EPG in v1 (unless operator chooses otherwise).
 

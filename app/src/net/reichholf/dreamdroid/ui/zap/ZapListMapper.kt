@@ -4,7 +4,7 @@ import net.reichholf.dreamdroid.enigma.Service
 
 /**
  * Zap channel grid filters. Channel rows come typed from
- * [net.reichholf.dreamdroid.enigma.EnigmaClient]. Bouquet picker Intent extras carry
+ * [net.reichholf.dreamdroid.enigma.ReceiverApi]. Bouquet picker Intent extras carry
  * [Service] directly.
  */
 object ZapListMapper {

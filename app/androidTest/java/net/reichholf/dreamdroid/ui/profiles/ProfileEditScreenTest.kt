@@ -32,6 +32,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
@@ -196,7 +197,8 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("root").assertIsDisplayed()
 
         composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithText("Use encoder for streaming").performScrollTo().performClick()
+        composeRule.onNodeWithContentDescription("Stream mode").performScrollTo().performClick()
+        composeRule.onNodeWithText("Dreambox encoder (RTSP)").performClick()
         composeRule.onNodeWithText("Port (Live)").assertDoesNotExist()
         composeRule.onNodeWithText("Stream path").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("stream").assertIsDisplayed()
@@ -205,6 +207,29 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Encoder user").assertDoesNotExist()
         composeRule.onAllNodesWithText("Enable Login")[1].performClick()
         composeRule.onNodeWithText("Encoder user").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun transcodingModeShowsItsPortAndSavesTheMode() {
+        show(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen()
+            }
+        }
+
+        composeRule.onNodeWithText("Transcoding port").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Stream mode").performScrollTo().performClick()
+        composeRule.onNodeWithText("Transcoding (HTTP)").performClick()
+        composeRule.onNodeWithText("Transcoding port").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("8002").assertIsDisplayed()
+        composeRule.onNodeWithText("Port (Live)").assertDoesNotExist()
+        composeRule.onNodeWithText("Stream path").assertDoesNotExist()
+
+        val saved = Profile.getDefault()
+        composeRule.runOnIdle { fields.applyTo(saved, form) }
+        assertEquals(StreamMode.Transcoding, saved.streamMode)
+        assertEquals(8002, saved.transcodePort)
     }
 
     @Test

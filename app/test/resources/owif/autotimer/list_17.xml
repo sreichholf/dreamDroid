@@ -1,0 +1,17 @@
+<?xml version="1.0" ?>
+<autotimer version="8" nextTimerId="3">
+
+ <defaults id="-1" encoding="UTF-8">
+ </defaults>
+
+ <timer name="Tatort" match="Tatort" enabled="yes" id="1" from="20:00" to="23:00" encoding="UTF-8" searchType="start" always_zap="1">
+  <e2service>
+   <e2servicereference>1:0:19:283D:3FB:1:C00000:0:0:0:</e2servicereference>
+   <e2servicename>Das Erste HD</e2servicename>
+  </e2service>
+ </timer>
+
+ <timer name="Sport" match="Sportschau" enabled="no" id="2" justplay="1" encoding="UTF-8">
+ </timer>
+
+</autotimer>

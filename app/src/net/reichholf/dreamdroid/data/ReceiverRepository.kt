@@ -8,21 +8,16 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.CurrentService
 import net.reichholf.dreamdroid.enigma.DeviceInfo
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.PowerCommand
 import net.reichholf.dreamdroid.enigma.PowerState
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Volume
+import net.reichholf.dreamdroid.enigma.VolumeCommand
 import net.reichholf.dreamdroid.enigma.userMessageText
-import net.reichholf.dreamdroid.helpers.EnigmaUrls
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.Python
-import net.reichholf.dreamdroid.helpers.enigma2.Message
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
-import net.reichholf.dreamdroid.helpers.enigma2.Remote
-import net.reichholf.dreamdroid.helpers.enigma2.SleepTimer as SleepTimerKeys
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.video.ZapAndStream
 
@@ -41,27 +36,19 @@ sealed interface LiveStream {
 /** Receiver state and commands of the active profile. */
 @Singleton
 class ReceiverRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository
 ) {
-    suspend fun deviceInfo(): EnigmaResponse<DeviceInfo> = clients.current().getDeviceInfo()
+    suspend fun deviceInfo(): EnigmaResponse<DeviceInfo> = clients.current().deviceInfo()
 
-    suspend fun signal(): EnigmaResponse<Signal> = clients.current().getSignal()
+    suspend fun signal(): EnigmaResponse<Signal> = clients.current().signal()
 
-    /**
-     * A JPEG of video and OSD at the receiver's resolution, from `/grab` (which writes it to a
-     * timestamped file under `/tmp` first), or from `/screenshot` when `/grab` returns no image.
-     */
-    suspend fun screenshot(): EnigmaResponse<ByteArray> = clients.current().getScreenshot(
-        listOf(
-            NameValuePair("format", "jpg"),
-            NameValuePair("filename", "/tmp/dreamDroid-${System.currentTimeMillis() / 1000}")
-        )
-    )
+    /** A JPEG of video and OSD at the receiver's resolution. */
+    suspend fun screenshot(): EnigmaResponse<ByteArray> = clients.current().screenshot()
 
     /** Zaps the receiver to [reference], a service or a recording. */
     suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
-        clients.current().zap(listOf(NameValuePair("sRef", reference)))
+        clients.current().zap(reference)
 
     /**
      * The stream of the live service [reference]. A zap-and-stream profile ([ZapAndStream])
@@ -78,11 +65,12 @@ class ReceiverRepository @Inject constructor(
                 return LiveStream.Failed(response.userMessageText())
             }
         }
-        return LiveStream.Ready(reference, EnigmaUrls.stream(profile, reference))
+        return LiveStream.Ready(reference, clients.forProfile(profile).liveStreamUrl(reference))
     }
 
     /** The service the receiver is tuned to, with its now and next event. */
-    suspend fun currentService(): EnigmaResponse<CurrentService> = clients.current().getCurrent()
+    suspend fun currentService(): EnigmaResponse<CurrentService> =
+        clients.current().currentService()
 
     /**
      * Returns once the startup profile check stored the active profile's device info, or
@@ -104,54 +92,38 @@ class ReceiverRepository @Inject constructor(
 
     /** Plays [reference], a media player service ref, on the receiver of [profile]. */
     suspend fun playMedia(profile: Profile, reference: String): EnigmaResponse<SimpleResult> =
-        clients.forProfile(profile).playMedia(listOf(NameValuePair("file", reference)))
+        clients.forProfile(profile).playMedia(reference)
 
-    /** Runs the volume [command] (`up`, `down`, `mute`); the answer carries the new level. */
-    suspend fun setVolume(command: String): EnigmaResponse<Volume> =
-        clients.current().setVolume(listOf(NameValuePair("set", command)))
+    /** Runs the volume [command]; the answer carries the new level. */
+    suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume> =
+        clients.current().setVolume(command)
 
-    /** Sets the power [state]; the answer carries the new state. */
-    suspend fun setPowerState(state: String): EnigmaResponse<PowerState> =
-        clients.current().setPowerState(PowerStateKeys.getStateParams(state))
+    /** Runs the power [command]; the answer carries the new state. */
+    suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState> =
+        clients.current().setPowerState(command)
 
     /** Reads the sleep timer. */
-    suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = clients.current().sleepTimer(emptyList())
+    suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = clients.current().sleepTimer()
 
     /** Writes the sleep timer; the answer carries the stored timer. */
     suspend fun setSleepTimer(
         time: String?,
         action: String?,
         enabled: Boolean
-    ): EnigmaResponse<SleepTimer> = clients.current().sleepTimer(
-        listOf(
-            NameValuePair("cmd", SleepTimerKeys.CMD_SET),
-            NameValuePair("time", time),
-            NameValuePair("action", action),
-            NameValuePair("enabled", if (enabled) Python.TRUE else Python.FALSE)
-        )
-    )
+    ): EnigmaResponse<SleepTimer> = clients.current().setSleepTimer(time, action, enabled)
 
     /** Shows a message on the receiver. */
     suspend fun sendMessage(
         text: String?,
         type: String?,
         timeout: String?
-    ): EnigmaResponse<SimpleResult> =
-        clients.current().sendMessage(Message.getParams(text, type, timeout))
+    ): EnigmaResponse<SimpleResult> = clients.current().sendMessage(text, type, timeout)
 
     /** Sends a remote-control key press. */
     suspend fun remoteCommand(
         keyCode: Int,
         simpleRemote: Boolean,
         longClick: Boolean
-    ): EnigmaResponse<SimpleResult> {
-        val params = ArrayList<NameValuePair>().apply {
-            add(NameValuePair("command", keyCode.toString()))
-            add(NameValuePair("rcu", if (simpleRemote) "standard" else "advanced"))
-            if (longClick) {
-                add(NameValuePair("type", Remote.CLICK_TYPE_LONG))
-            }
-        }
-        return clients.current().remoteCommand(params)
-    }
+    ): EnigmaResponse<SimpleResult> =
+        clients.current().remoteCommand(keyCode, simpleRemote, longClick)
 }

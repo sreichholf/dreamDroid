@@ -79,6 +79,7 @@ reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reo
 room-compiler = { module = "androidx.room3:room3-compiler", version.ref = "room" }
 room-runtime = { module = "androidx.room3:room3-runtime", version.ref = "room" }
 serialization-core = { module = "org.jetbrains.kotlinx:kotlinx-serialization-core", version.ref = "serialization" }
+serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "serialization" }
 sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
 sqlite-bundled-jvm = { module = "androidx.sqlite:sqlite-bundled-jvm", version.ref = "sqlite" }
 tv-material = { module = "androidx.tv:tv-material", version.ref = "tvMaterial" }

@@ -11,13 +11,14 @@ import java.net.HttpURLConnection
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import okhttp3.Call
 import okhttp3.Callback
 import okhttp3.Credentials
+import okhttp3.Headers
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
@@ -31,7 +32,9 @@ data class EnigmaHttpError(val failure: EnigmaFailure) {
 }
 
 sealed class EnigmaHttpResult {
-    data class Success(val bytes: ByteArray) : EnigmaHttpResult() {
+    /** The body, empty for a download, and the answer's [headers]. */
+    data class Success(val bytes: ByteArray, val headers: Headers = Headers.headersOf()) :
+        EnigmaHttpResult() {
         val text: String
             get() = String(bytes)
     }
@@ -43,25 +46,28 @@ sealed class EnigmaHttpResult {
  * Per-request Enigma2 HTTP. Share [EnigmaOkHttp] under the hood; do not share
  * this type across concurrent fetches (a second [fetch] cancels the first).
  *
- * Built by `EnigmaClientFactory`. Response bodies are copied into [xmlDumpDir] when it is set
+ * Built by `ReceiverApiFactory`. Response bodies are copied into [xmlDumpDir] when it is set
  * (the "dump XML" developer setting).
+ *
+ * Requests go out as POST or GET as [capabilities] says for [profile]. A 405 answer flips the
+ * method for this client and for the profile, and the request is sent again.
  */
 class EnigmaHttp(
-    private val profile: Profile,
+    val profile: Profile,
     private val okHttp: EnigmaOkHttp,
+    private val capabilities: WebIfCapabilitiesRepository,
     private val xmlDumpDir: Lazy<File>? = null,
-    timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
+    private val timeoutMillis: Int = DEFAULT_CONNECTION_TIMEOUT_MILLIS
 ) {
-    private var timeoutMillis: Int = timeoutMillis
     private var rememberedReturnCode: Int = 0
+
+    /** Set once a 405 flipped the method, so a draft profile without an id flips too. */
+    @Volatile
+    private var postRequest: Boolean? = null
 
     @Volatile
     private var inFlight: Call? = null
     private val fetchEpoch = AtomicInteger(0)
-
-    fun setConnectionTimeoutMillis(millis: Int) {
-        timeoutMillis = millis
-    }
 
     fun connectionTimeoutMillis(): Int = timeoutMillis
 
@@ -100,7 +106,8 @@ class EnigmaHttp(
             val urlString = EnigmaUrls.page(profile, path, requestParams)
             val requestBuilder = Request.Builder().url(urlString)
             authHeader()?.let { requestBuilder.header("Authorization", it) }
-            if (DreamDroid.featurePostRequest()) {
+            val post = postsRequests()
+            if (post) {
                 requestBuilder.post(ByteArray(0).toRequestBody(null))
             } else {
                 requestBuilder.get()
@@ -113,7 +120,15 @@ class EnigmaHttp(
                 throw InterruptedIOException()
             }
             executeInterruptibly(call).use { response ->
-                return handleResponse(path, parameters, urlString, response, epoch, destination)
+                return handleResponse(
+                    path,
+                    parameters,
+                    urlString,
+                    response,
+                    epoch,
+                    destination,
+                    post
+                )
             }
         } catch (e: Exception) {
             if (e is java.util.concurrent.CancellationException) {
@@ -145,14 +160,18 @@ class EnigmaHttp(
         urlString: String,
         response: Response,
         epoch: Int,
-        destination: File?
+        destination: File?,
+        sentPost: Boolean
     ): EnigmaHttpResult {
         val code = response.code
         if (code != HttpURLConnection.HTTP_OK) {
             if (code == HttpURLConnection.HTTP_BAD_METHOD &&
                 rememberedReturnCode != HttpURLConnection.HTTP_BAD_METHOD
             ) {
-                DreamDroid.setFeaturePostRequest(!DreamDroid.featurePostRequest())
+                // The other method than this request's: another request may have flipped it.
+                val post = !sentPost
+                postRequest = post
+                capabilities.setPostRequest(profile, post)
                 rememberedReturnCode = HttpURLConnection.HTTP_BAD_METHOD
                 return execute(uri, parameters, destination)
             }
@@ -182,18 +201,18 @@ class EnigmaHttp(
                 destination.delete()
                 return cancelledResult()
             }
-            return EnigmaHttpResult.Success(ByteArray(0))
+            return EnigmaHttpResult.Success(ByteArray(0), response.headers)
         }
         val body = response.body.bytes()
         if (epoch != fetchEpoch.get()) {
             return cancelledResult()
         }
         xmlDumpDir?.let { dumpToFile(it.value, urlString, body) }
-        return EnigmaHttpResult.Success(body)
+        return EnigmaHttpResult.Success(body, response.headers)
     }
 
     private fun createSession() {
-        val sessionHttp = EnigmaHttp(profile, okHttp, xmlDumpDir, timeoutMillis)
+        val sessionHttp = EnigmaHttp(profile, okHttp, capabilities, xmlDumpDir, timeoutMillis)
         when (val result = sessionHttp.fetch(URIStore.SESSION)) {
             is EnigmaHttpResult.Success -> {
                 val content = result.text.replace(Regex("\\<.*?\\>"), "").trim()
@@ -220,6 +239,8 @@ class EnigmaHttp(
             e.printStackTrace()
         }
     }
+
+    private fun postsRequests(): Boolean = postRequest ?: capabilities.of(profile).postRequest
 
     private fun isSessionLess(uri: String): Boolean = URIStore.SCREENSHOT == uri
 

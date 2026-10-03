@@ -158,7 +158,6 @@ class MainActivity :
         }
         val outcome = state.profileCheckOutcome ?: return
         ensureNavigationHelper()
-        navigationHelper!!.setAvailableFeatures()
         when (outcome) {
             is ProfileCheckOutcome.Failed -> phoneNav.navigateToProfileCheck()
 
@@ -282,8 +281,8 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
-                    if (!showingSetup && shellActions.probeReachability()) {
-                        navigationHelper?.setAvailableFeatures()
+                    if (!showingSetup) {
+                        shellActions.probeReachability()
                     }
                     delay(SESSION_REACHABILITY_INTERVAL_MS)
                 }
@@ -404,6 +403,7 @@ class MainActivity :
                     connectionLabel = stringResource(status.chipLabelRes()),
                     boxActionsBlocked = status.blocksMutations,
                     autoTimerInDrawer = shellUiState.autoTimerInDrawer,
+                    sleepTimerInDrawer = shellUiState.sleepTimerInDrawer,
                     onProfileClick = {
                         checkNavigationHelper()
                         navigationHelper?.navigateTo(R.id.menu_navigation_profiles)

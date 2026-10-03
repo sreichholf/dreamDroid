@@ -20,6 +20,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
 import net.reichholf.dreamdroid.ui.compose.EditFormSubsection
@@ -159,15 +161,17 @@ fun ProfileEditScreen(
                     label = stringResource(R.string.zap_and_stream),
                     summary = stringResource(R.string.zap_and_stream_summary)
                 )
-                EditSwitchRow(
-                    checked = form.encoderStream,
-                    onCheckedChange = { onFormChange(form.copy(encoderStream = it)) },
-                    label = stringResource(R.string.use_encoder)
+                val modeLabels = StreamMode.entries.map { stringResource(it.label) }
+                EditDropdownField(
+                    options = modeLabels,
+                    selectedIndex = form.streamMode.ordinal,
+                    onSelected = { onFormChange(form.copy(streamMode = StreamMode.entries[it])) },
+                    label = stringResource(R.string.stream_mode)
                 )
-                if (form.encoderStream) {
-                    EncoderSection(form, fields, onFormChange)
-                } else {
-                    StreamPortsSection(form, fields, onFormChange)
+                when (form.streamMode) {
+                    StreamMode.Direct -> StreamPortsSection(form, fields, onFormChange)
+                    StreamMode.Encoder -> EncoderSection(form, fields, onFormChange)
+                    StreamMode.Transcoding -> TranscodingSection(form, fields, onFormChange)
                 }
             }
 
@@ -242,6 +246,31 @@ private fun EncoderSection(
         )
     }
 }
+
+@Composable
+private fun TranscodingSection(
+    form: ProfileForm,
+    fields: ProfileTextFields,
+    onFormChange: (ProfileForm) -> Unit
+) {
+    EditOutlinedTextField(
+        state = fields.transcodePort.state,
+        label = stringResource(R.string.transcode_port),
+        keyboardType = KeyboardType.Number
+    )
+    EditSwitchRow(
+        checked = form.streamLogin,
+        onCheckedChange = { onFormChange(form.copy(streamLogin = it)) },
+        label = stringResource(R.string.login)
+    )
+}
+
+private val StreamMode.label: Int
+    get() = when (this) {
+        StreamMode.Direct -> R.string.stream_mode_direct
+        StreamMode.Encoder -> R.string.stream_mode_encoder
+        StreamMode.Transcoding -> R.string.stream_mode_transcoding
+    }
 
 @Composable
 private fun StreamPortsSection(

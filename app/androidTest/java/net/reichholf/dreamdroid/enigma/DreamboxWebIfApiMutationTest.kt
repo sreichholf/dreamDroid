@@ -3,9 +3,9 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.helpers.Python
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -18,9 +18,9 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 
-/** Typed [EnigmaClient] mutations hit the right endpoint and map the simple XML result. */
+/** Typed [DreamboxWebIfApi] mutations hit the right endpoint and map the simple XML result. */
 @RunWith(AndroidJUnit4::class)
-class EnigmaClientMutationTest {
+class DreamboxWebIfApiMutationTest {
     private lateinit var server: MockWebServer
 
     @Before
@@ -37,7 +37,7 @@ class EnigmaClientMutationTest {
     @Test
     fun zapSendsServiceReferenceAndSucceeds() = runBlocking {
         server.enqueue(MockResponse().setBody(simpleResult(Python.TRUE, "Active service is now")))
-        val response = client().zap(listOf(NameValuePair("sRef", "1:0:1:a")))
+        val response = client().zap("1:0:1:a")
         val request = server.takeRequest()
         assertEquals("/web/zap", request.requestUrl!!.encodedPath)
         assertEquals("1:0:1:a", request.requestUrl!!.queryParameter("sRef"))
@@ -48,7 +48,7 @@ class EnigmaClientMutationTest {
     @Test
     fun rejectedTimerChangeIsBoxRejected() = runBlocking {
         server.enqueue(MockResponse().setBody(simpleResult(Python.FALSE, "Conflicting timer")))
-        val response = client().changeTimer(listOf(NameValuePair("sRef", "1:0:1:a")))
+        val response = client().addTimer(Timer(reference = "1:0:1:a"))
         assertEquals("/web/timerchange", server.takeRequest().requestUrl!!.encodedPath)
         assertNotNull(response.value)
         assertEquals(EnigmaFailure.BoxRejected("Conflicting timer"), response.error!!.failure)
@@ -66,7 +66,7 @@ class EnigmaClientMutationTest {
     @Test
     fun httpFailureIsNotSuccess() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500))
-        val response = client().deleteMovie(listOf(NameValuePair("sRef", "1:0:0:m")))
+        val response = client().deleteMovie(Movie(reference = "1:0:0:m"))
         assertEquals("/web/moviedelete", server.takeRequest().requestUrl!!.encodedPath)
         assertNull(response.value)
         assertTrue(response.error!!.failure is EnigmaFailure.Http)
@@ -75,7 +75,7 @@ class EnigmaClientMutationTest {
     @Test
     fun resultWithoutStateTextIsNotSuccess() = runBlocking {
         server.enqueue(MockResponse().setBody("<e2simplexmlresult><e2state>True</e2state>"))
-        val response = client().remoteCommand(listOf(NameValuePair("command", "352")))
+        val response = client().remoteCommand(352, simpleRemote = false, longPress = false)
         assertEquals("/web/remotecontrol", server.takeRequest().requestUrl!!.encodedPath)
         assertNull(response.value)
         assertNull(response.error)
@@ -89,12 +89,12 @@ class EnigmaClientMutationTest {
                     "<e2ismuted>False</e2ismuted></e2volume>"
             )
         )
-        val volume = client().setVolume(listOf(NameValuePair("set", "up"))).value!!
+        val volume = client().setVolume(VolumeCommand.Up).value!!
         assertEquals("/web/vol", server.takeRequest().requestUrl!!.encodedPath)
         assertEquals("40", volume.current)
     }
 
-    private fun client() = EnigmaClient(
+    private fun client() = DreamboxWebIfApi(
         EnigmaHttp(
             Profile().apply {
                 host = "127.0.0.1"
@@ -102,8 +102,10 @@ class EnigmaClientMutationTest {
                 ssl = false
                 login = false
             },
-            EnigmaOkHttp()
-        )
+            EnigmaOkHttp(),
+            WebIfCapabilitiesRepository()
+        ),
+        WebIfCapabilities()
     )
 
     private fun simpleResult(state: String, stateText: String): String =

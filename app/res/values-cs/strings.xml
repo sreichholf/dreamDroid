@@ -238,7 +238,6 @@
     <string name="use_fake_picon_long">Byla použita vadná ikona (picon_default.png), abyste se vyhnuli problémům s autorskými právy na snímcích obrazovky</string>
     <string name="host_unreach">Nepodařilo se připojit k hostiteli</string>
     <string name="next_event">další událost</string>
-    <string name="use_encoder">použít kodér pro streamování</string>
     <string name="encoder_path">cesta sdílení</string>
     <string name="audio_bitrate">datový tok audia</string>
     <string name="video_bitrate">datový tok videa</string>

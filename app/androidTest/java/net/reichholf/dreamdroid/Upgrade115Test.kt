@@ -97,7 +97,7 @@ class Upgrade115Test {
         assertEquals("Favourites", p.defaultBouquetTvName)
         assertEquals(BOUQUETS_REF, p.defaultParentBouquetTv)
         assertEquals("Bouquets", p.defaultParentBouquetTvName)
-        assertTrue(p.encoderStream)
+        assertEquals(StreamMode.Encoder, p.streamMode)
         assertEquals("transcode", p.encoderPath)
         assertEquals(5554, p.encoderPort)
         assertTrue(p.encoderLogin)

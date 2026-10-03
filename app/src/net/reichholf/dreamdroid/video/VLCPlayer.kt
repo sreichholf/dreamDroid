@@ -10,12 +10,12 @@ import javax.inject.Singleton
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.di.ApplicationScope
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
@@ -44,9 +44,11 @@ data class PlayerState(
  * Leaving the player in the middle of a stuck zap can still be slow.
  */
 @Singleton
-class VLCPlayer @Inject constructor(@param:ApplicationContext private val context: Context) {
-    private val commands = PlayerCommandQueue(Dispatchers.IO)
-    private val mainScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+class VLCPlayer @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    @param:ApplicationScope private val scope: CoroutineScope
+) {
+    private val commands = PlayerCommandQueue(scope, Dispatchers.IO)
 
     private var mediaPlayer: MediaPlayer? = null
 
@@ -137,7 +139,7 @@ class VLCPlayer @Inject constructor(@param:ApplicationContext private val contex
         val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
         // VLC for Android's PlayerController.startPlayback: setMedia off main, then listener
         // and play() on main. setMedia joins the old stream's threads, which can take long.
-        mainScope.launch {
+        scope.launch(Dispatchers.Main.immediate) {
             try {
                 commands.call {
                     val media = Media(VLCInstance.get(context), uri)

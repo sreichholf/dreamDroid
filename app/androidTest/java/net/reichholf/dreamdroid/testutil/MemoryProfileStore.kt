@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.testutil
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ProfileStore
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 
 /**
  * Profiles in memory, so a screen test's ViewModel can save and activate without
@@ -47,4 +48,4 @@ class MemoryProfileStore(rows: List<Profile> = emptyList()) : ProfileStore {
 }
 
 fun memoryProfiles(vararg rows: Profile): ProfileRepository =
-    ProfileRepository(MemoryProfileStore(rows.toList()))
+    ProfileRepository(MemoryProfileStore(rows.toList()), WebIfCapabilitiesRepository())

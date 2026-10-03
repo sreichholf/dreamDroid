@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.room.ServiceRosterEntity
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
@@ -12,8 +13,8 @@ import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -30,7 +31,7 @@ class BouquetEditorRepositoryTest {
     private val services = receiver.profiles.services
     private val rosterDao = receiver.profiles.database.rosterDao()
     private val repository =
-        BouquetEditorRepository(enigmaClients(receiver.repository), receiver.repository, services)
+        BouquetEditorRepository(receiverApis(receiver.repository), receiver.repository, services)
 
     @BeforeEach
     fun setUp() {

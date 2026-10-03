@@ -1,0 +1,63 @@
+{
+ "brand": "Vu+",
+ "model": "Uno 4K SE",
+ "boxtype": "vuuno4kse",
+ "machinebuild": "vuuno4kse",
+ "lcd": 0,
+ "grabpip": 1,
+ "chipset": "BCM7252S",
+ "mem1": "1543424 kB",
+ "mem2": "1043424 kB",
+ "mem3": "1043424 kB free / 1543424 kB total",
+ "uptime": "2d 3:04",
+ "webifver": "OWIF 1.5.2",
+ "imagedistro": "openatv",
+ "friendlyimagedistro": "openATV",
+ "oever": "OE-Alliance 5.4",
+ "imagever": "7.4.0",
+ "enigmaver": "2024-05-10",
+ "driverdate": "20231024",
+ "kernelver": "4.1.20-1.9",
+ "fp_version": null,
+ "friendlychipsetdescription": "Chipset",
+ "friendlychipsettext": "BCM7252S",
+ "tuners": [
+  {
+   "name": "Tuner A",
+   "type": "Vuplus DVB-S NIM(45308X FBC) (DVB-S2X)",
+   "rec": "",
+   "live": ""
+  }
+ ],
+ "ifaces": [
+  {
+   "name": "eth0",
+   "friendlynic": "Broadcom Gigabit Ethernet",
+   "linkspeed": "1 GBit/s",
+   "mac": "00:1d:ec:12:34:56",
+   "dhcp": true,
+   "ipv4method": "DHCP",
+   "ip": "192.168.0.20",
+   "mask": "255.255.255.0",
+   "v4prefix": 24,
+   "gw": "192.168.0.1",
+   "ipv6": "",
+   "ipmethod": "IPv4",
+   "firstpublic": null
+  }
+ ],
+ "hdd": [
+  {
+   "model": "ATA(ST2000LM015-2E81)",
+   "capacity": "1.8 TB",
+   "labelled_capacity": "2 TB",
+   "free": "1.2 TB",
+   "mount": "/media/hdd",
+   "friendlycapacity": "1.2 TB free / 1.8 TB total (\"2 TB\")"
+  }
+ ],
+ "shares": [],
+ "transcoding": true,
+ "EX": "",
+ "streams": []
+}

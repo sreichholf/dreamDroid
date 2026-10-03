@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.data.BouquetMode
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
 
@@ -422,7 +422,12 @@ data class TimerEdit(
     val repeated: String = "",
     val dontSave: String = "",
     val canceled: String = "",
-    val toggleDisabled: String = ""
+    val toggleDisabled: String = "",
+    val allowDuplicate: String? = null,
+    val autoAdjust: String? = null,
+    val vpsEnabled: String? = null,
+    val vpsOverwrite: String? = null,
+    val vpsTime: String? = null
 ) {
     fun toTimer(): Timer = Timer(
         reference = reference,
@@ -452,7 +457,12 @@ data class TimerEdit(
         repeated = repeated,
         dontSave = dontSave,
         canceled = canceled,
-        toggleDisabled = toggleDisabled
+        toggleDisabled = toggleDisabled,
+        allowDuplicate = allowDuplicate,
+        autoAdjust = autoAdjust,
+        vpsEnabled = vpsEnabled,
+        vpsOverwrite = vpsOverwrite,
+        vpsTime = vpsTime
     )
 
     companion object {
@@ -485,7 +495,12 @@ data class TimerEdit(
             repeated = timer.repeated,
             dontSave = timer.dontSave,
             canceled = timer.canceled,
-            toggleDisabled = timer.toggleDisabled
+            toggleDisabled = timer.toggleDisabled,
+            allowDuplicate = timer.allowDuplicate,
+            autoAdjust = timer.autoAdjust,
+            vpsEnabled = timer.vpsEnabled,
+            vpsOverwrite = timer.vpsOverwrite,
+            vpsTime = timer.vpsTime
         )
     }
 }

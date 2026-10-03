@@ -70,7 +70,11 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
 
     /** Answers the next request to [path] with [body]; later ones get what [respond] set. */
     fun respondOnce(path: String, body: String) {
-        once.getOrPut(path) { ConcurrentLinkedQueue() }.add(MockResponse().setBody(body))
+        respondOnce(path, MockResponse().setBody(body))
+    }
+
+    fun respondOnce(path: String, response: MockResponse) {
+        once.getOrPut(path) { ConcurrentLinkedQueue() }.add(response)
     }
 
     /**
@@ -88,7 +92,7 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         requests.filter { it.requestUrl?.encodedPath == path }
 
     fun timerRepository(): TimerRepository =
-        TimerRepository(enigmaClients(repository), repository, profiles.database)
+        TimerRepository(receiverApis(repository), repository, profiles.database)
 
     class Hold {
         val arrived = CountDownLatch(1)

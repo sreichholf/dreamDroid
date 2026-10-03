@@ -23,8 +23,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.multiepg.MULTI_EPG_VISIBLE_MINUTES_KEY
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -227,13 +227,13 @@ class TvMultiEpgViewModelTest {
             receiver.repository,
             receiver.services,
             TimerRepository(
-                enigmaClients(receiver.profiles.repository),
+                receiverApis(receiver.profiles.repository),
                 receiver.profiles.repository,
                 receiver.profiles.database
             ),
             receiver.profiles.repository,
             ReceiverRepository(
-                enigmaClients(receiver.profiles.repository),
+                receiverApis(receiver.profiles.repository),
                 receiver.profiles.repository
             ),
             receiver.sessions,

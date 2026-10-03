@@ -1,0 +1,6 @@
+{
+ "enabled": true,
+ "minutes": 30,
+ "action": "standby",
+ "message": "Sleeptimer set to 30 minutes"
+}

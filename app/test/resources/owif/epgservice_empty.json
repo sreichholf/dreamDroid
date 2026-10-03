@@ -1,0 +1,25 @@
+{
+ "events": [
+  {
+   "id": 0,
+   "sref": "1:0:19:283D:3FB:1:C00000:0:0:0:",
+   "picon": "/picon/1_0_19_283D_3FB_1_C00000_0_0_0.png",
+   "date": 0,
+   "begin": 0,
+   "begin_timestamp": 0,
+   "duration": 0,
+   "duration_sec": 0,
+   "end": 0,
+   "title": "N/A",
+   "shortdesc": "",
+   "sname": "",
+   "longdesc": "",
+   "tleft": 0,
+   "progress": 0,
+   "now_timestamp": 0,
+   "genre": "",
+   "genreid": 0
+  }
+ ],
+ "result": true
+}

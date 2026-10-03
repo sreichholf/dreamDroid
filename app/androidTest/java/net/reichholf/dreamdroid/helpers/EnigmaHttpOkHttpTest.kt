@@ -4,9 +4,10 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.HttpsURLConnection
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.WebIfCapabilities
 import okhttp3.Credentials
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -25,6 +26,7 @@ import org.junit.runner.RunWith
 class EnigmaHttpOkHttpTest {
     private lateinit var server: MockWebServer
     private val okHttp = EnigmaOkHttp()
+    private val capabilities = WebIfCapabilitiesRepository()
 
     @Before
     fun startServer() {
@@ -117,7 +119,6 @@ class EnigmaHttpOkHttpTest {
                 }
             }
         val client = clientForServer()
-        client.setConnectionTimeoutMillis(15_000)
         val finished = CountDownLatch(1)
         var ok = true
         var failure: EnigmaFailure? = null
@@ -200,33 +201,44 @@ class EnigmaHttpOkHttpTest {
     }
 
     @Test
-    fun fetch_postsWhenFeatureEnabled() {
-        val previous = DreamDroid.featurePostRequest()
-        DreamDroid.setFeaturePostRequest(true)
-        try {
-            server.enqueue(MockResponse().setBody("ok"))
-            clientForServer().fetch("/web/about")
-            assertEquals("POST", server.takeRequest().method)
-        } finally {
-            DreamDroid.setFeaturePostRequest(previous)
-        }
+    fun fetch_postsByDefault() {
+        server.enqueue(MockResponse().setBody("ok"))
+        clientForServer().fetch("/web/about")
+        assertEquals("POST", server.takeRequest().method)
     }
 
     @Test
-    fun fetch_405RetriesAsGet() {
-        val previous = DreamDroid.featurePostRequest()
-        DreamDroid.setFeaturePostRequest(true)
-        try {
-            server.enqueue(MockResponse().setResponseCode(405))
-            server.enqueue(MockResponse().setBody("ok-get"))
-            val result = clientForServer().fetch("/web/about")
-            assertTrue(result is EnigmaHttpResult.Success)
-            assertEquals("ok-get", (result as EnigmaHttpResult.Success).text)
-            assertEquals("POST", server.takeRequest().method)
-            assertEquals("GET", server.takeRequest().method)
-        } finally {
-            DreamDroid.setFeaturePostRequest(previous)
-        }
+    fun fetch_getsWhenTheProfileTakesNoPost() {
+        val client = clientForServer(id = 1)
+        capabilities.set(client.profile, WebIfCapabilities(postRequest = false))
+        server.enqueue(MockResponse().setBody("ok"))
+        client.fetch("/web/about")
+        assertEquals("GET", server.takeRequest().method)
+    }
+
+    @Test
+    fun fetch_405RetriesAsGetAndRemembersItForThatProfileOnly() {
+        val other = Profile().apply { id = 2 }
+        server.enqueue(MockResponse().setResponseCode(405))
+        server.enqueue(MockResponse().setBody("ok-get"))
+        val client = clientForServer(id = 1)
+        val result = client.fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("ok-get", (result as EnigmaHttpResult.Success).text)
+        assertEquals("POST", server.takeRequest().method)
+        assertEquals("GET", server.takeRequest().method)
+        assertFalse(capabilities.of(client.profile).postRequest)
+        assertTrue(capabilities.of(other).postRequest)
+    }
+
+    @Test
+    fun fetch_405RetriesAsGetForADraftWithoutId() {
+        server.enqueue(MockResponse().setResponseCode(405))
+        server.enqueue(MockResponse().setBody("ok-get"))
+        val result = clientForServer().fetch("/web/about")
+        assertTrue(result is EnigmaHttpResult.Success)
+        assertEquals("POST", server.takeRequest().method)
+        assertEquals("GET", server.takeRequest().method)
     }
 
     @Test
@@ -241,7 +253,7 @@ class EnigmaHttpOkHttpTest {
                 user = "root"
                 pass = "secret"
             }
-        EnigmaHttp(profile, okHttp).fetch("/web/about")
+        EnigmaHttp(profile, okHttp, capabilities).fetch("/web/about")
         assertEquals(
             Credentials.basic("root", "secret"),
             server.takeRequest().getHeader("Authorization")
@@ -283,7 +295,8 @@ class EnigmaHttpOkHttpTest {
                 ssl = false
                 login = false
             }
-        val result = EnigmaHttp(profile, okHttp, timeoutMillis = 2_000).fetch("/web/about")
+        val result =
+            EnigmaHttp(profile, okHttp, capabilities, timeoutMillis = 2_000).fetch("/web/about")
         assertTrue(result is EnigmaHttpResult.Failure)
     }
 
@@ -296,15 +309,16 @@ class EnigmaHttpOkHttpTest {
         assertEquals(beforeVerifier, HttpsURLConnection.getDefaultHostnameVerifier())
     }
 
-    private fun clientForServer(sessionId: String? = null): EnigmaHttp {
+    private fun clientForServer(sessionId: String? = null, id: Int? = null): EnigmaHttp {
         val profile =
             Profile().apply {
+                this.id = id
                 host = "127.0.0.1"
                 port = server.port
                 ssl = false
                 login = false
                 this.sessionId = sessionId
             }
-        return EnigmaHttp(profile, okHttp)
+        return EnigmaHttp(profile, okHttp, capabilities)
     }
 }

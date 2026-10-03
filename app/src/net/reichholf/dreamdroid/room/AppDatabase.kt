@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListEntity::class,
         EpgSearchRecentEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -334,6 +334,34 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
+         * Replaces the `encoder_stream` flag with `stream_mode`, which holds a
+         * [net.reichholf.dreamdroid.StreamMode] name, and adds the transcoding port.
+         */
+        val MIGRATION_9_10: Migration = object : Migration(9, 10) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    """
+                    ALTER TABLE `profile`
+                    ADD COLUMN `stream_mode` TEXT NOT NULL DEFAULT 'Direct'
+                    """.trimIndent()
+                )
+                connection.execSQL(
+                    """
+                    UPDATE `profile` SET `stream_mode` = 'Encoder'
+                    WHERE `encoder_stream` != 0
+                    """.trimIndent()
+                )
+                connection.execSQL("ALTER TABLE `profile` DROP COLUMN `encoder_stream`")
+                connection.execSQL(
+                    """
+                    ALTER TABLE `profile`
+                    ADD COLUMN `transcode_port` INTEGER NOT NULL DEFAULT 8002
+                    """.trimIndent()
+                )
+            }
+        }
+
+        /**
          * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
          * building does not open the file.
          */
@@ -350,7 +378,8 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_5_6,
                 MIGRATION_6_7,
                 MIGRATION_7_8,
-                MIGRATION_8_9
+                MIGRATION_8_9,
+                MIGRATION_9_10
             )
             .configureRoomDriver()
             .build()

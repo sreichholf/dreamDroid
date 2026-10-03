@@ -8,3 +8,12 @@ data class Volume(
     val current: String? = null,
     val muted: String? = null
 ) : Serializable
+
+/** A change to the receiver's volume. */
+enum class VolumeCommand {
+    Up,
+    Down,
+
+    /** Toggles mute. */
+    Mute
+}

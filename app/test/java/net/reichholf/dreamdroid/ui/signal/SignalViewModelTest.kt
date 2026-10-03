@@ -20,8 +20,8 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.Dispatcher
@@ -217,7 +217,7 @@ class SignalViewModelTest {
         sessions: SessionConnectionHolder = this.sessions
     ) = SignalViewModel(
         handle,
-        ReceiverRepository(enigmaClients(profiles), profiles),
+        ReceiverRepository(receiverApis(profiles), profiles),
         sessions
     )
         .also { viewModels += it }

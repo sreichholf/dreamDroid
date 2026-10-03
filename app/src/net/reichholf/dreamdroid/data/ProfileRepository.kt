@@ -17,10 +17,8 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.enigma.StringListParser
-import net.reichholf.dreamdroid.helpers.EnigmaHttp
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
+import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
@@ -28,14 +26,18 @@ import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 /**
  * Room profiles and the active profile. [current] is the source of truth.
  * [switches] emits once when the active profile actually changes (settings differ
- * or the caller forces the event). Location lists, tag lists, and device-info XML
- * live here and are cleared on that change.
+ * or the caller forces the event). Location lists, tag lists, and device info with the
+ * receiver's flavor live here and are cleared on that change. The [WebIfCapabilitiesRepository]
+ * entries the check derived from that device info are dropped with it.
  *
  * The constructor must not read [store]: Hilt builds this during `DreamDroid`'s
  * `super.onCreate()`, before the pre-Room profile import runs.
  */
 @Singleton
-class ProfileRepository @Inject constructor(private val store: ProfileStore) {
+class ProfileRepository @Inject constructor(
+    private val store: ProfileStore,
+    private val capabilities: WebIfCapabilitiesRepository
+) {
     private val _current = MutableStateFlow<Profile?>(null)
     val current: StateFlow<Profile?> = _current.asStateFlow()
 
@@ -66,7 +68,10 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     @Volatile
     private var locationsFromReceiver: Boolean = false
 
-    private val deviceInfo = HashMap<Int, String>()
+    private val deviceInfo = HashMap<Int, DeviceInfo>()
+
+    /** Kept with [deviceInfo]: an entry lives exactly as long as the device info it came from. */
+    private val flavors = HashMap<Int, ReceiverFlavor>()
 
     @Volatile
     private var xmlDump: Boolean = false
@@ -83,20 +88,30 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
 
     fun locationsLoadedFromReceiver(): Boolean = locationsFromReceiver
 
-    /** Device-info XML for a saved profile. Drafts with no id are never cached. */
+    /** Device info of a saved profile's receiver. Drafts with no id are never cached. */
     @Synchronized
-    fun deviceInfo(profile: Profile): String? {
+    fun deviceInfo(profile: Profile): DeviceInfo? {
         val id = profile.id ?: return null
         return deviceInfo[id]
     }
 
+    /** The web interface [deviceInfo] was detected as; null when unknown or not cached. */
     @Synchronized
-    fun setDeviceInfo(profile: Profile, xml: String?) {
+    fun flavor(profile: Profile): ReceiverFlavor? {
+        val id = profile.id ?: return null
+        return flavors[id]
+    }
+
+    /** Caches [info] and the [flavor] detected from it; null [info] drops both. */
+    @Synchronized
+    fun setDeviceInfo(profile: Profile, info: DeviceInfo?, flavor: ReceiverFlavor? = null) {
         val id = profile.id ?: return
-        if (xml == null) {
+        if (info == null) {
             deviceInfo.remove(id)
+            flavors.remove(id)
         } else {
-            deviceInfo[id] = xml
+            deviceInfo[id] = info
+            if (flavor == null) flavors.remove(id) else flavors[id] = flavor
         }
     }
 
@@ -110,7 +125,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
 
     /**
      * Replaces the in-memory current profile (the edit path). Locations and tags stay.
-     * Device-info XML is dropped when connection settings changed, so the next check
+     * Device info is dropped when connection settings changed, so the next check
      * talks to the edited receiver instead of reusing the old one's answer.
      * A profile set here is settled, so [awaitLoaded] returns; instrumented tests, which
      * skip `DreamDroid.onCreate`, rely on that.
@@ -119,7 +134,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     fun setCurrent(profile: Profile) {
         val previous = _current.value
         if (previous != null && !profile.hasSameSettings(previous)) {
-            setDeviceInfo(profile, null)
+            forget(profile)
         }
         _current.value = profile
         loaded.value = true
@@ -144,7 +159,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     /**
      * Loads [id] from [store], publishes it on [current], and emits [switches] once
      * when the row differs from the active profile or [forceEvent] is true.
-     * That path clears locations, tags, and device-info XML.
+     * That path clears locations, tags, and device info.
      */
     internal suspend fun activate(id: Int, forceEvent: Boolean): Boolean =
         writes.withLock { activateLocked(id, forceEvent) }
@@ -211,6 +226,7 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         val deletedId = profile.id
         val wasCurrent = deletedId != null && deletedId == current.value?.id
         store.delete(profile)
+        forget(profile)
         if (!wasCurrent) {
             return@withLock
         }
@@ -289,37 +305,34 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
     }
 
     /**
-     * Asks [profile]'s receiver over [http] for its movie locations; `/hdd/movie` when it
-     * does not answer. The request runs outside the lock so a slow receiver does not stall
-     * other callers, such as the main thread asking for [deviceInfo]. The answer is dropped
-     * when [profile] is no longer the current one.
+     * Keeps the movie locations [profile]'s receiver answered with, or `/hdd/movie` when
+     * [received] is null because it did not answer. The caller asks the receiver outside
+     * the lock, so a slow receiver does not stall other callers, such as the main thread
+     * asking for [deviceInfo]. The answer is dropped when [profile] is no longer the
+     * current one.
      */
-    fun loadLocations(profile: Profile, http: EnigmaHttp): Boolean {
-        val parsed = http.fetchStringList(URIStore.LOCATIONS, "e2location")
-        if (parsed == null) {
+    fun putLocations(profile: Profile, received: List<String>?) {
+        if (received == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing locations, falling back to /hdd/movie")
         }
         synchronized(this) {
             if (isCurrent(profile)) {
-                locationList = ArrayList(parsed ?: listOf("/hdd/movie"))
-                locationsFromReceiver = parsed != null
+                locationList = ArrayList(received ?: listOf("/hdd/movie"))
+                locationsFromReceiver = received != null
             }
         }
-        return parsed != null
     }
 
-    /** Asks for the timer tags like [loadLocations]; none when the receiver does not answer. */
-    fun loadTags(profile: Profile, http: EnigmaHttp): Boolean {
-        val parsed = http.fetchStringList(URIStore.TAGS, "e2tag")
-        if (parsed == null) {
+    /** Keeps the timer tags like [putLocations]; none when [received] is null. */
+    fun putTags(profile: Profile, received: List<String>?) {
+        if (received == null) {
             Log.e(DreamDroid.LOG_TAG, "Error parsing Tags, no more Tags will be available")
         }
         synchronized(this) {
             if (isCurrent(profile)) {
-                tagList = ArrayList(parsed.orEmpty())
+                tagList = ArrayList(received.orEmpty())
             }
         }
-        return parsed != null
     }
 
     private fun isCurrent(profile: Profile): Boolean =
@@ -331,6 +344,15 @@ class ProfileRepository @Inject constructor(private val store: ProfileStore) {
         locationsFromReceiver = false
         tagList.clear()
         deviceInfo.clear()
+        flavors.clear()
+        capabilities.clear()
+    }
+
+    /** Drops [profile]'s device info, its flavor and the capabilities checked from them. */
+    @Synchronized
+    private fun forget(profile: Profile) {
+        setDeviceInfo(profile, null)
+        capabilities.drop(profile)
     }
 }
 
@@ -437,6 +459,3 @@ class RoomProfileStore @Inject constructor(
         )
     }
 }
-
-private fun EnigmaHttp.fetchStringList(uri: String, itemTag: String): List<String>? =
-    (fetch(uri) as? EnigmaHttpResult.Success)?.let { StringListParser.parse(it.text, itemTag) }

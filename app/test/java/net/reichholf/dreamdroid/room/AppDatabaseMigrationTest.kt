@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.room
 import androidx.sqlite.SQLiteConnection
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import androidx.sqlite.execSQL
+import com.google.gson.JsonParser
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
@@ -15,12 +16,14 @@ import org.junit.jupiter.api.Test
  * Version 1 is the profile table only. [AppDatabase.MIGRATION_7_8] adds
  * `zap_and_stream`; every other profile column is already in the v1 table.
  * [AppDatabase.MIGRATION_8_9] fills `epg_event.titleKey` for a cached row.
+ * [AppDatabase.MIGRATION_9_10] turns `encoder_stream` into `stream_mode`; the `profile`
+ * table that comes out is checked against the exported schema 10.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
 class AppDatabaseMigrationTest {
     @Test
-    fun migratesV1ProfileThroughVersion8() {
+    fun migratesV1ProfileThroughVersion10() {
         val dbFile = Files.createTempFile("dreambox-v1", ".db")
         Files.delete(dbFile)
         try {
@@ -38,10 +41,15 @@ class AppDatabaseMigrationTest {
                     AppDatabase.MIGRATION_7_8.migrate(connection)
                     connection.execSQL(V8_EPG_EVENT_ROW)
                     AppDatabase.MIGRATION_8_9.migrate(connection)
+                    connection.execSQL(V9_ENCODER_PROFILE_ROW)
+                    connection.execSQL(V9_TRUTHY_ENCODER_PROFILE_ROW)
+                    AppDatabase.MIGRATION_9_10.migrate(connection)
                 }
                 assertProfileSurvived(connection)
                 assertMigratedTablesExist(connection)
                 assertTitleKeyBackfilled(connection)
+                assertStreamModeFromEncoderFlag(connection)
+                assertProfileTableMatchesSchema10(connection)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -61,6 +69,66 @@ class AppDatabaseMigrationTest {
             assertFalse(statement.step())
         }
     }
+
+    private fun assertStreamModeFromEncoderFlag(connection: SQLiteConnection) {
+        val sql =
+            "SELECT _id, stream_mode, transcode_port, encoder_port, encoder_path FROM profile " +
+                "ORDER BY _id"
+        val rows = mutableListOf<List<Any?>>()
+        connection.prepare(sql).use { statement ->
+            while (statement.step()) {
+                rows += listOf(
+                    statement.getLong(0),
+                    statement.getText(1),
+                    statement.getLong(2),
+                    statement.getLong(3),
+                    if (statement.isNull(4)) null else statement.getText(4)
+                )
+            }
+        }
+        assertEquals(
+            listOf(
+                listOf(7L, "Direct", 8002L, 554L, null),
+                listOf(8L, "Encoder", 8002L, 554L, null),
+                listOf(9L, "Encoder", 8002L, 8554L, "live")
+            ),
+            rows
+        )
+    }
+
+    /**
+     * The migrated `profile` table has the columns of the exported version-10 schema: the
+     * check Room makes when it opens the file.
+     */
+    private fun assertProfileTableMatchesSchema10(connection: SQLiteConnection) {
+        val actual = mutableMapOf<String, Column>()
+        connection.prepare("PRAGMA table_info(`profile`)").use { statement ->
+            while (statement.step()) {
+                actual[statement.getText(1)] = Column(
+                    type = statement.getText(2),
+                    notNull = statement.getLong(3) != 0L,
+                    defaultValue = if (statement.isNull(4)) null else statement.getText(4)
+                )
+            }
+        }
+        assertEquals(schema10ProfileColumns(), actual)
+    }
+
+    private fun schema10ProfileColumns(): Map<String, Column> {
+        val schema = listOf(Path.of(SCHEMA_10), Path.of("app", SCHEMA_10)).first(Files::exists)
+        val entities = JsonParser.parseString(Files.readString(schema)).asJsonObject
+            .getAsJsonObject("database").getAsJsonArray("entities").map { it.asJsonObject }
+        val profile = entities.single { it.get("tableName").asString == "profile" }
+        return profile.getAsJsonArray("fields").map { it.asJsonObject }.associate { field ->
+            field.get("columnName").asString to Column(
+                type = field.get("affinity").asString,
+                notNull = field.get("notNull")?.asBoolean ?: false,
+                defaultValue = field.get("defaultValue")?.asString
+            )
+        }
+    }
+
+    private data class Column(val type: String, val notNull: Boolean, val defaultValue: String?)
 
     private fun assertTitleKeyBackfilled(connection: SQLiteConnection) {
         connection.prepare("SELECT titleKey FROM epg_event").use { statement ->
@@ -156,6 +224,48 @@ class AppDatabaseMigrationTest {
                 0
             )
             """.trimIndent()
+
+        /** A version-9 profile with the Dreambox encoder on. */
+        private val V9_ENCODER_PROFILE_ROW =
+            """
+            INSERT INTO `profile` (
+                `_id`, `profile`, `host`,
+                `login`, `ssl`, `trust_all_certs`, `streamlogin`, `file_login`,
+                `encoder_login`, `encoder_stream`, `file_ssl`, `simpleremote`,
+                `port`, `streamport`, `fileport`, `encoder_port`,
+                `encoder_audio_bitrate`, `encoder_video_bitrate`,
+                `defaultProfileOnNoWifi`
+            ) VALUES (
+                8, 'Bedroom', '192.168.1.21',
+                0, 0, 0, 0, 0,
+                0, 1, 0, 0,
+                80, 8001, 80, 554,
+                128, 2500,
+                0
+            )
+            """.trimIndent()
+
+        /** A version-9 encoder profile whose flag is a truthy value other than 1. */
+        private val V9_TRUTHY_ENCODER_PROFILE_ROW =
+            """
+            INSERT INTO `profile` (
+                `_id`, `profile`, `host`, `encoder_path`,
+                `login`, `ssl`, `trust_all_certs`, `streamlogin`, `file_login`,
+                `encoder_login`, `encoder_stream`, `file_ssl`, `simpleremote`,
+                `port`, `streamport`, `fileport`, `encoder_port`,
+                `encoder_audio_bitrate`, `encoder_video_bitrate`,
+                `defaultProfileOnNoWifi`
+            ) VALUES (
+                9, 'Kitchen', '192.168.1.22', 'live',
+                0, 0, 0, 0, 0,
+                0, 2, 0, 0,
+                80, 8001, 80, 8554,
+                128, 2500,
+                0
+            )
+            """.trimIndent()
+
+        private const val SCHEMA_10 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/10.json"
 
         private val V8_EPG_EVENT_ROW =
             """

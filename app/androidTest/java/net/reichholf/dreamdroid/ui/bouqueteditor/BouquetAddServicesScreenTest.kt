@@ -13,9 +13,9 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
 import net.reichholf.dreamdroid.enigma.BouquetEntryKind
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals

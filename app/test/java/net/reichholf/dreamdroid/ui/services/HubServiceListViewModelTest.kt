@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.enigma.WebIfCapabilities
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
@@ -26,10 +27,10 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.jobs
 import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -323,22 +324,29 @@ class HubServiceListViewModelTest {
         assertEquals("1:${CHANNEL_44D}", viewModel.uiState.value.menu?.rowKey)
         viewModel.onMenuDismiss()
         assertNull(viewModel.uiState.value.menu)
+    }
 
-        DreamDroid.disableNowNext()
-        try {
-            viewModel.onItemMenu(1)
-            assertEquals(
-                listOf(
-                    ServiceRowAction.CurrentEvent,
-                    ServiceRowAction.BrowseEpg,
-                    ServiceRowAction.Zap,
-                    ServiceRowAction.Stream
-                ),
-                viewModel.uiState.value.menu?.actions
-            )
-        } finally {
-            DreamDroid.enableNowNext()
-        }
+    @Test
+    fun aReceiverWithoutNowNextGetsNoNextEventInTheRowMenu() = runBlocking {
+        receiver.profiles.capabilities.set(
+            receiver.profiles.repository.requireCurrent(),
+            WebIfCapabilities(nowNext = false)
+        )
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.onItemMenu(1)
+
+        assertEquals(1, receiver.requestsTo(EPG_NOW).size)
+        assertEquals(
+            listOf(
+                ServiceRowAction.CurrentEvent,
+                ServiceRowAction.BrowseEpg,
+                ServiceRowAction.Zap,
+                ServiceRowAction.Stream
+            ),
+            viewModel.uiState.value.menu?.actions
+        )
     }
 
     @Test
@@ -529,6 +537,9 @@ class HubServiceListViewModelTest {
 
             EPG_NOW_NEXT -> MockResponse().setBody(loadWebFixture("epgnownext.xml"))
 
+            // `/web/epgnow` lists the running events only; this list has next ones too.
+            EPG_NOW -> MockResponse().setBody(loadWebFixture("epgnownext.xml"))
+
             EPG_MULTI -> MockResponse().setBody(loadWebFixture("epgmulti.xml"))
 
             ZAP -> MockResponse().setBody(
@@ -558,7 +569,10 @@ class HubServiceListViewModelTest {
             services,
             receiver.repository,
             ReceiverRepository(
-                enigmaClients(receiver.profiles.repository),
+                receiverApis(
+                    receiver.profiles.repository,
+                    capabilities = receiver.profiles.capabilities
+                ),
                 receiver.profiles.repository
             ),
             receiver.profiles.repository,
@@ -591,6 +605,7 @@ class HubServiceListViewModelTest {
 
         const val GET_SERVICES = "/web/getservices"
         const val EPG_NOW_NEXT = "/web/epgnownext"
+        const val EPG_NOW = "/web/epgnow"
         const val EPG_MULTI = "/web/epgmulti"
         const val ZAP = "/web/zap"
     }

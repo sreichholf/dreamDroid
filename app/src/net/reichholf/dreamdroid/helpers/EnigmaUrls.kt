@@ -4,6 +4,7 @@ import java.io.UnsupportedEncodingException
 import java.net.URLDecoder
 import java.net.URLEncoder
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 /** Enigma2 webinterface and stream URL builders. No HTTP I/O. */
@@ -13,10 +14,11 @@ object EnigmaUrls {
         return webPrefix(profile) + profile.host + ":" + profile.port + path
     }
 
-    fun stream(profile: Profile, ref: String): String = if (profile.encoderStream) {
-        encoderStream(profile, ref)
-    } else {
-        serviceStream(profile, ref)
+    /** Live stream URL for [ref] in the profile's [StreamMode]. */
+    fun stream(profile: Profile, ref: String): String = when (profile.streamMode) {
+        StreamMode.Direct -> serviceStream(profile, ref)
+        StreamMode.Encoder -> encoderStream(profile, ref)
+        StreamMode.Transcoding -> serviceStream(profile, ref, profile.transcodePort)
     }
 
     fun encoderStream(profile: Profile, ref: String): String {
@@ -41,7 +43,12 @@ object EnigmaUrls {
         )
     }
 
-    fun serviceStream(profile: Profile, ref: String): String {
+    /**
+     * `http://host:port/<ref>`. OpenWebif's transcoder takes the same shape on its own port
+     * (OpenWebif `plugin/controllers/models/stream.py:83-90,128`); without query parameters it
+     * applies the box's TranscodingSetup values.
+     */
+    fun serviceStream(profile: Profile, ref: String, port: Int = profile.streamPort): String {
         var serviceRef = ref
         if (serviceRef.contains("http")) {
             try {
@@ -62,17 +69,23 @@ object EnigmaUrls {
             pass = profile.pass,
             scheme = "http"
         )
-        return "http://" + streamLoginString + profile.streamHostOrHost + ":" +
-            profile.streamPort + "/" + serviceRef
+        return "http://" + streamLoginString + profile.streamHostOrHost + ":" + port + "/" +
+            serviceRef
     }
 
+    /**
+     * Recording URL. [StreamMode.Transcoding] asks the transcoder for `/file` over http, as
+     * OpenWebif's own m3u does (`stream.py:191-198,248`).
+     */
     fun fileStream(profile: Profile, ref: String, fileName: String?): String {
-        if (profile.encoderStream && ref.startsWith("1:")) {
+        if (profile.streamMode == StreamMode.Encoder && ref.startsWith("1:")) {
             return encoderStream(profile, ref)
         }
-        val params = ArrayList<NameValuePair>()
-        params.add(NameValuePair("file", fileName))
-        val parms = NameValuePair.toString(params)
+        val parms = NameValuePair.toString(listOf(NameValuePair("file", fileName)))
+        if (profile.streamMode == StreamMode.Transcoding) {
+            return "http://" + profile.streamHostOrHost + ":" + profile.transcodePort +
+                URIStore.FILE + parms
+        }
         val fileScheme = if (profile.fileSsl) "https" else "http"
         val fileAuthString = HttpUserInfo.embed(
             enabled = profile.fileLogin,

@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -16,8 +17,8 @@ import net.reichholf.dreamdroid.enigma.autotimer.Verdict
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.nav.AutoTimerPreview
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -32,9 +33,9 @@ class AutoTimerPreviewViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
     private val autoTimers =
-        AutoTimerRepository(enigmaClients(receiver.repository), receiver.repository)
+        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, TestScope())
     private val epg = EpgRepository(
-        enigmaClients(receiver.repository),
+        receiverApis(receiver.repository),
         receiver.repository,
         receiver.profiles.database,
         sessions,

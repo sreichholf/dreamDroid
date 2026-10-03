@@ -9,6 +9,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
@@ -20,13 +22,14 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.PowerCommand
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.Statics
-import net.reichholf.dreamdroid.helpers.enigma2.PowerState as PowerStateKeys
 import net.reichholf.dreamdroid.helpers.enigma2.shouldConsumeVolumeKey
 import net.reichholf.dreamdroid.helpers.enigma2.volumeCommandForKey
 import net.reichholf.dreamdroid.ui.profilecheck.ProfileCheckUi
@@ -51,7 +54,9 @@ data class ShellUiState(
     val profileCheckStarted: ProfileCheckStart? = null,
     val profileCheckOutcome: ProfileCheckOutcome? = null,
     /** The receiver has the AutoTimer plugin, so the drawer lists AutoTimer. */
-    val autoTimerInDrawer: Boolean = false
+    val autoTimerInDrawer: Boolean = false,
+    /** The active profile's web interface has the sleep timer, so the drawer offers it. */
+    val sleepTimerInDrawer: Boolean = true
 )
 
 /** A profile check started. [showGate]: open the gate, which shows Checking. */
@@ -93,7 +98,8 @@ class ShellViewModel @Inject constructor(
     private val checks: ProfileCheckRepository,
     private val services: ServiceRepository,
     private val sessions: SessionConnectionHolder,
-    private val settings: SettingsRepository
+    private val settings: SettingsRepository,
+    capabilities: WebIfCapabilitiesRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ShellUiState())
     val uiState: StateFlow<ShellUiState> = _uiState.asStateFlow()
@@ -113,6 +119,13 @@ class ShellViewModel @Inject constructor(
         viewModelScope.launch {
             profiles.current.collect { profile ->
                 _uiState.update { it.copy(profileName = profile?.name.orEmpty()) }
+            }
+        }
+        viewModelScope.launch {
+            combine(profiles.current, capabilities.all) { profile, all ->
+                profile == null || profile.id?.let(all::get)?.sleepTimer != false
+            }.distinctUntilChanged().collect { available ->
+                _uiState.update { it.copy(sleepTimerInDrawer = available) }
             }
         }
         viewModelScope.launch {
@@ -208,20 +221,20 @@ class ShellViewModel @Inject constructor(
     }
 
     fun onPowerMenuAction(itemId: Int) {
-        val state = when (itemId) {
-            Statics.ITEM_TOGGLE_STANDBY -> PowerStateKeys.STATE_TOGGLE
-            Statics.ITEM_RESTART_GUI -> PowerStateKeys.STATE_GUI_RESTART
-            Statics.ITEM_REBOOT -> PowerStateKeys.STATE_SYSTEM_REBOOT
-            Statics.ITEM_SHUTDOWN -> PowerStateKeys.STATE_SHUTDOWN
+        val command = when (itemId) {
+            Statics.ITEM_TOGGLE_STANDBY -> PowerCommand.ToggleStandby
+            Statics.ITEM_RESTART_GUI -> PowerCommand.RestartGui
+            Statics.ITEM_REBOOT -> PowerCommand.Reboot
+            Statics.ITEM_SHUTDOWN -> PowerCommand.Shutdown
             else -> return
         }
-        setPowerState(state)
+        setPowerState(command)
     }
 
-    fun setPowerState(state: String) {
+    fun setPowerState(command: PowerCommand) {
         powerJob?.cancel()
         powerJob = viewModelScope.launch {
-            val response = receiver.setPowerState(state)
+            val response = receiver.setPowerState(command)
             val error = response.error
             _uiState.update {
                 it.copy(

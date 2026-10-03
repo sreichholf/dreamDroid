@@ -178,7 +178,7 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
     return timers
 }
 
-private fun buildTimer(
+internal fun buildTimer(
     reference: String,
     serviceName: String,
     eit: String,

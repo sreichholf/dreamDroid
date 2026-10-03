@@ -43,6 +43,4 @@ object Remote {
     const val KEY_RADIO: Int = 385
     const val KEY_TEXT: Int = 388
     const val KEY_RECORD: Int = 167
-
-    const val CLICK_TYPE_LONG: String = "long"
 }

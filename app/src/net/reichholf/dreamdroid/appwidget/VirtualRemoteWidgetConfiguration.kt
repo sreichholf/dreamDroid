@@ -15,10 +15,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
@@ -30,6 +32,10 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
     @Inject
     lateinit var profileRepository: ProfileRepository
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     private var appWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
 
@@ -86,7 +92,13 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
         val context = applicationContext
         val appWidgetManager = AppWidgetManager.getInstance(context)
         val profile = getWidgetProfile(context, profileRepository, appWidgetId)
-        VirtualRemoteWidgetProvider.updateWidget(context, appWidgetManager, appWidgetId, profile)
+        VirtualRemoteWidgetProvider.updateWidget(
+            applicationScope,
+            context,
+            appWidgetManager,
+            appWidgetId,
+            profile
+        )
         val data = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_OK, data)
         finish()

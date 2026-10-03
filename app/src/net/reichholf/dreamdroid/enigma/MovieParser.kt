@@ -103,7 +103,7 @@ private fun parseMovieList(parser: XmlPullParser): List<Movie> {
     return movies
 }
 
-private fun buildMovie(
+internal fun buildMovie(
     reference: String,
     title: String,
     description: String,

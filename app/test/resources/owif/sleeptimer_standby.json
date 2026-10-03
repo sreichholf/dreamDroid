@@ -1,0 +1,7 @@
+{
+ "enabled": false,
+ "minutes": 90,
+ "action": "shutdown",
+ "remaining": 0,
+ "message": "ERROR: Cannot set SleepTimer while device is in Standby-Mode"
+}

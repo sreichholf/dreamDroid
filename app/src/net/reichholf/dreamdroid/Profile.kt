@@ -98,8 +98,8 @@ class Profile : Serializable {
     @ColumnInfo(name = "encoder_login")
     var encoderLogin: Boolean = false
 
-    @ColumnInfo(name = "encoder_stream")
-    var encoderStream: Boolean = false
+    @ColumnInfo(name = "stream_mode", defaultValue = "'Direct'")
+    var streamMode: StreamMode = StreamMode.Direct
 
     @ColumnInfo(name = "file_ssl")
     var fileSsl: Boolean = false
@@ -131,6 +131,10 @@ class Profile : Serializable {
 
     @ColumnInfo(name = "encoder_video_bitrate")
     var encoderVideoBitrate: Int = 0
+
+    /** Port of the HTTP transcoder for [StreamMode.Transcoding]. */
+    @ColumnInfo(name = "transcode_port", defaultValue = "8002")
+    var transcodePort: Int = DEFAULT_TRANSCODE_PORT
 
     @ColumnInfo(name = "default_ref")
     var defaultBouquetTv: String? = null
@@ -198,7 +202,7 @@ class Profile : Serializable {
             defaultRefName,
             defaultRef2,
             defaultRef2Name,
-            false,
+            StreamMode.Direct,
             "stream",
             554,
             false,
@@ -231,7 +235,7 @@ class Profile : Serializable {
         defaultBouquetTvName: String?,
         defaultParentBouquetTv: String?,
         defaultParentBouquetTvName: String?,
-        encoderStream: Boolean,
+        streamMode: StreamMode,
         encoderPath: String?,
         encoderPort: Int,
         encoderLogin: Boolean,
@@ -243,7 +247,7 @@ class Profile : Serializable {
         init(
             id, name, host, streamHost, port, streamPort, filePort, login, user, pass, ssl,
             allCertsTrusted, streamLogin, fileLogin, fileSsl, simpleRemote, defaultBouquetTv,
-            defaultBouquetTvName, defaultParentBouquetTv, defaultParentBouquetTvName, encoderStream,
+            defaultBouquetTvName, defaultParentBouquetTv, defaultParentBouquetTvName, streamMode,
             encoderPath, encoderPort, encoderLogin, encoderUser, encoderPass, encoderVideoBitrate,
             encoderAudioBitrate
         )
@@ -270,7 +274,7 @@ class Profile : Serializable {
         defaultRefName: String?,
         defaultRef2: String?,
         defaultRef2Name: String?,
-        encoderStream: Boolean,
+        streamMode: StreamMode,
         encoderPath: String?,
         encoderPort: Int,
         encoderLogin: Boolean,
@@ -298,7 +302,7 @@ class Profile : Serializable {
         this.simpleRemote = simpleRemote
         setDefaultRefValues(defaultRef, defaultRefName)
         setDefaultRef2Values(defaultRef2, defaultRef2Name)
-        this.encoderStream = encoderStream
+        this.streamMode = streamMode
         this.encoderPort = encoderPort
         this.encoderPath = encoderPath
         this.encoderAudioBitrate = encoderAudioBitrate
@@ -335,6 +339,10 @@ class Profile : Serializable {
         encoderPort = parseInt(port) { encoderPort }
     }
 
+    fun setTranscodePort(port: String) {
+        transcodePort = parseInt(port) { transcodePort }
+    }
+
     fun setEncoderVideoBitrate(bitrate: String) {
         encoderVideoBitrate = parseInt(bitrate) { encoderVideoBitrate }
     }
@@ -368,7 +376,8 @@ class Profile : Serializable {
         fileSsl == p.fileSsl &&
         fileLogin == p.fileLogin &&
         zapAndStream == p.zapAndStream &&
-        encoderStream == p.encoderStream &&
+        streamMode == p.streamMode &&
+        transcodePort == p.transcodePort &&
         encoderPort == p.encoderPort &&
         encoderPath == p.encoderPath &&
         encoderLogin == p.encoderLogin &&
@@ -389,6 +398,8 @@ class Profile : Serializable {
 
     companion object {
         private const val serialVersionUID: Long = 8176949133234868302L
+
+        const val DEFAULT_TRANSCODE_PORT: Int = 8002
 
         @Ignore
         fun getDefault(): Profile = Profile(

@@ -7,14 +7,12 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.ReceiverApi
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.valueOrThrow
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.multiepg.MultiEpgPersistGate
 import net.reichholf.dreamdroid.multiepg.MultiEpgSync
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
@@ -36,13 +34,14 @@ sealed interface EventListLoad {
 }
 
 /**
- * EPG of the active profile. MultiEPG (`/web/epgmulti`) fills Room chunks through
- * [multiEpgSync]. List EPG (`/web/epgbouquet`, `/web/epgservice`) reads those chunks as its
- * offline cache and never writes them; see docs/offline-and-errors.md and docs/multiepg.md.
+ * EPG of the active profile. MultiEPG ([ReceiverApi.epgMulti]) fills Room chunks through
+ * [multiEpgSync]. List EPG ([ReceiverApi.epgAt], [ReceiverApi.serviceEpg]) reads those chunks
+ * as its offline cache and never writes them; see docs/offline-and-errors.md and
+ * docs/multiepg.md.
  */
 @Singleton
 class EpgRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
     private val sessions: SessionConnectionHolder,
@@ -53,7 +52,7 @@ class EpgRepository @Inject constructor(
 
     /**
      * The process's one MultiEPG chunk cache. MultiEPG, the hub service list, and the TV hub
-     * share it, so they coalesce `/web/epgmulti` work. Built on first use: Hilt constructs
+     * share it, so they coalesce MultiEPG requests. Built on first use: Hilt constructs
      * this repository before the pre-Room import runs.
      */
     val multiEpgSync: MultiEpgSync by lazy {
@@ -71,12 +70,7 @@ class EpgRepository @Inject constructor(
     ): Flow<EventListLoad> = listLoad(
         forceRefresh = forceRefresh,
         readCache = { profileId -> cachedBouquetEvents(profileId, bouquetRef, atSec) },
-        fetch = { client ->
-            client.getEvents(
-                listOf(NameValuePair("bRef", bouquetRef), NameValuePair("time", atSec.toString())),
-                URIStore.EPG_BOUQUET
-            )
-        }
+        fetch = { client -> client.epgAt(bouquetRef, atSec) }
     )
 
     /** The schedule of [serviceRef] from now on. See [listLoad]. */
@@ -86,9 +80,7 @@ class EpgRepository @Inject constructor(
             readCache = { profileId ->
                 cachedServiceEvents(profileId, serviceRef, System.currentTimeMillis() / 1000L)
             },
-            fetch = { client ->
-                client.getEvents(listOf(NameValuePair("sRef", serviceRef)), URIStore.EPG_SERVICE)
-            }
+            fetch = { client -> client.serviceEpg(serviceRef) }
         )
 
     /**
@@ -122,17 +114,12 @@ class EpgRepository @Inject constructor(
     }
 
     /**
-     * Receiver-side EPG search by title (`/web/epgsearch`). Searches run one at a time for
-     * the whole app: the box scans its whole EPG per search, and a cancelled caller's HTTP
-     * call still finishes, so the next search waits for it.
+     * Receiver-side EPG search by title. Searches run one at a time for the whole app: the
+     * box scans its whole EPG per search, and a cancelled caller's HTTP call still finishes,
+     * so the next search waits for it.
      */
     suspend fun receiverSearch(query: String): EnigmaResponse<List<Event>> =
-        epgSearchRequest.withLock {
-            clients.current().getEvents(
-                listOf(NameValuePair("search", query)),
-                URIStore.EPG_SEARCH
-            )
-        }
+        epgSearchRequest.withLock { clients.current().epgSearch(query) }
 
     /**
      * The programme a timer on [serviceRef] from [beginSec] to [endSec] records. That window
@@ -158,16 +145,8 @@ class EpgRepository @Inject constructor(
         if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
             return null
         }
-        // The box answers `time` and a length in minutes with the programmes running then.
-        val minutes = (endSec - beginSec + SECONDS_PER_MINUTE - 1) / SECONDS_PER_MINUTE
-        val events = clients.current().getEvents(
-            listOf(
-                NameValuePair("sRef", serviceRef),
-                NameValuePair("time", beginSec.toString()),
-                NameValuePair("endTime", minutes.coerceAtLeast(1).toString())
-            ),
-            URIStore.EPG_SERVICE
-        ).value ?: return null
+        val events = clients.current().serviceEpg(serviceRef, beginSec, endSec).value
+            ?: return null
         return programmeInWindow(events, title, beginSec, endSec)
     }
 
@@ -198,7 +177,7 @@ class EpgRepository @Inject constructor(
     fun multiEpgPersistGate(): MultiEpgPersistGate = MultiEpgPersistGate(services.excludedTabRefs)
 
     /**
-     * Use-driven EPG fill: `/web/epgmulti` for the chunk at [nowSec] into Room when the user
+     * Use-driven EPG fill: MultiEPG for the chunk at [nowSec] into Room when the user
      * opened [containerRef] under the hub tab [tabRootRef] and that container is cacheable
      * (docs/offline-and-errors.md). Provider, All Services, and the bouquet index never
      * fetch. Failures throw.
@@ -221,28 +200,15 @@ class EpgRepository @Inject constructor(
     }
 
     /**
-     * One `/web/epgmulti` window. `time` is the unix start; `endTime` is the **duration in
-     * minutes** (eEPGCache's 4th tuple arg, as GraphMultiEPG passes it) despite its name. An
-     * absolute unix end overflows on the box and yields no events. Requests run one at a
-     * time, so the box never serves two bouquet dumps at once.
+     * One MultiEPG window of [bouquetRef]. Requests run one at a time, so the box never serves
+     * two bouquet dumps at once.
      */
     private suspend fun fetchEpgMulti(
         bouquetRef: String,
         timeSec: Long,
         endTimeSec: Long
-    ): List<Event> {
-        require(endTimeSec > timeSec) { "window end must be after start" }
-        val durationMinutes = ((endTimeSec - timeSec) / 60L).coerceAtLeast(1L)
-        return epgMultiRequest.withLock {
-            clients.current().getEvents(
-                listOf(
-                    NameValuePair("bRef", bouquetRef),
-                    NameValuePair("time", timeSec.toString()),
-                    NameValuePair("endTime", durationMinutes.toString())
-                ),
-                URIStore.EPG_MULTI
-            ).valueOrThrow()
-        }
+    ): List<Event> = epgMultiRequest.withLock {
+        clients.current().epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
     /**
@@ -253,7 +219,7 @@ class EpgRepository @Inject constructor(
     private fun listLoad(
         forceRefresh: Boolean,
         readCache: suspend (profileId: Int) -> List<Event>?,
-        fetch: suspend (EnigmaClient) -> EnigmaResponse<List<Event>>
+        fetch: suspend (ReceiverApi) -> EnigmaResponse<List<Event>>
     ): Flow<EventListLoad> = flow {
         val profileId = profiles.requireCurrent().id
         suspend fun cached(): List<Event>? = profileId?.let { readCache(it) }
@@ -280,7 +246,7 @@ class EpgRepository @Inject constructor(
     }
 
     /**
-     * One programme per channel at [fromSec], matching `/web/epgbouquet?time=`. Null when
+     * One programme per channel at [fromSec], matching [ReceiverApi.epgAt]. Null when
      * that container's chunk was never written.
      */
     private suspend fun cachedBouquetEvents(
@@ -315,8 +281,6 @@ class EpgRepository @Inject constructor(
     }
 
     private companion object {
-        const val SECONDS_PER_MINUTE = 60L
-
         /** Upper bound of one cached search result list. */
         const val SEARCH_LIMIT = 256
 
@@ -347,7 +311,7 @@ internal fun programmeInWindow(
 }
 
 /**
- * `/web/epgbouquet` is one row per channel: the event whose `[start, start+duration)`
+ * [ReceiverApi.epgAt] is one row per channel: the event whose `[start, start+duration)`
  * contains [atSec]. Bouquet order is kept.
  */
 internal fun bouquetEventsAtInstant(events: List<EpgEventEntity>, atSec: Long): List<Event> {

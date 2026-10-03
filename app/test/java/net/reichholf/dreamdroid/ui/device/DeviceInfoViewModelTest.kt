@@ -17,8 +17,8 @@ import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -135,7 +135,7 @@ class DeviceInfoViewModelTest {
     }
 
     private fun viewModel(handle: SavedStateHandle) =
-        DeviceInfoViewModel(handle, ReceiverRepository(enigmaClients(profiles), profiles))
+        DeviceInfoViewModel(handle, ReceiverRepository(receiverApis(profiles), profiles))
 
     private suspend fun DeviceInfoViewModel.settled(): DeviceInfoUiState =
         uiState.first { !it.refreshing }

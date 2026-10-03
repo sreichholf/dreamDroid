@@ -9,6 +9,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
@@ -300,7 +301,7 @@ class TimerRepositoryTest {
         val deviceInfo = try {
             withTimeout(5_000L) {
                 async(Dispatchers.IO) {
-                    profiles.setDeviceInfo(profile, "<e2deviceinfo/>")
+                    profiles.setDeviceInfo(profile, DeviceInfo())
                     profiles.deviceInfo(profile)
                 }.await()
             }
@@ -308,7 +309,7 @@ class TimerRepositoryTest {
             held.release()
         }
 
-        assertEquals("<e2deviceinfo/>", deviceInfo)
+        assertEquals(DeviceInfo(), deviceInfo)
         assertEquals(
             TimerChoices(listOf("/media/hdd/"), listOf("News"), true),
             choices.await()

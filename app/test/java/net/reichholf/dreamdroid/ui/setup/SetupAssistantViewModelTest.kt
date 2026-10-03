@@ -17,8 +17,8 @@ import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -183,7 +183,8 @@ class SetupAssistantViewModelTest {
         profiles,
         ReceiverProfileCheckRepository(
             profiles,
-            enigmaClients(profiles, testProfiles.context)
+            receiverApis(profiles, testProfiles.context, testProfiles.capabilities),
+            testProfiles.capabilities
         ),
         ReceiverDiscovery {
             searches++

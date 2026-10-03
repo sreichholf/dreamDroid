@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.enigma
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -16,7 +17,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
-class EnigmaClientHttpFailTest {
+class DreamboxWebIfApiHttpFailTest {
     private lateinit var server: MockWebServer
 
     @Before
@@ -31,16 +32,16 @@ class EnigmaClientHttpFailTest {
     }
 
     @Test
-    fun getServices_httpFailIsNull() = runBlocking {
+    fun services_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val services = client().getServices().value
+        val services = client().services(REF).value
         assertEquals(null, services)
     }
 
     @Test
-    fun getServices_http500IsHttpFailure() = runBlocking {
+    fun services_http500IsHttpFailure() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val response = client().getServices()
+        val response = client().services(REF)
         assertEquals(null, response.value)
         val failure = response.error!!.failure
         assertTrue(failure is EnigmaFailure.Http)
@@ -48,24 +49,24 @@ class EnigmaClientHttpFailTest {
     }
 
     @Test
-    fun getServices_http401IsAuthFailure() = runBlocking {
+    fun services_http401IsAuthFailure() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(401).setBody("nope"))
-        val response = client().getServices()
+        val response = client().services(REF)
         assertEquals(null, response.value)
         assertEquals(EnigmaFailure.Auth, response.error!!.failure)
     }
 
     @Test
-    fun getServices_empty200IsEmptyList() = runBlocking {
+    fun services_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val services = client().getServices().value
+        val services = client().services(REF).value
         assertEquals(emptyList<Service>(), services)
     }
 
     @Test
-    fun getServices_200ReturnsFixtureNames() = runBlocking {
+    fun services_200ReturnsFixtureNames() = runBlocking {
         server.enqueue(MockResponse().setBody(loadWebFixture("getservices.xml")))
-        val services = client().getServices().value!!
+        val services = client().services(REF).value!!
         assertEquals(3, services.size)
         assertEquals("Favourites (TV)", services[0].name)
         assertEquals("Das Erste HD", services[1].name)
@@ -73,30 +74,30 @@ class EnigmaClientHttpFailTest {
     }
 
     @Test
-    fun getEvents_httpFailIsNull() = runBlocking {
+    fun serviceEpg_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val events = client().getEvents().value
+        val events = client().serviceEpg(REF).value
         assertEquals(null, events)
     }
 
     @Test
-    fun getEvents_empty200IsEmptyList() = runBlocking {
+    fun serviceEpg_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val events = client().getEvents().value
+        val events = client().serviceEpg(REF).value
         assertEquals(emptyList<Event>(), events)
     }
 
     @Test
-    fun getEpgNowNext_httpFailIsNull() = runBlocking {
+    fun epgNowNext_httpFailIsNull() = runBlocking {
         server.enqueue(MockResponse().setResponseCode(500).setBody("nope"))
-        val rows = client().getEpgNowNext().value
+        val rows = client().epgNowNext(REF).value
         assertEquals(null, rows)
     }
 
     @Test
-    fun getEpgNowNext_empty200IsEmptyList() = runBlocking {
+    fun epgNowNext_empty200IsEmptyList() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
-        val rows = client().getEpgNowNext().value
+        val rows = client().epgNowNext(REF).value
         assertEquals(emptyList<ServiceNowNext>(), rows)
     }
 
@@ -107,5 +108,12 @@ class EnigmaClientHttpFailTest {
         login = false
     }
 
-    private fun client() = EnigmaClient(EnigmaHttp(profileForServer(), EnigmaOkHttp()))
+    private fun client() = DreamboxWebIfApi(
+        EnigmaHttp(profileForServer(), EnigmaOkHttp(), WebIfCapabilitiesRepository()),
+        WebIfCapabilities()
+    )
+
+    private companion object {
+        const val REF = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\""
+    }
 }

@@ -12,16 +12,16 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetEditorRepository
-import net.reichholf.dreamdroid.data.BouquetMode
 import net.reichholf.dreamdroid.enigma.BouquetEntry
+import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
-import net.reichholf.dreamdroid.testutil.enigmaClients
 import net.reichholf.dreamdroid.testutil.loadWebFixture
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
@@ -38,7 +38,7 @@ class BouquetListViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
     private val editor = BouquetEditorRepository(
-        enigmaClients(receiver.repository),
+        receiverApis(receiver.repository),
         receiver.repository,
         receiver.profiles.services
     )

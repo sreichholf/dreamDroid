@@ -72,7 +72,7 @@ class EpgNowNextParserTest {
         // epgservice.xml is a flat two-event list for one service; treat like epgnow: one row each.
         val events = EventParser.parse(loadWebFixture("epgservice.xml"))
         assertEquals(2, events.size)
-        // Client maps flat lists without pairing (see EnigmaClient.getEpgNowNext for non-NOWNEXT).
+        // Client maps flat lists without pairing (see DreamboxWebIfApi for /web/epgnow).
         val rows = events.map { event ->
             ServiceNowNext(event.serviceReference, event.serviceName, event, null)
         }

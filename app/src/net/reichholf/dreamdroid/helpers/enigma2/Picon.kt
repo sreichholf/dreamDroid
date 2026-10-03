@@ -85,6 +85,14 @@ object Picon {
         return piconModel(context, fileName)
     }
 
+    /**
+     * `/file?file=<picon dir>/<name>.png` on the profile's web port. The same URL serves
+     * OpenWebif: its `/file` returns any existing path (OpenWebif
+     * `plugin/controllers/file.py:50-83`), so the user's picon path keeps working on both
+     * web interfaces. OpenWebif's own `/picon/` is mounted only when the box finds a picon
+     * folder (`root.py:80-81,98-99`), and `getservices?picon=1` would carry a URL per
+     * service through the service model; neither is used.
+     */
     fun onlinePiconUrl(profile: Profile, fileName: String?): String = EnigmaUrls.page(
         profile,
         URIStore.FILE,

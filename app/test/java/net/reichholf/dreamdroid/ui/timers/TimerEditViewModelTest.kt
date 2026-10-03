@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.LOCATIONS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TAGS
@@ -21,6 +22,7 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CHANGE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_DELETE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.ui.nav.TimerEdit
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -68,6 +70,30 @@ class TimerEditViewModelTest {
         assertEquals(listOf("/hdd/movie/", "/media/hdd/"), state.locations)
         assertEquals(listOf("News", "Sport"), state.tags)
         assertEquals("Das Erste HD", state.form?.serviceName)
+    }
+
+    @Test
+    fun theRouteKeepsTheOpenWebifSettingsOfTheTimer() = runTest {
+        val listed = Timer(
+            reference = REFERENCE,
+            allowDuplicate = "0",
+            autoAdjust = "1",
+            vpsEnabled = "1",
+            vpsOverwrite = "0",
+            vpsTime = "1893456000"
+        )
+        assertEquals(listed, TimerEdit.from(listed, create = false).toTimer())
+
+        val handle = route(create = false).apply {
+            set("allowDuplicate", "0")
+            set("vpsEnabled", "1")
+        }
+        val timer = viewModel(handle).ready().timer!!
+
+        assertEquals(
+            listOf("0", null, "1"),
+            listOf(timer.allowDuplicate, timer.autoAdjust, timer.vpsEnabled)
+        )
     }
 
     @Test

@@ -7,17 +7,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
-import net.reichholf.dreamdroid.helpers.EnigmaHttpResult
-import net.reichholf.dreamdroid.helpers.EnigmaUrls
-import net.reichholf.dreamdroid.helpers.NameValuePair
-import net.reichholf.dreamdroid.helpers.enigma2.Movie as MovieKeys
-import net.reichholf.dreamdroid.helpers.enigma2.Tag
-import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.MovieLocationStripEntity
 import net.reichholf.dreamdroid.room.toListEntity
@@ -48,7 +42,7 @@ sealed interface MovieDownload {
 @Singleton
 class MovieRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
-    private val clients: EnigmaClientFactory,
+    private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase
 ) {
@@ -59,14 +53,7 @@ class MovieRepository @Inject constructor(
      * unfiltered snapshot.
      */
     suspend fun movies(location: String, tags: List<String>): MovieListLoad {
-        val params = ArrayList<NameValuePair>()
-        if (location.isNotEmpty()) {
-            params.add(NameValuePair("dirname", location))
-        }
-        if (tags.isNotEmpty()) {
-            params.add(NameValuePair("tag", Tag.implodeTags(ArrayList(tags))))
-        }
-        val response = clients.current().getMovies(params)
+        val response = clients.current().movies(location, tags)
         val live = response.value
         if (live != null) {
             if (tags.isEmpty()) {
@@ -83,11 +70,10 @@ class MovieRepository @Inject constructor(
     }
 
     suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
-        clients.current().deleteMovie(MovieKeys.getDeleteParams(movie))
+        clients.current().deleteMovie(movie)
 
     /** The stream of [movie] from the active profile, for the video player. */
-    fun streamUrl(movie: Movie): String =
-        EnigmaUrls.fileStream(profiles.requireCurrent(), movie.reference, movie.fileName)
+    fun streamUrl(movie: Movie): String = clients.current().recordingStreamUrl(movie)
 
     /**
      * A URL any viewer can open for the recording at [remotePath], or null when the profile
@@ -98,22 +84,20 @@ class MovieRepository @Inject constructor(
         if (profile.login) {
             return null
         }
-        return EnigmaUrls.page(profile, URIStore.FILE, listOf(NameValuePair("file", remotePath)))
+        return clients.forProfile(profile).recordingFileUrl(remotePath)
     }
 
     /** Copies the recording at [remotePath] into the app cache, with the profile's login. */
     suspend fun downloadToCache(remotePath: String): MovieDownload {
-        val profile = profiles.requireCurrent()
-        val params = listOf(NameValuePair("file", remotePath))
+        val api = clients.current()
         return withContext(Dispatchers.IO) {
             val out = File(context.cacheDir, movieCacheFileName(remotePath))
-            when (val fetched = clients.http(profile).downloadToFile(URIStore.FILE, params, out)) {
-                is EnigmaHttpResult.Failure -> {
-                    out.delete()
-                    MovieDownload.Failed(fetched.error)
-                }
-
-                is EnigmaHttpResult.Success -> MovieDownload.Ready(out)
+            val error = api.downloadRecording(remotePath, out)
+            if (error != null) {
+                out.delete()
+                MovieDownload.Failed(error)
+            } else {
+                MovieDownload.Ready(out)
             }
         }
     }

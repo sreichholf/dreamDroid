@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -89,9 +88,6 @@ object DrawerDestinations {
 class DrawerListState {
     var selectedItemId by mutableIntStateOf(R.id.menu_none)
         private set
-
-    /** False when the connected box is older than the sleep-timer interface. */
-    var sleepTimerAvailable by mutableStateOf(true)
 
     fun select(itemId: Int) {
         selectedItemId = itemId
@@ -199,11 +195,12 @@ fun DrawerScreen(
     onItemClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     boxActionsBlocked: Boolean = false,
-    autoTimerAvailable: Boolean = false
+    autoTimerAvailable: Boolean = false,
+    sleepTimerAvailable: Boolean = true
 ) {
     Column(modifier = modifier.fillMaxSize()) {
         DrawerBoxActions(
-            actions = drawerBoxActions(state.sleepTimerAvailable),
+            actions = drawerBoxActions(sleepTimerAvailable),
             onItemClick = onItemClick,
             blocked = boxActionsBlocked
         )

@@ -3,7 +3,8 @@ package net.reichholf.dreamdroid.enigma
 import org.xmlpull.v1.XmlPullParser
 
 /**
- * Typed `/web` simple result (`e2state`/`e2result` + `e2statetext`/`e2resulttext`).
+ * Typed `/web` simple result (`e2state`/`e2result` + `e2statetext`/`e2resulttext`), with the
+ * AutoTimer plugin's `e2id` when it sends one.
  */
 object SimpleResultParser {
     fun parse(xml: String): SimpleResult? =
@@ -15,6 +16,7 @@ object SimpleResultParser {
 private fun parseSimpleResult(parser: XmlPullParser): SimpleResult {
     val state = StringBuilder()
     val stateText = StringBuilder()
+    val id = StringBuilder()
     var current: StringBuilder? = null
     var sawState = false
     var sawStateText = false
@@ -33,6 +35,8 @@ private fun parseSimpleResult(parser: XmlPullParser): SimpleResult {
                         current = stateText
                         sawStateText = false
                     }
+
+                    "e2id" -> current = id
 
                     else -> current = null
                 }
@@ -53,6 +57,7 @@ private fun parseSimpleResult(parser: XmlPullParser): SimpleResult {
     }
     return SimpleResult(
         state = if (sawState) state.toString() else null,
-        stateText = if (sawStateText) stateText.toString() else null
+        stateText = if (sawStateText) stateText.toString() else null,
+        id = id.toString().trim().ifEmpty { null }
     )
 }

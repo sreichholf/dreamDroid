@@ -237,7 +237,6 @@
     <string name="play_button_as_play_pause_long">Usa il tasto Play come Play/Pausa nel widget e nel telecomando dell\'app</string>
     <string name="play_button_as_play_pause">Tasto Play come Play/Pausa</string>
     <string name="next_event">Evento successivo</string>
-    <string name="use_encoder">Usa encoder per la trasmissione</string>
     <string name="encoder_path">Percorso trasmissione</string>
     <string name="audio_bitrate">Bitrate audio</string>
     <string name="video_bitrate">Bitrate video</string>

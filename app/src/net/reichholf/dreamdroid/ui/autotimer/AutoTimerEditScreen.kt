@@ -199,7 +199,11 @@ private fun AutoTimerEditForm(
                 label = stringResource(R.string.autotimer_name_label),
                 supportingText = stringResource(R.string.autotimer_name_hint)
             )
-            val searchTypes = SearchType.entries
+            // Only oe-alliance's plugin knows "start"; it is offered where it is set already.
+            val searchTypes = SearchType.entries.filter {
+                it != SearchType.Start || SearchType.Start in
+                    listOf(draft.searchType, state.base.searchType)
+            }
             EditDropdownField(
                 options = searchTypes.map { stringResource(it.label) },
                 selectedIndex = searchTypes.indexOf(draft.searchType),
@@ -563,7 +567,10 @@ private fun ExtrasNote(extras: Extras) {
         stringResource(R.string.autotimer_extra_counter).takeIf { extras.counter },
         stringResource(R.string.autotimer_extra_vps).takeIf { extras.vps },
         stringResource(R.string.autotimer_extra_series).takeIf { extras.seriesPlugin },
-        stringResource(R.string.autotimer_extra_alternatives).takeIf { extras.overrideAlternatives }
+        stringResource(R.string.autotimer_extra_alternatives).takeIf {
+            extras.overrideAlternatives
+        },
+        stringResource(R.string.autotimer_extra_always_zap).takeIf { extras.alwaysZap }
     )
     if (names.isNotEmpty()) {
         Text(
@@ -657,6 +664,7 @@ private val SearchType.label: Int
         SearchType.Partial -> R.string.autotimer_search_partial
         SearchType.Exact -> R.string.autotimer_search_exact
         SearchType.Description -> R.string.autotimer_search_description
+        SearchType.Start -> R.string.autotimer_search_start
     }
 
 private fun formatDay(day: Instant): String =

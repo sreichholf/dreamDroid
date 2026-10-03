@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.data
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,23 +11,25 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.reichholf.dreamdroid.enigma.EnigmaClient
-import net.reichholf.dreamdroid.enigma.EnigmaClientFactory
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
+import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
+import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
-import net.reichholf.dreamdroid.enigma.autotimer.toParams
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
-import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** Whether the active profile's receiver has the AutoTimer plugin. */
@@ -50,8 +53,11 @@ sealed interface AutoTimerLoad {
 
 /** How a write went. */
 sealed interface AutoTimerWriteResult {
-    /** The box took it; [message] is its (localized) reply. */
-    data class Done(val message: UiText) : AutoTimerWriteResult
+    /**
+     * The box took it; [message] is its (localized) reply. [id] is the AutoTimer a save wrote,
+     * when the plugin says (api_version 1.7).
+     */
+    data class Done(val message: UiText, val id: AutoTimerId? = null) : AutoTimerWriteResult
 
     /** The id no longer names the AutoTimer that was loaded; nothing was written. */
     data object Conflict : AutoTimerWriteResult
@@ -80,21 +86,24 @@ sealed interface AutoTimerPreviewLoad {
 
 /**
  * The AutoTimer plugin of the active profile's receiver (`/autotimer`). Online only: the box
- * changes its AutoTimers itself, so nothing is cached but whether the plugin is there.
+ * changes its AutoTimers itself, so nothing is cached but whether the plugin is there, and
+ * which API it speaks ([AutoTimerApi]), learned with that answer.
  */
 @Singleton
 class AutoTimerRepository @Inject constructor(
-    private val clients: EnigmaClientFactory,
-    private val profiles: ProfileRepository
+    private val clients: ReceiverApiFactory,
+    private val profiles: ProfileRepository,
+    /** Where an API 1.7 run, which answers only once done, goes on unawaited. */
+    @param:ApplicationScope private val background: CoroutineScope
 ) {
     private val writes = Mutex()
 
-    /** Plugin presence per profile id; the last answer stays while a receiver is offline. */
-    private val known = MutableStateFlow<Map<Int, PluginPresence>>(emptyMap())
+    /** The plugin per profile id; the last answer stays while a receiver is offline. */
+    private val known = MutableStateFlow<Map<Int, AutoTimerPlugin>>(emptyMap())
 
     val presence: Flow<PluginPresence> =
         combine(profiles.current, known) { profile, known ->
-            profile?.id?.let { known[it] } ?: PluginPresence.Unknown
+            profile?.id?.let { known[it] }.presence()
         }.distinctUntilChanged()
 
     private val _revision = MutableStateFlow(0)
@@ -109,21 +118,22 @@ class AutoTimerRepository @Inject constructor(
     val profileId: Flow<Int?> = profiles.current.map { it?.id }.distinctUntilChanged()
 
     /**
-     * Asks `/web/external` whether the plugin is installed. A failed request keeps the last
+     * Asks the receiver whether the plugin is installed. A failed request keeps the last
      * answer for the profile.
      */
-    suspend fun refreshPresence(): PluginPresence = checkPresence().value ?: currentPresence()
+    suspend fun refreshPresence(): PluginPresence =
+        (checkPlugin().value ?: knownPlugin()).presence()
 
     suspend fun list(): AutoTimerLoad {
-        if (currentPresence() != PluginPresence.Present) {
-            val check = checkPresence()
+        if (knownPlugin() !is AutoTimerPlugin.Installed) {
+            val check = checkPlugin()
             when (check.value) {
                 null -> return AutoTimerLoad.Failed(check.error.contentErrorText())
-                PluginPresence.Absent -> return AutoTimerLoad.PluginMissing
-                else -> Unit
+                AutoTimerPlugin.Missing -> return AutoTimerLoad.PluginMissing
+                is AutoTimerPlugin.Installed -> Unit
             }
         }
-        val response = clients.current().getAutoTimers()
+        val response = clients.current().autoTimers()
         return response.value?.let { AutoTimerLoad.Ready(it.entries, it.defaults) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
     }
@@ -145,8 +155,7 @@ class AutoTimerRepository @Inject constructor(
         if (!autoTimer.settings.enabled) {
             return AutoTimerPreviewLoad.Disabled(autoTimer)
         }
-        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(PREVIEW_TIMEOUT_MS) }
-        val response = EnigmaClient(http).testAutoTimer(id.value)
+        val response = clients.current(PREVIEW_TIMEOUT_MS).testAutoTimer(id)
         return when (val outcome = response.value) {
             is PreviewOutcome.Matches -> AutoTimerPreviewLoad.Ready(autoTimer, outcome.matches)
 
@@ -166,28 +175,49 @@ class AutoTimerRepository @Inject constructor(
             when (write) {
                 is AutoTimerWrite.Change ->
                     guard(AutoTimerEntry.Readable(write.loaded))
-                        ?: result(clients.current().editAutoTimer(write.toParams()))
+                        ?: saved(clients.current().saveAutoTimer(write))
 
-                is AutoTimerWrite.Create ->
-                    result(clients.current().editAutoTimer(write.toParams()))
+                is AutoTimerWrite.Create -> saved(clients.current().saveAutoTimer(write))
             }
         }
     }
 
     /**
      * Searches the EPG for all enabled AutoTimers now and adds timers for new matches, as a
-     * run on the box does, which rewrites the box's AutoTimers: writes wait for it. It gets its
-     * own client with a long timeout, so other requests do not cancel it.
+     * run on the box does, which rewrites the box's AutoTimers. It gets its own client with a
+     * long timeout, so other requests do not cancel it.
+     *
+     * Where the plugin keeps the connection alive ([AutoTimerApi.runAnswersInTime]), writes
+     * wait for the run and the result is its summary. Otherwise the run is only started: the
+     * plugin answers once done, which can take longer than any timeout. [revision] counts it
+     * again when the box answers or the request gives up, so a shown list is fetched anew.
      */
     suspend fun runNow(): AutoTimerWriteResult {
-        val http = clients.currentHttp().apply { setConnectionTimeoutMillis(RUN_TIMEOUT_MS) }
-        return counted { writes.withLock { result(EnigmaClient(http).runAutoTimers()) } }
+        val plugin = knownPlugin() ?: checkPlugin().let { check ->
+            check.value ?: return AutoTimerWriteResult.Failed(check.error.contentErrorText())
+        }
+        val api = (plugin as? AutoTimerPlugin.Installed)?.api
+            ?: return AutoTimerWriteResult.Failed(UiText.Resource(R.string.autotimer_not_installed))
+        val client = clients.current(RUN_TIMEOUT_MS)
+        if (api.runAnswersInTime) {
+            return counted { writes.withLock { result(client.runAutoTimers()) } }
+        }
+        background.launch {
+            try {
+                client.runAutoTimers()
+            } finally {
+                _revision.update { it + 1 }
+            }
+        }
+        return counted {
+            AutoTimerWriteResult.Done(UiText.Resource(R.string.autotimer_run_started))
+        }
     }
 
     /**
      * The AutoTimer the box lists for [settings] after a save: the one with that id when
-     * [id] is set, else the newest one with that match and name. The box does not answer a
-     * create with the new id.
+     * [id] is set, else the newest one with that match and name. Only api_version 1.7
+     * answers a create with the new id ([AutoTimerWriteResult.Done.id]).
      */
     suspend fun locate(settings: AutoTimerSettings, id: AutoTimerId?): AutoTimer? {
         val entries = (list() as? AutoTimerLoad.Ready)?.entries ?: return null
@@ -205,10 +235,7 @@ class AutoTimerRepository @Inject constructor(
     /** Removes [entry] unless its id names another AutoTimer by now. */
     suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = counted {
         writes.withLock {
-            guard(entry) ?: result(
-                clients.current()
-                    .removeAutoTimer(listOf(NameValuePair("id", entry.id.value.toString())))
-            )
+            guard(entry) ?: result(clients.current().removeAutoTimer(entry.id))
         }
     }
 
@@ -227,7 +254,7 @@ class AutoTimerRepository @Inject constructor(
      * anew whenever its config file changed, so an id alone may name another one.
      */
     private suspend fun guard(expected: AutoTimerEntry): AutoTimerWriteResult? {
-        val response = clients.current().getAutoTimers()
+        val response = clients.current().autoTimers()
         val entries = response.value?.entries
             ?: return AutoTimerWriteResult.Failed(response.error.contentErrorText())
         val current = entries.firstOrNull { it.id == expected.id }
@@ -241,27 +268,38 @@ class AutoTimerRepository @Inject constructor(
             AutoTimerWriteResult.Failed(response.userMessageText())
         }
 
-    private fun currentPresence(): PluginPresence =
-        profiles.current.value?.id?.let { known.value[it] } ?: PluginPresence.Unknown
+    /** [result], with the id the box gave the AutoTimer it wrote. */
+    private fun saved(response: EnigmaResponse<SimpleResult>): AutoTimerWriteResult =
+        when (val written = result(response)) {
+            is AutoTimerWriteResult.Done ->
+                written.copy(id = response.value?.id?.toIntOrNull()?.let(::AutoTimerId))
+
+            else -> written
+        }
+
+    private fun knownPlugin(): AutoTimerPlugin? =
+        profiles.current.value?.id?.let { known.value[it] }
 
     /** The receiver's answer, remembered for the profile; no value when the request failed. */
-    private suspend fun checkPresence(): EnigmaResponse<PluginPresence> {
+    private suspend fun checkPlugin(): EnigmaResponse<AutoTimerPlugin> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        val response = clients.forProfile(profile).getWebExternals()
-        val paths = response.value ?: return EnigmaResponse(null, response.error)
-        val presence = if (PLUGIN_PATH in paths) PluginPresence.Present else PluginPresence.Absent
-        profile.id?.let { id -> known.update { it + (id to presence) } }
-        return EnigmaResponse(presence)
+        val response = clients.forProfile(profile).autoTimerPlugin()
+        val plugin = response.value ?: return EnigmaResponse(null, response.error)
+        profile.id?.let { id -> known.update { it + (id to plugin) } }
+        return EnigmaResponse(plugin)
     }
 
     private companion object {
-        /** The plugin's API; `autotimereditor` is its web page. */
-        const val PLUGIN_PATH = "autotimer"
-
         /** The box searches the whole EPG for a preview; that can take a while. */
         const val PREVIEW_TIMEOUT_MS = 60_000
 
         /** Longer than the 50 s between the keep-alives the box sends during a run. */
         const val RUN_TIMEOUT_MS = 120_000
     }
+}
+
+private fun AutoTimerPlugin?.presence(): PluginPresence = when (this) {
+    null -> PluginPresence.Unknown
+    AutoTimerPlugin.Missing -> PluginPresence.Absent
+    is AutoTimerPlugin.Installed -> PluginPresence.Present
 }

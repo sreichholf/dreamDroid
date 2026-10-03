@@ -1,0 +1,9 @@
+{
+ "tunertype": "DVB-S2",
+ "tunernumber": 0,
+ "snr": 63,
+ "snr_db": "12.50",
+ "agc": 73,
+ "ber": 0,
+ "inStandby": "false"
+}

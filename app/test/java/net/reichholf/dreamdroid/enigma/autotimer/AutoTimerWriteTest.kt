@@ -214,7 +214,7 @@ class AutoTimerWriteTest {
     }
 
     private fun AutoTimerWrite.pairs(): List<Pair<String, String>> =
-        toParams().map { it.key to it.value() }
+        autoTimerEditParams(this).map { it.key to it.value() }
 
     private fun load(fixture: String): AutoTimer = (
         AutoTimerListParser.parse(loadWebFixture("autotimer/$fixture"))!!.entries.single()

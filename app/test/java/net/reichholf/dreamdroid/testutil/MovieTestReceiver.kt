@@ -19,7 +19,7 @@ class MovieTestReceiver {
     val server = MockWebServer()
     val profiles = TestProfiles()
     val sessions = SessionConnectionHolder()
-    private val clients = enigmaClients(profiles.repository)
+    private val clients = receiverApis(profiles.repository)
     val movies = MovieRepository(
         profiles.context,
         clients,

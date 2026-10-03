@@ -18,7 +18,7 @@ import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.testutil.TestProfiles
-import net.reichholf.dreamdroid.testutil.enigmaClients
+import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -199,7 +199,7 @@ class ScreenshotViewModelTest {
     }
 
     private fun viewModel(sessions: SessionConnectionHolder = this.sessions) =
-        ScreenshotViewModel(ReceiverRepository(enigmaClients(profiles), profiles), sessions)
+        ScreenshotViewModel(ReceiverRepository(receiverApis(profiles), profiles), sessions)
             .also { viewModels += it }
 
     private suspend fun ScreenshotViewModel.settled(): ScreenshotUiState =

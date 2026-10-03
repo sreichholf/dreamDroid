@@ -237,7 +237,6 @@
 <string name="use_fake_picon_long">Kasuta ekraanitõmmistel vaikepikonit (picon_default.png), vältimaks probleeme autoriõigustega</string>
 <string name="host_unreach">Ühendumine masinaga nurjus</string>
 <string name="next_event">Järgmine saade</string>
-<string name="use_encoder">Kasuta voogesituseks enkooderit</string>
 <string name="encoder_path">Voo asukoht</string>
 <string name="audio_bitrate">Heli bitikiirus</string>
 <string name="video_bitrate">Video bitikiirus</string>

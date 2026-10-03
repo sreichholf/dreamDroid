@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?><e2settings><e2setting>
+				<e2settingname>config.plugins.autotimer.autopoll</e2settingname>
+				<e2settingvalue>True</e2settingvalue>
+				<e2settingtitle>Poll automatically</e2settingtitle>
+				<e2settingdescription>If this is disabled AutoTimer will NOT automatically look for events matching your AutoTimers but only when you leave the GUI with the green button.</e2settingdescription>
+			</e2setting><e2setting>
+				<e2settingname>config.plugins.autotimer.add_autotimer_to_tags</e2settingname>
+				<e2settingvalue>False</e2settingvalue>
+				<e2settingtitle>Include "AutoTimer" in tags</e2settingtitle>
+				<e2settingdescription>If this is selected, the tag "AutoTimer" will be given to timers created by this plugin.</e2settingdescription>
+			</e2setting><e2setting>
+				<e2settingname>hasVps</e2settingname>
+				<e2settingvalue>False</e2settingvalue>
+				</e2setting>
+				<e2setting>
+					<e2settingname>hasSeriesPlugin</e2settingname>
+					<e2settingvalue>False</e2settingvalue>
+				</e2setting>
+				<e2setting>
+					<e2settingname>version</e2settingname>
+					<e2settingvalue>8</e2settingvalue>
+				</e2setting>
+				<e2setting>
+					<e2settingname>api_version</e2settingname>
+					<e2settingvalue>1.7</e2settingvalue>
+				</e2setting>
+				<e2setting>
+					<e2settingname>autotimer_version</e2settingname>
+					<e2settingvalue>4.3.2</e2settingvalue>
+				</e2setting>
+			</e2settings>

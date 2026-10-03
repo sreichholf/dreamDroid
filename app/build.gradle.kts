@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.coroutines.android)
     implementation(libs.serialization.core)
+    implementation(libs.serialization.json)
     implementation(libs.coil)
     implementation(libs.coil.compose)
     implementation(libs.coil.network.okhttp)
