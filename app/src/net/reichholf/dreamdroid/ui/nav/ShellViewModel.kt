@@ -15,10 +15,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.PluginPresence
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
@@ -93,7 +93,7 @@ private val CHECKING = ProfileCheckUi.Checking(UiText.Resource(R.string.checking
 @HiltViewModel
 class ShellViewModel @Inject constructor(
     private val receiver: ReceiverRepository,
-    private val autoTimers: AutoTimerRepository,
+    private val plugins: ReceiverPluginsRepository,
     private val profiles: ProfileRepository,
     private val checks: ProfileCheckRepository,
     private val services: ServiceRepository,
@@ -129,7 +129,7 @@ class ShellViewModel @Inject constructor(
             }
         }
         viewModelScope.launch {
-            autoTimers.presence.collect { presence ->
+            plugins.autoTimerPresence.collect { presence ->
                 _uiState.update {
                     it.copy(autoTimerInDrawer = presence == PluginPresence.Present)
                 }
@@ -346,7 +346,7 @@ class ShellViewModel @Inject constructor(
                 ProfileCheckOutcome.Leave(offGateToo = false, firstStart = firstStart)
             }
         } else {
-            viewModelScope.launch { autoTimers.refreshPresence() }
+            viewModelScope.launch { plugins.refresh() }
             val openStart = openStartOnSuccess
             openStartOnSuccess = false
             ProfileCheckOutcome.Leave(offGateToo = openStart || firstStart, firstStart = firstStart)

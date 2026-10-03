@@ -13,7 +13,6 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPluginApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.FieldGroup
@@ -435,8 +434,31 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
         }
     }
 
-    /** `/autotimer/get`; see [AutoTimerPluginApi.plugin]. */
-    override suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin> = autoTimer.plugin()
+    /**
+     * The AutoTimer plugin from `/autotimer/get` ([AutoTimerPluginApi.plugin]), the VPS plugin
+     * from `/ajax/at`. OpenWebif keeps `vpsplugin` out of `/web/external` (pluginshook.src:10)
+     * and names the plugin nowhere in `/api`; the timer list reports VPS fields with or without
+     * it (models/timers.py:145-155). Its own AutoTimer form has the VPS checkbox `id="vps"`
+     * exactly when `Plugins.SystemPlugins.vps` imports (defaults.py:207-213,266,
+     * ajax.py:349-351, views/ajax/at.tmpl:206-213). A page that answers with an HTTP error, as
+     * on an image without these views, counts as no VPS: the editor hides the field and timers
+     * keep their VPS.
+     */
+    override suspend fun plugins(): EnigmaResponse<ReceiverPlugins> = withContext(Dispatchers.IO) {
+        val autoTimerPlugin = autoTimer.plugin()
+        val plugin = autoTimerPlugin.value
+            ?: return@withContext EnigmaResponse(null, autoTimerPlugin.error)
+        when (val page = fetch("/ajax/at", emptyList())) {
+            is EnigmaHttpResult.Success ->
+                EnigmaResponse(ReceiverPlugins(plugin, vps = VPS_CHECKBOX in page.text))
+
+            is EnigmaHttpResult.Failure -> if (page.error.failure is EnigmaFailure.Http) {
+                EnigmaResponse(ReceiverPlugins(plugin, vps = false))
+            } else {
+                EnigmaResponse(null, page.error)
+            }
+        }
+    }
 
     /**
      * OpenWebif always mounts its own bouquet editor (root.py:76, `BQE.py`, `BouquetEditor.py`),
@@ -763,6 +785,9 @@ private fun owifDirname(path: String): String = buildString {
 }
 
 private const val SLEEP_TIMER_ERROR = "ERROR"
+
+/** The VPS checkbox of OpenWebif's AutoTimer form, there only with the VPS plugin. */
+private const val VPS_CHECKBOX = "id=\"vps\""
 
 private const val HEX = 16
 

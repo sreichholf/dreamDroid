@@ -7,7 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
@@ -31,14 +30,6 @@ import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.ui.text.UiText
-
-/** Whether the active profile's receiver has the AutoTimer plugin. */
-enum class PluginPresence {
-    /** Not asked yet for this profile, or the question failed before any answer. */
-    Unknown,
-    Present,
-    Absent
-}
 
 /** The AutoTimer list, or why there is none. */
 sealed interface AutoTimerLoad {
@@ -86,25 +77,18 @@ sealed interface AutoTimerPreviewLoad {
 
 /**
  * The AutoTimer plugin of the active profile's receiver (`/autotimer`). Online only: the box
- * changes its AutoTimers itself, so nothing is cached but whether the plugin is there, and
- * which API it speaks ([AutoTimerApi]), learned with that answer.
+ * changes its AutoTimers itself, so nothing is cached. [ReceiverPluginsRepository] knows
+ * whether the plugin is there and which API it speaks ([AutoTimerApi]).
  */
 @Singleton
 class AutoTimerRepository @Inject constructor(
     private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
+    private val plugins: ReceiverPluginsRepository,
     /** Where an API 1.7 run, which answers only once done, goes on unawaited. */
     @param:ApplicationScope private val background: CoroutineScope
 ) {
     private val writes = Mutex()
-
-    /** The plugin per profile id; the last answer stays while a receiver is offline. */
-    private val known = MutableStateFlow<Map<Int, AutoTimerPlugin>>(emptyMap())
-
-    val presence: Flow<PluginPresence> =
-        combine(profiles.current, known) { profile, known ->
-            profile?.id?.let { known[it] }.presence()
-        }.distinctUntilChanged()
 
     private val _revision = MutableStateFlow(0)
 
@@ -117,13 +101,7 @@ class AutoTimerRepository @Inject constructor(
     /** Emits the active profile's id, and again each time the active profile changes. */
     val profileId: Flow<Int?> = profiles.current.map { it?.id }.distinctUntilChanged()
 
-    /**
-     * Asks the receiver whether the plugin is installed. A failed request keeps the last
-     * answer for the profile.
-     */
-    suspend fun refreshPresence(): PluginPresence =
-        (checkPlugin().value ?: knownPlugin()).presence()
-
+    /** Lists the AutoTimers; asks for the plugin first until it was seen. */
     suspend fun list(): AutoTimerLoad {
         if (knownPlugin() !is AutoTimerPlugin.Installed) {
             val check = checkPlugin()
@@ -277,16 +255,12 @@ class AutoTimerRepository @Inject constructor(
             else -> written
         }
 
-    private fun knownPlugin(): AutoTimerPlugin? =
-        profiles.current.value?.id?.let { known.value[it] }
+    private fun knownPlugin(): AutoTimerPlugin? = plugins.known()?.autoTimer
 
     /** The receiver's answer, remembered for the profile; no value when the request failed. */
     private suspend fun checkPlugin(): EnigmaResponse<AutoTimerPlugin> {
-        val profile = profiles.current.value ?: return EnigmaResponse(null)
-        val response = clients.forProfile(profile).autoTimerPlugin()
-        val plugin = response.value ?: return EnigmaResponse(null, response.error)
-        profile.id?.let { id -> known.update { it + (id to plugin) } }
-        return EnigmaResponse(plugin)
+        val response = plugins.refresh()
+        return EnigmaResponse(response.value?.autoTimer, response.error)
     }
 
     private companion object {
@@ -296,10 +270,4 @@ class AutoTimerRepository @Inject constructor(
         /** Longer than the 50 s between the keep-alives the box sends during a run. */
         const val RUN_TIMEOUT_MS = 120_000
     }
-}
-
-private fun AutoTimerPlugin?.presence(): PluginPresence = when (this) {
-    null -> PluginPresence.Unknown
-    AutoTimerPlugin.Missing -> PluginPresence.Absent
-    is AutoTimerPlugin.Installed -> PluginPresence.Present
 }

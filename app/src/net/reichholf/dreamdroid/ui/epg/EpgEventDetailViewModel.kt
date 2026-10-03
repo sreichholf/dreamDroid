@@ -12,8 +12,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.PluginPresence
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.userMessageText
@@ -43,14 +43,18 @@ data class EpgEventDetailUiState(
 class EpgEventDetailViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val timers: TimerRepository,
-    autoTimers: AutoTimerRepository,
+    plugins: ReceiverPluginsRepository,
     sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         EpgEventDetailUiState(event = savedStateHandle.get<Event>(KEY_EVENT))
     )
     val uiState: StateFlow<EpgEventDetailUiState> =
-        combine(_uiState, sessions.status, autoTimers.presence) { state, connection, presence ->
+        combine(_uiState, sessions.status, plugins.autoTimerPresence) {
+                state,
+                connection,
+                presence
+            ->
             state.copy(
                 timerWritesBlocked = connection.blocksMutations,
                 autoTimerAvailable = presence == PluginPresence.Present

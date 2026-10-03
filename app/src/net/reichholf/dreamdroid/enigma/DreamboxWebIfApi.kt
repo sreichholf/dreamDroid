@@ -275,18 +275,23 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
         }
 
     /**
-     * Whether `/web/external` lists `autotimer`, the plugin's API (`autotimereditor` is its web
-     * page), and the `api_version` the plugin registered as its version.
+     * One `/web/external`. The AutoTimer plugin is there when it lists `autotimer`, the plugin's
+     * API (`autotimereditor` is its web page), with the `api_version` the plugin registered as
+     * its version. The VPS plugin registers `vpsplugin` at session start, whether VPS is on or
+     * not (`plugin.py` of enigma2-plugin-vps).
      */
-    override suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin> =
-        withContext(Dispatchers.IO) {
-            http.fetch(URIStore.WEB_EXTERNALS).mapParsed { xml ->
-                WebExternalsParser.parse(xml)?.let { externals ->
-                    externals["autotimer"]?.let { AutoTimerPlugin.Installed(AutoTimerApi.of(it)) }
-                        ?: AutoTimerPlugin.Missing
-                }
+    override suspend fun plugins(): EnigmaResponse<ReceiverPlugins> = withContext(Dispatchers.IO) {
+        http.fetch(URIStore.WEB_EXTERNALS).mapParsed { xml ->
+            WebExternalsParser.parse(xml)?.let { externals ->
+                ReceiverPlugins(
+                    autoTimer = externals["autotimer"]
+                        ?.let { AutoTimerPlugin.Installed(AutoTimerApi.of(it)) }
+                        ?: AutoTimerPlugin.Missing,
+                    vps = "vpsplugin" in externals
+                )
             }
         }
+    }
 
     /** Whether `/web/external` lists `bouqueteditor`. */
     override suspend fun hasBouquetEditor(): EnigmaResponse<Boolean> = withContext(Dispatchers.IO) {

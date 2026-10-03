@@ -9,8 +9,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.withTimeout
-import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
@@ -31,6 +29,8 @@ import org.junit.jupiter.api.Test
 
 class AutoTimerRepositoryTest {
     private val receiver = TestReceiver()
+    private val plugins =
+        ReceiverPluginsRepository(receiverApis(receiver.repository), receiver.repository)
     private val repository = repository(TestScope())
 
     @BeforeEach
@@ -46,44 +46,11 @@ class AutoTimerRepositoryTest {
     }
 
     @Test
-    fun presentWhenWebExternalsListTheAutoTimerPlugin() = runBlocking<Unit> {
-        assertEquals(PluginPresence.Unknown, repository.presence.first())
-
-        assertEquals(PluginPresence.Present, repository.refreshPresence())
-        assertEquals(PluginPresence.Present, repository.presence.first())
-    }
-
-    @Test
     fun theWebEditorAloneIsNotThePlugin() = runBlocking<Unit> {
         receiver.respond(EXTERNALS, externals("autotimereditor", "bouqueteditor"))
 
-        assertEquals(PluginPresence.Absent, repository.refreshPresence())
         assertEquals(AutoTimerLoad.PluginMissing, repository.list())
         assertEquals(emptyList<Any>(), receiver.requestsTo(LIST))
-    }
-
-    @Test
-    fun aFailedCheckKeepsTheLastAnswer() = runBlocking<Unit> {
-        repository.refreshPresence()
-        receiver.fail(EXTERNALS)
-
-        assertEquals(PluginPresence.Present, repository.refreshPresence())
-    }
-
-    @Test
-    fun presenceBelongsToTheProfile() = runBlocking<Unit> {
-        repository.refreshPresence()
-        val other = receiver.repository.requireCurrent()
-        receiver.repository.setCurrent(
-            Profile().apply {
-                id = OTHER_PROFILE_ID
-                name = "other"
-                host = other.host
-                port = other.port
-            }
-        )
-
-        withTimeout(TIMEOUT) { repository.presence.first { it == PluginPresence.Unknown } }
     }
 
     @Test
@@ -99,7 +66,7 @@ class AutoTimerRepositoryTest {
     @Test
     fun aFailedCheckIsAFailureNotAMissingPlugin() = runBlocking<Unit> {
         receiver.respond(EXTERNALS, externals("bouqueteditor"))
-        repository.refreshPresence()
+        plugins.refresh()
         receiver.fail(EXTERNALS)
 
         assertEquals(true, repository.list() is AutoTimerLoad.Failed)
@@ -383,8 +350,12 @@ class AutoTimerRepositoryTest {
         repository.revision.first { it > started }
     }
 
-    private fun repository(background: CoroutineScope) =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, background)
+    private fun repository(background: CoroutineScope) = AutoTimerRepository(
+        receiverApis(receiver.repository),
+        receiver.repository,
+        plugins,
+        background
+    )
 
     @Test
     fun aRunWithoutThePluginSendsNothing() = runBlocking<Unit> {
@@ -426,8 +397,6 @@ class AutoTimerRepositoryTest {
         } + "</e2webifexternals>"
 
     private companion object {
-        const val TIMEOUT = 5_000L
-        const val OTHER_PROFILE_ID = 8
         const val EXTERNALS = "/web/external"
         const val LIST = "/autotimer"
         const val EDIT = "/autotimer/edit"

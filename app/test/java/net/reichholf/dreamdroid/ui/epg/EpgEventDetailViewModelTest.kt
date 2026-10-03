@@ -7,13 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
-import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -35,10 +34,9 @@ import org.junit.jupiter.api.Test
 class EpgEventDetailViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<EpgEventDetailViewModel>()
-    private val autoTimers = AutoTimerRepository(
+    private val plugins = ReceiverPluginsRepository(
         receiverApis(receiver.profiles.repository),
-        receiver.profiles.repository,
-        TestScope()
+        receiver.profiles.repository
     )
 
     @BeforeEach
@@ -162,7 +160,7 @@ class EpgEventDetailViewModelTest {
         val viewModel = viewModel()
         assertFalse(viewModel.uiState.value.autoTimerAvailable)
 
-        autoTimers.refreshPresence()
+        plugins.refresh()
 
         withTimeout(5_000L) { viewModel.uiState.first { it.autoTimerAvailable } }
     }
@@ -178,7 +176,7 @@ class EpgEventDetailViewModelTest {
             receiver.profiles.repository,
             receiver.profiles.database
         ),
-        autoTimers,
+        plugins,
         receiver.sessions
     ).also { viewModels += it }
 

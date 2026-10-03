@@ -37,6 +37,7 @@ with `ensure_ascii`. A real capture replaces its fixture (docs/openwebif.md §3)
 | `gettags.json` | `/api/gettags` | `web.py:965-978`, `models/movies.py:753-773` | |
 | `mediaplayerplay_missing.json` | `/api/mediaplayerplay` | `web.py:1994-2000`, `models/mediaplayer.py:106-112` | the MediaPlayer plugin is missing |
 | `file_not_found.txt` | `/file?file=` | `file.py:58-59` | on Python 2 images: HTTP 200 text without `Content-Disposition`, which a real file has (`:80-83`). On Python 3 `render` returns `str`, which Twisted answers with HTTP 500 |
+| `ajax_at.html`, `ajax_at_vps.html` | `/ajax/at` | `ajax.py:349-363`, `views/ajax/at.tmpl:206-217` | an excerpt of the AutoTimer form (HTML, not JSON); the VPS checkbox `id="vps"` only with `hasVPS`, the VPS plugin importing (`defaults.py:207-213,266`) |
 | `vol.json` | `/api/vol` | `web.py:220-256`, `models/volume.py:15-46` | `current` a number, `ismute` a JSON bool |
 | `powerstate_before.json`, `powerstate_after.json` | `/api/powerstate` | `web.py:360-379`, `models/control.py:207-243` | the answer to `newstate` is the state from before the action (`:208,232-235`); asking again gives the new one |
 | `zap.json` | `/api/zap` | `web.py:296-321`, `models/control.py:111-166` | |

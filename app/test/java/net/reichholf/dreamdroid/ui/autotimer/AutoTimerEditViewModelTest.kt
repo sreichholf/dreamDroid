@@ -25,6 +25,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEvent
 import net.reichholf.dreamdroid.enigma.autotimer.AfterEventAction
@@ -55,8 +56,12 @@ import org.junit.jupiter.api.Test
 class AutoTimerEditViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
-    private val autoTimers =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, TestScope())
+    private val autoTimers = AutoTimerRepository(
+        receiverApis(receiver.repository),
+        receiver.repository,
+        ReceiverPluginsRepository(receiverApis(receiver.repository), receiver.repository),
+        TestScope()
+    )
     private val timers = receiver.timerRepository()
     private val viewModels = mutableListOf<AutoTimerEditViewModel>()
 

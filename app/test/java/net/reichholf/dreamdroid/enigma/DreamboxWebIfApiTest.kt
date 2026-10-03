@@ -421,7 +421,7 @@ class DreamboxWebIfApiTest {
         server.enqueue(MockResponse().setBody(EXTERNALS))
         server.enqueue(MockResponse().setBody(EXTERNALS))
 
-        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
+        assertEquals(ReceiverPlugins(AutoTimerPlugin.Missing, vps = false), api.plugins().value)
         assertEquals(true, api.hasBouquetEditor().value)
 
         assertEquals("/web/external?", takePath())
@@ -433,8 +433,19 @@ class DreamboxWebIfApiTest {
         server.enqueue(MockResponse().setBody(loadWebFixture("bouqueteditor/web_external.xml")))
         server.enqueue(MockResponse().setBody(EXTERNALS_AUTOTIMER_17))
 
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.plugins().value?.autoTimer)
+    }
+
+    @Test
+    fun theVpsPluginIsItsPathInWebExternals() = runBlocking {
+        server.enqueue(MockResponse().setBody(EXTERNALS_VPS))
+
+        val plugins = api.plugins().value
+
+        assertEquals(true, plugins?.vps)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), plugins?.autoTimer)
+        assertEquals("/web/external?", takePath())
     }
 
     @Test
@@ -601,6 +612,11 @@ class DreamboxWebIfApiTest {
         const val EXTERNALS_AUTOTIMER_17 = "<e2webifexternals><e2webifexternal>" +
             "<e2path>autotimer</e2path><e2externalversion>1.7</e2externalversion>" +
             "</e2webifexternal></e2webifexternals>"
+
+        const val EXTERNALS_VPS = "<e2webifexternals>" +
+            "<e2webifexternal><e2path>autotimer</e2path></e2webifexternal>" +
+            "<e2webifexternal><e2path>vpsplugin</e2path></e2webifexternal>" +
+            "</e2webifexternals>"
 
         /** `/grab` writes to `/tmp/dreamDroid-<unix seconds>`. */
         val GRAB = Regex("/grab\\?format=jpg&filename=%2Ftmp%2FdreamDroid-\\d+")

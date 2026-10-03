@@ -972,19 +972,43 @@ class OpenWebifApiTest {
 
     @Test
     fun theAutoTimerPluginAndItsApiComeFromAutoTimerGet() = runBlocking {
-        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_17.xml")))
-        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_16.xml")))
+        answer("autotimer/get_17.xml")
+        answer("ajax_at.html")
+        answer("autotimer/get_16.xml")
+        answer("ajax_at.html")
         server.enqueue(
             MockResponse().setResponseCode(404).setBody(loadOwifFixture("error404.html"))
         )
+        answer("ajax_at.html")
         forbidden()
 
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
-        assertEquals(EnigmaFailure.IpRejected, api.autoTimerPlugin().error?.failure)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Missing, api.plugins().value?.autoTimer)
+        assertEquals(EnigmaFailure.IpRejected, api.plugins().error?.failure)
 
-        repeat(4) { assertRequest("/autotimer/get") }
+        repeat(3) {
+            assertRequest("/autotimer/get")
+            assertRequest("/ajax/at")
+        }
+        assertRequest("/autotimer/get")
+    }
+
+    @Test
+    fun theVpsPluginIsTheVpsCheckboxOfTheAutoTimerForm() = runBlocking {
+        answer("autotimer/get_17.xml")
+        answer("ajax_at_vps.html")
+        answer("autotimer/get_17.xml")
+        answer("ajax_at.html")
+        answer("autotimer/get_17.xml")
+        server.enqueue(MockResponse().setResponseCode(500))
+        answer("autotimer/get_17.xml")
+        forbidden()
+
+        assertEquals(true, api.plugins().value?.vps)
+        assertEquals(false, api.plugins().value?.vps)
+        assertEquals(false, api.plugins().value?.vps)
+        assertEquals(EnigmaFailure.IpRejected, api.plugins().error?.failure)
     }
 
     @Test
