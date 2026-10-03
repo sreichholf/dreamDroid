@@ -41,6 +41,10 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
     val dontSave = StringBuilder()
     val canceled = StringBuilder()
     val toggleDisabled = StringBuilder()
+    val vpsEnabled = StringBuilder()
+    val vpsOverwrite = StringBuilder()
+    val vpsTime = StringBuilder()
+    var hasVps = false
     var current: StringBuilder? = null
     var inTimer = false
 
@@ -76,6 +80,10 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                         dontSave.setLength(0)
                         canceled.setLength(0)
                         toggleDisabled.setLength(0)
+                        vpsEnabled.setLength(0)
+                        vpsOverwrite.setLength(0)
+                        vpsTime.setLength(0)
+                        hasVps = false
                         current = null
                     }
 
@@ -128,6 +136,21 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                     "e2cancled" -> if (inTimer) current = canceled
 
                     "e2toggledisabled" -> if (inTimer) current = toggleDisabled
+
+                    "e2vpsplugin_enabled" -> if (inTimer) {
+                        hasVps = true
+                        current = vpsEnabled
+                    }
+
+                    "e2vpsplugin_overwrite" -> if (inTimer) {
+                        hasVps = true
+                        current = vpsOverwrite
+                    }
+
+                    "e2vpsplugin_time" -> if (inTimer) {
+                        hasVps = true
+                        current = vpsTime
+                    }
                 }
             }
 
@@ -165,6 +188,16 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                                 dontSave = dontSave.toString().trim(),
                                 canceled = canceled.toString().trim(),
                                 toggleDisabled = toggleDisabled.toString().trim()
+                            ).copy(
+                                vps = if (hasVps) {
+                                    parseVps(
+                                        vpsEnabled.toString().trim(),
+                                        vpsOverwrite.toString().trim(),
+                                        vpsTime.toString().trim()
+                                    )
+                                } else {
+                                    null
+                                }
                             )
                         )
                     }
@@ -253,3 +286,18 @@ internal fun buildTimer(
         toggleDisabled = toggleDisabled
     )
 }
+
+/**
+ * The VPS plugin's flags print as Python booleans; `1`/`0` is read too. A time of `-1` (none)
+ * or any other value `<= 0` is null.
+ */
+private fun parseVps(enabled: String, overwrite: String, time: String): TimerVps {
+    val mode = when {
+        !enabled.isPythonTrue() -> VpsMode.Off
+        overwrite.isPythonTrue() -> VpsMode.Overwrite
+        else -> VpsMode.Safe
+    }
+    return TimerVps(mode, time.toLongOrNull()?.takeIf { it > 0 })
+}
+
+private fun String.isPythonTrue(): Boolean = this == Python.TRUE || this == "1"

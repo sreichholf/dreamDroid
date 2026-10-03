@@ -11,6 +11,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
@@ -53,7 +54,8 @@ class TvHubViewModelTest {
     private val timers = TimerRepository(
         clients,
         receiver.profiles.repository,
-        receiver.profiles.database
+        receiver.profiles.database,
+        ReceiverPluginsRepository(clients, receiver.profiles.repository)
     )
     private val viewModels = mutableListOf<TvHubViewModel>()
 

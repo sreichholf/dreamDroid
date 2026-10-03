@@ -85,7 +85,8 @@ class ServiceEpgRetentionTest {
             sessions
         )
     )
-    private val timers = TimerRepository(clients, profiles, database)
+    private val plugins = ReceiverPluginsRepository(clients, profiles)
+    private val timers = TimerRepository(clients, profiles, database, plugins)
 
     @Before
     fun forceAlwaysNight() {
@@ -120,7 +121,7 @@ class ServiceEpgRetentionTest {
                             EpgEventDetailViewModel(
                                 createSavedStateHandle(),
                                 timers,
-                                ReceiverPluginsRepository(clients, profiles),
+                                plugins,
                                 sessions
                             )
                         }

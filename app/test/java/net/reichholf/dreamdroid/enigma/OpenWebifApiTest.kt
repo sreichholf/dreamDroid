@@ -592,11 +592,31 @@ class OpenWebifApiTest {
         answer("timeraddbyeventid.json")
 
         val response = api.addTimerForEvent(
-            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort")
+            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort"),
+            vps = null
         )
 
         assertRequest("/api/timeraddbyeventid", "sRef" to DAS_ERSTE, "eventid" to "4712")
         assertEquals(SimpleResult("True", "Timer 'Tatort' added"), response.value)
+    }
+
+    @Test
+    fun addTimerForEventSendsTheVpsOfTheNewTimer() = runBlocking {
+        answer("timeraddbyeventid.json")
+
+        api.addTimerForEvent(
+            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort"),
+            TimerVps(VpsMode.Safe)
+        )
+
+        assertRequest(
+            "/api/timeraddbyeventid",
+            "sRef" to DAS_ERSTE,
+            "eventid" to "4712",
+            "vpsplugin_enabled" to "1",
+            "vpsplugin_overwrite" to "0",
+            "vpsplugin_time" to "-1"
+        )
     }
 
     @Test

@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.enigma
 
 import java.io.File
+import java.net.HttpURLConnection
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.withContext
@@ -20,12 +21,20 @@ import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.URIStore
 
 /**
- * [ReceiverApi] over the Dreambox web interface (`/web` XML) and the WebBouquetEditor and
- * AutoTimer plugins, on one [EnigmaHttp]. Built by [ReceiverApiFactory]. Stream and file URLs
+ * [ReceiverApi] over the Dreambox web interface (`/web` XML) and the WebBouquetEditor, AutoTimer
+ * and VPS plugins, on one [EnigmaHttp]. Built by [ReceiverApiFactory]. Stream and file URLs
  * come from the profile of [http]; [capabilities] are that profile's when the client was built.
+ *
+ * With the VPS plugin ([vpsPlugin]), the timer list and the timer writes that carry VPS go to
+ * the plugin's `/vpsplugin/web/...` pages (enigma2-plugin-vps `src_py/web`). Each runs the
+ * stock page, then sets the timer's VPS. A 404 there means the plugin is gone: the client
+ * reports it and sends the request once more to the stock page.
  */
-class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: WebIfCapabilities) :
-    ReceiverApi {
+class DreamboxWebIfApi(
+    private val http: EnigmaHttp,
+    private val capabilities: WebIfCapabilities,
+    private val vpsPlugin: VpsPlugin = VpsPlugin.Absent
+) : ReceiverApi {
     private val autoTimer = AutoTimerPluginApi(http::fetch)
 
     override suspend fun services(containerRef: String): EnigmaResponse<List<Service>> =
@@ -165,10 +174,10 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
             is EnigmaHttpResult.Failure -> EnigmaResponse(null, result.error)
         }
 
+    /** The plugin's list is the stock one plus each timer's VPS (`e2vpsplugin_*`). */
     override suspend fun timers(): EnigmaResponse<List<Timer>> = withContext(Dispatchers.IO) {
-        http.fetch(URIStore.TIMER_LIST).mapParsed { xml ->
-            TimerParser.parse(xml)
-        }
+        fetchTimerRequest(URIStore.TIMER_LIST, URIStore.VPS_TIMER_LIST, emptyList(), emptyList())
+            .mapParsed { xml -> TimerParser.parse(xml) }
     }
 
     /** `tag` carries [tags] joined by spaces; `dirname` is left out for the default location. */
@@ -339,31 +348,43 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
     override suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult> =
         simpleResult(URIStore.MOVIE_DELETE, listOf(NameValuePair("sRef", movie.reference)))
 
-    override suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult> =
-        simpleResult(
-            URIStore.TIMER_ADD_BY_EVENT_ID,
-            listOf(
-                NameValuePair("sRef", event.serviceReference),
-                NameValuePair("eventid", event.eventId)
-            )
-        )
-
-    /** `/web/timerchange` with `deleteOldOnSave=0`, as the app has always added timers. */
-    override suspend fun addTimer(timer: Timer): EnigmaResponse<SimpleResult> = simpleResult(
-        URIStore.TIMER_CHANGE,
-        timerParams(timer) + NameValuePair("deleteOldOnSave", "0")
+    override suspend fun addTimerForEvent(
+        event: Event,
+        vps: TimerVps?
+    ): EnigmaResponse<SimpleResult> = timerWrite(
+        URIStore.TIMER_ADD_BY_EVENT_ID,
+        URIStore.VPS_TIMER_ADD_BY_EVENT_ID,
+        listOf(
+            NameValuePair("sRef", event.serviceReference),
+            NameValuePair("eventid", event.eventId)
+        ),
+        vps
     )
 
-    /** `/web/timerchange` with the `*Old` keys of [old] and `deleteOldOnSave=1`. */
+    /** `/web/timerchange` with `deleteOldOnSave=0`, as the app has always added timers. */
+    override suspend fun addTimer(timer: Timer): EnigmaResponse<SimpleResult> = timerWrite(
+        URIStore.TIMER_CHANGE,
+        URIStore.VPS_TIMER_CHANGE,
+        timerParams(timer) + NameValuePair("deleteOldOnSave", "0"),
+        timer.vps
+    )
+
+    /**
+     * `/web/timerchange` with the `*Old` keys of [old] and `deleteOldOnSave=1`. The stock page
+     * edits in place and keeps the VPS the box has, so a timer whose VPS is unknown goes there.
+     * The plugin's page finds the timer again by its new values (`Vps.py` `editTimer`).
+     */
     override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> =
-        simpleResult(
+        timerWrite(
             URIStore.TIMER_CHANGE,
+            URIStore.VPS_TIMER_CHANGE,
             timerParams(new) + listOf(
                 NameValuePair("channelOld", old.reference),
                 NameValuePair("beginOld", old.begin),
                 NameValuePair("endOld", old.end),
                 NameValuePair("deleteOldOnSave", "1")
-            )
+            ),
+            new.vps
         )
 
     /** The Dreambox has no toggle: [editTimer] with only `disabled` changed. */
@@ -479,6 +500,43 @@ class DreamboxWebIfApi(private val http: EnigmaHttp, private val capabilities: W
         params: List<NameValuePair> = emptyList()
     ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
         simpleResultFromFetch(http.fetch(uri, params), SimpleResultParser::parse)
+    }
+
+    /** A timer write; with [vps] known it goes through the VPS plugin ([fetchTimerRequest]). */
+    private suspend fun timerWrite(
+        stockUri: String,
+        vpsUri: String,
+        params: List<NameValuePair>,
+        vps: TimerVps?
+    ): EnigmaResponse<SimpleResult> = withContext(Dispatchers.IO) {
+        simpleResultFromFetch(
+            fetchTimerRequest(stockUri, vpsUri, params, vps?.params()),
+            SimpleResultParser::parse
+        )
+    }
+
+    /**
+     * [stockUri] with [params], or with the VPS plugin and [vpsParams] its [vpsUri] with both.
+     * The plugin sets each VPS param it is not sent to none (`Vps.py` `editTimer`,
+     * `addTimerByEventID`), so all three go. When the plugin's page answers 404, the plugin is
+     * reported missing and [stockUri] answers instead.
+     */
+    private fun fetchTimerRequest(
+        stockUri: String,
+        vpsUri: String,
+        params: List<NameValuePair>,
+        vpsParams: List<NameValuePair>?
+    ): EnigmaHttpResult {
+        if (vpsParams == null || !vpsPlugin.present) {
+            return http.fetch(stockUri, params)
+        }
+        val viaPlugin = http.fetch(vpsUri, params + vpsParams)
+        val failure = (viaPlugin as? EnigmaHttpResult.Failure)?.error?.failure
+        if (failure !is EnigmaFailure.Http || failure.code != HttpURLConnection.HTTP_NOT_FOUND) {
+            return viaPlugin
+        }
+        vpsPlugin.onMissing()
+        return http.fetch(stockUri, params)
     }
 
     private fun <T> EnigmaHttpResult.mapParsed(parse: (String) -> T?): EnigmaResponse<T> =

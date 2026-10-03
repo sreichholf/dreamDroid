@@ -16,7 +16,8 @@ import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
  * profile and cancels its in-flight call when a second fetch starts, so it must not be shared
  * across screens. A profile detected as [ReceiverFlavor.OpenWebif] gets an [OpenWebifApi];
  * every other one, an undetected one included, a [DreamboxWebIfApi]. Each client sees its
- * profile's [WebIfCapabilities].
+ * profile's [WebIfCapabilities]. A Dreambox client sends timer requests through the VPS plugin
+ * when told it is there ([VpsPlugin]); OpenWebif takes VPS on its own timer requests.
  */
 @Singleton
 class ReceiverApiFactory @Inject constructor(
@@ -30,24 +31,28 @@ class ReceiverApiFactory @Inject constructor(
 
     /**
      * A client for the active profile. [timeoutMillis] bounds each request; a long one suits
-     * a call the box takes long to answer.
+     * a call the box takes long to answer. [vpsPlugin] is what the caller knows of the VPS plugin.
      */
-    fun current(timeoutMillis: Int = EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS): ReceiverApi =
-        client(profiles.requireCurrent(), timeoutMillis)
+    fun current(
+        timeoutMillis: Int = EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
+        vpsPlugin: VpsPlugin = VpsPlugin.Absent
+    ): ReceiverApi = client(profiles.requireCurrent(), timeoutMillis, vpsPlugin)
 
     /** A client for [profile], which need not be the active one. */
     fun forProfile(profile: Profile): ReceiverApi =
-        client(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS)
+        client(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, VpsPlugin.Absent)
 
     /** A [ReceiverDetector] for [profile]'s receiver, for one profile check. */
     fun detector(profile: Profile): ReceiverDetector =
         ReceiverDetector(http(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS))
 
-    private fun client(profile: Profile, timeoutMillis: Int): ReceiverApi {
+    private fun client(profile: Profile, timeoutMillis: Int, vpsPlugin: VpsPlugin): ReceiverApi {
         val http = http(profile, timeoutMillis)
         return when (profiles.flavor(profile)) {
             ReceiverFlavor.OpenWebif -> OpenWebifApi(http)
-            ReceiverFlavor.DreamboxWebIf, null -> DreamboxWebIfApi(http, capabilities.of(profile))
+
+            ReceiverFlavor.DreamboxWebIf, null ->
+                DreamboxWebIfApi(http, capabilities.of(profile), vpsPlugin)
         }
     }
 

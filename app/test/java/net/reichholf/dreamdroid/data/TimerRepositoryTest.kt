@@ -13,6 +13,8 @@ import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.Python
@@ -32,9 +34,12 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CHANGE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CLEANUP
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_DELETE
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_LIST
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.WEB_EXTERNALS
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.externals
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.text.UiText
+import okhttp3.HttpUrl
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
@@ -339,6 +344,131 @@ class TimerRepositoryTest {
         assertEquals(false, profiles.locationsLoadedFromReceiver())
     }
 
+    @Test
+    fun vpsPluginListsTimersThroughItsEndpoint() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("autotimer", "vpsplugin"))
+        receiver.respond(VPS_TIMER_LIST, loadWebFixture("vps/timerlist.xml"))
+
+        val result = repository.timers() as TimerListResult.Loaded
+
+        val modes = listOf(VpsMode.Off, VpsMode.Safe, VpsMode.Overwrite)
+        assertEquals(modes, result.timers.map { it.vps?.mode })
+        assertEquals(modes, snapshot()?.map { it.vps?.mode })
+        assertEquals(1_893_611_100L, snapshot()!![2].vps?.time)
+        assertEquals(0, receiver.requestsTo(TIMER_LIST).size)
+    }
+
+    @Test
+    fun withoutTheVpsPluginTheStockEndpointsAnswer() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("autotimer"))
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
+
+        repository.timers()
+        repository.save(timer("New").copy(vps = TimerVps(VpsMode.Safe)), null)
+        repository.addByEvent(EVENT)
+
+        assertEquals(1, receiver.requestsTo(TIMER_LIST).size)
+        val writes = receiver.requestsTo(TIMER_CHANGE) + receiver.requestsTo(TIMER_ADD_BY_EVENT_ID)
+        assertEquals(2, writes.size)
+        writes.forEach { request ->
+            assertTrue(
+                request.requestUrl!!.queryParameterNames.none { it.startsWith("vpsplugin") }
+            )
+        }
+        assertTrue(receiver.requests.none { it.requestUrl!!.encodedPath.startsWith("/vpsplugin") })
+        assertEquals(1, receiver.requestsTo(WEB_EXTERNALS).size)
+        assertNull(repository.vpsForNewTimer())
+    }
+
+    @Test
+    fun vpsPluginSaveSendsAllThreeParams() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(VPS_TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        val original = timer("Old")
+
+        val response = repository.save(
+            original.copy(name = "New", vps = TimerVps(VpsMode.Overwrite, 1_476_645_000L)),
+            original
+        )
+        repository.save(timer("Plain").copy(vps = TimerVps(VpsMode.Off)), null)
+
+        assertEquals("Timer changed", response.value?.stateText)
+        assertEquals(0, receiver.requestsTo(TIMER_CHANGE).size)
+        val (edit, add) = receiver.requestsTo(VPS_TIMER_CHANGE).map { it.requestUrl!! }
+        assertEquals("New", edit.queryParameter("name"))
+        assertEquals("1", edit.queryParameter("deleteOldOnSave"))
+        assertEquals(listOf("1", "1", "1476645000"), vpsParams(edit))
+        assertEquals("0", add.queryParameter("deleteOldOnSave"))
+        assertEquals(listOf("0", "0", "-1"), vpsParams(add))
+    }
+
+    @Test
+    fun timerWithUnknownVpsKeepsTheReceiversVpsThroughTheStockEndpoint() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        val snapshotRow = timer("Old")
+
+        repository.toggleEnabled(snapshotRow)
+
+        assertEquals(0, receiver.requestsTo(VPS_TIMER_CHANGE).size)
+        val url = receiver.requestsTo(TIMER_CHANGE).single().requestUrl!!
+        assertTrue(url.queryParameterNames.none { it.startsWith("vpsplugin") })
+    }
+
+    @Test
+    fun vpsPluginAddByEventSendsTheProfileDefault() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(VPS_TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
+        receiver.repository.requireCurrent().vpsDefault = VpsMode.Safe
+
+        assertEquals("Timer added", repository.addByEvent(EVENT).value?.stateText)
+
+        val url = receiver.requestsTo(VPS_TIMER_ADD_BY_EVENT_ID).single().requestUrl!!
+        assertEquals(EVENT.eventId, url.queryParameter("eventid"))
+        assertEquals(EVENT.serviceReference, url.queryParameter("sRef"))
+        assertEquals(listOf("1", "0", "-1"), vpsParams(url))
+        assertEquals(0, receiver.requestsTo(TIMER_ADD_BY_EVENT_ID).size)
+        assertEquals(TimerVps(VpsMode.Safe), repository.vpsForNewTimer())
+    }
+
+    @Test
+    fun aMissingVpsEndpointFallsBackToStockOnce() = runTest {
+        // The receiver lists the plugin, but its endpoints answer 404.
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+
+        val response = repository.save(timer("New").copy(vps = TimerVps(VpsMode.Safe)), null)
+        repository.timers()
+
+        assertEquals("Timer changed", response.value?.stateText)
+        assertEquals(1, receiver.requestsTo(VPS_TIMER_CHANGE).size)
+        val stock = receiver.requestsTo(TIMER_CHANGE).single().requestUrl!!
+        assertTrue(stock.queryParameterNames.none { it.startsWith("vpsplugin") })
+        assertEquals(0, receiver.requestsTo(VPS_TIMER_LIST).size)
+        assertEquals(1, receiver.requestsTo(TIMER_LIST).size)
+        assertNull(repository.vpsForNewTimer())
+    }
+
+    @Test
+    fun aMissingVpsTimerListFallsBackToTheStockList() = runTest {
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+
+        val result = repository.timers() as TimerListResult.Loaded
+
+        assertEquals(2, result.timers.size)
+        assertEquals(1, receiver.requestsTo(VPS_TIMER_LIST).size)
+    }
+
+    private fun vpsParams(url: HttpUrl): List<String?> = listOf(
+        url.queryParameter("vpsplugin_enabled"),
+        url.queryParameter("vpsplugin_overwrite"),
+        url.queryParameter("vpsplugin_time")
+    )
+
     private suspend fun awaitArrival(hold: TestReceiver.Hold) = withContext(Dispatchers.IO) {
         assertTrue(hold.arrived.await(5, TimeUnit.SECONDS), "the request never arrived")
     }
@@ -368,5 +498,9 @@ class TimerRepositoryTest {
     private companion object {
         const val LOCATIONS_BODY =
             "<e2locations><e2location>/media/hdd/</e2location></e2locations>"
+        const val VPS_TIMER_LIST = "/vpsplugin/web/timerlist"
+        const val VPS_TIMER_CHANGE = "/vpsplugin/web/timerchange"
+        const val VPS_TIMER_ADD_BY_EVENT_ID = "/vpsplugin/web/timeraddbyeventid"
+        val EVENT = Event(eventId = "39150", serviceReference = "1:0:1:6DCA:44C:1:C00000:0:0:0:")
     }
 }

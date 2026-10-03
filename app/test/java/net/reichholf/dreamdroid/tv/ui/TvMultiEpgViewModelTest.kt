@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
@@ -229,7 +230,11 @@ class TvMultiEpgViewModelTest {
             TimerRepository(
                 receiverApis(receiver.profiles.repository),
                 receiver.profiles.repository,
-                receiver.profiles.database
+                receiver.profiles.database,
+                ReceiverPluginsRepository(
+                    receiverApis(receiver.profiles.repository),
+                    receiver.profiles.repository
+                )
             ),
             receiver.profiles.repository,
             ReceiverRepository(

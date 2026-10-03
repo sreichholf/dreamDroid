@@ -509,12 +509,19 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     override suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult> =
         command("/api/moviedelete", listOf(NameValuePair("sRef", movie.reference)))
 
-    override suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult> = command(
+    /**
+     * `timeraddbyeventid` takes the VPS params as `timeradd` does (web.py:1104-1113,
+     * models/timers.py:305-309); without them the new timer has no VPS.
+     */
+    override suspend fun addTimerForEvent(
+        event: Event,
+        vps: TimerVps?
+    ): EnigmaResponse<SimpleResult> = command(
         "/api/timeraddbyeventid",
         listOf(
             NameValuePair("sRef", event.serviceReference),
             NameValuePair("eventid", event.eventId)
-        )
+        ) + vps?.params().orEmpty()
     )
 
     /**

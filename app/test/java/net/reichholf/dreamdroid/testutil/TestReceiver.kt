@@ -7,6 +7,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import okhttp3.mockwebserver.Dispatcher
 import okhttp3.mockwebserver.MockResponse
@@ -91,8 +92,11 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
     fun requestsTo(path: String): List<RecordedRequest> =
         requests.filter { it.requestUrl?.encodedPath == path }
 
-    fun timerRepository(): TimerRepository =
-        TimerRepository(receiverApis(repository), repository, profiles.database)
+    fun timerRepository(plugins: ReceiverPluginsRepository = pluginsRepository()): TimerRepository =
+        TimerRepository(receiverApis(repository), repository, profiles.database, plugins)
+
+    fun pluginsRepository(): ReceiverPluginsRepository =
+        ReceiverPluginsRepository(receiverApis(repository), repository)
 
     class Hold {
         val arrived = CountDownLatch(1)
@@ -115,6 +119,13 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         const val TIMER_CLEANUP = "/web/timercleanup"
         const val LOCATIONS = "/web/getlocations"
         const val TAGS = "/web/gettags"
+        const val WEB_EXTERNALS = "/web/external"
+
+        /** A `/web/external` answer that lists the plugins at [paths]. */
+        fun externals(vararg paths: String): String =
+            "<e2webifexternals>" + paths.joinToString("") {
+                "<e2webifexternal><e2path>$it</e2path></e2webifexternal>"
+            } + "</e2webifexternals>"
 
         fun simpleResult(state: Boolean, text: String): String =
             "<e2simplexmlresult><e2state>${if (state) "True" else "False"}</e2state>" +
