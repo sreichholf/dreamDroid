@@ -172,6 +172,7 @@ Kinds (names flexible):
 
 - `Unreachable` — DNS (`host_not_found`), connect (`host_unreach`), **timeout**, SSL
 - `Auth` — 401
+- `IpRejected` — OpenWebif's 403 "IP address rejected" with authentication off (added with [`openwebif.md`](openwebif.md)); treated like `Auth`
 - `Http` — other status
 - `Parse` — XML/image did not make sense
 - `BoxRejected` — Enigma `state=False` / `statetext`. Produced in SimpleResult handlers / `launchSimpleResultLoad`, **not** inside `EnigmaHttp.fetch`
@@ -190,7 +191,7 @@ One PR per row. Each slice must leave the app shippable. Do not start slice *n+1
 
 | # | Slice | Ships |
 | --- | --- | --- |
-| 1 | Typed failures | `EnigmaFailure` from `EnigmaHttp` / `EnigmaClient` + SimpleResult `BoxRejected`. Timeout/SSL mapping tests. Adapter so existing `errorText` callers keep compiling. MultiEPG throws → `userMessage`. No new Room. No session chrome. |
+| 1 | Typed failures | `EnigmaFailure` from `EnigmaHttp` / `EnigmaClient` (now `ReceiverApi`) + SimpleResult `BoxRejected`. Timeout/SSL mapping tests. Adapter so existing `errorText` callers keep compiling. MultiEPG throws → `userMessage`. No new Room. No session chrome. |
 | 2 | Session status | Phone-shell `ConnectionStatus` (`Online` / `Offline` + lastUpdated). Drawer copy. **ProfileCheck UI still shows** (no skip yet). Do **not** promise hub Room paint. May drop the 20s wait *only* if CheckProfile is clearly in flight without blocking first paint on empty lists — prefer keeping the wait until slice 3 if dropping it shows a blank hub. Compose `SnackbarHost` **or** defer to a follow-up if the mutation migration explodes; greyed chrome is slice 5. |
 | 3 | Tab strip + roster Room | Profile-keyed **tab strip** + ordered rows for opened cacheable containers. Never Provider/All (including nested). Folders = name+ref+kind. Hub/Zap/pickers read roster Offline. **This slice enables ProfileCheck UI skip** when the tab strip exists. Tests: directory vs channel vs marker; Provider/All not inserted; nested All Services folder not inserted; aggregate `bouquets.tv` root is never an `epgmulti` target. |
 | 4 | EPG fill from the service list | Opening a cacheable container calls the **shared** `MultiEpgSync.ensureChunk` for **now’s** 24 h chunk. Offline list now/next from Room overlap. **Online hub stays on `epgnownext`.** MultiEPG keeps pan/prefetch. Tests: Favourites tab (directory!) writes chunks; nested folder **does** write child events with `bouquetRef` = folder; folder ref is not a `serviceRef`; Provider / All / index / default-bouquet-is-Provider do **not** write. Update [`docs/multiepg.md`](multiepg.md) Offline/shared-Room row only — do not delete Online `epgnownext`. |
@@ -216,7 +217,8 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 
 ## 9. Out of scope
 
-- Idle / full EPG sync, AutoTimer, OpenWebif-only APIs
+- Idle / full EPG sync, AutoTimer
+- OpenWebif-only APIs (out of scope for this plan; OpenWebif boxes later got their own client, [`openwebif.md`](openwebif.md), which feeds the same cache. Its `IpRejected` failure allows an offline session with cache, as `Auth` does.)
 - Caching Provider / All Services
 - Optimistic offline writes or a command queue
 - OS `ConnectivityManager` as a third copy — box unreachable is enough for v1

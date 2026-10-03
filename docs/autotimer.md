@@ -1,7 +1,7 @@
 # AutoTimer (plan)
 
 **Status:** phases 1–7 implemented on phone (§5); the operator's box checks are open. API researched from source and on a real box; test data captured (`app/test/resources/web/autotimer/`). The design was compared against three independent alternatives (§8).
-**Target API:** the opendreambox **AutoTimer** plugin's web API (`/autotimer`, API version 1.6, plugin 4.3.2, config version 8). Not the OpenWebif AutoTimer fork. We do not patch the plugin.
+**Target API:** the opendreambox **AutoTimer** plugin's web API (`/autotimer`, API version 1.6, plugin 4.3.2, config version 8). This plan was written for the Dreambox WebInterface only. Since [`openwebif.md`](openwebif.md) the same client (`AutoTimerPluginApi`) also serves OpenWebif boxes and the oe-alliance fork (API version 1.7); requests depend on the plugin's `api_version`, not on the web interface. We do not patch the plugin.
 **Reference (read-only):** [opendreambox/enigma2-plugins `autotimer`](https://github.com/opendreambox/enigma2-plugins/tree/master/autotimer), mainly `src/AutoTimerResource.py` (the web API), `src/AutoTimerConfiguration.py` (list XML), `src/AutoTimer.py` (matching), `src/AutoTimerEditor.py` (on-box editor and "AutoTimer from event"), `src/web-data/autotimereditor.js` (the plugin's own web editor).
 **Architecture:** new code follows [`modernize-dreamdroid.md`](modernize-dreamdroid.md#target-architecture) and [`AGENTS.md`](../AGENTS.md): one `AutoTimerRepository`, `@HiltViewModel`s with `SavedStateHandle` and one `StateFlow` UI state, `UiText` titles and messages, type-safe routes, `SavedTextField` for text input.
 
@@ -12,7 +12,7 @@ An AutoTimer is a saved EPG search on the receiver. When the plugin runs, it add
 | | |
 | --- | --- |
 | **Entry** | Own drawer destination **AutoTimer**, after EPG. Not a Tools hub tab: the hub's bottom navigation is already full. |
-| **Visibility** | Shown only when `/web/external` lists `autotimer` for the active profile. Hidden while unknown; the last answer is kept while the box is unreachable. |
+| **Visibility** | Shown only when the plugin is present for the active profile: `/web/external` lists `autotimer` (Dreambox WebInterface) or `/autotimer/get` answers (OpenWebif). Hidden while unknown; the last answer is kept while the box is unreachable. |
 | **Fast path** | **Record series** in the EPG detail sheet opens the editor prefilled from the event. After every save the user lands on the preview: "what will this record". |
 | **Writes** | Typed model parsed at the boundary. `edit` gets only the field groups the user changed, plus escaped `match` and `name`. Fields the app does not model are never sent, so they survive. |
 | **Identity** | Plugin ids are list positions that the box renumbers. Every write re-lists first and refuses when the id no longer names the AutoTimer the user loaded. |
@@ -195,7 +195,7 @@ Why these shapes:
 
 - `AutoTimerListParser`: `<autotimer>` → entries of `Readable(AutoTimer)` or `Unreadable(id, name, reason)`; `<defaults>` skipped; an `e2simplexmlresult` root ("Couldn't load config file", `AutoTimerResource.py:236-238`) is a box rejection.
 - `AutoTimerPreviewParser`: checks the raw text for `<exception>` first, then `<e2simulatedtimer>` rows with `Verdict.Ok | Skip` (absent for `simulate`) and `e2message` unescaped a second time.
-- Write replies reuse `SimpleResultParser`. Presence uses the existing `getWebExternals()` paths and matches exactly `autotimer`, not `autotimereditor`.
+- Write replies reuse `SimpleResultParser`. Presence is `ReceiverApi.autoTimerPlugin()`, which also returns the plugin's API version: `DreamboxWebIfApi` reads `/web/external` and matches exactly `autotimer`, not `autotimereditor`; `OpenWebifApi` asks `/autotimer/get`. (Written as `getWebExternals()` before the `ReceiverApi` split.)
 
 **Encoder.** `AutoTimerWrite` is the only way to build `edit` parameters:
 
@@ -204,7 +204,7 @@ sealed interface AutoTimerWrite {
     data class Create(val settings: AutoTimerSettings) : AutoTimerWrite                 // every group
     data class Change(val loaded: AutoTimer, val edited: AutoTimerSettings) : AutoTimerWrite  // changed groups only
 }
-fun AutoTimerWrite.toParams(): List<NameValuePair>
+fun autoTimerEditParams(write: AutoTimerWrite): List<NameValuePair>  // was AutoTimerWrite.toParams()
 ```
 
 A field group is what the plugin updates together: Match, Name, Enabled, Search, TimeWindow, DateWindow, Offset, MaxDuration, Location, Targets (both `services` and `bouquets`), Tags, Include (all four keys), Exclude (all four `!` keys), AfterEvent, RecordMode, Duplicates. Rules:
@@ -218,18 +218,18 @@ Sending only changed groups keeps values the app cannot round-trip exactly, and 
 
 ## 4. App wiring
 
-**Repository** (`data/AutoTimerRepository.kt`, `@Singleton`, injects `EnigmaClientFactory` and `ProfileRepository`):
+**Repository** (`data/AutoTimerRepository.kt`, `@Singleton`, injects `ReceiverApiFactory` (was `EnigmaClientFactory`) and `ProfileRepository`):
 
 | Member | Behaviour |
 | --- | --- |
 | `presence: StateFlow<PluginPresence>` | `Unknown`, `Present`, `Absent` for the active profile; reset to `Unknown` on profile change; a failed check keeps the last answer |
-| `refreshPresence()` | `getWebExternals()`; called from `ShellViewModel` after a successful profile check |
+| `refreshPresence()` | `ReceiverApi.autoTimerPlugin()`; called from `ShellViewModel` after a successful profile check |
 | `list()` | `Ready(entries)`, `PluginMissing` or `Failed` |
 | `save(write)`, `setEnabled(timer, on)`, `remove(timer)` | Stale guard: re-list and compare the entry at `timer.id` with the loaded `AutoTimer`; different or missing → `Conflict`, no write. One write at a time (`Mutex`, as in `BouquetEditorRepository`). Reload after `remove`. |
 | `preview(timer)` | `test?id=N`; a disabled AutoTimer never reaches the box |
-| `runNow()` | Last phase: own `EnigmaHttp` with a long timeout |
+| `runNow()` | Last phase: a client with a long timeout (`clients.current(RUN_TIMEOUT_MS)`). API 1.7 sends nothing until the run ends, so there the run starts in the background and the list refreshes when the box answers. |
 
-Each call takes a fresh client from `clients.current()` (`EnigmaClientFactory.kt:25`): one `EnigmaHttp` cancels its in-flight call when it starts another (`helpers/EnigmaHttp.kt:86`). `EnigmaClient` gains `getAutoTimers`, `editAutoTimer`, `removeAutoTimer`, `testAutoTimer` (and later `parseAutoTimers`); paths go to `URIStore`. Parameters stay in the query string, as for every other request.
+Each call takes a fresh client from `clients.current()` (`ReceiverApiFactory`): one `EnigmaHttp` cancels its in-flight call when it starts another. `ReceiverApi` has `autoTimers`, `saveAutoTimer`, `removeAutoTimer`, `testAutoTimer` and `runAutoTimers`; both clients delegate them to `AutoTimerPluginApi`, and paths stay in `URIStore`. Parameters stay in the query string, as for every other request. (This paragraph first named `EnigmaClient` and `getAutoTimers`/`editAutoTimer`/`parseAutoTimers`.)
 
 **Drawer.** `ShellUiState` gains `autoTimerInDrawer` (presence is `Present`); `PhoneShell` passes it to `DrawerScreen`, which filters `DrawerDestinations.destinations`. New id `R.id.menu_navigation_autotimer` maps to the `AutoTimers` route in `NavigationHelper.navRootRoutes` and in `DrawerHighlight.itemIdForRoute`. Do not add a `DreamDroid` static flag like `featureSleepTimer()` (`NavigationHelper.kt:116`).
 

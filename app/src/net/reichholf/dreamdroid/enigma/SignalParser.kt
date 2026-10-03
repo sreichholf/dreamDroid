@@ -28,7 +28,8 @@ private fun parseSignal(parser: XmlPullParser): Signal? {
 
                     "e2ber" -> current = ber
 
-                    // OpenWebif historically emits the typo "e2acg"; accept both.
+                    // The Dreambox webinterface (fixture web/signal.xml) and OpenWebif both
+                    // write the misspelt "e2acg"; accept the correct spelling too.
                     "e2acg", "e2agc" -> current = agc
                 }
             }
