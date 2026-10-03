@@ -38,6 +38,9 @@ object URIStore {
     const val AUTOTIMER_REMOVE: String = "/autotimer/remove?"
     const val AUTOTIMER_TEST: String = "/autotimer/test?"
     const val AUTOTIMER_PARSE: String = "/autotimer/parse"
+    const val VPS_TIMER_LIST: String = "/vpsplugin/web/timerlist"
+    const val VPS_TIMER_CHANGE: String = "/vpsplugin/web/timerchange?"
+    const val VPS_TIMER_ADD_BY_EVENT_ID: String = "/vpsplugin/web/timeraddbyeventid?"
     const val AUTOTIMER_SETTINGS: String = "/autotimer/get"
     const val AUTOTIMER_CHANGE: String = "/autotimer/change?"
 }

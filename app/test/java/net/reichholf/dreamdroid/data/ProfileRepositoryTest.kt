@@ -13,6 +13,7 @@ import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.enigma.WebIfCapabilities
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -152,6 +153,22 @@ class ProfileRepositoryTest {
         assertEquals("Living Room", store.profile(1)?.name)
         assertEquals(2, added.id)
         assertEquals(1, repo.requireCurrent().id)
+        assertTrue(switchedIds.isEmpty())
+        scope.cancel()
+    }
+
+    @Test
+    fun savingANewVpsDefaultUpdatesCurrentWithoutSwitch() = runBlocking<Unit> {
+        val store = MemoryProfileStore(listOf(profile(1, "living-room")))
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+        val switchedIds = mutableListOf<Int>()
+        val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)
+        scope.launch { repo.switches.collect { switchedIds.add(it.id!!) } }
+
+        repo.save(profile(1, "living-room").apply { vpsDefault = VpsMode.Safe })
+
+        assertEquals(VpsMode.Safe, repo.requireCurrent().vpsDefault)
         assertTrue(switchedIds.isEmpty())
         scope.cancel()
     }

@@ -24,6 +24,11 @@
         <item>Automatic</item>
     </string-array>
 
+    <string name="vps">VPS</string>
+    <string name="vps_note">Requires VPS to be enabled in the receiver\'s VPS settings.</string>
+    <string name="vps_date">VPS date</string>
+    <string name="vps_time">VPS time</string>
+
     <string name="begin_time">Begin time</string>
     <string name="repeatings">Repeatings</string>
     <string name="end_time">End time</string>
@@ -235,6 +240,8 @@
     <string name="show_now_playing_strip">Now-playing strip</string>
     <string name="show_now_playing_strip_long">Show what\'s currently on the box on TV &amp; Movies</string>
     <string name="simple_remote">Simple remote layout</string>
+    <string name="vps_default">VPS default for new timers</string>
+    <string name="vps_default_hint">Used when the receiver has the VPS plugin.</string>
     <string name="screenshot_saved">Screenshot saved to \'%s\'</string>
     <string name="imdb">IMDb</string>
     <string name="missing_stream_player">No Player for Videostreams installed on this device!</string>
@@ -536,4 +543,10 @@
     <string name="autotimer_run">Run now</string>
     <string name="autotimer_run_confirm">Search the EPG for all enabled AutoTimers now? The receiver adds timers for new matches. This can take a few minutes.</string>
     <string name="autotimer_run_started">The receiver is searching now. New timers show up in the timer list once it is done.</string>
+    <!-- VPS plugin choice, in VpsMode order: Off, Safe, Overwrite. -->
+    <string-array name="vps_modes">
+        <item>No</item>
+        <item>Yes (safe mode)</item>
+        <item>Yes</item>
+    </string-array>
 </resources>

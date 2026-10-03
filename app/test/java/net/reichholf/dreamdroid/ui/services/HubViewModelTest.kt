@@ -26,6 +26,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.MovieRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfo
@@ -62,7 +63,12 @@ class HubViewModelTest {
         profiles,
         receiver.profiles.database
     )
-    private val timers = TimerRepository(clients, profiles, receiver.profiles.database)
+    private val timers = TimerRepository(
+        clients,
+        profiles,
+        receiver.profiles.database,
+        ReceiverPluginsRepository(clients, profiles)
+    )
     private val viewModels = mutableListOf<HubViewModel>()
     private val main = DelayCountingDispatcher(UnconfinedTestDispatcher())
 

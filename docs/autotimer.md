@@ -195,7 +195,7 @@ Why these shapes:
 
 - `AutoTimerListParser`: `<autotimer>` → entries of `Readable(AutoTimer)` or `Unreadable(id, name, reason)`; `<defaults>` skipped; an `e2simplexmlresult` root ("Couldn't load config file", `AutoTimerResource.py:236-238`) is a box rejection.
 - `AutoTimerPreviewParser`: checks the raw text for `<exception>` first, then `<e2simulatedtimer>` rows with `Verdict.Ok | Skip` (absent for `simulate`) and `e2message` unescaped a second time.
-- Write replies reuse `SimpleResultParser`. Presence is `ReceiverApi.autoTimerPlugin()`, which also returns the plugin's API version: `DreamboxWebIfApi` reads `/web/external` and matches exactly `autotimer`, not `autotimereditor`; `OpenWebifApi` asks `/autotimer/get`. (Written as `getWebExternals()` before the `ReceiverApi` split.)
+- Write replies reuse `SimpleResultParser`. Presence is the AutoTimer part of `ReceiverApi.plugins()`, which also returns the plugin's API version: `DreamboxWebIfApi` reads `/web/external` and matches exactly `autotimer`, not `autotimereditor`; `OpenWebifApi` asks `/autotimer/get`. (Written as `getWebExternals()` before the `ReceiverApi` split, and as `autoTimerPlugin()` before VPS joined it, `vps.md` §3.)
 
 **Encoder.** `AutoTimerWrite` is the only way to build `edit` parameters:
 
@@ -222,8 +222,7 @@ Sending only changed groups keeps values the app cannot round-trip exactly, and 
 
 | Member | Behaviour |
 | --- | --- |
-| `presence: StateFlow<PluginPresence>` | `Unknown`, `Present`, `Absent` for the active profile; reset to `Unknown` on profile change; a failed check keeps the last answer |
-| `refreshPresence()` | `ReceiverApi.autoTimerPlugin()`; called from `ShellViewModel` after a successful profile check |
+| presence | Kept by `ReceiverPluginsRepository` (`autoTimerPresence`: `Unknown`, `Present`, `Absent` for the active profile; `Unknown` after a profile change until asked; a failed check keeps the last answer). `refresh()` is called from `ShellViewModel` after a successful profile check; `list()` and `runNow()` ask while the profile has no answer. (Was `presence`/`refreshPresence()` on this repository until VPS presence joined it.) |
 | `list()` | `Ready(entries)`, `PluginMissing` or `Failed` |
 | `save(write)`, `setEnabled(timer, on)`, `remove(timer)` | Stale guard: re-list and compare the entry at `timer.id` with the loaded `AutoTimer`; different or missing → `Conflict`, no write. One write at a time (`Mutex`, as in `BouquetEditorRepository`). Reload after `remove`. |
 | `preview(timer)` | `test?id=N`; a disabled AutoTimer never reaches the box |
@@ -237,7 +236,7 @@ Each call takes a fresh client from `clients.current()` (`ReceiverApiFactory`): 
 
 **Target picker.** A new multi-select destination over `ServiceRepository`: bouquet rows have a checkbox (whole bouquet → `Target.Bouquet`) and open on tap for single channels. The result goes to the editor's back-stack `SavedStateHandle`, not through the `Intent` bridge the timer picker uses (`PhoneNavigator.deliverPickResult`). `TimerServicePick` stays as it is.
 
-**ViewModels** (`ui/autotimer/`): `AutoTimerListViewModel`, `AutoTimerPreviewViewModel`, `AutoTimerEditViewModel`, `AutoTimerTargetPickViewModel`; each takes the repository, `SessionConnectionHolder` and `SavedStateHandle`. The editor keeps the loaded `AutoTimer` and the draft in `SavedStateHandle` so the change set survives process death; name, match, filter and tag inputs are `SavedTextField`s. Form → `AutoTimerSettings` is a pure function returning the settings or per-field errors (blank match, invalid minutes, a date window that ends on or before its first day). Text left in the filter field is added on Save, as if Add had been tapped. The editor belongs to the profile it opened on. The EPG sheet reads `presence` through `EpgEventDetailViewModel`.
+**ViewModels** (`ui/autotimer/`): `AutoTimerListViewModel`, `AutoTimerPreviewViewModel`, `AutoTimerEditViewModel`, `AutoTimerTargetPickViewModel`; each takes the repository, `SessionConnectionHolder` and `SavedStateHandle`. The editor keeps the loaded `AutoTimer` and the draft in `SavedStateHandle` so the change set survives process death; name, match, filter and tag inputs are `SavedTextField`s. Form → `AutoTimerSettings` is a pure function returning the settings or per-field errors (blank match, invalid minutes, a date window that ends on or before its first day). Text left in the filter field is added on Save, as if Add had been tapped. The editor belongs to the profile it opened on. The EPG sheet reads `autoTimerPresence` through `EpgEventDetailViewModel`.
 
 ## 5. Phases
 

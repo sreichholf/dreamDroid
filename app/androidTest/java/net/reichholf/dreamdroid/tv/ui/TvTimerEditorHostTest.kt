@@ -17,11 +17,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.timers.TimerEditUiState
@@ -98,6 +101,48 @@ class TvTimerEditorHostTest {
     }
 
     @Test
+    fun vpsFieldIsHiddenWithoutThePlugin() {
+        val timer = sampleTimer().copy(vps = TimerVps(VpsMode.Safe))
+        composeRule.setContent {
+            Editor(state(isCreate = true).copy(timer = timer), name = "Sample")
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps)).assertDoesNotExist()
+    }
+
+    @Test
+    fun manualTimerWithVpsShowsTheNoteAndTheVpsTime() {
+        val timer = sampleTimer().copy(eit = "", vps = TimerVps(VpsMode.Safe))
+        composeRule.setContent {
+            Editor(state(isCreate = true).copy(timer = timer, vpsPlugin = true), name = "Sample")
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.vps_note))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(string(R.string.vps_time))
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun vpsOffHidesTheNoteAndTheVpsTime() {
+        val timer = sampleTimer().copy(eit = "", vps = TimerVps(VpsMode.Off))
+        composeRule.setContent {
+            Editor(state(isCreate = true).copy(timer = timer, vpsPlugin = true), name = "Sample")
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.vps_note)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(string(R.string.vps_time)).assertDoesNotExist()
+    }
+
+    @Test
     fun backDismisses() {
         var dismissed = false
         composeRule.setContent {
@@ -161,8 +206,10 @@ class TvTimerEditorHostTest {
         tags = listOf("News")
     )
 
-    private fun saveLabel(): String =
-        InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.save)
+    private fun saveLabel(): String = string(R.string.save)
+
+    private fun string(id: Int): String =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
 
     private fun sampleTimer(): Timer = TimerHelper.getInitialTimer().copy(
         name = "Launch name",

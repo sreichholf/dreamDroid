@@ -15,13 +15,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
@@ -87,8 +85,8 @@ class ServiceEpgRetentionTest {
             sessions
         )
     )
-    private val timers = TimerRepository(clients, profiles, database)
-    private val autoTimerScope = MainScope()
+    private val plugins = ReceiverPluginsRepository(clients, profiles)
+    private val timers = TimerRepository(clients, profiles, database, plugins)
 
     @Before
     fun forceAlwaysNight() {
@@ -99,7 +97,6 @@ class ServiceEpgRetentionTest {
 
     @After
     fun tearDown() {
-        autoTimerScope.cancel()
         server.shutdown()
         database.close()
     }
@@ -124,7 +121,7 @@ class ServiceEpgRetentionTest {
                             EpgEventDetailViewModel(
                                 createSavedStateHandle(),
                                 timers,
-                                AutoTimerRepository(clients, profiles, autoTimerScope),
+                                plugins,
                                 sessions
                             )
                         }

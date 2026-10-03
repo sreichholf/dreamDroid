@@ -401,14 +401,12 @@ class OpenWebifApiTest {
         )
         assertTrue(tatort.beginReadable.isNotEmpty())
         assertEquals(
-            listOf("0", "1", "1", "1", T + 900),
-            with(tatort) {
-                listOf(allowDuplicate, autoAdjust, vpsEnabled, vpsOverwrite, vpsTime?.toLong())
-            }
+            listOf("0", "1", TimerVps(VpsMode.Overwrite, T + 900)),
+            with(tatort) { listOf(allowDuplicate, autoAdjust, vps) }
         )
         assertEquals(
-            listOf("1", null, "0", "0", null),
-            with(heute) { listOf(allowDuplicate, autoAdjust, vpsEnabled, vpsOverwrite, vpsTime) }
+            listOf("1", null, TimerVps(VpsMode.Off)),
+            with(heute) { listOf(allowDuplicate, autoAdjust, vps) }
         )
         assertEquals(
             listOf("", "1", "1", "0", "", "", "31", "N/A"),
@@ -476,7 +474,7 @@ class OpenWebifApiTest {
         answer("timerchange.json")
 
         val old = TATORT_TIMER.copy(begin = T.toString(), end = (T + 5400).toString())
-        val response = api.editTimer(old, TATORT_TIMER)
+        val response = api.editTimer(old, TATORT_TIMER.copy(vps = TimerVps(VpsMode.Off)))
 
         assertRequest(
             "/api/timerchange",
@@ -491,11 +489,47 @@ class OpenWebifApiTest {
             "justplay" to "0",
             "afterevent" to "3",
             "repeated" to "0",
+            "vpsplugin_enabled" to "0",
+            "vpsplugin_overwrite" to "0",
+            "vpsplugin_time" to "-1",
             "channelOld" to DAS_ERSTE,
             "beginOld" to T.toString(),
             "endOld" to (T + 5400).toString()
         )
         assertEquals(SimpleResult("True", "Timer 'Tatort' changed"), response.value)
+    }
+
+    @Test
+    fun editTimerWithUnknownVpsSendsTheVpsTheBoxListsForIt() = runBlocking {
+        answer("timerlist.json")
+        answer("timerchange.json")
+
+        val response = api.editTimer(TATORT_TIMER, TATORT_TIMER.copy(name = "Tatort (neu)"))
+
+        assertRequest("/api/timerlist")
+        val query = takeQuery()
+        assertEquals("Tatort (neu)", query["name"])
+        assertEquals(
+            listOf("1", "1", (T + 900).toString()),
+            listOf(
+                query["vpsplugin_enabled"],
+                query["vpsplugin_overwrite"],
+                query["vpsplugin_time"]
+            )
+        )
+        assertEquals(SimpleResult("True", "Timer 'Tatort' changed"), response.value)
+    }
+
+    @Test
+    fun editTimerWithUnknownVpsChangesNothingWhenTheListFails() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(500))
+
+        val response = api.editTimer(TATORT_TIMER, TATORT_TIMER.copy(name = "Tatort (neu)"))
+
+        assertNull(response.value)
+        assertEquals(500, (response.error?.failure as? EnigmaFailure.Http)?.code)
+        assertRequest("/api/timerlist")
+        assertEquals(1, server.requestCount)
     }
 
     @Test
@@ -594,11 +628,31 @@ class OpenWebifApiTest {
         answer("timeraddbyeventid.json")
 
         val response = api.addTimerForEvent(
-            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort")
+            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort"),
+            vps = null
         )
 
         assertRequest("/api/timeraddbyeventid", "sRef" to DAS_ERSTE, "eventid" to "4712")
         assertEquals(SimpleResult("True", "Timer 'Tatort' added"), response.value)
+    }
+
+    @Test
+    fun addTimerForEventSendsTheVpsOfTheNewTimer() = runBlocking {
+        answer("timeraddbyeventid.json")
+
+        api.addTimerForEvent(
+            Event(eventId = "4712", serviceReference = DAS_ERSTE, title = "Tatort"),
+            TimerVps(VpsMode.Safe)
+        )
+
+        assertRequest(
+            "/api/timeraddbyeventid",
+            "sRef" to DAS_ERSTE,
+            "eventid" to "4712",
+            "vpsplugin_enabled" to "1",
+            "vpsplugin_overwrite" to "0",
+            "vpsplugin_time" to "-1"
+        )
     }
 
     @Test
@@ -974,19 +1028,43 @@ class OpenWebifApiTest {
 
     @Test
     fun theAutoTimerPluginAndItsApiComeFromAutoTimerGet() = runBlocking {
-        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_17.xml")))
-        server.enqueue(MockResponse().setBody(loadOwifFixture("autotimer/get_16.xml")))
+        answer("autotimer/get_17.xml")
+        answer("ajax_at.html")
+        answer("autotimer/get_16.xml")
+        answer("ajax_at.html")
         server.enqueue(
             MockResponse().setResponseCode(404).setBody(loadOwifFixture("error404.html"))
         )
+        answer("ajax_at.html")
         forbidden()
 
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
-        assertEquals(EnigmaFailure.IpRejected, api.autoTimerPlugin().error?.failure)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Missing, api.plugins().value?.autoTimer)
+        assertEquals(EnigmaFailure.IpRejected, api.plugins().error?.failure)
 
-        repeat(4) { assertRequest("/autotimer/get") }
+        repeat(3) {
+            assertRequest("/autotimer/get")
+            assertRequest("/ajax/at")
+        }
+        assertRequest("/autotimer/get")
+    }
+
+    @Test
+    fun theVpsPluginIsTheVpsCheckboxOfTheAutoTimerForm() = runBlocking {
+        answer("autotimer/get_17.xml")
+        answer("ajax_at_vps.html")
+        answer("autotimer/get_17.xml")
+        answer("ajax_at.html")
+        answer("autotimer/get_17.xml")
+        server.enqueue(MockResponse().setResponseCode(500))
+        answer("autotimer/get_17.xml")
+        forbidden()
+
+        assertEquals(true, api.plugins().value?.vps)
+        assertEquals(false, api.plugins().value?.vps)
+        assertEquals(false, api.plugins().value?.vps)
+        assertEquals(EnigmaFailure.IpRejected, api.plugins().error?.failure)
     }
 
     @Test

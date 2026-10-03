@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2timerlist>
+	<e2timer>
+		<e2servicereference>1:0:19:EF74:3F9:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>SAT.1 HD</e2servicename>
+		<e2eit>39350</e2eit>
+		<e2name>Navy CIS: L.A.</e2name>
+		<e2description>Kein Rauch ohne Feuer</e2description>
+		<e2descriptionextended>Ein Feuerwehrmann stirbt bei einem Brand.</e2descriptionextended>
+		<e2disabled>0</e2disabled>
+		<e2timebegin>1476644933</e2timebegin>
+		<e2timeend>1476649083</e2timeend>
+		<e2duration>4150</e2duration>
+		<e2startprepare>1476644913</e2startprepare>
+		<e2justplay>0</e2justplay>
+		<e2afterevent>3</e2afterevent>
+		<e2location>None</e2location>
+		<e2tags></e2tags>
+		<e2logentries>[(1476254301, 15, 'record time changed')]</e2logentries>
+		<e2filename></e2filename>
+		<e2backoff>0</e2backoff>
+		<e2nextactivation></e2nextactivation>
+		<e2firsttryprepare>True</e2firsttryprepare>
+		<e2state>0</e2state>
+		<e2repeated>0</e2repeated>
+		<e2dontsave>0</e2dontsave>
+		<e2cancled>False</e2cancled>
+		<e2toggledisabled>1</e2toggledisabled>
+		<e2toggledisabledimg>off</e2toggledisabledimg>
+		<e2vpsplugin_enabled>False</e2vpsplugin_enabled>
+		<e2vpsplugin_overwrite>False</e2vpsplugin_overwrite>
+		<e2vpsplugin_time>-1</e2vpsplugin_time>
+	</e2timer>
+	<e2timer>
+		<e2servicereference>1:0:19:283D:3FB:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>ZDF HD</e2servicename>
+		<e2eit>27466</e2eit>
+		<e2name>Der Bergdoktor</e2name>
+		<e2description>Zwischen den Welten</e2description>
+		<e2descriptionextended></e2descriptionextended>
+		<e2disabled>0</e2disabled>
+		<e2timebegin>1893528600</e2timebegin>
+		<e2timeend>1893534000</e2timeend>
+		<e2duration>5400</e2duration>
+		<e2startprepare>1893528580</e2startprepare>
+		<e2justplay>0</e2justplay>
+		<e2afterevent>3</e2afterevent>
+		<e2location>/media/hdd/movie/</e2location>
+		<e2tags></e2tags>
+		<e2logentries></e2logentries>
+		<e2filename></e2filename>
+		<e2backoff>0</e2backoff>
+		<e2nextactivation></e2nextactivation>
+		<e2firsttryprepare>True</e2firsttryprepare>
+		<e2state>0</e2state>
+		<e2repeated>0</e2repeated>
+		<e2dontsave>0</e2dontsave>
+		<e2cancled>False</e2cancled>
+		<e2toggledisabled>1</e2toggledisabled>
+		<e2toggledisabledimg>off</e2toggledisabledimg>
+		<e2vpsplugin_enabled>True</e2vpsplugin_enabled>
+		<e2vpsplugin_overwrite>False</e2vpsplugin_overwrite>
+		<e2vpsplugin_time>-1</e2vpsplugin_time>
+	</e2timer>
+	<e2timer>
+		<e2servicereference>1:0:19:2B66:3F3:1:C00000:0:0:0:</e2servicereference>
+		<e2servicename>arte HD</e2servicename>
+		<e2eit></e2eit>
+		<e2name>Manual recording</e2name>
+		<e2description></e2description>
+		<e2descriptionextended></e2descriptionextended>
+		<e2disabled>0</e2disabled>
+		<e2timebegin>1893610800</e2timebegin>
+		<e2timeend>1893618000</e2timeend>
+		<e2duration>7200</e2duration>
+		<e2startprepare>1893610780</e2startprepare>
+		<e2justplay>0</e2justplay>
+		<e2afterevent>3</e2afterevent>
+		<e2location>/media/hdd/movie/</e2location>
+		<e2tags></e2tags>
+		<e2logentries></e2logentries>
+		<e2filename></e2filename>
+		<e2backoff>0</e2backoff>
+		<e2nextactivation></e2nextactivation>
+		<e2firsttryprepare>True</e2firsttryprepare>
+		<e2state>0</e2state>
+		<e2repeated>0</e2repeated>
+		<e2dontsave>0</e2dontsave>
+		<e2cancled>False</e2cancled>
+		<e2toggledisabled>1</e2toggledisabled>
+		<e2toggledisabledimg>off</e2toggledisabledimg>
+		<e2vpsplugin_enabled>True</e2vpsplugin_enabled>
+		<e2vpsplugin_overwrite>True</e2vpsplugin_overwrite>
+		<e2vpsplugin_time>1893611100</e2vpsplugin_time>
+	</e2timer>
+</e2timerlist>

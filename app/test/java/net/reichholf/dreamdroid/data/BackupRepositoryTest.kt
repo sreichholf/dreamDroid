@@ -7,6 +7,7 @@ import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import net.reichholf.dreamdroid.testutil.TestProfiles
@@ -154,6 +155,44 @@ class BackupRepositoryTest {
                     it.get("encoderStream").asBoolean
                 )
             }.sortedBy { it.first }
+        )
+    }
+
+    @Test
+    fun exportAndImportKeepTheVpsDefault() = runBlocking<Unit> {
+        saved("Living Room", "10.0.0.1").also {
+            it.vpsDefault = VpsMode.Overwrite
+            profiles.save(it)
+        }
+        val exported = backups.exportJson(backups.backupData(), includePasswords = true)
+        profiles.save(profiles.profiles().single().apply { vpsDefault = VpsMode.Off })
+
+        assertTrue(backups.importBackup(exported))
+
+        assertEquals(VpsMode.Overwrite, profiles.profiles().single().vpsDefault)
+    }
+
+    @Test
+    fun backupWithoutAKnownVpsDefaultImportsAsOff() = runBlocking<Unit> {
+        val content = """
+            {"mProfiles": [
+                {"name": "Old", "host": "10.0.0.1"},
+                {"name": "Null", "host": "10.0.0.2", "vpsDefault": null},
+                {"name": "Newer", "host": "10.0.0.3", "vpsDefault": "Later"},
+                {"name": "Safe", "host": "10.0.0.4", "vpsDefault": "Safe"}
+            ]}
+        """.trimIndent()
+
+        assertTrue(backups.importBackup(content))
+
+        assertEquals(
+            mapOf(
+                "Old" to VpsMode.Off,
+                "Null" to VpsMode.Off,
+                "Newer" to VpsMode.Off,
+                "Safe" to VpsMode.Safe
+            ),
+            profiles.profiles().associate { it.name to it.vpsDefault }
         )
     }
 

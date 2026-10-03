@@ -12,6 +12,7 @@ import androidx.room3.PrimaryKey
 import androidx.room3.Query
 import androidx.room3.Update
 import java.io.Serializable
+import net.reichholf.dreamdroid.enigma.VpsMode
 
 @Entity(tableName = "profile")
 class Profile : Serializable {
@@ -156,6 +157,10 @@ class Profile : Serializable {
 
     @ColumnInfo(name = "defaultProfileOnNoWifi")
     var isDefaultProfileOnNoWifi: Boolean = false
+
+    /** VPS choice for new timers when the receiver has the VPS plugin. */
+    @ColumnInfo(name = "vps_default", defaultValue = "'Off'")
+    var vpsDefault: VpsMode = VpsMode.Off
 
     constructor()
 

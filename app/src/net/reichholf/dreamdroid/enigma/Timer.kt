@@ -5,9 +5,10 @@ import java.io.Serializable
 /**
  * Typed `/web/timerlist` row (`e2timer`).
  *
- * [allowDuplicate], [autoAdjust], [vpsEnabled], [vpsOverwrite] and [vpsTime] are OpenWebif's,
- * as `0`/`1` (`vpsTime` in seconds), and null where the box did not report them. Its
- * `timerchange` resets each one that is not sent back (web.py:985-1011,1084-1089 at e46534f).
+ * [allowDuplicate] and [autoAdjust] are OpenWebif's, as `0`/`1`, and null where the box did not
+ * report them. Its `timerchange` resets each one that is not sent back (web.py:1084-1089 at
+ * e46534f). [vps] is null where the receiver did not report VPS: a Dreambox without the VPS
+ * plugin, or a snapshot row stored before dreamDroid kept VPS.
  */
 data class Timer(
     val reference: String = "",
@@ -40,7 +41,23 @@ data class Timer(
     val toggleDisabled: String = "",
     val allowDuplicate: String? = null,
     val autoAdjust: String? = null,
-    val vpsEnabled: String? = null,
-    val vpsOverwrite: String? = null,
-    val vpsTime: String? = null
+    val vps: TimerVps? = null
 ) : Serializable
+
+/** The VPS choice for a timer, as the receiver offers it: No, Yes (safe mode), Yes. */
+enum class VpsMode {
+    /** No VPS: the timer records its planned window. */
+    Off,
+
+    /** Records the planned window and extends it by what VPS reports. */
+    Safe,
+
+    /** VPS controls start and stop. */
+    Overwrite
+}
+
+/**
+ * VPS as the receiver stores it on a timer. [time] is the announced start, in seconds, that
+ * the receiver looks for on a timer without an event id or name; null for none.
+ */
+data class TimerVps(val mode: VpsMode, val time: Long? = null) : Serializable

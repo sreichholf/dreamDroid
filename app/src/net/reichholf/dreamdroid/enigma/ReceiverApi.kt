@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.enigma
 import java.io.File
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewOutcome
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
@@ -115,8 +114,8 @@ interface ReceiverApi {
         enabled: Boolean
     ): EnigmaResponse<SleepTimer>
 
-    /** Whether the receiver has the AutoTimer plugin, and which API it speaks. */
-    suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin>
+    /** Which of the AutoTimer and VPS plugins the receiver has, and the AutoTimer's API. */
+    suspend fun plugins(): EnigmaResponse<ReceiverPlugins>
 
     /** Whether the receiver has the bouquet editor plugin. */
     suspend fun hasBouquetEditor(): EnigmaResponse<Boolean>
@@ -154,8 +153,11 @@ interface ReceiverApi {
 
     suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult>
 
-    /** Adds a timer for [event]; the receiver fills it in from its EPG. */
-    suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult>
+    /**
+     * Adds a timer for [event]; the receiver fills it in from its EPG. [vps] is the new timer's
+     * VPS; null leaves it to the receiver.
+     */
+    suspend fun addTimerForEvent(event: Event, vps: TimerVps?): EnigmaResponse<SimpleResult>
 
     /** Adds [timer] as a new timer. */
     suspend fun addTimer(timer: Timer): EnigmaResponse<SimpleResult>

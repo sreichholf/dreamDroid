@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.SavedTextField
@@ -175,6 +176,24 @@ class ProfileEditViewModelTest {
         assertTrue(restored.uiState.value.form?.login == true)
         assertEquals("Living Room", restored.uiState.value.savedName)
         assertTrue(restored.uiState.value.canDelete)
+    }
+
+    @Test
+    fun vpsDefaultLoadsSurvivesANewViewModelAndSaves() = runTest {
+        val saved = receiver("Living Room", "10.0.0.1").apply { vpsDefault = VpsMode.Safe }
+        profiles.save(saved)
+        val handle = SavedStateHandle(mapOf("profileId" to saved.id!!))
+        val first = viewModel(handle)
+        val form = checkNotNull(first.uiState.first { it.form != null }.form)
+        assertEquals(VpsMode.Safe, form.vpsDefault)
+        first.onFormChange(form.copy(vpsDefault = VpsMode.Overwrite))
+
+        val restored = viewModel(handle)
+        assertEquals(VpsMode.Overwrite, restored.uiState.value.form?.vpsDefault)
+        restored.save()
+        restored.uiState.first { it.finished != null }
+
+        assertEquals(VpsMode.Overwrite, profiles.profile(saved.id!!)?.vpsDefault)
     }
 
     private fun viewModel(handle: SavedStateHandle) =

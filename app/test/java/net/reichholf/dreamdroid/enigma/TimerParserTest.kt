@@ -52,7 +52,48 @@ class TimerParserTest {
         assertEquals("news", second.tags)
         assertEquals("/hdd/movie/", second.location)
         assertEquals("60", second.durationReadable)
+        assertNull(first.vps)
+        assertNull(second.vps)
     }
+
+    @Test
+    fun readsTheVpsPluginFields() {
+        val timers = TimerParser.parse(loadWebFixture("vps/timerlist.xml"))!!
+
+        assertEquals(
+            listOf(
+                TimerVps(VpsMode.Off),
+                TimerVps(VpsMode.Safe),
+                TimerVps(VpsMode.Overwrite, 1_893_611_100L)
+            ),
+            timers.map { it.vps }
+        )
+        assertEquals("Navy CIS: L.A.", timers[0].name)
+        assertEquals("1", timers[0].toggleDisabled)
+    }
+
+    @Test
+    fun readsVpsFlagsAsDigits() {
+        val vps = TimerParser.parse(vpsTimer(enabled = "1", overwrite = "0", time = "0"))!!
+            .single().vps
+
+        assertEquals(TimerVps(VpsMode.Safe), vps)
+    }
+
+    @Test
+    fun vpsOverwriteWithoutEnabledIsOff() {
+        val vps = TimerParser.parse(vpsTimer(enabled = "False", overwrite = "True", time = "-1"))!!
+            .single().vps
+
+        assertEquals(TimerVps(VpsMode.Off), vps)
+    }
+
+    private fun vpsTimer(enabled: String, overwrite: String, time: String): String =
+        "<e2timerlist><e2timer><e2name>News</e2name>" +
+            "<e2vpsplugin_enabled>$enabled</e2vpsplugin_enabled>" +
+            "<e2vpsplugin_overwrite>$overwrite</e2vpsplugin_overwrite>" +
+            "<e2vpsplugin_time>$time</e2vpsplugin_time>" +
+            "</e2timer></e2timerlist>"
 
     @Test
     fun emptyXmlYieldsNull() {

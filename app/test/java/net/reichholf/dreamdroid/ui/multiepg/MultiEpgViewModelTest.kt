@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Service
@@ -244,7 +245,11 @@ class MultiEpgViewModelTest {
     private fun timerRepository(): TimerRepository = TimerRepository(
         receiverApis(receiver.profiles.repository),
         receiver.profiles.repository,
-        receiver.profiles.database
+        receiver.profiles.database,
+        ReceiverPluginsRepository(
+            receiverApis(receiver.profiles.repository),
+            receiver.profiles.repository
+        )
     )
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): MultiEpgViewModel =

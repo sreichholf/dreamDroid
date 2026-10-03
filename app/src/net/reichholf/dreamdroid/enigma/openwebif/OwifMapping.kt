@@ -15,7 +15,9 @@ import net.reichholf.dreamdroid.enigma.Signal
 import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.SleepTimer
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
 import net.reichholf.dreamdroid.enigma.Volume
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.enigma.buildEvent
 import net.reichholf.dreamdroid.enigma.buildMovie
 import net.reichholf.dreamdroid.enigma.buildTimer
@@ -185,10 +187,24 @@ internal fun OwifTimers.toTimers(): List<Timer> = timers.map { dto ->
     ).copy(
         allowDuplicate = dto.allowDuplicate?.let(::pythonFlag),
         autoAdjust = dto.autoadjust?.let(::pythonFlag),
-        vpsEnabled = dto.vpsEnabled?.let(::pythonFlag),
-        vpsOverwrite = dto.vpsOverwrite?.let(::pythonFlag),
-        vpsTime = dto.vpsTime?.trim()?.takeUnless { it.isEmpty() || it == "-1" }
+        vps = dto.vps()
     )
+}
+
+/**
+ * The timer's VPS. The list reports it for every timer, `False` and `-1` where the timer has
+ * none (models/timers.py:145-155,238-240); a time of `-1` or `0` is none. Null where the fields
+ * are missing or unreadable.
+ */
+private fun OwifTimer.vps(): TimerVps? {
+    val enabled = vpsEnabled?.let(::pythonFlag) ?: return null
+    val overwrite = vpsOverwrite?.let(::pythonFlag) == "1"
+    val mode = when {
+        enabled != "1" -> VpsMode.Off
+        overwrite -> VpsMode.Overwrite
+        else -> VpsMode.Safe
+    }
+    return TimerVps(mode, vpsTime?.trim()?.toDoubleOrNull()?.toLong()?.takeIf { it > 0 })
 }
 
 /**

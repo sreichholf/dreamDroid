@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.AutoTimerWriteResult
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.testutil.TestReceiver
@@ -35,8 +36,12 @@ import org.junit.jupiter.api.Test
 class AutoTimerListViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
-    private val autoTimers =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, TestScope())
+    private val autoTimers = AutoTimerRepository(
+        receiverApis(receiver.repository),
+        receiver.repository,
+        ReceiverPluginsRepository(receiverApis(receiver.repository), receiver.repository),
+        TestScope()
+    )
     private val viewModels = mutableListOf<AutoTimerListViewModel>()
 
     @BeforeEach

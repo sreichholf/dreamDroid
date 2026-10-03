@@ -7,13 +7,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
-import net.reichholf.dreamdroid.data.AutoTimerRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -35,10 +34,9 @@ import org.junit.jupiter.api.Test
 class EpgEventDetailViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<EpgEventDetailViewModel>()
-    private val autoTimers = AutoTimerRepository(
+    private val plugins = ReceiverPluginsRepository(
         receiverApis(receiver.profiles.repository),
-        receiver.profiles.repository,
-        TestScope()
+        receiver.profiles.repository
     )
 
     @BeforeEach
@@ -97,8 +95,7 @@ class EpgEventDetailViewModelTest {
 
         assertFalse(state.saving)
         assertEquals(UiText.Raw("Timer added"), state.userMessage)
-        val url = receiver.server.takeRequest().requestUrl!!
-        assertEquals("/web/timeraddbyeventid", url.encodedPath)
+        val url = receiver.requestsTo(ADD_BY_EVENT_ID).single().requestUrl!!
         assertEquals(EVENT.serviceReference, url.queryParameter("sRef"))
         assertEquals(EVENT.eventId, url.queryParameter("eventid"))
         viewModel.onMessageShown()
@@ -144,7 +141,7 @@ class EpgEventDetailViewModelTest {
         release.countDown()
         viewModel.uiState.first { !it.saving }
 
-        assertEquals(1, receiver.server.requestCount)
+        assertEquals(1, receiver.requestsTo(ADD_BY_EVENT_ID).size)
     }
 
     @Test
@@ -162,7 +159,7 @@ class EpgEventDetailViewModelTest {
         val viewModel = viewModel()
         assertFalse(viewModel.uiState.value.autoTimerAvailable)
 
-        autoTimers.refreshPresence()
+        plugins.refresh()
 
         withTimeout(5_000L) { viewModel.uiState.first { it.autoTimerAvailable } }
     }
@@ -176,13 +173,16 @@ class EpgEventDetailViewModelTest {
         TimerRepository(
             receiverApis(receiver.profiles.repository),
             receiver.profiles.repository,
-            receiver.profiles.database
+            receiver.profiles.database,
+            plugins
         ),
-        autoTimers,
+        plugins,
         receiver.sessions
     ).also { viewModels += it }
 
     private companion object {
+        const val ADD_BY_EVENT_ID = "/web/timeraddbyeventid"
+
         val EVENT = Event(
             eventId = "39150",
             title = "Tagesschau",

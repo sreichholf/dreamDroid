@@ -13,7 +13,6 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerList
-import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPlugin
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerPluginApi
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
 import net.reichholf.dreamdroid.enigma.autotimer.FieldGroup
@@ -435,8 +434,31 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
         }
     }
 
-    /** `/autotimer/get`; see [AutoTimerPluginApi.plugin]. */
-    override suspend fun autoTimerPlugin(): EnigmaResponse<AutoTimerPlugin> = autoTimer.plugin()
+    /**
+     * The AutoTimer plugin from `/autotimer/get` ([AutoTimerPluginApi.plugin]), the VPS plugin
+     * from `/ajax/at`. OpenWebif keeps `vpsplugin` out of `/web/external` (pluginshook.src:10)
+     * and names the plugin nowhere in `/api`; the timer list reports VPS fields with or without
+     * it (models/timers.py:145-155). Its own AutoTimer form has the VPS checkbox `id="vps"`
+     * exactly when `Plugins.SystemPlugins.vps` imports (defaults.py:207-213,266,
+     * ajax.py:349-351, views/ajax/at.tmpl:206-213). A page that answers with an HTTP error, as
+     * on an image without these views, counts as no VPS: the editor hides the field and timers
+     * keep their VPS.
+     */
+    override suspend fun plugins(): EnigmaResponse<ReceiverPlugins> = withContext(Dispatchers.IO) {
+        val autoTimerPlugin = autoTimer.plugin()
+        val plugin = autoTimerPlugin.value
+            ?: return@withContext EnigmaResponse(null, autoTimerPlugin.error)
+        when (val page = fetch("/ajax/at", emptyList())) {
+            is EnigmaHttpResult.Success ->
+                EnigmaResponse(ReceiverPlugins(plugin, vps = VPS_CHECKBOX in page.text))
+
+            is EnigmaHttpResult.Failure -> if (page.error.failure is EnigmaFailure.Http) {
+                EnigmaResponse(ReceiverPlugins(plugin, vps = false))
+            } else {
+                EnigmaResponse(null, page.error)
+            }
+        }
+    }
 
     /**
      * OpenWebif always mounts its own bouquet editor (root.py:76, `BQE.py`, `BouquetEditor.py`),
@@ -487,12 +509,19 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     override suspend fun deleteMovie(movie: Movie): EnigmaResponse<SimpleResult> =
         command("/api/moviedelete", listOf(NameValuePair("sRef", movie.reference)))
 
-    override suspend fun addTimerForEvent(event: Event): EnigmaResponse<SimpleResult> = command(
+    /**
+     * `timeraddbyeventid` takes the VPS params as `timeradd` does (web.py:1104-1113,
+     * models/timers.py:305-309); without them the new timer has no VPS.
+     */
+    override suspend fun addTimerForEvent(
+        event: Event,
+        vps: TimerVps?
+    ): EnigmaResponse<SimpleResult> = command(
         "/api/timeraddbyeventid",
         listOf(
             NameValuePair("sRef", event.serviceReference),
             NameValuePair("eventid", event.eventId)
-        )
+        ) + vps?.params().orEmpty()
     )
 
     /**
@@ -506,17 +535,28 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
     /**
      * `timerchange` edits the timer found by `channelOld`, `beginOld` and `endOld` in place
      * (models/timers.py:395-400); it has no `deleteOldOnSave`. It resets duplicates,
-     * auto-adjust and VPS unless they are sent (web.py:985-1011,1084-1089), so [new] carries
-     * them from the timer list.
+     * auto-adjust and VPS unless they are sent (web.py:985-1011,1084-1089,
+     * models/timers.py:416-419), so [new] carries them from the timer list. The list reports
+     * VPS for every timer, so only a snapshot row from before dreamDroid kept VPS lacks it:
+     * that one first reads the VPS the box lists for [old], and a failed read fails the edit.
      */
-    override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> = command(
-        "/api/timerchange",
-        timerParams(new) + listOf(
-            NameValuePair("channelOld", old.reference),
-            NameValuePair("beginOld", old.begin),
-            NameValuePair("endOld", old.end)
+    override suspend fun editTimer(old: Timer, new: Timer): EnigmaResponse<SimpleResult> {
+        val vps = new.vps ?: run {
+            val listed = timers()
+            val timers = listed.value ?: return EnigmaResponse(null, listed.error)
+            timers.firstOrNull {
+                it.reference == old.reference && it.begin == old.begin && it.end == old.end
+            }?.vps
+        }
+        return command(
+            "/api/timerchange",
+            timerParams(new.copy(vps = vps)) + listOf(
+                NameValuePair("channelOld", old.reference),
+                NameValuePair("beginOld", old.begin),
+                NameValuePair("endOld", old.end)
+            )
         )
-    )
+    }
 
     /**
      * `timertogglestatus` flips only `disabled` and refuses an enable that conflicts
@@ -727,6 +767,8 @@ class OpenWebifApi(private val http: EnigmaHttp) : ReceiverApi {
  * - Empty `tags` are left out: the box would store one empty tag (web.py:1062-1064).
  * - No `eit`: the box reads it only as a number, which a query value never is, and looks the
  *   event up by time instead (web.py:1081-1088).
+ * - VPS goes as all three params when the timer's is known ([params]). Without them the box
+ *   turns VPS off (web.py:990-996, models/timers.py:416-419).
  */
 private fun timerParams(timer: Timer): List<NameValuePair> = listOfNotNull(
     NameValuePair("sRef", timer.reference),
@@ -741,11 +783,8 @@ private fun timerParams(timer: Timer): List<NameValuePair> = listOfNotNull(
     NameValuePair("afterevent", timer.afterEvent),
     NameValuePair("repeated", timer.repeated.ifBlank { "0" }),
     timer.allowDuplicate?.let { NameValuePair("allow_duplicate", it) },
-    timer.autoAdjust?.let { NameValuePair("autoadjust", it) },
-    timer.vpsEnabled?.let { NameValuePair("vpsplugin_enabled", it) },
-    timer.vpsOverwrite?.let { NameValuePair("vpsplugin_overwrite", it) },
-    timer.vpsTime?.let { NameValuePair("vpsplugin_time", it) }
-)
+    timer.autoAdjust?.let { NameValuePair("autoadjust", it) }
+) + timer.vps?.params().orEmpty()
 
 /**
  * [path] for `movielist`'s `dirname`. The box decodes that argument as Latin-1 and then turns
@@ -764,6 +803,9 @@ private fun owifDirname(path: String): String = buildString {
 }
 
 private const val SLEEP_TIMER_ERROR = "ERROR"
+
+/** The VPS checkbox of OpenWebif's AutoTimer form, there only with the VPS plugin. */
+private const val VPS_CHECKBOX = "id=\"vps\""
 
 private const val HEX = 16
 

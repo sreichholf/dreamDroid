@@ -13,6 +13,7 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.AutoTimerRepository
 import net.reichholf.dreamdroid.data.EpgRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.enigma.autotimer.Verdict
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
@@ -32,8 +33,12 @@ import org.junit.jupiter.api.Test
 class AutoTimerPreviewViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
-    private val autoTimers =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, TestScope())
+    private val autoTimers = AutoTimerRepository(
+        receiverApis(receiver.repository),
+        receiver.repository,
+        ReceiverPluginsRepository(receiverApis(receiver.repository), receiver.repository),
+        TestScope()
+    )
     private val epg = EpgRepository(
         receiverApis(receiver.repository),
         receiver.repository,

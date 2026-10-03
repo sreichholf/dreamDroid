@@ -2,6 +2,8 @@ package net.reichholf.dreamdroid.room
 
 import androidx.room3.Entity
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 
 /**
  * One ordered `/web/timerlist` row for a profile. Full [Timer] snapshot so the
@@ -41,7 +43,10 @@ data class TimerListEntity(
     val repeated: String,
     val dontSave: String,
     val canceled: String,
-    val toggleDisabled: String
+    val toggleDisabled: String,
+    /** Null where the receiver did not report VPS ([Timer.vps]). */
+    val vpsMode: VpsMode? = null,
+    val vpsTime: Long? = null
 )
 
 fun Timer.toListEntity(profileId: Int, position: Int): TimerListEntity = TimerListEntity(
@@ -74,7 +79,9 @@ fun Timer.toListEntity(profileId: Int, position: Int): TimerListEntity = TimerLi
     repeated = repeated,
     dontSave = dontSave,
     canceled = canceled,
-    toggleDisabled = toggleDisabled
+    toggleDisabled = toggleDisabled,
+    vpsMode = vps?.mode,
+    vpsTime = vps?.time
 )
 
 fun TimerListEntity.toTimer(): Timer = Timer(
@@ -105,5 +112,6 @@ fun TimerListEntity.toTimer(): Timer = Timer(
     repeated = repeated,
     dontSave = dontSave,
     canceled = canceled,
-    toggleDisabled = toggleDisabled
+    toggleDisabled = toggleDisabled,
+    vps = vpsMode?.let { TimerVps(it, vpsTime) }
 )

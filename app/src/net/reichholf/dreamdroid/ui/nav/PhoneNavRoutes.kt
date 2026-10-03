@@ -6,6 +6,8 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 
 /**
  * Stable route ids. Saved start routes and drawer highlight still use these
@@ -425,9 +427,10 @@ data class TimerEdit(
     val toggleDisabled: String = "",
     val allowDuplicate: String? = null,
     val autoAdjust: String? = null,
-    val vpsEnabled: String? = null,
-    val vpsOverwrite: String? = null,
-    val vpsTime: String? = null
+    /** [VpsMode] name; null where the timer's VPS is unknown. */
+    val vpsMode: String? = null,
+    /** VPS time in seconds; -1 for none. */
+    val vpsTime: Long = -1
 ) {
     fun toTimer(): Timer = Timer(
         reference = reference,
@@ -460,9 +463,9 @@ data class TimerEdit(
         toggleDisabled = toggleDisabled,
         allowDuplicate = allowDuplicate,
         autoAdjust = autoAdjust,
-        vpsEnabled = vpsEnabled,
-        vpsOverwrite = vpsOverwrite,
-        vpsTime = vpsTime
+        vps = VpsMode.entries.find { it.name == vpsMode }?.let { mode ->
+            TimerVps(mode, vpsTime.takeIf { it > 0 })
+        }
     )
 
     companion object {
@@ -498,9 +501,8 @@ data class TimerEdit(
             toggleDisabled = timer.toggleDisabled,
             allowDuplicate = timer.allowDuplicate,
             autoAdjust = timer.autoAdjust,
-            vpsEnabled = timer.vpsEnabled,
-            vpsOverwrite = timer.vpsOverwrite,
-            vpsTime = timer.vpsTime
+            vpsMode = timer.vps?.mode?.name,
+            vpsTime = timer.vps?.time ?: -1
         )
     }
 }

@@ -36,17 +36,19 @@ class DreamboxWebIfApiTest {
 
     private val api by lazy { api(WebIfCapabilities()) }
 
-    private fun api(capabilities: WebIfCapabilities) = DreamboxWebIfApi(
-        EnigmaHttp(
-            Profile().apply {
-                host = server.hostName
-                port = server.port
-            },
-            EnigmaOkHttp(),
-            WebIfCapabilitiesRepository()
-        ),
-        capabilities
-    )
+    private fun api(capabilities: WebIfCapabilities, vpsPlugin: VpsPlugin = VpsPlugin.Absent) =
+        DreamboxWebIfApi(
+            EnigmaHttp(
+                Profile().apply {
+                    host = server.hostName
+                    port = server.port
+                },
+                EnigmaOkHttp(),
+                WebIfCapabilitiesRepository()
+            ),
+            capabilities,
+            vpsPlugin
+        )
 
     @BeforeEach
     fun setUp() {
@@ -169,12 +171,93 @@ class DreamboxWebIfApiTest {
     fun addTimerForEventSendsServiceAndEventId() = runBlocking {
         server.enqueue(MockResponse().setBody(""))
 
-        api.addTimerForEvent(Event(serviceReference = SERVICE, eventId = "39150"))
+        api.addTimerForEvent(Event(serviceReference = SERVICE, eventId = "39150"), vps = null)
 
         assertEquals(
             "/web/timeraddbyeventid?sRef=$SERVICE_ENCODED&eventid=39150",
             server.takeRequest(5, TimeUnit.SECONDS)!!.path
         )
+    }
+
+    @Test
+    fun withoutTheVpsPluginTimerRequestsStayOnTheStockPagesAndSendNoVps() = runBlocking {
+        repeat(3) { server.enqueue(MockResponse().setBody("")) }
+        val withVps = TIMER.copy(vps = TimerVps(VpsMode.Safe))
+
+        api.timers()
+        api.addTimer(withVps)
+        api.addTimerForEvent(Event(serviceReference = SERVICE, eventId = "39150"), withVps.vps)
+
+        assertEquals("/web/timerlist?", takePath())
+        assertEquals("/web/timerchange?$TIMER_QUERY&deleteOldOnSave=0", takePath())
+        assertEquals("/web/timeraddbyeventid?sRef=$SERVICE_ENCODED&eventid=39150", takePath())
+    }
+
+    @Test
+    fun withTheVpsPluginTheListAndVpsWritesGoThroughIt() = runBlocking {
+        repeat(4) { server.enqueue(MockResponse().setBody("")) }
+        val api = api(WebIfCapabilities(), VpsPlugin(present = true))
+        val old = TIMER.copy(begin = "1699990000")
+
+        api.timers()
+        api.editTimer(old, TIMER.copy(vps = TimerVps(VpsMode.Overwrite, 1700000100)))
+        api.addTimer(TIMER.copy(vps = TimerVps(VpsMode.Off, 1700000100)))
+        api.addTimerForEvent(
+            Event(serviceReference = SERVICE, eventId = "39150"),
+            TimerVps(VpsMode.Safe)
+        )
+
+        assertEquals("/vpsplugin/web/timerlist?", takePath())
+        assertEquals(
+            "/vpsplugin/web/timerchange?$TIMER_QUERY&channelOld=$SERVICE_ENCODED" +
+                "&beginOld=1699990000&endOld=1700003600&deleteOldOnSave=1" +
+                "&vpsplugin_enabled=1&vpsplugin_overwrite=1&vpsplugin_time=1700000100",
+            takePath()
+        )
+        assertEquals(
+            "/vpsplugin/web/timerchange?$TIMER_QUERY&deleteOldOnSave=0" +
+                "&vpsplugin_enabled=0&vpsplugin_overwrite=0&vpsplugin_time=-1",
+            takePath()
+        )
+        assertEquals(
+            "/vpsplugin/web/timeraddbyeventid?sRef=$SERVICE_ENCODED&eventid=39150" +
+                "&vpsplugin_enabled=1&vpsplugin_overwrite=0&vpsplugin_time=-1",
+            takePath()
+        )
+    }
+
+    @Test
+    fun aTimerWithUnknownVpsIsSavedOnTheStockPageThatKeepsTheBoxsVps() = runBlocking {
+        server.enqueue(MockResponse().setBody(""))
+        val api = api(WebIfCapabilities(), VpsPlugin(present = true))
+
+        api.editTimer(TIMER, TIMER.copy(vps = null))
+
+        assertEquals(
+            "/web/timerchange?$TIMER_QUERY&channelOld=$SERVICE_ENCODED&beginOld=1700000000" +
+                "&endOld=1700003600&deleteOldOnSave=1",
+            takePath()
+        )
+    }
+
+    @Test
+    fun aPluginPageThatIsGoneIsReportedAndTheStockPageAnswers() = runBlocking {
+        server.enqueue(MockResponse().setResponseCode(404))
+        server.enqueue(MockResponse().setBody(SIMPLE_RESULT_TRUE))
+        var missing = 0
+        val api = api(WebIfCapabilities(), VpsPlugin(present = true) { missing++ })
+
+        val response = api.addTimer(TIMER.copy(vps = TimerVps(VpsMode.Safe)))
+
+        assertEquals(
+            "/vpsplugin/web/timerchange?$TIMER_QUERY&deleteOldOnSave=0" +
+                "&vpsplugin_enabled=1&vpsplugin_overwrite=0&vpsplugin_time=-1",
+            takePath()
+        )
+        assertEquals("/web/timerchange?$TIMER_QUERY&deleteOldOnSave=0", takePath())
+        assertEquals(1, missing)
+        assertEquals(SimpleResult("True", "Timer added"), response.value)
+        assertNull(response.error)
     }
 
     @Test
@@ -421,7 +504,7 @@ class DreamboxWebIfApiTest {
         server.enqueue(MockResponse().setBody(EXTERNALS))
         server.enqueue(MockResponse().setBody(EXTERNALS))
 
-        assertEquals(AutoTimerPlugin.Missing, api.autoTimerPlugin().value)
+        assertEquals(ReceiverPlugins(AutoTimerPlugin.Missing, vps = false), api.plugins().value)
         assertEquals(true, api.hasBouquetEditor().value)
 
         assertEquals("/web/external?", takePath())
@@ -433,8 +516,19 @@ class DreamboxWebIfApiTest {
         server.enqueue(MockResponse().setBody(loadWebFixture("bouqueteditor/web_external.xml")))
         server.enqueue(MockResponse().setBody(EXTERNALS_AUTOTIMER_17))
 
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.autoTimerPlugin().value)
-        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.autoTimerPlugin().value)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), api.plugins().value?.autoTimer)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_7), api.plugins().value?.autoTimer)
+    }
+
+    @Test
+    fun theVpsPluginIsItsPathInWebExternals() = runBlocking {
+        server.enqueue(MockResponse().setBody(EXTERNALS_VPS))
+
+        val plugins = api.plugins().value
+
+        assertEquals(true, plugins?.vps)
+        assertEquals(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), plugins?.autoTimer)
+        assertEquals("/web/external?", takePath())
     }
 
     @Test
@@ -601,6 +695,14 @@ class DreamboxWebIfApiTest {
         const val EXTERNALS_AUTOTIMER_17 = "<e2webifexternals><e2webifexternal>" +
             "<e2path>autotimer</e2path><e2externalversion>1.7</e2externalversion>" +
             "</e2webifexternal></e2webifexternals>"
+
+        const val SIMPLE_RESULT_TRUE = "<e2simplexmlresult><e2state>True</e2state>" +
+            "<e2statetext>Timer added</e2statetext></e2simplexmlresult>"
+
+        const val EXTERNALS_VPS = "<e2webifexternals>" +
+            "<e2webifexternal><e2path>autotimer</e2path></e2webifexternal>" +
+            "<e2webifexternal><e2path>vpsplugin</e2path></e2webifexternal>" +
+            "</e2webifexternals>"
 
         /** `/grab` writes to `/tmp/dreamDroid-<unix seconds>`. */
         val GRAB = Regex("/grab\\?format=jpg&filename=%2Ftmp%2FdreamDroid-\\d+")

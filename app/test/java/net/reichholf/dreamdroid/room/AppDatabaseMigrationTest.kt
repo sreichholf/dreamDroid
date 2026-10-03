@@ -18,12 +18,14 @@ import org.junit.jupiter.api.Test
  * [AppDatabase.MIGRATION_8_9] fills `epg_event.titleKey` for a cached row.
  * [AppDatabase.MIGRATION_9_10] turns `encoder_stream` into `stream_mode`; the `profile`
  * table that comes out is checked against the exported schema 10.
+ * [AppDatabase.MIGRATION_10_11] adds VPS to `timer_list` and `profile`; both tables are checked
+ * against the exported schema 11.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
 class AppDatabaseMigrationTest {
     @Test
-    fun migratesV1ProfileThroughVersion10() {
+    fun migratesV1ProfileThroughVersion11() {
         val dbFile = Files.createTempFile("dreambox-v1", ".db")
         Files.delete(dbFile)
         try {
@@ -45,11 +47,16 @@ class AppDatabaseMigrationTest {
                     connection.execSQL(V9_TRUTHY_ENCODER_PROFILE_ROW)
                     AppDatabase.MIGRATION_9_10.migrate(connection)
                 }
+                assertTableMatchesSchema(connection, "profile", SCHEMA_10)
+                connection.execSQL(V10_TIMER_LIST_ROW)
+                runBlocking { AppDatabase.MIGRATION_10_11.migrate(connection) }
                 assertProfileSurvived(connection)
                 assertMigratedTablesExist(connection)
                 assertTitleKeyBackfilled(connection)
                 assertStreamModeFromEncoderFlag(connection)
-                assertProfileTableMatchesSchema10(connection)
+                assertVpsDefaultsOff(connection)
+                assertTableMatchesSchema(connection, "profile", SCHEMA_11)
+                assertTableMatchesSchema(connection, "timer_list", SCHEMA_11)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -96,13 +103,32 @@ class AppDatabaseMigrationTest {
         )
     }
 
+    /** Existing profiles get VPS default "No"; an existing snapshot row has unknown VPS. */
+    private fun assertVpsDefaultsOff(connection: SQLiteConnection) {
+        connection.prepare("SELECT DISTINCT vps_default FROM profile").use { statement ->
+            assertTrue(statement.step())
+            assertEquals("Off", statement.getText(0))
+            assertFalse(statement.step())
+        }
+        connection.prepare("SELECT vpsMode, vpsTime FROM timer_list").use { statement ->
+            assertTrue(statement.step())
+            assertTrue(statement.isNull(0))
+            assertTrue(statement.isNull(1))
+            assertFalse(statement.step())
+        }
+    }
+
     /**
-     * The migrated `profile` table has the columns of the exported version-10 schema: the
-     * check Room makes when it opens the file.
+     * The migrated [table] has the columns of the exported [schemaPath]: the check Room makes
+     * when it opens the file.
      */
-    private fun assertProfileTableMatchesSchema10(connection: SQLiteConnection) {
+    private fun assertTableMatchesSchema(
+        connection: SQLiteConnection,
+        table: String,
+        schemaPath: String
+    ) {
         val actual = mutableMapOf<String, Column>()
-        connection.prepare("PRAGMA table_info(`profile`)").use { statement ->
+        connection.prepare("PRAGMA table_info(`$table`)").use { statement ->
             while (statement.step()) {
                 actual[statement.getText(1)] = Column(
                     type = statement.getText(2),
@@ -111,15 +137,15 @@ class AppDatabaseMigrationTest {
                 )
             }
         }
-        assertEquals(schema10ProfileColumns(), actual)
+        assertEquals(schemaColumns(table, schemaPath), actual, table)
     }
 
-    private fun schema10ProfileColumns(): Map<String, Column> {
-        val schema = listOf(Path.of(SCHEMA_10), Path.of("app", SCHEMA_10)).first(Files::exists)
+    private fun schemaColumns(table: String, schemaPath: String): Map<String, Column> {
+        val schema = listOf(Path.of(schemaPath), Path.of("app", schemaPath)).first(Files::exists)
         val entities = JsonParser.parseString(Files.readString(schema)).asJsonObject
             .getAsJsonObject("database").getAsJsonArray("entities").map { it.asJsonObject }
-        val profile = entities.single { it.get("tableName").asString == "profile" }
-        return profile.getAsJsonArray("fields").map { it.asJsonObject }.associate { field ->
+        val entity = entities.single { it.get("tableName").asString == table }
+        return entity.getAsJsonArray("fields").map { it.asJsonObject }.associate { field ->
             field.get("columnName").asString to Column(
                 type = field.get("affinity").asString,
                 notNull = field.get("notNull")?.asBoolean ?: false,
@@ -266,6 +292,18 @@ class AppDatabaseMigrationTest {
             """.trimIndent()
 
         private const val SCHEMA_10 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/10.json"
+
+        private const val SCHEMA_11 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/11.json"
+
+        /** A version-10 timer snapshot row, from before dreamDroid kept VPS. */
+        private val V10_TIMER_LIST_ROW =
+            """
+            INSERT INTO `timer_list` VALUES (
+                7, 0, '1:0:19:283D:3FB:1:C00000:0:0:0:', 'Das Erste HD', '1234', 'Tatort', '',
+                '', '0', '1700000000', '1700005400', '5400', '', '', '', '', '0', '3',
+                '/media/hdd/movie/', '', '', '', '0', '', '', '0', '0', '0', '0', '0'
+            )
+            """.trimIndent()
 
         private val V8_EPG_EVENT_ROW =
             """

@@ -24,6 +24,8 @@ import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
@@ -157,6 +159,71 @@ class TimerEditScreenTest {
     }
 
     @Test
+    fun vpsFieldIsHiddenWithoutThePlugin() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                Form(form(sampleTimer()))
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps)).assertDoesNotExist()
+    }
+
+    @Test
+    fun vpsFieldShowsTheNoteOnlyWhenOn() {
+        val actions = RecordingActions()
+        val timer = sampleTimer().copy(eit = "4711", vps = TimerVps(VpsMode.Off))
+        composeRule.setContent {
+            DreamDroidTheme {
+                Form(form(timer), actions = actions)
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.vps_note)).assertDoesNotExist()
+        composeRule.onNodeWithContentDescription(string(R.string.vps)).performClick()
+        composeRule.onNodeWithText(vpsModes()[2]).performClick()
+        assertEquals(listOf(VpsMode.Overwrite), actions.modes)
+    }
+
+    @Test
+    fun epgTimerWithVpsOnShowsTheNoteWithoutTimePickers() {
+        val timer = sampleTimer().copy(eit = "4711", vps = TimerVps(VpsMode.Safe))
+        composeRule.setContent {
+            DreamDroidTheme {
+                Form(form(timer))
+            }
+        }
+
+        composeRule.onNodeWithText(vpsModes()[1]).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.vps_note))
+            .performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(string(R.string.vps_time)).assertDoesNotExist()
+    }
+
+    @Test
+    fun manualTimerWithVpsOnShowsAndReportsTheVpsTimePickers() {
+        val picks = mutableListOf<TimerEditPick>()
+        val timer = sampleTimer().copy(eit = "", vps = TimerVps(VpsMode.Safe))
+        composeRule.setContent {
+            DreamDroidTheme {
+                Form(form(timer), onPick = { picks += it })
+            }
+        }
+
+        composeRule.onNodeWithContentDescription(string(R.string.vps_date))
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithContentDescription(string(R.string.vps_time))
+            .performScrollTo()
+            .performClick()
+        assertEquals(listOf(TimerEditPick.VpsDate, TimerEditPick.VpsTime), picks)
+    }
+
+    @Test
     fun saveErrorShowsAboveTheForm() {
         composeRule.setContent {
             DreamDroidTheme {
@@ -266,7 +333,18 @@ class TimerEditScreenTest {
         )
     }
 
-    private fun form(timer: Timer) = TimerEditForm.from(timer, LOCATIONS)
+    private fun form(timer: Timer) = TimerEditForm.from(timer, LOCATIONS, vpsPlugin = true)
+
+    private fun vpsModes(): Array<String> = InstrumentationRegistry.getInstrumentation()
+        .targetContext.resources.getStringArray(R.array.vps_modes)
+
+    private class RecordingActions : TimerFormActions {
+        val modes = mutableListOf<VpsMode>()
+
+        override fun onVpsModeChange(mode: VpsMode) {
+            modes += mode
+        }
+    }
 
     private fun repeatedLabel(repeated: Int) = timerRepeatedLabel(
         InstrumentationRegistry.getInstrumentation().targetContext.resources,

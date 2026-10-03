@@ -3,9 +3,12 @@ package net.reichholf.dreamdroid.ui.timers
 import java.util.Calendar
 import java.util.TimeZone
 import net.reichholf.dreamdroid.enigma.Timer
+import net.reichholf.dreamdroid.enigma.TimerVps
+import net.reichholf.dreamdroid.enigma.VpsMode
 import org.junit.jupiter.api.Assertions.assertArrayEquals
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -60,13 +63,13 @@ class TimerEditFormTest {
     fun normalizedWritesWhatTheFormShows() {
         val timer = Timer(disabled = "", justPlay = "", afterEvent = "", location = "/gone/")
 
-        val saved = timer.normalized(listOf("/hdd/movie/", "/media/hdd/"))
+        val saved = timer.normalized(listOf("/hdd/movie/", "/media/hdd/"), vpsPlugin = true)
 
         assertEquals("0", saved.disabled)
         assertEquals("0", saved.justPlay)
         assertEquals("0", saved.afterEvent)
         assertEquals("/hdd/movie/", saved.location)
-        assertEquals("/gone/", timer.normalized(emptyList()).location)
+        assertEquals("/gone/", timer.normalized(emptyList(), vpsPlugin = true).location)
     }
 
     @Test
@@ -96,12 +99,109 @@ class TimerEditFormTest {
         assertSame(moved, moved.withClock(isBegin = false, hourOfDay = 22, minute = 30))
     }
 
-    private fun form(timer: Timer, locations: List<String> = emptyList()) =
-        TimerEditForm.from(timer, locations)
+    @Test
+    fun vpsShowsOnlyWithThePluginForRecordTimersThatDoNotRepeat() {
+        assertNull(form(EPG_TIMER.copy(vps = null)).vps)
+        assertNull(form(EPG_TIMER, vpsPlugin = false).vps)
+        assertNull(form(EPG_TIMER.copy(justPlay = "1")).vps)
+        assertNull(form(EPG_TIMER.copy(repeated = "31")).vps)
+
+        assertEquals(VpsForm(VpsMode.Safe, time = null, manual = false), form(EPG_TIMER).vps)
+    }
+
+    @Test
+    fun vpsTimeIsForTimersWithoutEventOrName() {
+        val epg = form(EPG_TIMER).vps!!
+        assertFalse(epg.manual)
+        assertFalse(epg.showsTime)
+
+        val noEvent = form(EPG_TIMER.copy(eit = "")).vps!!
+        assertTrue(noEvent.manual)
+        assertTrue(noEvent.showsTime)
+
+        assertTrue(TimerEditForm.from(EPG_TIMER, emptyList(), true, name = " ").vps!!.manual)
+        assertFalse(form(EPG_TIMER.copy(eit = "", vps = TimerVps(VpsMode.Off))).vps!!.showsTime)
+    }
+
+    @Test
+    fun normalizedSavesAHiddenVpsFieldAsOff() {
+        val zap = EPG_TIMER.copy(justPlay = "1", vps = TimerVps(VpsMode.Overwrite, 500))
+        val repeating = EPG_TIMER.copy(repeated = "1")
+
+        assertEquals(TimerVps(VpsMode.Off), zap.normalized(emptyList(), vpsPlugin = true).vps)
+        assertEquals(TimerVps(VpsMode.Off), repeating.normalized(emptyList(), vpsPlugin = true).vps)
+        assertNull(EPG_TIMER.copy(vps = null).normalized(emptyList(), vpsPlugin = true).vps)
+        assertEquals(EPG_TIMER.vps, EPG_TIMER.normalized(emptyList(), vpsPlugin = true).vps)
+    }
+
+    @Test
+    fun withoutThePluginNormalizedKeepsTheListedVps() {
+        val timer = EPG_TIMER.copy(vps = TimerVps(VpsMode.Overwrite, 500))
+        val manualZap = EPG_TIMER.copy(eit = "", justPlay = "1")
+
+        assertNull(form(timer, vpsPlugin = false).vps)
+        assertEquals(timer.vps, timer.normalized(emptyList(), vpsPlugin = false).vps)
+        assertEquals(manualZap.vps, manualZap.normalized(emptyList(), vpsPlugin = false).vps)
+    }
+
+    @Test
+    fun normalizedGivesAManualVpsTimerItsBegin() {
+        val manual = EPG_TIMER.copy(eit = "")
+
+        assertEquals(
+            TimerVps(VpsMode.Safe, 1000),
+            manual.normalized(emptyList(), vpsPlugin = true).vps
+        )
+    }
+
+    @Test
+    fun turningVpsOnStartsAManualTimerAtItsBegin() {
+        val manual = EPG_TIMER.copy(eit = "", vps = TimerVps(VpsMode.Off))
+
+        assertEquals(TimerVps(VpsMode.Safe, 1000), manual.withVpsMode(VpsMode.Safe, "Show").vps)
+        assertEquals(
+            TimerVps(VpsMode.Overwrite),
+            EPG_TIMER.withVpsMode(VpsMode.Overwrite, "Show").vps
+        )
+        assertNull(EPG_TIMER.copy(vps = null).withVpsMode(VpsMode.Safe, "Show").vps)
+    }
+
+    @Test
+    fun pickedVpsDateAndClockMoveTheVpsTime() {
+        val begin = local(2030, Calendar.JANUARY, 15, 20, 15)
+        val timer = EPG_TIMER.copy(eit = "", begin = begin.toString())
+        val utcDate = Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
+            clear()
+            set(2030, Calendar.MARCH, 2)
+        }.timeInMillis
+
+        val moved = timer.withVpsDate(utcDate).withVpsClock(hourOfDay = 20, minute = 10)
+
+        assertEquals(local(2030, Calendar.MARCH, 2, 20, 10), moved.vps?.time)
+        assertEquals(timer.begin, moved.begin)
+    }
+
+    private fun form(
+        timer: Timer,
+        locations: List<String> = emptyList(),
+        vpsPlugin: Boolean = true
+    ) = TimerEditForm.from(timer, locations, vpsPlugin)
 
     private fun local(year: Int, month: Int, day: Int, hour: Int, minute: Int): Long =
         Calendar.getInstance().apply {
             clear()
             set(year, month, day, hour, minute)
         }.timeInMillis / 1000
+
+    private companion object {
+        val EPG_TIMER = Timer(
+            eit = "4711",
+            name = "Show",
+            begin = "1000",
+            end = "2000",
+            justPlay = "0",
+            repeated = "0",
+            vps = TimerVps(VpsMode.Safe)
+        )
+    }
 }
