@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
@@ -32,7 +33,7 @@ class AutoTimerPreviewViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
     private val autoTimers =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository)
+        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, TestScope())
     private val epg = EpgRepository(
         receiverApis(receiver.repository),
         receiver.repository,

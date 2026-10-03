@@ -5,7 +5,9 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 
 /**
@@ -18,6 +20,9 @@ interface WidgetEntryPoint {
     fun profileRepository(): ProfileRepository
 
     fun receiverApiFactory(): ReceiverApiFactory
+
+    @ApplicationScope
+    fun applicationScope(): CoroutineScope
 
     companion object {
         fun get(context: Context): WidgetEntryPoint =

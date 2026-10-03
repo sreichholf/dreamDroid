@@ -2,15 +2,25 @@ package net.reichholf.dreamdroid.video
 
 import java.util.Collections
 import java.util.concurrent.CountDownLatch
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 class PlayerCommandQueueTest {
-    private val queue = PlayerCommandQueue(Dispatchers.IO)
+    private val scope = CoroutineScope(SupervisorJob())
+    private val queue = PlayerCommandQueue(scope, Dispatchers.IO)
+
+    @AfterEach
+    fun cancelQueue() {
+        scope.cancel()
+    }
 
     @Test
     fun postReturnsWhileACommandBlocksAndLaterCommandsWaitTheirTurn() = runBlocking {

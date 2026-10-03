@@ -6,16 +6,14 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Python
 
 /**
- * Home-screen Virtual Remote click handler. Runs RCU HTTP on [Dispatchers.IO]
- * (replaces the old JobIntentService WidgetService path).
+ * Home-screen Virtual Remote click handler. Runs RCU HTTP in the application scope on
+ * [Dispatchers.IO] (replaces the old JobIntentService WidgetService path).
  */
 object WidgetRemoteRequest {
     private const val TAG = "WidgetRemoteRequest"
@@ -26,22 +24,21 @@ object WidgetRemoteRequest {
     const val KEY_KEYID = "key_id"
     const val KEY_WIDGETID = "widget_id"
 
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val mainHandler = Handler(Looper.getMainLooper())
 
     fun enqueue(context: Context, intent: Intent, onComplete: Runnable? = null) {
         val app = context.applicationContext
-        scope.launch {
+        val deps = WidgetEntryPoint.get(app)
+        deps.applicationScope().launch(Dispatchers.IO) {
             try {
-                doRemoteRequest(app, intent)
+                doRemoteRequest(app, deps, intent)
             } finally {
                 onComplete?.run()
             }
         }
     }
 
-    private suspend fun doRemoteRequest(context: Context, intent: Intent) {
-        val deps = WidgetEntryPoint.get(context)
+    private suspend fun doRemoteRequest(context: Context, deps: WidgetEntryPoint, intent: Intent) {
         val profile = VirtualRemoteWidgetConfiguration.getWidgetProfile(
             context,
             deps.profileRepository(),

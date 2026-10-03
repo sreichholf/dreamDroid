@@ -7,8 +7,6 @@ import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 
@@ -39,13 +37,12 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
     companion object {
         const val WIDGET_PREFERENCE_PREFIX = "virtual_remote."
 
-        private val updateScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
         /**
-         * Refresh one widget after configure. Prefers Glance update; falls back to a
-         * direct [RemoteViews] push if Glance has not bound the id yet.
+         * Refresh one widget after configure, in [scope]. Prefers Glance update; falls back to
+         * a direct [RemoteViews] push if Glance has not bound the id yet.
          */
         fun updateWidget(
+            scope: CoroutineScope,
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int,
@@ -53,7 +50,7 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
         ) {
             if (profile == null) return
             val appContext = context.applicationContext
-            updateScope.launch {
+            scope.launch {
                 try {
                     val glanceId = GlanceAppWidgetManager(appContext).getGlanceIdBy(appWidgetId)
                     VirtualRemoteWidget().update(appContext, glanceId)

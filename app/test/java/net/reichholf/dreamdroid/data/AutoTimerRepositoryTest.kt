@@ -1,10 +1,14 @@
 package net.reichholf.dreamdroid.data
 
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
@@ -27,8 +31,7 @@ import org.junit.jupiter.api.Test
 
 class AutoTimerRepositoryTest {
     private val receiver = TestReceiver()
-    private val repository =
-        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository)
+    private val repository = repository(TestScope())
 
     @BeforeEach
     fun setUp() {
@@ -358,10 +361,11 @@ class AutoTimerRepositoryTest {
     }
 
     @Test
-    fun aRunOnApi17IsStartedAndCountedAgainOnceTheBoxAnswers() = runBlocking<Unit> {
+    fun aRunOnApi17IsStartedAndCountedAgainOnceTheBoxAnswers() = runTest {
         receiver.respond(EXTERNALS, EXTERNALS_17)
         receiver.respond(PARSE, TestReceiver.simpleResult(true, RUN_SUMMARY))
         val hold = receiver.hold(PARSE)
+        val repository = repository(backgroundScope)
 
         val result = repository.runNow()
         val started = repository.revision.value
@@ -370,10 +374,17 @@ class AutoTimerRepositoryTest {
             AutoTimerWriteResult.Done(UiText.Resource(R.string.autotimer_run_started)),
             result
         )
+        // The run waits on the test scheduler until the test lets it start.
+        assertEquals(emptyList<Any>(), receiver.requestsTo(PARSE))
+        runCurrent()
         assertTrue(hold.arrived.await(5, TimeUnit.SECONDS))
         hold.release()
-        withTimeout(TIMEOUT) { repository.revision.first { it > started } }
+        // runTest's own timeout bounds this; withTimeout would run on virtual time.
+        repository.revision.first { it > started }
     }
+
+    private fun repository(background: CoroutineScope) =
+        AutoTimerRepository(receiverApis(receiver.repository), receiver.repository, background)
 
     @Test
     fun aRunWithoutThePluginSendsNothing() = runBlocking<Unit> {

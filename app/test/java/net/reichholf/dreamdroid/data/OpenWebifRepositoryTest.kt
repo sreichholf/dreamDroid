@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import net.reichholf.dreamdroid.enigma.BouquetMode
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
@@ -81,7 +82,7 @@ class OpenWebifRepositoryTest {
     fun autoTimerPresenceComesFromAutoTimerGet() = runBlocking<Unit> {
         receiver.respond("/autotimer/get", loadOwifFixture("autotimer/get_17.xml"))
         receiver.respond("/autotimer", loadOwifFixture("autotimer/list_17.xml"))
-        val autoTimers = AutoTimerRepository(clients, profiles)
+        val autoTimers = AutoTimerRepository(clients, profiles, TestScope())
 
         assertEquals(PluginPresence.Present, autoTimers.refreshPresence())
         val load = autoTimers.list() as AutoTimerLoad.Ready

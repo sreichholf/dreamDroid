@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -36,7 +37,8 @@ class EpgEventDetailViewModelTest {
     private val viewModels = mutableListOf<EpgEventDetailViewModel>()
     private val autoTimers = AutoTimerRepository(
         receiverApis(receiver.profiles.repository),
-        receiver.profiles.repository
+        receiver.profiles.repository,
+        TestScope()
     )
 
     @BeforeEach

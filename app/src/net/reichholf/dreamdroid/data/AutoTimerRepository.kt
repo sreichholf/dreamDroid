@@ -3,8 +3,6 @@ package net.reichholf.dreamdroid.data
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,6 +15,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.ReceiverApiFactory
 import net.reichholf.dreamdroid.enigma.SimpleResult
@@ -93,12 +92,11 @@ sealed interface AutoTimerPreviewLoad {
 @Singleton
 class AutoTimerRepository @Inject constructor(
     private val clients: ReceiverApiFactory,
-    private val profiles: ProfileRepository
+    private val profiles: ProfileRepository,
+    /** Where an API 1.7 run, which answers only once done, goes on unawaited. */
+    @param:ApplicationScope private val background: CoroutineScope
 ) {
     private val writes = Mutex()
-
-    /** Runs that answer only once done, which nobody waits for. */
-    private val background = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     /** The plugin per profile id; the last answer stays while a receiver is offline. */
     private val known = MutableStateFlow<Map<Int, AutoTimerPlugin>>(emptyMap())
