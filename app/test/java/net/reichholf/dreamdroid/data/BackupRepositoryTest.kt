@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import androidx.preference.PreferenceManager
+import androidx.sqlite.SQLiteException
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import kotlinx.coroutines.runBlocking
@@ -47,7 +48,7 @@ class BackupRepositoryTest {
     }
 
     @Test
-    fun importStoresSettingsWithTheirTypes() = runBlocking<Unit> {
+    fun importStoresSettingsWithTheirTypesButNotTheFilesActiveProfileId() = runBlocking<Unit> {
         val data = BackupData()
         data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
@@ -57,7 +58,77 @@ class BackupRepositoryTest {
 
         assertEquals("from-backup", preferences.getString("import_probe", null))
         assertEquals(true, preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
-        assertEquals(7, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
+        assertEquals(-1, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
+    }
+
+    @Test
+    fun withTheSettingsTheFilesActiveProfileBecomesActiveByName() = runBlocking<Unit> {
+        val living = saved("Living Room", "10.0.0.1")
+        val kitchen = saved("Kitchen", "10.0.0.2")
+        profiles.setCurrent(living.id!!)
+        val data = BackupData()
+        data.addProfile(receiver("Cellar", "10.0.0.4").apply { id = kitchen.id })
+        data.addProfile(receiver("Kitchen", "10.0.0.5").apply { id = 40 })
+        data.addGenericSetting(GenericSetting(DreamDroid.CURRENT_PROFILE, "40", "Integer"))
+
+        importAll(json(data))
+
+        assertEquals(kitchen.id, profiles.requireCurrent().id)
+        assertEquals("10.0.0.5", profiles.requireCurrent().host)
+        assertEquals(kitchen.id, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
+    }
+
+    @Test
+    fun withoutTheSettingsTheActiveProfileStays() = runBlocking<Unit> {
+        val living = saved("Living Room", "10.0.0.1")
+        profiles.setCurrent(living.id!!)
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.5").apply { id = 40 })
+        data.addGenericSetting(GenericSetting(DreamDroid.CURRENT_PROFILE, "40", "Integer"))
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = setOf(0), passwords = true, settings = false)
+            )
+        )
+
+        assertEquals(living.id, profiles.requireCurrent().id)
+        assertEquals(living.id, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
+    }
+
+    @Test
+    fun aFailedWriteLeavesNoProfileAndNoSettingBehind() = runBlocking<Unit> {
+        val room = RoomProfileStore(testProfiles.database, preferences) { testProfiles.services }
+        val failing = object : ProfileStore by room {
+            var adds = 0
+
+            override suspend fun add(profile: Profile): Long {
+                if (++adds == 2) {
+                    throw SQLiteException("disk I/O error")
+                }
+                return room.add(profile)
+            }
+        }
+        val failingBackups = BackupRepository(
+            ProfileRepository(failing, testProfiles.capabilities),
+            SettingsRepository(preferences)
+        )
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
+        val backup = checkNotNull(failingBackups.parse(json(data)))
+
+        val imported = failingBackups.importBackup(
+            backup,
+            ImportChoice(profiles = setOf(0, 1), passwords = true, settings = true)
+        )
+
+        assertFalse(imported)
+        assertTrue(profiles.profiles().isEmpty())
+        assertNull(preferences.getString("import_probe", null))
     }
 
     @Test
@@ -116,9 +187,11 @@ class BackupRepositoryTest {
         data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
         val backup = checkNotNull(backups.parse(json(data)))
 
-        backups.importBackup(
-            backup,
-            ImportChoice(profiles = setOf(1), passwords = true, settings = false)
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = setOf(1), passwords = true, settings = false)
+            )
         )
 
         assertEquals(listOf("Cellar"), profiles.profiles().map { it.name })
@@ -137,9 +210,11 @@ class BackupRepositoryTest {
         data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
         val backup = checkNotNull(backups.parse(json(data)))
 
-        backups.importBackup(
-            backup,
-            ImportChoice(profiles = setOf(0, 1), passwords = false, settings = false)
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(profiles = setOf(0, 1), passwords = false, settings = false)
+            )
         )
 
         assertEquals(
@@ -255,9 +330,11 @@ class BackupRepositoryTest {
 
     private suspend fun importAll(content: String) {
         val backup = checkNotNull(backups.parse(content))
-        backups.importBackup(
-            backup,
-            ImportChoice(backup.profiles.indices.toSet(), passwords = true, settings = true)
+        assertTrue(
+            backups.importBackup(
+                backup,
+                ImportChoice(backup.profiles.indices.toSet(), passwords = true, settings = true)
+            )
         )
     }
 

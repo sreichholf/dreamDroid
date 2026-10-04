@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import android.util.Log
+import androidx.sqlite.SQLiteException
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
@@ -10,7 +11,9 @@ import com.google.gson.JsonParser
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.VpsMode
@@ -66,26 +69,46 @@ class BackupRepository @Inject constructor(
      * Imports the parts of [backup] that [choice] names. A profile whose name is already
      * saved replaces that row in place, so it keeps its id and, when it is the active one,
      * stays active.
+     *
+     * The profiles are written in one transaction, which finishes even when the caller is
+     * cancelled. The file's active profile id names a row of the device that wrote it, so it
+     * is not copied with the settings: when the settings come along and that profile is
+     * imported, its row here becomes the active one.
+     *
+     * @return false when the profiles could not be written. Nothing is changed then.
      */
-    suspend fun importBackup(backup: BackupData, choice: ImportChoice): Unit =
-        withContext(Dispatchers.IO) {
+    suspend fun importBackup(backup: BackupData, choice: ImportChoice): Boolean =
+        withContext(Dispatchers.IO + NonCancellable) {
             Log.i(TAG, "Import started")
             val passwordsIncluded = if (choice.passwords) backup.passwordsIncluded else false
-            backup.profiles.forEachIndexed { index, profile ->
-                if (index !in choice.profiles) {
-                    return@forEachIndexed
-                }
-                val name = profile.name ?: ""
-                val existing = profiles.profiles().firstOrNull { it.name == name }
-                val row = profileToInsert(profile, existing, passwordsIncluded)
-                row.id = existing?.id
-                profiles.save(row)
+            val activeInFile = backup.settings
+                ?.firstOrNull { it.key == DreamDroid.CURRENT_PROFILE }
+                ?.value
+                ?.toIntOrNull()
+            val chosen = backup.profiles.filterIndexed { index, _ -> index in choice.profiles }
+            val active = chosen.firstOrNull { activeInFile != null && it.id == activeInFile }
+            val saved = profiles.profiles()
+            val rows = chosen.map { profile ->
+                val existing = saved.firstOrNull { it.name == (profile.name ?: "") }
+                profileToInsert(profile, existing, passwordsIncluded).apply { id = existing?.id }
+            }
+            try {
+                profiles.saveAll(rows)
+            } catch (e: SQLiteException) {
+                Log.e(TAG, "Import failed, no profile was written", e)
+                return@withContext false
             }
             if (choice.settings) {
                 backup.settings?.let { imported ->
-                    settings.restore(imported.associate { it.key to typedValue(it) })
+                    settings.restore(
+                        imported
+                            .filter { it.key != DreamDroid.CURRENT_PROFILE }
+                            .associate { it.key to typedValue(it) }
+                    )
                 }
+                active?.id?.let { profiles.setCurrent(it) }
             }
+            true
         }
 
     private companion object {

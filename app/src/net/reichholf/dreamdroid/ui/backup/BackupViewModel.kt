@@ -253,9 +253,12 @@ class BackupViewModel @Inject constructor(
         }
         clearImport()
         viewModelScope.launch {
-            backups.importBackup(backup, review.choice)
-            showMessage(UiText.Resource(R.string.backup_import_successful))
-            reload()
+            if (backups.importBackup(backup, review.choice)) {
+                showMessage(UiText.Resource(R.string.backup_import_successful))
+                reload()
+            } else {
+                showMessage(UiText.Resource(R.string.backup_import_error))
+            }
         }
     }
 

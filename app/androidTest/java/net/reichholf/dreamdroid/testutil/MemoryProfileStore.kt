@@ -32,6 +32,8 @@ class MemoryProfileStore(rows: List<Profile> = emptyList()) : ProfileStore {
         rows.removeAll { it.id == profile.id }
     }
 
+    override suspend fun <R> transaction(block: suspend () -> R): R = block()
+
     override fun activeId(): Int = remembered
 
     override fun setActiveId(id: Int) {

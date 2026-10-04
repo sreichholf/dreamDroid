@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.backup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.preference.PreferenceManager
+import androidx.sqlite.SQLiteException
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -18,6 +19,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ProfileStore
+import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
@@ -351,6 +355,35 @@ class BackupViewModelTest {
         handle.getStateFlow<String?>("backup_import_content", "{").first { it == null }
 
         assertEquals(null, viewModel.uiState.value.importReview)
+    }
+
+    @Test
+    fun aFailedImportSaysSoAndWritesNothing() = runTest {
+        val room = RoomProfileStore(testProfiles.database, preferences) { testProfiles.services }
+        val failing = object : ProfileStore by room {
+            override suspend fun add(profile: Profile): Long =
+                throw SQLiteException("disk I/O error")
+        }
+        val failingProfiles = ProfileRepository(failing, testProfiles.capabilities)
+        val viewModel = BackupViewModel(
+            SavedStateHandle(),
+            BackupRepository(failingProfiles, SettingsRepository(preferences)),
+            failingProfiles,
+            documents
+        ).also { viewModels += it }
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.confirmImport()
+
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        assertTrue(profiles.profiles().isEmpty())
     }
 
     @Test
