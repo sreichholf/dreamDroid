@@ -38,6 +38,8 @@ import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
+import net.reichholf.dreamdroid.helpers.isTelevision
+import net.reichholf.dreamdroid.tv.activities.MainActivity as TvMainActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -176,6 +178,14 @@ class MainActivity :
     override fun requestLocalNetworkOnCreate(): Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (isTelevision()) {
+            // Whatever starts the plain LAUNCHER entry on a TV would get the phone shell in
+            // its tablet layout. Leanback launches the TV hub; send this one there too.
+            super.onCreate(savedInstanceState)
+            startActivity(Intent(this, TvMainActivity::class.java))
+            finish()
+            return
+        }
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
         lifecycleScope.launch {

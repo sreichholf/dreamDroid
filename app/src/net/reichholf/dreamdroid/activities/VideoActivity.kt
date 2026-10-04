@@ -45,6 +45,7 @@ import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
+import net.reichholf.dreamdroid.helpers.isTelevision
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
@@ -110,7 +111,7 @@ class VideoActivity :
         )
         setFullScreen()
         super.onCreate(savedInstanceState)
-        val isTelevision = isTelevisionDevice()
+        val isTelevision = isTelevision()
         if (!shouldKeepTvStreamingActivity(
                 isTelevision,
                 sessions.status.value,
@@ -152,16 +153,12 @@ class VideoActivity :
         initializeOverlay()
     }
 
-    private fun isTelevisionDevice(): Boolean =
-        resources.configuration.uiMode and Configuration.UI_MODE_TYPE_MASK ==
-            Configuration.UI_MODE_TYPE_TELEVISION
-
     private fun observeTvSession() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 sessions.status.collect { status ->
                     if (!shouldKeepTvStreamingActivity(
-                            isTelevisionDevice(),
+                            isTelevision(),
                             status,
                             playbackAlreadyStarted
                         )
