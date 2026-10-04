@@ -25,10 +25,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
+import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
-import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
 
@@ -36,9 +36,8 @@ import net.reichholf.dreamdroid.ui.text.asString
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * [HubViewModel] owns mode, the selected row, and bouquet or location tabs
  * (parity with former ServiceListPager). Publishes [TvMoviesHubState] through
- * [RegisterShellDestinationBar] (phone [R.id.shell_destination_nav] bar or tablet
- * [R.id.shell_destination_rail]), and routes MultiChoice / timer-edit results
- * for the active child page.
+ * [RegisterShellDestinationBar] (phone bottom bar or tablet rail), and routes MultiChoice /
+ * timer-edit results for the active child page.
  */
 @Composable
 fun HubDestination(
@@ -81,7 +80,11 @@ fun HubDestination(
         else -> TvMoviesDestination.TV
     }
 
+    val chromeScroll = LocalShellChromeScrollState.current
+
+    // A new list starts at the top, so all shell chrome comes back, as on a new screen.
     fun selectDestination(dest: TvMoviesDestination) {
+        chromeScroll?.revealAll()
         when (dest) {
             TvMoviesDestination.TV -> viewModel.selectTv()
             TvMoviesDestination.RADIO -> viewModel.selectRadio()
@@ -93,7 +96,7 @@ fun HubDestination(
     /** Active TV/Radio service list's go-up (clear drill-down / reload root). */
     var serviceListGoUp by remember { mutableStateOf<(() -> Unit)?>(null) }
 
-    // Shell destination bar state (Coordinator slot). Keep handler/selection fresh each frame.
+    // Shell destination bar state. Keep handler/selection fresh each frame.
     val destinationBarState = remember { TvMoviesHubState() }
     destinationBarState.selected = hubSelected
     destinationBarState.onDestinationSelected = { selectDestination(it) }
@@ -111,11 +114,11 @@ fun HubDestination(
             return
         }
         viewModel.onRowSelected(index)
+        chromeScroll?.revealAll()
     }
 
-    // Publish Snapshot state to the NavHost-owned shell ComposeView. Installing
-    // shell_destination_nav from this leaf tied chrome disposal to hub content load
-    // (bar vanished after bouquet / list refresh finished).
+    // Publish Snapshot state to the shell. Installing the bar from this leaf tied chrome
+    // disposal to hub content load (bar vanished after bouquet / list refresh finished).
     RegisterShellDestinationBar(ShellDestinationBarContent.TvMovies(destinationBarState))
 
     DisposableEffect(handle) {
@@ -241,9 +244,6 @@ fun HubDestination(
                     }
                 }
             }
-            ShellHubBottomChromeSpacer(
-                nowPlayingStripEnabled = destinationBarState.nowPlayingStripEnabled
-            )
         }
     }
 }

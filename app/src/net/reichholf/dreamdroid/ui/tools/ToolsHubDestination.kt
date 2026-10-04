@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.ui.tools
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -16,10 +15,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetListDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
+import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
-import net.reichholf.dreamdroid.ui.nav.ShellHubBottomChromeSpacer
 import net.reichholf.dreamdroid.ui.screenshot.ScreenshotDestination
 import net.reichholf.dreamdroid.ui.signal.SignalDestination
 
@@ -33,10 +32,14 @@ fun ToolsHubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     var selected by rememberSaveable { mutableStateOf(ToolsDestination.SCREENSHOT) }
     val destinationBarState = remember { ToolsHubState() }
     destinationBarState.selected = selected
-    destinationBarState.onDestinationSelected = { selected = it }
+    val chromeScroll = LocalShellChromeScrollState.current
+    destinationBarState.onDestinationSelected = {
+        selected = it
+        chromeScroll?.revealAll()
+    }
 
-    // Publish Snapshot state to the NavHost-owned shell ComposeView — do not install or
-    // setContent on shell_destination_nav from this leaf (content load must not dispose chrome).
+    // Publish Snapshot state to the shell; do not draw the bar from this leaf (content load
+    // must not dispose chrome).
     RegisterShellDestinationBar(ShellDestinationBarContent.Tools(destinationBarState))
 
     Scaffold(
@@ -44,24 +47,17 @@ fun ToolsHubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxSize()
-            ) {
-                when (selected) {
-                    ToolsDestination.SCREENSHOT -> ScreenshotDestination(handle = handle)
-                    ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
-                    ToolsDestination.SIGNAL -> SignalDestination(handle = handle)
-                    ToolsDestination.BOUQUETS -> BouquetListDestination(handle = handle)
-                }
+            when (selected) {
+                ToolsDestination.SCREENSHOT -> ScreenshotDestination(handle = handle)
+                ToolsDestination.DEVICE_INFO -> DeviceInfoDestination()
+                ToolsDestination.SIGNAL -> SignalDestination(handle = handle)
+                ToolsDestination.BOUQUETS -> BouquetListDestination(handle = handle)
             }
-            ShellHubBottomChromeSpacer()
         }
     }
 }

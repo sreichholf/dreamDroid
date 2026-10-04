@@ -1,6 +1,5 @@
 package net.reichholf.dreamdroid.ui.nav
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Handler
 import android.os.Looper
@@ -9,7 +8,6 @@ import androidx.navigation.FloatingWindow
 import androidx.navigation.NavHostController
 import kotlinx.coroutines.flow.StateFlow
 import net.reichholf.dreamdroid.Profile
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.BouquetMode
@@ -69,13 +67,10 @@ class PhoneNavigator(
         controller.addOnDestinationChangedListener { _, dest, _ ->
             val previous = controller.previousBackStackEntry?.destination?.route
             highlighter?.highlightDrawerForRoute(dest.route, previous)
-            val activity = lifecycleOwner as? Activity
             applyShellDestinationBarForRoute(
                 dest.route,
                 dest is FloatingWindow,
-                shellDestinationBarController,
-                activity?.findViewById(R.id.shell_destination_nav),
-                activity?.findViewById(R.id.shell_destination_rail)
+                shellDestinationBarController
             )
         }
         flushPendingNavigations()

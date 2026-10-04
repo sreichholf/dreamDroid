@@ -18,10 +18,6 @@
     <dimen name="fab_margin_right">16dp</dimen>
     <!-- M3 FAB gap above bottom chrome (NavigationBar / now-playing strip). -->
     <dimen name="fab_margin_above_chrome">16dp</dimen>
-    <!-- Material3 NavigationBar with labels; hub Scaffold bottomBar height. -->
-    <dimen name="shell_destination_bar_height">80dp</dimen>
-    <!-- Now-playing strip stacked above that bar in the Coordinator overlay. -->
-    <dimen name="now_playing_strip_height">56dp</dimen>
     <dimen name="navigation_header_height">200dp</dimen>
     <dimen name="navigation_header_padding_top">30dp</dimen>
     <dimen name="zap_grid_item_height">70dp</dimen>

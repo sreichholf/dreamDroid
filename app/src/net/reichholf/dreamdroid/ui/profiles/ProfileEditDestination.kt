@@ -54,7 +54,8 @@ fun ProfileEditDestination(
             canDelete = uiState.canDelete,
             onSave = viewModel::save,
             onDelete = { showDeleteConfirm = true }
-        )
+        ),
+        keepInView = true
     )
 
     ProfileEditScreen(

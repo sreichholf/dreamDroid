@@ -74,7 +74,8 @@ fun TimerEditDestination(
             actionsEnabled = uiState.progress == null,
             onSave = { online(viewModel::save) },
             onDelete = { online { showDeleteConfirm = true } }
-        )
+        ),
+        keepInView = true
     )
 
     TimerEditContent(

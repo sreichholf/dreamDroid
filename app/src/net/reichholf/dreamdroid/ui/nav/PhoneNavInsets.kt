@@ -35,7 +35,7 @@ import androidx.core.view.WindowInsetsCompat
  * [WindowInsets.safeDrawing] is often already consumed by the DrawerLayout, so
  * pad by the measured overlap of this ComposeView with the visible safe area.
  *
- * Hubs keep the overflow on purpose (chrome on `shell_destination_nav`).
+ * Hubs keep the overflow on purpose (the shell draws their bottom chrome).
  */
 @Composable
 fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean): Modifier {
@@ -61,8 +61,7 @@ fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean, bottomInset: 
     }
 
 /**
- * Hide `shell_destination_nav` (and tablet `shell_destination_rail` when present)
- * as soon as the current route is not a hub.
+ * Hide the shell destination chrome as soon as the current route is not a hub.
  * Hub [RegisterShellDestinationBar] only clears on dispose, which runs after the
  * first frame of timer/profile edit.
  * A [floating] (dialog) destination floats over the hub, which stays composed, so the bar stays.
@@ -70,18 +69,12 @@ fun Modifier.phoneNavDestinationViewport(shellBarVisible: Boolean, bottomInset: 
 fun applyShellDestinationBarForRoute(
     route: String?,
     floating: Boolean,
-    controller: ShellDestinationBarController?,
-    shellNav: View?,
-    shellRail: View? = null
+    controller: ShellDestinationBarController?
 ) {
     if (floating || PhoneNavRoutes.showsShellDestinationBar(route)) {
         return
     }
-    if (controller != null) {
-        controller.content = ShellDestinationBarContent.Hidden
-    }
-    shellNav?.visibility = View.GONE
-    shellRail?.visibility = View.GONE
+    controller?.content = ShellDestinationBarContent.Hidden
 }
 
 internal fun phoneNavBottomOverflowPx(

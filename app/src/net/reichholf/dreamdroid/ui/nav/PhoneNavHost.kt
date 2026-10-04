@@ -108,6 +108,7 @@ fun PhoneNavHost(
         val shellBarVisible = PhoneNavRoutes.showsShellDestinationBar(
             screenEntry?.destination?.route
         )
+        KeepShellChromePerScreen(screenEntry)
         PhoneNavHostGraph(
             handle = handle,
             navController = navController,

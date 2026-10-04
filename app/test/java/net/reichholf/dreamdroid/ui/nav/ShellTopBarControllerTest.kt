@@ -65,6 +65,19 @@ class ShellTopBarControllerTest {
         assertTrue(controller.actions.isEmpty())
     }
 
+    @Test
+    fun keepInViewFollowsTheNewestBindingAndSurvivesUpdates() {
+        val list = controller.claim()
+        controller.bind(list, listOf(action("Tags")))
+        val edit = controller.claim()
+        controller.bind(edit, listOf(action("Save")), keepInView = true)
+        assertTrue(controller.keepInView)
+        controller.update(edit, listOf(action("Save"), action("Delete")))
+        assertTrue(controller.keepInView)
+        controller.release(edit)
+        assertFalse(controller.keepInView)
+    }
+
     private fun labels() = controller.actions.map { it.label }
 
     private fun action(label: String) = ShellTopBarAction(id = label.hashCode(), label = label) {}

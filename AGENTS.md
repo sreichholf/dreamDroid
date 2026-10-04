@@ -10,6 +10,8 @@ Phone Enigma2 remote. Rewrite trunk is `main`. Sources live in `app/src` and `ap
 
 **Architecture:** new and touched code follows the target architecture in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md#target-architecture): repositories + Hilt, ViewModels without `Application`/`Context` exposing `StateFlow` UI state, Material 3 `TopAppBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`, type-safe routes, DataStore. Do not copy a legacy pattern from neighboring code because it is still there; it is listed under remediation.
 
+**Material 3 first:** where Material 3 defines a design or behavior, use its default: the component, its `*Defaults`, its state holders and scroll behaviors (for example `TopAppBarDefaults.enterAlwaysScrollBehavior`, `BottomAppBarDefaults.exitAlwaysScrollBehavior`, `rememberTopAppBarState`). Do not hand-write what the library already covers. Write custom code only for what Material 3 does not define, and say in the PR why the library does not fit.
+
 **Hilt** (the app and its instrumented tests run on Hilt; history and decisions in [`docs/hilt-migration.md`](docs/hilt-migration.md)):
 
 - A binding, repository method, or module lands in the PR with its first consumer. No bindings "for later".

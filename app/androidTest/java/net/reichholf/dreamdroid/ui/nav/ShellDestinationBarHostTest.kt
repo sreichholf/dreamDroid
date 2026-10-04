@@ -138,14 +138,13 @@ class ShellDestinationBarHostTest {
     }
 }
 
-private class TestLifecycleOwner : LifecycleOwner {
+internal class TestLifecycleOwner : LifecycleOwner {
     val registry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle get() = registry
 }
 
 /**
- * Test double for [ProvideShellDestinationBar] that exposes the controller without
- * requiring the activity [R.id.shell_destination_nav] ComposeView.
+ * Test double for [ProvideShellDestinationBar] that exposes the controller to the test.
  */
 @Composable
 private fun ProvideShellDestinationBarForTest(
