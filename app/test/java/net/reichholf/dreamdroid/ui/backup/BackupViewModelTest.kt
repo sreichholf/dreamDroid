@@ -146,15 +146,68 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun nothingToExportSaysSo() {
+    fun exportWithNothingChosenSaysSoAndOpensNoPicker() = runTest {
         val viewModel = viewModel()
 
-        viewModel.onNothingToExport()
+        viewModel.requestExport()
 
-        assertEquals(
-            UiText.Resource(R.string.backup_nothing_selected),
-            viewModel.uiState.value.userMessage
-        )
+        val state = viewModel.uiState.value
+        assertEquals(UiText.Resource(R.string.backup_nothing_selected), state.userMessage)
+        assertFalse(state.pickingExport)
+        assertFalse(state.confirmingPasswords)
+    }
+
+    @Test
+    fun exportWithoutPasswordsOpensThePickerOnce() = runTest {
+        saved("Living Room", "10.0.0.1")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        viewModel.requestExport()
+        assertTrue(viewModel.uiState.value.pickingExport)
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        viewModel.onExportPickerOpened()
+        assertFalse(viewModel.uiState.value.pickingExport)
+    }
+
+    @Test
+    fun exportWithPasswordsWarnsBeforeThePicker() = runTest {
+        saved("Living Room", "10.0.0.1")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+        viewModel.setIncludePasswords(true)
+
+        viewModel.requestExport()
+        assertTrue(viewModel.uiState.value.confirmingPasswords)
+        assertFalse(viewModel.uiState.value.pickingExport)
+        viewModel.dismissPasswordWarning()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertFalse(viewModel.uiState.value.pickingExport)
+
+        viewModel.requestExport()
+        viewModel.confirmPasswords()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertTrue(viewModel.uiState.value.pickingExport)
+    }
+
+    @Test
+    fun settingsOnlyExportCarriesNoPasswordsAndNoWarning() = runTest {
+        saved("Living Room", "10.0.0.1", pass = "secret")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+        viewModel.setIncludePasswords(true)
+        viewModel.setAllProfilesChecked(false)
+        viewModel.setExportSettings(true)
+
+        viewModel.requestExport()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertTrue(viewModel.uiState.value.pickingExport)
+        viewModel.exportTo(URI)
+        viewModel.uiState.first { it.userMessage != null }
+
+        val exported = read(documents.files.getValue(URI))
+        assertTrue(exported.profiles.isEmpty())
+        assertEquals(false, exported.passwordsIncluded)
     }
 
     @Test
@@ -214,16 +267,6 @@ class BackupViewModelTest {
             UiText.Resource(R.string.backup_export_missing_permission),
             viewModel.uiState.value.userMessage
         )
-    }
-
-    @Test
-    fun passwordWarningOpensAndCloses() {
-        val viewModel = viewModel()
-
-        viewModel.confirmPasswords()
-        assertTrue(viewModel.uiState.value.confirmingPasswords)
-        viewModel.dismissPasswordWarning()
-        assertFalse(viewModel.uiState.value.confirmingPasswords)
     }
 
     @Test

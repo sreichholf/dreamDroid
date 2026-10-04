@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.backup
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
@@ -62,10 +63,7 @@ class BackupScreenTest {
         composeRule.onNode(hasText("Cellar") and hasText("192.168.1.2")).assertIsOn()
         composeRule.onAllNodesWithText("Current").assertCountEquals(1)
         composeRule.onNodeWithText("Receiver passwords").assertIsOff()
-        composeRule.onNodeWithText(
-            "Left out. On import, existing profiles keep their saved passwords."
-        )
-            .assertIsDisplayed()
+        composeRule.onNodeWithText(PASSWORDS_EXCLUDED).assertIsDisplayed()
         composeRule.onNodeWithText("App settings").assertIsOff()
         composeRule.onAllNodesWithTag(LIST_ROW_TAG).assertCountEquals(4)
         composeRule.onAllNodesWithTag(LIST_ROW_TAG)[0]
@@ -119,6 +117,30 @@ class BackupScreenTest {
         )
     }
 
+    @Test
+    fun withoutAChosenProfileThePasswordSwitchIsOffLimits() {
+        setScreen(
+            BackupUiState(
+                profiles = listOf(
+                    BackupProfileToggle(id = 1, name = "Home", host = "h1", checked = false)
+                ),
+                includePasswords = true
+            )
+        )
+
+        composeRule.onNodeWithText("0 of 1").assertIsDisplayed()
+        composeRule.onNode(hasText("Receiver passwords") and isToggleable()).assertIsNotEnabled()
+    }
+
+    @Test
+    fun withoutProfilesTheHeaderHasNoCountOrSelectButton() {
+        setScreen(BackupUiState())
+
+        composeRule.onNodeWithText("Profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("0 of 0").assertDoesNotExist()
+        composeRule.onNodeWithText("Select all").assertDoesNotExist()
+    }
+
     private fun setScreen(state: BackupUiState, events: MutableList<String> = mutableListOf()) {
         composeRule.setContent {
             DreamDroidTheme {
@@ -132,5 +154,11 @@ class BackupScreenTest {
                 )
             }
         }
+    }
+
+    private companion object {
+        const val PASSWORDS_EXCLUDED =
+            "Left out. On import, profiles already on the device keep their passwords; " +
+                "new ones have none."
     }
 }

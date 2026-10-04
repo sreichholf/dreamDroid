@@ -26,6 +26,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.compose.ListRow
@@ -88,7 +90,8 @@ fun BackupScreen(
                 }
             ),
             checked = state.includePasswords,
-            onCheckedChange = onIncludePasswordsChange
+            onCheckedChange = onIncludePasswordsChange,
+            enabled = state.selectedProfiles > 0
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.backup_export_settings),
@@ -113,7 +116,8 @@ private fun ImportCard(onImport: () -> Unit) {
             Text(
                 text = stringResource(R.string.backup_import),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.semantics { heading() }
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -133,7 +137,10 @@ private fun ImportCard(onImport: () -> Unit) {
     }
 }
 
-/** "Profiles  2 of 3" with a button that selects all of them, or none once all are. */
+/**
+ * "Profiles  2 of 3", read as one heading, with a button that selects all of them, or none
+ * once all are. Without profiles the count and the button are left out.
+ */
 @Composable
 private fun ProfilesHeader(selected: Int, total: Int, onAllCheckedChange: (Boolean) -> Unit) {
     Row(
@@ -143,18 +150,26 @@ private fun ProfilesHeader(selected: Int, total: Int, onAllCheckedChange: (Boole
             .heightIn(min = 48.dp)
             .padding(start = ListRowHorizontalInset + 16.dp, end = ListRowHorizontalInset)
     ) {
-        Text(
-            text = stringResource(R.string.backup_profiles),
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = stringResource(R.string.backup_profiles_selected, selected, total),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.weight(1f)
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f)
+                .semantics(mergeDescendants = true) { heading() }
+        ) {
+            Text(
+                text = stringResource(R.string.backup_profiles),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (total > 0) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.backup_profiles_selected, selected, total),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
         if (total > 0) {
             val all = selected == total
             TextButton(onClick = { onAllCheckedChange(!all) }) {
@@ -174,12 +189,14 @@ private fun SubHeader(text: String) {
         text = text,
         style = MaterialTheme.typography.titleSmall,
         color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(
-            start = ListRowHorizontalInset + 16.dp,
-            end = ListRowHorizontalInset + 16.dp,
-            top = 16.dp,
-            bottom = 8.dp
-        )
+        modifier = Modifier
+            .padding(
+                start = ListRowHorizontalInset + 16.dp,
+                end = ListRowHorizontalInset + 16.dp,
+                top = 16.dp,
+                bottom = 8.dp
+            )
+            .semantics { heading() }
     )
 }
 

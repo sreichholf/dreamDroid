@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -52,16 +53,17 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         }
     }
 
+    LaunchedEffect(uiState.pickingExport) {
+        if (uiState.pickingExport) {
+            viewModel.onExportPickerOpened()
+            openExportPicker()
+        }
+    }
+
     BindShellFab(
         contentDescription = stringResource(R.string.backup_export),
         iconRes = R.drawable.ic_action_fab_export,
-        onClick = {
-            when {
-                !uiState.canExport -> viewModel.onNothingToExport()
-                uiState.includePasswords -> viewModel.confirmPasswords()
-                else -> openExportPicker()
-            }
-        },
+        onClick = viewModel::requestExport,
         text = stringResource(R.string.backup_export),
         lookDisabled = !uiState.canExport
     )
@@ -81,7 +83,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
             title = stringResource(R.string.backup_passwords_confirm_title),
             message = stringResource(R.string.backup_passwords_confirm),
             onDismiss = viewModel::dismissPasswordWarning,
-            onConfirm = ::openExportPicker,
+            onConfirm = viewModel::confirmPasswords,
             confirmLabel = stringResource(R.string.backup_export)
         )
     }

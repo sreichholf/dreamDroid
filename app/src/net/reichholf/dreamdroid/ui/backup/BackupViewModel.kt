@@ -30,13 +30,15 @@ data class BackupProfileToggle(
 /**
  * The export choices. App settings and receiver passwords stay out of the file until the
  * user turns [exportSettings] or [includePasswords] on. [confirmingPasswords] shows the
- * warning before an export that includes passwords.
+ * warning before an export that includes passwords; [pickingExport] asks the destination
+ * to open the document picker once.
  */
 data class BackupUiState(
     val profiles: List<BackupProfileToggle> = emptyList(),
     val exportSettings: Boolean = false,
     val includePasswords: Boolean = false,
     val confirmingPasswords: Boolean = false,
+    val pickingExport: Boolean = false,
     val userMessage: UiText? = null
 ) {
     val title: UiText
@@ -48,6 +50,10 @@ data class BackupUiState(
     /** False when the file would hold neither a profile nor the settings. */
     val canExport: Boolean
         get() = selectedProfiles > 0 || exportSettings
+
+    /** Passwords only reach the file with a profile that carries them. */
+    val passwordsInExport: Boolean
+        get() = includePasswords && selectedProfiles > 0
 }
 
 /**
@@ -108,12 +114,29 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(includePasswords = include) }
     }
 
+    /**
+     * The export button: says so when there is nothing to export, warns before an export
+     * with passwords, and otherwise opens the picker.
+     */
+    fun requestExport() {
+        val state = _uiState.value
+        when {
+            !state.canExport -> showMessage(UiText.Resource(R.string.backup_nothing_selected))
+            state.passwordsInExport -> _uiState.update { it.copy(confirmingPasswords = true) }
+            else -> _uiState.update { it.copy(pickingExport = true) }
+        }
+    }
+
     fun confirmPasswords() {
-        _uiState.update { it.copy(confirmingPasswords = true) }
+        _uiState.update { it.copy(confirmingPasswords = false, pickingExport = true) }
     }
 
     fun dismissPasswordWarning() {
         _uiState.update { it.copy(confirmingPasswords = false) }
+    }
+
+    fun onExportPickerOpened() {
+        _uiState.update { it.copy(pickingExport = false) }
     }
 
     /** Imports the document at [uri], then lists the profiles again. */
@@ -145,7 +168,7 @@ class BackupViewModel @Inject constructor(
                     data.settings = null
                 }
                 data.profiles.removeAll { it.id in skipped }
-                backups.exportJson(data, state.includePasswords)
+                backups.exportJson(data, state.passwordsInExport)
             }
             val message = if (documents.write(uri, json)) {
                 R.string.backup_export_successful
@@ -154,10 +177,6 @@ class BackupViewModel @Inject constructor(
             }
             showMessage(UiText.Resource(message))
         }
-    }
-
-    fun onNothingToExport() {
-        showMessage(UiText.Resource(R.string.backup_nothing_selected))
     }
 
     /** No app can pick the document. [reason] is the system's text, when it gave one. */

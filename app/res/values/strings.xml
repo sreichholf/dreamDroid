@@ -376,7 +376,7 @@
     <string name="backup_select_none">Select none</string>
     <string name="backup_also_include">Also include</string>
     <string name="backup_include_passwords">Receiver passwords</string>
-    <string name="backup_passwords_excluded">Left out. On import, existing profiles keep their saved passwords.</string>
+    <string name="backup_passwords_excluded">Left out. On import, profiles already on the device keep their passwords; new ones have none.</string>
     <string name="backup_passwords_included">In the file. Anyone who has it can sign in to your receivers.</string>
     <string name="backup_export_settings">App settings</string>
     <string name="backup_export_settings_summary">Every app preference</string>
