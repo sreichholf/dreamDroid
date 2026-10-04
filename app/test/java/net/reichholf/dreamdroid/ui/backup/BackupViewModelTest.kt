@@ -3,10 +3,12 @@ package net.reichholf.dreamdroid.ui.backup
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.preference.PreferenceManager
+import androidx.sqlite.SQLiteException
 import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -17,6 +19,9 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ProfileStore
+import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
@@ -63,7 +68,8 @@ class BackupViewModelTest {
         assertEquals(listOf(true, false), state.profiles.map { it.current })
         assertTrue(state.profiles.all { it.checked })
         assertFalse(state.exportSettings)
-        assertTrue(state.includePasswords)
+        assertFalse(state.includePasswords)
+        assertTrue(state.canExport)
         assertEquals(UiText.Resource(R.string.backup), state.title)
     }
 
@@ -86,14 +92,13 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun exportWithSettingsAndWithoutPasswords() = runTest {
+    fun exportWithSettingsLeavesPasswordsOutByDefault() = runTest {
         saved("Living Room", "10.0.0.1", pass = "secret")
         preferences.edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "0").apply()
         val viewModel = viewModel()
         viewModel.uiState.first { it.profiles.size == 1 }
 
         viewModel.setExportSettings(true)
-        viewModel.setIncludePasswords(false)
         viewModel.exportTo(URI)
         viewModel.uiState.first { it.userMessage != null }
 
@@ -108,6 +113,109 @@ class BackupViewModelTest {
     }
 
     @Test
+    fun exportKeepsPasswordsOnceChosen() = runTest {
+        saved("Living Room", "10.0.0.1", pass = "secret")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        viewModel.setIncludePasswords(true)
+        viewModel.exportTo(URI)
+        viewModel.uiState.first { it.userMessage != null }
+
+        val exported = read(documents.files.getValue(URI))
+        assertEquals("secret", exported.profiles.single().pass)
+        assertEquals(true, exported.passwordsIncluded)
+    }
+
+    @Test
+    fun selectNoneLeavesNothingToExportUntilSettingsAreChosen() = runTest {
+        saved("Living Room", "10.0.0.1")
+        saved("Bedroom", "10.0.0.2")
+        val handle = SavedStateHandle()
+        val viewModel = viewModel(handle)
+        viewModel.uiState.first { it.profiles.size == 2 }
+
+        viewModel.setAllProfilesChecked(false)
+        val none = viewModel.uiState.value
+        assertEquals(0, none.selectedProfiles)
+        assertFalse(none.canExport)
+        assertEquals(
+            listOf(false, false),
+            viewModel(handle).uiState.first { it.profiles.size == 2 }.profiles.map { it.checked }
+        )
+
+        viewModel.setExportSettings(true)
+        assertTrue(viewModel.uiState.value.canExport)
+        viewModel.setAllProfilesChecked(true)
+        assertEquals(2, viewModel.uiState.value.selectedProfiles)
+    }
+
+    @Test
+    fun exportWithNothingChosenSaysSoAndOpensNoPicker() = runTest {
+        val viewModel = viewModel()
+
+        viewModel.requestExport()
+
+        val state = viewModel.uiState.value
+        assertEquals(UiText.Resource(R.string.backup_nothing_selected), state.userMessage)
+        assertFalse(state.pickingExport)
+        assertFalse(state.confirmingPasswords)
+    }
+
+    @Test
+    fun exportWithoutPasswordsOpensThePickerOnce() = runTest {
+        saved("Living Room", "10.0.0.1")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        viewModel.requestExport()
+        assertTrue(viewModel.uiState.value.pickingExport)
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        viewModel.onExportPickerOpened()
+        assertFalse(viewModel.uiState.value.pickingExport)
+    }
+
+    @Test
+    fun exportWithPasswordsWarnsBeforeThePicker() = runTest {
+        saved("Living Room", "10.0.0.1")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+        viewModel.setIncludePasswords(true)
+
+        viewModel.requestExport()
+        assertTrue(viewModel.uiState.value.confirmingPasswords)
+        assertFalse(viewModel.uiState.value.pickingExport)
+        viewModel.dismissPasswordWarning()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertFalse(viewModel.uiState.value.pickingExport)
+
+        viewModel.requestExport()
+        viewModel.confirmPasswords()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertTrue(viewModel.uiState.value.pickingExport)
+    }
+
+    @Test
+    fun settingsOnlyExportCarriesNoPasswordsAndNoWarning() = runTest {
+        saved("Living Room", "10.0.0.1", pass = "secret")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+        viewModel.setIncludePasswords(true)
+        viewModel.setAllProfilesChecked(false)
+        viewModel.setExportSettings(true)
+
+        viewModel.requestExport()
+        assertFalse(viewModel.uiState.value.confirmingPasswords)
+        assertTrue(viewModel.uiState.value.pickingExport)
+        viewModel.exportTo(URI)
+        viewModel.uiState.first { it.userMessage != null }
+
+        val exported = read(documents.files.getValue(URI))
+        assertTrue(exported.profiles.isEmpty())
+        assertEquals(false, exported.passwordsIncluded)
+    }
+
+    @Test
     fun failedExportSaysSo() = runTest {
         documents.writable = false
         val viewModel = viewModel()
@@ -119,7 +227,7 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun importStoresProfilesAndSettingsAndListsThem() = runTest {
+    fun importAsksFirstAndStoresProfilesAndSettingsOnConfirm() = runTest {
         val data = BackupData()
         data.addProfile(receiver("Kitchen", "10.0.0.3"))
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
@@ -127,11 +235,193 @@ class BackupViewModelTest {
         val viewModel = viewModel()
 
         viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        assertEquals(listOf("Kitchen"), review.profiles.map { it.name })
+        assertTrue(profiles.profiles().isEmpty())
+
+        viewModel.confirmImport()
         val state = viewModel.uiState.first { it.profiles.isNotEmpty() }
 
         assertEquals(UiText.Resource(R.string.backup_import_successful), state.userMessage)
+        assertEquals(null, state.importReview)
         assertEquals(listOf("Kitchen"), state.profiles.map { it.name })
         assertTrue(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
+    fun reviewOffersOnlyWhatTheFileHolds() = runTest {
+        saved("Kitchen", "10.0.0.1")
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "" })
+        data.addProfile(receiver("Cellar", "10.0.0.4").apply { pass = "" })
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+
+        assertEquals(listOf(true, false), review.profiles.map { it.replaces })
+        assertTrue(review.profiles.all { it.checked })
+        assertFalse(review.passwordsAvailable)
+        assertFalse(review.includePasswords)
+        assertFalse(review.settingsAvailable)
+        assertFalse(review.includeSettings)
+        viewModel.setImportPasswords(true)
+        viewModel.setImportSettings(true)
+        assertFalse(viewModel.uiState.value.importReview!!.includePasswords)
+        assertFalse(viewModel.uiState.value.importReview!!.includeSettings)
+    }
+
+    @Test
+    fun importTakesOnlyTheChosenParts() = runTest {
+        saved("Kitchen", "10.0.0.1", pass = "saved")
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        assertTrue(review.passwordsAvailable && review.includePasswords)
+        assertTrue(review.settingsAvailable && review.includeSettings)
+
+        viewModel.setImportProfileChecked(1, false)
+        viewModel.setImportPasswords(false)
+        viewModel.setImportSettings(false)
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals(
+            mapOf("Kitchen" to ("10.0.0.3" to "saved")),
+            profiles.profiles().associate { it.name to (it.host to it.pass) }
+        )
+        assertFalse(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
+    fun nothingChosenCannotBeImportedAndCancelChangesNothing() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.setAllImportProfilesChecked(false)
+        val review = viewModel.uiState.value.importReview!!
+        assertFalse(review.canImport)
+        assertFalse(review.passwordsSelectable)
+        viewModel.confirmImport()
+        assertTrue(viewModel.uiState.value.importReview != null)
+
+        viewModel.dismissImport()
+        assertEquals(null, viewModel.uiState.value.importReview)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun importReviewSurvivesProcessDeath() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val handle = SavedStateHandle()
+        val first = viewModel(handle)
+        first.importFrom(URI)
+        first.uiState.first { it.importReview != null }
+        first.setImportProfileChecked(0, false)
+        first.setImportSettings(false)
+        documents.files.clear()
+
+        val restored = viewModel(handle)
+        val review = restored.uiState.first { it.importReview != null }.importReview!!
+        assertEquals(listOf(false, true), review.profiles.map { it.checked })
+        assertFalse(review.includeSettings)
+
+        restored.confirmImport()
+        restored.uiState.first { it.profiles.isNotEmpty() }
+        assertEquals(listOf("Cellar"), profiles.profiles().map { it.name })
+        assertEquals(null, handle.get<String>("backup_import_content"))
+    }
+
+    @Test
+    fun aSavedImportThatNoLongerParsesIsDropped() = runTest {
+        val handle = SavedStateHandle(mapOf("backup_import_content" to "{"))
+
+        val viewModel = viewModel(handle)
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        handle.getStateFlow<String?>("backup_import_content", "{").first { it == null }
+
+        assertEquals(null, viewModel.uiState.value.importReview)
+    }
+
+    @Test
+    fun aFailedImportSaysSoAndWritesNothing() = runTest {
+        val room = RoomProfileStore(testProfiles.database, preferences) { testProfiles.services }
+        val failing = object : ProfileStore by room {
+            override suspend fun add(profile: Profile): Long =
+                throw SQLiteException("disk I/O error")
+        }
+        val failingProfiles = ProfileRepository(failing, testProfiles.capabilities)
+        val viewModel = BackupViewModel(
+            SavedStateHandle(),
+            BackupRepository(failingProfiles, SettingsRepository(preferences)),
+            failingProfiles,
+            documents
+        ).also { viewModels += it }
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.confirmImport()
+
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun aSecondConfirmImportsNothing() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.confirmImport()
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.profiles.isNotEmpty() }
+
+        assertEquals(listOf("Kitchen"), profiles.profiles().map { it.name })
+    }
+
+    @Test
+    fun aFileWithNothingToImportOrTooLargeIsRefused() = runTest {
+        documents.files[URI] = "{}"
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        viewModel.onMessageShown()
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "x".repeat(70 * 1024)))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        viewModel.importFrom(URI)
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        assertEquals(null, viewModel.uiState.value.importReview)
     }
 
     @Test
@@ -167,16 +457,6 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun passwordWarningOpensAndCloses() {
-        val viewModel = viewModel()
-
-        viewModel.confirmPasswords()
-        assertTrue(viewModel.uiState.value.confirmingPasswords)
-        viewModel.dismissPasswordWarning()
-        assertFalse(viewModel.uiState.value.confirmingPasswords)
-    }
-
-    @Test
     fun exportChoicesSurviveProcessDeath() = runTest {
         saved("Living Room", "10.0.0.1")
         val bedroom = saved("Bedroom", "10.0.0.2")
@@ -185,13 +465,13 @@ class BackupViewModelTest {
         first.uiState.first { it.profiles.size == 2 }
         first.setProfileChecked(bedroom.id!!, false)
         first.setExportSettings(true)
-        first.setIncludePasswords(false)
+        first.setIncludePasswords(true)
 
         val state = viewModel(handle).uiState.first { it.profiles.size == 2 }
 
         assertEquals(listOf(true, false), state.profiles.map { it.checked })
         assertTrue(state.exportSettings)
-        assertFalse(state.includePasswords)
+        assertTrue(state.includePasswords)
     }
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): BackupViewModel =
@@ -212,7 +492,8 @@ class BackupViewModelTest {
         val files = HashMap<String, String>()
         var writable = true
 
-        override suspend fun read(uri: String): String? = files[uri]
+        override suspend fun read(uri: String, maxChars: Int): String? =
+            files[uri]?.takeIf { it.length <= maxChars }
 
         override suspend fun write(uri: String, text: String): Boolean {
             if (writable) {

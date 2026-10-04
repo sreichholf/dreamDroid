@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.backup
 
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
@@ -10,6 +11,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
@@ -36,77 +38,130 @@ class BackupScreenTest {
     }
 
     @Test
-    fun keyLabelsAndButtonsVisible() {
-        val state = BackupUiState(
-            profiles = listOf(
-                BackupProfileToggle(id = 1, name = "Home", host = "192.168.1.1", current = true),
-                BackupProfileToggle(id = 2, name = "Cellar", host = "192.168.1.2")
+    fun importCardProfilesAndOptionsAreShown() {
+        setScreen(
+            BackupUiState(
+                profiles = listOf(
+                    BackupProfileToggle(
+                        id = 1,
+                        name = "Home",
+                        host = "192.168.1.1",
+                        current = true
+                    ),
+                    BackupProfileToggle(id = 2, name = "Cellar", host = "192.168.1.2")
+                )
             )
         )
-        composeRule.setContent {
-            DreamDroidTheme {
-                BackupScreen(
-                    state = state,
-                    onImport = {},
-                    onExport = {},
-                    onProfileCheckedChange = { _, _ -> },
-                    onExportSettingsChange = {},
-                    onIncludePasswordsChange = {}
-                )
-            }
-        }
 
         composeRule.onNodeWithText("Import").assertIsDisplayed()
+        composeRule.onNodeWithText("Choose file").assertIsDisplayed()
         composeRule.onNodeWithText("Export").assertIsDisplayed()
-        composeRule.onNodeWithText("Profiles").assertIsDisplayed()
-        composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsDisplayed()
-        composeRule.onNodeWithText("Cellar (192.168.1.2)").assertIsDisplayed()
-        composeRule.onNodeWithText("Settings").assertIsDisplayed()
-        composeRule.onNodeWithText("Export settings").assertIsDisplayed()
-        composeRule.onNodeWithText("Include receiver passwords").assertIsDisplayed()
-        composeRule.onNodeWithText("Home (192.168.1.1) (current)").assertIsOn()
-        composeRule.onNodeWithText("Export settings").assertIsOff()
-        composeRule.onNodeWithText("Include receiver passwords").assertIsOn()
+        composeRule.onNodeWithText("2 of 2").assertIsDisplayed()
+        composeRule.onNodeWithText("Select none").assertIsDisplayed()
+        composeRule.onNode(hasText("Home") and hasText("192.168.1.1") and hasText("Current"))
+            .assertIsOn()
+        composeRule.onNode(hasText("Cellar") and hasText("192.168.1.2")).assertIsOn()
+        composeRule.onAllNodesWithText("Current").assertCountEquals(1)
+        composeRule.onNodeWithText("Receiver passwords").assertIsOff()
+        composeRule.onNodeWithText(PASSWORDS_EXCLUDED).assertIsDisplayed()
+        composeRule.onNodeWithText("App settings").assertIsOff()
         composeRule.onAllNodesWithTag(LIST_ROW_TAG).assertCountEquals(4)
         composeRule.onAllNodesWithTag(LIST_ROW_TAG)[0]
             .assertLeftPositionInRootIsEqualTo(8.dp)
-        val exportSettings = composeRule.onNode(hasText("Export settings") and isToggleable())
+        val settings = composeRule.onNode(hasText("App settings") and isToggleable())
             .getBoundsInRoot()
-        val exportHeight = exportSettings.bottom - exportSettings.top
-        assertTrue(
-            "Switch rows are at least 56.dp, height=$exportHeight",
-            exportHeight >= 56.dp
+        val height = settings.bottom - settings.top
+        assertTrue("Switch rows are at least 56.dp, height=$height", height >= 56.dp)
+    }
+
+    @Test
+    fun partialSelectionOffersSelectAllAndPasswordsWarnWhenOn() {
+        setScreen(
+            BackupUiState(
+                profiles = listOf(
+                    BackupProfileToggle(id = 1, name = "Home", host = "h1"),
+                    BackupProfileToggle(id = 2, name = "Cellar", host = "h2", checked = false)
+                ),
+                includePasswords = true
+            )
+        )
+
+        composeRule.onNodeWithText("1 of 2").assertIsDisplayed()
+        composeRule.onNodeWithText("Select all").assertIsDisplayed()
+        composeRule.onNode(hasText("Cellar") and isToggleable()).assertIsOff()
+        composeRule.onNodeWithText("Receiver passwords").assertIsOn()
+        composeRule.onNodeWithText("In the file. Anyone who has it can sign in to your receivers.")
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun rowsAndButtonsReportToTheCaller() {
+        val events = mutableListOf<String>()
+        setScreen(
+            BackupUiState(
+                profiles = listOf(BackupProfileToggle(id = 7, name = "Home", host = "h"))
+            ),
+            events
+        )
+
+        composeRule.onNodeWithText("Choose file").performClick()
+        composeRule.onNodeWithText("Home").performClick()
+        composeRule.onNodeWithText("Select none").performClick()
+        composeRule.onNodeWithText("App settings").performClick()
+        composeRule.onNodeWithText("Receiver passwords").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals(
+            listOf("import", "profile 7 false", "all false", "settings true", "passwords true"),
+            events
         )
     }
 
     @Test
-    fun switchesAndButtonsReportToTheCaller() {
-        val events = mutableListOf<String>()
+    fun withoutAChosenProfileThePasswordSwitchIsOffLimits() {
+        setScreen(
+            BackupUiState(
+                profiles = listOf(
+                    BackupProfileToggle(id = 1, name = "Home", host = "h1", checked = false)
+                ),
+                includePasswords = true
+            )
+        )
+
+        composeRule.onNodeWithText("0 of 1").assertIsDisplayed()
+        composeRule.onNode(hasText("Receiver passwords") and isToggleable())
+            .assertIsOff()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithText(PASSWORDS_EXCLUDED).assertIsDisplayed()
+    }
+
+    @Test
+    fun withoutProfilesTheHeaderHasNoCountOrSelectButton() {
+        setScreen(BackupUiState())
+
+        composeRule.onNodeWithText("Profiles").assertIsDisplayed()
+        composeRule.onNodeWithText("0 of 0").assertDoesNotExist()
+        composeRule.onNodeWithText("Select all").assertDoesNotExist()
+    }
+
+    private fun setScreen(state: BackupUiState, events: MutableList<String> = mutableListOf()) {
         composeRule.setContent {
             DreamDroidTheme {
                 BackupScreen(
-                    state = BackupUiState(
-                        profiles = listOf(BackupProfileToggle(id = 7, name = "Home", host = "h"))
-                    ),
+                    state = state,
                     onImport = { events += "import" },
-                    onExport = { events += "export" },
                     onProfileCheckedChange = { id, checked -> events += "profile $id $checked" },
+                    onAllProfilesCheckedChange = { events += "all $it" },
                     onExportSettingsChange = { events += "settings $it" },
                     onIncludePasswordsChange = { events += "passwords $it" }
                 )
             }
         }
+    }
 
-        composeRule.onNodeWithText("Import").performClick()
-        composeRule.onNodeWithText("Export").performClick()
-        composeRule.onNodeWithText("Home (h)").performClick()
-        composeRule.onNodeWithText("Export settings").performClick()
-        composeRule.onNodeWithText("Include receiver passwords").performClick()
-        composeRule.waitForIdle()
-
-        assertEquals(
-            listOf("import", "export", "profile 7 false", "settings true", "passwords false"),
-            events
-        )
+    private companion object {
+        const val PASSWORDS_EXCLUDED =
+            "Left out. On import, profiles already on the device keep their passwords; " +
+                "new ones have none."
     }
 }

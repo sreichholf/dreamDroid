@@ -15,7 +15,10 @@ import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
+import net.reichholf.dreamdroid.data.ImportChoice
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.carriesPasswords
+import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** A saved profile and whether the export includes it. */
@@ -28,25 +31,84 @@ data class BackupProfileToggle(
 )
 
 /**
- * The export choices. [exportSettings] matches the legacy switch default (off); receiver
- * passwords stay in the file unless the user turns [includePasswords] off.
- * [confirmingPasswords] shows the warning before an export that includes them.
+ * The export choices. App settings and receiver passwords stay out of the file until the
+ * user turns [exportSettings] or [includePasswords] on. [confirmingPasswords] shows the
+ * warning before an export that includes passwords; [pickingExport] asks the destination
+ * to open the document picker once.
  */
 data class BackupUiState(
     val profiles: List<BackupProfileToggle> = emptyList(),
     val exportSettings: Boolean = false,
-    val includePasswords: Boolean = true,
+    val includePasswords: Boolean = false,
     val confirmingPasswords: Boolean = false,
+    val pickingExport: Boolean = false,
+    val importReview: ImportReview? = null,
     val userMessage: UiText? = null
 ) {
     val title: UiText
         get() = UiText.Resource(R.string.backup)
+
+    val selectedProfiles: Int
+        get() = profiles.count { it.checked }
+
+    /** False when the file would hold neither a profile nor the settings. */
+    val canExport: Boolean
+        get() = selectedProfiles > 0 || exportSettings
+
+    /** Passwords only reach the file with a profile that carries them. */
+    val passwordsInExport: Boolean
+        get() = includePasswords && selectedProfiles > 0
+}
+
+/**
+ * A profile in the backup being imported, by its [index] in the file. [replaces] marks a
+ * name that is already saved, whose row the import overwrites.
+ */
+data class ImportProfileToggle(
+    val index: Int,
+    val name: String,
+    val host: String,
+    val replaces: Boolean = false,
+    val checked: Boolean = true
+)
+
+/**
+ * What the user takes from a picked backup before anything is written. A part the file
+ * does not hold ([passwordsAvailable], [settingsAvailable]) cannot be chosen.
+ */
+data class ImportReview(
+    val profiles: List<ImportProfileToggle>,
+    val passwordsAvailable: Boolean,
+    val includePasswords: Boolean,
+    val settingsAvailable: Boolean,
+    val includeSettings: Boolean
+) {
+    val selectedProfiles: Int
+        get() = profiles.count { it.checked }
+
+    /** Passwords come with a chosen profile only. */
+    val passwordsSelectable: Boolean
+        get() = passwordsAvailable && selectedProfiles > 0
+
+    /** What the passwords switch shows: off whenever it cannot be chosen. */
+    val passwordsChecked: Boolean
+        get() = includePasswords && passwordsSelectable
+
+    val canImport: Boolean
+        get() = selectedProfiles > 0 || includeSettings
+
+    val choice: ImportChoice
+        get() = ImportChoice(
+            profiles = profiles.filter { it.checked }.map { it.index }.toSet(),
+            passwords = passwordsChecked,
+            settings = includeSettings
+        )
 }
 
 /**
  * Import and export of profiles and settings. The destination picks the documents; this
- * reads and writes them through [BackupDocuments]. The export choices survive process
- * death in the [SavedStateHandle].
+ * reads and writes them through [BackupDocuments]. The export choices and a pending
+ * import, with its choices, survive process death in the [SavedStateHandle].
  */
 @HiltViewModel
 class BackupViewModel @Inject constructor(
@@ -58,7 +120,7 @@ class BackupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         BackupUiState(
             exportSettings = savedStateHandle[KEY_EXPORT_SETTINGS] ?: false,
-            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: true
+            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: false
         )
     )
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
@@ -66,8 +128,21 @@ class BackupViewModel @Inject constructor(
     private var excluded: Set<Int> =
         savedStateHandle.get<IntArray>(KEY_EXCLUDED)?.toSet() ?: emptySet()
 
+    /** The parsed file behind [BackupUiState.importReview]. */
+    private var pendingImport: BackupData? = null
+
     init {
         reload()
+        savedStateHandle.get<String>(KEY_IMPORT_CONTENT)?.let { content ->
+            viewModelScope.launch {
+                val backup = backups.parse(content)
+                if (backup == null) {
+                    clearImport()
+                } else {
+                    review(backup)
+                }
+            }
+        }
     }
 
     fun setProfileChecked(id: Int, checked: Boolean) {
@@ -82,6 +157,15 @@ class BackupViewModel @Inject constructor(
         }
     }
 
+    fun setAllProfilesChecked(checked: Boolean) {
+        val ids = _uiState.value.profiles.map { it.id }
+        excluded = if (checked) excluded - ids.toSet() else excluded + ids
+        savedStateHandle[KEY_EXCLUDED] = excluded.toIntArray()
+        _uiState.update { state ->
+            state.copy(profiles = state.profiles.map { it.copy(checked = checked) })
+        }
+    }
+
     fun setExportSettings(export: Boolean) {
         savedStateHandle[KEY_EXPORT_SETTINGS] = export
         _uiState.update { it.copy(exportSettings = export) }
@@ -92,28 +176,88 @@ class BackupViewModel @Inject constructor(
         _uiState.update { it.copy(includePasswords = include) }
     }
 
+    /**
+     * The export button: says so when there is nothing to export, warns before an export
+     * with passwords, and otherwise opens the picker.
+     */
+    fun requestExport() {
+        val state = _uiState.value
+        when {
+            !state.canExport -> showMessage(UiText.Resource(R.string.backup_nothing_selected))
+            state.passwordsInExport -> _uiState.update { it.copy(confirmingPasswords = true) }
+            else -> _uiState.update { it.copy(pickingExport = true) }
+        }
+    }
+
     fun confirmPasswords() {
-        _uiState.update { it.copy(confirmingPasswords = true) }
+        _uiState.update { it.copy(confirmingPasswords = false, pickingExport = true) }
     }
 
     fun dismissPasswordWarning() {
         _uiState.update { it.copy(confirmingPasswords = false) }
     }
 
-    /** Imports the document at [uri], then lists the profiles again. */
+    fun onExportPickerOpened() {
+        _uiState.update { it.copy(pickingExport = false) }
+    }
+
+    /** Reads the document at [uri] and asks what to take from it. */
     fun importFrom(uri: String) {
         viewModelScope.launch {
-            val content = documents.read(uri)
-            val imported = content != null &&
-                withContext(Dispatchers.IO) { backups.importBackup(content) }
-            val message = if (imported) {
-                R.string.backup_import_successful
-            } else {
-                R.string.backup_import_error
+            // A backup is a few KB; a larger file would not fit the saved state.
+            val content = documents.read(uri, MAX_IMPORT_CHARS)
+            val backup = content?.let { backups.parse(it) }
+                ?.takeUnless { it.profiles.isEmpty() && it.settings.isNullOrEmpty() }
+            if (backup == null) {
+                showMessage(UiText.Resource(R.string.backup_import_error))
+                return@launch
             }
-            showMessage(UiText.Resource(message))
-            if (imported) {
+            savedStateHandle[KEY_IMPORT_CONTENT] = content
+            savedStateHandle.remove<IntArray>(KEY_IMPORT_EXCLUDED)
+            savedStateHandle.remove<Boolean>(KEY_IMPORT_PASSWORDS)
+            savedStateHandle.remove<Boolean>(KEY_IMPORT_SETTINGS)
+            review(backup)
+        }
+    }
+
+    fun setImportProfileChecked(index: Int, checked: Boolean) = updateImport { review ->
+        review.copy(
+            profiles = review.profiles.map {
+                if (it.index == index) it.copy(checked = checked) else it
+            }
+        )
+    }
+
+    fun setAllImportProfilesChecked(checked: Boolean) = updateImport { review ->
+        review.copy(profiles = review.profiles.map { it.copy(checked = checked) })
+    }
+
+    fun setImportPasswords(include: Boolean) = updateImport { review ->
+        review.copy(includePasswords = include && review.passwordsAvailable)
+    }
+
+    fun setImportSettings(include: Boolean) = updateImport { review ->
+        review.copy(includeSettings = include && review.settingsAvailable)
+    }
+
+    fun dismissImport() {
+        clearImport()
+    }
+
+    /** Imports what the review chose, then lists the profiles again. */
+    fun confirmImport() {
+        val backup = pendingImport ?: return
+        val review = _uiState.value.importReview ?: return
+        if (!review.canImport) {
+            return
+        }
+        clearImport()
+        viewModelScope.launch {
+            if (backups.importBackup(backup, review.choice)) {
+                showMessage(UiText.Resource(R.string.backup_import_successful))
                 reload()
+            } else {
+                showMessage(UiText.Resource(R.string.backup_import_error))
             }
         }
     }
@@ -129,7 +273,7 @@ class BackupViewModel @Inject constructor(
                     data.settings = null
                 }
                 data.profiles.removeAll { it.id in skipped }
-                backups.exportJson(data, state.includePasswords)
+                backups.exportJson(data, state.passwordsInExport)
             }
             val message = if (documents.write(uri, json)) {
                 R.string.backup_export_successful
@@ -177,6 +321,56 @@ class BackupViewModel @Inject constructor(
         }
     }
 
+    /** Shows [backup] for review, with any choices saved before process death. */
+    private suspend fun review(backup: BackupData) {
+        val savedNames = withContext(Dispatchers.IO) { profiles.profiles() }
+            .mapNotNull { it.name }
+            .toSet()
+        val excludedRows = savedStateHandle.get<IntArray>(KEY_IMPORT_EXCLUDED)?.toSet().orEmpty()
+        val passwordsAvailable = backup.carriesPasswords
+        val settingsAvailable = !backup.settings.isNullOrEmpty()
+        pendingImport = backup
+        _uiState.update { state ->
+            state.copy(
+                importReview = ImportReview(
+                    profiles = backup.profiles.mapIndexed { index, profile ->
+                        ImportProfileToggle(
+                            index = index,
+                            name = profile.name.orEmpty(),
+                            host = profile.host.orEmpty(),
+                            replaces = profile.name.orEmpty() in savedNames,
+                            checked = index !in excludedRows
+                        )
+                    },
+                    passwordsAvailable = passwordsAvailable,
+                    includePasswords = passwordsAvailable &&
+                        savedStateHandle.get<Boolean>(KEY_IMPORT_PASSWORDS) ?: true,
+                    settingsAvailable = settingsAvailable,
+                    includeSettings = settingsAvailable &&
+                        savedStateHandle.get<Boolean>(KEY_IMPORT_SETTINGS) ?: true
+                )
+            )
+        }
+    }
+
+    private fun updateImport(transform: (ImportReview) -> ImportReview) {
+        val review = _uiState.value.importReview?.let(transform) ?: return
+        savedStateHandle[KEY_IMPORT_EXCLUDED] =
+            review.profiles.filterNot { it.checked }.map { it.index }.toIntArray()
+        savedStateHandle[KEY_IMPORT_PASSWORDS] = review.includePasswords
+        savedStateHandle[KEY_IMPORT_SETTINGS] = review.includeSettings
+        _uiState.update { it.copy(importReview = review) }
+    }
+
+    private fun clearImport() {
+        pendingImport = null
+        savedStateHandle[KEY_IMPORT_CONTENT] = null
+        savedStateHandle.remove<IntArray>(KEY_IMPORT_EXCLUDED)
+        savedStateHandle.remove<Boolean>(KEY_IMPORT_PASSWORDS)
+        savedStateHandle.remove<Boolean>(KEY_IMPORT_SETTINGS)
+        _uiState.update { it.copy(importReview = null) }
+    }
+
     private fun showMessage(message: UiText) {
         _uiState.update { it.copy(userMessage = message) }
     }
@@ -185,5 +379,10 @@ class BackupViewModel @Inject constructor(
         const val KEY_EXCLUDED = "backup_excluded_profiles"
         const val KEY_EXPORT_SETTINGS = "backup_export_settings"
         const val KEY_INCLUDE_PASSWORDS = "backup_include_passwords"
+        const val MAX_IMPORT_CHARS = 64 * 1024
+        const val KEY_IMPORT_CONTENT = "backup_import_content"
+        const val KEY_IMPORT_EXCLUDED = "backup_import_excluded_profiles"
+        const val KEY_IMPORT_PASSWORDS = "backup_import_passwords"
+        const val KEY_IMPORT_SETTINGS = "backup_import_settings"
     }
 }

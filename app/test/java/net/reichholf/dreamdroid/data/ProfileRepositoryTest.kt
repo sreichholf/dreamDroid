@@ -316,6 +316,8 @@ private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
         profile.id?.let { deletedIds.add(it) }
     }
 
+    override suspend fun <R> transaction(block: suspend () -> R): R = block()
+
     override fun activeId(): Int = remembered
 
     override fun setActiveId(id: Int) {

@@ -267,9 +267,8 @@
     <string name="backup_current_profile">aktuální</string>
     <string name="backup_export">export</string>
     <string name="backup_import">import</string>
-    <string name="backup_settings">nastavení</string>
     <string name="backup_profiles">profily</string>
-    <string name="backup_export_settings">export nastavení</string>
+    <string name="backup_export_settings">nastavení aplikace</string>
     <string name="backup_export_successful">Export byl úspěšný</string>
     <string name="backup_import_successful">Import byl úspěšný</string>
     <string name="backup_export_missing_permission">Přidejte oprávnění k používání úložiště pro tuto funkci !</string>

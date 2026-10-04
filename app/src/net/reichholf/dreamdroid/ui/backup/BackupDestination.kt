@@ -4,6 +4,7 @@ import android.content.ActivityNotFoundException
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -11,6 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
@@ -51,24 +53,49 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         }
     }
 
+    LaunchedEffect(uiState.pickingExport) {
+        if (uiState.pickingExport) {
+            viewModel.onExportPickerOpened()
+            openExportPicker()
+        }
+    }
+
+    BindShellFab(
+        contentDescription = stringResource(R.string.backup_export),
+        iconRes = R.drawable.ic_action_fab_export,
+        onClick = viewModel::requestExport,
+        text = stringResource(R.string.backup_export),
+        lookDisabled = !uiState.canExport
+    )
+
     BackupScreen(
         state = uiState,
         onImport = ::openImportPicker,
-        onExport = {
-            if (uiState.includePasswords) viewModel.confirmPasswords() else openExportPicker()
-        },
         onProfileCheckedChange = viewModel::setProfileChecked,
+        onAllProfilesCheckedChange = viewModel::setAllProfilesChecked,
         onExportSettingsChange = viewModel::setExportSettings,
         onIncludePasswordsChange = viewModel::setIncludePasswords,
         modifier = modifier
     )
+
+    uiState.importReview?.let { review ->
+        ImportBackupDialog(
+            review = review,
+            onProfileCheckedChange = viewModel::setImportProfileChecked,
+            onAllProfilesCheckedChange = viewModel::setAllImportProfilesChecked,
+            onPasswordsChange = viewModel::setImportPasswords,
+            onSettingsChange = viewModel::setImportSettings,
+            onDismiss = viewModel::dismissImport,
+            onConfirm = viewModel::confirmImport
+        )
+    }
 
     if (uiState.confirmingPasswords) {
         ConfirmAlertDialog(
             title = stringResource(R.string.backup_passwords_confirm_title),
             message = stringResource(R.string.backup_passwords_confirm),
             onDismiss = viewModel::dismissPasswordWarning,
-            onConfirm = ::openExportPicker,
+            onConfirm = viewModel::confirmPasswords,
             confirmLabel = stringResource(R.string.backup_export)
         )
     }

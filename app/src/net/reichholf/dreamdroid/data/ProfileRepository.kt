@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.data
 
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.room3.withWriteTransaction
 import dagger.Lazy
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -207,14 +208,30 @@ class ProfileRepository @Inject constructor(
      * updated active profile replaces [current] without a switch event (the edit path).
      */
     suspend fun save(profile: Profile): Unit = writes.withLock {
-        val id = profile.id ?: 0
-        if (id > 0) {
+        write(profile)
+        publishIfCurrent(profile)
+    }
+
+    /**
+     * Saves [rows] as [save] does, in one transaction: all of them, or none when a write
+     * fails. The active profile is replaced only after the transaction committed.
+     */
+    suspend fun saveAll(rows: List<Profile>): Unit = writes.withLock {
+        store.transaction { rows.forEach { write(it) } }
+        rows.forEach(::publishIfCurrent)
+    }
+
+    private suspend fun write(profile: Profile) {
+        if ((profile.id ?: 0) > 0) {
             store.update(profile)
-            if (id == current.value?.id) {
-                setCurrent(profile)
-            }
         } else {
             profile.id = store.add(profile).toInt()
+        }
+    }
+
+    private fun publishIfCurrent(profile: Profile) {
+        if (profile.id != null && profile.id == current.value?.id) {
+            setCurrent(profile)
         }
     }
 
@@ -372,6 +389,9 @@ interface ProfileStore {
     /** Deletes the row and the offline cache kept for it. */
     suspend fun delete(profile: Profile)
 
+    /** Runs [block] so its writes land together or, when it throws, not at all. */
+    suspend fun <R> transaction(block: suspend () -> R): R
+
     /** The remembered active profile id, or -1. */
     fun activeId(): Int
 
@@ -414,6 +434,9 @@ class RoomProfileStore @Inject constructor(
         val id = profile.id ?: return
         services.get().clearCacheOfDeletedProfile(id)
     }
+
+    override suspend fun <R> transaction(block: suspend () -> R): R =
+        database.withWriteTransaction { block() }
 
     override fun activeId(): Int = preferences.getInt(DreamDroid.CURRENT_PROFILE, -1)
 

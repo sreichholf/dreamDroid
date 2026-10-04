@@ -263,12 +263,11 @@
     <string name="no_tracks">Nessuna traccia disponibile!</string>
     <string name="preferences">Preferenze</string>
     <string name="backup">Backup</string>
-    <string name="backup_current_profile">attuale</string>
+    <string name="backup_current_profile">Attuale</string>
     <string name="backup_export">Esporta</string>
     <string name="backup_import">Importa</string>
-    <string name="backup_settings">Impostazioni</string>
     <string name="backup_profiles">Profili</string>
-    <string name="backup_export_settings">Impostazioni esportazione</string>
+    <string name="backup_export_settings">Impostazioni app</string>
     <string name="backup_export_successful">Esportazione riuscita</string>
     <string name="backup_import_successful">Importazione riuscita</string>
     <string name="backup_export_missing_permission">Concedi l\'autorizzazione di archiviazione per usare questa funzione!</string>
