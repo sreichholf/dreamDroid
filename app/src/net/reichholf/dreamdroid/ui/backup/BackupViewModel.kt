@@ -28,19 +28,26 @@ data class BackupProfileToggle(
 )
 
 /**
- * The export choices. [exportSettings] matches the legacy switch default (off); receiver
- * passwords stay in the file unless the user turns [includePasswords] off.
- * [confirmingPasswords] shows the warning before an export that includes them.
+ * The export choices. App settings and receiver passwords stay out of the file until the
+ * user turns [exportSettings] or [includePasswords] on. [confirmingPasswords] shows the
+ * warning before an export that includes passwords.
  */
 data class BackupUiState(
     val profiles: List<BackupProfileToggle> = emptyList(),
     val exportSettings: Boolean = false,
-    val includePasswords: Boolean = true,
+    val includePasswords: Boolean = false,
     val confirmingPasswords: Boolean = false,
     val userMessage: UiText? = null
 ) {
     val title: UiText
         get() = UiText.Resource(R.string.backup)
+
+    val selectedProfiles: Int
+        get() = profiles.count { it.checked }
+
+    /** False when the file would hold neither a profile nor the settings. */
+    val canExport: Boolean
+        get() = selectedProfiles > 0 || exportSettings
 }
 
 /**
@@ -58,7 +65,7 @@ class BackupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         BackupUiState(
             exportSettings = savedStateHandle[KEY_EXPORT_SETTINGS] ?: false,
-            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: true
+            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: false
         )
     )
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
@@ -79,6 +86,15 @@ class BackupViewModel @Inject constructor(
                     if (row.id == id) row.copy(checked = checked) else row
                 }
             )
+        }
+    }
+
+    fun setAllProfilesChecked(checked: Boolean) {
+        val ids = _uiState.value.profiles.map { it.id }
+        excluded = if (checked) excluded - ids.toSet() else excluded + ids
+        savedStateHandle[KEY_EXCLUDED] = excluded.toIntArray()
+        _uiState.update { state ->
+            state.copy(profiles = state.profiles.map { it.copy(checked = checked) })
         }
     }
 
@@ -138,6 +154,10 @@ class BackupViewModel @Inject constructor(
             }
             showMessage(UiText.Resource(message))
         }
+    }
+
+    fun onNothingToExport() {
+        showMessage(UiText.Resource(R.string.backup_nothing_selected))
     }
 
     /** No app can pick the document. [reason] is the system's text, when it gave one. */

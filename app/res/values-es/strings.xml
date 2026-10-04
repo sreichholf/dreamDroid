@@ -263,12 +263,11 @@
     <string name="no_tracks">¡No hay pistas disponibles!</string>
     <string name="preferences">Preferencias</string>
     <string name="backup">Copia de seguridad</string>
-    <string name="backup_current_profile">actual</string>
+    <string name="backup_current_profile">Actual</string>
     <string name="backup_export">Exportar</string>
     <string name="backup_import">Importar</string>
-    <string name="backup_settings">Ajustes</string>
     <string name="backup_profiles">Perfiles</string>
-    <string name="backup_export_settings">Exportar ajustes</string>
+    <string name="backup_export_settings">Ajustes de la app</string>
     <string name="backup_export_successful">Exportación exitosa</string>
     <string name="backup_import_successful">Importación exitosa</string>
     <string name="backup_export_missing_permission">¡Otorgue permiso de almacenamiento para usar esta función!</string>

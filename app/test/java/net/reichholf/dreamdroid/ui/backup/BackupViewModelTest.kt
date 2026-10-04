@@ -63,7 +63,8 @@ class BackupViewModelTest {
         assertEquals(listOf(true, false), state.profiles.map { it.current })
         assertTrue(state.profiles.all { it.checked })
         assertFalse(state.exportSettings)
-        assertTrue(state.includePasswords)
+        assertFalse(state.includePasswords)
+        assertTrue(state.canExport)
         assertEquals(UiText.Resource(R.string.backup), state.title)
     }
 
@@ -86,14 +87,13 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun exportWithSettingsAndWithoutPasswords() = runTest {
+    fun exportWithSettingsLeavesPasswordsOutByDefault() = runTest {
         saved("Living Room", "10.0.0.1", pass = "secret")
         preferences.edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "0").apply()
         val viewModel = viewModel()
         viewModel.uiState.first { it.profiles.size == 1 }
 
         viewModel.setExportSettings(true)
-        viewModel.setIncludePasswords(false)
         viewModel.exportTo(URI)
         viewModel.uiState.first { it.userMessage != null }
 
@@ -104,6 +104,56 @@ class BackupViewModelTest {
             exported.settings.orEmpty().any {
                 it.key == DreamDroid.PREFS_KEY_THEME_TYPE && it.value == "0"
             }
+        )
+    }
+
+    @Test
+    fun exportKeepsPasswordsOnceChosen() = runTest {
+        saved("Living Room", "10.0.0.1", pass = "secret")
+        val viewModel = viewModel()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        viewModel.setIncludePasswords(true)
+        viewModel.exportTo(URI)
+        viewModel.uiState.first { it.userMessage != null }
+
+        val exported = read(documents.files.getValue(URI))
+        assertEquals("secret", exported.profiles.single().pass)
+        assertEquals(true, exported.passwordsIncluded)
+    }
+
+    @Test
+    fun selectNoneLeavesNothingToExportUntilSettingsAreChosen() = runTest {
+        saved("Living Room", "10.0.0.1")
+        saved("Bedroom", "10.0.0.2")
+        val handle = SavedStateHandle()
+        val viewModel = viewModel(handle)
+        viewModel.uiState.first { it.profiles.size == 2 }
+
+        viewModel.setAllProfilesChecked(false)
+        val none = viewModel.uiState.value
+        assertEquals(0, none.selectedProfiles)
+        assertFalse(none.canExport)
+        assertEquals(
+            listOf(false, false),
+            viewModel(handle).uiState.first { it.profiles.size == 2 }.profiles.map { it.checked }
+        )
+
+        viewModel.setExportSettings(true)
+        assertTrue(viewModel.uiState.value.canExport)
+        viewModel.setAllProfilesChecked(true)
+        assertEquals(2, viewModel.uiState.value.selectedProfiles)
+    }
+
+    @Test
+    fun nothingToExportSaysSo() {
+        val viewModel = viewModel()
+
+        viewModel.onNothingToExport()
+
+        assertEquals(
+            UiText.Resource(R.string.backup_nothing_selected),
+            viewModel.uiState.value.userMessage
         )
     }
 
@@ -185,13 +235,13 @@ class BackupViewModelTest {
         first.uiState.first { it.profiles.size == 2 }
         first.setProfileChecked(bedroom.id!!, false)
         first.setExportSettings(true)
-        first.setIncludePasswords(false)
+        first.setIncludePasswords(true)
 
         val state = viewModel(handle).uiState.first { it.profiles.size == 2 }
 
         assertEquals(listOf(true, false), state.profiles.map { it.checked })
         assertTrue(state.exportSettings)
-        assertFalse(state.includePasswords)
+        assertTrue(state.includePasswords)
     }
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): BackupViewModel =

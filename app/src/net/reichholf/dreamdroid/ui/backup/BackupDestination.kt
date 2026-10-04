@@ -11,6 +11,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.nav.BindShellFab
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 
@@ -51,13 +52,25 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         }
     }
 
+    BindShellFab(
+        contentDescription = stringResource(R.string.backup_export),
+        iconRes = R.drawable.ic_action_fab_export,
+        onClick = {
+            when {
+                !uiState.canExport -> viewModel.onNothingToExport()
+                uiState.includePasswords -> viewModel.confirmPasswords()
+                else -> openExportPicker()
+            }
+        },
+        text = stringResource(R.string.backup_export),
+        lookDisabled = !uiState.canExport
+    )
+
     BackupScreen(
         state = uiState,
         onImport = ::openImportPicker,
-        onExport = {
-            if (uiState.includePasswords) viewModel.confirmPasswords() else openExportPicker()
-        },
         onProfileCheckedChange = viewModel::setProfileChecked,
+        onAllProfilesCheckedChange = viewModel::setAllProfilesChecked,
         onExportSettingsChange = viewModel::setExportSettings,
         onIncludePasswordsChange = viewModel::setIncludePasswords,
         modifier = modifier
