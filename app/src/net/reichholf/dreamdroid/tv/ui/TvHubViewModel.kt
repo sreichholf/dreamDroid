@@ -48,7 +48,7 @@ sealed interface TvStreamOpen {
  * loaded per location, the open service overlay or timer editor, and the session.
  */
 data class TvHubUiState(
-    val selectedHeaderId: String = TvComposeHubHost.HEADER_SETTINGS_ID,
+    val selectedHeaderId: String = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
     val loading: Boolean = true,
     val errorText: UiText? = null,
     val bouquetRows: List<HubBouquetRow> = emptyList(),
@@ -118,10 +118,11 @@ class TvHubViewModel @Inject constructor(
         browseJob = viewModelScope.launch {
             val result = browse.browse()
             _uiState.update { state ->
-                val stillValid = TvComposeHubHost.isPersistentHubHeader(state.selectedHeaderId) ||
-                    result.rows.any { it.bouquet.reference == state.selectedHeaderId } ||
-                    TvComposeHubHost.movieDirnameFromHeader(state.selectedHeaderId) in
+                val stillValid = TvComposeHubHost.hubHeaderSurvivesReload(
+                    state.selectedHeaderId,
+                    result.rows,
                     result.locations
+                )
                 state.copy(
                     loading = false,
                     errorText = unavailableTvHubMessage(
@@ -134,7 +135,7 @@ class TvHubViewModel @Inject constructor(
                     selectedHeaderId = if (stillValid) {
                         state.selectedHeaderId
                     } else {
-                        TvComposeHubHost.HEADER_SETTINGS_ID
+                        TvComposeHubHost.firstHubHeader(result.rows)
                     }
                 )
             }

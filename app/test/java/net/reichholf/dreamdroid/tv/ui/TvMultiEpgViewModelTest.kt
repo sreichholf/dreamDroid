@@ -44,6 +44,10 @@ class TvMultiEpgViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<TvMultiEpgViewModel>()
 
+    /** The `/web/epgmulti` answer; null answers the fixture. */
+    @Volatile
+    private var epgMultiBody: String? = null
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -69,6 +73,23 @@ class TvMultiEpgViewModelTest {
         assertEquals(UiText.Raw("Favourites"), state.title)
         assertTrue(state.bouquets.any { it.name == "Das Erste HD" })
         assertTrue(receiver.requests.any { it.requestUrl?.encodedPath == "/web/epgmulti" })
+    }
+
+    @Test
+    fun programmesTheHubFilledShowInTheGrid() = runBlocking<Unit> {
+        val now = System.currentTimeMillis() / 1000L
+        epgMultiBody = epgMultiAround(now)
+        // The hub writes the tab strip and fills the chunk at now before MultiEPG opens.
+        receiver.services.tvBouquetTabs()
+        receiver.repository.fillNowChunk(BOUQUET, BOUQUET, now)
+        val viewModel = viewModel()
+
+        viewModel.start(BOUQUET, "Favourites")
+        val state = awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+
+        val bar = state.grid.channels.single { it.serviceRef == BOUQUET_CHANNEL }.bars.single()
+        assertEquals("Now", bar.event.title)
+        assertTrue(now in bar.startSec until bar.endSec)
     }
 
     @Test
@@ -206,7 +227,9 @@ class TvMultiEpgViewModelTest {
 
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
-            "/web/epgmulti" -> MockResponse().setBody(loadWebFixture("epgmulti.xml"))
+            "/web/epgmulti" -> MockResponse().setBody(
+                epgMultiBody ?: loadWebFixture("epgmulti.xml")
+            )
 
             "/web/getservices" -> MockResponse().setBody(loadWebFixture("getservices.xml"))
 
@@ -221,6 +244,17 @@ class TvMultiEpgViewModelTest {
 
             else -> MockResponse().setResponseCode(404)
         }
+
+    /** One programme on [BOUQUET_CHANNEL] that started ten minutes before [nowSec]. */
+    private fun epgMultiAround(nowSec: Long): String =
+        "<e2eventlist><e2event><e2eventid>1</e2eventid>" +
+            "<e2eventstart>${nowSec - 600}</e2eventstart>" +
+            "<e2eventduration>3600</e2eventduration>" +
+            "<e2eventcurrenttime>$nowSec</e2eventcurrenttime>" +
+            "<e2eventtitle>Now</e2eventtitle>" +
+            "<e2eventservicereference>$BOUQUET_CHANNEL</e2eventservicereference>" +
+            "<e2eventservicename>Das Erste HD</e2eventservicename>" +
+            "</e2event></e2eventlist>"
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): TvMultiEpgViewModel =
         TvMultiEpgViewModel(

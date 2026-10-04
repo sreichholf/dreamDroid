@@ -204,16 +204,15 @@ class TvHubViewModelTest {
     @Test
     fun reloadDropsAVanishedHeaderAndKeepsPersistentOnes() = runBlocking<Unit> {
         val viewModel = viewModel()
-        awaitLoaded(viewModel)
-        viewModel.selectHeader(FAVOURITES)
-        awaitState(viewModel) { it.selectedHeaderId == FAVOURITES }
+        val opened = awaitLoaded(viewModel)
+        assertEquals(FAVOURITES, opened.selectedHeaderId)
 
         // Each wait names the reloaded rows: a bare "loaded" also matches the state
         // before the reload reached the combined uiState.
         bouquets = listOf(OTHER to "Other")
         viewModel.reload()
         val dropped = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(OTHER) }
-        assertEquals(TvComposeHubHost.HEADER_SETTINGS_ID, dropped.selectedHeaderId)
+        assertEquals(OTHER, dropped.selectedHeaderId)
 
         viewModel.selectHeader(TvComposeHubHost.HEADER_TIMERS_ID)
         awaitState(viewModel) { it.selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID }
