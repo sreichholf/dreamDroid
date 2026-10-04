@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -338,7 +339,56 @@ class BackupViewModelTest {
         restored.confirmImport()
         restored.uiState.first { it.profiles.isNotEmpty() }
         assertEquals(listOf("Cellar"), profiles.profiles().map { it.name })
-        assertEquals(null, viewModel(handle).uiState.value.importReview)
+        assertEquals(null, handle.get<String>("backup_import_content"))
+    }
+
+    @Test
+    fun aSavedImportThatNoLongerParsesIsDropped() = runTest {
+        val handle = SavedStateHandle(mapOf("backup_import_content" to "{"))
+
+        val viewModel = viewModel(handle)
+        backgroundScope.launch { viewModel.uiState.collect {} }
+        handle.getStateFlow<String?>("backup_import_content", "{").first { it == null }
+
+        assertEquals(null, viewModel.uiState.value.importReview)
+    }
+
+    @Test
+    fun aSecondConfirmImportsNothing() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.confirmImport()
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.profiles.isNotEmpty() }
+
+        assertEquals(listOf("Kitchen"), profiles.profiles().map { it.name })
+    }
+
+    @Test
+    fun aFileWithNothingToImportOrTooLargeIsRefused() = runTest {
+        documents.files[URI] = "{}"
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        viewModel.onMessageShown()
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "x".repeat(300 * 1024)))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        viewModel.importFrom(URI)
+        assertEquals(
+            UiText.Resource(R.string.backup_import_error),
+            viewModel.uiState.first { it.userMessage != null }.userMessage
+        )
+        assertEquals(null, viewModel.uiState.value.importReview)
     }
 
     @Test

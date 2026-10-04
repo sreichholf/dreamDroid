@@ -108,8 +108,8 @@ val BackupData.carriesPasswords: Boolean
  * Profile row to insert.
  *
  * A null [passwordsIncluded] is a legacy file and counts as included, so [incoming] passwords
- * replace any saved ones. False keeps [existing] receiver passwords, or stores empty passwords
- * when the name is new. True also uses the incoming passwords.
+ * replace the saved ones; an empty incoming password keeps the [existing] one. False keeps
+ * [existing] receiver passwords, or stores empty passwords when the name is new.
  */
 internal fun profileToInsert(
     incoming: Profile,
@@ -117,6 +117,14 @@ internal fun profileToInsert(
     passwordsIncluded: Boolean?
 ): Profile {
     if (passwordsIncluded != false) {
+        if (existing != null) {
+            if (incoming.pass.isNullOrEmpty()) {
+                incoming.pass = existing.pass
+            }
+            if (incoming.encoderPass.isNullOrEmpty()) {
+                incoming.encoderPass = existing.encoderPass
+            }
+        }
         return incoming
     }
     if (existing != null) {

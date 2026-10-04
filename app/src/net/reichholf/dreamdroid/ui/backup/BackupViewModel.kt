@@ -90,13 +90,17 @@ data class ImportReview(
     val passwordsSelectable: Boolean
         get() = passwordsAvailable && selectedProfiles > 0
 
+    /** What the passwords switch shows: off whenever it cannot be chosen. */
+    val passwordsChecked: Boolean
+        get() = includePasswords && passwordsSelectable
+
     val canImport: Boolean
         get() = selectedProfiles > 0 || includeSettings
 
     val choice: ImportChoice
         get() = ImportChoice(
             profiles = profiles.filter { it.checked }.map { it.index }.toSet(),
-            passwords = includePasswords,
+            passwords = passwordsChecked,
             settings = includeSettings
         )
 }
@@ -200,8 +204,10 @@ class BackupViewModel @Inject constructor(
     /** Reads the document at [uri] and asks what to take from it. */
     fun importFrom(uri: String) {
         viewModelScope.launch {
-            val content = documents.read(uri)
+            // A backup is a few KB; a larger file would not fit the saved state.
+            val content = documents.read(uri)?.takeIf { it.length <= MAX_IMPORT_CHARS }
             val backup = content?.let { backups.parse(it) }
+                ?.takeUnless { it.profiles.isEmpty() && it.settings.isNullOrEmpty() }
             if (backup == null) {
                 showMessage(UiText.Resource(R.string.backup_import_error))
                 return@launch
@@ -355,7 +361,7 @@ class BackupViewModel @Inject constructor(
 
     private fun clearImport() {
         pendingImport = null
-        savedStateHandle.remove<String>(KEY_IMPORT_CONTENT)
+        savedStateHandle[KEY_IMPORT_CONTENT] = null
         savedStateHandle.remove<IntArray>(KEY_IMPORT_EXCLUDED)
         savedStateHandle.remove<Boolean>(KEY_IMPORT_PASSWORDS)
         savedStateHandle.remove<Boolean>(KEY_IMPORT_SETTINGS)
@@ -370,6 +376,7 @@ class BackupViewModel @Inject constructor(
         const val KEY_EXCLUDED = "backup_excluded_profiles"
         const val KEY_EXPORT_SETTINGS = "backup_export_settings"
         const val KEY_INCLUDE_PASSWORDS = "backup_include_passwords"
+        const val MAX_IMPORT_CHARS = 256 * 1024
         const val KEY_IMPORT_CONTENT = "backup_import_content"
         const val KEY_IMPORT_EXCLUDED = "backup_import_excluded_profiles"
         const val KEY_IMPORT_PASSWORDS = "backup_import_passwords"

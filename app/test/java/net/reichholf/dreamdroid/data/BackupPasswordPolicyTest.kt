@@ -44,6 +44,15 @@ class BackupPasswordPolicyTest {
     }
 
     @Test
+    fun anEmptyIncomingPasswordKeepsTheSavedOne() {
+        val incoming = profile(name = "Box", pass = "", encoderPass = "new-enc")
+        val existing = profile(name = "Box", pass = "old-pass", encoderPass = "old-enc")
+        val inserted = profileToInsert(incoming, existing, passwordsIncluded = true)
+        assertEquals("old-pass", inserted.pass)
+        assertEquals("new-enc", inserted.encoderPass)
+    }
+
+    @Test
     fun explicitFalseKeepsExistingPassword() {
         val incoming = profile(
             name = "Box",

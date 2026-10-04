@@ -23,6 +23,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import net.reichholf.dreamdroid.R
 
 /** Text start of a [ListItem] inside the dialog's content padding. */
@@ -30,7 +31,8 @@ private val RowContentInset = 16.dp
 
 /**
  * Asks what to take from the picked backup before anything is written. A part the file
- * does not hold is shown, switched off and disabled.
+ * does not hold is shown, switched off and disabled. Only the profile list scrolls, so the
+ * password and settings choices stay in view; a tap outside does not drop the choices.
  */
 @Composable
 fun ImportBackupDialog(
@@ -44,13 +46,13 @@ fun ImportBackupDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
+        properties = DialogProperties(dismissOnClickOutside = false),
         title = { Text(stringResource(R.string.backup_import_title)) },
         text = {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(max = 480.dp)
-                    .verticalScroll(rememberScrollState())
             ) {
                 ProfilesHeader(
                     selected = review.selectedProfiles,
@@ -66,31 +68,37 @@ fun ImportBackupDialog(
                     )
                 }
                 val replacesLabel = stringResource(R.string.backup_import_replaces)
-                review.profiles.forEach { profile ->
-                    ListItem(
-                        leadingContent = {
-                            Checkbox(checked = profile.checked, onCheckedChange = null)
-                        },
-                        headlineContent = { Text(profile.name.ifEmpty { profile.host }) },
-                        supportingContent = if (profile.name.isNotEmpty() &&
-                            profile.host.isNotEmpty()
-                        ) {
-                            { Text(profile.host) }
-                        } else {
-                            null
-                        },
-                        trailingContent = if (profile.replaces) {
-                            { LabelBadge(replacesLabel) }
-                        } else {
-                            null
-                        },
-                        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                        modifier = Modifier.toggleable(
-                            value = profile.checked,
-                            role = Role.Checkbox,
-                            onValueChange = { onProfileCheckedChange(profile.index, it) }
+                Column(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    review.profiles.forEach { profile ->
+                        ListItem(
+                            leadingContent = {
+                                Checkbox(checked = profile.checked, onCheckedChange = null)
+                            },
+                            headlineContent = { Text(profile.name.ifEmpty { profile.host }) },
+                            supportingContent = if (profile.name.isNotEmpty() &&
+                                profile.host.isNotEmpty()
+                            ) {
+                                { Text(profile.host) }
+                            } else {
+                                null
+                            },
+                            trailingContent = if (profile.replaces) {
+                                { LabelBadge(replacesLabel) }
+                            } else {
+                                null
+                            },
+                            colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+                            modifier = Modifier.toggleable(
+                                value = profile.checked,
+                                role = Role.Checkbox,
+                                onValueChange = { onProfileCheckedChange(profile.index, it) }
+                            )
                         )
-                    )
+                    }
                 }
 
                 Text(
@@ -106,11 +114,11 @@ fun ImportBackupDialog(
                     summary = stringResource(
                         when {
                             !review.passwordsAvailable -> R.string.backup_import_not_in_file
-                            review.includePasswords -> R.string.backup_import_passwords_on
+                            review.passwordsChecked -> R.string.backup_import_passwords_on
                             else -> R.string.backup_import_passwords_off
                         }
                     ),
-                    checked = review.includePasswords,
+                    checked = review.passwordsChecked,
                     enabled = review.passwordsSelectable,
                     onCheckedChange = onPasswordsChange
                 )

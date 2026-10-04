@@ -11,6 +11,7 @@ import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -61,7 +62,13 @@ class ImportBackupDialogTest {
         )
 
         composeRule.onNodeWithText("0 of 2").assertIsDisplayed()
-        composeRule.onNode(hasText("Receiver passwords") and isToggleable()).assertIsNotEnabled()
+        composeRule.onNode(hasText("Receiver passwords") and isToggleable())
+            .assertIsOff()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithText(
+            "Profiles already on the device keep their passwords; new ones have none."
+        )
+            .assertIsDisplayed()
         composeRule.onNode(hasText("Import") and hasClickAction()).assertIsNotEnabled()
     }
 
@@ -70,7 +77,7 @@ class ImportBackupDialogTest {
         val events = mutableListOf<String>()
         setDialog(review(passwordsAvailable = true, settingsAvailable = true), events)
 
-        composeRule.onNodeWithText("Cellar").performClick()
+        composeRule.onNodeWithText("Cellar").performScrollTo().performClick()
         composeRule.onNodeWithText("Select none").performClick()
         composeRule.onNodeWithText("Receiver passwords").performClick()
         composeRule.onNodeWithText("App settings").performClick()
