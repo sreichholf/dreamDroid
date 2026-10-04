@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
+import net.reichholf.dreamdroid.helpers.isTelevision
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.bindTvZapList
@@ -78,7 +79,7 @@ class VideoOverlayController(
     private lateinit var autoHideRunnable: Runnable
     private lateinit var issueReloadRunnable: Runnable
 
-    private val tvOverlay: Boolean = DreamDroid.isTV(activity)
+    private val tvOverlay: Boolean = activity.isTelevision()
     private val channelSwipe = VideoChannelSwipe()
 
     private var overlayRoot: View? = null

@@ -341,7 +341,5 @@ class DreamDroid : Application() {
             context.startActivity(mainIntent)
             Runtime.getRuntime().exit(0)
         }
-
-        fun isTV(context: Context): Boolean = context.resources.getBoolean(R.bool.is_television)
     }
 }
