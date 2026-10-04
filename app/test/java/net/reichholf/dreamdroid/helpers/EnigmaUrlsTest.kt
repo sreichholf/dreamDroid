@@ -177,6 +177,20 @@ class EnigmaUrlsTest {
     }
 
     @Test
+    fun serviceStream_embeddedHttpUrlIgnoresStreamSsl() {
+        val ref = "4097:0:1:0:0:0:0:0:0:0:" +
+            URLEncoder.encode("http://cdn.example/live.ts", "utf-8")
+        val profile = streamProfile(streamLogin = true).apply { streamSsl = true }
+        assertEquals("http://cdn.example/live.ts", EnigmaUrls.serviceStream(profile, ref))
+    }
+
+    @Test
+    fun stream_encoderIgnoresStreamSsl() {
+        val profile = encoderProfile().apply { streamSsl = true }
+        assertTrue(EnigmaUrls.stream(profile, "1:0:1").startsWith("rtsp://box.local:554/"))
+    }
+
+    @Test
     fun fileStream_directIgnoresStreamSsl() {
         val profile = fileProfile().apply { streamSsl = true }
         val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
