@@ -22,6 +22,10 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.layout.layout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Velocity
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NavBackStackEntry
 import kotlin.math.roundToInt
 
 /**
@@ -69,6 +73,34 @@ class ShellChromeScrollState {
         topBar.heightOffset = 0f
         topBar.contentOffset = 0f
         revealBottom()
+    }
+
+    /**
+     * Keeps where the bars are in the back stack entry of the screen that is leaving, as
+     * Material 3 keeps each screen's saveable app bar state.
+     */
+    fun saveTo(handle: SavedStateHandle) {
+        handle[KEY_TOP_OFFSET] = topBar.heightOffset
+        handle[KEY_TOP_CONTENT_OFFSET] = topBar.contentOffset
+        handle[KEY_BOTTOM_HIDDEN] = bottomHiddenFraction
+        handle[KEY_FAB_EXPANDED] = fabExpanded
+    }
+
+    /**
+     * Puts the bars back where the screen of [handle] left them, so Back returns to the bars
+     * as they were. A screen shown for the first time starts with all bars shown.
+     */
+    fun restoreFrom(handle: SavedStateHandle) {
+        val topOffset = handle.get<Float>(KEY_TOP_OFFSET)
+        if (topOffset == null) {
+            revealAll()
+            return
+        }
+        moves += 1
+        topBar.heightOffset = topOffset
+        topBar.contentOffset = handle.get<Float>(KEY_TOP_CONTENT_OFFSET) ?: 0f
+        bottomHiddenFraction = handle.get<Float>(KEY_BOTTOM_HIDDEN) ?: 0f
+        fabExpanded = handle.get<Boolean>(KEY_FAB_EXPANDED) ?: true
     }
 
     /**
@@ -122,7 +154,43 @@ class ShellChromeScrollState {
         }
 }
 
+private const val KEY_TOP_OFFSET = "shell_chrome_top_offset"
+private const val KEY_TOP_CONTENT_OFFSET = "shell_chrome_top_content_offset"
+private const val KEY_BOTTOM_HIDDEN = "shell_chrome_bottom_hidden"
+private const val KEY_FAB_EXPANDED = "shell_chrome_fab_expanded"
+
 val LocalShellChromeScrollState = staticCompositionLocalOf<ShellChromeScrollState?> { null }
+
+/**
+ * Gives each screen its own bar positions, as Material 3 keeps app bar state per screen: a
+ * screen shown for the first time starts with all shell chrome shown, and Back finds the bars
+ * where that screen left them. [entry] is the back stack entry of the screen on display.
+ */
+@Composable
+fun KeepShellChromePerScreen(entry: NavBackStackEntry?) {
+    val chromeScroll = LocalShellChromeScrollState.current
+    DisposableEffect(entry, chromeScroll) {
+        if (entry == null || chromeScroll == null) {
+            return@DisposableEffect onDispose {}
+        }
+        chromeScroll.restoreFrom(entry.savedStateHandle)
+        // Pausing comes before the instance state is saved, so rotation and process death
+        // keep the bars too.
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                chromeScroll.saveTo(entry.savedStateHandle)
+            }
+        }
+        entry.lifecycle.addObserver(observer)
+        onDispose {
+            entry.lifecycle.removeObserver(observer)
+            // A popped entry is gone; only a screen that may come back keeps its bars.
+            if (entry.lifecycle.currentState != Lifecycle.State.DESTROYED) {
+                chromeScroll.saveTo(entry.savedStateHandle)
+            }
+        }
+    }
+}
 
 /**
  * Lays out the bottom chrome at its visible height only, so the content above grows as it

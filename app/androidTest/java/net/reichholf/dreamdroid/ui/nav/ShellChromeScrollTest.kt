@@ -26,6 +26,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -44,6 +49,8 @@ import org.junit.Test
 private const val CONTENT_TAG = "chrome_scroll_content"
 private const val LIST_TAG = "chrome_scroll_list"
 private const val FAB_LABEL = "New timer"
+private const val LIST_SCREEN_TAG = "chrome_scroll_list_screen"
+private const val DETAIL_SCREEN_TAG = "chrome_scroll_detail_screen"
 
 /** How the destination in [ScrollHost] uses the shell top bar. */
 private enum class TopBarUse { SHELL, KEEP_IN_VIEW, REPLACED }
@@ -168,6 +175,28 @@ class ShellChromeScrollTest {
         assertEquals(shown.top, contentBounds().top)
     }
 
+    @Test
+    fun backFindsTheBarsWhereTheListLeftThem() {
+        lateinit var nav: NavHostController
+        composeRule.setContent {
+            nav = rememberNavController()
+            NavScrollHost(nav)
+        }
+        composeRule.waitForIdle()
+        val shownTop = boundsOf(LIST_SCREEN_TAG).top
+        scrollListDown()
+        val hiddenTop = boundsOf(LIST_SCREEN_TAG).top
+        assertTrue("top bar hidden", hiddenTop < shownTop)
+
+        composeRule.runOnIdle { nav.navigate("detail") }
+        composeRule.waitForIdle()
+        assertEquals("new screen shows the top bar", shownTop, boundsOf(DETAIL_SCREEN_TAG).top)
+
+        composeRule.runOnIdle { nav.popBackStack() }
+        composeRule.waitForIdle()
+        assertEquals("Back keeps the list's bars", hiddenTop, boundsOf(LIST_SCREEN_TAG).top)
+    }
+
     private fun show(usesRail: Boolean = false, topBar: TopBarUse = TopBarUse.SHELL) {
         composeRule.setContent {
             ScrollHost(
@@ -195,8 +224,10 @@ class ShellChromeScrollTest {
         )
     }
 
-    private fun contentBounds(): Rect =
-        composeRule.onNodeWithTag(CONTENT_TAG).fetchSemanticsNode().boundsInRoot
+    private fun contentBounds(): Rect = boundsOf(CONTENT_TAG)
+
+    private fun boundsOf(tag: String): Rect =
+        composeRule.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
 
     private fun chromeBounds(): Rect =
         composeRule.onNodeWithTag(SHELL_CHROME_TAG).fetchSemanticsNode().boundsInRoot
@@ -262,6 +293,45 @@ private fun ScrollHost(
                         LazyColumn(state = listState, modifier = Modifier.testTag(LIST_TAG)) {
                             items((1..100).toList()) { Text("Timer $it") }
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** The shell around a NavHost with a long list and a detail screen. */
+@Composable
+private fun NavScrollHost(nav: NavHostController) {
+    DreamDroidTheme {
+        PhoneShell(
+            drawerListState = remember { DrawerListState() },
+            drawerOpen = false,
+            onDrawerOpenChange = {},
+            profileName = "Living Room",
+            connectionLabel = "Online",
+            boxActionsBlocked = false,
+            onProfileClick = {},
+            onDrawerItemClick = {},
+            onNavigationClick = {},
+            destinationController = remember { ShellDestinationBarController() },
+            fabController = remember { ShellFabController() },
+            topBarController = remember { ShellTopBarController().apply { title = "Timers" } },
+            usesRail = false
+        ) {
+            val entry by nav.currentBackStackEntryAsState()
+            KeepShellChromePerScreen(entry)
+            NavHost(navController = nav, startDestination = "list") {
+                composable("list") {
+                    Box(Modifier.fillMaxSize().testTag(LIST_SCREEN_TAG)) {
+                        LazyColumn(Modifier.testTag(LIST_TAG)) {
+                            items((1..100).toList()) { Text("Timer $it") }
+                        }
+                    }
+                }
+                composable("detail") {
+                    Box(Modifier.fillMaxSize().testTag(DETAIL_SCREEN_TAG)) {
+                        Text("Timer 1")
                     }
                 }
             }

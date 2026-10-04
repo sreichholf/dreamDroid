@@ -6,7 +6,6 @@ import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -109,11 +108,7 @@ fun PhoneNavHost(
         val shellBarVisible = PhoneNavRoutes.showsShellDestinationBar(
             screenEntry?.destination?.route
         )
-        // A new screen starts with all shell chrome shown, whatever the last one scrolled away.
-        val chromeScroll = LocalShellChromeScrollState.current
-        LaunchedEffect(screenEntry?.id, chromeScroll) {
-            chromeScroll?.revealAll()
-        }
+        KeepShellChromePerScreen(screenEntry)
         PhoneNavHostGraph(
             handle = handle,
             navController = navController,

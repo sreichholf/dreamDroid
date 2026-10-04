@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import androidx.compose.runtime.MonotonicFrameClock
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -68,6 +69,34 @@ class ShellChromeScrollStateTest {
         state.revealAll()
         assertEquals(0f, state.bottomHiddenFraction)
         assertEquals(0f, state.topBar.heightOffset)
+    }
+
+    @Test
+    fun screenShownForTheFirstTimeShowsAllBars() {
+        val state = stateWithChrome()
+        state.topBar.heightOffsetLimit = -64f
+        state.topBar.heightOffset = -64f
+        state.onScroll(-500f)
+        state.restoreFrom(SavedStateHandle())
+        assertEquals(0f, state.topBar.heightOffset)
+        assertEquals(0f, state.bottomHiddenFraction)
+        assertTrue(state.fabExpanded)
+    }
+
+    @Test
+    fun backFindsTheBarsWhereTheScreenLeftThem() {
+        val list = SavedStateHandle()
+        val state = stateWithChrome()
+        state.topBar.heightOffsetLimit = -64f
+        state.topBar.heightOffset = -64f
+        state.onScroll(-500f)
+        state.saveTo(list)
+        // A detail screen opens with all bars shown, then Back returns to the list.
+        state.restoreFrom(SavedStateHandle())
+        state.restoreFrom(list)
+        assertEquals(-64f, state.topBar.heightOffset)
+        assertEquals(1f, state.bottomHiddenFraction)
+        assertFalse(state.fabExpanded)
     }
 
     @Test
