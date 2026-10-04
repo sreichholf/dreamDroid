@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.lifecycle.SavedStateHandle
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.tv.BrowseItem
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -42,12 +43,93 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun settingsTimersAndMultiEpgArePersistentBrowsePanes() {
-        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_SETTINGS_ID))
-        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_TIMERS_ID))
-        assertTrue(TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_MULTIEPG_ID))
+    fun drawerListsBouquetsMultiEpgMoviesTimersThenPreferences() {
+        val headers = hubNavHeaders(
+            bouquetRows = listOf(row(FAVOURITES, "Favourites"), row(SPORTS, "")),
+            movieLocations = listOf("/media/hdd/movie/")
+        )
+        assertEquals(
+            listOf(
+                HubNavHeader(FAVOURITES, "Favourites"),
+                HubNavHeader(SPORTS, "Services"),
+                HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
+                HubNavHeader(
+                    TvComposeHubHost.movieHeaderId("/media/hdd/movie/"),
+                    "/media/hdd/movie/"
+                ),
+                HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timers"),
+                HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
+            ),
+            headers
+        )
+    }
+
+    @Test
+    fun drawerWithoutBouquetsShowsPlaceholderAndNoMultiEpg() {
+        assertEquals(
+            listOf(
+                HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
+                HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timers"),
+                HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
+            ),
+            hubNavHeaders(bouquetRows = emptyList(), movieLocations = emptyList())
+        )
+    }
+
+    @Test
+    fun selectionSurvivesReloadOnlyWhileItsHeaderIsInTheDrawer() {
+        val rows = listOf(row(FAVOURITES, "Favourites"))
+        val movie = TvComposeHubHost.movieHeaderId("/media/hdd/movie/")
+        for (id in listOf(TvComposeHubHost.HEADER_SETTINGS_ID, TvComposeHubHost.HEADER_TIMERS_ID)) {
+            assertTrue(TvComposeHubHost.hubHeaderSurvivesReload(id, emptyList(), emptyList()))
+        }
+        assertTrue(
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_MULTIEPG_ID,
+                rows,
+                emptyList()
+            )
+        )
         assertFalse(
-            TvComposeHubHost.isPersistentHubHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID)
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_MULTIEPG_ID,
+                emptyList(),
+                emptyList()
+            )
+        )
+        assertTrue(TvComposeHubHost.hubHeaderSurvivesReload(FAVOURITES, rows, emptyList()))
+        assertFalse(TvComposeHubHost.hubHeaderSurvivesReload(SPORTS, rows, emptyList()))
+        assertTrue(
+            TvComposeHubHost.hubHeaderSurvivesReload(movie, rows, listOf("/media/hdd/movie/"))
+        )
+        assertFalse(TvComposeHubHost.hubHeaderSurvivesReload(movie, rows, emptyList()))
+        assertTrue(
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                emptyList(),
+                emptyList()
+            )
+        )
+        assertFalse(
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+                rows,
+                emptyList()
+            )
+        )
+    }
+
+    @Test
+    fun hubOpensOnTheFirstBouquetElseThePlaceholder() {
+        assertEquals(
+            FAVOURITES,
+            TvComposeHubHost.firstHubHeader(
+                listOf(row(FAVOURITES, "Favourites"), row(SPORTS, "Sports"))
+            )
+        )
+        assertEquals(
+            TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+            TvComposeHubHost.firstHubHeader(emptyList())
         )
     }
 
@@ -186,5 +268,23 @@ class TvComposeHubHostTest {
                 hasPaintedContent = true
             )
         )
+    }
+
+    private fun hubNavHeaders(bouquetRows: List<HubBouquetRow>, movieLocations: List<String>) =
+        TvComposeHubHost.hubNavHeaders(
+            bouquetRows = bouquetRows,
+            movieLocations = movieLocations,
+            placeholderTitle = "Services",
+            multiEpgTitle = "MultiEPG",
+            timersTitle = "Timers",
+            settingsTitle = "Preferences"
+        )
+
+    private fun row(reference: String, name: String) =
+        HubBouquetRow(bouquet = Service(reference, name), services = emptyList())
+
+    private companion object {
+        const val FAVOURITES = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\""
+        const val SPORTS = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.sports.tv\""
     }
 }

@@ -129,10 +129,56 @@ object TvComposeHubHost {
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
-    /** Survives hub reload so Settings / Timers / MultiEPG are not bounced away. */
-    fun isPersistentHubHeader(headerId: String): Boolean = headerId == HEADER_SETTINGS_ID ||
-        headerId == HEADER_TIMERS_ID ||
-        headerId == HEADER_MULTIEPG_ID
+    /**
+     * Drawer order: the bouquets (or a placeholder while there are none), MultiEPG when
+     * there are bouquets to show in it, the movie locations, Timers, then Preferences.
+     */
+    fun hubNavHeaders(
+        bouquetRows: List<HubBouquetRow>,
+        movieLocations: List<String>,
+        placeholderTitle: String,
+        multiEpgTitle: String,
+        timersTitle: String,
+        settingsTitle: String
+    ): List<HubNavHeader> = buildList {
+        if (bouquetRows.isEmpty()) {
+            add(HubNavHeader(HEADER_PLACEHOLDER_ID, placeholderTitle))
+        } else {
+            bouquetRows.forEach { row ->
+                val title = row.bouquet.name.ifBlank { placeholderTitle }
+                add(HubNavHeader(row.bouquet.reference, title))
+            }
+            add(HubNavHeader(HEADER_MULTIEPG_ID, multiEpgTitle))
+        }
+        movieLocations.forEach { dirname ->
+            add(HubNavHeader(movieHeaderId(dirname), dirname))
+        }
+        add(HubNavHeader(HEADER_TIMERS_ID, timersTitle))
+        add(HubNavHeader(HEADER_SETTINGS_ID, settingsTitle))
+    }
+
+    /** The top of the drawer, which the hub opens on: the first bouquet, else the placeholder. */
+    fun firstHubHeader(bouquetRows: List<HubBouquetRow>): String =
+        bouquetRows.firstOrNull()?.bouquet?.reference ?: HEADER_PLACEHOLDER_ID
+
+    /**
+     * Whether [headerId] is still in the drawer after a hub reload with [bouquetRows] and
+     * [movieLocations]. Otherwise the selection falls back to [firstHubHeader].
+     */
+    fun hubHeaderSurvivesReload(
+        headerId: String,
+        bouquetRows: List<HubBouquetRow>,
+        movieLocations: List<String>
+    ): Boolean = when {
+        headerId == HEADER_SETTINGS_ID || headerId == HEADER_TIMERS_ID -> true
+
+        headerId == HEADER_MULTIEPG_ID -> bouquetRows.isNotEmpty()
+
+        headerId == HEADER_PLACEHOLDER_ID -> bouquetRows.isEmpty()
+
+        else -> bouquetRows.any { it.bouquet.reference == headerId } ||
+            movieDirnameFromHeader(headerId) in movieLocations
+    }
 
     /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
     fun hubHeaderIconRes(headerId: String): Int = when {
@@ -246,27 +292,14 @@ fun ComposeTvHubApp(
         bouquetRows,
         movieLocations
     ) {
-        buildList {
-            add(HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, settingsTitle))
-            add(HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, timersTitle))
-            add(
-                HubNavHeader(
-                    TvComposeHubHost.HEADER_MULTIEPG_ID,
-                    multiEpgTitle
-                )
-            )
-            if (bouquetRows.isEmpty()) {
-                add(HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, placeholderTitle))
-            } else {
-                bouquetRows.forEach { row ->
-                    val title = row.bouquet.name.ifBlank { placeholderTitle }
-                    add(HubNavHeader(row.bouquet.reference, title))
-                }
-            }
-            movieLocations.forEach { dirname ->
-                add(HubNavHeader(TvComposeHubHost.movieHeaderId(dirname), dirname))
-            }
-        }
+        TvComposeHubHost.hubNavHeaders(
+            bouquetRows = bouquetRows,
+            movieLocations = movieLocations,
+            placeholderTitle = placeholderTitle,
+            multiEpgTitle = multiEpgTitle,
+            timersTitle = timersTitle,
+            settingsTitle = settingsTitle
+        )
     }
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
