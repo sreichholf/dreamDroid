@@ -53,38 +53,56 @@ class BackupRepository @Inject constructor(
         return gson.toJson(tree)
     }
 
-    /**
-     * Imports [content]. A profile whose name is already saved replaces that row in
-     * place, so it keeps its id and, when it is the active one, stays active.
-     *
-     * @return false when [content] cannot be imported. Nothing is changed.
-     */
-    suspend fun importBackup(content: String?): Boolean = withContext(Dispatchers.IO) {
-        Log.i(TAG, "Import started")
-        // Reject the whole document before writing profiles or preferences.
-        val backupData = parseBackupImport(content)
-        if (backupData == null) {
-            Log.e(TAG, "Import rejected an unreadable backup document")
-            return@withContext false
+    /** The backup in [content], or null when it cannot be imported in full. */
+    suspend fun parse(content: String?): BackupData? = withContext(Dispatchers.Default) {
+        parseBackupImport(content).also {
+            if (it == null) {
+                Log.e(TAG, "Rejected an unreadable backup document")
+            }
         }
-
-        for (profile in backupData.profiles) {
-            val name = profile.name ?: ""
-            val existing = profiles.profiles().firstOrNull { it.name == name }
-            val row = profileToInsert(profile, existing, backupData.passwordsIncluded)
-            row.id = existing?.id
-            profiles.save(row)
-        }
-        backupData.settings?.let { imported ->
-            settings.restore(imported.associate { it.key to typedValue(it) })
-        }
-        true
     }
+
+    /**
+     * Imports the parts of [backup] that [choice] names. A profile whose name is already
+     * saved replaces that row in place, so it keeps its id and, when it is the active one,
+     * stays active.
+     */
+    suspend fun importBackup(backup: BackupData, choice: ImportChoice): Unit =
+        withContext(Dispatchers.IO) {
+            Log.i(TAG, "Import started")
+            val passwordsIncluded = if (choice.passwords) backup.passwordsIncluded else false
+            backup.profiles.forEachIndexed { index, profile ->
+                if (index !in choice.profiles) {
+                    return@forEachIndexed
+                }
+                val name = profile.name ?: ""
+                val existing = profiles.profiles().firstOrNull { it.name == name }
+                val row = profileToInsert(profile, existing, passwordsIncluded)
+                row.id = existing?.id
+                profiles.save(row)
+            }
+            if (choice.settings) {
+                backup.settings?.let { imported ->
+                    settings.restore(imported.associate { it.key to typedValue(it) })
+                }
+            }
+        }
 
     private companion object {
         const val TAG = "BackupRepository"
     }
 }
+
+/**
+ * What to take from a backup: the profiles at these indices of [BackupData.profiles], and
+ * whether their passwords and the app settings come along.
+ */
+data class ImportChoice(val profiles: Set<Int>, val passwords: Boolean, val settings: Boolean)
+
+/** False for a file exported without passwords, or one whose profiles have none. */
+val BackupData.carriesPasswords: Boolean
+    get() = passwordsIncluded != false &&
+        profiles.any { !it.pass.isNullOrEmpty() || !it.encoderPass.isNullOrEmpty() }
 
 /**
  * Profile row to insert.
@@ -139,7 +157,7 @@ internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean):
  * JSON null, or has a setting value that does not match its type.
  *
  * Gson parse failures ([JsonParseException], including syntax and IO errors) stay inside this
- * function so [BackupRepository.importBackup] can refuse the document before it writes.
+ * function, so a document is refused before [BackupRepository.importBackup] writes.
  */
 internal fun parseBackupImport(content: String?): BackupData? {
     val backupData = try {

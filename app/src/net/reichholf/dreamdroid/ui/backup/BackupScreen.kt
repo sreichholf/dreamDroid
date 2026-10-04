@@ -68,7 +68,11 @@ fun BackupScreen(
         ProfilesHeader(
             selected = state.selectedProfiles,
             total = state.profiles.size,
-            onAllCheckedChange = onAllProfilesCheckedChange
+            onAllCheckedChange = onAllProfilesCheckedChange,
+            modifier = Modifier.padding(
+                start = ListRowHorizontalInset + 16.dp,
+                end = ListRowHorizontalInset
+            )
         )
         val currentLabel = stringResource(R.string.backup_current_profile)
         state.profiles.forEach { profile ->
@@ -142,13 +146,17 @@ private fun ImportCard(onImport: () -> Unit) {
  * once all are. Without profiles the count and the button are left out.
  */
 @Composable
-private fun ProfilesHeader(selected: Int, total: Int, onAllCheckedChange: (Boolean) -> Unit) {
+internal fun ProfilesHeader(
+    selected: Int,
+    total: Int,
+    onAllCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 48.dp)
-            .padding(start = ListRowHorizontalInset + 16.dp, end = ListRowHorizontalInset)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -215,7 +223,7 @@ private fun ProfileRow(
             null
         },
         trailingContent = if (profile.current) {
-            { CurrentBadge(currentLabel) }
+            { LabelBadge(currentLabel) }
         } else {
             null
         },
@@ -228,7 +236,7 @@ private fun ProfileRow(
 }
 
 @Composable
-private fun CurrentBadge(label: String) {
+internal fun LabelBadge(label: String) {
     Surface(
         color = MaterialTheme.colorScheme.secondaryContainer,
         contentColor = MaterialTheme.colorScheme.onSecondaryContainer,

@@ -222,7 +222,7 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun importStoresProfilesAndSettingsAndListsThem() = runTest {
+    fun importAsksFirstAndStoresProfilesAndSettingsOnConfirm() = runTest {
         val data = BackupData()
         data.addProfile(receiver("Kitchen", "10.0.0.3"))
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
@@ -230,11 +230,115 @@ class BackupViewModelTest {
         val viewModel = viewModel()
 
         viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        assertEquals(listOf("Kitchen"), review.profiles.map { it.name })
+        assertTrue(profiles.profiles().isEmpty())
+
+        viewModel.confirmImport()
         val state = viewModel.uiState.first { it.profiles.isNotEmpty() }
 
         assertEquals(UiText.Resource(R.string.backup_import_successful), state.userMessage)
+        assertEquals(null, state.importReview)
         assertEquals(listOf("Kitchen"), state.profiles.map { it.name })
         assertTrue(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
+    fun reviewOffersOnlyWhatTheFileHolds() = runTest {
+        saved("Kitchen", "10.0.0.1")
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "" })
+        data.addProfile(receiver("Cellar", "10.0.0.4").apply { pass = "" })
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+
+        viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+
+        assertEquals(listOf(true, false), review.profiles.map { it.replaces })
+        assertTrue(review.profiles.all { it.checked })
+        assertFalse(review.passwordsAvailable)
+        assertFalse(review.includePasswords)
+        assertFalse(review.settingsAvailable)
+        assertFalse(review.includeSettings)
+        viewModel.setImportPasswords(true)
+        viewModel.setImportSettings(true)
+        assertFalse(viewModel.uiState.value.importReview!!.includePasswords)
+        assertFalse(viewModel.uiState.value.importReview!!.includeSettings)
+    }
+
+    @Test
+    fun importTakesOnlyTheChosenParts() = runTest {
+        saved("Kitchen", "10.0.0.1", pass = "saved")
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        assertTrue(review.passwordsAvailable && review.includePasswords)
+        assertTrue(review.settingsAvailable && review.includeSettings)
+
+        viewModel.setImportProfileChecked(1, false)
+        viewModel.setImportPasswords(false)
+        viewModel.setImportSettings(false)
+        viewModel.confirmImport()
+        viewModel.uiState.first { it.userMessage != null }
+
+        assertEquals(
+            mapOf("Kitchen" to ("10.0.0.3" to "saved")),
+            profiles.profiles().associate { it.name to (it.host to it.pass) }
+        )
+        assertFalse(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
+    fun nothingChosenCannotBeImportedAndCancelChangesNothing() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val viewModel = viewModel()
+        viewModel.importFrom(URI)
+        viewModel.uiState.first { it.importReview != null }
+
+        viewModel.setAllImportProfilesChecked(false)
+        val review = viewModel.uiState.value.importReview!!
+        assertFalse(review.canImport)
+        assertFalse(review.passwordsSelectable)
+        viewModel.confirmImport()
+        assertTrue(viewModel.uiState.value.importReview != null)
+
+        viewModel.dismissImport()
+        assertEquals(null, viewModel.uiState.value.importReview)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun importReviewSurvivesProcessDeath() = runTest {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
+        documents.files[URI] = GsonBuilder().create().toJson(data)
+        val handle = SavedStateHandle()
+        val first = viewModel(handle)
+        first.importFrom(URI)
+        first.uiState.first { it.importReview != null }
+        first.setImportProfileChecked(0, false)
+        first.setImportSettings(false)
+        documents.files.clear()
+
+        val restored = viewModel(handle)
+        val review = restored.uiState.first { it.importReview != null }.importReview!!
+        assertEquals(listOf(false, true), review.profiles.map { it.checked })
+        assertFalse(review.includeSettings)
+
+        restored.confirmImport()
+        restored.uiState.first { it.profiles.isNotEmpty() }
+        assertEquals(listOf("Cellar"), profiles.profiles().map { it.name })
+        assertEquals(null, viewModel(handle).uiState.value.importReview)
     }
 
     @Test

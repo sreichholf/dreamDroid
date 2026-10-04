@@ -53,7 +53,7 @@ class BackupRepositoryTest {
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
         data.addGenericSetting(GenericSetting(DreamDroid.CURRENT_PROFILE, "7", "Integer"))
 
-        assertTrue(backups.importBackup(json(data)))
+        importAll(json(data))
 
         assertEquals("from-backup", preferences.getString("import_probe", null))
         assertEquals(true, preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
@@ -66,7 +66,7 @@ class BackupRepositoryTest {
         val data = BackupData()
         data.addProfile(receiver("Bedroom", "9.9.9.9").apply { id = kitchen.id })
 
-        assertTrue(backups.importBackup(json(data)))
+        importAll(json(data))
 
         val byName = profiles.profiles().associate { it.name to it.host }
         assertEquals(mapOf("Kitchen" to "10.0.0.1", "Bedroom" to "9.9.9.9"), byName)
@@ -79,7 +79,7 @@ class BackupRepositoryTest {
         val data = BackupData()
         data.addProfile(receiver("Living Room", "10.0.0.2").apply { id = 99 })
 
-        assertTrue(backups.importBackup(json(data)))
+        importAll(json(data))
 
         val rows = profiles.profiles()
         assertEquals(listOf(living.id), rows.map { it.id })
@@ -97,19 +97,68 @@ class BackupRepositoryTest {
         data.passwordsIncluded = false
         data.addProfile(receiver("Living Room", "10.0.0.2"))
 
-        assertTrue(backups.importBackup(json(data)))
+        importAll(json(data))
 
         assertEquals("secret", profiles.profiles().single().pass)
     }
 
     @Test
-    fun unreadableDocumentChangesNothing() = runBlocking<Unit> {
-        saved("Living Room", "10.0.0.1")
+    fun unreadableDocumentIsRejectedBeforeImport() = runBlocking<Unit> {
+        assertNull(backups.parse("{"))
+        assertNull(backups.parse(null))
+    }
 
-        assertFalse(backups.importBackup("{"))
+    @Test
+    fun importTakesOnlyTheChosenProfilesAndSettings() = runBlocking<Unit> {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3"))
+        data.addProfile(receiver("Cellar", "10.0.0.4"))
+        data.addGenericSetting(GenericSetting("import_probe", "from-backup", "String"))
+        val backup = checkNotNull(backups.parse(json(data)))
 
-        assertEquals(listOf("Living Room"), profiles.profiles().map { it.name })
+        backups.importBackup(
+            backup,
+            ImportChoice(profiles = setOf(1), passwords = true, settings = false)
+        )
+
+        assertEquals(listOf("Cellar"), profiles.profiles().map { it.name })
         assertNull(preferences.getString("import_probe", null))
+    }
+
+    @Test
+    fun importWithoutChosenPasswordsKeepsTheSavedOnes() = runBlocking<Unit> {
+        saved("Living Room", "10.0.0.1").also {
+            it.pass = "secret"
+            profiles.save(it)
+        }
+        val data = BackupData()
+        data.passwordsIncluded = true
+        data.addProfile(receiver("Living Room", "10.0.0.2").apply { pass = "from-file" })
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "from-file" })
+        val backup = checkNotNull(backups.parse(json(data)))
+
+        backups.importBackup(
+            backup,
+            ImportChoice(profiles = setOf(0, 1), passwords = false, settings = false)
+        )
+
+        assertEquals(
+            mapOf("Living Room" to "secret", "Kitchen" to ""),
+            profiles.profiles().associate { it.name to it.pass }
+        )
+    }
+
+    @Test
+    fun aFileCarriesPasswordsOnlyWhenAProfileHasOne() {
+        val data = BackupData()
+        data.addProfile(receiver("Kitchen", "10.0.0.3").apply { pass = "" })
+        assertFalse(data.carriesPasswords)
+
+        data.profiles.single().encoderPass = "secret"
+        assertTrue(data.carriesPasswords)
+
+        data.passwordsIncluded = false
+        assertFalse(data.carriesPasswords)
     }
 
     @Test
@@ -167,7 +216,7 @@ class BackupRepositoryTest {
         val exported = backups.exportJson(backups.backupData(), includePasswords = true)
         profiles.save(profiles.profiles().single().apply { vpsDefault = VpsMode.Off })
 
-        assertTrue(backups.importBackup(exported))
+        importAll(exported)
 
         assertEquals(VpsMode.Overwrite, profiles.profiles().single().vpsDefault)
     }
@@ -183,7 +232,7 @@ class BackupRepositoryTest {
             ]}
         """.trimIndent()
 
-        assertTrue(backups.importBackup(content))
+        importAll(content)
 
         assertEquals(
             mapOf(
@@ -202,6 +251,14 @@ class BackupRepositoryTest {
     private fun receiver(name: String, host: String): Profile = Profile.getDefault().apply {
         this.name = name
         this.host = host
+    }
+
+    private suspend fun importAll(content: String) {
+        val backup = checkNotNull(backups.parse(content))
+        backups.importBackup(
+            backup,
+            ImportChoice(backup.profiles.indices.toSet(), passwords = true, settings = true)
+        )
     }
 
     private fun json(data: BackupData): String = GsonBuilder().create().toJson(data)

@@ -78,6 +78,18 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         modifier = modifier
     )
 
+    uiState.importReview?.let { review ->
+        ImportBackupDialog(
+            review = review,
+            onProfileCheckedChange = viewModel::setImportProfileChecked,
+            onAllProfilesCheckedChange = viewModel::setAllImportProfilesChecked,
+            onPasswordsChange = viewModel::setImportPasswords,
+            onSettingsChange = viewModel::setImportSettings,
+            onDismiss = viewModel::dismissImport,
+            onConfirm = viewModel::confirmImport
+        )
+    }
+
     if (uiState.confirmingPasswords) {
         ConfirmAlertDialog(
             title = stringResource(R.string.backup_passwords_confirm_title),
