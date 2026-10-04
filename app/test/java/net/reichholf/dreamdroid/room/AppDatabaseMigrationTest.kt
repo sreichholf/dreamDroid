@@ -20,12 +20,14 @@ import org.junit.jupiter.api.Test
  * table that comes out is checked against the exported schema 10.
  * [AppDatabase.MIGRATION_10_11] adds VPS to `timer_list` and `profile`; both tables are checked
  * against the exported schema 11.
+ * [AppDatabase.MIGRATION_11_12] adds `profile.stream_ssl`, off for existing profiles; the
+ * `profile` table is checked against the exported schema 12.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
 class AppDatabaseMigrationTest {
     @Test
-    fun migratesV1ProfileThroughVersion11() {
+    fun migratesV1ProfileThroughVersion12() {
         val dbFile = Files.createTempFile("dreambox-v1", ".db")
         Files.delete(dbFile)
         try {
@@ -57,6 +59,9 @@ class AppDatabaseMigrationTest {
                 assertVpsDefaultsOff(connection)
                 assertTableMatchesSchema(connection, "profile", SCHEMA_11)
                 assertTableMatchesSchema(connection, "timer_list", SCHEMA_11)
+                runBlocking { AppDatabase.MIGRATION_11_12.migrate(connection) }
+                assertStreamSslOff(connection)
+                assertTableMatchesSchema(connection, "profile", SCHEMA_12)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -114,6 +119,15 @@ class AppDatabaseMigrationTest {
             assertTrue(statement.step())
             assertTrue(statement.isNull(0))
             assertTrue(statement.isNull(1))
+            assertFalse(statement.step())
+        }
+    }
+
+    /** Existing profiles keep requesting their streams over http. */
+    private fun assertStreamSslOff(connection: SQLiteConnection) {
+        connection.prepare("SELECT DISTINCT stream_ssl FROM profile").use { statement ->
+            assertTrue(statement.step())
+            assertEquals(0L, statement.getLong(0))
             assertFalse(statement.step())
         }
     }
@@ -294,6 +308,8 @@ class AppDatabaseMigrationTest {
         private const val SCHEMA_10 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/10.json"
 
         private const val SCHEMA_11 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/11.json"
+
+        private const val SCHEMA_12 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/12.json"
 
         /** A version-10 timer snapshot row, from before dreamDroid kept VPS. */
         private val V10_TIMER_LIST_ROW =
