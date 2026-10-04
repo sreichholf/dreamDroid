@@ -20,6 +20,7 @@ fun Profile.matchesSeededDemo(): Boolean = name == SEEDED_DEMO_NAME &&
     ssl &&
     !allCertsTrusted &&
     !streamLogin &&
+    !streamSsl &&
     !fileLogin &&
     !fileSsl &&
     !simpleRemote &&

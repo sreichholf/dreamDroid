@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.di.ApplicationScope
+import net.reichholf.dreamdroid.helpers.HttpUserInfo
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
@@ -153,7 +154,7 @@ class VLCPlayer @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "Starting $uri failed", e)
+                Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(uri.toString())} failed", e)
                 return@launch
             }
             // A zap, detach, or release since then owns the player now.

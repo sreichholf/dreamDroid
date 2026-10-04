@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -227,11 +228,42 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("8002").assertIsDisplayed()
         composeRule.onNodeWithText("Port (Live)").assertDoesNotExist()
         composeRule.onNodeWithText("Stream path").assertDoesNotExist()
+        // The web interface's https, then the transcoder's.
+        composeRule.onAllNodes(hasText("https") and isToggleable())[1]
+            .performScrollTo()
+            .assertIsOff()
+            .performClick()
 
         val saved = Profile.getDefault()
         composeRule.runOnIdle { fields.applyTo(saved, form) }
         assertEquals(StreamMode.Transcoding, saved.streamMode)
         assertEquals(8002, saved.transcodePort)
+        assertTrue(saved.streamSsl)
+    }
+
+    @Test
+    fun liveHttpsStartsOffAndRoundTripsThroughTheProfile() {
+        show(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        // The web interface's https, Live's, then Movies'.
+        val httpsSwitches = composeRule.onAllNodes(hasText("https") and isToggleable())
+        httpsSwitches.assertCountEquals(3)
+        httpsSwitches[1].performScrollTo().assertIsOff().performClick()
+        httpsSwitches[1].assertIsOn()
+        httpsSwitches[2].performScrollTo().assertIsOff()
+        assertTrue(form.streamSsl)
+        assertFalse(form.fileSsl)
+
+        val profile = Profile.getDefault()
+        composeRule.runOnIdle { fields.applyTo(profile, form) }
+        assertTrue(profile.streamSsl)
+        assertFalse(profile.fileSsl)
+        assertTrue(ProfileForm.from(profile).streamSsl)
     }
 
     @Test

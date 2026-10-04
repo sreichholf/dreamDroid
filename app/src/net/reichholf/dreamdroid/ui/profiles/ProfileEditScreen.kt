@@ -267,10 +267,21 @@ private fun TranscodingSection(
         label = stringResource(R.string.transcode_port),
         keyboardType = KeyboardType.Number
     )
+    StreamLoginAndSslRows(form, onFormChange)
+}
+
+/** Login and https of the HTTP stream port, shared by direct live streams and transcoding. */
+@Composable
+private fun StreamLoginAndSslRows(form: ProfileForm, onFormChange: (ProfileForm) -> Unit) {
     EditSwitchRow(
         checked = form.streamLogin,
         onCheckedChange = { onFormChange(form.copy(streamLogin = it)) },
         label = stringResource(R.string.login)
+    )
+    EditSwitchRow(
+        checked = form.streamSsl,
+        onCheckedChange = { onFormChange(form.copy(streamSsl = it)) },
+        label = stringResource(R.string.ssl_enabled)
     )
 }
 
@@ -293,11 +304,7 @@ private fun StreamPortsSection(
             label = stringResource(R.string.port_stream_live),
             keyboardType = KeyboardType.Number
         )
-        EditSwitchRow(
-            checked = form.streamLogin,
-            onCheckedChange = { onFormChange(form.copy(streamLogin = it)) },
-            label = stringResource(R.string.login)
-        )
+        StreamLoginAndSslRows(form, onFormChange)
     }
     EditFormSubsection(title = stringResource(R.string.movies)) {
         EditOutlinedTextField(

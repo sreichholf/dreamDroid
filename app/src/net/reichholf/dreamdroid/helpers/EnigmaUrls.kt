@@ -44,9 +44,10 @@ object EnigmaUrls {
     }
 
     /**
-     * `http://host:port/<ref>`. OpenWebif's transcoder takes the same shape on its own port
-     * (OpenWebif `plugin/controllers/models/stream.py:83-90,128`); without query parameters it
-     * applies the box's TranscodingSetup values.
+     * `http://host:port/<ref>`, or https when [Profile.streamSsl] is set. OpenWebif's transcoder
+     * takes the same shape on its own port (OpenWebif
+     * `plugin/controllers/models/stream.py:83-90,128`); without query parameters it applies the
+     * box's TranscodingSetup values.
      */
     fun serviceStream(profile: Profile, ref: String, port: Int = profile.streamPort): String {
         var serviceRef = ref
@@ -63,19 +64,12 @@ object EnigmaUrls {
             serviceRef = URLEncoder.encode(serviceRef, "utf-8").replace("+", "%20")
         } catch (_: UnsupportedEncodingException) {
         }
-        val streamLoginString = HttpUserInfo.embed(
-            enabled = profile.streamLogin,
-            user = profile.user,
-            pass = profile.pass,
-            scheme = "http"
-        )
-        return "http://" + streamLoginString + profile.streamHostOrHost + ":" + port + "/" +
-            serviceRef
+        return streamOrigin(profile, port) + "/" + serviceRef
     }
 
     /**
-     * Recording URL. [StreamMode.Transcoding] asks the transcoder for `/file` over http, as
-     * OpenWebif's own m3u does (`stream.py:191-198,248`).
+     * Recording URL. [StreamMode.Transcoding] asks the transcoder for `/file`, as OpenWebif's
+     * own m3u does (`stream.py:191-198,248`), with the live stream's scheme and login.
      */
     fun fileStream(profile: Profile, ref: String, fileName: String?): String {
         if (profile.streamMode == StreamMode.Encoder && ref.startsWith("1:")) {
@@ -83,8 +77,7 @@ object EnigmaUrls {
         }
         val parms = NameValuePair.toString(listOf(NameValuePair("file", fileName)))
         if (profile.streamMode == StreamMode.Transcoding) {
-            return "http://" + profile.streamHostOrHost + ":" + profile.transcodePort +
-                URIStore.FILE + parms
+            return streamOrigin(profile, profile.transcodePort) + URIStore.FILE + parms
         }
         val fileScheme = if (profile.fileSsl) "https" else "http"
         val fileAuthString = HttpUserInfo.embed(
@@ -95,6 +88,18 @@ object EnigmaUrls {
         )
         return filePrefix(profile) + fileAuthString + profile.streamHostOrHost + ":" +
             profile.filePort + URIStore.FILE + parms
+    }
+
+    /** `scheme://[user:pass@]host:port` of the HTTP stream ports. */
+    private fun streamOrigin(profile: Profile, port: Int): String {
+        val scheme = if (profile.streamSsl) "https" else "http"
+        val userInfo = HttpUserInfo.embed(
+            enabled = profile.streamLogin,
+            user = profile.user,
+            pass = profile.pass,
+            scheme = scheme
+        )
+        return "$scheme://$userInfo${profile.streamHostOrHost}:$port"
     }
 
     private fun webPrefix(profile: Profile): String = if (profile.ssl) "https://" else "http://"

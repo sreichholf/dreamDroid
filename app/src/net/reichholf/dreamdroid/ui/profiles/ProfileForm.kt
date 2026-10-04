@@ -17,6 +17,7 @@ data class ProfileForm(
     val trustAllCerts: Boolean = false,
     val login: Boolean = false,
     val streamLogin: Boolean = false,
+    val streamSsl: Boolean = false,
     val fileSsl: Boolean = false,
     val fileLogin: Boolean = false,
     val simpleRemote: Boolean = false,
@@ -32,6 +33,7 @@ data class ProfileForm(
             trustAllCerts = profile.allCertsTrusted,
             login = profile.login,
             streamLogin = profile.streamLogin,
+            streamSsl = profile.streamSsl,
             fileSsl = profile.fileSsl,
             fileLogin = profile.fileLogin,
             simpleRemote = profile.simpleRemote,
@@ -107,6 +109,7 @@ class ProfileTextFields(
         profile.setFilePort(filePort.text)
         profile.login = form.login
         profile.streamLogin = form.streamLogin
+        profile.streamSsl = form.streamSsl
         profile.fileLogin = form.fileLogin
         profile.fileSsl = form.fileSsl
         profile.user = user.text

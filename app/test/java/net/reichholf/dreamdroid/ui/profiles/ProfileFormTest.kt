@@ -4,9 +4,12 @@ import kotlinx.coroutines.test.runTest
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.VpsMode
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
+import org.junit.jupiter.params.provider.ValueSource
 
 /** [ProfileForm] and [ProfileTextFields] carry the profile's switches to the form and back. */
 class ProfileFormTest {
@@ -30,6 +33,31 @@ class ProfileFormTest {
 
         assertEquals(mode, form.vpsDefault)
         assertEquals(mode, saved.vpsDefault)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [false, true])
+    fun streamSslRoundTripsThroughTheForm(streamSsl: Boolean) = runTest {
+        val source = Profile.getDefault().apply {
+            host = "10.0.0.1"
+            this.streamSsl = streamSsl
+        }
+        val fields = ProfileTextFields(backgroundScope).apply { fill(source) }
+        val form = ProfileForm.from(source)
+
+        val saved = Profile.getDefault().also { fields.applyTo(it, form) }
+
+        assertEquals(streamSsl, form.streamSsl)
+        assertEquals(streamSsl, saved.streamSsl)
+    }
+
+    /** The repository republishes the active profile when its settings change. */
+    @Test
+    fun streamSslIsASettingsChange() {
+        val http = Profile.getDefault()
+
+        assertTrue(http.hasSameSettings(Profile.getDefault()))
+        assertFalse(http.hasSameSettings(Profile.getDefault().apply { streamSsl = true }))
     }
 
     @Test

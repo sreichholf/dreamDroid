@@ -143,6 +143,61 @@ class EnigmaUrlsTest {
     }
 
     @Test
+    fun serviceStream_httpsWhenStreamSsl() {
+        val profile = streamProfile().apply { streamSsl = true }
+        assertEquals("https://box.local:8001/1%3A0%3A1", EnigmaUrls.stream(profile, "1:0:1"))
+    }
+
+    @Test
+    fun serviceStream_httpsKeepsUserInfo() {
+        val profile = streamProfile(streamLogin = true).apply {
+            streamSsl = true
+            streamPort = 443
+        }
+        assertEquals(
+            "https://root:secret@box.local:443/1%3A0%3A1",
+            EnigmaUrls.stream(profile, "1:0:1")
+        )
+    }
+
+    @Test
+    fun stream_transcodingOverHttpsWhenStreamSsl() {
+        val profile = transcodingProfile().apply { streamSsl = true }
+        assertEquals("https://box.local:8002/1%3A0%3A1", EnigmaUrls.stream(profile, "1:0:1"))
+    }
+
+    @Test
+    fun fileStream_transcodingFollowsTheStreamSchemeAndLogin() {
+        val profile = transcodingProfile().apply {
+            streamSsl = true
+            streamLogin = true
+        }
+        val url = EnigmaUrls.fileStream(profile, "1:0:0:0:0:0:0:0:0:0:/hdd/a.ts", "/hdd/a.ts")
+        assertEquals("https://root:secret@box.local:8002/file?file=%2Fhdd%2Fa.ts", url)
+    }
+
+    @Test
+    fun serviceStream_embeddedHttpUrlIgnoresStreamSsl() {
+        val ref = "4097:0:1:0:0:0:0:0:0:0:" +
+            URLEncoder.encode("http://cdn.example/live.ts", "utf-8")
+        val profile = streamProfile(streamLogin = true).apply { streamSsl = true }
+        assertEquals("http://cdn.example/live.ts", EnigmaUrls.serviceStream(profile, ref))
+    }
+
+    @Test
+    fun stream_encoderIgnoresStreamSsl() {
+        val profile = encoderProfile().apply { streamSsl = true }
+        assertTrue(EnigmaUrls.stream(profile, "1:0:1").startsWith("rtsp://box.local:554/"))
+    }
+
+    @Test
+    fun fileStream_directIgnoresStreamSsl() {
+        val profile = fileProfile().apply { streamSsl = true }
+        val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
+        assertEquals("http://box.local:80/file?file=%2Ftmp%2Fa.ts", url)
+    }
+
+    @Test
     fun fileStream_directIgnoresTheTranscodePort() {
         val url = EnigmaUrls.fileStream(fileProfile(), "1:0:1", "/tmp/a.ts")
         assertEquals("http://box.local:80/file?file=%2Ftmp%2Fa.ts", url)

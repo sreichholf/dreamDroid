@@ -60,4 +60,33 @@ class HttpUserInfoTest {
             )
         )
     }
+
+    @Test
+    fun embeddedCredentialsArePercentEncoded() {
+        assertEquals(
+            "me%40home:p%3Aw%2Fd%23%3F%20x@",
+            HttpUserInfo.embed(
+                enabled = true,
+                user = "me@home",
+                pass = "p:w/d#? x",
+                scheme = "https"
+            )
+        )
+    }
+
+    @Test
+    fun redactMasksUserInfoOnly() {
+        assertEquals(
+            "https://***@box.local:8001/1%3A0%3A1",
+            HttpUserInfo.redact("https://root:secret@box.local:8001/1%3A0%3A1")
+        )
+        assertEquals(
+            "rtsp://***@box.local:554/stream?ref=1",
+            HttpUserInfo.redact("rtsp://enc:pw@box.local:554/stream?ref=1")
+        )
+        assertEquals(
+            "http://box.local:80/file?file=%2Fa%40b.ts",
+            HttpUserInfo.redact("http://box.local:80/file?file=%2Fa%40b.ts")
+        )
+    }
 }

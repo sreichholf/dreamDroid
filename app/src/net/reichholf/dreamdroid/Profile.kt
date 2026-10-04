@@ -106,6 +106,13 @@ class Profile : Serializable {
     var fileSsl: Boolean = false
 
     /**
+     * Request HTTP streams (live, and the transcoder) over https, as a reverse proxy in
+     * front of the stream port serves them.
+     */
+    @ColumnInfo(name = "stream_ssl", defaultValue = "0")
+    var streamSsl: Boolean = false
+
+    /**
      * Zap to the service before opening a live stream. Single-tuner boxes can
      * only stream a service that is on the current transponder.
      */
@@ -378,6 +385,7 @@ class Profile : Serializable {
         streamPort == p.streamPort &&
         filePort == p.filePort &&
         streamLogin == p.streamLogin &&
+        streamSsl == p.streamSsl &&
         fileSsl == p.fileSsl &&
         fileLogin == p.fileLogin &&
         zapAndStream == p.zapAndStream &&
