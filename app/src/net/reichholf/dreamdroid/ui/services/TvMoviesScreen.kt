@@ -78,9 +78,8 @@ fun TvMoviesDestinationRail(
 }
 
 /**
- * Coordinator overlay chrome: now-playing strip stacked on the destination bar.
- * Hub list in detail_view overflows under this slot (ScrollingViewBehavior),
- * so the strip must live here — not in the hub Column.
+ * Shell bottom chrome: now-playing strip stacked on the destination bar. Both slide away
+ * together while the hub list scrolls down, so the strip lives here, not in the hub Column.
  *
  * Tablet hosts destinations on [net.reichholf.dreamdroid.ui.nav.DestinationRail]
  * and sets [showDestinationBar] to false so this slot is strip-only.

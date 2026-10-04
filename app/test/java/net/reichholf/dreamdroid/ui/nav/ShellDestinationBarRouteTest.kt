@@ -12,9 +12,7 @@ class ShellDestinationBarRouteTest {
         applyShellDestinationBarForRoute(
             PhoneNavRoutes.TIMER_EDIT,
             floating = false,
-            controller,
-            shellNav = null,
-            shellRail = null
+            controller
         )
         assertTrue(controller.content is ShellDestinationBarContent.Hidden)
     }
@@ -26,9 +24,7 @@ class ShellDestinationBarRouteTest {
         applyShellDestinationBarForRoute(
             PhoneNavRoutes.HUB,
             floating = false,
-            controller,
-            shellNav = null,
-            shellRail = null
+            controller
         )
         assertTrue(controller.content is ShellDestinationBarContent.TvMovies)
     }
@@ -40,9 +36,7 @@ class ShellDestinationBarRouteTest {
         applyShellDestinationBarForRoute(
             PhoneNavRoutes.CHANGELOG,
             floating = true,
-            controller,
-            shellNav = null,
-            shellRail = null
+            controller
         )
         assertTrue(controller.content is ShellDestinationBarContent.TvMovies)
     }

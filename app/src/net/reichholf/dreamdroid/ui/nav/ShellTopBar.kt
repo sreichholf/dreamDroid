@@ -8,6 +8,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -136,6 +137,7 @@ fun ShellTopAppBar(
     controller: ShellTopBarController,
     onNavigationClick: () -> Unit,
     trailingActions: List<ShellTopBarAction>,
+    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -156,7 +158,8 @@ fun ShellTopAppBar(
                 ShellTopBarActionButton(action)
             }
         },
-        windowInsets = WindowInsets(0, 0, 0, 0)
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        scrollBehavior = scrollBehavior
     )
 }
 

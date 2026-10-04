@@ -138,7 +138,7 @@ class ShellDestinationBarHostTest {
     }
 }
 
-private class TestLifecycleOwner : LifecycleOwner {
+internal class TestLifecycleOwner : LifecycleOwner {
     val registry = LifecycleRegistry(this)
     override val lifecycle: Lifecycle get() = registry
 }

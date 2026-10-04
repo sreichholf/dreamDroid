@@ -25,11 +25,8 @@ const val DESTINATION_RAIL_TAG = "destination_rail"
 data class DestinationBarItem(@StringRes val labelRes: Int, @DrawableRes val iconRes: Int)
 
 /**
- * Shared Material 3 bottom destination bar for phone hubs that host chrome on the
- * activity Coordinator slot ([R.id.shell_destination_nav]).
- *
- * Installed by [ProvideShellDestinationBar] / [RegisterShellDestinationBar] — not by
- * capturing NavHost `@Composable` lambdas into the sibling activity ComposeView.
+ * Shared Material 3 bottom destination bar for phone hubs (TV & Movies, Tools).
+ * [PhoneShell] draws it from the state hubs publish with [RegisterShellDestinationBar].
  */
 @Composable
 fun DestinationBar(
@@ -38,7 +35,7 @@ fun DestinationBar(
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Hosted on MainActivity Coordinator which already fits system windows (#263/#264).
+    // The shell already pads by the system bars (#263/#264).
     NavigationBar(
         modifier = modifier.fillMaxWidth(),
         windowInsets = WindowInsets(0, 0, 0, 0)
@@ -61,9 +58,8 @@ fun DestinationBar(
 }
 
 /**
- * Material 3 start-side rail for the tablet shell slot ([R.id.shell_destination_rail]).
- * Same items as [DestinationBar]. Hosted on MainActivity which already fits system
- * windows (#263/#264).
+ * Material 3 start-side rail for the tablet shell. Same items as [DestinationBar].
+ * The shell already pads by the system bars (#263/#264).
  */
 @Composable
 fun DestinationRail(
