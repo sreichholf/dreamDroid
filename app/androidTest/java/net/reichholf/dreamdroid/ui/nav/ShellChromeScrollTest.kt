@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.swipe
@@ -86,19 +85,19 @@ class ShellChromeScrollTest {
         val shown = contentBounds()
         val shownChrome = chromeBounds()
         assertTrue("content clear of chrome", shown.bottom <= shownChrome.top)
-        assertTrue("FAB label shown", fabLabelShown())
+        assertTrue("FAB expanded", fabExpanded())
 
         scrollListDown()
 
         assertChromeHidden(shown, shownChrome)
-        composeRule.waitUntil(timeoutMillis = 5_000) { !fabLabelShown() }
+        composeRule.waitUntil(timeoutMillis = 5_000) { !fabExpanded() }
 
         composeRule.onNodeWithTag(LIST_TAG).performTouchInput { swipeDown() }
         composeRule.waitForIdle()
 
         assertEquals(shown, contentBounds())
         assertEquals(shownChrome, chromeBounds())
-        composeRule.waitUntil(timeoutMillis = 5_000) { fabLabelShown() }
+        composeRule.waitUntil(timeoutMillis = 5_000) { fabExpanded() }
     }
 
     @Test
@@ -118,7 +117,7 @@ class ShellChromeScrollTest {
 
         assertEquals(shownChrome, chromeBounds())
         assertEquals("top bar stays hidden", hiddenTop, contentBounds().top)
-        assertFalse("FAB label follows the top bar", fabLabelShown())
+        assertFalse("FAB follows the top bar", fabExpanded())
     }
 
     @Test
@@ -233,8 +232,14 @@ class ShellChromeScrollTest {
     private fun chromeBounds(): Rect =
         composeRule.onNodeWithTag(SHELL_CHROME_TAG).fetchSemanticsNode().boundsInRoot
 
-    private fun fabLabelShown(): Boolean =
-        composeRule.onAllNodesWithText(FAB_LABEL).fetchSemanticsNodes().isNotEmpty()
+    /**
+     * Whether the FAB shows its label. Material 3 clears the label's semantics, so read the
+     * shape: collapsed, the FAB is square; expanded, the label makes it wider than tall.
+     */
+    private fun fabExpanded(): Boolean {
+        val fab = boundsOf(SHELL_FAB_TAG)
+        return fab.width > fab.height
+    }
 }
 
 @Composable
