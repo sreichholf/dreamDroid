@@ -205,7 +205,7 @@ class BackupViewModel @Inject constructor(
     fun importFrom(uri: String) {
         viewModelScope.launch {
             // A backup is a few KB; a larger file would not fit the saved state.
-            val content = documents.read(uri)?.takeIf { it.length <= MAX_IMPORT_CHARS }
+            val content = documents.read(uri, MAX_IMPORT_CHARS)
             val backup = content?.let { backups.parse(it) }
                 ?.takeUnless { it.profiles.isEmpty() && it.settings.isNullOrEmpty() }
             if (backup == null) {
@@ -379,7 +379,7 @@ class BackupViewModel @Inject constructor(
         const val KEY_EXCLUDED = "backup_excluded_profiles"
         const val KEY_EXPORT_SETTINGS = "backup_export_settings"
         const val KEY_INCLUDE_PASSWORDS = "backup_include_passwords"
-        const val MAX_IMPORT_CHARS = 256 * 1024
+        const val MAX_IMPORT_CHARS = 64 * 1024
         const val KEY_IMPORT_CONTENT = "backup_import_content"
         const val KEY_IMPORT_EXCLUDED = "backup_import_excluded_profiles"
         const val KEY_IMPORT_PASSWORDS = "backup_import_passwords"

@@ -129,7 +129,10 @@ class BackupScreenTest {
         )
 
         composeRule.onNodeWithText("0 of 1").assertIsDisplayed()
-        composeRule.onNode(hasText("Receiver passwords") and isToggleable()).assertIsNotEnabled()
+        composeRule.onNode(hasText("Receiver passwords") and isToggleable())
+            .assertIsOff()
+            .assertIsNotEnabled()
+        composeRule.onNodeWithText(PASSWORDS_EXCLUDED).assertIsDisplayed()
     }
 
     @Test

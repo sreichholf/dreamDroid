@@ -86,14 +86,14 @@ class BackupRepository @Inject constructor(
                 ?.value
                 ?.toIntOrNull()
             val chosen = backup.profiles.filterIndexed { index, _ -> index in choice.profiles }
-            val active = chosen.firstOrNull { activeInFile != null && it.id == activeInFile }
-            val saved = profiles.profiles()
-            val rows = chosen.map { profile ->
-                val existing = saved.firstOrNull { it.name == (profile.name ?: "") }
-                profileToInsert(profile, existing, passwordsIncluded).apply { id = existing?.id }
-            }
-            try {
-                profiles.saveAll(rows)
+            val activeRow = chosen.indexOfFirst { activeInFile != null && it.id == activeInFile }
+            val rows = try {
+                val saved = profiles.profiles()
+                chosen.map { profile ->
+                    val existing = saved.firstOrNull { it.name == (profile.name ?: "") }
+                    profileToInsert(profile, existing, passwordsIncluded)
+                        .apply { id = existing?.id }
+                }.also { profiles.saveAll(it) }
             } catch (e: SQLiteException) {
                 Log.e(TAG, "Import failed, no profile was written", e)
                 return@withContext false
@@ -106,7 +106,13 @@ class BackupRepository @Inject constructor(
                             .associate { it.key to typedValue(it) }
                     )
                 }
-                active?.id?.let { profiles.setCurrent(it) }
+                rows.getOrNull(activeRow)?.id?.let { id ->
+                    try {
+                        profiles.setCurrent(id)
+                    } catch (e: SQLiteException) {
+                        Log.e(TAG, "Imported, but could not activate profile $id", e)
+                    }
+                }
             }
             true
         }

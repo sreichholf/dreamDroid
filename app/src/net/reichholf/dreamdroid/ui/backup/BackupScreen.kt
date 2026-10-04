@@ -87,13 +87,13 @@ fun BackupScreen(
         SwitchPreferenceRow(
             title = stringResource(R.string.backup_include_passwords),
             summary = stringResource(
-                if (state.includePasswords) {
+                if (state.passwordsInExport) {
                     R.string.backup_passwords_included
                 } else {
                     R.string.backup_passwords_excluded
                 }
             ),
-            checked = state.includePasswords,
+            checked = state.passwordsInExport,
             onCheckedChange = onIncludePasswordsChange,
             enabled = state.selectedProfiles > 0
         )

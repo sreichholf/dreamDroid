@@ -414,7 +414,7 @@ class BackupViewModelTest {
         )
         viewModel.onMessageShown()
         val data = BackupData()
-        data.addProfile(receiver("Kitchen", "x".repeat(300 * 1024)))
+        data.addProfile(receiver("Kitchen", "x".repeat(70 * 1024)))
         documents.files[URI] = GsonBuilder().create().toJson(data)
         viewModel.importFrom(URI)
         assertEquals(
@@ -492,7 +492,8 @@ class BackupViewModelTest {
         val files = HashMap<String, String>()
         var writable = true
 
-        override suspend fun read(uri: String): String? = files[uri]
+        override suspend fun read(uri: String, maxChars: Int): String? =
+            files[uri]?.takeIf { it.length <= maxChars }
 
         override suspend fun write(uri: String, text: String): Boolean {
             if (writable) {

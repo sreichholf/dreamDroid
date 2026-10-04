@@ -127,6 +127,7 @@ class BackupRepositoryTest {
         )
 
         assertFalse(imported)
+        assertEquals(2, failing.adds)
         assertTrue(profiles.profiles().isEmpty())
         assertNull(preferences.getString("import_probe", null))
     }

@@ -46,7 +46,9 @@ class ImportBackupDialogTest {
         composeRule.onNode(hasText("Receiver passwords") and isToggleable())
             .assertIsOn()
             .assertIsEnabled()
-        composeRule.onNodeWithText("The file's passwords replace the saved ones.")
+        composeRule.onNodeWithText(
+            "Passwords in the file replace the saved ones; a profile without one keeps its own."
+        )
             .assertIsDisplayed()
         composeRule.onNode(hasText("App settings") and isToggleable())
             .assertIsOn()
