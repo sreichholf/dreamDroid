@@ -36,8 +36,8 @@ import net.reichholf.dreamdroid.ui.text.asString
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * [HubViewModel] owns mode, the selected row, and bouquet or location tabs
  * (parity with former ServiceListPager). Publishes [TvMoviesHubState] through
- * [RegisterShellDestinationBar] (phone bottom bar or tablet rail), and routes MultiChoice / timer-edit results
- * for the active child page.
+ * [RegisterShellDestinationBar] (phone bottom bar or tablet rail), and routes MultiChoice /
+ * timer-edit results for the active child page.
  */
 @Composable
 fun HubDestination(
@@ -80,7 +80,11 @@ fun HubDestination(
         else -> TvMoviesDestination.TV
     }
 
+    val chromeScroll = LocalShellChromeScrollState.current
+
+    // A new list starts at the top, so all shell chrome comes back, as on a new screen.
     fun selectDestination(dest: TvMoviesDestination) {
+        chromeScroll?.revealAll()
         when (dest) {
             TvMoviesDestination.TV -> viewModel.selectTv()
             TvMoviesDestination.RADIO -> viewModel.selectRadio()
@@ -103,8 +107,6 @@ fun HubDestination(
         hubState = destinationBarState
     )
 
-    val chromeScroll = LocalShellChromeScrollState.current
-
     fun onRowSelected(index: Int) {
         // Reselect active bouquet tab → go up one provider/directory level (or reload root).
         if (index == selectedRow && (mode == HubModes.TV || mode == HubModes.RADIO)) {
@@ -112,8 +114,7 @@ fun HubDestination(
             return
         }
         viewModel.onRowSelected(index)
-        // A new list starts at the top; bring back the bar its scrolling slid away.
-        chromeScroll?.revealBottom()
+        chromeScroll?.revealAll()
     }
 
     // Publish Snapshot state to the shell. Installing the bar from this leaf tied chrome

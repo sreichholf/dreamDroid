@@ -74,7 +74,8 @@ fun BouquetAddServicesDestination(
                     }
                 )
             )
-        }
+        },
+        keepInView = true
     )
 
     BouquetAddServicesScreen(

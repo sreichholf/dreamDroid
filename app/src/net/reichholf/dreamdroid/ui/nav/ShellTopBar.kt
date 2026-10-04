@@ -55,7 +55,14 @@ class ShellTopBarController {
     var replaced by mutableStateOf(false)
         private set
 
-    private val bindings = sortedMapOf<Int, List<ShellTopBarAction>?>()
+    /** True while the newest binding keeps the bar in view when content scrolls. */
+    var keepInView by mutableStateOf(false)
+        private set
+
+    /** [actions] null: the destination draws its own bar instead of the shell's. */
+    private class Binding(val actions: List<ShellTopBarAction>?, val keepInView: Boolean)
+
+    private val bindings = sortedMapOf<Int, Binding>()
     private var nextEpoch = 0
 
     internal fun claim(): Int {
@@ -63,17 +70,15 @@ class ShellTopBarController {
         return nextEpoch
     }
 
-    /** [actions] null: the destination draws its own bar instead of the shell's. */
-    internal fun bind(epoch: Int, actions: List<ShellTopBarAction>?) {
-        bindings[epoch] = actions
+    internal fun bind(epoch: Int, actions: List<ShellTopBarAction>?, keepInView: Boolean = false) {
+        bindings[epoch] = Binding(actions, keepInView)
         publish()
     }
 
     internal fun update(epoch: Int, actions: List<ShellTopBarAction>) {
-        if (epoch in bindings) {
-            bindings[epoch] = actions
-            publish()
-        }
+        val binding = bindings[epoch] ?: return
+        bindings[epoch] = Binding(actions, binding.keepInView)
+        publish()
     }
 
     internal fun release(epoch: Int) {
@@ -84,9 +89,10 @@ class ShellTopBarController {
     }
 
     private fun publish() {
-        val newest = if (bindings.isEmpty()) emptyList() else bindings.getValue(bindings.lastKey())
-        replaced = newest == null
-        val shown = newest ?: emptyList()
+        val newest = if (bindings.isEmpty()) null else bindings.getValue(bindings.lastKey())
+        replaced = newest != null && newest.actions == null
+        keepInView = newest?.keepInView == true
+        val shown = newest?.actions ?: emptyList()
         if (shown !== actions) {
             actions = shown
         }
@@ -105,13 +111,16 @@ fun ShellTitle(title: UiText) {
     }
 }
 
-/** Shows [actions] in the shell top bar while this composition is attached. */
+/**
+ * Shows [actions] in the shell top bar while this composition is attached. With
+ * [keepInView] the bar stays put while content scrolls, for screens whose Save lives there.
+ */
 @Composable
-fun BindShellTopBarActions(actions: List<ShellTopBarAction>) {
+fun BindShellTopBarActions(actions: List<ShellTopBarAction>, keepInView: Boolean = false) {
     val controller = LocalShellTopBarController.current ?: return
     val epoch = remember(controller) { controller.claim() }
-    DisposableEffect(controller, epoch) {
-        controller.bind(epoch, actions)
+    DisposableEffect(controller, epoch, keepInView) {
+        controller.bind(epoch, actions, keepInView)
         onDispose { controller.release(epoch) }
     }
     SideEffect { controller.update(epoch, actions) }

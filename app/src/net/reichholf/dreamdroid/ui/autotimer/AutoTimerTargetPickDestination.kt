@@ -39,7 +39,8 @@ fun AutoTimerTargetPickDestination(
                 enabled = uiState.selected.isNotEmpty(),
                 onClick = { handle.deliverAutoTimerTargets(uiState.selected) }
             )
-        )
+        ),
+        keepInView = true
     )
 
     AutoTimerTargetPickScreen(

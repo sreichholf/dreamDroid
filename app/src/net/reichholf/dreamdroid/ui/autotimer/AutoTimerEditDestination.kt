@@ -59,7 +59,8 @@ fun AutoTimerEditDestination(
                     if (uiState.blocked) handle.requestNeedsReceiver() else viewModel.save()
                 }
             )
-        )
+        ),
+        keepInView = true
     )
 
     AutoTimerEditScreen(

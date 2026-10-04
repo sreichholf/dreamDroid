@@ -30,7 +30,7 @@ import kotlin.math.roundToInt
  * to its icon; scrolling up brings them back.
  *
  * The top bar follows [topBar] through the Material 3 enter-always behavior. The bottom
- * chrome follows [bottomOffsetPx] through [collapsingBottomChrome].
+ * chrome follows [bottomHiddenFraction] through [collapsingBottomChrome].
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Stable
@@ -41,8 +41,11 @@ class ShellChromeScrollState {
         initialContentOffset = 0f
     )
 
-    /** How far the bottom chrome has slid out, from 0 (shown) to its height (hidden). */
-    var bottomOffsetPx by mutableFloatStateOf(0f)
+    /**
+     * How much of the bottom chrome has slid out, from 0 (shown) to 1 (hidden). A fraction,
+     * so hidden chrome stays hidden when the now-playing strip turns on.
+     */
+    var bottomHiddenFraction by mutableFloatStateOf(0f)
         private set
 
     /** False while content scrolls down: the shell FAB shows its icon only. */
@@ -52,9 +55,13 @@ class ShellChromeScrollState {
     /** Measured height of the bottom chrome; written during layout, read when scrolling. */
     internal var bottomHeightPx = 0f
 
+    /** Bumped by every move except a settle, so a running settle stops writing. */
+    private var moves = 0
+
     /** Bottom chrome and FAB label come back; the top bar waits for a scroll up. */
     fun revealBottom() {
-        bottomOffsetPx = 0f
+        moves += 1
+        bottomHiddenFraction = 0f
         fabExpanded = true
     }
 
@@ -69,23 +76,32 @@ class ShellChromeScrollState {
      * (negative while content scrolls down). Consumes nothing: the content keeps scrolling.
      */
     internal fun onScroll(deltaY: Float) {
-        bottomOffsetPx = (bottomOffsetPx.coerceAtMost(bottomHeightPx) - deltaY)
-            .coerceIn(0f, bottomHeightPx)
-        if (deltaY < 0f) {
-            fabExpanded = false
-        } else if (deltaY > 0f) {
-            fabExpanded = true
-        }
-    }
-
-    /** After a fling, a half-hidden bottom chrome snaps to the nearer end. */
-    internal suspend fun settleBottom() {
-        val start = bottomOffsetPx
-        if (start <= 0f || start >= bottomHeightPx) {
+        if (deltaY == 0f) {
             return
         }
-        val target = if (start < bottomHeightPx / 2) 0f else bottomHeightPx
-        animate(start, target) { value, _ -> bottomOffsetPx = value }
+        moves += 1
+        if (bottomHeightPx > 0f) {
+            bottomHiddenFraction =
+                (bottomHiddenFraction - deltaY / bottomHeightPx).coerceIn(0f, 1f)
+        }
+        fabExpanded = deltaY > 0f
+    }
+
+    /**
+     * After a fling, a half-hidden bottom chrome snaps to the nearer end. A scroll or reveal
+     * during the snap wins: the snap stops writing.
+     */
+    internal suspend fun settleBottom() {
+        val start = bottomHiddenFraction
+        if (start <= 0f || start >= 1f) {
+            return
+        }
+        val settle = moves
+        animate(start, if (start < 0.5f) 0f else 1f) { value, _ ->
+            if (moves == settle) {
+                bottomHiddenFraction = value
+            }
+        }
     }
 
     internal fun bottomConnection(enabled: () -> Boolean): NestedScrollConnection =
@@ -116,7 +132,7 @@ fun Modifier.collapsingBottomChrome(state: ShellChromeScrollState): Modifier = c
     .layout { measurable, constraints ->
         val placeable = measurable.measure(constraints.copy(minHeight = 0))
         state.bottomHeightPx = placeable.height.toFloat()
-        val visible = (placeable.height - state.bottomOffsetPx.roundToInt())
+        val visible = (placeable.height * (1f - state.bottomHiddenFraction)).roundToInt()
             .coerceIn(0, placeable.height)
         layout(placeable.width, visible) {
             placeable.place(0, 0)

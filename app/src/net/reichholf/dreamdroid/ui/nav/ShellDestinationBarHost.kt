@@ -140,8 +140,7 @@ fun TabletShellNowPlaying(
 /**
  * Publishes [content] to the shell destination chrome while this leaf is composed, and again
  * each time its back stack entry resumes: the shell may have hidden the bar in between while
- * the leaf stayed composed. Publishing also brings back bottom chrome that scrolling slid
- * away, so returning to the app or to the hub shows the bar; the top bar stays as it was.
+ * the leaf stayed composed.
  * Clears only if we still own the slot (so rapid hub→hub swaps do not blank a successor).
  */
 @Composable
@@ -151,15 +150,12 @@ fun RegisterShellDestinationBar(content: ShellDestinationBarContent) {
             "ShellDestinationBarController not provided — wrap PhoneNavHost in " +
                 "ProvideShellDestinationBar"
         )
-    val chromeScroll = LocalShellChromeScrollState.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(controller, content, lifecycleOwner, chromeScroll) {
+    DisposableEffect(controller, content, lifecycleOwner) {
         controller.content = content
-        chromeScroll?.revealBottom()
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 controller.content = content
-                chromeScroll?.revealBottom()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

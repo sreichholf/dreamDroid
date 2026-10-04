@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import net.reichholf.dreamdroid.ui.bouqueteditor.BouquetListDestination
 import net.reichholf.dreamdroid.ui.device.DeviceInfoDestination
+import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
@@ -31,7 +32,11 @@ fun ToolsHubDestination(handle: PhoneNavHandle, modifier: Modifier = Modifier) {
     var selected by rememberSaveable { mutableStateOf(ToolsDestination.SCREENSHOT) }
     val destinationBarState = remember { ToolsHubState() }
     destinationBarState.selected = selected
-    destinationBarState.onDestinationSelected = { selected = it }
+    val chromeScroll = LocalShellChromeScrollState.current
+    destinationBarState.onDestinationSelected = {
+        selected = it
+        chromeScroll?.revealAll()
+    }
 
     // Publish Snapshot state to the shell; do not draw the bar from this leaf (content load
     // must not dispose chrome).

@@ -9,12 +9,14 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
 
 @Composable
 fun ListEmptyState(
@@ -23,6 +25,14 @@ fun ListEmptyState(
     modifier: Modifier = Modifier,
     onRetry: (() -> Unit)? = null
 ) {
+    // Nothing here scrolls, so a top bar that a list scrolled away could not come back.
+    val chromeScroll = LocalShellChromeScrollState.current
+    val showsMessage = !loading && message != null
+    LaunchedEffect(showsMessage, chromeScroll) {
+        if (showsMessage) {
+            chromeScroll?.revealAll()
+        }
+    }
     Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         if (loading) {
             CircularProgressIndicator()

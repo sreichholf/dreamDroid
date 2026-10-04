@@ -31,6 +31,7 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -49,6 +50,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
@@ -178,9 +182,26 @@ private fun ShellBody(
             chromeScroll.revealAll()
         }
     }
+    // Coming back to the app brings back the bottom chrome; the top bar waits for a scroll up.
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner, chromeScroll) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                chromeScroll.revealBottom()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    // A bar the destination replaced cannot hide: it would swallow scrolling unseen.
+    val canHideTopBar = remember(topBarController) {
+        {
+            currentHideOnScroll && !topBarController.replaced && !topBarController.keepInView
+        }
+    }
     val topBarScroll = TopAppBarDefaults.enterAlwaysScrollBehavior(
         state = chromeScroll.topBar,
-        canScroll = { currentHideOnScroll }
+        canScroll = canHideTopBar
     )
     val bottomConnection = remember(chromeScroll) {
         chromeScroll.bottomConnection { currentHideOnScroll }
