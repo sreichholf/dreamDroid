@@ -41,6 +41,7 @@ import net.reichholf.dreamdroid.ui.services.TvMoviesDestination
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -117,7 +118,7 @@ class ShellChromeScrollTest {
 
         assertEquals(shownChrome, chromeBounds())
         assertEquals("top bar stays hidden", hiddenTop, contentBounds().top)
-        composeRule.waitUntil(timeoutMillis = 5_000) { fabLabelShown() }
+        assertFalse("FAB label follows the top bar", fabLabelShown())
     }
 
     @Test

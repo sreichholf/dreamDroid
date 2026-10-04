@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.BottomAppBarDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -33,6 +34,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -199,12 +201,18 @@ private fun ShellBody(
             currentHideOnScroll && !topBarController.replaced && !topBarController.keepInView
         }
     }
+    val canHideBottomChrome = remember { { currentHideOnScroll } }
     val topBarScroll = TopAppBarDefaults.enterAlwaysScrollBehavior(
         state = chromeScroll.topBar,
         canScroll = canHideTopBar
     )
-    val bottomConnection = remember(chromeScroll) {
-        chromeScroll.bottomConnection { currentHideOnScroll }
+    val bottomChromeScroll = BottomAppBarDefaults.exitAlwaysScrollBehavior(
+        state = chromeScroll.bottomBar,
+        canScroll = canHideBottomChrome
+    )
+    // The FAB shows its label only while the top bar is fully in view.
+    val fabExpanded by remember(chromeScroll) {
+        derivedStateOf { chromeScroll.topBar.collapsedFraction == 0f }
     }
     Row(
         modifier = Modifier
@@ -214,13 +222,11 @@ private fun ShellBody(
         if (usesRail) {
             TabletShellDestinationRail(destinationController)
         }
-        // The bottom connection is the outer one: it sees each scroll before the top bar
-        // takes its share.
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxHeight()
-                .nestedScroll(bottomConnection)
+                .nestedScroll(bottomChromeScroll.nestedScrollConnection)
                 .nestedScroll(topBarScroll.nestedScrollConnection)
         ) {
             if (!topBarController.replaced) {
@@ -254,7 +260,7 @@ private fun ShellBody(
                     content()
                     ShellFabButton(
                         controller = fabController,
-                        expanded = chromeScroll.fabExpanded,
+                        expanded = fabExpanded,
                         aboveChrome = destinationController.content.showsBottomChrome(usesRail),
                         modifier = Modifier.align(Alignment.BottomEnd)
                     )
