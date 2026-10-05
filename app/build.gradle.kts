@@ -112,6 +112,14 @@ android {
         targetSdk = 37
         // Runs every instrumented test on HiltTestApplication (docs/hilt-migration.md, PR 15).
         testInstrumentationRunner = "net.reichholf.dreamdroid.testutil.HiltTestRunner"
+        // CI splits the instrumented suite across runners (android-ci.yml androidTest
+        // matrix): -PtestShardCount=3 -PtestShardIndex=0..2. AndroidJUnitRunner reads
+        // numShards/shardIndex. Not -Pandroid.testInstrumentationRunnerArguments… (AGENTS.md).
+        providers.gradleProperty("testShardCount").orNull?.let { count ->
+            testInstrumentationRunnerArguments["numShards"] = count
+            testInstrumentationRunnerArguments["shardIndex"] =
+                providers.gradleProperty("testShardIndex").get()
+        }
         multiDexEnabled = true
         buildConfigField("int", "MIN_SDK", "26")
     }

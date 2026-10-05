@@ -144,13 +144,21 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # Emulator jobs are free on this public repo but slow (~20–40+ min) and flaky.
+  # Emulator jobs are free on this public repo but slow and flaky.
   # Keep them off pull_request; run on main pushes and manual workflow_dispatch.
+  # Three runners each build the APKs and run a third of the suite
+  # (AndroidJUnitRunner numShards/shardIndex) on the cached AVD.
   androidTest:
-    name: Instrumented Compose tests
+    name: Instrumented Compose tests (shard ${{ matrix.shard }}/3)
     if: github.event_name != 'pull_request' && !inputs.upgrade_from_115
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    env:
+      SHARD_ARGS: -PtestShardCount=3 -PtestShardIndex=${{ matrix.shard }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -200,6 +208,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      # Build before the emulator boots so it does not compete for the runner's CPUs.
+      # -Pci disables ABI splits so connectedAndroidTest installs one APK.
+      - name: Build googleDebug + androidTest APKs
+        run: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+
       # Boot from a cached AVD snapshot instead of cold booting
       # (reactivecircus/android-emulator-runner README, "Caching AVD").
       - name: AVD cache
@@ -235,17 +248,17 @@ jobs:
           # Boot from the cached snapshot; do not write it back.
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          # -Pci disables ABI splits so connectedAndroidTest installs one APK.
           # Cloud `connected-test.sh` instead streams the ABI-split x86_64 APK
           # (UTP's fat-APK push times out under TCG). Do not unify those paths.
-          # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors).
-          script: ./gradlew -Pci --no-configuration-cache :app:connectedGoogleDebugAndroidTest
+          # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors);
+          # app/build.gradle.kts maps testShardCount/testShardIndex to runner arguments.
+          script: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
 
       - name: Upload instrumented test reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: androidTest-reports
+          name: androidTest-reports-shard-${{ matrix.shard }}
           path: |
             app/build/reports/androidTests/connected/
             app/build/outputs/androidTest-results/
