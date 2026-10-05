@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Bouquets
@@ -223,38 +222,25 @@ class ServiceRepository @Inject constructor(
     }
 
     /**
-     * The hub list of [ref], opened under the hub tab [tabRootRef]. Unless [forceRefresh],
-     * paints the Room roster first and skips the receiver while the session is Offline and
-     * Room had it. Then asks the receiver; its answer replaces the roster when [ref] is
-     * cacheable. When the receiver fails, Room is the fallback (also on a forced refresh)
-     * before the failure is reported.
+     * The hub list of [ref], opened under the hub tab [tabRootRef], read [cacheFirstLoad]. The
+     * receiver's answer replaces the Room roster when [ref] is cacheable.
      */
     fun nowNextList(
         ref: String,
         tabRootRef: String,
         forceRefresh: Boolean = false
-    ): Flow<NowNextListLoad> = flow {
-        val painted = if (forceRefresh) null else cachedNowNext(ref)
-        if (painted != null) {
-            emit(NowNextListLoad.Rows(painted, cached = true))
-        }
-        if (!forceRefresh && sessions.status.value.shouldSkipReceiverHttp(painted != null)) {
-            return@flow
-        }
-        val response = receiverNowNext(ref)
-        val live = response.value
-        if (live != null) {
-            persistRoster(ref, tabRootRef, live)
-            emit(NowNextListLoad.Rows(live, cached = false))
-            return@flow
-        }
-        val fallback = cachedNowNext(ref)
-        if (fallback != null) {
-            emit(NowNextListLoad.Rows(fallback, cached = true))
-        } else {
-            emit(NowNextListLoad.Failed(response.error))
-        }
-    }
+    ): Flow<NowNextListLoad> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { cachedNowNext(ref) },
+        fetch = {
+            receiverNowNext(ref).also { response ->
+                response.value?.let { persistRoster(ref, tabRootRef, it) }
+            }
+        },
+        loaded = NowNextListLoad::Rows,
+        failed = NowNextListLoad::Failed
+    )
 
     /**
      * The services of [ref] are the roster; the receiver's now/next only adds events to it

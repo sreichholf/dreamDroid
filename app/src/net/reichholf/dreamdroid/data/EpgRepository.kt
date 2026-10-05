@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.data
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -211,39 +210,19 @@ class EpgRepository @Inject constructor(
         clients.current().epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
-    /**
-     * Unless [forceRefresh], paints Room first and skips the receiver while the session is
-     * Offline and Room had the list. Then asks the receiver; when that fails, Room is the
-     * fallback (also on a forced refresh) before the failure is reported.
-     */
+    /** [cacheFirstLoad] of one event list of the active profile. */
     private fun listLoad(
         forceRefresh: Boolean,
         readCache: suspend (profileId: Int) -> List<Event>?,
         fetch: suspend (ReceiverApi) -> EnigmaResponse<List<Event>>
-    ): Flow<EventListLoad> = flow {
-        val profileId = profiles.requireCurrent().id
-        suspend fun cached(): List<Event>? = profileId?.let { readCache(it) }
-
-        val painted = if (forceRefresh) null else cached()
-        if (painted != null) {
-            emit(EventListLoad.Events(painted, cached = true))
-        }
-        if (!forceRefresh && sessions.status.value.shouldSkipReceiverHttp(painted != null)) {
-            return@flow
-        }
-        val response = fetch(clients.current())
-        val live = response.value
-        if (live != null) {
-            emit(EventListLoad.Events(live, cached = false))
-            return@flow
-        }
-        val fallback = cached()
-        if (fallback != null) {
-            emit(EventListLoad.Events(fallback, cached = true))
-        } else {
-            emit(EventListLoad.Failed(response.error))
-        }
-    }
+    ): Flow<EventListLoad> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { profiles.requireCurrent().id?.let { readCache(it) } },
+        fetch = { fetch(clients.current()) },
+        loaded = EventListLoad::Events,
+        failed = EventListLoad::Failed
+    )
 
     /**
      * One programme per channel at [fromSec], matching [ReceiverApi.epgAt]. Null when
