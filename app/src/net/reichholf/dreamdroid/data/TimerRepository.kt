@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.data
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.flow.Flow
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
@@ -14,6 +15,7 @@ import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.toListEntity
 import net.reichholf.dreamdroid.room.toTimer
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** The timer list to show, or why there is none. */
@@ -46,32 +48,36 @@ class TimerRepository @Inject constructor(
     private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
-    private val plugins: ReceiverPluginsRepository
+    private val plugins: ReceiverPluginsRepository,
+    private val sessions: SessionConnectionHolder
 ) {
     /**
-     * The receiver's timers, or the snapshot when that request fails. With
-     * [preferSnapshot], an existing snapshot answers without asking the receiver.
+     * The timers of the active profile, read [cacheFirstLoad] from the Room snapshot, which a
+     * live `/web/timerlist` replaces.
      */
-    suspend fun timers(preferSnapshot: Boolean = false): TimerListResult {
-        val profileId = profiles.requireCurrent().id
-        if (preferSnapshot) {
-            snapshot(profileId)?.let { return TimerListResult.Loaded(it) }
-        }
-        val response = clients.current(vpsPlugin = vpsPlugin()).timers()
-        val live = response.value
-        if (live != null) {
-            if (profileId != null) {
-                database.timerDao().replaceSnapshot(
-                    profileId,
-                    live.mapIndexed { index, timer -> timer.toListEntity(profileId, index) }
-                )
+    fun timers(forceRefresh: Boolean = false): Flow<TimerListResult> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { snapshot() },
+        fetch = {
+            val profileId = profiles.requireCurrent().id
+            clients.current(vpsPlugin = vpsPlugin()).timers().also { response ->
+                val live = response.value
+                if (live != null && profileId != null) {
+                    database.timerDao().replaceSnapshot(
+                        profileId,
+                        live.mapIndexed { index, timer -> timer.toListEntity(profileId, index) }
+                    )
+                }
             }
-            return TimerListResult.Loaded(live)
+        },
+        loaded = { timers, _ -> TimerListResult.Loaded(timers) },
+        failed = { error ->
+            TimerListResult.Failed(
+                error?.contentErrorText() ?: UiText.Resource(R.string.error_parsing)
+            )
         }
-        snapshot(profileId)?.let { return TimerListResult.Loaded(it) }
-        val message = response.error?.contentErrorText() ?: UiText.Resource(R.string.error_parsing)
-        return TimerListResult.Failed(message)
-    }
+    )
 
     /**
      * Saves [timer]. With [original], the receiver replaces that timer instead of adding one.
@@ -116,16 +122,21 @@ class TimerRepository @Inject constructor(
      * Locations and tags, fetched from the receiver until it answered. Failed locations
      * read as `/hdd/movie`, failed tags as none; both are asked again on the next call.
      * Answers are kept until the profile changes; known ones return without suspending.
+     * While the session is Offline the receiver is not asked, as if it had failed.
      */
     suspend fun locationsAndTags(): TimerChoices {
         if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
             val profile = profiles.requireCurrent()
-            val api = clients.forProfile(profile)
+            val api = if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
+                null
+            } else {
+                clients.forProfile(profile)
+            }
             if (!profiles.locationsLoadedFromReceiver()) {
-                profiles.putLocations(profile, api.locations().value)
+                profiles.putLocations(profile, api?.locations()?.value)
             }
             if (profiles.tags().isEmpty()) {
-                profiles.putTags(profile, api.tags().value)
+                profiles.putTags(profile, api?.tags()?.value)
             }
         }
         return TimerChoices(

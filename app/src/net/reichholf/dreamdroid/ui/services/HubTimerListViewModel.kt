@@ -59,17 +59,24 @@ class HubTimerListViewModel @Inject constructor(
         }
     }
 
-    /** Loads when [epoch] differs from the last one; the hub bumps it after a timer edit. */
+    /**
+     * Loads when [epoch] differs from the last one; the hub bumps it after a timer edit, and
+     * then the snapshot is stale, so the receiver answers.
+     */
     fun onRemount(epoch: Int) {
         val key = epoch.toString()
         if (!shouldLoadHubPage(appliedEpoch, key)) {
             return
         }
+        val edited = appliedEpoch != null
         appliedEpoch = key
-        reload()
+        reload(forceRefresh = edited)
     }
 
-    fun reload() {
+    /**
+     * Loads the timers. Room paints first unless [forceRefresh]; see [TimerRepository.timers].
+     */
+    fun reload(forceRefresh: Boolean = false) {
         _uiState.update {
             it.copy(
                 refreshing = true,
@@ -78,24 +85,25 @@ class HubTimerListViewModel @Inject constructor(
         }
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val result = timers.timers()
-            _uiState.update {
-                when (result) {
-                    is TimerListResult.Loaded -> it.copy(
-                        timers = result.timers,
-                        refreshing = false,
-                        emptyMessage = if (result.timers.isEmpty()) {
-                            UiText.Resource(R.string.no_list_item)
-                        } else {
-                            null
-                        }
-                    )
+            timers.timers(forceRefresh).collect { result ->
+                _uiState.update {
+                    when (result) {
+                        is TimerListResult.Loaded -> it.copy(
+                            timers = result.timers,
+                            refreshing = false,
+                            emptyMessage = if (result.timers.isEmpty()) {
+                                UiText.Resource(R.string.no_list_item)
+                            } else {
+                                null
+                            }
+                        )
 
-                    is TimerListResult.Failed -> it.copy(
-                        timers = emptyList(),
-                        refreshing = false,
-                        emptyMessage = result.message
-                    )
+                        is TimerListResult.Failed -> it.copy(
+                            timers = emptyList(),
+                            refreshing = false,
+                            emptyMessage = result.message
+                        )
+                    }
                 }
             }
         }
@@ -111,7 +119,7 @@ class HubTimerListViewModel @Inject constructor(
         viewModelScope.launch {
             val response = timers.cleanup()
             _uiState.update { it.copy(cleaning = false, userMessage = response.userMessageText()) }
-            reload()
+            reload(forceRefresh = true)
         }
     }
 

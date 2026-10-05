@@ -55,7 +55,7 @@ fun TvTimerHost(modifier: Modifier = Modifier, viewModel: TvTimerHostViewModel =
             onDismiss = viewModel::showList,
             onSaved = {
                 viewModel.showList()
-                viewModel.reload()
+                viewModel.reload(forceRefresh = true)
             },
             modifier = Modifier.fillMaxSize()
         )

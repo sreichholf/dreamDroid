@@ -58,23 +58,8 @@ object HubModes {
 fun shouldLoadHubPage(appliedKey: String?, nextKey: String): Boolean = appliedKey != nextKey
 
 /**
- * Movie locations load once while a strip is on screen. An empty failed load
- * runs again when the hub destination re-enters.
+ * Movie locations load again on each hub entry until the receiver answered once; Room's strip
+ * or the `/hdd/movie` stand-in alone does not stop that. Not while a load runs.
  */
-fun shouldRetryHubLocations(
-    ready: Boolean,
-    locations: List<String>,
-    jobActive: Boolean,
-    lastHttpSuccess: Boolean?
-): Boolean {
-    if (jobActive) {
-        return false
-    }
-    if (!ready) {
-        return true
-    }
-    if (locations.isNotEmpty()) {
-        return false
-    }
-    return lastHttpSuccess != true
-}
+fun shouldLoadHubLocations(jobActive: Boolean, fromReceiver: Boolean): Boolean =
+    !jobActive && !fromReceiver

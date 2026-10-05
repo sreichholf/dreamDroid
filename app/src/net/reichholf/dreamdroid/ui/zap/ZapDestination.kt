@@ -99,7 +99,7 @@ fun ZapDestination(
 
     DreamDroidPullRefresh(
         refreshing = uiState.refreshing,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         enabled = true,
         modifier = modifier
     ) {

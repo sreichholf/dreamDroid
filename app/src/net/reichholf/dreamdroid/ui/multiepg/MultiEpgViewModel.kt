@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -169,8 +170,9 @@ internal fun newMultiEpgGrid(
     sync = epg.multiEpgSync,
     scope = scope,
     profileId = { profiles.requireCurrent().id ?: -1 },
+    // The grid only asks for the timers once it decided to ask the receiver.
     fetchTimers = {
-        when (val result = timers.timers()) {
+        when (val result = timers.timers(forceRefresh = true).last()) {
             is TimerListResult.Loaded -> result.timers
             is TimerListResult.Failed -> emptyList()
         }

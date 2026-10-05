@@ -12,20 +12,15 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.updateAndGet
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
-import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
-import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
@@ -44,8 +39,7 @@ data class HubUiState(
     val movieLocations: List<String> = emptyList(),
     val locationsReady: Boolean = false,
     val timerRemountEpoch: Int = 0,
-    val nowPlayingReloadEpoch: Int = 0,
-    val userMessage: UiText? = null
+    val nowPlayingReloadEpoch: Int = 0
 )
 
 /**
@@ -60,8 +54,6 @@ class HubViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val services: ServiceRepository,
     private val movies: MovieRepository,
-    private val timers: TimerRepository,
-    private val receiver: ReceiverRepository,
     private val profiles: ProfileRepository,
     private val sessions: SessionConnectionHolder
 ) : ViewModel() {
@@ -70,7 +62,7 @@ class HubViewModel @Inject constructor(
     private var currentMovie: String?
     private var bouquetJob: Job? = null
     private var locationsJob: Job? = null
-    private var lastLocationsHttpSuccess: Boolean? = null
+    private var locationsFromReceiver = false
 
     private val _uiState: MutableStateFlow<HubUiState>
     val uiState: StateFlow<HubUiState>
@@ -80,13 +72,10 @@ class HubViewModel @Inject constructor(
         currentTv = saved.currentTv
         currentRadio = saved.currentRadio
         currentMovie = saved.currentMovie
-        val knownLocations = profiles.locations().toList()
         _uiState = MutableStateFlow(
             HubUiState(
                 mode = saved.mode,
                 selectedRow = saved.selectedRow,
-                movieLocations = knownLocations,
-                locationsReady = knownLocations.isNotEmpty(),
                 timerRemountEpoch = saved.timerRemountEpoch,
                 nowPlayingReloadEpoch = saved.nowPlayingReloadEpoch
             )
@@ -117,17 +106,11 @@ class HubViewModel @Inject constructor(
         update { it.copy(mode = HubModes.RADIO, selectedRow = index) }
     }
 
-    /** Until the movie locations are known, shows row 0 and says they are loading. */
+    /** Until the movie locations are known, shows row 0; the page shows them loading. */
     fun selectMovies() {
         val state = _uiState.value
         if (!state.locationsReady || state.movieLocations.isEmpty()) {
-            update {
-                it.copy(
-                    mode = HubModes.MOVIES,
-                    selectedRow = 0,
-                    userMessage = UiText.Resource(R.string.loading)
-                )
-            }
+            update { it.copy(mode = HubModes.MOVIES, selectedRow = 0) }
             return
         }
         update {
@@ -177,63 +160,40 @@ class HubViewModel @Inject constructor(
     }
 
     /**
-     * Loads the movie locations once; an empty failed load runs again on the next call,
-     * which the destination makes each time it enters.
+     * Loads the movie locations ([MovieRepository.locations]) until the receiver answered;
+     * the destination calls this each time it enters.
      */
     fun ensureLocations() {
-        val state = _uiState.value
-        val retry = shouldRetryHubLocations(
-            state.locationsReady,
-            state.movieLocations,
-            locationsJob?.isActive == true,
-            lastLocationsHttpSuccess
-        )
-        if (!retry) {
+        if (!shouldLoadHubLocations(locationsJob?.isActive == true, locationsFromReceiver)) {
             return
         }
         locationsJob = viewModelScope.launch {
-            val choices = timers.locationsAndTags()
-            lastLocationsHttpSuccess = choices.locationsFromReceiver
-            val painted = movies.locationsOrCached(
-                receiverAnswered = choices.locationsFromReceiver,
-                live = choices.locations
-            )
-            update {
-                it.copy(
-                    movieLocations = painted,
-                    locationsReady = true,
-                    selectedRow = if (it.mode == HubModes.MOVIES) {
-                        indexOfLocation(painted, currentMovie)
-                    } else {
-                        it.selectedRow
-                    }
-                )
+            movies.locations().collect { locations ->
+                locationsFromReceiver = locations.fromReceiver
+                update {
+                    it.copy(
+                        movieLocations = locations.names,
+                        locationsReady = true,
+                        selectedRow = if (it.mode == HubModes.MOVIES) {
+                            indexOfLocation(locations.names, currentMovie)
+                        } else {
+                            it.selectedRow
+                        }
+                    )
+                }
             }
         }
     }
 
-    fun onMessageShown() {
-        _uiState.update { it.copy(userMessage = null) }
-    }
-
     private suspend fun loadBouquets() {
-        val cached = services.cachedBouquets()
-        val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
-        if (hasStrip) {
-            applyBouquets(cached.tv, cached.radio, error = null)
-        }
-        if (sessions.status.value.shouldSkipReceiverHttp(hasStrip)) {
-            return
-        }
-        if (shouldWaitForDeviceInfo(hasStrip)) {
-            receiver.awaitProfileCheck()
-        }
-        when (val load = services.bouquets()) {
-            is BouquetListLoad.Loaded ->
-                applyBouquets(load.bouquets.tv, load.bouquets.radio, error = null)
+        services.hubBouquets().collect { load ->
+            when (load) {
+                is BouquetListLoad.Loaded ->
+                    applyBouquets(load.bouquets.tv, load.bouquets.radio, error = null)
 
-            is BouquetListLoad.Failed ->
-                applyBouquets(emptyList(), emptyList(), load.error.contentErrorText())
+                is BouquetListLoad.Failed ->
+                    applyBouquets(emptyList(), emptyList(), load.error.contentErrorText())
+            }
         }
     }
 

@@ -73,8 +73,9 @@ data class TvHubUiState(
 /**
  * State of the TV hub, scoped to the TV activity so it survives configuration changes and
  * the hub leaving composition. [TvHubUiState.stream] is a stream for the player; the host
- * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data;
- * switching headers keeps movies already loaded for a location.
+ * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data,
+ * except Online after a browse that already asked the receiver while the session was unknown;
+ * switching headers keeps movies the receiver already sent for a location.
  */
 @HiltViewModel
 class TvHubViewModel @Inject constructor(
@@ -82,7 +83,7 @@ class TvHubViewModel @Inject constructor(
     private val timers: TimerRepository,
     private val receiver: ReceiverRepository,
     private val movies: MovieRepository,
-    sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(TvHubUiState())
 
@@ -93,13 +94,24 @@ class TvHubViewModel @Inject constructor(
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var browseJob: Job? = null
+
+    /** The session the current browse started in, and whether it got a receiver answer. */
+    private var browseSession: ConnectionStatus.Session? = null
+    private var browseLive = false
     private var movieJob: Job? = null
     private var movieJobDirname: String? = null
     private var streamJob: Job? = null
 
+    /** Locations whose movies came from the receiver; Room's snapshot is asked again. */
+    private val liveMovieLocations = mutableSetOf<String>()
+
     init {
         viewModelScope.launch {
-            sessionWord.collect { reload() }
+            sessionWord.collect { session ->
+                if (!browseCoversOnline(session)) {
+                    reload()
+                }
+            }
         }
     }
 
@@ -107,6 +119,9 @@ class TvHubViewModel @Inject constructor(
         browseJob?.cancel()
         movieJob?.cancel()
         movieJobDirname = null
+        liveMovieLocations.clear()
+        browseSession = sessions.status.value.session
+        browseLive = false
         _uiState.update {
             it.copy(
                 loading = true,
@@ -116,31 +131,45 @@ class TvHubViewModel @Inject constructor(
             )
         }
         browseJob = viewModelScope.launch {
-            val result = browse.browse()
-            _uiState.update { state ->
-                val stillValid = TvComposeHubHost.hubHeaderSurvivesReload(
-                    state.selectedHeaderId,
-                    result.rows,
-                    result.locations
-                )
-                state.copy(
-                    loading = false,
-                    errorText = unavailableTvHubMessage(
-                        result.usedCache,
-                        result.rows.isNotEmpty(),
-                        result.errorText
-                    ),
-                    bouquetRows = result.rows,
-                    movieLocations = result.locations,
-                    selectedHeaderId = if (stillValid) {
-                        state.selectedHeaderId
-                    } else {
-                        TvComposeHubHost.firstHubHeader(result.rows)
-                    }
-                )
-            }
+            browse.browse().collect { result -> applyBrowse(result) }
         }
         loadSelectedMovies()
+    }
+
+    /**
+     * A cold start browses while the profile check runs; the session is not Offline then, so
+     * that browse asks the receiver. When the check then says Online, it already covers it.
+     */
+    private fun browseCoversOnline(session: ConnectionStatus.Session?): Boolean =
+        session == ConnectionStatus.Session.Online &&
+            browseJob != null &&
+            browseSession == null &&
+            (browseJob?.isActive == true || browseLive)
+
+    private fun applyBrowse(result: TvHubBrowseResult) {
+        browseLive = browseLive || !result.usedCache
+        _uiState.update { state ->
+            val stillValid = TvComposeHubHost.hubHeaderSurvivesReload(
+                state.selectedHeaderId,
+                result.rows,
+                result.locations
+            )
+            state.copy(
+                loading = false,
+                errorText = unavailableTvHubMessage(
+                    result.usedCache,
+                    result.rows.isNotEmpty(),
+                    result.errorText
+                ),
+                bouquetRows = result.rows,
+                movieLocations = result.locations,
+                selectedHeaderId = if (stillValid) {
+                    state.selectedHeaderId
+                } else {
+                    TvComposeHubHost.firstHubHeader(result.rows)
+                }
+            )
+        }
     }
 
     fun selectHeader(headerId: String) {
@@ -236,7 +265,7 @@ class TvHubViewModel @Inject constructor(
     private fun loadSelectedMovies() {
         val state = _uiState.value
         val dirname = TvComposeHubHost.movieDirnameFromHeader(state.selectedHeaderId) ?: return
-        if (dirname in state.moviesByLocation) {
+        if (dirname in liveMovieLocations) {
             return
         }
         if (movieJob?.isActive == true && movieJobDirname == dirname) {
@@ -246,22 +275,28 @@ class TvHubViewModel @Inject constructor(
         movieJobDirname = dirname
         _uiState.update { it.copy(movieLoading = true, movieError = null) }
         movieJob = viewModelScope.launch {
-            val result = browse.movies(dirname)
-            _uiState.update { current ->
-                current.copy(
-                    movieLoading = false,
-                    movieError = unavailableTvHubMessage(
-                        result.usedCache,
-                        !result.movies.isNullOrEmpty(),
-                        result.errorText
-                    ),
-                    moviesByLocation = if (result.movies != null) {
-                        current.moviesByLocation + (dirname to result.movies)
-                    } else {
-                        current.moviesByLocation
-                    }
-                )
-            }
+            browse.movies(dirname).collect { result -> applyMovies(dirname, result) }
+        }
+    }
+
+    private fun applyMovies(dirname: String, result: TvHubMoviesResult) {
+        if (result.movies != null && !result.usedCache) {
+            liveMovieLocations += dirname
+        }
+        _uiState.update { current ->
+            current.copy(
+                movieLoading = false,
+                movieError = unavailableTvHubMessage(
+                    result.usedCache,
+                    !result.movies.isNullOrEmpty(),
+                    result.errorText
+                ),
+                moviesByLocation = if (result.movies != null) {
+                    current.moviesByLocation + (dirname to result.movies)
+                } else {
+                    current.moviesByLocation
+                }
+            )
         }
     }
 }

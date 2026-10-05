@@ -10,6 +10,7 @@ import java.nio.file.Files
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
@@ -77,7 +78,8 @@ class TestProfiles(val context: TestContext = TestContext()) {
             receiverApis(repository, context, capabilities),
             repository,
             database,
-            sessions
+            sessions,
+            ReceiverRepository(receiverApis(repository, context, capabilities), repository)
         )
     }
 }

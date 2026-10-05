@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.data
 
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.Movie
@@ -10,6 +12,7 @@ import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.USB
 import net.reichholf.dreamdroid.testutil.MovieTestReceiver.Companion.movieList
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
 import okhttp3.mockwebserver.MockResponse
+import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -36,7 +39,7 @@ class MovieRepositoryTest {
 
     @Test
     fun unfilteredLoadWritesSnapshotOfThatLocation() = runTest {
-        val load = repository.movies(HDD, emptyList())
+        val load = repository.movies(HDD, emptyList()).last()
 
         assertEquals(
             MovieListLoad.Movies(repository.cachedMovies(HDD)!!, cached = false),
@@ -52,7 +55,7 @@ class MovieRepositoryTest {
 
     @Test
     fun snapshotKeepsMovieFields() = runTest {
-        repository.movies(HDD, emptyList())
+        repository.movies(HDD, emptyList()).last()
 
         val cached = repository.cachedMovies(HDD)!!.first()
         assertEquals("Das Erste HD", cached.serviceName)
@@ -62,14 +65,14 @@ class MovieRepositoryTest {
 
     @Test
     fun defaultLocationSendsNoDirname() = runTest {
-        repository.movies("", emptyList())
+        repository.movies("", emptyList()).last()
 
         assertNull(receiver.server.takeRequest().requestUrl!!.queryParameter("dirname"))
     }
 
     @Test
     fun filteredLoadSendsTagsAndWritesNothing() = runTest {
-        val load = repository.movies(HDD, listOf("news", "sports"))
+        val load = repository.movies(HDD, listOf("news", "sports")).last()
 
         assertEquals(listOf("Evening News", "Empty Size"), titles(load))
         assertEquals(
@@ -84,7 +87,7 @@ class MovieRepositoryTest {
         repository.saveMovies(HDD, listOf(Movie(title = "News"), Movie(title = "Sport")))
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val load = repository.movies(HDD, emptyList())
+        val load = repository.movies(HDD, emptyList()).last()
 
         assertEquals(
             MovieListLoad.Movies(listOf(Movie(title = "News"), Movie(title = "Sport")), true),
@@ -97,7 +100,7 @@ class MovieRepositoryTest {
     fun failureWithoutSnapshotFails() = runTest {
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val load = repository.movies(HDD, emptyList())
+        val load = repository.movies(HDD, emptyList()).last()
 
         assertInstanceOf(EnigmaFailure.Http::class.java, failure(load))
         assertNull(repository.cachedMovies(HDD))
@@ -108,10 +111,42 @@ class MovieRepositoryTest {
         repository.saveMovies(HDD, listOf(Movie(title = "News")))
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val load = repository.movies(HDD, listOf("sports"))
+        val load = repository.movies(HDD, listOf("sports")).last()
 
         assertInstanceOf(EnigmaFailure.Http::class.java, failure(load))
         assertEquals(listOf("News"), repository.cachedMovies(HDD)?.map { it.title })
+    }
+
+    @Test
+    fun snapshotPaintsBeforeTheReceiverAnswer() = runTest {
+        repository.saveMovies(HDD, listOf(Movie(title = "Cached")))
+
+        val loads = repository.movies(HDD, emptyList()).toList()
+
+        assertEquals(listOf("Cached"), titles(loads[0]))
+        assertEquals(listOf("Evening News", "Empty Size"), titles(loads[1]))
+        assertEquals(listOf(true, false), loads.map { (it as MovieListLoad.Movies).cached })
+    }
+
+    @Test
+    fun offlineSnapshotAnswersWithoutTheReceiver() = runTest {
+        repository.saveMovies(HDD, listOf(Movie(title = "Cached")))
+        receiver.goOffline()
+
+        val loads = repository.movies(HDD, emptyList()).toList()
+
+        assertEquals(listOf(MovieListLoad.Movies(listOf(Movie(title = "Cached")), true)), loads)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun forcedRefreshAsksTheReceiverWhileOffline() = runTest {
+        repository.saveMovies(HDD, listOf(Movie(title = "Cached")))
+        receiver.goOffline()
+
+        val loads = repository.movies(HDD, emptyList(), forceRefresh = true).toList()
+
+        assertEquals(listOf(listOf("Evening News", "Empty Size")), loads.map(::titles))
     }
 
     @Test
@@ -131,7 +166,7 @@ class MovieRepositoryTest {
         repository.saveMovies(USB, listOf(Movie(title = "Keep")))
         receiver.answer = { movieList("New") }
 
-        repository.movies(HDD, emptyList())
+        repository.movies(HDD, emptyList()).last()
 
         assertEquals(listOf("New"), repository.cachedMovies(HDD)?.map { it.title })
         assertEquals(listOf("Keep"), repository.cachedMovies(USB)?.map { it.title })
@@ -150,32 +185,49 @@ class MovieRepositoryTest {
     }
 
     @Test
-    fun answeredLocationsReplaceTheStrip() = runTest {
+    fun receiverLocationsFollowTheStripAndReplaceIt() = runTest {
         repository.saveLocations(listOf("/old", "/drop"))
-        val live = listOf(HDD, USB)
+        receiver.answer = { locationsAnswer(it) }
 
-        assertEquals(live, repository.locationsOrCached(receiverAnswered = true, live = live))
+        val loads = repository.locations().toList()
 
-        assertEquals(live, repository.cachedLocations())
+        assertEquals(
+            listOf(MovieLocations(listOf("/old", "/drop"), false), MovieLocations(LIVE, true)),
+            loads
+        )
+        assertEquals(LIVE, repository.cachedLocations())
     }
 
     @Test
-    fun unansweredLocationsPaintTheStripWithoutRewriting() = runTest {
-        val cached = listOf(HDD, USB)
-        repository.saveLocations(cached)
+    fun failedLocationsKeepTheStripWithoutRewriting() = runTest {
+        repository.saveLocations(LIVE)
+        receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val painted = repository.locationsOrCached(receiverAnswered = false, live = listOf("/x"))
+        val loads = repository.locations().toList()
 
-        assertEquals(cached, painted)
-        assertEquals(cached, repository.cachedLocations())
+        assertEquals(listOf(MovieLocations(LIVE, false)), loads)
+        assertEquals(LIVE, repository.cachedLocations())
     }
 
     @Test
-    fun unansweredLocationsWithoutStripKeepLiveAndWriteNothing() = runTest {
-        val painted = repository.locationsOrCached(receiverAnswered = false, live = listOf("/x"))
+    fun failedLocationsWithoutStripPaintTheStandInAndWriteNothing() = runTest {
+        receiver.answer = { MockResponse().setResponseCode(500) }
 
-        assertEquals(listOf("/x"), painted)
+        val loads = repository.locations().toList()
+
+        assertEquals(listOf(MovieLocations(listOf("/hdd/movie"), false)), loads)
         assertNull(repository.cachedLocations())
+    }
+
+    @Test
+    fun offlineLocationsComeFromTheStripWithoutTheReceiver() = runTest {
+        repository.saveLocations(LIVE)
+        receiver.goOffline()
+
+        val loads = repository.locations().toList()
+
+        assertEquals(listOf(MovieLocations(LIVE, false)), loads)
+        assertEquals(0, receiver.server.requestCount)
     }
 
     @Test
@@ -244,12 +296,27 @@ class MovieRepositoryTest {
         assertFalse(receiver.profiles.context.cacheDir.resolve("news.ts").exists())
     }
 
+    private fun locationsAnswer(request: RecordedRequest): MockResponse =
+        when (request.requestUrl?.encodedPath) {
+            "/web/getlocations" -> MockResponse().setBody(
+                LIVE.joinToString("", "<e2locations>", "</e2locations>") {
+                    "<e2location>$it</e2location>"
+                }
+            )
+
+            else -> MockResponse().setBody("<e2tags></e2tags>")
+        }
+
     private suspend fun load(location: String): MovieListLoad =
-        repository.movies(location, emptyList())
+        repository.movies(location, emptyList()).last()
 
     private fun titles(load: MovieListLoad): List<String> =
         (load as MovieListLoad.Movies).movies.map { it.title }
 
     private fun failure(load: MovieListLoad): EnigmaFailure? =
         (load as MovieListLoad.Failed).error?.failure
+
+    private companion object {
+        val LIVE = listOf(HDD, USB)
+    }
 }

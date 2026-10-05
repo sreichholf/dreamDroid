@@ -92,8 +92,11 @@ class ZapViewModel @Inject constructor(
         reload()
     }
 
-    /** Loads the bouquet, or opens the picker when there is none and it is not open yet. */
-    fun reload() {
+    /**
+     * Loads the bouquet, or opens the picker when there is none and it is not open yet. Room
+     * paints first unless [forceRefresh].
+     */
+    fun reload(forceRefresh: Boolean = false) {
         if (saved.bouquetRef.isEmpty()) {
             if (!saved.waitingForPicker) {
                 pickBouquet()
@@ -109,28 +112,31 @@ class ZapViewModel @Inject constructor(
         val bouquetRef = saved.bouquetRef
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val load = services.services(bouquetRef)
-            _uiState.update {
-                when (load) {
-                    is ServiceListLoad.Services -> {
-                        val rows = ZapListMapper.rowsFrom(load.services)
-                        it.copy(
-                            refreshing = false,
-                            items = rows,
-                            emptyMessage = if (rows.isEmpty()) {
-                                UiText.Resource(R.string.no_list_item)
-                            } else {
-                                null
-                            }
-                        )
-                    }
+            services.services(bouquetRef, forceRefresh).collect { load -> apply(load) }
+        }
+    }
 
-                    is ServiceListLoad.Failed -> it.copy(
+    private fun apply(load: ServiceListLoad) {
+        _uiState.update {
+            when (load) {
+                is ServiceListLoad.Services -> {
+                    val rows = ZapListMapper.rowsFrom(load.services)
+                    it.copy(
                         refreshing = false,
-                        items = emptyList(),
-                        emptyMessage = load.error.contentErrorText()
+                        items = rows,
+                        emptyMessage = if (rows.isEmpty()) {
+                            UiText.Resource(R.string.no_list_item)
+                        } else {
+                            null
+                        }
                     )
                 }
+
+                is ServiceListLoad.Failed -> it.copy(
+                    refreshing = false,
+                    items = emptyList(),
+                    emptyMessage = load.error.contentErrorText()
+                )
             }
         }
     }

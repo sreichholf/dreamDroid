@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.data
 import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
@@ -68,7 +70,7 @@ class TimerRepositoryTest {
         writeSnapshot(listOf(timer("Old"), timer("Dropped")))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
 
-        val result = repository.timers()
+        val result = repository.timers().last()
 
         val names = listOf("Navy CIS: L.A.", "Tagesschau")
         assertEquals(names, (result as TimerListResult.Loaded).timers.map { it.name })
@@ -81,7 +83,7 @@ class TimerRepositoryTest {
         writeSnapshot(listOf(timer("News"), timer("Sport")))
         receiver.fail(TIMER_LIST)
 
-        val result = repository.timers()
+        val result = repository.timers().last()
 
         assertEquals(
             listOf("News", "Sport"),
@@ -94,7 +96,7 @@ class TimerRepositoryTest {
     fun failedListWithoutSnapshotReportsTheError() = runTest {
         receiver.fail(TIMER_LIST)
 
-        val result = repository.timers()
+        val result = repository.timers().last()
 
         val error = EnigmaHttpError(EnigmaFailure.fromHttpStatus(500, "Server Error"))
         assertEquals(TimerListResult.Failed(error.contentErrorText()), result)
@@ -106,7 +108,7 @@ class TimerRepositoryTest {
     fun unreadableListWithoutSnapshotIsAParseError() = runTest {
         receiver.respond(TIMER_LIST, "<e2timerlist><e2timer><e2name>Cut")
 
-        val result = repository.timers()
+        val result = repository.timers().last()
 
         assertEquals(TimerListResult.Failed(UiText.Resource(R.string.error_parsing)), result)
     }
@@ -116,28 +118,57 @@ class TimerRepositoryTest {
         writeSnapshot(emptyList())
         receiver.fail(TIMER_LIST)
 
-        assertEquals(TimerListResult.Loaded(emptyList()), repository.timers())
+        assertEquals(TimerListResult.Loaded(emptyList()), repository.timers().last())
     }
 
     @Test
-    fun preferredSnapshotAnswersWithoutTheReceiver() = runTest {
+    fun snapshotPaintsBeforeTheReceiverAnswer() = runTest {
         writeSnapshot(listOf(timer("Cached")))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
 
-        val result = repository.timers(preferSnapshot = true)
+        val results = repository.timers().toList()
 
-        assertEquals(listOf("Cached"), (result as TimerListResult.Loaded).timers.map { it.name })
-        assertEquals(0, receiver.requestsTo(TIMER_LIST).size)
+        assertEquals(
+            listOf(listOf("Cached"), listOf("Navy CIS: L.A.", "Tagesschau")),
+            results.map { result -> (result as TimerListResult.Loaded).timers.map { it.name } }
+        )
     }
 
     @Test
-    fun preferredSnapshotFallsBackToTheReceiverWhenThereIsNone() = runTest {
-        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+    fun offlineSnapshotAnswersWithoutTheReceiver() = runTest {
+        writeSnapshot(listOf(timer("Cached")))
+        goOffline()
 
-        val result = repository.timers(preferSnapshot = true)
+        val results = repository.timers().toList()
+
+        assertEquals(
+            listOf(listOf("Cached")),
+            results.map { result -> (result as TimerListResult.Loaded).timers.map { it.name } }
+        )
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
+    fun offlineWithoutSnapshotAsksTheReceiver() = runTest {
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        goOffline()
+
+        val result = repository.timers().last()
 
         assertEquals(2, (result as TimerListResult.Loaded).timers.size)
         assertEquals(2, snapshot()?.size)
+    }
+
+    @Test
+    fun forcedRefreshAsksTheReceiverWhileOffline() = runTest {
+        writeSnapshot(listOf(timer("Cached")))
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        goOffline()
+
+        val results = repository.timers(forceRefresh = true).toList()
+
+        assertEquals(1, results.size)
+        assertEquals(2, (results[0] as TimerListResult.Loaded).timers.size)
     }
 
     @Test
@@ -276,6 +307,17 @@ class TimerRepositoryTest {
     }
 
     @Test
+    fun offlineLocationsAndTagsDoNotAskTheReceiver() = runTest {
+        goOffline()
+
+        assertEquals(
+            TimerChoices(listOf("/hdd/movie"), emptyList(), false),
+            repository.locationsAndTags()
+        )
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
     fun failedLocationsAreAskedAgain() = runTest {
         receiver.fail(LOCATIONS)
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
@@ -349,7 +391,7 @@ class TimerRepositoryTest {
         receiver.respond(WEB_EXTERNALS, externals("autotimer", "vpsplugin"))
         receiver.respond(VPS_TIMER_LIST, loadWebFixture("vps/timerlist.xml"))
 
-        val result = repository.timers() as TimerListResult.Loaded
+        val result = repository.timers().last() as TimerListResult.Loaded
 
         val modes = listOf(VpsMode.Off, VpsMode.Safe, VpsMode.Overwrite)
         assertEquals(modes, result.timers.map { it.vps?.mode })
@@ -365,7 +407,7 @@ class TimerRepositoryTest {
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
 
-        repository.timers()
+        repository.timers().last()
         repository.save(timer("New").copy(vps = TimerVps(VpsMode.Safe)), null)
         repository.addByEvent(EVENT)
 
@@ -441,7 +483,7 @@ class TimerRepositoryTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
 
         val response = repository.save(timer("New").copy(vps = TimerVps(VpsMode.Safe)), null)
-        repository.timers()
+        repository.timers().last()
 
         assertEquals("Timer changed", response.value?.stateText)
         assertEquals(1, receiver.requestsTo(VPS_TIMER_CHANGE).size)
@@ -457,7 +499,7 @@ class TimerRepositoryTest {
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
 
-        val result = repository.timers() as TimerListResult.Loaded
+        val result = repository.timers().last() as TimerListResult.Loaded
 
         assertEquals(2, result.timers.size)
         assertEquals(1, receiver.requestsTo(VPS_TIMER_LIST).size)
@@ -477,6 +519,13 @@ class TimerRepositoryTest {
         dao.replaceSnapshot(
             PROFILE_ID,
             timers.mapIndexed { index, timer -> timer.toListEntity(PROFILE_ID, index) }
+        )
+    }
+
+    private fun goOffline() {
+        receiver.profiles.sessions.onFailure(
+            EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Timeout),
+            hasCache = true
         )
     }
 

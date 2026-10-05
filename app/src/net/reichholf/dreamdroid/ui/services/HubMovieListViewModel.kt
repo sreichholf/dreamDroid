@@ -114,7 +114,11 @@ class HubMovieListViewModel @AssistedInject constructor(
         reload()
     }
 
-    fun reload() {
+    /**
+     * Loads the location. Room paints first unless [forceRefresh]; see
+     * [MovieRepository.movies].
+     */
+    fun reload(forceRefresh: Boolean = false) {
         _uiState.update {
             it.copy(
                 refreshing = true,
@@ -123,7 +127,9 @@ class HubMovieListViewModel @AssistedInject constructor(
         }
         val tags = _uiState.value.selectedTags
         loadJob?.cancel()
-        loadJob = viewModelScope.launch { apply(movieRepository.movies(location, tags)) }
+        loadJob = viewModelScope.launch {
+            movieRepository.movies(location, tags, forceRefresh).collect(::apply)
+        }
     }
 
     private fun apply(load: MovieListLoad) {
@@ -135,13 +141,14 @@ class HubMovieListViewModel @AssistedInject constructor(
             is MovieListLoad.Movies ->
                 if (load.movies.isEmpty()) UiText.Resource(R.string.no_list_item) else null
         }
-        // Rows changed under an open menu; its row would be stale.
+        val items = movieListItemsFromMovies(movies)
         _uiState.update {
             it.copy(
-                items = movieListItemsFromMovies(movies),
+                items = items,
                 refreshing = false,
                 emptyMessage = emptyMessage,
-                menu = null
+                // Rows changed under an open menu; its row would be stale.
+                menu = if (items == it.items) it.menu else null
             )
         }
     }
@@ -216,7 +223,8 @@ class HubMovieListViewModel @AssistedInject constructor(
             }
             showMessage(response.userMessageText())
             if (response.value?.state == Python.TRUE) {
-                reload()
+                // The snapshot still lists the deleted movie.
+                reload(forceRefresh = true)
             }
         }
     }

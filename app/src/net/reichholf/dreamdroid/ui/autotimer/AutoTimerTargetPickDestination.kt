@@ -45,7 +45,7 @@ fun AutoTimerTargetPickDestination(
 
     AutoTimerTargetPickScreen(
         state = uiState,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         onOpen = viewModel::open,
         onToggle = viewModel::toggle,
         modifier = modifier

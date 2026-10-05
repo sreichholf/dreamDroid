@@ -8,4 +8,6 @@ class Bouquets {
     val tv: ArrayList<Service> = ArrayList()
 
     val radio: ArrayList<Service> = ArrayList()
+
+    fun isNotEmpty(): Boolean = tv.isNotEmpty() || radio.isNotEmpty()
 }

@@ -93,7 +93,13 @@ class TestReceiver(val profiles: TestProfiles = TestProfiles()) {
         requests.filter { it.requestUrl?.encodedPath == path }
 
     fun timerRepository(plugins: ReceiverPluginsRepository = pluginsRepository()): TimerRepository =
-        TimerRepository(receiverApis(repository), repository, profiles.database, plugins)
+        TimerRepository(
+            receiverApis(repository),
+            repository,
+            profiles.database,
+            plugins,
+            profiles.sessions
+        )
 
     fun pluginsRepository(): ReceiverPluginsRepository =
         ReceiverPluginsRepository(receiverApis(repository), repository)

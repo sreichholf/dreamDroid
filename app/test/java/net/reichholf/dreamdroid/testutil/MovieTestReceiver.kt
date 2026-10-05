@@ -3,7 +3,9 @@ package net.reichholf.dreamdroid.testutil
 import java.util.concurrent.TimeUnit
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.MovieRepository
+import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import okhttp3.mockwebserver.Dispatcher
@@ -24,7 +26,15 @@ class MovieTestReceiver {
         profiles.context,
         clients,
         profiles.repository,
-        profiles.database
+        profiles.database,
+        sessions,
+        TimerRepository(
+            clients,
+            profiles.repository,
+            profiles.database,
+            ReceiverPluginsRepository(clients, profiles.repository),
+            sessions
+        )
     )
     val receiver = ReceiverRepository(clients, profiles.repository)
 

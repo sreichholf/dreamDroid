@@ -20,7 +20,6 @@ import net.reichholf.dreamdroid.enigma.SimpleResult
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerRequests
-import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
@@ -48,8 +47,7 @@ data class TvTimerHostUiState(
 /**
  * List, add, and edit for [TvTimerHost]. The scope keeps the page and the loaded list
  * across a configuration change, and the page with its editor timer across process death;
- * [reload] still runs on each entry. When the session is not Online, the Room snapshot
- * paints without asking the receiver.
+ * [reload] still runs on each entry. The list reads [TimerRepository.timers].
  */
 @HiltViewModel
 class TvTimerHostViewModel @Inject constructor(
@@ -122,7 +120,8 @@ class TvTimerHostViewModel @Inject constructor(
         }
     }
 
-    fun reload() {
+    /** Loads the timers. Room paints first unless [forceRefresh]. */
+    fun reload(forceRefresh: Boolean = false) {
         val currentProfileId = profiles.current.value?.id
         // The activity outlives a profile switch in TvProfilesHost.
         if (currentProfileId != profileId) {
@@ -138,23 +137,23 @@ class TvTimerHostViewModel @Inject constructor(
                 it
             }
         }
-        val preferSnapshot = sessions.status.value.session != ConnectionStatus.Session.Online
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val result = timers.timers(preferSnapshot)
-            _uiState.update {
-                when (result) {
-                    is TimerListResult.Loaded -> it.copy(
-                        timers = result.timers,
-                        emptyMessage = if (result.timers.isEmpty()) {
-                            UiText.Resource(R.string.no_list_item)
-                        } else {
-                            null
-                        }
-                    )
+            timers.timers(forceRefresh).collect { result ->
+                _uiState.update {
+                    when (result) {
+                        is TimerListResult.Loaded -> it.copy(
+                            timers = result.timers,
+                            emptyMessage = if (result.timers.isEmpty()) {
+                                UiText.Resource(R.string.no_list_item)
+                            } else {
+                                null
+                            }
+                        )
 
-                    is TimerListResult.Failed ->
-                        it.copy(timers = emptyList(), emptyMessage = result.message)
+                        is TimerListResult.Failed ->
+                            it.copy(timers = emptyList(), emptyMessage = result.message)
+                    }
                 }
             }
         }
@@ -183,7 +182,7 @@ class TvTimerHostViewModel @Inject constructor(
         viewModelScope.launch {
             val response = call()
             _uiState.update { it.copy(progress = null, userMessage = response.userMessageText()) }
-            reload()
+            reload(forceRefresh = true)
         }
     }
 

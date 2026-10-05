@@ -6,6 +6,8 @@ import java.io.File
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Movie
@@ -16,6 +18,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.MovieLocationStripEntity
 import net.reichholf.dreamdroid.room.toListEntity
 import net.reichholf.dreamdroid.room.toMovie
+import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 
 /** Outcome of a movie list load. */
 sealed interface MovieListLoad {
@@ -25,6 +28,9 @@ sealed interface MovieListLoad {
     /** The receiver failed and Room has nothing to show instead. */
     data class Failed(val error: EnigmaHttpError?) : MovieListLoad
 }
+
+/** Movie location names; [fromReceiver] is false for Room's strip and the `/hdd/movie` stand-in. */
+data class MovieLocations(val names: List<String>, val fromReceiver: Boolean)
 
 /** Outcome of copying a recording into the app cache. */
 sealed interface MovieDownload {
@@ -44,30 +50,34 @@ class MovieRepository @Inject constructor(
     @param:ApplicationContext private val context: Context,
     private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val sessions: SessionConnectionHolder,
+    private val timers: TimerRepository
 ) {
     /**
-     * Movies in [location] (the receiver's default location when empty) filtered by [tags].
-     * An unfiltered answer replaces the snapshot of that location. When the receiver fails,
-     * an unfiltered load falls back to the snapshot; a filtered one never paints the
-     * unfiltered snapshot.
+     * Movies in [location] (the receiver's default location when empty) filtered by [tags],
+     * read [cacheFirstLoad]. Only an unfiltered load reads Room, and its answer replaces the
+     * snapshot of that location; a filtered one never paints the unfiltered snapshot.
      */
-    suspend fun movies(location: String, tags: List<String>): MovieListLoad {
-        val response = clients.current().movies(location, tags)
-        val live = response.value
-        if (live != null) {
-            if (tags.isEmpty()) {
-                saveMovies(location, live)
+    fun movies(
+        location: String,
+        tags: List<String>,
+        forceRefresh: Boolean = false
+    ): Flow<MovieListLoad> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { if (tags.isEmpty()) cachedMovies(location) else null },
+        fetch = {
+            clients.current().movies(location, tags).also { response ->
+                val live = response.value
+                if (live != null && tags.isEmpty()) {
+                    saveMovies(location, live)
+                }
             }
-            return MovieListLoad.Movies(live, cached = false)
-        }
-        val cached = if (tags.isEmpty()) cachedMovies(location) else null
-        return if (cached != null) {
-            MovieListLoad.Movies(cached, cached = true)
-        } else {
-            MovieListLoad.Failed(response.error)
-        }
-    }
+        },
+        loaded = MovieListLoad::Movies,
+        failed = MovieListLoad::Failed
+    )
 
     suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
         clients.current().deleteMovie(movie)
@@ -103,15 +113,23 @@ class MovieRepository @Inject constructor(
     }
 
     /**
-     * The receiver's locations when it answered ([receiverAnswered]), which also replace
-     * the snapshot. Otherwise the snapshot, or [live] when there is none.
+     * The movie locations: Room's location strip first, then [TimerRepository.locationsAndTags],
+     * which does not ask the receiver while the session is Offline. The receiver's answer
+     * replaces the strip. Without one the strip stays, or the `/hdd/movie` stand-in paints when
+     * there is no strip.
      */
-    suspend fun locationsOrCached(receiverAnswered: Boolean, live: List<String>): List<String> {
-        if (receiverAnswered) {
-            saveLocations(live)
-            return live
+    fun locations(): Flow<MovieLocations> = flow {
+        val cached = cachedLocations()
+        if (cached != null) {
+            emit(MovieLocations(cached, fromReceiver = false))
         }
-        return cachedLocations() ?: live
+        val choices = timers.locationsAndTags()
+        if (choices.locationsFromReceiver) {
+            saveLocations(choices.locations)
+            emit(MovieLocations(choices.locations, fromReceiver = true))
+        } else if (cached == null) {
+            emit(MovieLocations(choices.locations, fromReceiver = false))
+        }
     }
 
     /**
