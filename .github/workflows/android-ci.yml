@@ -24,6 +24,15 @@ concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event.action == 'edited' && github.event.changes.base.ref.from == '' && '-pr-text' || '' }}
   cancel-in-progress: true
 
+# One emulator for androidTest and upgrade115; the AVD snapshot cache key is
+# derived from these, so both jobs share one cached, booted AVD.
+# aosp_atd: Automated Test Device image (no Play/Google APIs, fewer system
+# apps, headless). No test needs Google APIs.
+env:
+  AVD_API_LEVEL: 30
+  AVD_TARGET: aosp_atd
+  AVD_PROFILE: pixel_4
+
 jobs:
   unit:
     name: Unit tests + assemble
@@ -135,13 +144,21 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # Emulator jobs are free on this public repo but slow (~20–40+ min) and flaky.
+  # Emulator jobs are free on this public repo but slow and flaky.
   # Keep them off pull_request; run on main pushes and manual workflow_dispatch.
+  # Three runners each build the APKs and run a third of the suite
+  # (AndroidJUnitRunner numShards/shardIndex) on the cached AVD.
   androidTest:
-    name: Instrumented Compose tests
+    name: Instrumented Compose tests (shard ${{ matrix.shard }}/3)
     if: github.event_name != 'pull_request' && !inputs.upgrade_from_115
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2]
+    env:
+      SHARD_ARGS: -PtestShardCount=3 -PtestShardIndex=${{ matrix.shard }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -191,25 +208,57 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
+      # Build before the emulator boots so it does not compete for the runner's CPUs.
+      # -Pci disables ABI splits so connectedAndroidTest installs one APK.
+      - name: Build googleDebug + androidTest APKs
+        run: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+
+      # Boot from a cached AVD snapshot instead of cold booting
+      # (reactivecircus/android-emulator-runner README, "Caching AVD").
+      - name: AVD cache
+        uses: actions/cache@v5
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: x86_64
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot"
+
       - name: Instrumented tests (googleDebug)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: ${{ env.AVD_API_LEVEL }}
           arch: x86_64
-          target: google_apis
-          profile: pixel_4
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          # Boot from the cached snapshot; do not write it back.
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          # -Pci disables ABI splits so connectedAndroidTest installs one APK.
           # Cloud `connected-test.sh` instead streams the ABI-split x86_64 APK
           # (UTP's fat-APK push times out under TCG). Do not unify those paths.
-          # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors).
-          script: ./gradlew -Pci --no-configuration-cache :app:connectedGoogleDebugAndroidTest
+          # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors);
+          # app/build.gradle.kts maps testShardCount/testShardIndex to runner arguments.
+          script: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
 
       - name: Upload instrumented test reports
         if: always()
         uses: actions/upload-artifact@v6
         with:
-          name: androidTest-reports
+          name: androidTest-reports-shard-${{ matrix.shard }}
           path: |
             app/build/reports/androidTests/connected/
             app/build/outputs/androidTest-results/
@@ -348,13 +397,39 @@ jobs:
           echo "2.0:  $new"
           [[ "$old" == "$new" ]]
 
+      # Boot from a cached AVD snapshot instead of cold booting
+      # (reactivecircus/android-emulator-runner README, "Caching AVD").
+      - name: AVD cache
+        uses: actions/cache@v5
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: x86_64
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "Generated AVD snapshot"
+
       - name: Upgrade on emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: ${{ env.AVD_API_LEVEL }}
           arch: x86_64
-          target: google_apis
-          profile: pixel_4
+          target: ${{ env.AVD_TARGET }}
+          profile: ${{ env.AVD_PROFILE }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash .github/upgrade-from-115/run.sh old/app-google-x86_64-debug.apk app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk upgrade-logs
 

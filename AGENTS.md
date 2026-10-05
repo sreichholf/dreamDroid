@@ -108,7 +108,7 @@ Claude Code running locally on a machine with JDK 25, the SDK, and a device or e
 - Gradle 9.6 / AGP 9.4; run the build on JDK 25 (app bytecode stays Java 17).
 - Two googleDebug processes cannot share one device.
 - Lint fails on `UnusedResources` and `UnusedIds`, and spotless fails on unused imports. Delete what they flag. A resource only reached by name at runtime (like `resValue` in `app/build.gradle.kts`) goes in the `UnusedResources` ignore list in `app/lint.xml`.
-- Do not pass `-Pandroid.testInstrumentationRunnerArguments...` to Gradle. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -e class ...` instead.
+- Do not pass `-Pandroid.testInstrumentationRunnerArguments...` to Gradle. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -e class ...` instead. To run one shard of the suite, pass `-PtestShardCount=N -PtestShardIndex=i` (CI does; `app/build.gradle.kts` maps them to `numShards`/`shardIndex`).
 - `-Pci` builds one fat APK so UTP can install it on GitHub Actions; `.cursor/cloud/connected-test.sh` deliberately uses the ABI-split x86_64 APK. The split is **intentional**; do not force the helper onto `-Pci` or drop `-Pci` from CI.
 - Remaining modernization work (the remediation steps, anything still listed under **Still to do**, and the **Deliberate exceptions** that must not be "fixed") lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
 
