@@ -68,7 +68,7 @@ CI is [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml); re
 ./gradlew -Pci spotlessCheck :app:testGoogleDebugUnitTest :app:compileGoogleDebugAndroidTestKotlin :app:lintGoogleDebug
 ```
 
-The emulator job does not run on PRs; trigger it with `workflow_dispatch` when a change needs it before merge.
+The emulator job does not run on PRs; trigger it with `workflow_dispatch` when a change needs it before merge. The emulator jobs boot from a cached AVD snapshot that `.github/emulator/settle-snapshot.sh` takes only after the framework is up and settled. Bump `AVD_SNAPSHOT_VERSION` in `android-ci.yml` (the cache key suffix) whenever the snapshot step or that script changes.
 
 `verify-dreamdroid.py` exists for a shell-only dump when there is no instrumented test yet. It is not the verification loop.
 
