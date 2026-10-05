@@ -126,6 +126,8 @@ run_scenario() {
 }
 
 adb wait-for-device
+# A snapshot restore reports boot_completed before the framework is up.
+wait_for "package manager" sh -c 'adb shell pm path android | grep -q package:'
 adb shell command -v sqlite3 >/dev/null || { echo "no sqlite3 on the emulator" >&2; exit 1; }
 
 run_scenario room_v1

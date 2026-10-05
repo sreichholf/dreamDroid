@@ -32,6 +32,9 @@ env:
   AVD_API_LEVEL: 30
   AVD_TARGET: aosp_atd
   AVD_PROFILE: pixel_4
+  # Part of the AVD cache key. Bump it whenever the snapshot step or
+  # .github/emulator/settle-snapshot.sh changes, so the old snapshot is not reused.
+  AVD_SNAPSHOT_VERSION: v2
 
 jobs:
   unit:
@@ -211,7 +214,7 @@ jobs:
       # Build before the emulator boots so it does not compete for the runner's CPUs.
       # -Pci disables ABI splits so connectedAndroidTest installs one APK.
       - name: Build googleDebug + androidTest APKs
-        run: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+        run: ./gradlew -Pci --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
 
       # Boot from a cached AVD snapshot instead of cold booting
       # (reactivecircus/android-emulator-runner README, "Caching AVD").
@@ -222,7 +225,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -235,7 +238,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: echo "Generated AVD snapshot"
+          script: bash .github/emulator/settle-snapshot.sh
 
       - name: Instrumented tests (googleDebug)
         uses: reactivecircus/android-emulator-runner@v2
@@ -251,8 +254,14 @@ jobs:
           # Cloud `connected-test.sh` instead streams the ABI-split x86_64 APK
           # (UTP's fat-APK push times out under TCG). Do not unify those paths.
           # Do not pass -Pandroid.testInstrumentationRunnerArguments… (breaks flavors);
-          # app/build.gradle.kts maps testShardCount/testShardIndex to runner arguments.
-          script: ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
+          # app/build.gradle.kts maps testShardCount/testShardIndex to `am instrument`
+          # arguments only, so the APKs built above without SHARD_ARGS are reused as is.
+          # Wait for the package manager first: a snapshot restore reports
+          # boot_completed before the framework is up.
+          script: |
+            adb wait-for-device
+            timeout 60 bash -c 'until adb shell pm path android | grep -q package:; do sleep 2; done'
+            ./gradlew -Pci --no-configuration-cache $SHARD_ARGS :app:connectedGoogleDebugAndroidTest
 
       - name: Upload instrumented test reports
         if: always()
@@ -406,7 +415,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -419,7 +428,7 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: echo "Generated AVD snapshot"
+          script: bash .github/emulator/settle-snapshot.sh
 
       - name: Upgrade on emulator
         uses: reactivecircus/android-emulator-runner@v2
