@@ -45,17 +45,20 @@ import org.junit.jupiter.api.Test
 class TvHubViewModelTest {
     private val receiver = EpgTestReceiver()
     private val clients = receiverApis(receiver.profiles.repository)
-    private val movies = MovieRepository(
-        receiver.profiles.context,
-        clients,
-        receiver.profiles.repository,
-        receiver.profiles.database
-    )
     private val timers = TimerRepository(
         clients,
         receiver.profiles.repository,
         receiver.profiles.database,
-        ReceiverPluginsRepository(clients, receiver.profiles.repository)
+        ReceiverPluginsRepository(clients, receiver.profiles.repository),
+        receiver.sessions
+    )
+    private val movies = MovieRepository(
+        receiver.profiles.context,
+        clients,
+        receiver.profiles.repository,
+        receiver.profiles.database,
+        receiver.sessions,
+        timers
     )
     private val viewModels = mutableListOf<TvHubViewModel>()
 
@@ -130,13 +133,60 @@ class TvHubViewModelTest {
 
     @Test
     fun failedReceiverWithCachePaintsRoom() = runBlocking<Unit> {
-        awaitLoaded(viewModel())
+        val viewModel = viewModel()
+        awaitLoaded(viewModel)
         receiverDown = true
+        val before = viewModel.jobs()
 
-        val state = awaitLoaded(viewModel())
+        viewModel.reload()
+        viewModel.joinJobsSince(before)
 
+        assertEquals(2, receiver.requestsTo(BOUQUET_INDEX_PATH).count { it.isBouquetIndex() })
+        val state = awaitLoaded(viewModel)
         assertEquals(listOf(FAVOURITES), state.bouquetRows.map { it.bouquet.reference })
         assertNull(state.errorText)
+    }
+
+    @Test
+    fun checkingPaintsRoomAndAsksTheReceiverOnceThroughOnline() = runBlocking<Unit> {
+        val first = viewModel()
+        awaitLoaded(first)
+        first.cancelAndJoin()
+        receiver.sessions.resetForProfileChange()
+
+        val viewModel = viewModel()
+        assertEquals(listOf(FAVOURITES), awaitLoaded(viewModel).rowRefs())
+        receiver.awaitRequests(2) { it.isBouquetIndex() }
+        val before = viewModel.jobs()
+        receiver.sessions.onSuccess()
+        val started = viewModel.jobs() - before
+        viewModel.joinJobsSince(before)
+
+        assertTrue(started.isEmpty(), "Online after Checking started $started")
+        assertEquals(2, receiver.requestsTo(BOUQUET_INDEX_PATH).count { it.isBouquetIndex() })
+    }
+
+    @Test
+    fun aMovieLocationOnlyRoomAnsweredIsAskedAgain() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        awaitLoaded(viewModel)
+        movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
+        receiverDown = true
+        var before = viewModel.jobs()
+        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.joinJobsSince(before)
+        // uiState combines the ViewModel state with the session, so it can trail the load.
+        val cached = awaitState(viewModel) { HDD in it.moviesByLocation }
+        assertEquals(listOf("Cached"), cached.moviesByLocation.getValue(HDD).map { it.title })
+        viewModel.selectHeader(FAVOURITES)
+        receiverDown = false
+        before = viewModel.jobs()
+
+        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.joinJobsSince(before)
+
+        assertEquals(2, receiver.requestsTo(MOVIE_LIST).size)
+        awaitState(viewModel) { it.moviesByLocation[HDD]?.size == 2 }
     }
 
     @Test

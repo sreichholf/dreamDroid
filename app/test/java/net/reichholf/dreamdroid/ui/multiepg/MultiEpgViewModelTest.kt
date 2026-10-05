@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -136,7 +137,7 @@ class MultiEpgViewModelTest {
     @Test
     fun offlineTimerClocksComeFromTheTimerSnapshot() = runBlocking {
         timerList = timerList.replace("<e2disabled>1</e2disabled>", "<e2disabled>0</e2disabled>")
-        timerRepository().timers()
+        timerRepository().timers().last()
         receiver.writeChunk(
             BOUQUET,
             NOW,
@@ -249,7 +250,8 @@ class MultiEpgViewModelTest {
         ReceiverPluginsRepository(
             receiverApis(receiver.profiles.repository),
             receiver.profiles.repository
-        )
+        ),
+        receiver.sessions
     )
 
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): MultiEpgViewModel =

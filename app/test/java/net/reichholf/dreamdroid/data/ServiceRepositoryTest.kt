@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.data
 
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.Profile
@@ -60,7 +61,7 @@ class ServiceRepositoryTest {
         lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[1] to "Provider")
         lists[RADIO_ROOTS[0]] = serviceList(RADIO to "Radio")
 
-        val load = services.bouquets() as BouquetListLoad.Loaded
+        val load = services.bouquets().last() as BouquetListLoad.Loaded
 
         assertFalse(load.cached)
         assertEquals(listOf("Favourites", "Provider"), load.bouquets.tv.map { it.name })
@@ -80,7 +81,7 @@ class ServiceRepositoryTest {
         writeStrip("TV", FAVOURITES to "Favourites")
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val load = services.bouquets() as BouquetListLoad.Loaded
+        val load = services.bouquets().last() as BouquetListLoad.Loaded
 
         assertTrue(load.cached)
         assertEquals(listOf("Favourites"), load.bouquets.tv.map { it.name })
@@ -92,7 +93,7 @@ class ServiceRepositoryTest {
     fun failedTvIndexWithoutTabStripFails() = runBlocking {
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        assertTrue(services.bouquets() is BouquetListLoad.Failed)
+        assertTrue(services.bouquets().last() is BouquetListLoad.Failed)
         assertTrue(services.cachedBouquets().tv.isEmpty())
     }
 
@@ -106,7 +107,7 @@ class ServiceRepositoryTest {
             }
         }
 
-        assertTrue(services.bouquets() is BouquetListLoad.Failed)
+        assertTrue(services.bouquets().last() is BouquetListLoad.Failed)
         assertEquals(listOf(TV_ROOTS[0]), receiver.requestsTo(GET_SERVICES).map { it.sRef() })
     }
 
@@ -115,7 +116,7 @@ class ServiceRepositoryTest {
         lists[TV_ROOTS[0]] = serviceList()
         lists[RADIO_ROOTS[0]] = serviceList()
 
-        val load = services.bouquets() as BouquetListLoad.Loaded
+        val load = services.bouquets().last() as BouquetListLoad.Loaded
 
         assertFalse(load.cached)
         assertTrue(load.bouquets.tv.isEmpty() && load.bouquets.radio.isEmpty())
@@ -125,7 +126,7 @@ class ServiceRepositoryTest {
     fun emptyServiceListIsAnEmptySuccess() = runBlocking {
         lists[FAVOURITES] = serviceList()
 
-        val load = services.services(FAVOURITES) as ServiceListLoad.Services
+        val load = services.services(FAVOURITES).last() as ServiceListLoad.Services
 
         assertTrue(load.services.isEmpty())
         assertFalse(load.cached)
@@ -143,13 +144,40 @@ class ServiceRepositoryTest {
             }
         }
 
-        val load = services.bouquets() as BouquetListLoad.Loaded
+        val load = services.bouquets().last() as BouquetListLoad.Loaded
 
         assertFalse(load.cached)
         assertEquals(listOf("Favourites"), load.bouquets.tv.map { it.name })
         assertTrue(load.bouquets.radio.isEmpty())
         assertEquals(listOf(FAVOURITES), strip("TV"))
         assertEquals(listOf(RADIO), strip("RADIO"))
+    }
+
+    @Test
+    fun offlineBouquetsComeFromTheTabStripsWithoutTheReceiver() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        receiver.goOffline()
+
+        val load = services.bouquets().toList().single() as BouquetListLoad.Loaded
+
+        assertTrue(load.cached)
+        assertEquals(listOf("Favourites"), load.bouquets.tv.map { it.name })
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun offlineServicesComeFromTheRosterUntilAForcedRefresh() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        services.persistRoster(FAVOURITES, FAVOURITES, listOf(ServiceNowNext(CHANNEL, "Cached")))
+        receiver.goOffline()
+
+        val cached = services.services(FAVOURITES).toList().single() as ServiceListLoad.Services
+        assertEquals(0, receiver.server.requestCount)
+        val forced = services.services(FAVOURITES, forceRefresh = true).toList().single()
+
+        assertEquals(listOf("Cached"), cached.services.map { it.name })
+        assertEquals(3, (forced as ServiceListLoad.Services).services.size)
+        assertFalse(forced.cached)
     }
 
     @Test
@@ -199,16 +227,16 @@ class ServiceRepositoryTest {
 
     @Test
     fun servicesFallBackToTheWrittenRoster() = runBlocking {
-        val live = services.services(FAVOURITES) as ServiceListLoad.Services
+        val live = services.services(FAVOURITES).last() as ServiceListLoad.Services
         assertFalse(live.cached)
         assertEquals(3, live.services.size)
 
         receiver.answer = { MockResponse().setResponseCode(500) }
-        assertTrue(services.services(FAVOURITES) is ServiceListLoad.Failed)
+        assertTrue(services.services(FAVOURITES).last() is ServiceListLoad.Failed)
 
         writeStrip("TV", FAVOURITES to "Favourites")
         services.persistRoster(FAVOURITES, FAVOURITES, listOf(ServiceNowNext(CHANNEL, "Cached")))
-        val cached = services.services(FAVOURITES) as ServiceListLoad.Services
+        val cached = services.services(FAVOURITES).last() as ServiceListLoad.Services
         assertTrue(cached.cached)
         assertEquals(listOf("Cached"), cached.services.map { it.name })
         assertEquals(
@@ -298,7 +326,7 @@ class ServiceRepositoryTest {
     fun dedicatedRootsAndTheirFoldersAreNeverStored() = runBlocking {
         lists[TV_ROOTS[0]] = serviceList(FAVOURITES to "Favourites", TV_ROOTS[1] to "Provider")
         lists[RADIO_ROOTS[0]] = serviceList()
-        services.bouquets()
+        services.bouquets().last()
 
         for (root in TV_ROOTS + RADIO_ROOTS) {
             assertFalse(services.persistRoster(root, root, listOf(channel)))

@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.tv.ui.tvTimerServicePickRows
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -146,11 +147,37 @@ class TimerServicePickViewModelTest {
         val handle = SavedStateHandle()
         TimerServicePickSaved(BOUQUET.reference, BOUQUET.name).writeTo(handle)
         receiver.answer = { MockResponse().setResponseCode(500) }
+        val viewModel = viewModel(handle)
+        viewModel.settled()
+        val before = viewModel.jobs()
 
-        val state = viewModel(handle).settled()
+        viewModel.reload()
+        viewModel.joinJobsSince(before)
 
+        val state = viewModel.uiState.value
         assertEquals(listOf("Cached HD"), state.items.map { it.name })
         assertNull(state.emptyMessage)
+        assertEquals(2, receiver.requests.size)
+    }
+
+    @Test
+    fun backAsksAgainWhenOnlyRoomHadTheBouquets() = runBlocking {
+        receiver.writeTabStrip(BOUQUET)
+        receiver.goOffline()
+        val viewModel = viewModel()
+        assertEquals(listOf("Favourites"), viewModel.settled().items.map { it.name })
+        receiver.sessions.onSuccess()
+        viewModel.onRowClick(BOUQUET)
+        viewModel.settled()
+        val before = viewModel.jobs()
+
+        viewModel.showBouquetList()
+        viewModel.joinJobsSince(before)
+
+        assertEquals(
+            listOf("Section", "Favourites", "Radio"),
+            viewModel.uiState.value.items.map { it.name }
+        )
     }
 
     @Test

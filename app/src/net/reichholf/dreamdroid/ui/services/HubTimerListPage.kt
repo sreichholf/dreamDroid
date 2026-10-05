@@ -75,14 +75,14 @@ fun HubTimerListPage(
     }
     DreamDroidPullRefresh(
         refreshing = uiState.refreshing,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         modifier = modifier
     ) {
         if (items.isEmpty()) {
             ListEmptyState(
                 loading = uiState.refreshing,
                 message = uiState.emptyMessage?.asString(),
-                onRetry = viewModel::reload
+                onRetry = { viewModel.reload(forceRefresh = true) }
             )
         } else {
             TimerListScreen(

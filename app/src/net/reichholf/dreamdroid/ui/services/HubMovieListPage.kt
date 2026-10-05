@@ -82,7 +82,7 @@ fun HubMovieListPage(
 
     HubMovieListScreen(
         state = uiState,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         onItemClick = { item, isLong ->
             if (viewModel.zapsOnTap(isLong)) {
                 handle.runOnlineOnly { viewModel.zap(item.index) }

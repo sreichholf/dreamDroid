@@ -28,7 +28,14 @@ fun testShellViewModel(profiles: ProfileRepository): ShellViewModel {
         ReceiverPluginsRepository(clients, profiles),
         profiles,
         ReceiverProfileCheckRepository(profiles, clients, capabilities),
-        ServiceRepository(context, clients, profiles, AppDatabase.inMemory(context), sessions),
+        ServiceRepository(
+            context,
+            clients,
+            profiles,
+            AppDatabase.inMemory(context),
+            sessions,
+            ReceiverRepository(clients, profiles)
+        ),
         sessions,
         SettingsRepository(context.getSharedPreferences("shell-test", 0)),
         capabilities

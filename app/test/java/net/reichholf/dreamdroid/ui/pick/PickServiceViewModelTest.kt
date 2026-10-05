@@ -20,6 +20,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -84,11 +86,17 @@ class PickServiceViewModelTest {
             listOf(BouquetTabEntity(PROFILE_ID, "TV", 0, TV_BOUQUET, "Cached TV"))
         )
         receiver.answer = { MockResponse().setResponseCode(500) }
+        val viewModel = viewModel()
+        viewModel.settled()
+        val before = viewModel.jobs()
 
-        val state = viewModel().settled()
+        viewModel.reload()
+        viewModel.joinJobsSince(before)
 
+        val state = viewModel.uiState.value
         assertEquals(listOf("Cached TV"), state.items.map { it.name })
         assertNull(state.emptyMessage)
+        assertEquals(2, receiver.requests.size)
     }
 
     @Test
@@ -117,10 +125,31 @@ class PickServiceViewModelTest {
     fun reloadAsksAgain() = runBlocking {
         val viewModel = viewModel()
         viewModel.settled()
+        val before = viewModel.jobs()
 
         viewModel.reload()
-        viewModel.settled()
+        viewModel.joinJobsSince(before)
 
+        assertEquals(4, receiver.requests.size)
+    }
+
+    @Test
+    fun offlineReloadPaintsTheTabStripsWithoutTheReceiver() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+        receiver.goOffline()
+        val before = viewModel.jobs()
+
+        viewModel.reload()
+        viewModel.joinJobsSince(before)
+
+        assertEquals(
+            listOf("Favourites (TV)", "Favourites (Radio)"),
+            viewModel.uiState.value.items.map { it.name }
+        )
+        assertEquals(2, receiver.requests.size)
+        viewModel.reload(forceRefresh = true)
+        viewModel.joinJobsSince(before)
         assertEquals(4, receiver.requests.size)
     }
 

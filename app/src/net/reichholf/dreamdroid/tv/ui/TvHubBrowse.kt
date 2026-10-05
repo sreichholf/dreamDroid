@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.tv.ui
 import android.util.Log
 import javax.inject.Inject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.MovieListLoad
@@ -45,29 +48,43 @@ class TvHubBrowse @Inject constructor(
     private val sessions: SessionConnectionHolder
 ) {
     /**
-     * Each TV bouquet with now/next. A bouquet the receiver answered replaces its Room
-     * roster and fills the MultiEPG chunk at now; one it failed paints from Room.
+     * Each TV bouquet with now/next. Room paints first; the receiver is skipped while the
+     * session is Offline and Room had something to paint. A bouquet the receiver answered
+     * replaces its Room roster and fills the MultiEPG chunk at now; one it failed paints
+     * from Room.
      */
-    suspend fun browse(): TvHubBrowseResult {
+    fun browse(): Flow<TvHubBrowseResult> = flow {
         val cachedTabs = services.cachedTvBouquetTabs()
         val cachedLocations = movies.cachedLocations()
         val hasCache = cachedTabs.isNotEmpty() || cachedLocations != null
-        if (shouldSkipTvHubHttp(sessions.status.value, hasCache)) {
-            return paintFromCache(
-                tabs = cachedTabs,
-                locations = movieHeadersForTvHub(
-                    locationsFromReceiver = false,
-                    liveLocations = emptyList(),
-                    cachedLocations = cachedLocations
+        if (hasCache) {
+            emit(
+                paintFromCache(
+                    tabs = cachedTabs,
+                    locations = movieHeadersForTvHub(
+                        locationsFromReceiver = false,
+                        liveLocations = emptyList(),
+                        cachedLocations = cachedLocations
+                    )
                 )
             )
         }
+        if (sessions.status.value.shouldSkipReceiverHttp(hasCache)) {
+            return@flow
+        }
+        emit(receiverBrowse(cachedTabs, cachedLocations))
+    }
+
+    private suspend fun receiverBrowse(
+        cachedTabs: List<Service>,
+        cachedLocations: List<String>?
+    ): TvHubBrowseResult {
         timers.locationsAndTags()
         val bouquetResult = services.tvBouquetTabs()
         val bouquets = bouquetResult.value
         if (bouquets == null) {
             val locations = liveMovieHeaders(cachedLocations)
-            if (hasCache) {
+            if (cachedTabs.isNotEmpty() || cachedLocations != null) {
                 return paintFromCache(cachedTabs, locations)
             }
             return TvHubBrowseResult(
@@ -109,27 +126,25 @@ class TvHubBrowse @Inject constructor(
         )
     }
 
-    /**
-     * Recordings in [dirname]. Room answers without asking the receiver while the session
-     * is not Online and Room has that location, and when the receiver fails.
-     */
-    suspend fun movies(dirname: String): TvHubMoviesResult {
-        val cached = movies.cachedMovies(dirname)
-        if (shouldSkipTvHubHttp(sessions.status.value, cached != null)) {
-            return TvHubMoviesResult(movies = cached.orEmpty(), errorText = null, usedCache = true)
-        }
-        return when (val load = movies.movies(dirname, emptyList())) {
-            is MovieListLoad.Movies ->
-                TvHubMoviesResult(movies = load.movies, errorText = null, usedCache = load.cached)
+    /** Recordings in [dirname]; see [MovieRepository.movies]. */
+    fun movies(dirname: String): Flow<TvHubMoviesResult> =
+        movies.movies(dirname, emptyList()).map { load ->
+            when (load) {
+                is MovieListLoad.Movies ->
+                    TvHubMoviesResult(
+                        movies = load.movies,
+                        errorText = null,
+                        usedCache = load.cached
+                    )
 
-            is MovieListLoad.Failed ->
-                TvHubMoviesResult(
-                    movies = null,
-                    errorText = load.error.contentErrorText(),
-                    usedCache = false
-                )
+                is MovieListLoad.Failed ->
+                    TvHubMoviesResult(
+                        movies = null,
+                        errorText = load.error.contentErrorText(),
+                        usedCache = false
+                    )
+            }
         }
-    }
 
     private suspend fun fillNowChunk(ref: String, nowSec: Long) {
         try {

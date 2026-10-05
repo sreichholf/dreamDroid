@@ -24,10 +24,8 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
-import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -39,8 +37,9 @@ import net.reichholf.dreamdroid.testutil.RADIO_ROOTS
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.activeJobs
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.receiverApis
-import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
 import org.junit.jupiter.api.AfterEach
@@ -57,17 +56,20 @@ class HubViewModelTest {
     private val receiver = EpgTestReceiver()
     private val profiles = receiver.profiles.repository
     private val clients = receiverApis(profiles)
-    private val movies = MovieRepository(
-        receiver.profiles.context,
-        clients,
-        profiles,
-        receiver.profiles.database
-    )
     private val timers = TimerRepository(
         clients,
         profiles,
         receiver.profiles.database,
-        ReceiverPluginsRepository(clients, profiles)
+        ReceiverPluginsRepository(clients, profiles),
+        receiver.sessions
+    )
+    private val movies = MovieRepository(
+        receiver.profiles.context,
+        clients,
+        profiles,
+        receiver.profiles.database,
+        receiver.sessions,
+        timers
     )
     private val viewModels = mutableListOf<HubViewModel>()
     private val main = DelayCountingDispatcher(UnconfinedTestDispatcher())
@@ -248,7 +250,7 @@ class HubViewModelTest {
     }
 
     @Test
-    fun moviesSayLoadingUntilTheLocationsAreKnown() = runBlocking<Unit> {
+    fun moviesShowRowZeroUntilTheLocationsAreKnown() = runBlocking<Unit> {
         val release = CountDownLatch(1)
         receiver.answer = { request ->
             if (request.requestUrl?.encodedPath == LOCATIONS) {
@@ -262,10 +264,9 @@ class HubViewModelTest {
         viewModel.ensureLocations()
 
         viewModel.selectMovies()
-        assertEquals(UiText.Resource(R.string.loading), viewModel.uiState.value.userMessage)
+        assertEquals(HubModes.MOVIES, viewModel.uiState.value.mode)
         assertEquals(0, viewModel.uiState.value.selectedRow)
-        viewModel.onMessageShown()
-        assertNull(viewModel.uiState.value.userMessage)
+        assertFalse(viewModel.uiState.value.locationsReady)
         release.countDown()
         val state = withTimeout(5_000L) { viewModel.uiState.first { it.locationsReady } }
 
@@ -275,7 +276,7 @@ class HubViewModelTest {
     }
 
     @Test
-    fun failedLocationsPaintTheSnapshotAndAreNotAskedAgain() = runBlocking<Unit> {
+    fun failedLocationsPaintTheStripAndAreAskedAgainOnTheNextEntry() = runBlocking<Unit> {
         movies.saveLocations(listOf(USB))
         receiver.answer = { request ->
             when (request.requestUrl?.encodedPath) {
@@ -284,24 +285,90 @@ class HubViewModelTest {
             }
         }
         val viewModel = viewModel()
+        var before = viewModel.jobs()
+        viewModel.ensureLocations()
+        viewModel.joinJobsSince(before)
+        assertEquals(listOf(USB), viewModel.uiState.value.movieLocations)
+        receiver.answer = ::routes
+        before = viewModel.jobs()
 
         viewModel.ensureLocations()
-        val state = withTimeout(5_000L) { viewModel.uiState.first { it.locationsReady } }
-        viewModel.ensureLocations()
+        viewModel.joinJobsSince(before)
 
-        assertEquals(listOf(USB), state.movieLocations)
-        assertEquals(1, receiver.requestsTo(LOCATIONS).size)
+        assertEquals(listOf(HDD, USB), viewModel.uiState.value.movieLocations)
+        assertEquals(listOf(HDD, USB), movies.cachedLocations())
+        assertEquals(2, receiver.requestsTo(LOCATIONS).size)
+        before = viewModel.jobs()
+        viewModel.ensureLocations()
+        assertTrue((viewModel.jobs() - before).isEmpty())
     }
 
     @Test
-    fun knownLocationsAreReadyAtOnce() = runBlocking<Unit> {
-        receiver.answer = ::routes
+    fun checkingPaintsTheStripBeforeTheReceiverAnswers() = runBlocking<Unit> {
+        movies.saveLocations(listOf(USB))
+        receiver.sessions.resetForProfileChange()
+        val release = CountDownLatch(1)
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == LOCATIONS) {
+                release.await(5, TimeUnit.SECONDS)
+            }
+            routes(request)
+        }
+        val viewModel = viewModel()
+
+        viewModel.ensureLocations()
+        val painted = withTimeout(5_000L) { viewModel.uiState.first { it.locationsReady } }
+        assertEquals(listOf(USB), painted.movieLocations)
+        release.countDown()
+
+        val live = withTimeout(5_000L) {
+            viewModel.uiState.first { it.movieLocations == listOf(HDD, USB) }
+        }
+        assertTrue(live.locationsReady)
+        assertEquals(listOf(HDD, USB), movies.cachedLocations())
+    }
+
+    @Test
+    fun locationsAnotherScreenLoadedAreSavedAsTheStrip() = runBlocking<Unit> {
         timers.locationsAndTags()
+        val viewModel = viewModel()
+        val before = viewModel.jobs()
 
-        val state = viewModel().uiState.value
+        viewModel.ensureLocations()
+        viewModel.joinJobsSince(before)
 
-        assertTrue(state.locationsReady)
-        assertEquals(listOf(HDD, USB), state.movieLocations)
+        assertEquals(listOf(HDD, USB), viewModel.uiState.value.movieLocations)
+        assertEquals(listOf(HDD, USB), movies.cachedLocations())
+    }
+
+    @Test
+    fun offlineStandInDoesNotReplaceTheStrip() = runBlocking<Unit> {
+        movies.saveLocations(listOf(USB))
+        receiver.goOffline()
+        // Another screen asked for the locations while Offline: memory holds /hdd/movie.
+        timers.locationsAndTags()
+        val viewModel = viewModel()
+        val before = viewModel.jobs()
+
+        viewModel.ensureLocations()
+        viewModel.joinJobsSince(before)
+
+        assertEquals(listOf(USB), viewModel.uiState.value.movieLocations)
+        assertTrue(receiver.requestsTo(LOCATIONS).isEmpty())
+    }
+
+    @Test
+    fun offlineSessionPaintsTheLocationSnapshotWithoutTheReceiver() = runBlocking<Unit> {
+        movies.saveLocations(listOf(USB))
+        receiver.goOffline()
+        val viewModel = viewModel()
+
+        viewModel.ensureLocations()
+        val state = withTimeout(5_000L) { viewModel.uiState.first { it.locationsReady } }
+
+        assertEquals(listOf(USB), state.movieLocations)
+        assertTrue(receiver.requestsTo(LOCATIONS).isEmpty())
+        assertTrue(receiver.requestsTo(TAGS).isEmpty())
     }
 
     @Test
@@ -336,8 +403,6 @@ class HubViewModelTest {
         handle,
         receiver.services,
         movies,
-        timers,
-        ReceiverRepository(clients, profiles),
         profiles,
         receiver.sessions
     ).also { viewModels += it }

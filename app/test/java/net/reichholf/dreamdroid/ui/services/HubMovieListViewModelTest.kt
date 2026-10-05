@@ -117,10 +117,51 @@ class HubMovieListViewModelTest {
         receiver.movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
         receiver.answer = { MockResponse().setResponseCode(500) }
 
-        val state = viewModel().settled()
+        val state = viewModel().reloaded()
 
         assertEquals(listOf("Cached"), state.items.map { it.title })
         assertNull(state.emptyMessage)
+        assertEquals(2, receiver.server.requestCount)
+    }
+
+    @Test
+    fun offlinePaintsSnapshotWithoutTheReceiver() = runTest {
+        receiver.movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
+        receiver.goOffline()
+
+        val state = viewModel().reloaded()
+
+        assertEquals(listOf("Cached"), state.items.map { it.title })
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun rowMenuStaysOpenWhenTheRowsDoNotChange() = runTest {
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.onItemMenu(0)
+
+        // Room paints the rows the receiver sent, then the receiver sends them again.
+        val state = viewModel.reloaded()
+
+        assertEquals(0, state.menu?.rowKey)
+        assertEquals(2, receiver.server.requestCount)
+    }
+
+    @Test
+    fun forcedRefreshAsksTheReceiverWhileOffline() = runTest {
+        receiver.movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
+        receiver.goOffline()
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        viewModel.reload(forceRefresh = true)
+
+        assertEquals(
+            listOf("Evening News", "Empty Size"),
+            viewModel.settled().items.map { it.title }
+        )
+        assertEquals(1, receiver.server.requestCount)
     }
 
     @Test
@@ -130,7 +171,7 @@ class HubMovieListViewModelTest {
 
         assertEquals(
             UiText.Resource(R.string.no_list_item),
-            viewModel().settled().emptyMessage
+            viewModel().reloaded().emptyMessage
         )
     }
 
@@ -469,6 +510,18 @@ class HubMovieListViewModelTest {
 
     private suspend fun HubMovieListViewModel.settled(): HubMovieListUiState =
         uiState.first { !it.refreshing }
+
+    /**
+     * Settles the load the ViewModel started, then reloads and waits for that whole load,
+     * the receiver's answer included, not just Room's first paint.
+     */
+    private suspend fun HubMovieListViewModel.reloaded(): HubMovieListUiState {
+        settled()
+        val before = jobs()
+        reload()
+        joinJobsSince(before)
+        return uiState.value
+    }
 
     private fun loadMovies(): String = loadWebFixture("movielist.xml")
 

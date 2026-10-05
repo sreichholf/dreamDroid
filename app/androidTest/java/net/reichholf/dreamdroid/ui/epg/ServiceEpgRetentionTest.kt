@@ -20,6 +20,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
@@ -82,11 +83,12 @@ class ServiceEpgRetentionTest {
             clients,
             profiles,
             database,
-            sessions
+            sessions,
+            ReceiverRepository(clients, profiles)
         )
     )
     private val plugins = ReceiverPluginsRepository(clients, profiles)
-    private val timers = TimerRepository(clients, profiles, database, plugins)
+    private val timers = TimerRepository(clients, profiles, database, plugins, sessions)
 
     @Before
     fun forceAlwaysNight() {

@@ -268,7 +268,8 @@ class TvMultiEpgViewModelTest {
                 ReceiverPluginsRepository(
                     receiverApis(receiver.profiles.repository),
                     receiver.profiles.repository
-                )
+                ),
+                receiver.sessions
             ),
             receiver.profiles.repository,
             ReceiverRepository(

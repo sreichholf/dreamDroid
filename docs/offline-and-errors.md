@@ -122,6 +122,8 @@ Also guard **writers**, not only the hub: Zap default bouquet, list EPG, and Mul
 | Profiles / settings / about | Already local | — | Always available. |
 | Synced picons on disk | Existing picon sync | Files | Show if present; no FTP while Offline. |
 
+**Who decides.** The repositories read the lists above cache-first (`data/CacheFirstLoad.kt`): Room paints first, the receiver is skipped while the session is **Offline** and Room had the list, and Room is the fallback when the receiver fails. That covers bouquets, service lists and hub rosters, list EPG, movies and timers, on phone and TV. ViewModels collect the flow and pass only `forceRefresh` (pull-to-refresh, Retry, and reloads after a write, whose snapshot is stale); they do not read the session to choose between Room and the receiver. Because the cached copy paints first, nothing waits on the receiver for first paint, Checking included. While Offline, `TimerRepository.locationsAndTags` does not ask the receiver either. Not cache-first lists, each with its own Offline skip: the MultiEPG grid (`MultiEpgGrid`), the TV MultiEPG picker's `ServiceRepository.tvBouquets`, EPG search, and the timer editor's `EpgRepository.recordedProgramme`.
+
 Not cached as blobs: device info live page, signal, screenshot, `/web/getcurrent`. Now-playing **strip** while Offline: hide or empty, do not freeze last headline. Channel rows in a cached user bouquet use Room now/next **while Offline/stale**. Online hub now/next stays on `epgnownext`; the Online roster is `getservices`, so services with no event stay listed.
 
 **List EPG** (drawer `/web/epgbouquet`): v1 Offline reads shared `epgmulti` Room chunks for that user bouquet, or Unavailable if never filled. Do not persist `epgbouquet` separately.

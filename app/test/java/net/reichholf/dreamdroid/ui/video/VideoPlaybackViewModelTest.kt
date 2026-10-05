@@ -247,8 +247,7 @@ class VideoPlaybackViewModelTest {
                 receiverApis(on.profiles.repository),
                 on.profiles.repository
             ),
-            on.profiles.repository,
-            on.sessions
+            on.profiles.repository
         ).also { viewModels += it }
 
     private fun routes(request: RecordedRequest): MockResponse = when (request.path()) {

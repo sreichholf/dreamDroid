@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import net.reichholf.dreamdroid.R
@@ -27,6 +28,7 @@ import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.room.ServiceRosterEntity
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.session.hasUseDrivenCache
+import net.reichholf.dreamdroid.ui.session.shouldWaitForDeviceInfo
 
 /** Outcome of a TV + radio bouquet list load. */
 sealed interface BouquetListLoad {
@@ -67,7 +69,8 @@ class ServiceRepository @Inject constructor(
     private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository,
     private val database: AppDatabase,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val receiver: ReceiverRepository
 ) {
     /** The dedicated TV roots: the aggregate bouquet index, Provider, and All Services. */
     val tvRoots: List<String> by lazy {
@@ -138,38 +141,48 @@ class ServiceRepository @Inject constructor(
     }
 
     /**
-     * The children of the TV and radio bouquet indexes. Each list the receiver answered
-     * replaces its Room tab strip. A failed TV request fails the load even when radio would
-     * answer. On failure the Room tab strips answer when there are any.
+     * [bouquets] for the hub. With no Room strip to paint, waits for the startup profile check
+     * first, so the hub's first request does not race it.
      */
-    suspend fun bouquets(): BouquetListLoad {
+    fun hubBouquets(): Flow<BouquetListLoad> = flow {
+        if (shouldWaitForDeviceInfo(cachedBouquets().isNotEmpty())) {
+            receiver.awaitProfileCheck()
+        }
+        emitAll(bouquets())
+    }
+
+    /**
+     * The children of the TV and radio bouquet indexes, read [cacheFirstLoad] from the Room
+     * tab strips. Each list the receiver answered replaces its tab strip. A failed TV request
+     * fails the receiver's answer even when radio would answer.
+     */
+    fun bouquets(forceRefresh: Boolean = false): Flow<BouquetListLoad> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { cachedBouquets().takeIf { it.isNotEmpty() } },
+        fetch = ::receiverBouquets,
+        loaded = BouquetListLoad::Loaded,
+        failed = BouquetListLoad::Failed
+    )
+
+    private suspend fun receiverBouquets(): EnigmaResponse<Bouquets> {
         val client = clients.current()
         val profileId = profiles.requireCurrent().id
         val tv = client.services(tvRoots[0])
-        val tvList = tv.value
-        var error = tv.error
-        var success = false
+        val tvList = tv.value ?: return EnigmaResponse(null, tv.error)
         val live = Bouquets()
-        if (tvList != null) {
-            live.tv.addAll(tvList)
-            profileId?.let { replaceTabStrip(it, KIND_TV, tvList) }
-            val radio = client.services(radioRoots[0])
-            val radioList = radio.value
-            if (radioList != null) {
-                live.radio.addAll(radioList)
-                profileId?.let { replaceTabStrip(it, KIND_RADIO, radioList) }
-            }
-            success = radioList != null || tvList.isNotEmpty()
-            error = radio.error
+        live.tv.addAll(tvList)
+        profileId?.let { replaceTabStrip(it, KIND_TV, tvList) }
+        val radio = client.services(radioRoots[0])
+        val radioList = radio.value
+        if (radioList != null) {
+            live.radio.addAll(radioList)
+            profileId?.let { replaceTabStrip(it, KIND_RADIO, radioList) }
         }
-        if (success) {
-            return BouquetListLoad.Loaded(live, cached = false)
+        if (radioList == null && tvList.isEmpty()) {
+            return EnigmaResponse(null, radio.error)
         }
-        val cached = cachedBouquets()
-        if (cached.tv.isEmpty() && cached.radio.isEmpty()) {
-            return BouquetListLoad.Failed(error)
-        }
-        return BouquetListLoad.Loaded(cached, cached = true)
+        return EnigmaResponse(live)
     }
 
     /**
@@ -208,53 +221,39 @@ class ServiceRepository @Inject constructor(
         roster(profileId, bouquetRef)?.map { Service(it.serviceRef, it.name) }
 
     /**
-     * Members of [ref] from the receiver. When it fails, the Room roster of [ref] answers
-     * if it was written. Does not write the roster.
+     * Members of [ref], read [cacheFirstLoad] from the Room roster of [ref]. Does not write
+     * the roster.
      */
-    suspend fun services(ref: String): ServiceListLoad {
-        val response = clients.current().services(ref)
-        val live = response.value
-        if (live != null) {
-            return ServiceListLoad.Services(live, cached = false)
-        }
-        val cached = profiles.requireCurrent().id?.let { cachedBouquetServices(it, ref) }
-            ?: return ServiceListLoad.Failed(response.error)
-        return ServiceListLoad.Services(cached, cached = true)
-    }
+    fun services(ref: String, forceRefresh: Boolean = false): Flow<ServiceListLoad> =
+        cacheFirstLoad(
+            sessions,
+            forceRefresh,
+            cached = { profiles.requireCurrent().id?.let { cachedBouquetServices(it, ref) } },
+            fetch = { clients.current().services(ref) },
+            loaded = ServiceListLoad::Services,
+            failed = ServiceListLoad::Failed
+        )
 
     /**
-     * The hub list of [ref], opened under the hub tab [tabRootRef]. Unless [forceRefresh],
-     * paints the Room roster first and skips the receiver while the session is Offline and
-     * Room had it. Then asks the receiver; its answer replaces the roster when [ref] is
-     * cacheable. When the receiver fails, Room is the fallback (also on a forced refresh)
-     * before the failure is reported.
+     * The hub list of [ref], opened under the hub tab [tabRootRef], read [cacheFirstLoad]. The
+     * receiver's answer replaces the Room roster when [ref] is cacheable.
      */
     fun nowNextList(
         ref: String,
         tabRootRef: String,
         forceRefresh: Boolean = false
-    ): Flow<NowNextListLoad> = flow {
-        val painted = if (forceRefresh) null else cachedNowNext(ref)
-        if (painted != null) {
-            emit(NowNextListLoad.Rows(painted, cached = true))
-        }
-        if (!forceRefresh && sessions.status.value.shouldSkipReceiverHttp(painted != null)) {
-            return@flow
-        }
-        val response = receiverNowNext(ref)
-        val live = response.value
-        if (live != null) {
-            persistRoster(ref, tabRootRef, live)
-            emit(NowNextListLoad.Rows(live, cached = false))
-            return@flow
-        }
-        val fallback = cachedNowNext(ref)
-        if (fallback != null) {
-            emit(NowNextListLoad.Rows(fallback, cached = true))
-        } else {
-            emit(NowNextListLoad.Failed(response.error))
-        }
-    }
+    ): Flow<NowNextListLoad> = cacheFirstLoad(
+        sessions,
+        forceRefresh,
+        cached = { cachedNowNext(ref) },
+        fetch = {
+            receiverNowNext(ref).also { response ->
+                response.value?.let { persistRoster(ref, tabRootRef, it) }
+            }
+        },
+        loaded = NowNextListLoad::Rows,
+        failed = NowNextListLoad::Failed
+    )
 
     /**
      * The services of [ref] are the roster; the receiver's now/next only adds events to it

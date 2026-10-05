@@ -24,12 +24,12 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
-import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
@@ -47,7 +47,6 @@ fun HubDestination(
 ) {
     val resources = LocalResources.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
     val mode = uiState.mode
     val selectedRow = uiState.selectedRow
     val movieLocations = uiState.movieLocations
@@ -233,6 +232,8 @@ fun HubDestination(
                             key(location) {
                                 HubMovieListPage(handle = handle, location = location)
                             }
+                        } else if (!uiState.locationsReady) {
+                            ListEmptyState(loading = true, message = null)
                         }
                     }
 

@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.services
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
@@ -17,6 +18,8 @@ import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CLEANUP
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_LIST
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -32,7 +35,7 @@ import org.junit.jupiter.api.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class HubTimerListViewModelTest {
     private val receiver = TestReceiver()
-    private val sessions = SessionConnectionHolder()
+    private val sessions = receiver.profiles.sessions
     private val viewModels = mutableListOf<HubTimerListViewModel>()
 
     @BeforeEach
@@ -62,8 +65,9 @@ class HubTimerListViewModelTest {
         assertEquals(listOf("Navy CIS: L.A.", "Tagesschau"), state.timers.map { it.name })
         assertNull(state.emptyMessage)
         assertEquals(1, receiver.requestsTo(TIMER_LIST).size)
+        val before = viewModel.jobs()
         viewModel.onRemount(1)
-        viewModel.settled()
+        viewModel.joinJobsSince(before)
         assertEquals(2, receiver.requestsTo(TIMER_LIST).size)
     }
 
@@ -101,10 +105,36 @@ class HubTimerListViewModelTest {
         viewModel.reload()
         viewModel.settled()
         receiver.fail(TIMER_LIST)
+        val before = viewModel.jobs()
 
         viewModel.reload()
+        viewModel.joinJobsSince(before)
 
-        assertEquals(2, viewModel.settled().timers.size)
+        assertEquals(2, viewModel.uiState.value.timers.size)
+        assertNull(viewModel.uiState.value.emptyMessage)
+        assertEquals(2, receiver.requestsTo(TIMER_LIST).size)
+    }
+
+    @Test
+    fun offlinePaintsTheSnapshotWithoutTheReceiver() = runTest {
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        receiver.timerRepository().timers().last()
+        val asked = receiver.requests.size
+        sessions.onFailure(
+            EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Timeout),
+            hasCache = true
+        )
+        val viewModel = viewModel()
+        val before = viewModel.jobs()
+
+        viewModel.onRemount(0)
+        viewModel.joinJobsSince(before)
+
+        assertEquals(2, viewModel.uiState.value.timers.size)
+        assertEquals(asked, receiver.requests.size)
+        viewModel.reload(forceRefresh = true)
+        viewModel.settled()
+        assertEquals(2, receiver.requestsTo(TIMER_LIST).size)
     }
 
     @Test

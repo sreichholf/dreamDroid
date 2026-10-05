@@ -174,7 +174,8 @@ class EpgEventDetailViewModelTest {
             receiverApis(receiver.profiles.repository),
             receiver.profiles.repository,
             receiver.profiles.database,
-            plugins
+            plugins,
+            receiver.sessions
         ),
         plugins,
         receiver.sessions

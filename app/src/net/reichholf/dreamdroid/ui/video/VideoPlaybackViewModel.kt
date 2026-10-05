@@ -22,7 +22,6 @@ import net.reichholf.dreamdroid.enigma.Bouquets
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.contentErrorText
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
@@ -35,8 +34,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 class VideoPlaybackViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val receiver: ReceiverRepository,
-    private val profiles: ProfileRepository,
-    private val sessions: SessionConnectionHolder
+    private val profiles: ProfileRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(VideoPlaybackUiState())
     val uiState: StateFlow<VideoPlaybackUiState> = _uiState.asStateFlow()
@@ -162,7 +160,7 @@ class VideoPlaybackViewModel @Inject constructor(
         _uiState.update { it.copy(userMessage = null) }
     }
 
-    /** Cache first, then the receiver. One load per ViewModel; a recording clears it. */
+    /** See [ServiceRepository.bouquets]. One load per ViewModel; a recording clears it. */
     private fun loadBouquetBar() {
         if (bouquetJob != null) {
             return
@@ -171,19 +169,13 @@ class VideoPlaybackViewModel @Inject constructor(
             // A restore after process death can land here before the active profile is read.
             profiles.awaitLoaded()
             val excluded = services.excludedTabRefs
-            val cached = services.cachedBouquets()
-            val hasStrip = cached.tv.isNotEmpty() || cached.radio.isNotEmpty()
-            if (hasStrip) {
-                publishBouquets(overlayBouquets(cached.tv, cached.radio, excluded))
+            services.bouquets().collect { load ->
+                val painted = when (load) {
+                    is BouquetListLoad.Loaded -> load.bouquets
+                    is BouquetListLoad.Failed -> Bouquets()
+                }
+                publishBouquets(overlayBouquets(painted.tv, painted.radio, excluded))
             }
-            if (sessions.status.value.shouldSkipReceiverHttp(hasStrip)) {
-                return@launch
-            }
-            val painted = when (val load = services.bouquets()) {
-                is BouquetListLoad.Loaded -> load.bouquets
-                is BouquetListLoad.Failed -> Bouquets()
-            }
-            publishBouquets(overlayBouquets(painted.tv, painted.radio, excluded))
         }
     }
 

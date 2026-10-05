@@ -64,14 +64,22 @@ class AutoTimerTargetPickViewModel @Inject constructor(
     val uiState: StateFlow<AutoTimerTargetPickUiState> = _uiState.asStateFlow()
 
     private var bouquets: List<Service> = emptyList()
+
+    /** Whether [bouquets] came from the receiver; Room's tab strips are asked again. */
+    private var bouquetsLive = false
     private var loadJob: Job? = null
 
     init {
         reload()
     }
 
-    fun reload() {
-        if (_uiState.value.bouquet == null) loadBouquets() else loadChannels()
+    /** Loads the list on screen. Room paints first unless [forceRefresh]. */
+    fun reload(forceRefresh: Boolean = false) {
+        if (_uiState.value.bouquet == null) {
+            loadBouquets(forceRefresh)
+        } else {
+            loadChannels(forceRefresh)
+        }
     }
 
     fun open(bouquet: Service) {
@@ -87,7 +95,7 @@ class AutoTimerTargetPickViewModel @Inject constructor(
     fun showBouquets() {
         loadJob?.cancel()
         setBouquet(null)
-        if (bouquets.isEmpty()) {
+        if (!bouquetsLive) {
             _uiState.update { it.copy(rows = emptyList()) }
             loadBouquets()
         } else {
@@ -114,31 +122,36 @@ class AutoTimerTargetPickViewModel @Inject constructor(
         _uiState.update { it.copy(bouquet = bouquet) }
     }
 
-    private fun loadBouquets() {
+    private fun loadBouquets(forceRefresh: Boolean = false) {
         startLoading()
         loadJob = viewModelScope.launch {
-            when (val load = services.bouquets()) {
-                is BouquetListLoad.Loaded -> {
-                    bouquets = load.bouquets.tv + load.bouquets.radio
-                    show(bouquets)
-                }
+            services.bouquets(forceRefresh).collect { load ->
+                when (load) {
+                    is BouquetListLoad.Loaded -> {
+                        bouquets = load.bouquets.tv + load.bouquets.radio
+                        bouquetsLive = !load.cached
+                        show(bouquets)
+                    }
 
-                is BouquetListLoad.Failed -> fail(load.error.contentErrorText())
+                    is BouquetListLoad.Failed -> fail(load.error.contentErrorText())
+                }
             }
         }
     }
 
-    private fun loadChannels() {
+    private fun loadChannels(forceRefresh: Boolean = false) {
         val ref = _uiState.value.bouquet?.ref ?: return
         startLoading()
         loadJob = viewModelScope.launch {
-            when (val load = services.services(ref)) {
-                // Without markers; a channel the bouquet lists twice is one target.
-                is ServiceListLoad.Services -> show(
-                    ZapListMapper.rowsFrom(load.services).distinctBy { it.reference }
-                )
+            services.services(ref, forceRefresh).collect { load ->
+                when (load) {
+                    // Without markers; a channel the bouquet lists twice is one target.
+                    is ServiceListLoad.Services -> show(
+                        ZapListMapper.rowsFrom(load.services).distinctBy { it.reference }
+                    )
 
-                is ServiceListLoad.Failed -> fail(load.error.contentErrorText())
+                    is ServiceListLoad.Failed -> fail(load.error.contentErrorText())
+                }
             }
         }
     }

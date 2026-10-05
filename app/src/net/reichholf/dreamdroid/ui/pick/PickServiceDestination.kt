@@ -27,7 +27,7 @@ fun PickServiceDestination(
 
     DreamDroidPullRefresh(
         refreshing = uiState.refreshing,
-        onRefresh = viewModel::reload,
+        onRefresh = { viewModel.reload(forceRefresh = true) },
         modifier = modifier
     ) {
         PickServiceScreen(

@@ -43,7 +43,8 @@ class PickServiceViewModel @Inject constructor(private val services: ServiceRepo
         reload()
     }
 
-    fun reload() {
+    /** Loads the bouquets. Room paints first unless [forceRefresh]. */
+    fun reload(forceRefresh: Boolean = false) {
         _uiState.update {
             it.copy(
                 refreshing = true,
@@ -52,23 +53,26 @@ class PickServiceViewModel @Inject constructor(private val services: ServiceRepo
         }
         loadJob?.cancel()
         loadJob = viewModelScope.launch {
-            val next = when (val load = services.bouquets()) {
-                is BouquetListLoad.Loaded -> {
-                    val rows = load.bouquets.tv + load.bouquets.radio
-                    PickServiceUiState(
-                        items = rows,
-                        emptyMessage = if (rows.isEmpty()) {
-                            UiText.Resource(R.string.no_list_item)
-                        } else {
-                            null
-                        }
-                    )
-                }
+            services.bouquets(forceRefresh).collect { load -> apply(load) }
+        }
+    }
 
-                is BouquetListLoad.Failed ->
-                    PickServiceUiState(emptyMessage = load.error.contentErrorText())
+    private fun apply(load: BouquetListLoad) {
+        _uiState.value = when (load) {
+            is BouquetListLoad.Loaded -> {
+                val rows = load.bouquets.tv + load.bouquets.radio
+                PickServiceUiState(
+                    items = rows,
+                    emptyMessage = if (rows.isEmpty()) {
+                        UiText.Resource(R.string.no_list_item)
+                    } else {
+                        null
+                    }
+                )
             }
-            _uiState.value = next
+
+            is BouquetListLoad.Failed ->
+                PickServiceUiState(emptyMessage = load.error.contentErrorText())
         }
     }
 }
