@@ -148,11 +148,12 @@ class TimerServicePickViewModelTest {
         TimerServicePickSaved(BOUQUET.reference, BOUQUET.name).writeTo(handle)
         receiver.answer = { MockResponse().setResponseCode(500) }
         val viewModel = viewModel(handle)
-        viewModel.settled()
-        val before = viewModel.jobs()
+        // The roster paints before the receiver is asked, so settled() would return while the
+        // first request is still in flight, and reload() could cancel it unsent.
+        viewModel.joinJobsSince(emptySet())
 
         viewModel.reload()
-        viewModel.joinJobsSince(before)
+        viewModel.joinJobsSince(emptySet())
 
         val state = viewModel.uiState.value
         assertEquals(listOf("Cached HD"), state.items.map { it.name })

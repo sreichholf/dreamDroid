@@ -87,11 +87,12 @@ class PickServiceViewModelTest {
         )
         receiver.answer = { MockResponse().setResponseCode(500) }
         val viewModel = viewModel()
-        viewModel.settled()
-        val before = viewModel.jobs()
+        // The tab strip paints before the receiver is asked, so settled() would return while
+        // the first request is still in flight, and reload() could cancel it unsent.
+        viewModel.joinJobsSince(emptySet())
 
         viewModel.reload()
-        viewModel.joinJobsSince(before)
+        viewModel.joinJobsSince(emptySet())
 
         val state = viewModel.uiState.value
         assertEquals(listOf("Cached TV"), state.items.map { it.name })
