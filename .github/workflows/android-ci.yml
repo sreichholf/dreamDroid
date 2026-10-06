@@ -58,24 +58,7 @@ jobs:
       # $ANDROID_HOME/.temp/PackageOperation* entries that poison Gradle's
       # configuration-cache fingerprints across runners.
       - name: Ensure Android SDK platforms
-        run: |
-          set -euo pipefail
-          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
-            echo "ANDROID_HOME/SDK root missing" >&2
-            exit 1
-          fi
-          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
-          if [[ -z "$SDKMANAGER" ]]; then
-            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
-            ls -la "$SDK" >&2 || true
-            exit 1
-          fi
-          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
-          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0"
-          rm -rf "$SDK/.temp"
+        uses: ./.github/actions/ensure-android-sdk
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -99,17 +82,10 @@ jobs:
       # -Pci disables ABI splits (one APK). androidTest compile catches broken
       # Compose tests without an emulator.
       # spotlessCheck: ktlint android_studio (Google Android Kotlin) on the Kotlin source roots (app/src, app/test, app/androidTest).
-      - name: Unit tests + compile androidTest
-        run: >
-          ./gradlew -Pci --no-configuration-cache
-          spotlessCheck
-          :app:testGoogleDebugUnitTest
-          :app:compileGoogleDebugAndroidTestKotlin
-          :app:compileGoogleDebugAndroidTestJavaWithJavac
-
       # Lint errors fail the build (abortOnError); warnings are reported only.
-      - name: Lint googleDebug
-        run: ./gradlew -Pci --no-configuration-cache :app:lintGoogleDebug
+      # The check list lives in the prCheck task in app/build.gradle.kts.
+      - name: PR checks (prCheck)
+        run: ./gradlew -Pci --no-configuration-cache :app:prCheck
 
       # Phone-installable arm64 APK: main pushes, PRs (so Cloud/device smoke
       # without local emulator), or workflow_dispatch with upload_apk=true.
@@ -179,24 +155,7 @@ jobs:
           distribution: temurin
 
       - name: Ensure Android SDK platforms
-        run: |
-          set -euo pipefail
-          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          if [[ -z "$SDK" || ! -d "$SDK" ]]; then
-            echo "ANDROID_HOME/SDK root missing" >&2
-            exit 1
-          fi
-          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
-          if [[ -z "$SDKMANAGER" ]]; then
-            echo "sdkmanager not found under $SDK/cmdline-tools" >&2
-            ls -la "$SDK" >&2 || true
-            exit 1
-          fi
-          # Image has 34+; AGP still auto-fetches platform 33 mid-build and leaves
-          # $SDK/.temp/PackageOperation* fingerprints that poison config-cache.
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0"
-          rm -rf "$SDK/.temp"
+        uses: ./.github/actions/ensure-android-sdk
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -362,13 +321,7 @@ jobs:
           distribution: temurin
 
       - name: Ensure Android SDK platforms
-        run: |
-          set -euo pipefail
-          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
-          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
-          yes | "$SDKMANAGER" --licenses >/dev/null || true
-          "$SDKMANAGER" "platforms;android-33" "platforms;android-34" "platforms;android-36" "platforms;android-37.0" "build-tools;36.0.0"
-          rm -rf "$SDK/.temp"
+        uses: ./.github/actions/ensure-android-sdk
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6

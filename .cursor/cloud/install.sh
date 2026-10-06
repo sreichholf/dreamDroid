@@ -10,15 +10,8 @@ JAVA_HOME_25="/usr/lib/jvm/java-25-openjdk-amd64"
 CMDLINE_TOOLS_VERSION="11076708"
 AVD_NAME="dreamdroid-verify"
 SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
-SDK_PACKAGES=(
-  "platform-tools"
-  "platforms;android-34"
-  "platforms;android-36"
-  "platforms;android-37.0"
-  "build-tools;36.0.0"
-  "emulator"
-  "$SYSTEM_IMAGE"
-)
+mapfile -t SDK_PACKAGES < <(grep -Ev '^[[:space:]]*(#|$)' "$REPO_ROOT/scripts/android-sdk-packages.txt")
+SDK_PACKAGES+=("platform-tools" "emulator" "$SYSTEM_IMAGE")
 ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
 
 echo "== install: system packages (JDK 25, KVM, tools) =="

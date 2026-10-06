@@ -13,15 +13,8 @@ REPO_ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && 
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
 JAVA_HOME_25="/usr/lib/jvm/java-25-openjdk-amd64"
 CMDLINE_TOOLS_VERSION="11076708"
-# Same platforms/build-tools as android-ci.yml.
-SDK_PACKAGES=(
-  "platform-tools"
-  "platforms;android-33"
-  "platforms;android-34"
-  "platforms;android-36"
-  "platforms;android-37.0"
-  "build-tools;36.0.0"
-)
+mapfile -t SDK_PACKAGES < <(grep -Ev '^[[:space:]]*(#|$)' "$REPO_ROOT/scripts/android-sdk-packages.txt")
+SDK_PACKAGES+=("platform-tools")
 
 SUDO=""
 if [ "$(id -u)" -ne 0 ]; then
