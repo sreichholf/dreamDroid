@@ -1,0 +1,22 @@
+name: Ensure Android SDK platforms
+description: Install scripts/android-sdk-packages.txt into the runner's preinstalled SDK.
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        set -euo pipefail
+        SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-}}"
+        if [[ -z "$SDK" || ! -d "$SDK" ]]; then
+          echo "ANDROID_HOME/SDK root missing" >&2
+          exit 1
+        fi
+        SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | sort | tail -n1 || true)"
+        if [[ -z "$SDKMANAGER" ]]; then
+          echo "sdkmanager not found under $SDK/cmdline-tools" >&2
+          ls -la "$SDK" >&2 || true
+          exit 1
+        fi
+        yes | "$SDKMANAGER" --licenses >/dev/null || true
+        grep -Ev '^[[:space:]]*(#|$)' "$GITHUB_WORKSPACE/scripts/android-sdk-packages.txt" | xargs "$SDKMANAGER"
+        rm -rf "$SDK/.temp"

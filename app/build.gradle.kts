@@ -263,3 +263,15 @@ androidComponents {
         }
     }
 }
+
+tasks.register("prCheck") {
+    group = "verification"
+    description = "What the PR job in .github/workflows/android-ci.yml runs."
+    dependsOn(
+        rootProject.tasks.named("spotlessCheck"),
+        "testGoogleDebugUnitTest",
+        "compileGoogleDebugAndroidTestKotlin",
+        "compileGoogleDebugAndroidTestJavaWithJavac",
+        "lintGoogleDebug",
+    )
+}
