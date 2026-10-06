@@ -116,8 +116,12 @@ class HubMovieListViewModelTest {
     fun failurePaintsSnapshot() = runTest {
         receiver.movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
         receiver.answer = { MockResponse().setResponseCode(500) }
+        val viewModel = viewModel()
+        // The snapshot paints before the receiver is asked, so settled() would return while
+        // the first request is still in flight, and reload() could cancel it unsent.
+        receiver.takeRequests(1)
 
-        val state = viewModel().reloaded()
+        val state = viewModel.reloaded()
 
         assertEquals(listOf("Cached"), state.items.map { it.title })
         assertNull(state.emptyMessage)
