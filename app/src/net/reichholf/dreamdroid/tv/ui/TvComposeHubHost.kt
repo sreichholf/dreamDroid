@@ -30,6 +30,7 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed as gridItemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,7 +44,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -77,6 +80,7 @@ import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
+import net.reichholf.dreamdroid.ui.services.nowProgress
 import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
@@ -247,7 +251,12 @@ data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext
 /** 5% focus scale needs inset so the first grid row is not clipped by the title. */
 private val HubGridItemSpacing = 24.dp
 private val HubGridFocusInset = 16.dp
-internal val HubServiceGridCardHeight = 220.dp
+
+/** One compact card size for the hub grid and the zap overlay. */
+internal val HubServiceCardHeight = 96.dp
+private val HubServiceProgressHeight = 6.dp
+private val HubServicePiconWidth = 64.dp
+private val HubServicePiconHeight = 40.dp
 
 @Composable
 fun ComposeTvHubApp(
@@ -408,7 +417,25 @@ fun ComposeTvHubChrome(
     }
 ) {
     var showStreamUnavailable by remember { mutableStateOf(false) }
+    // The standard TV drawer updates the page as focus moves between nav items. Focus
+    // that merely lands here when content changes (restoration) is not a nav move and
+    // must not select, or the hub would jump to the first bouquet.
+    var lastFocusedHeaderId by remember { mutableStateOf<String?>(null) }
     val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
+    // On start the hub focuses the first service card so the remote acts on content
+    // instead of an unclear cursor. One-shot per hub entry.
+    val initialGridFocus = remember { FocusRequester() }
+    var initialGridFocusApplied by remember { mutableStateOf(false) }
+    LaunchedEffect(selectedBouquet?.bouquet?.reference, selectedBouquet?.services?.size) {
+        if (!initialGridFocusApplied && selectedBouquet?.services?.isNotEmpty() == true) {
+            try {
+                initialGridFocus.requestFocus()
+            } catch (_: IllegalStateException) {
+                // Grid not attached yet.
+            }
+            initialGridFocusApplied = true
+        }
+    }
     val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
     val hasPaintedContent = selectedBouquet?.services?.isNotEmpty() == true ||
         (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty()) ||
@@ -445,7 +472,13 @@ fun ComposeTvHubChrome(
                     .testTag("compose_tv_hub_chrome"),
                 drawerContent = {
                     LazyColumn(
-                        modifier = Modifier.padding(vertical = 24.dp),
+                        modifier = Modifier
+                            .padding(vertical = 24.dp)
+                            .onFocusChanged { focusState ->
+                                if (!focusState.hasFocus) {
+                                    lastFocusedHeaderId = null
+                                }
+                            },
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         items(headers, key = { header -> header.id }) { header ->
@@ -465,9 +498,25 @@ fun ComposeTvHubChrome(
                                 colors = dreamDroidTvDrawerItemColors(),
                                 modifier = Modifier
                                     .testTag("hub_header_${header.id}")
+                                    .focusProperties {
+                                        // D-pad Right into a bouquet goes to its first
+                                        // service, not the toolbar (MultiEPG) action.
+                                        if (
+                                            selectedBouquet?.bouquet?.reference == header.id &&
+                                            selectedBouquet.services.isNotEmpty()
+                                        ) {
+                                            right = initialGridFocus
+                                        }
+                                    }
                                     .onFocusChanged { focusState ->
                                         if (focusState.isFocused) {
-                                            onHeaderSelected(header.id)
+                                            if (
+                                                lastFocusedHeaderId != null &&
+                                                lastFocusedHeaderId != header.id
+                                            ) {
+                                                onHeaderSelected(header.id)
+                                            }
+                                            lastFocusedHeaderId = header.id
                                         }
                                     }
                             ) {
@@ -564,7 +613,11 @@ fun ComposeTvHubChrome(
                             modifier = Modifier.testTag("hub_error")
                         )
                     }
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                    ) {
                         if (selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID) {
                             timerContent()
                         } else if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
@@ -582,6 +635,7 @@ fun ComposeTvHubChrome(
                                 bouquetRef = selectedBouquet.bouquet.reference,
                                 services = selectedBouquet.services,
                                 onServiceClick = gatedServiceClick,
+                                firstItemFocusRequester = initialGridFocus,
                                 onServiceInfo = onServiceInfo
                             )
                         } else if (movieDir != null) {
@@ -888,8 +942,12 @@ fun HubServiceGrid(
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
     modifier: Modifier = Modifier,
+    firstItemFocusRequester: FocusRequester? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null
 ) {
+    val firstCardIndex = services.indexOfFirst { service ->
+        !tvHubDrawsMarkerHeader(service.serviceReference)
+    }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
         horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
@@ -914,11 +972,16 @@ fun HubServiceGrid(
                     GridItemSpan(1)
                 }
             }
-        ) { _, service ->
+        ) { index, service ->
             HubBouquetServiceItem(
                 service = service,
                 bouquetRef = bouquetRef,
                 onServiceClick = onServiceClick,
+                modifier = if (index == firstCardIndex && firstItemFocusRequester != null) {
+                    Modifier.focusRequester(firstItemFocusRequester)
+                } else {
+                    Modifier
+                },
                 fillWidth = true,
                 contentExpanded = true,
                 onInfo = onServiceInfo
@@ -936,7 +999,7 @@ private fun HubBouquetServiceItem(
     modifier: Modifier = Modifier,
     onFocused: (() -> Unit)? = null,
     fillWidth: Boolean = false,
-    contentExpanded: Boolean = false,
+    contentExpanded: Boolean = true,
     onInfo: ((ServiceNowNext, String?) -> Unit)? = null
 ) {
     if (tvHubDrawsMarkerHeader(service.serviceReference)) {
@@ -1014,11 +1077,12 @@ private fun HubServiceCard(
         nextStart = next.startTimeReadable
         nextTitle = next.title
     }
+    val progress = nowProgress(now)
     Surface(
         onClick = onClick,
         modifier = modifier
             .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(200.dp))
-            .then(if (fillWidth) Modifier.height(HubServiceGridCardHeight) else Modifier)
+            .height(HubServiceCardHeight)
             .testTag("hub_service_card")
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
@@ -1044,25 +1108,48 @@ private fun HubServiceCard(
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape()
     ) {
-        Column(modifier = if (fillWidth) Modifier.fillMaxSize() else Modifier) {
-            PiconImage(
-                reference = service.serviceReference,
-                name = service.serviceName,
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (progress.isKnown) {
+                // Card-top strip: opt out of the Material 3 track, gap and stop indicator,
+                // like the phone service row.
+                LinearProgressIndicator(
+                    progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(HubServiceProgressHeight)
+                        .testTag("hub_service_progress"),
+                    color = MaterialTheme.colorScheme.primary,
+                    trackColor = Color.Transparent,
+                    strokeCap = StrokeCap.Butt,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
+                )
+            }
+            Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .testTag("hub_service_picon")
-            )
-            ImageCardContent(
-                title = title,
-                contentPrimary = contentPrimary,
-                nextStart = nextStart,
-                nextTitle = nextTitle,
-                contentExpanded = contentExpanded,
-                fillWidth = fillWidth,
-                imageWidthPx = imageWidthPx,
-                modifier = if (fillWidth) Modifier.weight(1f) else Modifier
-            )
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PiconImage(
+                    reference = service.serviceReference,
+                    name = service.serviceName,
+                    modifier = Modifier
+                        .padding(end = 12.dp)
+                        .size(width = HubServicePiconWidth, height = HubServicePiconHeight)
+                        .testTag("hub_service_picon")
+                )
+                ImageCardContent(
+                    title = title,
+                    contentPrimary = contentPrimary,
+                    nextStart = nextStart,
+                    nextTitle = nextTitle,
+                    contentExpanded = contentExpanded,
+                    fillWidth = true,
+                    imageWidthPx = imageWidthPx,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }

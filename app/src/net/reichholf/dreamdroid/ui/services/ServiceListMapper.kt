@@ -2,10 +2,40 @@ package net.reichholf.dreamdroid.ui.services
 
 import android.util.Log
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.DateTime
 import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
+
+/**
+ * The current programme's progress in minutes. [max] and [elapsed] are 0 when the now
+ * event has no usable start/duration. Shared by the phone service row and the TV card.
+ */
+data class NowProgress(val max: Int, val elapsed: Int) {
+    val isKnown: Boolean
+        get() = max > 0
+}
+
+fun nowProgress(now: Event?): NowProgress {
+    if (
+        now == null ||
+        now.duration.isEmpty() ||
+        now.start.isEmpty() ||
+        now.duration == Python.NONE ||
+        now.start == Python.NONE
+    ) {
+        return NowProgress(0, 0)
+    }
+    return try {
+        val max = (now.duration.toDouble() / 60).toLong().toInt()
+        val elapsed = max - DateTime.getRemaining(now.duration, now.start, now.currentTime)
+        NowProgress(max, elapsed.coerceAtLeast(0))
+    } catch (e: Exception) {
+        Log.e(DreamDroid.LOG_TAG, e.toString())
+        NowProgress(0, 0)
+    }
+}
 
 fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListItem> =
     rows.mapIndexed {
@@ -21,18 +51,7 @@ fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListIte
 
             else -> {
                 val now = row.now
-                var max = 0
-                var cur = 0
-                if (now != null && now.duration.isNotEmpty() && now.start.isNotEmpty() &&
-                    now.duration != Python.NONE && now.start != Python.NONE
-                ) {
-                    try {
-                        max = (now.duration.toDouble() / 60).toLong().toInt()
-                        cur = max - DateTime.getRemaining(now.duration, now.start, now.currentTime)
-                    } catch (e: Exception) {
-                        Log.e(DreamDroid.LOG_TAG, e.toString())
-                    }
-                }
+                val progress = nowProgress(now)
                 ServiceListItem(
                     index = index,
                     reference = ref,
@@ -44,8 +63,8 @@ fun serviceListItemsFromNowNext(rows: List<ServiceNowNext>): List<ServiceListIte
                     nextTitle = row.next?.title.orEmpty(),
                     nextStart = row.next?.startTimeReadable.orEmpty(),
                     nextDuration = row.next?.durationReadable.orEmpty(),
-                    progressMax = max,
-                    progress = cur.coerceAtLeast(0)
+                    progressMax = progress.max,
+                    progress = progress.elapsed
                 )
             }
         }

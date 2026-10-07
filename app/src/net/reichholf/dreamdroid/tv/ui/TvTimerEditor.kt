@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.LocalActivity
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.input.TextFieldState
@@ -14,6 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.Service
@@ -87,10 +89,19 @@ fun TvTimerEditorContent(
 ) {
     var pickingService by remember { mutableStateOf(false) }
     var showNeedsReceiver by remember { mutableStateOf(false) }
+    val firstFieldFocus = remember { FocusRequester() }
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
-    Box(modifier = modifier.fillMaxSize()) {
+    LaunchedEffect(Unit) {
+        try {
+            firstFieldFocus.requestFocus()
+        } catch (_: IllegalStateException) {
+            // Editor not attached yet.
+        }
+    }
+
+    Box(modifier = modifier.fillMaxSize().focusGroup()) {
         if (pickingService) {
             TvTimerServicePick(
                 viewModelKey = servicePickKey,
@@ -108,6 +119,7 @@ fun TvTimerEditorContent(
                 actions = actions,
                 onPickService = { pickingService = true },
                 showSaveFab = true,
+                firstFieldFocusRequester = firstFieldFocus,
                 onSave = {
                     if (uiState.mutationsBlocked) {
                         showNeedsReceiver = true

@@ -279,11 +279,13 @@ class ComposeTvHubServiceRowTest {
                         .padding(12.dp)
                         .width(240.dp)
                         .height(240.dp)
+                        .testTag("card_parent")
                 ) {
                     HubServiceRow(
                         bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
                         services = listOf(service),
-                        onServiceClick = { _, _ -> }
+                        onServiceClick = { _, _ -> },
+                        modifier = Modifier.padding(24.dp)
                     )
                 }
             }
@@ -310,12 +312,31 @@ class ComposeTvHubServiceRowTest {
 
         node.requestFocus()
         composeRule.waitForIdle()
-        val focused = node.captureToImage().asAndroidBitmap()
-        val focusedCorner = Color(focused.getPixel(1, 1))
+        // The 1.05 focus scale draws the card past its layout bounds, so a capture of the
+        // card node fills its corners. Scan the parent capture for the card's drawn
+        // top-left and check the corner just inside it is parent, not card.
+        val parentNode = composeRule.onNodeWithTag("card_parent")
+        val parentImage = parentNode.captureToImage().asAndroidBitmap()
+        val cardMidX = parentImage.width / 2
+        val fill = Color(parentImage.getPixel(cardMidX, 120))
+        fun isFill(x: Int, y: Int): Boolean =
+            rgbDistance(Color(parentImage.getPixel(x, y)).toArgb(), fill.toArgb()) < 60
+        var top = 0
+        while (top < parentImage.height && !isFill(cardMidX, top)) top++
+        var left = 0
+        val probeY = (top + 60).coerceAtMost(parentImage.height - 1)
+        while (left < parentImage.width && !isFill(left, probeY)) left++
+        val focusedCorner = Color(
+            parentImage.getPixel(
+                left.coerceIn(0, parentImage.width - 1),
+                (top + 2).coerceIn(0, parentImage.height - 1)
+            )
+        )
         assertTrue(
             "focused card must keep rounded corners " +
                 "corner=#${Integer.toHexString(focusedCorner.toArgb())}",
-            rgbDistance(focusedCorner.toArgb(), parent.toArgb()) < 80
+            rgbDistance(focusedCorner.toArgb(), parent.toArgb()) <
+                rgbDistance(focusedCorner.toArgb(), fill.toArgb())
         )
     }
 
