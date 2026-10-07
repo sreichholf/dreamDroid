@@ -14,7 +14,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
@@ -27,11 +29,13 @@ import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -45,7 +49,10 @@ class ComposeTvHubChromeTest {
     fun forceAlwaysNight() {
         PreferenceManager.getDefaultSharedPreferences(
             InstrumentationRegistry.getInstrumentation().targetContext
-        ).edit().putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1").commit()
+        ).edit()
+            .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "1")
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
+            .commit()
     }
 
     @Test
@@ -109,7 +116,7 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun multiEpgDrawerFocusSelectsBouquetGrid() {
+    fun movingBetweenDrawerHeadersSelectsBouquetGrid() {
         var selected by mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID)
         val rows = demoMultiEpgBouquetRows()
         composeRule.setContent {
@@ -126,6 +133,11 @@ class ComposeTvHubChromeTest {
                 bouquetRows = rows
             )
         }
+        // The standard TV drawer updates the page when focus moves from one nav item to
+        // another; landing on the first item is not a move.
+        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).requestFocus()
+        composeRule.waitForIdle()
+        assertEquals(TvComposeHubHost.HEADER_SETTINGS_ID, selected)
         val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
         header.assertExists()
         header.requestFocus()
@@ -142,6 +154,77 @@ class ComposeTvHubChromeTest {
         composeRule.onAllNodesWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
     }
+
+    @Test
+    fun firstServiceCardIsFocusedForTheSelectedBouquet() {
+        val rows = demoMultiEpgBouquetRows()
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name),
+                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
+                ),
+                selectedHeaderId = rows[0].bouquet.reference,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                bouquetRows = rows
+            )
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("hub_service_card", useUnmergedTree = true).assertIsFocused()
+    }
+
+    @Test
+    fun serviceCardsShareOneHeight() {
+        showBouquetGrid(bouquetWithAndWithoutNow())
+        composeRule.waitForIdle()
+        val cards = composeRule.onAllNodesWithTag("hub_service_card", useUnmergedTree = true)
+        cards.assertCountEquals(2)
+        cards[0].assertHeightIsEqualTo(HubServiceCardHeight)
+        cards[1].assertHeightIsEqualTo(HubServiceCardHeight)
+    }
+
+    @Test
+    fun serviceCardShowsCurrentProgramProgressOnlyWhenKnown() {
+        showBouquetGrid(bouquetWithAndWithoutNow())
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithTag("hub_service_progress", useUnmergedTree = true)
+            .assertCountEquals(1)
+    }
+
+    private fun showBouquetGrid(rows: List<HubBouquetRow>) {
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name),
+                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
+                ),
+                selectedHeaderId = rows[0].bouquet.reference,
+                onHeaderSelected = {},
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                bouquetRows = rows
+            )
+        }
+    }
+
+    private fun bouquetWithAndWithoutNow(): List<HubBouquetRow> = listOf(
+        HubBouquetRow(
+            bouquet = Service("1:7:1:0:0:0:0:0:0:0:Favourites", "Favourites"),
+            services = listOf(
+                ServiceNowNext(
+                    serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+                    serviceName = "With now",
+                    now = Event(title = "Now", start = "100", duration = "60", currentTime = "100")
+                ),
+                ServiceNowNext(
+                    serviceReference = "1:0:1:2:1:1:1:0:0:0:",
+                    serviceName = "Without now"
+                )
+            )
+        )
+    )
 
     @Test
     fun multiEpgBouquetCardClickOpensGraph() {
@@ -254,9 +337,9 @@ class ComposeTvHubChromeTest {
         composeRule.onNodeWithTag("hub_placeholder_row", useUnmergedTree = true).assertExists()
     }
 
-    /** D-pad TV: focusing a header selects that row without requiring a click. */
+    /** D-pad TV: moving focus from one drawer item to another selects that row. */
     @Test
-    fun headerFocusInvokesCallback() {
+    fun movingDrawerFocusInvokesCallback() {
         var selected: String? = null
         composeRule.setContent {
             ComposeTvHubChrome(
@@ -270,6 +353,10 @@ class ComposeTvHubChromeTest {
                 onSettingsClick = {}
             )
         }
+        // Entering the drawer on its first item is not a nav move, so it must not select.
+        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).requestFocus()
+        composeRule.waitForIdle()
+        assertNull(selected)
         val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
         node.assertExists()
         node.requestFocus()

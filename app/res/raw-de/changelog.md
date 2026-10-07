@@ -21,6 +21,7 @@
 * UPD: Benötigt Android 8.0 oder neuer
 * DEL: Eingebauter Mediaplayer / Playlist-Browser
 * FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
+* UPD: Android-TV-Senderkarten sind kompakt, mit vorangestelltem Picon und Fortschrittsbalken für die laufende Sendung
 * FIX: diverse kleinere Probleme
 
 ## 1.15.460

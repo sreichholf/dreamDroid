@@ -18,6 +18,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -69,7 +71,8 @@ fun TimerEditContent(
     onPickService: () -> Unit,
     modifier: Modifier = Modifier,
     showSaveFab: Boolean = false,
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
+    firstFieldFocusRequester: FocusRequester? = null
 ) {
     val form = uiState.form(name.text) ?: return
     var picker by remember { mutableStateOf<TimerEditPick?>(null) }
@@ -87,6 +90,7 @@ fun TimerEditContent(
         showSaveFab = showSaveFab,
         mutating = uiState.progress != null,
         onSave = onSave,
+        firstFieldFocusRequester = firstFieldFocusRequester,
         modifier = modifier
     )
 
@@ -177,7 +181,8 @@ fun TimerEditScreen(
     saveError: String? = null,
     showSaveFab: Boolean = true,
     mutating: Boolean = false,
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
+    firstFieldFocusRequester: FocusRequester? = null
 ) {
     val resources = LocalResources.current
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
@@ -222,7 +227,9 @@ fun TimerEditScreen(
                 EditOutlinedTextField(
                     state = name,
                     label = stringResource(R.string.title),
-                    contentDescription = "Title"
+                    contentDescription = "Title",
+                    modifier =
+                        firstFieldFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                 )
                 EditOutlinedTextField(
                     state = description,
