@@ -46,58 +46,36 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
+      # Same-repo PRs may write caches; forks stay read-only.
+      - name: Set up build
+        uses: ./.github/actions/setup-build
         with:
-          java-version: "25"
-          distribution: temurin
-
-      # ubuntu-latest already ships Android SDK + ANDROID_HOME. Do not use
-      # setup-android (re-downloads cmdline-tools / emulator). Preinstall the
-      # platform AGP still auto-fetches mid-build (33) so it cannot create
-      # $ANDROID_HOME/.temp/PackageOperation* entries that poison Gradle's
-      # configuration-cache fingerprints across runners.
-      - name: Ensure Android SDK platforms
-        uses: ./.github/actions/ensure-android-sdk
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          # Open-source cache provider (v6 default pulls proprietary gradle-actions-caching).
-          cache-provider: basic
-          # Same-repo PRs may write caches; forks stay read-only.
-          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
-
-      # Sonatype rate-limits Maven Central per egress IP (429s on shared
-      # runners). After setup-gradle so its cache restore cannot drop it.
-      - name: Resolve Maven Central through Google's mirror
-        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+          gradle-cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
 
       # --no-configuration-cache: restoring a project config-cache across GHA
       # runners cost ~26m validating an entry that then invalidated on an SDK
       # .temp path; dependency/build caches already make the real work ~30s.
-      # -Pci disables ABI splits (one APK). androidTest compile catches broken
-      # Compose tests without an emulator.
-      # spotlessCheck: ktlint android_studio (Google Android Kotlin) on the Kotlin source roots (app/src, app/test, app/androidTest).
-      # Lint errors fail the build (abortOnError); warnings are reported only.
-      # The check list lives in the prCheck task in app/build.gradle.kts.
-      - name: PR checks (prCheck)
-        run: ./gradlew -Pci --no-configuration-cache :app:prCheck
+      # The check list lives in the prTests task in app/build.gradle.kts.
+      # androidTest compile catches broken Compose tests without an emulator.
+      # Phone-installable arm64 APK: main pushes, PRs (device smoke without a
+      # local build), or workflow_dispatch with upload_apk. -Parm64Apk builds
+      # one ABI split (~57MB); splits only affect packaging, not the checks.
+      - name: Unit tests (prTests) + arm64 APK
+        env:
+          ASSEMBLE: ${{ github.event_name != 'workflow_dispatch' || inputs.upload_apk }}
+        run: |
+          tasks=(:app:prTests)
+          [[ "$ASSEMBLE" == true ]] && tasks+=(:app:assembleGoogleDebug)
+          ./gradlew --no-configuration-cache -Parm64Apk "${tasks[@]}"
 
-      # Phone-installable arm64 APK: main pushes, PRs (so Cloud/device smoke
-      # without local emulator), or workflow_dispatch with upload_apk=true.
-      # -Parm64Apk builds one ABI split (~57MB), not fat -Pci.
-      - name: Assemble googleDebug arm64 APK
-        if: >-
-          github.event_name == 'push' ||
-          github.event_name == 'pull_request' ||
-          (github.event_name == 'workflow_dispatch' && inputs.upload_apk)
-        run: >
-          ./gradlew --no-configuration-cache -Parm64Apk
-          :app:assembleGoogleDebug
+      # Only main saves: a PR's entry is visible to that PR alone and would
+      # count against the repo's 10 GB cache quota.
+      - name: Save Gradle build cache
+        if: github.event_name == 'push'
+        uses: actions/cache/save@v5
+        with:
+          path: ~/.gradle/caches/build-cache-1
+          key: gradle-build-cache-${{ github.sha }}
 
       - name: Upload googleDebug arm64 APK
         if: >-
@@ -119,7 +97,39 @@ jobs:
           path: |
             app/build/reports/tests/testGoogleDebugUnitTest/
             app/build/test-results/testGoogleDebugUnitTest/
-            app/build/reports/lint-results-googleDebug.html
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Runs beside the unit job so lint does not compete with tests and dexing
+  # for the runner's 4 vCPUs. Not on main pushes: the merged PR already ran it.
+  lint:
+    name: Lint + spotless
+    if: >-
+      github.event_name != 'push' &&
+      (github.event.action != 'edited' || github.event.changes.base.ref.from != '')
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up build
+        uses: ./.github/actions/setup-build
+        with:
+          gradle-cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
+
+      # spotlessCheck: ktlint android_studio (Google Android Kotlin) on the Kotlin source roots (app/src, app/test, app/androidTest).
+      # Lint errors fail the build (abortOnError); warnings are reported only.
+      # -Parm64Apk as in the unit job: the main compile's cache key depends on it.
+      - name: Lint + spotless (prLint)
+        run: ./gradlew --no-configuration-cache -Parm64Apk :app:prLint
+
+      - name: Upload lint report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-googleDebug.html
           if-no-files-found: ignore
           retention-days: 14
 
@@ -148,27 +158,8 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          java-version: "25"
-          distribution: temurin
-
-      - name: Ensure Android SDK platforms
-        uses: ./.github/actions/ensure-android-sdk
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-provider: basic
-
-      # Sonatype rate-limits Maven Central per egress IP (429s on shared
-      # runners). After setup-gradle so its cache restore cannot drop it.
-      - name: Resolve Maven Central through Google's mirror
-        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+      - name: Set up build
+        uses: ./.github/actions/setup-build
 
       # Build before the emulator boots so it does not compete for the runner's CPUs.
       # -Pci disables ABI splits so connectedAndroidTest installs one APK.
@@ -314,31 +305,13 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Set up JDK 25
-        uses: actions/setup-java@v5
-        with:
-          java-version: "25"
-          distribution: temurin
-
-      - name: Ensure Android SDK platforms
-        uses: ./.github/actions/ensure-android-sdk
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v6
-        with:
-          cache-provider: basic
-
-      # Sonatype rate-limits Maven Central per egress IP (429s on shared
-      # runners). After setup-gradle so its cache restore cannot drop it.
-      - name: Resolve Maven Central through Google's mirror
-        run: install -D -m 644 scripts/gradle/maven-central-mirror.init.gradle.kts ~/.gradle/init.d/maven-central-mirror.init.gradle.kts
+      - name: Set up build
+        uses: ./.github/actions/setup-build
 
       # ABI splits on (no -Pci): the x86_64 split's versionCode (9×10⁷ + base)
       # must beat 1.15's x86_64 split, as on Play.
       - name: Assemble 2.0 googleDebug + androidTest
-        run: |
-          chmod +x gradlew
-          ./gradlew --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+        run: ./gradlew --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
 
       - name: Download 1.15 APK
         uses: actions/download-artifact@v7

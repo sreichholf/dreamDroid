@@ -264,14 +264,24 @@ androidComponents {
     }
 }
 
-tasks.register("prCheck") {
+tasks.register("prTests") {
     group = "verification"
-    description = "What the PR job in .github/workflows/android-ci.yml runs."
+    description = "What the unit job in .github/workflows/android-ci.yml runs."
     dependsOn(
-        rootProject.tasks.named("spotlessCheck"),
         "testGoogleDebugUnitTest",
         "compileGoogleDebugAndroidTestKotlin",
         "compileGoogleDebugAndroidTestJavaWithJavac",
-        "lintGoogleDebug",
     )
+}
+
+tasks.register("prLint") {
+    group = "verification"
+    description = "What the lint job in .github/workflows/android-ci.yml runs."
+    dependsOn(rootProject.tasks.named("spotlessCheck"), "lintGoogleDebug")
+}
+
+tasks.register("prCheck") {
+    group = "verification"
+    description = "Everything the PR jobs in .github/workflows/android-ci.yml run."
+    dependsOn("prTests", "prLint")
 }
