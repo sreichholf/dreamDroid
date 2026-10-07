@@ -36,6 +36,8 @@ spotless {
 
 allprojects {
     tasks.withType<Test>().configureEach {
-        forkEvery = 100L
+        // One core left for Gradle measured fastest on the 4-vCPU CI runner; past ~10 forks
+        // each JVM gets too few test classes to pay back its startup.
+        maxParallelForks = (Runtime.getRuntime().availableProcessors() - 1).coerceIn(1, 8)
     }
 }

@@ -7,7 +7,7 @@ Modernization plan and remaining work: [`docs/modernize-dreamdroid.md`](docs/mod
 ## Before you open a PR
 
 1. `./gradlew spotlessApply` on every Kotlin file you touched; keep its output.
-2. `./gradlew -Pci --no-configuration-cache :app:prCheck` (`gradlew.bat` on Windows) — the exact checks the PR job runs: spotless, JVM tests, androidTest compile, lint. CI runs the same task, so do not assemble the task list from memory.
+2. `./gradlew -Pci --no-configuration-cache :app:prCheck` (`gradlew.bat` on Windows) — the exact checks the PR jobs run: spotless, JVM tests, androidTest compile, lint. CI runs the same tasks, so do not assemble the task list from memory.
 3. Phone UI changed? Write or update the instrumented test (see **Tests**). Run it locally on a device/emulator, or trigger `workflow_dispatch` on `android-ci.yml` — the emulator job does not run on PRs.
 4. Touched Room, DataStore, legacy SharedPreferences, or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
 5. User-visible change? Add a line to both changelogs (see **Changelog and strings**).
@@ -99,10 +99,10 @@ Three ways to build the APK; each exists for a reason, do not unify them:
 | Flag | Output | Used by |
 | --- | --- | --- |
 | *(none)* | ABI splits (one APK per ABI) | release, `upgrade115` job, `.cursor/cloud/connected-test.sh` (streams the x86_64 split) |
-| `-Pci` | one fat universal APK (~196 MB) | PR job and emulator job on GitHub Actions, so UTP can install one APK |
-| `-Parm64Apk` | one arm64-v8a APK (~57 MB) | `dreamdroid-google-debug-apk` artifact on PRs and `main` pushes (phone smoke test without a local build), `workflow_dispatch` with `upload_apk` |
+| `-Pci` | one fat universal APK (~196 MB) | emulator job on GitHub Actions, so UTP can install one APK |
+| `-Parm64Apk` | one arm64-v8a APK (~57 MB) | `unit` and `lint` jobs; `unit` uploads it as the `dreamdroid-google-debug-apk` artifact on PRs and `main` pushes (phone smoke test without a local build) and on `workflow_dispatch` with `upload_apk` |
 
-**PR job (`unit`)** — on every PR: `./gradlew -Pci --no-configuration-cache :app:prCheck` (the aggregate task in `app/build.gradle.kts`; change the check list there, nowhere else), then builds the arm64 artifact. Lint errors fail the build (`abortOnError`); warnings are reported only. Runs with `--no-configuration-cache` on purpose (restoring a config-cache across runners cost more than it saved).
+**PR jobs (`unit`, `lint`)** — two parallel jobs on every PR. `unit` runs `./gradlew --no-configuration-cache -Parm64Apk :app:prTests :app:assembleGoogleDebug`; `lint` runs `:app:prLint` (spotless + Android lint) with the same flags. `prCheck` is `prTests` + `prLint`; all three are in `app/build.gradle.kts`, so change the check lists there, nowhere else. ABI splits only affect packaging, so `-Pci` and `-Parm64Apk` run the same checks. Lint errors fail the build (`abortOnError`); warnings are reported only. `main` pushes run `unit` only, since the merged PR ran lint, and save Gradle's build cache for the next PRs. Shared setup (JDK, SDK, Gradle, caches) is the composite action `.github/actions/setup-build`. Runs with `--no-configuration-cache` on purpose (restoring a config-cache across runners cost more than it saved).
 
 **Emulator job (`androidTest`)** — on `main` pushes and `workflow_dispatch`, not on PRs. Three shards boot from a cached AVD snapshot that `.github/emulator/settle-snapshot.sh` takes only after the framework is up. Bump `AVD_SNAPSHOT_VERSION` in `android-ci.yml` (the cache key suffix) whenever the snapshot step or that script changes. If your change needs the emulator before merge, trigger the dispatch and link the run in the PR.
 
