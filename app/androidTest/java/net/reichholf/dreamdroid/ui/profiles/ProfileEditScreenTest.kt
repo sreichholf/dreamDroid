@@ -75,7 +75,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithContentDescription("Hostname or IP").assertIsDisplayed()
         composeRule.onNodeWithText("443").assertIsDisplayed()
         composeRule.onAllNodesWithText("https", substring = false).onFirst().assertIsDisplayed()
-        composeRule.onNodeWithText("Enable Login").assertIsDisplayed()
+        composeRule.onNodeWithText("Enable Login").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Streaming").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("Port (Movies)").performScrollTo().assertIsDisplayed()
@@ -196,11 +196,13 @@ class ProfileEditScreenTest {
         }
 
         composeRule.onNodeWithText("User").assertDoesNotExist()
-        composeRule.onNodeWithText("Enable Login").performClick()
-        composeRule.onNodeWithText("User").assertIsDisplayed()
-        composeRule.onNodeWithText("Password").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Show password").assertIsDisplayed()
-        composeRule.onNodeWithText("root").assertIsDisplayed()
+        composeRule.onNodeWithText("Enable Login").performScrollTo().performClick()
+        composeRule.onNodeWithText("User").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Password").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(
+            "Show password"
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("root").performScrollTo().assertIsDisplayed()
 
         composeRule.onNodeWithText("Port (Live)").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Stream mode").performScrollTo().performClick()
@@ -211,7 +213,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("554").assertIsDisplayed()
 
         composeRule.onNodeWithText("Encoder user").assertDoesNotExist()
-        composeRule.onAllNodesWithText("Enable Login")[1].performClick()
+        composeRule.onAllNodesWithText("Enable Login")[1].performScrollTo().performClick()
         composeRule.onNodeWithText("Encoder user").performScrollTo().assertIsDisplayed()
     }
 
@@ -287,7 +289,7 @@ class ProfileEditScreenTest {
         composeRule.onNodeWithText("Living Room").assertIsDisplayed()
         composeRule.onNodeWithText("192.168.1.50").assertIsDisplayed()
         composeRule.onNodeWithText("8080").assertIsDisplayed()
-        composeRule.onNodeWithText("User").assertIsDisplayed()
+        composeRule.onNodeWithText("User").performScrollTo().assertIsDisplayed()
         composeRule.onNodeWithText("admin").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Save").assertIsDisplayed()
     }
@@ -327,8 +329,9 @@ class ProfileEditScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("All certificates").assertIsDisplayed().assertIsOff()
-        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("All certificates").performScrollTo().assertIsDisplayed()
+            .assertIsOff()
+        composeRule.onNodeWithText("All certificates").performScrollTo().performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertIsDisplayed()
         composeRule.onNodeWithText(
             "dreamDroid will not verify this profile's HTTPS certificate. " +
@@ -350,7 +353,7 @@ class ProfileEditScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("All certificates").performScrollTo().performClick()
         composeRule.onNodeWithText("Enable").performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
         composeRule.onNodeWithText("All certificates").assertIsOn()
@@ -433,11 +436,11 @@ class ProfileEditScreenTest {
             }
         }
 
-        composeRule.onNodeWithText("All certificates").assertIsOn()
+        composeRule.onNodeWithText("All certificates").performScrollTo().assertIsOn()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
-        composeRule.onNodeWithText("All certificates").performClick()
+        composeRule.onNodeWithText("All certificates").performScrollTo().performClick()
         composeRule.onNodeWithText("Trust all certificates?").assertDoesNotExist()
-        composeRule.onNodeWithText("All certificates").assertIsOff()
+        composeRule.onNodeWithText("All certificates").performScrollTo().assertIsOff()
         assertFalse(form.trustAllCerts)
     }
 

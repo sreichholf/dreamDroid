@@ -3,7 +3,9 @@ package net.reichholf.dreamdroid.ui.multiepg
 import android.graphics.Bitmap
 import android.graphics.Color as AndroidColor
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -889,22 +891,27 @@ class MultiEpgScreenTest {
         var spanSec = 0L
         composeRule.setContent {
             DreamDroidTheme {
-                MultiEpgScreen(
-                    bouquetName = "Favourites",
-                    channels = channels,
-                    timelineStartSec = start,
-                    timelineEndSec = start + 6L * 3600L,
-                    nowSec = start + 60,
-                    loading = false,
-                    errorMessage = null,
-                    onJumpToNow = {},
-                    onEventClick = {},
-                    onVisibleWindow = { visStart, visEnd ->
-                        spanSec = visEnd - visStart
-                    },
-                    visibleMinutes = visibleMinutes,
-                    onVisibleMinutesChange = { visibleMinutes = it }
-                )
+                // Phone-width viewport: the visible MultiEPG span scales with width, so the
+                // 2h zoom must stay narrower than the test's 3h "late" bar.
+                Box(modifier = Modifier.width(411.dp).height(891.dp)) {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = channels,
+                        timelineStartSec = start,
+                        timelineEndSec = start + 6L * 3600L,
+                        nowSec = start + 60,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                        onVisibleWindow = { visStart, visEnd ->
+                            spanSec = visEnd - visStart
+                        },
+                        visibleMinutes = visibleMinutes,
+                        onVisibleMinutesChange = { visibleMinutes = it },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
             }
         }
         composeRule.waitUntil(5_000) { spanSec > 0L }
