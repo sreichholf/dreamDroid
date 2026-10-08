@@ -17,12 +17,16 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasAnyDescendant
+import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performScrollToIndex
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
@@ -173,6 +177,89 @@ class ComposeTvHubChromeTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithTag("hub_service_card", useUnmergedTree = true).assertIsFocused()
+    }
+
+    /**
+     * D-pad Right from the selected bouquet returns to the card focused last, even after the
+     * grid scrolled the first card out of the composition.
+     */
+    @Test
+    fun dpadRightFromTheSelectedBouquetReturnsToTheLastFocusedCard() {
+        val bouquet = Service("1:7:1:0:0:0:0:0:0:0:Favourites", "Favourites")
+        val rows = listOf(
+            HubBouquetRow(
+                bouquet = bouquet,
+                services = (1..60).map { n ->
+                    ServiceNowNext(
+                        serviceReference = "1:0:1:$n:1:1:1:0:0:0:",
+                        serviceName = "Channel $n"
+                    )
+                }
+            )
+        )
+        showBouquetGrid(rows)
+        composeRule.onNodeWithTag("hub_service_grid").performScrollToIndex(45)
+        val target = composeRule.onNode(
+            hasTestTag("hub_service_card") and hasAnyDescendant(hasText("Channel 46")),
+            useUnmergedTree = true
+        )
+        target.requestFocus()
+        composeRule.waitForIdle()
+
+        val header = composeRule.onNodeWithTag(
+            "hub_header_${bouquet.reference}",
+            useUnmergedTree = true
+        )
+        header.requestFocus()
+        composeRule.waitForIdle()
+        header.performKeyInput { pressKey(Key.DirectionRight) }
+        composeRule.waitForIdle()
+
+        target.assertIsFocused()
+    }
+
+    /** Rows that load after the user moved through the drawer must not pull focus out of it. */
+    @Test
+    fun movingThroughTheDrawerSuppressesTheInitialCardFocus() {
+        val favourites = HubBouquetRow(
+            bouquet = Service("1:7:1:0:0:0:0:0:0:0:Favourites", "Favourites"),
+            services = emptyList()
+        )
+        val sports = HubBouquetRow(
+            bouquet = Service("1:7:1:0:0:0:0:0:0:0:Sports", "Sports"),
+            services = listOf(
+                ServiceNowNext(serviceReference = "1:0:1:1:1:1:1:0:0:0:", serviceName = "Sport 1")
+            )
+        )
+        var selected by mutableStateOf(favourites.bouquet.reference)
+        composeRule.setContent {
+            ComposeTvHubChrome(
+                headers = listOf(
+                    HubNavHeader(favourites.bouquet.reference, favourites.bouquet.name),
+                    HubNavHeader(sports.bouquet.reference, sports.bouquet.name)
+                ),
+                selectedHeaderId = selected,
+                onHeaderSelected = { selected = it },
+                settingsItems = emptyList(),
+                onSettingsClick = {},
+                bouquetRows = listOf(favourites, sports)
+            )
+        }
+        composeRule.onNodeWithTag(
+            "hub_header_${favourites.bouquet.reference}",
+            useUnmergedTree = true
+        )
+            .requestFocus()
+        composeRule.waitForIdle()
+        val sportsHeader = composeRule.onNodeWithTag(
+            "hub_header_${sports.bouquet.reference}",
+            useUnmergedTree = true
+        )
+        sportsHeader.requestFocus()
+        composeRule.waitForIdle()
+
+        assertEquals(sports.bouquet.reference, selected)
+        sportsHeader.assertIsFocused()
     }
 
     @Test

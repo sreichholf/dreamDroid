@@ -38,11 +38,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
@@ -258,6 +260,9 @@ private val HubServiceProgressHeight = 6.dp
 private val HubServicePiconWidth = 64.dp
 private val HubServicePiconHeight = 40.dp
 
+/** Zap overlay row card: wide enough for text next to the leading picon. */
+private val HubServiceRowCardWidth = 280.dp
+
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
@@ -423,17 +428,15 @@ fun ComposeTvHubChrome(
     var lastFocusedHeaderId by remember { mutableStateOf<String?>(null) }
     val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
     // On start the hub focuses the first service card so the remote acts on content
-    // instead of an unclear cursor. One-shot per hub entry.
-    val initialGridFocus = remember { FocusRequester() }
-    var initialGridFocusApplied by remember { mutableStateOf(false) }
-    LaunchedEffect(selectedBouquet?.bouquet?.reference, selectedBouquet?.services?.size) {
-        if (!initialGridFocusApplied && selectedBouquet?.services?.isNotEmpty() == true) {
-            try {
-                initialGridFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // Grid not attached yet.
-            }
-            initialGridFocusApplied = true
+    // instead of an unclear cursor. One-shot per hub entry, and never once the user has
+    // moved through the drawer, so late-loading rows do not pull focus out of it.
+    val serviceGridFocus = remember { FocusRequester() }
+    var initialGridFocusDone by remember { mutableStateOf(false) }
+    LaunchedEffect(selectedBouquet?.bouquet?.reference, selectedBouquet?.services?.isNotEmpty()) {
+        if (!initialGridFocusDone && selectedBouquet?.services?.isNotEmpty() == true) {
+            // The grid composes its cards during layout; wait for that frame.
+            withFrameNanos {}
+            initialGridFocusDone = serviceGridFocus.requestFocus()
         }
     }
     val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
@@ -499,13 +502,14 @@ fun ComposeTvHubChrome(
                                 modifier = Modifier
                                     .testTag("hub_header_${header.id}")
                                     .focusProperties {
-                                        // D-pad Right into a bouquet goes to its first
-                                        // service, not the toolbar (MultiEPG) action.
+                                        // D-pad Right into a bouquet goes to its grid (last
+                                        // focused card, else the first), not the toolbar
+                                        // (MultiEPG) action.
                                         if (
                                             selectedBouquet?.bouquet?.reference == header.id &&
                                             selectedBouquet.services.isNotEmpty()
                                         ) {
-                                            right = initialGridFocus
+                                            right = serviceGridFocus
                                         }
                                     }
                                     .onFocusChanged { focusState ->
@@ -514,6 +518,7 @@ fun ComposeTvHubChrome(
                                                 lastFocusedHeaderId != null &&
                                                 lastFocusedHeaderId != header.id
                                             ) {
+                                                initialGridFocusDone = true
                                                 onHeaderSelected(header.id)
                                             }
                                             lastFocusedHeaderId = header.id
@@ -635,7 +640,7 @@ fun ComposeTvHubChrome(
                                 bouquetRef = selectedBouquet.bouquet.reference,
                                 services = selectedBouquet.services,
                                 onServiceClick = gatedServiceClick,
-                                firstItemFocusRequester = initialGridFocus,
+                                focusRequester = serviceGridFocus,
                                 onServiceInfo = onServiceInfo
                             )
                         } else if (movieDir != null) {
@@ -942,12 +947,13 @@ fun HubServiceGrid(
     services: List<ServiceNowNext>,
     onServiceClick: (ServiceNowNext, String?) -> Unit,
     modifier: Modifier = Modifier,
-    firstItemFocusRequester: FocusRequester? = null,
+    focusRequester: FocusRequester? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null
 ) {
     val firstCardIndex = services.indexOfFirst { service ->
         !tvHubDrawsMarkerHeader(service.serviceReference)
     }
+    val firstCardFocus = remember { FocusRequester() }
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = 200.dp),
         horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
@@ -961,6 +967,16 @@ fun HubServiceGrid(
         modifier = modifier
             .fillMaxSize()
             .testTag("hub_service_grid")
+            .then(
+                if (focusRequester != null) {
+                    // Entering the grid returns to the card focused last, else the first.
+                    Modifier
+                        .focusRequester(focusRequester)
+                        .focusRestorer(firstCardFocus)
+                } else {
+                    Modifier
+                }
+            )
     ) {
         gridItemsIndexed(
             services,
@@ -977,8 +993,8 @@ fun HubServiceGrid(
                 service = service,
                 bouquetRef = bouquetRef,
                 onServiceClick = onServiceClick,
-                modifier = if (index == firstCardIndex && firstItemFocusRequester != null) {
-                    Modifier.focusRequester(firstItemFocusRequester)
+                modifier = if (index == firstCardIndex) {
+                    Modifier.focusRequester(firstCardFocus)
                 } else {
                     Modifier
                 },
@@ -1081,7 +1097,9 @@ private fun HubServiceCard(
     Surface(
         onClick = onClick,
         modifier = modifier
-            .then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(200.dp))
+            .then(
+                if (fillWidth) Modifier.fillMaxWidth() else Modifier.width(HubServiceRowCardWidth)
+            )
             .height(HubServiceCardHeight)
             .testTag("hub_service_card")
             .onFocusChanged { focusState ->

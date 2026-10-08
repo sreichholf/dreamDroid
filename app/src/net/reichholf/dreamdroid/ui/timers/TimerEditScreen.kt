@@ -72,7 +72,7 @@ fun TimerEditContent(
     modifier: Modifier = Modifier,
     showSaveFab: Boolean = false,
     onSave: () -> Unit = {},
-    firstFieldFocusRequester: FocusRequester? = null
+    initialFocusRequester: FocusRequester? = null
 ) {
     val form = uiState.form(name.text) ?: return
     var picker by remember { mutableStateOf<TimerEditPick?>(null) }
@@ -90,7 +90,7 @@ fun TimerEditContent(
         showSaveFab = showSaveFab,
         mutating = uiState.progress != null,
         onSave = onSave,
-        firstFieldFocusRequester = firstFieldFocusRequester,
+        initialFocusRequester = initialFocusRequester,
         modifier = modifier
     )
 
@@ -182,7 +182,7 @@ fun TimerEditScreen(
     showSaveFab: Boolean = true,
     mutating: Boolean = false,
     onSave: () -> Unit = {},
-    firstFieldFocusRequester: FocusRequester? = null
+    initialFocusRequester: FocusRequester? = null
 ) {
     val resources = LocalResources.current
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
@@ -227,9 +227,7 @@ fun TimerEditScreen(
                 EditOutlinedTextField(
                     state = name,
                     label = stringResource(R.string.title),
-                    contentDescription = "Title",
-                    modifier =
-                        firstFieldFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+                    contentDescription = "Title"
                 )
                 EditOutlinedTextField(
                     state = description,
@@ -237,10 +235,14 @@ fun TimerEditScreen(
                     singleLine = false,
                     contentDescription = "Description"
                 )
+                // Initial focus goes to the first control that is not a text field, so
+                // opening the editor on a TV does not pop up the soft keyboard.
                 EditSwitchRow(
                     checked = form.enabled,
                     onCheckedChange = actions::onEnabledChange,
-                    label = stringResource(R.string.enabled)
+                    label = stringResource(R.string.enabled),
+                    modifier =
+                        initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                 )
                 EditSwitchRow(
                     checked = form.zap,

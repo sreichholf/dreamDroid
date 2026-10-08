@@ -89,15 +89,16 @@ fun TvTimerEditorContent(
 ) {
     var pickingService by remember { mutableStateOf(false) }
     var showNeedsReceiver by remember { mutableStateOf(false) }
-    val firstFieldFocus = remember { FocusRequester() }
+    val initialFocus = remember { FocusRequester() }
+    val formShown = !pickingService && uiState.timer != null
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
-    LaunchedEffect(Unit) {
-        try {
-            firstFieldFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Editor not attached yet.
+    // The form takes focus when it appears (also after the service picker), so focus does
+    // not fall back to the hub drawer when the opening button leaves the composition.
+    LaunchedEffect(formShown) {
+        if (formShown) {
+            initialFocus.requestFocus()
         }
     }
 
@@ -119,7 +120,7 @@ fun TvTimerEditorContent(
                 actions = actions,
                 onPickService = { pickingService = true },
                 showSaveFab = true,
-                firstFieldFocusRequester = firstFieldFocus,
+                initialFocusRequester = initialFocus,
                 onSave = {
                     if (uiState.mutationsBlocked) {
                         showNeedsReceiver = true
