@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.PiconSeed
 import net.reichholf.dreamdroid.ui.setup.matchesSeededDemo
 import net.reichholf.dreamdroid.ui.setup.soleSeededDemo
 
@@ -200,6 +201,24 @@ class ProfileRepository @Inject constructor(
 
     suspend fun profile(id: Int): Profile? = store.profile(id)
 
+    /**
+     * A new, unsaved profile seeded with the device's default online picon settings, so a
+     * fresh install keeps the behavior the global setting had before it moved onto the
+     * profile (TV defaults to online picons).
+     */
+    fun newProfile(): Profile = Profile.getDefault().also(::applyDefaultPiconSettings)
+
+    /**
+     * The device's online picon settings for a profile that has none of its own: a new one,
+     * or one imported from before they moved onto the profile.
+     */
+    fun piconDefaults(): PiconSeed = store.piconDefaults()
+
+    /** Seeds [profile]'s online picon settings from [piconDefaults]. */
+    fun applyDefaultPiconSettings(profile: Profile) {
+        piconDefaults().applyTo(profile)
+    }
+
     /** The remembered active profile id, else the live one. Null when neither is set. */
     fun activeProfileId(): Int? = store.activeId().takeIf { it > 0 } ?: current.value?.id
 
@@ -283,7 +302,7 @@ class ProfileRepository @Inject constructor(
         }
         soleSeededDemo(store.profiles())?.let { store.delete(it) }
         if (store.profiles().isEmpty()) {
-            val candidate = store.legacyProfile()
+            val candidate = store.legacyProfile().also(::applyDefaultPiconSettings)
             if (!candidate.matchesSeededDemo()) {
                 val newId = store.add(candidate).toInt()
                 setCurrentLocked(newId, forceEvent = true)
@@ -402,6 +421,9 @@ interface ProfileStore {
     /** The debug setting that logs receiver XML. */
     fun xmlDebug(): Boolean
 
+    /** The global online picon settings a profile without its own starts from (TV: online). */
+    fun piconDefaults(): PiconSeed
+
     /** The single-receiver settings of dreamDroid 1.x, as an unsaved profile. */
     fun legacyProfile(): Profile
 }
@@ -449,6 +471,8 @@ class RoomProfileStore @Inject constructor(
     }
 
     override fun xmlDebug(): Boolean = preferences.getBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, false)
+
+    override fun piconDefaults(): PiconSeed = PiconSeed.from(preferences)
 
     override fun legacyProfile(): Profile {
         val sp = preferences

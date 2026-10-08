@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.profiles
 
 import androidx.lifecycle.ViewModel
+import androidx.preference.PreferenceManager
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -10,6 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
@@ -123,6 +125,25 @@ class ProfilesViewModelTest {
         assertNull(state.discovered)
         assertEquals(listOf("dm920", "dm7080"), profiles.profiles().map { it.name })
         assertEquals(namedMessage(R.string.profile_added, "dm920', 'dm7080"), state.userMessage)
+    }
+
+    @Test
+    fun discoveredProfilesGetTheGlobalOnlinePiconSettings() = runTest {
+        PreferenceManager.getDefaultSharedPreferences(testProfiles.context).edit()
+            .putBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, true)
+            .putString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/media/hdd/picon")
+            .commit()
+        found = { listOf(receiver("dm920", "10.0.0.9")) }
+        val viewModel = viewModel()
+        viewModel.detectDevices()
+        viewModel.uiState.first { it.discovered != null }
+
+        viewModel.addAllDetected()
+        viewModel.uiState.first { it.profiles.size == 1 }
+
+        val saved = profiles.profiles().single()
+        assertTrue(saved.piconsOnline)
+        assertEquals("/media/hdd/picon", saved.piconsOnlinePath)
     }
 
     private fun viewModel() = ProfilesViewModel(

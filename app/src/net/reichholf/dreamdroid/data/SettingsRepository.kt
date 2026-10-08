@@ -36,7 +36,6 @@ data class AppSettings(
     val gridMaxCols: String = "-1",
     val multiEpgTextSize: String = MultiEpgTextSize.DEFAULT.prefValue,
     val picons: Boolean = false,
-    val piconsOnline: Boolean = false,
     val useNameAsPiconFilename: Boolean = false,
     val syncPiconsPath: String = "/usr/share/enigma2/picon",
     val enableDeveloper: Boolean = false,
@@ -101,7 +100,6 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DEFAULTS.multiEpgTextSize
         ),
         picons = bool(DreamDroid.PREFS_KEY_PICONS_ENABLED, DEFAULTS.picons),
-        piconsOnline = bool(DreamDroid.PREFS_KEY_PICONS_ONLINE, DEFAULTS.piconsOnline),
         useNameAsPiconFilename = bool(
             DreamDroid.PREFS_KEY_PICONS_USE_NAME,
             DEFAULTS.useNameAsPiconFilename
@@ -203,7 +201,6 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS to AppSettings::dynamicThemeColors,
             DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS to AppSettings::enableAnimations,
             DreamDroid.PREFS_KEY_PICONS_ENABLED to AppSettings::picons,
-            DreamDroid.PREFS_KEY_PICONS_ONLINE to AppSettings::piconsOnline,
             DreamDroid.PREFS_KEY_PICONS_USE_NAME to AppSettings::useNameAsPiconFilename,
             DreamDroid.PREFS_KEY_ENABLE_DEVELOPER_SETTINGS to AppSettings::enableDeveloper,
             DreamDroid.PREFS_KEY_FAKE_PICON to AppSettings::fakePicon,

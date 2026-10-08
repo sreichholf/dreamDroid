@@ -288,6 +288,10 @@
     <string name="enable_animations">Enable animations</string>
     <string name="use_name_as_picon_filename_long">Use service name as file name for picons</string>
     <string name="use_name_as_picon_filename">Picons by service name</string>
+    <string name="picons_online_use_name">Use service name for online picons</string>
+    <string name="picons_online_use_name_summary">Requests online picons by service name instead of the service reference.</string>
+    <string name="picons_offline_global_hint">Synced (offline) picons and the sync itself use the global picon settings.</string>
+    <string name="picons_profiles_hint">Profiles choose whether to use online picons and how they are named.</string>
     <string name="picons">Picons</string>
     <string name="developer_settings">Developer settings</string>
     <string name="dump_xml">Dump xml content</string>

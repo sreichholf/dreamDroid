@@ -58,7 +58,7 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
     }
 
     private suspend fun syncPicons() {
-        val localPath = Picon.getBasepath(applicationContext)
+        val localPath = Picon.localDir(applicationContext)
         val remotePath = PreferenceManager.getDefaultSharedPreferences(applicationContext)
             .getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
         Log.i(TAG, "Syncing from $remotePath to $localPath")

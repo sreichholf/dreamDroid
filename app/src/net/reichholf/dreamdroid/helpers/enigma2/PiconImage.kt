@@ -9,8 +9,9 @@ import coil3.compose.AsyncImage
 import net.reichholf.dreamdroid.R
 
 /**
- * Compose picon loaded with Coil. Hidden when picons are disabled or the URI
- * cannot be resolved. Failed loads show [R.drawable.dreamdroid_logo_simple].
+ * Compose picon loaded with Coil; [PiconImageLoader] picks the current profile's online or
+ * synced picon. Hidden when picons are disabled or the service has neither reference nor
+ * name. Failed loads show [R.drawable.dreamdroid_logo_simple].
  */
 @Composable
 fun PiconImage(
@@ -23,9 +24,11 @@ fun PiconImage(
 ) {
     val context = LocalContext.current
     PiconImageLoader.install(context)
-    val model = Picon.resolveLoadModel(context, reference, name) ?: return
+    if (!Picon.enabled(context) || (reference == null && name == null)) {
+        return
+    }
     AsyncImage(
-        model = model,
+        model = PiconKey(reference, name),
         contentDescription = contentDescription,
         error = painterResource(R.drawable.dreamdroid_logo_simple),
         contentScale = ContentScale.Fit,

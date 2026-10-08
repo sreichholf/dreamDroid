@@ -7,6 +7,7 @@ import com.google.gson.JsonParser
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.Profile
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -27,7 +28,45 @@ import org.junit.jupiter.api.Test
  */
 class AppDatabaseMigrationTest {
     @Test
-    fun migratesV1ProfileThroughVersion12() {
+    fun migratesV1ProfileThroughVersion13() {
+        withMigratedV12 { connection ->
+            runBlocking {
+                AppDatabase.migration12To13(
+                    PiconSeed(
+                        online = false,
+                        onlineUseName = false,
+                        onlinePath = Profile.DEFAULT_PICON_PATH
+                    )
+                ).migrate(connection)
+            }
+            assertProfileColumn(connection, "picons_online", expected = 0L)
+            assertProfileColumn(connection, "picons_online_use_name", expected = 0L)
+            assertProfileTextColumn(
+                connection,
+                "picons_online_path",
+                Profile.DEFAULT_PICON_PATH
+            )
+            assertTableMatchesSchema(connection, "profile", SCHEMA_13)
+        }
+    }
+
+    @Test
+    fun migrationSeedsTheOnlinePiconSettingsFromTheGlobalSettings() {
+        withMigratedV12 { connection ->
+            runBlocking {
+                AppDatabase.migration12To13(
+                    PiconSeed(online = true, onlineUseName = true, onlinePath = "/media/hdd/picon")
+                ).migrate(connection)
+            }
+            assertProfileColumn(connection, "picons_online", expected = 1L)
+            assertProfileColumn(connection, "picons_online_use_name", expected = 1L)
+            assertProfileTextColumn(connection, "picons_online_path", "/media/hdd/picon")
+            assertTableMatchesSchema(connection, "profile", SCHEMA_13)
+        }
+    }
+
+    /** Migrates a version-1 profile file to version 12 and runs [block] on it. */
+    private fun withMigratedV12(block: (SQLiteConnection) -> Unit) {
         val dbFile = Files.createTempFile("dreambox-v1", ".db")
         Files.delete(dbFile)
         try {
@@ -62,6 +101,7 @@ class AppDatabaseMigrationTest {
                 runBlocking { AppDatabase.MIGRATION_11_12.migrate(connection) }
                 assertStreamSslOff(connection)
                 assertTableMatchesSchema(connection, "profile", SCHEMA_12)
+                block(connection)
             }
         } finally {
             deleteSqliteFiles(dbFile)
@@ -128,6 +168,28 @@ class AppDatabaseMigrationTest {
         connection.prepare("SELECT DISTINCT stream_ssl FROM profile").use { statement ->
             assertTrue(statement.step())
             assertEquals(0L, statement.getLong(0))
+            assertFalse(statement.step())
+        }
+    }
+
+    /** Every existing profile has the same [expected] value in [column]. */
+    private fun assertProfileColumn(connection: SQLiteConnection, column: String, expected: Long) {
+        connection.prepare("SELECT DISTINCT `$column` FROM profile").use { statement ->
+            assertTrue(statement.step())
+            assertEquals(expected, statement.getLong(0))
+            assertFalse(statement.step())
+        }
+    }
+
+    /** Every existing profile has the same [expected] text in [column]. */
+    private fun assertProfileTextColumn(
+        connection: SQLiteConnection,
+        column: String,
+        expected: String
+    ) {
+        connection.prepare("SELECT DISTINCT `$column` FROM profile").use { statement ->
+            assertTrue(statement.step())
+            assertEquals(expected, statement.getText(0))
             assertFalse(statement.step())
         }
     }
@@ -310,6 +372,8 @@ class AppDatabaseMigrationTest {
         private const val SCHEMA_11 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/11.json"
 
         private const val SCHEMA_12 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/12.json"
+
+        private const val SCHEMA_13 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/13.json"
 
         /** A version-10 timer snapshot row, from before dreamDroid kept VPS. */
         private val V10_TIMER_LIST_ROW =

@@ -130,7 +130,12 @@ class ProfilesViewModel @Inject constructor(
         val found = detected ?: return
         dismissDiscovery()
         viewModelScope.launch {
-            withContext(Dispatchers.IO) { found.forEach { profiles.save(it) } }
+            withContext(Dispatchers.IO) {
+                found.forEach {
+                    profiles.applyDefaultPiconSettings(it)
+                    profiles.save(it)
+                }
+            }
             val names = found.joinToString("', '") { it.name.orEmpty() }
             _uiState.update {
                 it.copy(userMessage = namedMessage(R.string.profile_added, names))

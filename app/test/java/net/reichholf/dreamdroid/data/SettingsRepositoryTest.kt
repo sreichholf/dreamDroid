@@ -75,7 +75,6 @@ class SettingsRepositoryTest {
             gridMaxCols = "3",
             multiEpgTextSize = "compact",
             picons = true,
-            piconsOnline = true,
             useNameAsPiconFilename = true,
             syncPiconsPath = "/media/hdd/picon",
             enableDeveloper = true,

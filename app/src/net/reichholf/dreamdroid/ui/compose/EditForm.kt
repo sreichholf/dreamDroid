@@ -145,13 +145,14 @@ fun EditSwitchRow(
     onCheckedChange: (Boolean) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    summary: String? = null
+    summary: String? = null,
+    enabled: Boolean = true
 ) {
     if (summary == null) {
-        SwitchToggleRow(checked, onCheckedChange, label, modifier)
+        SwitchToggleRow(checked, onCheckedChange, label, modifier, enabled)
     } else {
         Column(modifier = modifier.fillMaxWidth()) {
-            SwitchToggleRow(checked, onCheckedChange, label, Modifier)
+            SwitchToggleRow(checked, onCheckedChange, label, Modifier, enabled)
             Text(
                 text = summary,
                 style = MaterialTheme.typography.bodyMedium,
@@ -166,7 +167,8 @@ private fun SwitchToggleRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     label: String,
-    modifier: Modifier
+    modifier: Modifier,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier
@@ -176,6 +178,7 @@ private fun SwitchToggleRow(
             .toggleable(
                 value = checked,
                 onValueChange = onCheckedChange,
+                enabled = enabled,
                 role = Role.Switch
             ),
         verticalAlignment = Alignment.CenterVertically
@@ -280,6 +283,7 @@ fun EditOutlinedTextField(
     supportingText: String? = null,
     suffix: String? = null,
     inputTransformation: InputTransformation? = null,
+    enabled: Boolean = true,
     contentDescription: String = label
 ) {
     val keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
@@ -299,6 +303,7 @@ fun EditOutlinedTextField(
             label = { Text(label) },
             isError = isError,
             supportingText = supporting,
+            enabled = enabled,
             trailingIcon = {
                 PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
             },
@@ -320,6 +325,7 @@ fun EditOutlinedTextField(
             suffix = suffix?.let { suffixText ->
                 { Text(suffixText) }
             },
+            enabled = enabled,
             lineLimits = if (singleLine) {
                 TextFieldLineLimits.SingleLine
             } else {

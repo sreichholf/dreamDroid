@@ -9,6 +9,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -182,6 +183,32 @@ fun ProfileEditScreen(
                     StreamMode.Encoder -> EncoderSection(form, fields, onFormChange)
                     StreamMode.Transcoding -> TranscodingSection(form, fields, onFormChange)
                 }
+            }
+
+            EditFormSection(title = stringResource(R.string.picons)) {
+                EditSwitchRow(
+                    checked = form.piconsOnline,
+                    onCheckedChange = { onFormChange(form.copy(piconsOnline = it)) },
+                    label = stringResource(R.string.online_picons),
+                    summary = stringResource(R.string.online_picons_long)
+                )
+                EditOutlinedTextField(
+                    state = fields.piconsOnlinePath.state,
+                    label = stringResource(R.string.sync_picons_path),
+                    enabled = form.piconsOnline
+                )
+                EditSwitchRow(
+                    checked = form.piconsOnlineUseName,
+                    onCheckedChange = { onFormChange(form.copy(piconsOnlineUseName = it)) },
+                    label = stringResource(R.string.picons_online_use_name),
+                    summary = stringResource(R.string.picons_online_use_name_summary),
+                    enabled = form.piconsOnline
+                )
+                Text(
+                    text = stringResource(R.string.picons_offline_global_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
 
             if (showSaveFab) {

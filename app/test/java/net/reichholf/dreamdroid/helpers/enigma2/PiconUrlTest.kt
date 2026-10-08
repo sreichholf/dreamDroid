@@ -9,7 +9,6 @@ import net.reichholf.dreamdroid.helpers.NameValuePair
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -39,28 +38,65 @@ class PiconUrlTest {
     }
 
     @Test
-    fun onlinePiconMapper_usesTheActiveProfile() = runBlocking<Unit> {
+    fun piconMapper_onlineProfileLoadsFromItsReceiverPath() = runBlocking<Unit> {
+        val profiles = TestProfiles()
+        val profile = loginProfile(ssl = false, port = 80).apply {
+            name = "box"
+            piconsOnline = true
+            piconsOnlinePath = "/media/hdd/picon"
+        }
+        profiles.repository.save(profile)
+        assertTrue(profiles.repository.setCurrent(profile.id!!))
+
+        val mapped = map(profiles, PiconKey(REFERENCE, "Das Erste HD"))
+
+        assertEquals(pageUrl(profile, "/media/hdd/picon/$REFERENCE_FILE.png").toUri(), mapped)
+    }
+
+    @Test
+    fun piconMapper_onlineProfileNamesByServiceNameWhenItSaysSo() = runBlocking<Unit> {
+        val profiles = TestProfiles()
+        val profile = loginProfile(ssl = false, port = 80).apply {
+            name = "box"
+            piconsOnline = true
+            piconsOnlineUseName = true
+        }
+        profiles.repository.save(profile)
+        assertTrue(profiles.repository.setCurrent(profile.id!!))
+
+        val mapped = map(profiles, PiconKey(REFERENCE, "Das Erste HD"))
+
+        assertEquals(
+            pageUrl(profile, "${Profile.DEFAULT_PICON_PATH}/Das Erste HD.png").toUri(),
+            mapped
+        )
+    }
+
+    @Test
+    fun piconMapper_offlineProfileLoadsTheSyncedFile() = runBlocking<Unit> {
         val profiles = TestProfiles()
         val profile = loginProfile(ssl = false, port = 80).apply { name = "box" }
         profiles.repository.save(profile)
         assertTrue(profiles.repository.setCurrent(profile.id!!))
-        val fileName = "/usr/share/enigma2/picon/1_0_1.png"
 
-        val mapped = PiconImageLoader.onlinePiconMapper(profiles.repository)
-            .map(OnlinePicon(fileName), Options(profiles.context))
+        val mapped = map(profiles, PiconKey(REFERENCE, "Das Erste HD"))
 
-        assertEquals(pageUrl(profile, fileName).toUri(), mapped)
+        assertEquals(syncedUri(profiles), mapped)
     }
 
     @Test
-    fun onlinePiconMapper_withoutProfileLeavesThePiconUnmapped() {
+    fun piconMapper_withoutProfileLoadsTheSyncedFile() {
         val profiles = TestProfiles()
 
-        val mapped = PiconImageLoader.onlinePiconMapper(profiles.repository)
-            .map(OnlinePicon("/picon.png"), Options(profiles.context))
-
-        assertNull(mapped)
+        assertEquals(syncedUri(profiles), map(profiles, PiconKey(REFERENCE, "Das Erste HD")))
     }
+
+    private fun map(profiles: TestProfiles, key: PiconKey) =
+        PiconImageLoader.piconMapper(profiles.context, profiles.repository.current)
+            .map(key, Options(profiles.context))
+
+    private fun syncedUri(profiles: TestProfiles) =
+        "file://${Picon.localDir(profiles.context)}$REFERENCE_FILE.png".toUri()
 
     private fun pageUrl(profile: Profile, fileName: String): String =
         EnigmaUrls.page(profile, URIStore.FILE, listOf(NameValuePair("file", fileName)))
@@ -72,5 +108,10 @@ class PiconUrlTest {
         login = true
         user = "root"
         pass = "secret"
+    }
+
+    private companion object {
+        const val REFERENCE = "1:0:19:283D:3FB:1:C00000:0:0:0:"
+        const val REFERENCE_FILE = "1_0_19_283D_3FB_1_C00000_0_0_0"
     }
 }

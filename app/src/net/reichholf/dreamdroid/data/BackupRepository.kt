@@ -201,6 +201,7 @@ internal fun parseBackupImport(content: String?): BackupData? {
         val tree = JsonParser.parseString(content.orEmpty())
         upgradeStreamMode(tree)
         upgradeVpsDefault(tree)
+        upgradeOnlinePicons(tree)
         GsonBuilder().create().fromJson(tree, BackupData::class.java)
     } catch (e: JsonParseException) {
         null
@@ -246,6 +247,40 @@ private fun upgradeVpsDefault(tree: JsonElement) {
         }
     }
 }
+
+/**
+ * Files written before online picons moved onto the profile have no `piconsOnline`. Such a
+ * profile gets the file's own global `picons_online`, `use_name_as_picon_filename` and
+ * `sync_picons_path`, as Room's 12->13 migration does for saved rows; a setting the file
+ * lacks keeps the profile default.
+ */
+private fun upgradeOnlinePicons(tree: JsonElement) {
+    val root = tree as? JsonObject ?: return
+    val profiles = root.get("mProfiles") as? JsonArray ?: return
+    val settings = (root.get("mSettings") as? JsonArray)
+        ?.filterIsInstance<JsonObject>()
+        ?.mapNotNull { setting ->
+            val key = setting.primitiveString("mKey") ?: return@mapNotNull null
+            val value = setting.primitiveString("mValue") ?: return@mapNotNull null
+            key to value
+        }
+        ?.toMap()
+        .orEmpty()
+    val online = settings[DreamDroid.PREFS_KEY_PICONS_ONLINE]?.toBoolean()
+    val useName = settings[DreamDroid.PREFS_KEY_PICONS_USE_NAME]?.toBoolean()
+    val path = settings[DreamDroid.PREFS_KEY_SYNC_PICONS_PATH]?.takeIf { it.isNotBlank() }
+    for (profile in profiles.filterIsInstance<JsonObject>()) {
+        if (profile.has("piconsOnline")) {
+            continue
+        }
+        online?.let { profile.addProperty("piconsOnline", it) }
+        useName?.let { profile.addProperty("piconsOnlineUseName", it) }
+        path?.let { profile.addProperty("piconsOnlinePath", it) }
+    }
+}
+
+private fun JsonObject.primitiveString(name: String): String? =
+    get(name)?.takeIf { it.isJsonPrimitive }?.asString
 
 /** `encoderStream` next to `streamMode`: true exactly for [StreamMode.Encoder]. */
 private fun writeLegacyEncoderStream(tree: JsonElement) {

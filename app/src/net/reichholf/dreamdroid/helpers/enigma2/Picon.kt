@@ -14,43 +14,41 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.helpers.NameValuePair
 
-/** A picon on the receiver. The picon image loader turns it into the active profile's URL. */
-data class OnlinePicon(val fileName: String)
+/**
+ * A service's picon. The picon image loader resolves it against the current profile:
+ * [Picon.piconUri].
+ */
+data class PiconKey(val reference: String?, val name: String?)
 
 /**
  * @author sre
  */
 object Picon {
 
-    fun getBasepath(context: Context): String {
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        if (sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)) {
-            return String.format(
-                "%s/",
-                sp.getString(DreamDroid.PREFS_KEY_SYNC_PICONS_PATH, "/usr/share/enigma2/picon")
-            )
-        }
-
+    /** Where synced picons are stored; one shared directory for all profiles. */
+    fun localDir(context: Context): String =
         // App-specific storage: WRITE_EXTERNAL_STORAGE is a no-op when targeting 30+.
-        return String.format(
+        String.format(
             "%s%spicons%s",
             context.filesDir.absolutePath,
             File.separator,
             File.separator
         )
-    }
+
+    /** The receiver's picon directory for online picons; [path] is the profile's. */
+    fun onlineBasepath(path: String): String = String.format("%s/", path)
 
     fun getPiconFileName(
         context: Context,
+        base: String,
+        useName: Boolean,
         reference: String?,
-        name: String?,
-        useName: Boolean
+        name: String?
     ): String? {
-        val root = getBasepath(context)
         if (PreferenceManager.getDefaultSharedPreferences(context)
                 .getBoolean(DreamDroid.PREFS_KEY_FAKE_PICON, false)
         ) {
-            return String.format("%spicon_default.png", root)
+            return String.format("%spicon_default.png", base)
         }
 
         var fileName: String?
@@ -67,22 +65,37 @@ object Picon {
                 fileName = fileName.substring(0, fileName.length - 1)
             }
         }
-        fileName = String.format("%s%s.png", root, fileName)
+        fileName = String.format("%s%s.png", base, fileName)
         return fileName
     }
 
+    /** Whether picons are shown at all (global). */
+    fun enabled(context: Context): Boolean = PreferenceManager.getDefaultSharedPreferences(context)
+        .getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)
+
     /**
-     * What the picon image loader loads for a service: a `file://` URI of a synced picon, or
-     * an [OnlinePicon]. Null when picons are off.
+     * Where [key]'s picon loads from: the receiver's `/file` URL when [profile] uses online
+     * picons (with its path and naming), else a `file://` URI of the shared synced picon
+     * (named by the global `use_name_as_picon_filename`). Null when no file name can be
+     * built.
      */
-    fun resolveLoadModel(context: Context, reference: String?, name: String?): Any? {
-        val sp = PreferenceManager.getDefaultSharedPreferences(context)
-        if (!sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_ENABLED, false)) {
-            return null
+    fun piconUri(context: Context, profile: Profile?, key: PiconKey): String? {
+        if (profile?.piconsOnline == true) {
+            val fileName = getPiconFileName(
+                context,
+                onlineBasepath(profile.piconsOnlinePath),
+                profile.piconsOnlineUseName,
+                key.reference,
+                key.name
+            ) ?: return null
+            return onlinePiconUrl(profile, fileName)
         }
-        val useName = sp.getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
-        val fileName = getPiconFileName(context, reference, name, useName) ?: return null
-        return piconModel(context, fileName)
+        val useName = PreferenceManager.getDefaultSharedPreferences(context)
+            .getBoolean(DreamDroid.PREFS_KEY_PICONS_USE_NAME, false)
+        val fileName =
+            getPiconFileName(context, localDir(context), useName, key.reference, key.name)
+                ?: return null
+        return String.format("file://%s", fileName)
     }
 
     /**
@@ -98,15 +111,6 @@ object Picon {
         URIStore.FILE,
         listOf(NameValuePair("file", fileName))
     )
-
-    private fun piconModel(context: Context, fileName: String): Any {
-        if (PreferenceManager.getDefaultSharedPreferences(context)
-                .getBoolean(DreamDroid.PREFS_KEY_PICONS_ONLINE, false)
-        ) {
-            return OnlinePicon(fileName)
-        }
-        return String.format("file://%s", fileName)
-    }
 
     fun clearCache(context: Context) {
         PiconImageLoader.clearCache(context)

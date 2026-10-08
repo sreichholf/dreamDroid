@@ -109,6 +109,9 @@ class ProfileEditViewModel @Inject constructor(
     }
 
     private fun bind(next: Profile) {
+        if ((next.id ?: 0) <= 0) {
+            profiles.applyDefaultPiconSettings(next)
+        }
         fields.fill(next)
         savedStateHandle[KEY_PROFILE] = next
         val form = ProfileForm.from(next)

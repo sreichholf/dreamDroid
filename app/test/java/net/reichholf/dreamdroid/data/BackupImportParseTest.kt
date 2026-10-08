@@ -6,7 +6,9 @@ import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class BackupImportParseTest {
@@ -97,6 +99,45 @@ class BackupImportParseTest {
         val imported = checkNotNull(parseBackupImport(GsonBuilder().create().toJson(data)))
         assertEquals(StreamMode.Transcoding, imported.profiles.single().streamMode)
         assertEquals(8003, imported.profiles.single().transcodePort)
+    }
+
+    @Test
+    fun fileWithoutProfilePiconsTakesItsGlobalOnlinePiconSettings() {
+        val json = """{"mSettings":[
+            {"mKey":"picons_online","mValue":"true","mType":"Boolean"},
+            {"mKey":"use_name_as_picon_filename","mValue":"true","mType":"Boolean"},
+            {"mKey":"sync_picons_path","mValue":"/media/hdd/picon","mType":"String"}
+        ],"mProfiles":[{"name":"Old"}]}"""
+        val profile = checkNotNull(parseBackupImport(json)).profiles.single()
+        assertTrue(profile.piconsOnline)
+        assertTrue(profile.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", profile.piconsOnlinePath)
+    }
+
+    @Test
+    fun fileWithoutAnyPiconSettingKeepsTheProfileDefaults() {
+        val profile = checkNotNull(parseBackupImport("""{"mProfiles":[{"name":"Old"}]}"""))
+            .profiles.single()
+        assertFalse(profile.piconsOnline)
+        assertFalse(profile.piconsOnlineUseName)
+        assertEquals(Profile.DEFAULT_PICON_PATH, profile.piconsOnlinePath)
+    }
+
+    @Test
+    fun profilePiconSettingsWinOverTheFileGlobals() {
+        val data = BackupData()
+        data.addGenericSetting(GenericSetting("picons_online", "true", "Boolean"))
+        data.addGenericSetting(GenericSetting("sync_picons_path", "/media/hdd/picon", "String"))
+        data.addProfile(
+            Profile.getDefault().apply {
+                piconsOnline = false
+                piconsOnlinePath = "/media/usb/picon"
+            }
+        )
+        val profile = checkNotNull(parseBackupImport(GsonBuilder().create().toJson(data)))
+            .profiles.single()
+        assertFalse(profile.piconsOnline)
+        assertEquals("/media/usb/picon", profile.piconsOnlinePath)
     }
 
     private fun settingJson(type: String, value: String): String {

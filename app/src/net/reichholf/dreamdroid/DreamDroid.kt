@@ -109,7 +109,11 @@ class DreamDroid : Application() {
     private fun loadProfiles() {
         ioScope.launch {
             try {
-                DatabaseHelper.migrateIntoRoomIfNeeded(this@DreamDroid, database.profileDao())
+                DatabaseHelper.migrateIntoRoomIfNeeded(
+                    this@DreamDroid,
+                    database.profileDao(),
+                    profiles.piconDefaults()
+                )
                 profiles.loadCurrent()
                 handleProfileSwitch(this@DreamDroid)
             } catch (t: Throwable) {

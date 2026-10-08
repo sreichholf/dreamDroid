@@ -25,7 +25,9 @@ data class ProfileForm(
     val streamMode: StreamMode = StreamMode.Direct,
     val zapAndStream: Boolean = false,
     val encoderLogin: Boolean = false,
-    val vpsDefault: VpsMode = VpsMode.Off
+    val vpsDefault: VpsMode = VpsMode.Off,
+    val piconsOnline: Boolean = false,
+    val piconsOnlineUseName: Boolean = false
 ) : Serializable {
     companion object {
         fun from(profile: Profile): ProfileForm = ProfileForm(
@@ -41,7 +43,9 @@ data class ProfileForm(
             streamMode = profile.streamMode,
             zapAndStream = profile.zapAndStream,
             encoderLogin = profile.encoderLogin,
-            vpsDefault = profile.vpsDefault
+            vpsDefault = profile.vpsDefault,
+            piconsOnline = profile.piconsOnline,
+            piconsOnlineUseName = profile.piconsOnlineUseName
         )
     }
 }
@@ -75,6 +79,7 @@ class ProfileTextFields(
     val encoderVideoBitrate = textField("encoder_video_bitrate")
     val encoderAudioBitrate = textField("encoder_audio_bitrate")
     val transcodePort = textField("transcode_port")
+    val piconsOnlinePath = textField("picons_online_path")
 
     fun fill(profile: Profile) {
         name.set(profile.name.orEmpty())
@@ -93,6 +98,7 @@ class ProfileTextFields(
         encoderVideoBitrate.set(profile.encoderVideoBitrate.toString())
         encoderAudioBitrate.set(profile.encoderAudioBitrate.toString())
         transcodePort.set(profile.transcodePort.toString())
+        piconsOnlinePath.set(profile.piconsOnlinePath)
     }
 
     /** Switching https moves the port between 80 and 443. */
@@ -120,6 +126,9 @@ class ProfileTextFields(
         profile.streamMode = form.streamMode
         profile.zapAndStream = form.zapAndStream
         profile.vpsDefault = form.vpsDefault
+        profile.piconsOnline = form.piconsOnline
+        profile.piconsOnlineUseName = form.piconsOnlineUseName
+        profile.piconsOnlinePath = piconsOnlinePath.text.ifBlank { Profile.DEFAULT_PICON_PATH }
         profile.encoderPath = encoderPath.text
         profile.setEncoderPort(encoderPort.text)
         profile.encoderLogin = form.encoderLogin

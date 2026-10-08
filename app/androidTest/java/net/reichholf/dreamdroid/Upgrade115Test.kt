@@ -110,6 +110,10 @@ class Upgrade115Test {
         assertTrue(p.isDefaultProfileOnNoWifi)
         assertFalse(p.zapAndStream)
         assertEquals(VpsMode.Off, p.vpsDefault)
+        // run.sh turns on 1.15's global online picons with these values.
+        assertTrue(p.piconsOnline)
+        assertTrue(p.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", p.piconsOnlinePath)
     }
 
     private companion object {
