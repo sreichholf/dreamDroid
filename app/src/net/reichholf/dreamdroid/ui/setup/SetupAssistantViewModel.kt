@@ -197,7 +197,7 @@ class SetupAssistantViewModel @Inject constructor(
 
     private fun toProfile(name: String): Profile {
         val draft = _uiState.value.draft
-        return wizardProfile(
+        val profile = wizardProfile(
             name = name,
             host = host.text,
             port = setupPort(port.text, draft.useHttps),
@@ -207,6 +207,8 @@ class SetupAssistantViewModel @Inject constructor(
             pass = pass.text,
             trustAllCerts = draft.trustAllCerts
         )
+        profiles.applyDefaultPiconSettings(profile)
+        return profile
     }
 
     private fun clearCheckResult() {

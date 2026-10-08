@@ -12,6 +12,9 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.components.SingletonComponent
 import java.util.concurrent.ConcurrentHashMap
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
@@ -25,7 +28,7 @@ import okhttp3.Request
  *
  * Each request uses the [EnigmaOkHttp] TLS setup of the current profile, including
  * trust-all, and basic auth from the current profile, not from URL userinfo.
- * An [OnlinePicon] becomes the current profile's `/file` URL.
+ * A [PiconKey] becomes the current profile's `/file` URL or the synced file.
  */
 object PiconImageLoader {
     fun install(context: Context) {
@@ -37,7 +40,10 @@ object PiconImageLoader {
                 newImageLoader(appContext, deps.profileRepository(), deps.enigmaOkHttp())
             } catch (e: Exception) {
                 e.printStackTrace()
-                ImageLoader.Builder(appContext).build()
+                // No Hilt component (a plain Compose test): synced picons only.
+                ImageLoader.Builder(appContext)
+                    .components { add(piconMapper(appContext, MutableStateFlow(null))) }
+                    .build()
             }
         }
     }
@@ -57,17 +63,19 @@ object PiconImageLoader {
         val calls = PiconCalls(profiles, okHttp)
         return ImageLoader.Builder(context)
             .components {
-                add(onlinePiconMapper(profiles))
+                add(piconMapper(context, profiles.current))
                 add(OkHttpNetworkFetcherFactory(callFactory = { calls }))
             }
             .build()
     }
 
-    /** [OnlinePicon] to the `/file` URL of the current profile; unmapped without a profile. */
-    fun onlinePiconMapper(profiles: ProfileRepository): Mapper<OnlinePicon, Uri> =
-        Mapper { data, _ ->
-            profiles.current.value?.let { Picon.onlinePiconUrl(it, data.fileName).toUri() }
-        }
+    /**
+     * [PiconKey] to the [current] profile's picon: its receiver's `/file` URL for online
+     * picons, else the synced file. Coil keys its memory cache on the mapped URI, so profiles
+     * do not share entries.
+     */
+    fun piconMapper(context: Context, current: StateFlow<Profile?>): Mapper<PiconKey, Uri> =
+        Mapper { data, _ -> Picon.piconUri(context, current.value, data)?.toUri() }
 }
 
 /**

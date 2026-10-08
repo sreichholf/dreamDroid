@@ -83,7 +83,7 @@ class TvProfilesHostViewModel @Inject constructor(private val profiles: ProfileR
         }
         editJob?.cancel()
         editJob = null
-        open(Profile.getDefault(), TvProfilesPage.Add)
+        open(profiles.newProfile(), TvProfilesPage.Add)
     }
 
     /** Loads [profileId] for editing. Keeps the draft when that edit is already open. */

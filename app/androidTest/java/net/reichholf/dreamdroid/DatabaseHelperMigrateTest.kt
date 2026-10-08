@@ -6,6 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.room.AppDatabase
+import net.reichholf.dreamdroid.room.PiconSeed
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -36,7 +37,7 @@ class DatabaseHelperMigrateTest {
     fun missingFileDoesNotCreateDatabase() = runBlocking<Unit> {
         assertFalse(DatabaseHelper.databaseFile(context).exists())
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
-        assertEquals(0, DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao()))
+        assertEquals(0, migrate())
         assertFalse(DatabaseHelper.databaseFile(context).exists())
     }
 
@@ -111,12 +112,17 @@ class DatabaseHelperMigrateTest {
             execSQL("INSERT INTO events (id, title) VALUES (1, 'ignored')")
         }
 
-        val copied = DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao())
+        val copied = migrate(
+            PiconSeed(online = true, onlineUseName = true, onlinePath = "/media/hdd/picon")
+        )
         assertEquals(1, copied)
         val roomRow = runBlocking { room.profileDao().getProfiles().single() }
         assertEquals("Box", roomRow.name)
         assertEquals("10.0.0.2", roomRow.host)
         assertEquals(443, roomRow.port)
+        assertTrue(roomRow.piconsOnline)
+        assertTrue(roomRow.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", roomRow.piconsOnlinePath)
         assertFalse(DatabaseHelper.databaseFile(context).exists())
     }
 
@@ -125,7 +131,7 @@ class DatabaseHelperMigrateTest {
         writeLegacy {
             execSQL("CREATE TABLE profiles (_id INTEGER PRIMARY KEY, profile TEXT)")
         }
-        assertEquals(0, DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao()))
+        assertEquals(0, migrate())
         assertFalse(DatabaseHelper.databaseFile(context).exists())
     }
 
@@ -147,7 +153,7 @@ class DatabaseHelperMigrateTest {
             execSQL("INSERT INTO profiles (_id, profile, host) VALUES (1, 'Legacy', '1.2.3.4')")
         }
 
-        assertEquals(0, DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao()))
+        assertEquals(0, migrate())
         assertTrue(DatabaseHelper.databaseFile(context).exists())
         val names = runBlocking {
             room.profileDao().getProfiles().map { it.name }
@@ -162,8 +168,19 @@ class DatabaseHelperMigrateTest {
         file.writeText("not a sqlite database")
 
         assertTrue(DatabaseHelper.readProfiles(context).isEmpty())
-        assertEquals(0, DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao()))
+        assertEquals(0, migrate())
         assertTrue(file.exists())
+    }
+
+    private fun migrate(
+        picons: PiconSeed =
+            PiconSeed(
+                online = false,
+                onlineUseName = false,
+                onlinePath = Profile.DEFAULT_PICON_PATH
+            )
+    ): Int = runBlocking {
+        DatabaseHelper.migrateIntoRoomIfNeeded(context, room.profileDao(), picons)
     }
 
     private fun writeLegacy(setup: SQLiteDatabase.() -> Unit) {

@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.Manifest
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,6 +32,7 @@ import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
 import net.reichholf.dreamdroid.ui.settings.isDebuggable
+import net.reichholf.dreamdroid.ui.settings.needsNotificationPermission
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
@@ -151,6 +155,9 @@ private fun TvHubNavGraph(
 private fun TvSettingsDestination(navController: NavHostController, viewModel: SettingsViewModel) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
     LaunchedEffect(viewModel) {
         viewModel.uiState.map { it.settings }.distinctUntilChanged().drop(1).collect {
             markTvHubReload(navController.previousBackStackEntry?.savedStateHandle)
@@ -160,6 +167,12 @@ private fun TvSettingsDestination(navController: NavHostController, viewModel: S
         TvSettingsScreen(
             settings = uiState.settings,
             onChange = viewModel::update,
+            onSyncPicons = {
+                if (context.needsNotificationPermission()) {
+                    notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                viewModel.syncPicons()
+            },
             showDeveloperCategory = context.isDebuggable(),
             syncPiconsPathDraft = viewModel.syncPiconsPath.state.takeIf {
                 uiState.editingSyncPiconsPath

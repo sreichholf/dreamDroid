@@ -3,8 +3,9 @@
 #
 # For each scenario: install 1.15 (v1.15.460), cold start it so its own code creates
 # `dreambox` (Room v1), `dreamdroid` (SQLite v14) and the prefs file, seed
-# seed-profile.sql, `adb install -r` the 2.0 APK over it, cold start 2.0 from
-# the launcher, then run Upgrade115Test against the upgraded data.
+# seed-profile.sql and the global online picon prefs, `adb install -r` the 2.0 APK
+# over it, cold start 2.0 from the launcher, then run Upgrade115Test against the
+# upgraded data.
 #
 # Usage: run.sh <1.15 apk> <2.0 apk> <2.0 androidTest apk> <log dir>
 set -euo pipefail
@@ -96,9 +97,16 @@ run_scenario() {
       ;;
   esac
   as_app "sed -i 's/name=\"currentProfile\" value=\"[0-9]*\"/name=\"currentProfile\" value=\"42\"/' $PREFS"
+  # Global online picon settings of 1.15; 2.0 must carry them onto the upgraded profile.
+  for key in picons_online use_name_as_picon_filename sync_picons_path; do
+    as_app "sed -i '/name=\"$key\"/d' $PREFS"
+  done
+  as_app "sed -i 's#</map>#<boolean name=\"picons_online\" value=\"true\" /><boolean name=\"use_name_as_picon_filename\" value=\"true\" /><string name=\"sync_picons_path\">/media/hdd/picon</string></map>#' $PREFS"
   as_app "cat $PREFS" > "$LOG_DIR/$scenario-1.15-prefs.xml"
   grep -q 'name="currentProfile" value="42"' "$LOG_DIR/$scenario-1.15-prefs.xml" \
     || { echo "could not point currentProfile at 42" >&2; exit 1; }
+  grep -q 'name="picons_online" value="true"' "$LOG_DIR/$scenario-1.15-prefs.xml" \
+    || { echo "could not turn on online picons" >&2; exit 1; }
 
   adb install -r "$NEW_APK"
   adb shell "dumpsys package $PKG | grep versionName"

@@ -14,6 +14,7 @@ import android.util.Log
 import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import net.reichholf.dreamdroid.room.PiconSeed
 
 /**
  * Pre-Room `dreamdroid` SQLite. Read-only profile import for Play 1.x upgrades and
@@ -87,34 +88,41 @@ object DatabaseHelper {
      * No-op if Room already has rows or the leftover file is missing.
      * Deletes an existing leftover after a successful open, including 0 rows
      * (empty file created by the old [SQLiteOpenHelper] path).
+     *
+     * The file has no online picon settings, so each row gets [picons]: the global ones the
+     * user had, as Room's 12->13 migration gives to rows it already holds.
      */
-    suspend fun migrateIntoRoomIfNeeded(context: Context, dao: Profile.ProfileDao): Int =
-        withContext(Dispatchers.IO) {
-            if (dao.getProfiles().isNotEmpty()) {
-                return@withContext 0
-            }
-            val file = databaseFile(context)
-            if (!file.exists()) {
-                return@withContext 0
-            }
-            val profiles = try {
-                SQLiteDatabase.openDatabase(
-                    file.absolutePath,
-                    null,
-                    SQLiteDatabase.OPEN_READONLY
-                ).use { db ->
-                    readProfiles(db)
-                }
-            } catch (e: SQLiteException) {
-                Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
-                return@withContext 0
-            }
-            for (profile in profiles) {
-                profile.id = dao.addProfile(profile).toInt()
-            }
-            context.deleteDatabase(DATABASE_NAME)
-            profiles.size
+    suspend fun migrateIntoRoomIfNeeded(
+        context: Context,
+        dao: Profile.ProfileDao,
+        picons: PiconSeed
+    ): Int = withContext(Dispatchers.IO) {
+        if (dao.getProfiles().isNotEmpty()) {
+            return@withContext 0
         }
+        val file = databaseFile(context)
+        if (!file.exists()) {
+            return@withContext 0
+        }
+        val profiles = try {
+            SQLiteDatabase.openDatabase(
+                file.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY
+            ).use { db ->
+                readProfiles(db)
+            }
+        } catch (e: SQLiteException) {
+            Log.e(LOG_TAG, "migrateIntoRoomIfNeeded: leftover unreadable", e)
+            return@withContext 0
+        }
+        for (profile in profiles) {
+            picons.applyTo(profile)
+            profile.id = dao.addProfile(profile).toInt()
+        }
+        context.deleteDatabase(DATABASE_NAME)
+        profiles.size
+    }
 
     private fun readProfiles(db: SQLiteDatabase): List<Profile> {
         val list = ArrayList<Profile>()

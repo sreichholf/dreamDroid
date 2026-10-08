@@ -26,6 +26,7 @@
 * UPD: Android TV service cards are compact, with a leading picon and a progress bar for the current programme
 * FIX: Switching channels in the player no longer freezes the app ("not responding") while the previous stream closes
 * UPD: libVLC 3.7.7
+* UPD: Online picons are set per profile (on/off, remote path, by service name); your previous global setting carries over. Android TV settings can now sync picons
 * FIX: multiple smaller issues
 
 ## 1.15.460

@@ -10,6 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertTextContains
@@ -34,6 +36,7 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
@@ -438,6 +441,56 @@ class ProfileEditScreenTest {
         assertFalse(form.trustAllCerts)
     }
 
+    @Test
+    fun onlinePiconPathAndNamingAreEditableOnlyWhileOnlinePiconsAreOn() {
+        show(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        val online = composeRule.onNodeWithText(string(R.string.online_picons))
+        val path = composeRule.onNodeWithContentDescription(string(R.string.sync_picons_path))
+        val useName = composeRule.onNodeWithText(string(R.string.picons_online_use_name))
+        online.performScrollTo().assertIsOff()
+        path.performScrollTo().assertIsNotEnabled()
+        useName.performScrollTo().assertIsNotEnabled()
+
+        online.performScrollTo().performClick()
+        online.assertIsOn()
+        path.performScrollTo().assertIsEnabled()
+        useName.performScrollTo().assertIsEnabled().performClick()
+        useName.assertIsOn()
+    }
+
+    @Test
+    fun onlinePiconSettingsRoundTripThroughTheProfile() {
+        show(
+            Profile.getDefault().apply {
+                piconsOnline = true
+                piconsOnlineUseName = true
+                piconsOnlinePath = "/media/hdd/picon"
+            }
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        composeRule.onNodeWithText(string(R.string.online_picons)).performScrollTo().assertIsOn()
+        composeRule.onNodeWithText("/media/hdd/picon").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(string(R.string.picons_online_use_name)).performScrollTo()
+            .assertIsOn()
+
+        val profile = Profile.getDefault()
+        composeRule.runOnIdle { fields.applyTo(profile, form) }
+        assertTrue(profile.piconsOnline)
+        assertTrue(profile.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", profile.piconsOnlinePath)
+    }
+
     private val scope = MainScope()
     private val fields = ProfileTextFields(scope)
     private var form by mutableStateOf(ProfileForm())
@@ -446,6 +499,9 @@ class ProfileEditScreenTest {
     fun cancelFields() {
         scope.cancel()
     }
+
+    private fun string(id: Int): String =
+        InstrumentationRegistry.getInstrumentation().targetContext.getString(id)
 
     private fun show(profile: Profile) {
         form = ProfileForm.from(profile)

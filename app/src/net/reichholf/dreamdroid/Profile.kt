@@ -169,6 +169,26 @@ class Profile : Serializable {
     @ColumnInfo(name = "vps_default", defaultValue = "'Off'")
     var vpsDefault: VpsMode = VpsMode.Off
 
+    /**
+     * Load picons for this profile from the receiver over HTTP instead of the shared
+     * synced files. [piconsOnlinePath] is the receiver's picon directory and
+     * [piconsOnlineUseName] picks the matching key; both apply only while this is on.
+     * Synced (offline) picons and the sync itself stay global.
+     */
+    @ColumnInfo(name = "picons_online", defaultValue = "0")
+    var piconsOnline: Boolean = false
+
+    /** The receiver's picon directory for [piconsOnline]. */
+    @ColumnInfo(name = "picons_online_path", defaultValue = "'/usr/share/enigma2/picon'")
+    var piconsOnlinePath: String = DEFAULT_PICON_PATH
+
+    /**
+     * Request online picons by service name instead of reference. Offline (synced) picons
+     * and the sync itself stay global; only this online naming is per receiver.
+     */
+    @ColumnInfo(name = "picons_online_use_name", defaultValue = "0")
+    var piconsOnlineUseName: Boolean = false
+
     constructor()
 
     @Ignore
@@ -413,6 +433,9 @@ class Profile : Serializable {
         private const val serialVersionUID: Long = 8176949133234868302L
 
         const val DEFAULT_TRANSCODE_PORT: Int = 8002
+
+        /** Default receiver picon directory, for online picons and the sync. */
+        const val DEFAULT_PICON_PATH: String = "/usr/share/enigma2/picon"
 
         @Ignore
         fun getDefault(): Profile = Profile(

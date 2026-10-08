@@ -1130,7 +1130,13 @@ class MultiEpgScreenTest {
         enableLocalPicons()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val path = checkNotNull(
-            Picon.getPiconFileName(context, serviceRef, serviceName, false)
+            Picon.getPiconFileName(
+                context,
+                Picon.localDir(context),
+                useName = false,
+                reference = serviceRef,
+                name = serviceName
+            )
         )
         val file = File(path)
         file.parentFile?.mkdirs()

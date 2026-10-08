@@ -29,6 +29,9 @@ class TestContext : ContextWrapper(null) {
     private val cacheDirectory by lazy {
         Files.createTempDirectory("dreamdroid-cache").toFile().apply { deleteOnExit() }
     }
+    private val filesDirectory by lazy {
+        Files.createTempDirectory("dreamdroid-files").toFile().apply { deleteOnExit() }
+    }
 
     @Suppress("DEPRECATION")
     private val resources = object : Resources(null, null, null) {
@@ -46,6 +49,8 @@ class TestContext : ContextWrapper(null) {
     override fun getPackageName(): String = "net.reichholf.dreamdroid.test"
 
     override fun getCacheDir(): File = cacheDirectory
+
+    override fun getFilesDir(): File = filesDirectory
 
     override fun getSharedPreferences(name: String, mode: Int): SharedPreferences =
         preferences.getOrPut(name) { MemorySharedPreferences() }

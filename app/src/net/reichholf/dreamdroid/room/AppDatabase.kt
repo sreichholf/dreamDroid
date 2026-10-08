@@ -27,7 +27,7 @@ import net.reichholf.dreamdroid.Profile
         MovieListEntity::class,
         EpgSearchRecentEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = true
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -382,10 +382,42 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /**
+         * Adds the per-profile online picon choice, path and matching key and copies [seed]
+         * (the global settings at build time) into every existing profile, so online picons
+         * keep the source, path and naming the user already had.
+         */
+        fun migration12To13(seed: PiconSeed): Migration = object : Migration(12, 13) {
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL(
+                    "ALTER TABLE `profile` ADD COLUMN `picons_online` INTEGER NOT NULL " +
+                        "DEFAULT 0"
+                )
+                connection.execSQL(
+                    "ALTER TABLE `profile` ADD COLUMN `picons_online_path` TEXT NOT NULL " +
+                        "DEFAULT '${Profile.DEFAULT_PICON_PATH}'"
+                )
+                connection.execSQL(
+                    "ALTER TABLE `profile` ADD COLUMN `picons_online_use_name` INTEGER NOT " +
+                        "NULL DEFAULT 0"
+                )
+                if (seed.online) {
+                    connection.execSQL("UPDATE `profile` SET `picons_online` = 1")
+                }
+                if (seed.onlineUseName) {
+                    connection.execSQL("UPDATE `profile` SET `picons_online_use_name` = 1")
+                }
+                connection.prepare("UPDATE `profile` SET `picons_online_path` = ?").use {
+                    it.bindText(1, seed.onlinePath)
+                    it.step()
+                }
+            }
+        }
+
+        /**
          * The app's file-backed database. Hilt builds the one instance (DatabaseModule);
          * building does not open the file.
          */
-        fun build(context: Context): AppDatabase = Room.databaseBuilder(
+        fun build(context: Context, piconSeed: PiconSeed): AppDatabase = Room.databaseBuilder(
             context.applicationContext,
             AppDatabase::class.java,
             DATABASE_NAME
@@ -401,7 +433,8 @@ abstract class AppDatabase : RoomDatabase() {
                 MIGRATION_8_9,
                 MIGRATION_9_10,
                 MIGRATION_10_11,
-                MIGRATION_11_12
+                MIGRATION_11_12,
+                migration12To13(piconSeed)
             )
             .configureRoomDriver()
             .build()

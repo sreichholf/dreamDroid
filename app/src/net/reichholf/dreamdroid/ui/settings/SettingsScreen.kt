@@ -242,17 +242,17 @@ fun SettingsScreen(
         )
 
         PreferenceCategoryHeader(stringResource(R.string.picons))
+        Text(
+            text = stringResource(R.string.picons_profiles_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = ListRowHorizontalInset, vertical = 4.dp)
+        )
         SwitchPreferenceRow(
             title = stringResource(R.string.use_picons),
             summary = stringResource(R.string.use_picons_long),
             checked = settings.picons,
             onCheckedChange = { checked -> onChange { it.copy(picons = checked) } }
-        )
-        SwitchPreferenceRow(
-            title = stringResource(R.string.online_picons),
-            summary = stringResource(R.string.online_picons_long),
-            checked = settings.piconsOnline,
-            onCheckedChange = { checked -> onChange { it.copy(piconsOnline = checked) } }
         )
         SwitchPreferenceRow(
             title = stringResource(R.string.use_name_as_picon_filename),

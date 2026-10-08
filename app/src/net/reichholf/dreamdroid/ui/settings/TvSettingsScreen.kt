@@ -8,6 +8,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 
 /**
@@ -29,6 +31,7 @@ import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 fun TvSettingsScreen(
     settings: AppSettings,
     onChange: ((AppSettings) -> AppSettings) -> Unit,
+    onSyncPicons: () -> Unit = {},
     showDeveloperCategory: Boolean = false,
     syncPiconsPathDraft: TextFieldState? = null,
     onEditSyncPiconsPath: () -> Unit = {},
@@ -80,6 +83,12 @@ fun TvSettingsScreen(
             )
 
             PreferenceCategoryHeader(stringResource(R.string.picons))
+            Text(
+                text = stringResource(R.string.picons_profiles_hint),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = ListRowHorizontalInset, vertical = 4.dp)
+            )
             SwitchPreferenceRow(
                 title = stringResource(R.string.use_name_as_picon_filename),
                 summary = stringResource(R.string.use_name_as_picon_filename_long),
@@ -87,6 +96,11 @@ fun TvSettingsScreen(
                 onCheckedChange = { checked ->
                     onChange { it.copy(useNameAsPiconFilename = checked) }
                 }
+            )
+            ActionPreferenceRow(
+                title = stringResource(R.string.sync_picons),
+                summary = stringResource(R.string.sync_picons_long),
+                onClick = onSyncPicons
             )
             ActionPreferenceRow(
                 title = stringResource(R.string.sync_picons_path),

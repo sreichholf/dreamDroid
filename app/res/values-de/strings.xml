@@ -238,6 +238,10 @@
     <string name="enable_animations">Animationen aktivieren</string>
     <string name="use_name_as_picon_filename_long">Kanalnamen als Dateinamen für Picons verwenden</string>
     <string name="use_name_as_picon_filename">Picons über Kanalnamen</string>
+    <string name="picons_online_use_name">Kanalnamen für Online-Picons verwenden</string>
+    <string name="picons_online_use_name_summary">Fordert Online-Picons über den Kanalnamen statt die Service-Referenz an.</string>
+    <string name="picons_offline_global_hint">Synchronisierte (Offline-)Picons und die Synchronisierung nutzen die globalen Picon-Einstellungen.</string>
+    <string name="picons_profiles_hint">Profile wählen, ob Online-Picons genutzt werden und wie sie benannt sind.</string>
     <string name="picons">Picons</string>
 
     <string name="reset_default">Standard zurücksetzen</string>

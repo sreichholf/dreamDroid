@@ -15,6 +15,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.enigma.WebIfCapabilities
+import net.reichholf.dreamdroid.room.PiconSeed
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
@@ -22,6 +23,35 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ProfileRepositoryTest {
+    @Test
+    fun newProfileSeedsOnlinePiconDefaultsFromTheDevice() {
+        val repo = ProfileRepository(
+            MemoryProfileStore(emptyList(), picons = TV_PICONS),
+            WebIfCapabilitiesRepository()
+        )
+
+        val profile = repo.newProfile()
+
+        assertTrue(profile.piconsOnline)
+        assertTrue(profile.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", profile.piconsOnlinePath)
+    }
+
+    @Test
+    fun importedLegacyProfileKeepsTheGlobalOnlinePiconSettings() = runBlocking<Unit> {
+        val repo = ProfileRepository(
+            MemoryProfileStore(emptyList(), picons = TV_PICONS),
+            WebIfCapabilitiesRepository()
+        )
+
+        repo.loadCurrent()
+
+        val imported = repo.requireCurrent()
+        assertTrue(imported.piconsOnline)
+        assertTrue(imported.piconsOnlineUseName)
+        assertEquals("/media/hdd/picon", imported.piconsOnlinePath)
+    }
+
     @Test
     fun switchingProfileEmitsOnceAndClearsCaches() = runBlocking<Unit> {
         val first = profile(1, "living-room")
@@ -280,7 +310,17 @@ private fun profile(id: Int, host: String): Profile = Profile().apply {
     name = host
 }
 
-private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
+private val TV_PICONS = PiconSeed(
+    online = true,
+    onlineUseName = true,
+    onlinePath = "/media/hdd/picon"
+)
+
+private class MemoryProfileStore(
+    rows: List<Profile>,
+    private val picons: PiconSeed =
+        PiconSeed(online = false, onlineUseName = false, onlinePath = Profile.DEFAULT_PICON_PATH)
+) : ProfileStore {
     private val rows = rows.toMutableList()
     var remembered: Int = -1
     val deletedIds = mutableListOf<Int>()
@@ -329,6 +369,8 @@ private class MemoryProfileStore(rows: List<Profile>) : ProfileStore {
     }
 
     override fun xmlDebug(): Boolean = false
+
+    override fun piconDefaults(): PiconSeed = picons
 
     override fun legacyProfile(): Profile = Profile.getDefault()
 }

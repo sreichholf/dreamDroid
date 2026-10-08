@@ -4,6 +4,7 @@ import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ProfileStore
 import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
+import net.reichholf.dreamdroid.room.PiconSeed
 
 /**
  * Profiles in memory, so a screen test's ViewModel can save and activate without
@@ -45,6 +46,9 @@ class MemoryProfileStore(rows: List<Profile> = emptyList()) : ProfileStore {
     }
 
     override fun xmlDebug(): Boolean = false
+
+    override fun piconDefaults(): PiconSeed =
+        PiconSeed(online = false, onlineUseName = false, onlinePath = Profile.DEFAULT_PICON_PATH)
 
     override fun legacyProfile(): Profile = Profile.getDefault()
 }
