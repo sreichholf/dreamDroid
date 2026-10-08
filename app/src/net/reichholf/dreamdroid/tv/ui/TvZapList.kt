@@ -78,11 +78,7 @@ fun ComposeView.bindTvZapList(
     setOnFocusChangeListener { _, hasFocus ->
         if (hasFocus) {
             post {
-                try {
-                    firstCardFocus.requestFocus()
-                } catch (_: IllegalStateException) {
-                    // Composition not ready yet.
-                }
+                firstCardFocus.requestFocus()
             }
         }
     }

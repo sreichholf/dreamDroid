@@ -72,7 +72,8 @@ fun TimerEditContent(
     modifier: Modifier = Modifier,
     showSaveFab: Boolean = false,
     onSave: () -> Unit = {},
-    initialFocusRequester: FocusRequester? = null
+    initialFocusRequester: FocusRequester? = null,
+    serviceFocusRequester: FocusRequester? = null
 ) {
     val form = uiState.form(name.text) ?: return
     var picker by remember { mutableStateOf<TimerEditPick?>(null) }
@@ -91,6 +92,7 @@ fun TimerEditContent(
         mutating = uiState.progress != null,
         onSave = onSave,
         initialFocusRequester = initialFocusRequester,
+        serviceFocusRequester = serviceFocusRequester,
         modifier = modifier
     )
 
@@ -182,7 +184,8 @@ fun TimerEditScreen(
     showSaveFab: Boolean = true,
     mutating: Boolean = false,
     onSave: () -> Unit = {},
-    initialFocusRequester: FocusRequester? = null
+    initialFocusRequester: FocusRequester? = null,
+    serviceFocusRequester: FocusRequester? = null
 ) {
     val resources = LocalResources.current
     val dateFormat = remember { SimpleDateFormat("yyyy-MM-dd", Locale.US) }
@@ -291,7 +294,9 @@ fun TimerEditScreen(
                 EditPickField(
                     value = form.serviceName.ifEmpty { "…" },
                     label = stringResource(R.string.service),
-                    onClick = { onPick(TimerEditPick.Service) }
+                    onClick = { onPick(TimerEditPick.Service) },
+                    modifier =
+                        serviceFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                 )
                 EditDropdownField(
                     options = stringArrayResource(R.array.afterevents).toList(),

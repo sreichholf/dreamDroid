@@ -205,6 +205,8 @@ class ComposeTvHubChromeTest {
         )
         target.requestFocus()
         composeRule.waitForIdle()
+        // The first card left the composition, so Right cannot rely on its requester.
+        composeRule.onNode(hasText("Channel 1"), useUnmergedTree = true).assertDoesNotExist()
 
         val header = composeRule.onNodeWithTag(
             "hub_header_${bouquet.reference}",

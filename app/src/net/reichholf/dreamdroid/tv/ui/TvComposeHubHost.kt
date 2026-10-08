@@ -34,6 +34,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -636,13 +637,17 @@ fun ComposeTvHubChrome(
                                 onOpenMultiEpg = onOpenMultiEpg
                             )
                         } else if (selectedBouquet != null) {
-                            HubServiceGrid(
-                                bouquetRef = selectedBouquet.bouquet.reference,
-                                services = selectedBouquet.services,
-                                onServiceClick = gatedServiceClick,
-                                focusRequester = serviceGridFocus,
-                                onServiceInfo = onServiceInfo
-                            )
+                            // Per bouquet, so scroll position and the restored card do not
+                            // carry over into another bouquet.
+                            key(selectedBouquet.bouquet.reference) {
+                                HubServiceGrid(
+                                    bouquetRef = selectedBouquet.bouquet.reference,
+                                    services = selectedBouquet.services,
+                                    onServiceClick = gatedServiceClick,
+                                    focusRequester = serviceGridFocus,
+                                    onServiceInfo = onServiceInfo
+                                )
+                            }
                         } else if (movieDir != null) {
                             if (movieLoading && movieDir !in moviesByLocation) {
                                 Text(
@@ -680,11 +685,7 @@ fun TvNeedsReceiverOverlay(
     val okFocus = remember { FocusRequester() }
     BackHandler(onBack = onDismiss)
     LaunchedEffect(Unit) {
-        try {
-            okFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Overlay not attached yet.
-        }
+        okFocus.requestFocus()
     }
     Box(
         modifier = modifier
