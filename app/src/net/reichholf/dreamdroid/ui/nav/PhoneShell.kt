@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -28,7 +27,6 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -55,7 +53,6 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
@@ -63,10 +60,9 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
 const val SHELL_PROFILE_NAME_TAG = "shell_profile_name"
 
 /**
- * Phone and tablet shell: modal drawer, top app bar, destination rail or bottom chrome,
- * and the shared FAB. The top bar and the bottom chrome slide away while content scrolls
- * down ([ShellChromeScrollState]). Bar versus rail follows the window size class unless
- * [usesRail] is set.
+ * Phone and tablet shell: modal drawer, top app bar, bottom chrome, and the shared FAB.
+ * The top bar and the bottom chrome slide away while content scrolls down
+ * ([ShellChromeScrollState]).
  */
 @Composable
 fun PhoneShell(
@@ -86,10 +82,8 @@ fun PhoneShell(
     trailingTopBarActions: List<ShellTopBarAction> = emptyList(),
     autoTimerInDrawer: Boolean = false,
     sleepTimerInDrawer: Boolean = true,
-    usesRail: Boolean? = null,
     content: @Composable () -> Unit
 ) {
-    val rail = usesRail ?: windowUsesDestinationRail()
     val drawerState = rememberDrawerState(
         if (drawerOpen) DrawerValue.Open else DrawerValue.Closed
     )
@@ -136,7 +130,6 @@ fun PhoneShell(
             }
         ) {
             ShellBody(
-                usesRail = rail,
                 destinationController = destinationController,
                 fabController = fabController,
                 onNavigationClick = onNavigationClick,
@@ -150,24 +143,9 @@ fun PhoneShell(
     }
 }
 
-/**
- * Same bar-versus-rail split as NavigationSuiteScaffoldDefaults: a rail unless the
- * width or height size class is Compact, or the posture is tabletop. The suite
- * scaffold itself is not used: it cannot hide the bar and the now-playing strip on scroll.
- */
-@Composable
-private fun windowUsesDestinationRail(): Boolean {
-    val info = currentWindowAdaptiveInfoV2()
-    val size = info.windowSizeClass
-    return !info.windowPosture.isTabletop &&
-        size.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) &&
-        size.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ShellBody(
-    usesRail: Boolean,
     destinationController: ShellDestinationBarController,
     fabController: ShellFabController,
     onNavigationClick: () -> Unit,
@@ -214,77 +192,58 @@ private fun ShellBody(
     val fabExpanded by remember(chromeScroll) {
         derivedStateOf { chromeScroll.topBar.collapsedFraction == 0f }
     }
-    Row(
+    val showsBottomChrome = destinationController.content !is ShellDestinationBarContent.Hidden
+    val contentMargin = if (isWideWindow()) {
+        dimensionResource(R.dimen.content_margin_horizontal)
+    } else {
+        0.dp
+    }
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .windowInsetsPadding(WindowInsets.safeDrawing)
+            .nestedScroll(bottomChromeScroll.nestedScrollConnection)
+            .nestedScroll(topBarScroll.nestedScrollConnection)
     ) {
-        if (usesRail) {
-            TabletShellDestinationRail(destinationController)
+        if (!topBarController.replaced) {
+            ShellTopAppBar(
+                controller = topBarController,
+                onNavigationClick = onNavigationClick,
+                trailingActions = trailingTopBarActions,
+                scrollBehavior = topBarScroll
+            )
         }
-        Column(
+        Scaffold(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxHeight()
-                .nestedScroll(bottomChromeScroll.nestedScrollConnection)
-                .nestedScroll(topBarScroll.nestedScrollConnection)
-        ) {
-            if (!topBarController.replaced) {
-                ShellTopAppBar(
-                    controller = topBarController,
-                    onNavigationClick = onNavigationClick,
-                    trailingActions = trailingTopBarActions,
-                    scrollBehavior = topBarScroll
+                .fillMaxWidth(),
+            containerColor = Color.Transparent,
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .fillMaxSize()
+                    .padding(horizontal = contentMargin)
+            ) {
+                content()
+                ShellFabButton(
+                    controller = fabController,
+                    expanded = fabExpanded,
+                    aboveChrome = showsBottomChrome,
+                    modifier = Modifier.align(Alignment.BottomEnd)
                 )
             }
-            Scaffold(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                containerColor = Color.Transparent,
-                contentWindowInsets = WindowInsets(0, 0, 0, 0),
-                snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
-            ) { innerPadding ->
-                Box(
-                    modifier = Modifier
-                        .padding(innerPadding)
-                        .fillMaxSize()
-                        .padding(
-                            horizontal = if (usesRail) {
-                                dimensionResource(R.dimen.content_margin_horizontal)
-                            } else {
-                                0.dp
-                            }
-                        )
-                ) {
-                    content()
-                    ShellFabButton(
-                        controller = fabController,
-                        expanded = fabExpanded,
-                        aboveChrome = destinationController.content.showsBottomChrome(usesRail),
-                        modifier = Modifier.align(Alignment.BottomEnd)
-                    )
-                }
-            }
-            val chromeModifier = Modifier
+        }
+        ShellDestinationChrome(
+            destinationController,
+            Modifier
                 .fillMaxWidth()
                 .collapsingBottomChrome(chromeScroll)
-            if (usesRail) {
-                TabletShellNowPlaying(destinationController, chromeModifier)
-            } else {
-                PhoneShellDestinationChrome(destinationController, chromeModifier)
-            }
-        }
+        )
     }
 }
-
-/** Whether a hub shows chrome under the content: the bar on phone, the strip on tablet. */
-private fun ShellDestinationBarContent.showsBottomChrome(usesRail: Boolean): Boolean =
-    if (usesRail) {
-        this is ShellDestinationBarContent.TvMovies && state.nowPlayingStripEnabled
-    } else {
-        this !is ShellDestinationBarContent.Hidden
-    }
 
 @Composable
 private fun ShellFabButton(

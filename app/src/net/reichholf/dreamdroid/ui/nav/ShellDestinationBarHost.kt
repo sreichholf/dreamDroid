@@ -14,11 +14,9 @@ import androidx.compose.ui.platform.testTag
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import net.reichholf.dreamdroid.ui.services.TvMoviesDestinationRail
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
 import net.reichholf.dreamdroid.ui.services.TvMoviesShellChrome
 import net.reichholf.dreamdroid.ui.tools.ToolsDestinationBar
-import net.reichholf.dreamdroid.ui.tools.ToolsDestinationRail
 import net.reichholf.dreamdroid.ui.tools.ToolsHubState
 
 /**
@@ -34,7 +32,7 @@ sealed interface ShellDestinationBarContent {
 }
 
 /**
- * Shell destination chrome controller: the phone bottom chrome and the tablet rail.
+ * Shell destination chrome controller: the bottom chrome under the hub content.
  * Owned by [ProvideShellDestinationBar] for the lifetime of [PhoneNavHost], not by hub leaves.
  */
 class ShellDestinationBarController {
@@ -64,11 +62,11 @@ fun ProvideShellDestinationBar(content: @Composable () -> Unit) {
 }
 
 /**
- * Phone bottom chrome (destination bar, and the TV & Movies now-playing strip when on).
+ * Shell bottom chrome (destination bar, and the TV & Movies now-playing strip when on).
  * Empty while the controller is [ShellDestinationBarContent.Hidden].
  */
 @Composable
-fun PhoneShellDestinationChrome(
+fun ShellDestinationChrome(
     controller: ShellDestinationBarController,
     modifier: Modifier = Modifier
 ) {
@@ -89,51 +87,6 @@ fun PhoneShellDestinationChrome(
                 state = shown.state
             )
         }
-    }
-}
-
-/** Tablet start rail. Empty while no hub owns the shell. */
-@Composable
-fun TabletShellDestinationRail(
-    controller: ShellDestinationBarController,
-    modifier: Modifier = Modifier
-) {
-    val shown = controller.content
-    if (shown is ShellDestinationBarContent.Hidden) {
-        return
-    }
-    when (shown) {
-        ShellDestinationBarContent.Hidden -> Unit
-
-        is ShellDestinationBarContent.Tools -> ToolsDestinationRail(
-            selected = shown.state.selected,
-            onDestinationSelected = { shown.state.onDestinationSelected(it) },
-            modifier = modifier
-        )
-
-        is ShellDestinationBarContent.TvMovies -> TvMoviesDestinationRail(
-            selected = shown.state.selected,
-            onDestinationSelected = { shown.state.onDestinationSelected(it) },
-            modifier = modifier
-        )
-    }
-}
-
-/** Tablet bottom slot: now-playing only. Destinations live on the rail. */
-@Composable
-fun TabletShellNowPlaying(
-    controller: ShellDestinationBarController,
-    modifier: Modifier = Modifier
-) {
-    val shown = controller.content
-    if (shown !is ShellDestinationBarContent.TvMovies || !shown.state.nowPlayingStripEnabled) {
-        return
-    }
-    Box(modifier.testTag(SHELL_CHROME_TAG)) {
-        TvMoviesShellChrome(
-            state = shown.state,
-            showDestinationBar = false
-        )
     }
 }
 

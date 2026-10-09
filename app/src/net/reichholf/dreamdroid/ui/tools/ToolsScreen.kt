@@ -9,7 +9,6 @@ import androidx.compose.ui.platform.LocalContext
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
-import net.reichholf.dreamdroid.ui.nav.DestinationRail
 import net.reichholf.dreamdroid.ui.theme.isDreamDroidDark
 
 @Composable
@@ -19,20 +18,6 @@ fun ToolsDestinationBar(
     modifier: Modifier = Modifier
 ) {
     DestinationBar(
-        items = toolsDestinationItems(),
-        selectedIndex = selected.ordinal,
-        onSelect = { onDestinationSelected(ToolsDestination.entries[it]) },
-        modifier = modifier
-    )
-}
-
-@Composable
-fun ToolsDestinationRail(
-    selected: ToolsDestination,
-    onDestinationSelected: (ToolsDestination) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    DestinationRail(
         items = toolsDestinationItems(),
         selectedIndex = selected.ordinal,
         onSelect = { onDestinationSelected(ToolsDestination.entries[it]) },

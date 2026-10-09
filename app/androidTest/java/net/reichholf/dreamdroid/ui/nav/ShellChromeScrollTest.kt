@@ -121,18 +121,6 @@ class ShellChromeScrollTest {
     }
 
     @Test
-    fun tabletNowPlayingStripHidesToo() {
-        show(usesRail = true)
-        val shown = contentBounds()
-        val shownStrip = chromeBounds()
-        assertTrue("content clear of strip", shown.bottom <= shownStrip.top)
-
-        scrollListDown()
-
-        assertChromeHidden(shown, shownStrip)
-    }
-
-    @Test
     fun keptTopBarStaysWhileBottomChromeHides() {
         show(topBar = TopBarUse.KEEP_IN_VIEW)
         val shown = contentBounds()
@@ -197,13 +185,12 @@ class ShellChromeScrollTest {
         assertEquals("Back keeps the list's bars", hiddenTop, boundsOf(LIST_SCREEN_TAG).top)
     }
 
-    private fun show(usesRail: Boolean = false, topBar: TopBarUse = TopBarUse.SHELL) {
+    private fun show(topBar: TopBarUse = TopBarUse.SHELL) {
         composeRule.setContent {
             ScrollHost(
                 owner = owner,
                 listState = listState,
                 showEmpty = showEmpty,
-                usesRail = usesRail,
                 topBar = topBar
             )
         }
@@ -247,7 +234,6 @@ private fun ScrollHost(
     owner: LifecycleOwner,
     listState: LazyListState,
     showEmpty: Boolean,
-    usesRail: Boolean,
     topBar: TopBarUse
 ) {
     val hub = remember {
@@ -272,8 +258,7 @@ private fun ScrollHost(
                 onNavigationClick = {},
                 destinationController = remember { ShellDestinationBarController() },
                 fabController = remember { ShellFabController() },
-                topBarController = topBarController,
-                usesRail = usesRail
+                topBarController = topBarController
             ) {
                 RegisterShellDestinationBar(ShellDestinationBarContent.TvMovies(hub))
                 when (topBar) {
@@ -322,8 +307,7 @@ private fun NavScrollHost(nav: NavHostController) {
             onNavigationClick = {},
             destinationController = remember { ShellDestinationBarController() },
             fabController = remember { ShellFabController() },
-            topBarController = remember { ShellTopBarController().apply { title = "Timers" } },
-            usesRail = false
+            topBarController = remember { ShellTopBarController().apply { title = "Timers" } }
         ) {
             val entry by nav.currentBackStackEntryAsState()
             KeepShellChromePerScreen(entry)
