@@ -3,23 +3,21 @@ package net.reichholf.dreamdroid.ui.nav
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
-import androidx.compose.ui.platform.WindowInfo
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.testutil.WithWindowSize
 import net.reichholf.dreamdroid.ui.drawer.DrawerListState
 import net.reichholf.dreamdroid.ui.services.TvMoviesDestination
 import net.reichholf.dreamdroid.ui.services.TvMoviesHubState
@@ -95,14 +93,9 @@ class ShellWindowSizeClassTest {
     }
 
     private fun showShell(width: Dp, height: Dp) {
-        val size = with(composeRule.density) {
-            IntSize(width.roundToPx(), height.roundToPx())
-        }
         composeRule.setContent {
             DreamDroidTheme {
-                CompositionLocalProvider(LocalWindowInfo provides FixedWindowInfo(size)) {
-                    WindowSizeHost()
-                }
+                WithWindowSize(width, height) { WindowSizeHost() }
             }
         }
         composeRule.waitForIdle()
@@ -140,7 +133,3 @@ private fun WindowSizeHost() {
 }
 
 private const val CONTENT_TAG = "window_size_content"
-
-private class FixedWindowInfo(override val containerSize: IntSize) : WindowInfo {
-    override val isWindowFocused: Boolean = true
-}
