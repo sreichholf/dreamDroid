@@ -8,7 +8,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -60,7 +63,9 @@ class TvServiceTimerEditorFocusTest {
         var overlay by mutableStateOf<ServiceNowNext?>(null)
         var editingEvent by mutableStateOf<Event?>(null)
 
+        lateinit var inputModeManager: InputModeManager
         composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
             Box(Modifier.fillMaxSize()) {
                 ComposeTvHubChrome(
                     headers = listOf(
@@ -103,6 +108,11 @@ class TvServiceTimerEditorFocusTest {
                 }
             }
         }
+
+        // Switches and other clickables take focus only outside touch mode, as on a TV
+        // driven by the remote.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
 
         val card = composeRule.onNodeWithTag("hub_service_card")
         card.requestFocus()
