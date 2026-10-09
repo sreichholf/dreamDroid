@@ -17,9 +17,14 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.compose.ListDetailPanes
+import net.reichholf.dreamdroid.ui.compose.ListDetailSinglePane
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
+import net.reichholf.dreamdroid.ui.compose.showsListDetailPanes
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailViewModel
+import net.reichholf.dreamdroid.ui.epg.ServiceEpgPane
+import net.reichholf.dreamdroid.ui.epg.ServiceEpgViewModel
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
@@ -32,7 +37,9 @@ import net.reichholf.dreamdroid.ui.text.asString
  * One TV/Radio hub bouquet tab. The ViewModel is keyed by the tab's ref on the hub
  * back-stack entry. The host keeps this in composition only while it is the active hub
  * child, so the top bar actions stay scoped. System back closes one opened folder before
- * leaving the hub; [onProvideGoUp] hands the host the tab-reselect action.
+ * leaving the hub; [onProvideGoUp] hands the host the tab-reselect action. Where the window
+ * fits two panes, a channel's EPG opens beside the list ([epgViewModel]) instead of on its own
+ * screen; events open in the EPG sheet either way. Each bouquet tab keeps its own open pane.
  */
 @Composable
 fun HubServiceListPage(
@@ -46,10 +53,13 @@ fun HubServiceListPage(
         hiltViewModel<HubServiceListViewModel, HubServiceListViewModel.Factory>(
             key = "hub-service:$bouquetRef"
         ) { factory -> factory.create(Service(bouquetRef, bouquetName)) },
-    detailViewModel: EpgEventDetailViewModel = hiltViewModel()
+    detailViewModel: EpgEventDetailViewModel = hiltViewModel(),
+    epgViewModel: ServiceEpgViewModel = hiltViewModel(key = "hub-service-epg:$bouquetRef")
 ) {
     val context = LocalContext.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val epgState by epgViewModel.uiState.collectAsStateWithLifecycle()
+    val twoPanes = showsListDetailPanes()
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
@@ -83,8 +93,11 @@ fun HubServiceListPage(
 
             is HubServiceEffect.ShowEvent -> detailViewModel.showDetail(effect.event)
 
-            is HubServiceEffect.ServiceEpg ->
+            is HubServiceEffect.ServiceEpg -> if (twoPanes) {
+                epgViewModel.show(effect.reference, effect.name)
+            } else {
                 handle.navigateToServiceEpg(effect.reference, effect.name)
+            }
 
             is HubServiceEffect.MultiEpg -> handle.navigateToMultiEpg(effect.reference, effect.name)
 
@@ -112,34 +125,56 @@ fun HubServiceListPage(
         viewModel.onEffectHandled()
     }
 
-    HubServiceListScreen(
-        state = uiState,
-        onRefresh = { viewModel.reload(forceRefresh = true) },
-        onItemClick = { item, isLong ->
-            when (item.kind) {
-                ServiceRowKind.MARKER -> Unit
+    val epgPane = @Composable {
+        ServiceEpgPane(
+            state = epgState,
+            onRefresh = { epgViewModel.reload(forceRefresh = true) },
+            onEventClick = detailViewModel::showDetail,
+            onClose = epgViewModel::clear
+        )
+    }
+    ListDetailPanes(
+        detail = epgState.serviceRef.takeIf { it.isNotEmpty() },
+        onDetailDismiss = epgViewModel::clear,
+        list = {
+            HubServiceListScreen(
+                state = uiState,
+                onRefresh = { viewModel.reload(forceRefresh = true) },
+                onItemClick = { item, isLong ->
+                    when (item.kind) {
+                        ServiceRowKind.MARKER -> Unit
 
-                ServiceRowKind.DIRECTORY -> viewModel.openDirectory(item.index)
+                        ServiceRowKind.DIRECTORY -> viewModel.openDirectory(item.index)
 
-                ServiceRowKind.CHANNEL -> {
-                    if (viewModel.zapsOnTap(isLong)) {
-                        handle.runOnlineOnly { viewModel.zap(item.index) }
-                    } else {
-                        viewModel.onItemMenu(item.index)
+                        ServiceRowKind.CHANNEL -> {
+                            if (viewModel.zapsOnTap(isLong)) {
+                                handle.runOnlineOnly { viewModel.zap(item.index) }
+                            } else {
+                                viewModel.onItemMenu(item.index)
+                            }
+                        }
                     }
-                }
-            }
+                },
+                onMenuAction = { action ->
+                    if (action.onlineOnly) {
+                        handle.runOnlineOnly { viewModel.onMenuAction(action) }
+                    } else {
+                        viewModel.onMenuAction(action)
+                    }
+                },
+                onMenuDismiss = viewModel::onMenuDismiss
+            )
         },
-        onMenuAction = { action ->
-            if (action.onlineOnly) {
-                handle.runOnlineOnly { viewModel.onMenuAction(action) }
-            } else {
-                viewModel.onMenuAction(action)
-            }
+        // The services grid keeps the whole width until a service's EPG is asked for.
+        emptyDetail = null,
+        // Only a window that narrowed under an open EPG gets here: it fills the space.
+        singlePaneDetail = {
+            ListDetailSinglePane { epgPane() }
         },
-        onMenuDismiss = viewModel::onMenuDismiss,
         modifier = modifier
-    )
+    ) {
+        epgPane()
+    }
 
     EpgEventDetailHost(handle, detailViewModel)
 }

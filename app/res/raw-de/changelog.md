@@ -10,7 +10,7 @@
 * NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist; auch die EPG-Suche funktioniert offline
 * NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
 * NEU: Android TV kann denselben externen Videoplayer nutzen wie das Telefon (gleicher Einstellungs-Schalter)
-* NEU: Breite Fenster (Tablets, Telefone im Querformat) zeigen die Infos einer Aufnahme neben der Filmliste und die Details einer Sendung neben Sender-EPG, Bouquet-EPG, EPG-Suche und AutoTimer-Vorschau; Timer öffnen sich zum Bearbeiten neben der Timerliste
+* NEU: Breite Fenster (Tablets, Foldables, große Telefone im Querformat) zeigen die Infos einer Aufnahme neben der Filmliste und die Details einer Sendung neben Sender-EPG, Bouquet-EPG, EPG-Suche und AutoTimer-Vorschau; Timer öffnen sich zum Bearbeiten neben der Timerliste und das EPG eines Senders neben der Senderliste
 * UPD: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
 * UPD: Sender-EPG nach Tag gruppiert
 * UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon

@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,10 +56,12 @@ private fun listDetailDirective(): PaneScaffoldDirective =
 /**
  * Material 3 list-detail for a list whose detail is UI state the caller owns. Where the window
  * fits two panes ([showsListDetailPanes]), [detailContent] sits beside [list] in a
- * [ListDetailPaneScaffold], with [emptyDetail] while [detail] is null. Narrower windows draw
+ * [ListDetailPaneScaffold], with [emptyDetail] while [detail] is null; without [emptyDetail]
+ * the list takes the whole width until there is a detail. Narrower windows draw
  * [list] and a shown detail's [singlePaneDetail] over it: a bottom sheet, or the detail filling
  * the space as Material 3's single-pane list-detail does. Back clears a shown detail before it
- * leaves the screen. [list] keeps its state, such as its scroll
+ * leaves the screen; a detail that stands on its own (a form, a schedule) also gets a close
+ * button in its [ListDetailPaneTopBar], while one that only describes a list item does not. [list] keeps its state, such as its scroll
  * position, when the window crosses between the two. The pane's state starts fresh whenever
  * [detailKey] of the detail changes.
  */
@@ -68,7 +71,7 @@ fun <T : Any> ListDetailPanes(
     detail: T?,
     onDetailDismiss: () -> Unit,
     list: @Composable () -> Unit,
-    emptyDetail: @Composable () -> Unit,
+    emptyDetail: (@Composable () -> Unit)?,
     singlePaneDetail: @Composable (T) -> Unit,
     modifier: Modifier = Modifier,
     detailKey: (T) -> Any = { it },
@@ -80,16 +83,29 @@ fun <T : Any> ListDetailPanes(
     BackHandler(enabled = detail != null, onBack = onDetailDismiss)
     if (directive.maxHorizontalPartitions < 2) {
         Box(modifier) {
-            movableList()
+            // A detail drawn over the list hides it from accessibility services too.
+            Box(if (detail != null) Modifier.clearAndSetSemantics {} else Modifier) {
+                movableList()
+            }
             detail?.let { singlePaneDetail(it) }
         }
         return
     }
+    // A pane that hides with its detail keeps showing that detail while it animates out.
+    val lastDetail = remember { LastDetail<T>() }
+    if (detail != null) {
+        lastDetail.value = detail
+    }
+    val paneDetail = detail ?: lastDetail.value.takeIf { emptyDetail == null }
     val destination = ThreePaneScaffoldDestinationItem<Nothing>(
         if (detail == null) ListDetailPaneScaffoldRole.List else ListDetailPaneScaffoldRole.Detail
     )
     val value = calculateThreePaneScaffoldValue(
-        maxHorizontalPartitions = directive.maxHorizontalPartitions,
+        maxHorizontalPartitions = if (detail == null && emptyDetail == null) {
+            1
+        } else {
+            directive.maxHorizontalPartitions
+        },
         adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
         currentDestination = destination
     )
@@ -107,16 +123,20 @@ fun <T : Any> ListDetailPanes(
                         .fillMaxSize()
                         .testTag(LIST_DETAIL_DETAIL_PANE_TAG)
                 ) {
-                    if (detail == null) {
-                        emptyDetail()
+                    if (paneDetail == null) {
+                        emptyDetail?.invoke()
                     } else {
-                        key(detailKey(detail)) { detailContent(detail) }
+                        key(detailKey(paneDetail)) { detailContent(paneDetail) }
                     }
                 }
             }
         },
         modifier = modifier
     )
+}
+
+private class LastDetail<T : Any> {
+    var value: T? = null
 }
 
 /** Placeholder for a detail pane with nothing selected. */
