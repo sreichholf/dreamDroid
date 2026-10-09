@@ -1,9 +1,12 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertCountEquals
@@ -12,6 +15,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -27,6 +31,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -115,6 +120,87 @@ class ServiceListScreenTest {
             .assertIsDisplayed()
             .getBoundsInRoot()
         assertEquals(list.top.value, header.top.value, 1f)
+    }
+
+    @Test
+    fun wideListFitsTwoColumnsUnderAFullWidthHeader() {
+        showColumns(AUTO_FIT_COLUMNS)
+
+        val one = composeRule.onNodeWithText("Channel 1").getUnclippedBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getUnclippedBoundsInRoot()
+        assertEquals(one.top.value, two.top.value, 1f)
+        assertTrue("Channel 2 sits right of Channel 1", two.left > one.right)
+        val header = composeRule.onNode(hasText("Doku") and isHeading())
+            .getUnclippedBoundsInRoot()
+        assertTrue("the marker sits above the first row", header.bottom <= one.top)
+        assertTrue("the marker spans both columns", header.right > two.left)
+    }
+
+    @Test
+    fun maxColumnsCapsTheGrid() {
+        showColumns(1)
+
+        val one = composeRule.onNodeWithText("Channel 1").getUnclippedBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getUnclippedBoundsInRoot()
+        assertEquals(one.left.value, two.left.value, 1f)
+        assertTrue("Channel 2 sits under Channel 1", two.top >= one.bottom)
+    }
+
+    @Test
+    fun cellsOfALineShareTheTallestHeight() {
+        val withEpg = ServiceListItem(
+            index = 2,
+            reference = "1:0:1:2:1:1:1:0:0:0:",
+            name = "Channel 2",
+            kind = ServiceRowKind.CHANNEL,
+            nowTitle = "Tagesschau",
+            nowStart = "20:00",
+            nowDuration = "15",
+            nextTitle = "Wetter",
+            nextStart = "20:15",
+            nextDuration = "5",
+            progressMax = 15,
+            progress = 3
+        )
+        showColumns(
+            AUTO_FIT_COLUMNS,
+            listOf(
+                ServiceListItem(1, "1:0:1:1:1:1:1:0:0:0:", "Channel 1", ServiceRowKind.CHANNEL),
+                withEpg
+            )
+        )
+
+        val cards = composeRule.onAllNodesWithTag(LIST_ROW_TAG)
+        val plain = cards[0].getUnclippedBoundsInRoot()
+        val epg = cards[1].getUnclippedBoundsInRoot()
+        assertTrue("the cards share a line", epg.left > plain.right)
+        assertEquals((epg.bottom - epg.top).value, (plain.bottom - plain.top).value, 1f)
+    }
+
+    /**
+     * [items] (default: a marker and four channels) 700dp wide: room for two 300dp columns. That is wider
+     * than a portrait phone, so the tests compare unclipped bounds.
+     */
+    private fun showColumns(
+        maxColumns: Int,
+        items: List<ServiceListItem> = listOf(
+            ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
+        ) + (1..4).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+    ) {
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(Modifier.requiredWidth(700.dp)) {
+                    ServiceListScreen(
+                        items = items,
+                        onItemClick = {},
+                        onItemLongClick = {},
+                        maxColumns = maxColumns
+                    )
+                }
+            }
+        }
     }
 
     @Test

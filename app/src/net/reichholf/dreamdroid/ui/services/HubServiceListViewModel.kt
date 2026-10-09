@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.NowNextListLoad
@@ -64,13 +65,14 @@ sealed interface HubServiceEffect {
 /**
  * One TV/radio hub bouquet tab. [currentRef] is the list on screen: the tab itself, or a
  * folder opened under it ([historyDepth] levels deep). [emptyMessage] is shown instead of
- * the list when [items] is empty.
+ * the list when [items] is empty. [maxColumns] caps the grid columns (`grid_max_cols`).
  */
 data class HubServiceListUiState(
     val currentRef: String,
     val currentName: String,
     val historyDepth: Int = 0,
     val items: List<ServiceListItem> = emptyList(),
+    val maxColumns: Int = AUTO_FIT_COLUMNS,
     val refreshing: Boolean = false,
     val emptyMessage: UiText? = null,
     val menu: RowMenuState<ServiceRowAction>? = null,
@@ -134,6 +136,7 @@ class HubServiceListViewModel @AssistedInject constructor(
                 currentRef = restored.currentRef,
                 currentName = restored.currentName,
                 historyDepth = history.size,
+                maxColumns = settings.current().maxGridColumns,
                 isDefaultBouquet = isDefault(restored.currentRef)
             )
         )
@@ -143,6 +146,11 @@ class HubServiceListViewModel @AssistedInject constructor(
                 sessions.status.map { it.session }.distinctUntilChanged(),
                 services.bouquetEdits.map { it[rootRef] }.distinctUntilChanged()
             ) { session, edit -> session to edit }.collect { reload() }
+        }
+        viewModelScope.launch {
+            settings.settings.map { it.maxGridColumns }.distinctUntilChanged().collect { cols ->
+                _uiState.update { it.copy(maxColumns = cols) }
+            }
         }
     }
 

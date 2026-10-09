@@ -170,6 +170,7 @@ fun HubServiceListScreen(
                 items = state.items,
                 onItemClick = { onItemClick(it, false) },
                 onItemLongClick = { onItemClick(it, true) },
+                maxColumns = state.maxColumns,
                 menu = state.menu,
                 onMenuAction = onMenuAction,
                 onMenuDismiss = onMenuDismiss

@@ -33,7 +33,7 @@ data class AppSettings(
     val themeType: String = "1",
     val dynamicThemeColors: Boolean = false,
     val enableAnimations: Boolean = true,
-    val gridMaxCols: String = "-1",
+    val gridMaxCols: String = AUTO_FIT_COLUMNS.toString(),
     val multiEpgTextSize: String = MultiEpgTextSize.DEFAULT.prefValue,
     val picons: Boolean = false,
     val useNameAsPiconFilename: Boolean = false,
@@ -42,7 +42,14 @@ data class AppSettings(
     val fakePicon: Boolean = false,
     val xmlDebug: Boolean = false,
     val autoSwitchProfileWifiBased: Boolean = false
-)
+) {
+    /** [gridMaxCols] as a column cap; [AUTO_FIT_COLUMNS] or below 1: as many as fit. */
+    val maxGridColumns: Int
+        get() = gridMaxCols.toIntOrNull() ?: AUTO_FIT_COLUMNS
+}
+
+/** `grid_max_cols` value for "as many columns as fit". */
+const val AUTO_FIT_COLUMNS = -1
 
 /**
  * [AppSettings] over the default [SharedPreferences], under the `DreamDroid.PREFS_KEY_*`

@@ -562,6 +562,18 @@ class HubServiceListViewModelTest {
         assertFalse(viewModel.zapsOnTap(isLong = true))
     }
 
+    @Test
+    fun maxColumnsStartsAtTheGridSettingAndFollowsIt() = runBlocking {
+        preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "1").commit()
+        val viewModel = viewModel()
+        assertEquals(1, viewModel.uiState.value.maxColumns)
+
+        preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "2").commit()
+
+        withTimeout(5_000L) { viewModel.uiState.first { it.maxColumns == 2 } }
+        Unit
+    }
+
     private fun viewModel(handle: SavedStateHandle = SavedStateHandle()): HubServiceListViewModel =
         HubServiceListViewModel(
             Service(TAB, "Tab"),

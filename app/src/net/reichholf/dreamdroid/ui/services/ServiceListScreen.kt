@@ -2,9 +2,12 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -27,8 +30,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
@@ -55,53 +60,110 @@ private val ProgressBarHeight = 6.dp
 
 const val SERVICE_LIST_PROGRESS_TAG = "service_list_progress"
 
+/** Narrowest service column, as the 1.x `AutofitRecyclerView` laid it out. */
+private val ServiceColumnMinWidth = 300.dp
+
+/**
+ * The service list as a grid of [ServiceColumnMinWidth] columns, at most [maxColumns] of
+ * them ([AUTO_FIT_COLUMNS] or any value below 1: as many as fit).
+ */
 @Composable
 fun ServiceListScreen(
     items: List<ServiceListItem>,
     onItemClick: (ServiceListItem) -> Unit,
     onItemLongClick: (ServiceListItem) -> Unit,
     modifier: Modifier = Modifier,
+    maxColumns: Int = AUTO_FIT_COLUMNS,
     menu: RowMenuState<ServiceRowAction>? = null,
     onMenuAction: (ServiceRowAction) -> Unit = {},
     onMenuDismiss: () -> Unit = {}
 ) {
-    LazyColumn(modifier.fillMaxSize()) {
-        serviceListItems(items) { item ->
-            Box {
-                ServiceRow(
-                    item = item,
-                    onClick = { onItemClick(item) },
-                    onLongClick = { onItemLongClick(item) }
-                )
-                RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        val columns = autoFitColumns(maxWidth, maxColumns)
+        LazyColumn(Modifier.fillMaxSize()) {
+            serviceListItems(items, columns) { item ->
+                Box {
+                    ServiceRow(
+                        item = item,
+                        onClick = { onItemClick(item) },
+                        onLongClick = { onItemLongClick(item) },
+                        modifier = Modifier.fillMaxHeight()
+                    )
+                    RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
+                }
             }
         }
     }
 }
 
 /**
- * [items] as list entries: a bouquet marker is a sticky section header over the rows up to
- * the next marker, a spacer is a plain gap, every other item is drawn by [row]. Each item
- * stays one list entry, so an item's index in [items] is its list index.
+ * How many [ServiceColumnMinWidth] columns fit into [width], at most [maxCount] of them;
+ * [maxCount] below 1 leaves it uncapped.
+ */
+private fun autoFitColumns(width: Dp, maxCount: Int): Int {
+    val fit = (width / ServiceColumnMinWidth).toInt().coerceAtLeast(1)
+    return if (maxCount > 0) minOf(fit, maxCount) else fit
+}
+
+/**
+ * [items] as list entries (see [ServiceSlot]), the rows between two markers grouped into
+ * lines of [columns] cells drawn by [row]. The cells of a line share the height of the
+ * tallest, so a channel without now/next is as tall as its neighbour with them. With one
+ * column every item is one list entry, so an item's index in [items] is its list index.
  */
 fun LazyListScope.serviceListItems(
     items: List<ServiceListItem>,
+    columns: Int = 1,
     row: @Composable (ServiceListItem) -> Unit
 ) {
+    val line = mutableListOf<ServiceListItem>()
+    fun flushLines() {
+        line.chunked(columns).forEach { cells ->
+            item(key = serviceRowKey(cells.first())) {
+                if (columns == 1) {
+                    row(cells.single())
+                } else {
+                    Row(Modifier.height(IntrinsicSize.Max)) {
+                        for (cell in cells) {
+                            Box(Modifier.weight(1f).fillMaxHeight()) { row(cell) }
+                        }
+                        repeat(columns - cells.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
+        }
+        line.clear()
+    }
     for (item in items) {
-        when {
-            item.kind != ServiceRowKind.MARKER -> item(key = serviceRowKey(item)) { row(item) }
+        when (item.slot) {
+            ServiceSlot.ROW -> line += item
 
-            item.isSectionHeader -> stickyHeader(key = serviceRowKey(item)) {
-                ListSectionHeader(item.name)
+            ServiceSlot.HEADER -> {
+                flushLines()
+                stickyHeader(key = serviceRowKey(item)) { ListSectionHeader(item.name) }
             }
 
-            else -> item(key = serviceRowKey(item)) {
-                Spacer(Modifier.height(SpacerGap))
+            ServiceSlot.GAP -> {
+                flushLines()
+                item(key = serviceRowKey(item)) { Spacer(Modifier.height(SpacerGap)) }
             }
         }
     }
+    flushLines()
 }
+
+/**
+ * How a list item is laid out: a bouquet marker is a sticky section [HEADER] over the rows
+ * up to the next marker, a spacer is a plain [GAP] across the list, everything else a [ROW].
+ */
+private enum class ServiceSlot { ROW, HEADER, GAP }
+
+private val ServiceListItem.slot: ServiceSlot
+    get() = when {
+        kind != ServiceRowKind.MARKER -> ServiceSlot.ROW
+        isSectionHeader -> ServiceSlot.HEADER
+        else -> ServiceSlot.GAP
+    }
 
 /**
  * A marker with a name. Spacers (`1:832:`) are markers too, but unnamed gaps that must
@@ -114,13 +176,18 @@ private val SpacerGap = 16.dp
 
 /** A channel or directory row; markers are section headers, see [serviceListItems]. */
 @Composable
-internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
+internal fun ServiceRow(
+    item: ServiceListItem,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
     // The strip sits on the tile above the ListItem. ListItem merges its own semantics, so
     // the click goes on it, next to the label.
-    ListRowSurface {
+    ListRowSurface(modifier) {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
             LinearProgressIndicator(
