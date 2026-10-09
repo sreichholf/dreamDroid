@@ -23,7 +23,7 @@ Modernization plan and remaining work: [`docs/modernize-dreamdroid.md`](docs/mod
 - `app/schemas/net.reichholf.dreamdroid.room.AppDatabase/<version>.json` — exported Room schemas, committed.
 - `app/res/raw/changelog.md`, `app/res/raw-de/changelog.md` — in-app changelogs (EN/DE). `fastlane/metadata/android/` holds store descriptions and screenshots only, no changelogs.
 - `scripts/` — helper scripts shared by CI and the agent hooks. `.cursor/`, `.claude/`, `.agents/` — per-tool setup and skills.
-- Design docs in `docs/`: `modernize-dreamdroid.md` (plan, target architecture, deliberate exceptions), `offline-and-errors.md` (what is cached and who decides), `hilt-migration.md`, `multiepg.md`, `openwebif.md`, `autotimer.md`, `vps.md`. Read the one for the area you touch before changing behavior there.
+- Design docs in `docs/`: `modernize-dreamdroid.md` (plan, target architecture, deliberate exceptions), `offline-and-errors.md` (what is cached and who decides), `hilt-migration.md`, `multiepg.md`, `openwebif.md`, `autotimer.md`, `vps.md`, `tv-focus-testing.md` (D-pad focus in instrumented tests). Read the one for the area you touch before changing behavior there.
 
 ## Code rules
 
@@ -71,6 +71,8 @@ Instrumented tests are the default proof for Compose and in-app UI. Do not prove
 ```
 
 Use `JAVA_HOME` pointing at JDK 25. Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+
+**D-pad focus needs keyboard input mode.** Compose tests start in touch mode, where buttons, switches and other clickables cannot take focus: `requestFocus()` returns false silently. Pressing keys with `performKeyInput` does not change that, and text fields or TV `Surface`s focus anyway, so a passing test can prove nothing. Before relying on D-pad focus, request `InputMode.Keyboard` as `SleepTimerCountdownTest` does, and keep a TV screen's initial focus off text fields (it opens the soft keyboard). Why, sources, and the ui-test 1.13 replacement: [`docs/tv-focus-testing.md`](docs/tv-focus-testing.md).
 
 **CI runs instrumented tests on `aosp_atd`, API 30, x86_64, headless (no Play / Google APIs).** A test must not depend on Google Play services or a Google-APIs-only feature, and API 30 is the only level exercised in CI (`minSdk` 26, `targetSdk` 37; the Cursor Cloud VM boots `system-images;android-34;google_apis;x86_64` instead). The suite runs in 3 shards (`-PtestShardCount=3 -PtestShardIndex=i`; `app/build.gradle.kts` maps them to `numShards`/`shardIndex`).
 
