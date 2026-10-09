@@ -1,9 +1,12 @@
 package net.reichholf.dreamdroid.ui.services
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertCountEquals
@@ -115,6 +118,49 @@ class ServiceListScreenTest {
             .assertIsDisplayed()
             .getBoundsInRoot()
         assertEquals(list.top.value, header.top.value, 1f)
+    }
+
+    @Test
+    fun wideListFitsTwoColumnsUnderAFullWidthHeader() {
+        showColumns(AUTO_FIT_COLUMNS)
+
+        val one = composeRule.onNodeWithText("Channel 1").getBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getBoundsInRoot()
+        assertEquals(one.top.value, two.top.value, 1f)
+        assertTrue("Channel 2 sits right of Channel 1", two.left > one.right)
+        val header = composeRule.onNode(hasText("Doku") and isHeading()).getBoundsInRoot()
+        assertTrue("the marker spans both columns", header.top < one.top)
+    }
+
+    @Test
+    fun maxColumnsCapsTheGrid() {
+        showColumns(1)
+
+        val one = composeRule.onNodeWithText("Channel 1").getBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getBoundsInRoot()
+        assertEquals(one.left.value, two.left.value, 1f)
+        assertTrue("Channel 2 sits under Channel 1", two.top >= one.bottom)
+    }
+
+    /** A marker and four channels, 700dp wide: room for two 300dp columns. */
+    private fun showColumns(maxColumns: Int) {
+        val items = listOf(
+            ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
+        ) + (1..4).map { n ->
+            ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(Modifier.requiredWidth(700.dp)) {
+                    ServiceListScreen(
+                        items = items,
+                        onItemClick = {},
+                        onItemLongClick = {},
+                        maxColumns = maxColumns
+                    )
+                }
+            }
+        }
     }
 
     @Test

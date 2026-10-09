@@ -11,8 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -27,6 +29,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
@@ -55,32 +59,74 @@ private val ProgressBarHeight = 6.dp
 
 const val SERVICE_LIST_PROGRESS_TAG = "service_list_progress"
 
+/** `grid_max_cols` value for "as many columns as fit". */
+const val AUTO_FIT_COLUMNS = -1
+
+/** Narrowest service column, as the 1.x `AutofitRecyclerView` laid it out. */
+private val ServiceColumnMinWidth = 300.dp
+
+/**
+ * The service list as a grid of [ServiceColumnMinWidth] columns, at most [maxColumns] of
+ * them ([AUTO_FIT_COLUMNS] or any value below 1: as many as fit).
+ */
 @Composable
 fun ServiceListScreen(
     items: List<ServiceListItem>,
     onItemClick: (ServiceListItem) -> Unit,
     onItemLongClick: (ServiceListItem) -> Unit,
     modifier: Modifier = Modifier,
+    maxColumns: Int = AUTO_FIT_COLUMNS,
     menu: RowMenuState<ServiceRowAction>? = null,
     onMenuAction: (ServiceRowAction) -> Unit = {},
     onMenuDismiss: () -> Unit = {}
 ) {
-    LazyColumn(modifier.fillMaxSize()) {
-        serviceListItems(items) { item ->
-            Box {
-                ServiceRow(
-                    item = item,
-                    onClick = { onItemClick(item) },
-                    onLongClick = { onItemLongClick(item) }
-                )
-                RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
+    LazyVerticalGrid(
+        columns = AutoFitCells(ServiceColumnMinWidth, maxColumns),
+        modifier = modifier.fillMaxSize()
+    ) {
+        for (item in items) {
+            when {
+                item.kind != ServiceRowKind.MARKER -> item(key = serviceRowKey(item)) {
+                    Box {
+                        ServiceRow(
+                            item = item,
+                            onClick = { onItemClick(item) },
+                            onLongClick = { onItemLongClick(item) }
+                        )
+                        RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
+                    }
+                }
+
+                item.isSectionHeader -> stickyHeader(key = serviceRowKey(item)) {
+                    ListSectionHeader(item.name)
+                }
+
+                else -> item(key = serviceRowKey(item), span = { GridItemSpan(maxLineSpan) }) {
+                    Spacer(Modifier.height(SpacerGap))
+                }
             }
         }
     }
 }
 
 /**
- * [items] as list entries: a bouquet marker is a sticky section header over the rows up to
+ * [GridCells.Adaptive] capped at [maxCount] columns; [maxCount] below 1 leaves it uncapped.
+ * Material 3 and foundation have no capped adaptive grid.
+ */
+private data class AutoFitCells(private val minSize: Dp, private val maxCount: Int) : GridCells {
+    override fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int> {
+        val fit = ((availableSize + spacing) / (minSize.roundToPx() + spacing)).coerceAtLeast(1)
+        val count = if (maxCount > 0) minOf(fit, maxCount) else fit
+        val cells = availableSize - spacing * (count - 1)
+        val size = cells / count
+        val remainder = cells % count
+        return List(count) { size + if (it < remainder) 1 else 0 }
+    }
+}
+
+/**
+ * [items] as list entries (the phone zap list; [ServiceListScreen] lays them out the same
+ * way as a grid): a bouquet marker is a sticky section header over the rows up to
  * the next marker, a spacer is a plain gap, every other item is drawn by [row]. Each item
  * stays one list entry, so an item's index in [items] is its list index.
  */

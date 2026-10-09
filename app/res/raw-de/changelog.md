@@ -20,6 +20,7 @@
 * UPD: Verbesserte Verbindungserkennung (Online / Offline / Prüfung, erneute Prüfung im Hintergrund)
 * UPD: Benötigt Android 8.0 oder neuer
 * DEL: Eingebauter Mediaplayer / Playlist-Browser
+* FIX: Breite Bildschirme zeigen die Kanalliste wieder mehrspaltig; „Max. Spalten in Kanalliste“ begrenzt sie
 * FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
 * UPD: Android-TV-Senderkarten sind kompakt, mit vorangestelltem Picon und Fortschrittsbalken für die laufende Sendung
 * UPD: Online-Picons werden pro Profil eingestellt (an/aus, Pfad auf dem Receiver, über Kanalnamen); die bisherige globale Einstellung wird übernommen. Die Android-TV-Einstellungen können jetzt Picons synchronisieren

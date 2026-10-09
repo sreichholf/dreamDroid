@@ -21,6 +21,7 @@
 * UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer / playlist browser
+* FIX: Wide screens show the service list in several columns again; "Max. servicelist columns" caps them
 * FIX: Screenshots on receivers whose /grab returns no image (e.g. Dreambox Two with Gemini Project) use /screenshot instead
 * FIX: Android TV movie cards no longer clip a partial last line of text
 * UPD: Android TV service cards are compact, with a leading picon and a progress bar for the current programme

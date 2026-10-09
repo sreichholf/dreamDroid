@@ -42,7 +42,11 @@ data class AppSettings(
     val fakePicon: Boolean = false,
     val xmlDebug: Boolean = false,
     val autoSwitchProfileWifiBased: Boolean = false
-)
+) {
+    /** [gridMaxCols] as a column cap; below 1 means as many columns as fit. */
+    val maxGridColumns: Int
+        get() = gridMaxCols.toIntOrNull() ?: -1
+}
 
 /**
  * [AppSettings] over the default [SharedPreferences], under the `DreamDroid.PREFS_KEY_*`
