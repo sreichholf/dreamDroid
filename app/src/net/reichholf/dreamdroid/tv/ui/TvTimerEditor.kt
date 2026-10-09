@@ -89,15 +89,19 @@ fun TvTimerEditorContent(
 ) {
     var pickingService by remember { mutableStateOf(false) }
     var showNeedsReceiver by remember { mutableStateOf(false) }
-    val firstFieldFocus = remember { FocusRequester() }
+    val initialFocus = remember { FocusRequester() }
+    val serviceFocus = remember { FocusRequester() }
+    var returnedFromPicker by remember { mutableStateOf(false) }
+    val formShown = !pickingService && uiState.timer != null
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
-    LaunchedEffect(Unit) {
-        try {
-            firstFieldFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Editor not attached yet.
+    // The form takes focus when it appears, so focus does not fall back to the hub drawer
+    // when the opening button leaves the composition. Back from the service picker, focus
+    // returns to the service field.
+    LaunchedEffect(formShown) {
+        if (formShown) {
+            if (returnedFromPicker) serviceFocus.requestFocus() else initialFocus.requestFocus()
         }
     }
 
@@ -107,9 +111,13 @@ fun TvTimerEditorContent(
                 viewModelKey = servicePickKey,
                 onPicked = { service ->
                     onServicePicked(service)
+                    returnedFromPicker = true
                     pickingService = false
                 },
-                onDismiss = { pickingService = false }
+                onDismiss = {
+                    returnedFromPicker = true
+                    pickingService = false
+                }
             )
         } else {
             TimerEditContent(
@@ -119,7 +127,8 @@ fun TvTimerEditorContent(
                 actions = actions,
                 onPickService = { pickingService = true },
                 showSaveFab = true,
-                firstFieldFocusRequester = firstFieldFocus,
+                initialFocusRequester = initialFocus,
+                serviceFocusRequester = serviceFocus,
                 onSave = {
                     if (uiState.mutationsBlocked) {
                         showNeedsReceiver = true

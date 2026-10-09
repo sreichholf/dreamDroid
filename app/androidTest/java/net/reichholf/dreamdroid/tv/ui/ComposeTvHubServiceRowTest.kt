@@ -277,7 +277,7 @@ class ComposeTvHubServiceRowTest {
                     modifier = Modifier
                         .background(parent)
                         .padding(12.dp)
-                        .width(240.dp)
+                        .width(340.dp)
                         .height(240.dp)
                         .testTag("card_parent")
                 ) {

@@ -11,12 +11,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
+import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
@@ -111,6 +115,10 @@ class TvServiceTimerEditorFocusTest {
         composeRule.waitForIdle()
 
         assertEquals("header selection changed", sports.bouquet.reference, selected)
-        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
+        // Focus lands on the first control that is not a text field, so no soft keyboard.
+        composeRule.onNodeWithContentDescription(
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.enabled)
+        ).assertIsFocused()
+        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed().assertIsNotFocused()
     }
 }

@@ -8,12 +8,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
+import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.ui.timers.TimerEditUiState
@@ -23,9 +27,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Opening the hub Timers editor must keep the Timers header selected. The drawer selects
- * a header when its item gains focus, so the editor has to take focus instead of letting
- * it fall back to the first drawer item when the edit button leaves the composition.
+ * Opening the hub Timers editor must keep the Timers header selected and put focus in the
+ * form. The edit button leaves the composition, so the editor takes focus itself; focus
+ * that falls back to the drawer would leave the form unreachable.
  */
 @OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHubFocusTest {
@@ -89,6 +93,10 @@ class TvTimerEditorHubFocusTest {
         composeRule.waitForIdle()
 
         assertEquals("header selection changed", TvComposeHubHost.HEADER_TIMERS_ID, selected)
-        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
+        // Focus lands on the first control that is not a text field, so no soft keyboard.
+        composeRule.onNodeWithContentDescription(
+            InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.enabled)
+        ).assertIsFocused()
+        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed().assertIsNotFocused()
     }
 }
