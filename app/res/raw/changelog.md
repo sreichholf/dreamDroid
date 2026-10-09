@@ -16,6 +16,7 @@
 * UPD: Modernized architecture and Material 3 UI across phone screens
 * UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
 * UPD: Tablets show the TV & Movies and Tools sections in the bottom bar like phones; on tablets and phones in landscape, icon and label sit side by side
+* UPD: Tablets and phones in landscape use the Material 3 side margin instead of a wide fixed one
 * UPD: Android TV browse hub refreshed
 * UPD: Bouquet EPG date/time jump chips (incl. Now / Prime)
 * UPD: Virtual Remote home-screen widget

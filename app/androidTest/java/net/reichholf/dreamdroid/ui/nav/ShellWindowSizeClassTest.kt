@@ -1,10 +1,14 @@
 package net.reichholf.dreamdroid.ui.nav
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -29,7 +33,8 @@ import org.junit.Test
  * Both window sizes show the bottom destination bar; from medium width on its items put the
  * icon beside the label. The size class comes from [LocalWindowInfo], which
  * [androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2] reads. The activity's own
- * configuration is left alone.
+ * configuration is left alone. From medium width on, content is also inset by the Material 3
+ * window margin.
  */
 class ShellWindowSizeClassTest {
     @get:Rule
@@ -53,11 +58,32 @@ class ShellWindowSizeClassTest {
     }
 
     @Test
+    fun mediumWindowInsetsContentByMaterialMargin() {
+        showShell(width = 700.dp, height = 900.dp)
+        val margin = contentStartMargin()
+        assertTrue("expected a 24dp inset, was $margin dp", abs(margin - 24f) < 1f)
+    }
+
+    @Test
+    fun compactWindowDrawsContentEdgeToEdge() {
+        showShell(width = 400.dp, height = 800.dp)
+        val margin = contentStartMargin()
+        assertTrue("expected no inset, was $margin dp", abs(margin) < 1f)
+    }
+
+    @Test
     fun compactWindowPutsIconsAboveLabels() {
         showShell(width = 400.dp, height = 800.dp)
         composeRule.onNodeWithTag(SHELL_CHROME_TAG).assertIsDisplayed()
         val offset = labelOffsetFromItemCenter()
         assertTrue("label below the icon, off by $offset", offset > 4f)
+    }
+
+    /** Distance in dp from the shell chrome's start edge to the content's start edge. */
+    private fun contentStartMargin(): Float {
+        val chrome = composeRule.onNodeWithTag(SHELL_CHROME_TAG).fetchSemanticsNode().boundsInRoot
+        val content = composeRule.onNodeWithTag(CONTENT_TAG).fetchSemanticsNode().boundsInRoot
+        return with(composeRule.density) { (content.left - chrome.left).toDp().value }
     }
 
     /** How far, in dp, the selected item's label sits below the middle of the item. */
@@ -108,8 +134,12 @@ private fun WindowSizeHost() {
         destinationController = destination,
         fabController = remember { ShellFabController() },
         topBarController = remember { ShellTopBarController() }
-    ) {}
+    ) {
+        Box(Modifier.fillMaxSize().testTag(CONTENT_TAG))
+    }
 }
+
+private const val CONTENT_TAG = "window_size_content"
 
 private class FixedWindowInfo(override val containerSize: IntSize) : WindowInfo {
     override val isWindowFocused: Boolean = true
