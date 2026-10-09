@@ -15,7 +15,6 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.current.NowPlayingStrip
 import net.reichholf.dreamdroid.ui.nav.DestinationBar
 import net.reichholf.dreamdroid.ui.nav.DestinationBarItem
-import net.reichholf.dreamdroid.ui.nav.DestinationRail
 
 @Composable
 fun TvMoviesHeader(
@@ -63,33 +62,12 @@ fun TvMoviesDestinationBar(
     )
 }
 
-@Composable
-fun TvMoviesDestinationRail(
-    selected: TvMoviesDestination,
-    onDestinationSelected: (TvMoviesDestination) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    DestinationRail(
-        items = tvMoviesDestinationItems(),
-        selectedIndex = selected.ordinal,
-        onSelect = { onDestinationSelected(TvMoviesDestination.entries[it]) },
-        modifier = modifier
-    )
-}
-
 /**
  * Shell bottom chrome: now-playing strip stacked on the destination bar. Both slide away
  * together while the hub list scrolls down, so the strip lives here, not in the hub Column.
- *
- * Tablet hosts destinations on [net.reichholf.dreamdroid.ui.nav.DestinationRail]
- * and sets [showDestinationBar] to false so this slot is strip-only.
  */
 @Composable
-fun TvMoviesShellChrome(
-    state: TvMoviesHubState,
-    showDestinationBar: Boolean = true,
-    modifier: Modifier = Modifier
-) {
+fun TvMoviesShellChrome(state: TvMoviesHubState, modifier: Modifier = Modifier) {
     Column(modifier.fillMaxWidth()) {
         if (state.nowPlayingStripEnabled) {
             NowPlayingStrip(
@@ -104,12 +82,10 @@ fun TvMoviesShellChrome(
                 onClick = { state.onNowPlayingClick() }
             )
         }
-        if (showDestinationBar) {
-            TvMoviesDestinationBar(
-                selected = state.selected,
-                onDestinationSelected = { state.onDestinationSelected(it) }
-            )
-        }
+        TvMoviesDestinationBar(
+            selected = state.selected,
+            onDestinationSelected = { state.onDestinationSelected(it) }
+        )
     }
 }
 

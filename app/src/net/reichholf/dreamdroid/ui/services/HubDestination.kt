@@ -36,7 +36,7 @@ import net.reichholf.dreamdroid.ui.text.asString
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * [HubViewModel] owns mode, the selected row, and bouquet or location tabs
  * (parity with former ServiceListPager). Publishes [TvMoviesHubState] through
- * [RegisterShellDestinationBar] (phone bottom bar or tablet rail), and routes MultiChoice /
+ * [RegisterShellDestinationBar] (shell bottom chrome), and routes MultiChoice /
  * timer-edit results for the active child page.
  */
 @Composable

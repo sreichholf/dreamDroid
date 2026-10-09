@@ -96,8 +96,7 @@ private fun ChromeHost(stripEnabled: Boolean) {
             onNavigationClick = {},
             destinationController = destination,
             fabController = fab,
-            topBarController = remember { ShellTopBarController() },
-            usesRail = false
+            topBarController = remember { ShellTopBarController() }
         ) {
             BindShellFab(
                 contentDescription = "New timer",
