@@ -117,24 +117,25 @@ fun EpgBouquetDestination(
         onTimeline = { openMultiEpg(timeSec.toLong()) }
     )
 
-    DreamDroidPullRefresh(
-        refreshing = uiState.refreshing,
-        onRefresh = { viewModel.reload(forceRefresh = true) },
-        enabled = true,
-        modifier = modifier
-    ) {
-        EpgBouquetScreen(
-            items = uiState.events,
-            listState = listState,
-            emptyMessage = uiState.emptyMessage?.asString(),
-            bouquetPick = EpgBouquetPickUi(
-                bouquetName = uiState.bouquetName,
-                onPickBouquet = viewModel::pickBouquet
-            ),
-            timeJump = timeJump,
-            piconsEnabled = uiState.piconsEnabled,
-            onItemClick = detailViewModel::showDetail
-        )
+    EpgEventListDetailHost(handle, detailViewModel, modifier) {
+        DreamDroidPullRefresh(
+            refreshing = uiState.refreshing,
+            onRefresh = { viewModel.reload(forceRefresh = true) },
+            enabled = true
+        ) {
+            EpgBouquetScreen(
+                items = uiState.events,
+                listState = listState,
+                emptyMessage = uiState.emptyMessage?.asString(),
+                bouquetPick = EpgBouquetPickUi(
+                    bouquetName = uiState.bouquetName,
+                    onPickBouquet = viewModel::pickBouquet
+                ),
+                timeJump = timeJump,
+                piconsEnabled = uiState.piconsEnabled,
+                onItemClick = detailViewModel::showDetail
+            )
+        }
     }
 
     if (showDatePicker) {
@@ -158,8 +159,6 @@ fun EpgBouquetDestination(
             }
         )
     }
-
-    EpgEventDetailHost(handle, detailViewModel)
 }
 
 internal fun openBouquetMultiEpg(

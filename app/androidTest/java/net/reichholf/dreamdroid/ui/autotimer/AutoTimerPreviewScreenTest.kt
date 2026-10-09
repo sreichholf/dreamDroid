@@ -7,9 +7,12 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import java.time.Instant
@@ -17,6 +20,10 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.enigma.autotimer.Verdict
+import net.reichholf.dreamdroid.testutil.COMPACT_WINDOW_WIDTH
+import net.reichholf.dreamdroid.testutil.EXPANDED_WINDOW_WIDTH
+import net.reichholf.dreamdroid.testutil.WithWindowSize
+import net.reichholf.dreamdroid.ui.compose.LIST_DETAIL_DETAIL_PANE_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -86,6 +93,22 @@ class AutoTimerPreviewScreenTest {
         composeRule.onNodeWithText("Krimi").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
         composeRule.onNodeWithText("Similar").assertDoesNotExist()
+    }
+
+    @Test
+    fun twoPaneWindowShowsTheProgrammeBesideTheList() {
+        show(
+            ready(upcoming = listOf(UPCOMING)).copy(
+                detail = AutoTimerMatchDetail(UPCOMING, MatchEpg.Missing)
+            ),
+            width = EXPANDED_WINDOW_WIDTH
+        )
+
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("The receiver's EPG has no details for this event.")
+            .assertExists()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
+        composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
     }
 
     @Test
@@ -182,20 +205,23 @@ class AutoTimerPreviewScreenTest {
 
     private fun show(
         state: AutoTimerPreviewUiState,
+        width: Dp = COMPACT_WINDOW_WIDTH,
         onEnable: () -> Unit = {},
         onToggleLog: (PreviewMatch) -> Unit = {},
         onOpenMatch: (PreviewMatch) -> Unit = {}
     ) {
         composeRule.setContent {
             DreamDroidTheme {
-                AutoTimerPreviewScreen(
-                    state = state,
-                    onRefresh = {},
-                    onEnable = onEnable,
-                    onToggleLog = onToggleLog,
-                    onOpenMatch = onOpenMatch,
-                    onDismissMatch = {}
-                )
+                WithWindowSize(width) {
+                    AutoTimerPreviewScreen(
+                        state = state,
+                        onRefresh = {},
+                        onEnable = onEnable,
+                        onToggleLog = onToggleLog,
+                        onOpenMatch = onOpenMatch,
+                        onDismissMatch = {}
+                    )
+                }
             }
         }
     }

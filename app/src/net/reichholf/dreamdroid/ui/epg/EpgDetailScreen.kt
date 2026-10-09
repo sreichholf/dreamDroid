@@ -123,7 +123,7 @@ fun EpgDetailScreen(
     showActions: Boolean = true,
     /** The session blocks timer writes: the timer actions look online-only. */
     timerWritesBlocked: Boolean = false,
-    /** Phone bottom sheet caps body height; TV fullscreen passes null. */
+    /** Phone bottom sheet caps body height; TV fullscreen and list-detail panes pass null. */
     bodyHeightCap: Dp? = 360.dp,
     /** Opens a new AutoTimer for this event; null hides the action. */
     onRecordSeries: (() -> Unit)? = null
@@ -137,7 +137,8 @@ fun EpgDetailScreen(
                     if (bodyHeightCap != null) {
                         Modifier.heightIn(max = bodyHeightCap)
                     } else {
-                        Modifier
+                        // Uncapped in a bounded pane: the body scrolls, the actions stay.
+                        Modifier.weight(1f, fill = false)
                     }
                 )
                 .testTag(

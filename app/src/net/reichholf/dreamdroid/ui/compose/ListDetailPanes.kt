@@ -46,7 +46,8 @@ private fun listDetailDirective(): PaneScaffoldDirective =
  * [ListDetailPaneScaffold], with [emptyDetail] while [detail] is null; back clears a shown
  * detail before it leaves the screen. Narrower windows draw [list] alone and hand a shown
  * detail to [singlePaneDetail] (a bottom sheet, say). [list] keeps its state, such as its scroll
- * position, when the window crosses between the two.
+ * position, when the window crosses between the two. The pane's state starts fresh whenever
+ * [detailKey] of the detail changes.
  */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -57,6 +58,7 @@ fun <T : Any> ListDetailPanes(
     emptyDetail: @Composable () -> Unit,
     singlePaneDetail: @Composable (T) -> Unit,
     modifier: Modifier = Modifier,
+    detailKey: (T) -> Any = { it },
     detailContent: @Composable (T) -> Unit
 ) {
     val currentList by rememberUpdatedState(list)
@@ -93,8 +95,7 @@ fun <T : Any> ListDetailPanes(
                     if (detail == null) {
                         emptyDetail()
                     } else {
-                        // A different item starts with fresh state (scroll position and so on).
-                        key(detail) { detailContent(detail) }
+                        key(detailKey(detail)) { detailContent(detail) }
                     }
                 }
             }

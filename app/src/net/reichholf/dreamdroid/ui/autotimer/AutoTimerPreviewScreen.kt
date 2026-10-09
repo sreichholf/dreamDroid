@@ -32,18 +32,22 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimer
 import net.reichholf.dreamdroid.enigma.autotimer.PreviewMatch
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.compose.ListDetailEmptyPane
+import net.reichholf.dreamdroid.ui.compose.ListDetailPanes
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListSectionHeader
+import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
+import net.reichholf.dreamdroid.ui.epg.EpgDetailScreen
 import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.text.asString
 
 /**
  * What an AutoTimer would record: its summary, then the upcoming events and the skipped ones.
- * A tap on an upcoming event opens its EPG sheet; a tap on a skipped one shows the plugin's
- * reason.
+ * A tap on an upcoming event opens its EPG detail (beside the list where the window fits two
+ * panes, a sheet elsewhere); a tap on a skipped one shows the plugin's reason.
  */
 @Composable
 fun AutoTimerPreviewScreen(
@@ -55,7 +59,37 @@ fun AutoTimerPreviewScreen(
     onDismissMatch: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Box(modifier = modifier.fillMaxSize()) {
+    ListDetailPanes(
+        detail = state.detail,
+        onDetailDismiss = onDismissMatch,
+        list = { PreviewList(state, onRefresh, onEnable, onToggleLog, onOpenMatch) },
+        emptyDetail = { ListDetailEmptyPane(stringResource(R.string.epg_detail_pane_empty)) },
+        singlePaneDetail = { AutoTimerMatchSheet(detail = it, onDismiss = onDismissMatch) },
+        modifier = modifier,
+        // The EPG lookup completing is the same match, not a new one.
+        detailKey = { it.match }
+    ) { detail ->
+        EpgDetailScreen(
+            content = detail.epgContent(),
+            onSetTimer = {},
+            onEditTimer = {},
+            onImdb = {},
+            onSimilar = {},
+            showActions = false,
+            bodyHeightCap = null
+        )
+    }
+}
+
+@Composable
+private fun PreviewList(
+    state: AutoTimerPreviewUiState,
+    onRefresh: () -> Unit,
+    onEnable: () -> Unit,
+    onToggleLog: (PreviewMatch) -> Unit,
+    onOpenMatch: (PreviewMatch) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
         DreamDroidPullRefresh(
             refreshing = state.refreshing,
             onRefresh = onRefresh,
@@ -117,7 +151,6 @@ fun AutoTimerPreviewScreen(
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
     }
-    state.detail?.let { AutoTimerMatchSheet(detail = it, onDismiss = onDismissMatch) }
 }
 
 /**
@@ -126,25 +159,28 @@ fun AutoTimerPreviewScreen(
  */
 @Composable
 fun AutoTimerMatchSheet(detail: AutoTimerMatchDetail, onDismiss: () -> Unit) {
-    val event = when (val epg = detail.epg) {
-        is MatchEpg.Found -> epg.event
-
-        MatchEpg.Loading -> detail.match.toEvent(description = "")
-
-        MatchEpg.Missing ->
-            detail.match.toEvent(description = stringResource(R.string.autotimer_no_epg))
-    }
     EpgDetailModalSheet(
-        content = event.toEpgDetailContentOrUnavailable(
-            stringResource(R.string.minutes_short),
-            stringResource(R.string.not_available)
-        ),
+        content = detail.epgContent(),
         onDismiss = onDismiss,
         onSetTimer = {},
         onEditTimer = {},
         onImdb = {},
         onSimilar = {},
         showActions = false
+    )
+}
+
+/** What the match itself says until the EPG lookup is done. */
+@Composable
+private fun AutoTimerMatchDetail.epgContent(): EpgDetailContent {
+    val event = when (val epg = epg) {
+        is MatchEpg.Found -> epg.event
+        MatchEpg.Loading -> match.toEvent(description = "")
+        MatchEpg.Missing -> match.toEvent(description = stringResource(R.string.autotimer_no_epg))
+    }
+    return event.toEpgDetailContentOrUnavailable(
+        stringResource(R.string.minutes_short),
+        stringResource(R.string.not_available)
     )
 }
 

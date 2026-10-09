@@ -157,6 +157,7 @@
     <string name="quickzap">QuickZap Layout (Simple)</string>
     <string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
     <string name="movie_detail_pane_empty">Choose Info on a recording to see its details here</string>
+    <string name="epg_detail_pane_empty">Choose an event to see its details here</string>
     <string name="ok">OK</string>
     <string name="activate">Activate</string>
     <string name="confirm_delete_profile">Do you really want to delete this profile?</string>

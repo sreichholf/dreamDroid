@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
@@ -33,27 +34,29 @@ fun EpgSearchDestination(
         viewModel.syncRoute(query, remountEpoch)
     }
 
-    DreamDroidPullRefresh(
-        refreshing = false,
-        onRefresh = viewModel::reload,
-        enabled = !uiState.showRecent,
-        modifier = modifier
-    ) {
-        EpgSearchScreen(
-            queryState = viewModel.queryState,
-            state = uiState,
-            onBack = { handle.popNavBackStack() },
-            onSearch = viewModel::submit,
-            onRecentClick = viewModel::searchRecent,
-            onRecentRemove = viewModel::forgetRecent,
-            onItemClick = { event ->
-                viewModel.onResultOpened()
-                detailViewModel.showDetail(event)
-            },
-            onRetry = viewModel::reload,
-            focusOnStart = query.isEmpty()
-        )
+    val focusManager = LocalFocusManager.current
+    EpgEventListDetailHost(handle, detailViewModel, modifier) {
+        DreamDroidPullRefresh(
+            refreshing = false,
+            onRefresh = viewModel::reload,
+            enabled = !uiState.showRecent
+        ) {
+            EpgSearchScreen(
+                queryState = viewModel.queryState,
+                state = uiState,
+                onBack = { handle.popNavBackStack() },
+                onSearch = viewModel::submit,
+                onRecentClick = viewModel::searchRecent,
+                onRecentRemove = viewModel::forgetRecent,
+                onItemClick = { event ->
+                    // In a detail pane the keyboard would stay up over the event's actions.
+                    focusManager.clearFocus()
+                    viewModel.onResultOpened()
+                    detailViewModel.showDetail(event)
+                },
+                onRetry = viewModel::reload,
+                focusOnStart = query.isEmpty()
+            )
+        }
     }
-
-    EpgEventDetailHost(handle, detailViewModel)
 }
