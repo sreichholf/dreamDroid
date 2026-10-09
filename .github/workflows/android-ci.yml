@@ -3,11 +3,11 @@ name: Android CI
 on:
   push:
     branches: [main]
+  # No `edited`: a title/body edit would start a run of skipped jobs, the newest
+  # run on the commit, and the required checks would read it instead of the
+  # real one. A PR retargeted onto main gets CI from its next push.
   pull_request:
     branches: [main]
-    # Default types (opened/synchronize/reopened) miss PR base retargets.
-    # edited covers that; title/body-only edits are skipped in the job `if`.
-    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
       upload_apk:
@@ -20,8 +20,7 @@ on:
         default: false
 
 concurrency:
-  # Isolate title/body-only edited runs so they do not cancel a real CI run.
-  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}${{ github.event.action == 'edited' && github.event.changes.base.ref.from == '' && '-pr-text' || '' }}
+  group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 # One emulator for androidTest and upgrade115; the AVD snapshot cache key is
@@ -39,7 +38,6 @@ env:
 jobs:
   unit:
     name: Unit tests + assemble
-    if: github.event.action != 'edited' || github.event.changes.base.ref.from != ''
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
@@ -104,9 +102,7 @@ jobs:
   # for the runner's 4 vCPUs. Not on main pushes: the merged PR already ran it.
   lint:
     name: Lint + spotless
-    if: >-
-      github.event_name != 'push' &&
-      (github.event.action != 'edited' || github.event.changes.base.ref.from != '')
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     steps:
