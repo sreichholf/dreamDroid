@@ -14,7 +14,7 @@
 * UPD: Sender-EPG nach Tag gruppiert
 * UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
 * UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
-* UPD: Tablets zeigen die Bereiche von TV & Movies und Werkzeuge wie Telefone in der unteren Leiste, mit Symbol und Text nebeneinander
+* UPD: Tablets zeigen die Bereiche von TV & Movies und Werkzeuge wie Telefone in der unteren Leiste; auf Tablets und Telefonen im Querformat stehen Symbol und Text nebeneinander
 * UPD: Android-TV-Browse-Hub überarbeitet
 * UPD: Bouquet-EPG mit Datums-/Zeit-Sprungchips (inkl. Jetzt / Prime)
 * UPD: Virtual-Remote-Homescreen-Widget

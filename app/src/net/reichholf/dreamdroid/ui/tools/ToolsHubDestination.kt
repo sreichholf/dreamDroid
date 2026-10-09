@@ -24,7 +24,7 @@ import net.reichholf.dreamdroid.ui.signal.SignalDestination
 
 /**
  * Tools hub: Screenshot / Device Info / Signal Meter / Bouquets with shell destination chrome
- * (phone bottom bar or tablet start rail, owned by
+ * (shell bottom chrome, owned by
  * [net.reichholf.dreamdroid.ui.nav.ProvideShellDestinationBar]).
  */
 @Composable
