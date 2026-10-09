@@ -2,19 +2,20 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -29,7 +30,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
@@ -78,32 +78,18 @@ fun ServiceListScreen(
     onMenuAction: (ServiceRowAction) -> Unit = {},
     onMenuDismiss: () -> Unit = {}
 ) {
-    LazyVerticalGrid(
-        columns = AutoFitCells(ServiceColumnMinWidth, maxColumns),
-        modifier = modifier.fillMaxSize()
-    ) {
-        for (item in items) {
-            when (item.slot) {
-                ServiceSlot.ROW -> item(key = serviceRowKey(item)) {
-                    Box {
-                        ServiceRow(
-                            item = item,
-                            onClick = { onItemClick(item) },
-                            onLongClick = { onItemLongClick(item) }
-                        )
-                        RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
-                    }
-                }
-
-                ServiceSlot.HEADER -> stickyHeader(key = serviceRowKey(item)) {
-                    ListSectionHeader(item.name)
-                }
-
-                ServiceSlot.GAP -> item(
-                    key = serviceRowKey(item),
-                    span = { GridItemSpan(maxLineSpan) }
-                ) {
-                    Spacer(Modifier.height(SpacerGap))
+    BoxWithConstraints(modifier.fillMaxSize()) {
+        val columns = autoFitColumns(maxWidth, maxColumns)
+        LazyColumn(Modifier.fillMaxSize()) {
+            serviceListItems(items, columns) { item ->
+                Box {
+                    ServiceRow(
+                        item = item,
+                        onClick = { onItemClick(item) },
+                        onLongClick = { onItemLongClick(item) },
+                        modifier = Modifier.fillMaxHeight()
+                    )
+                    RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
                 }
             }
         }
@@ -111,42 +97,59 @@ fun ServiceListScreen(
 }
 
 /**
- * [GridCells.Adaptive] capped at [maxCount] columns; [maxCount] below 1 leaves it uncapped.
- * Material 3 and foundation have no capped adaptive grid.
+ * How many [ServiceColumnMinWidth] columns fit into [width], at most [maxCount] of them;
+ * [maxCount] below 1 leaves it uncapped.
  */
-private data class AutoFitCells(private val minSize: Dp, private val maxCount: Int) : GridCells {
-    override fun Density.calculateCrossAxisCellSizes(availableSize: Int, spacing: Int): List<Int> {
-        val fit = ((availableSize + spacing) / (minSize.roundToPx() + spacing)).coerceAtLeast(1)
-        val count = if (maxCount > 0) minOf(fit, maxCount) else fit
-        val cells = availableSize - spacing * (count - 1)
-        val size = cells / count
-        val remainder = cells % count
-        return List(count) { size + if (it < remainder) 1 else 0 }
-    }
+private fun autoFitColumns(width: Dp, maxCount: Int): Int {
+    val fit = (width / ServiceColumnMinWidth).toInt().coerceAtLeast(1)
+    return if (maxCount > 0) minOf(fit, maxCount) else fit
 }
 
 /**
- * [items] as list entries, laid out like [ServiceListScreen]'s grid (see [ServiceSlot]),
- * every row drawn by [row]. Each item stays one list entry, so an item's index in [items]
- * is its list index.
+ * [items] as list entries (see [ServiceSlot]), the rows between two markers grouped into
+ * lines of [columns] cells drawn by [row]. The cells of a line share the height of the
+ * tallest, so a channel without now/next is as tall as its neighbour with them. With one
+ * column every item is one list entry, so an item's index in [items] is its list index.
  */
 fun LazyListScope.serviceListItems(
     items: List<ServiceListItem>,
+    columns: Int = 1,
     row: @Composable (ServiceListItem) -> Unit
 ) {
+    val line = mutableListOf<ServiceListItem>()
+    fun flushLines() {
+        line.chunked(columns).forEach { cells ->
+            item(key = serviceRowKey(cells.first())) {
+                if (columns == 1) {
+                    row(cells.single())
+                } else {
+                    Row(Modifier.height(IntrinsicSize.Max)) {
+                        for (cell in cells) {
+                            Box(Modifier.weight(1f).fillMaxHeight()) { row(cell) }
+                        }
+                        repeat(columns - cells.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+            }
+        }
+        line.clear()
+    }
     for (item in items) {
         when (item.slot) {
-            ServiceSlot.ROW -> item(key = serviceRowKey(item)) { row(item) }
+            ServiceSlot.ROW -> line += item
 
-            ServiceSlot.HEADER -> stickyHeader(key = serviceRowKey(item)) {
-                ListSectionHeader(item.name)
+            ServiceSlot.HEADER -> {
+                flushLines()
+                stickyHeader(key = serviceRowKey(item)) { ListSectionHeader(item.name) }
             }
 
-            ServiceSlot.GAP -> item(key = serviceRowKey(item)) {
-                Spacer(Modifier.height(SpacerGap))
+            ServiceSlot.GAP -> {
+                flushLines()
+                item(key = serviceRowKey(item)) { Spacer(Modifier.height(SpacerGap)) }
             }
         }
     }
+    flushLines()
 }
 
 /**
@@ -173,13 +176,18 @@ private val SpacerGap = 16.dp
 
 /** A channel or directory row; markers are section headers, see [serviceListItems]. */
 @Composable
-internal fun ServiceRow(item: ServiceListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
+internal fun ServiceRow(
+    item: ServiceListItem,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
     // The strip sits on the tile above the ListItem. ListItem merges its own semantics, so
     // the click goes on it, next to the label.
-    ListRowSurface {
+    ListRowSurface(modifier) {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
             LinearProgressIndicator(

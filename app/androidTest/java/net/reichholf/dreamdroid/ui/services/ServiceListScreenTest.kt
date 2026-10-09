@@ -146,16 +146,49 @@ class ServiceListScreenTest {
         assertTrue("Channel 2 sits under Channel 1", two.top >= one.bottom)
     }
 
+    @Test
+    fun cellsOfALineShareTheTallestHeight() {
+        val withEpg = ServiceListItem(
+            index = 2,
+            reference = "1:0:1:2:1:1:1:0:0:0:",
+            name = "Channel 2",
+            kind = ServiceRowKind.CHANNEL,
+            nowTitle = "Tagesschau",
+            nowStart = "20:00",
+            nowDuration = "15",
+            nextTitle = "Wetter",
+            nextStart = "20:15",
+            nextDuration = "5",
+            progressMax = 15,
+            progress = 3
+        )
+        showColumns(
+            AUTO_FIT_COLUMNS,
+            listOf(
+                ServiceListItem(1, "1:0:1:1:1:1:1:0:0:0:", "Channel 1", ServiceRowKind.CHANNEL),
+                withEpg
+            )
+        )
+
+        val cards = composeRule.onAllNodesWithTag(LIST_ROW_TAG)
+        val plain = cards[0].getUnclippedBoundsInRoot()
+        val epg = cards[1].getUnclippedBoundsInRoot()
+        assertTrue("the cards share a line", epg.left > plain.right)
+        assertEquals((epg.bottom - epg.top).value, (plain.bottom - plain.top).value, 1f)
+    }
+
     /**
-     * A marker and four channels, 700dp wide: room for two 300dp columns. That is wider
+     * [items] (default: a marker and four channels) 700dp wide: room for two 300dp columns. That is wider
      * than a portrait phone, so the tests compare unclipped bounds.
      */
-    private fun showColumns(maxColumns: Int) {
-        val items = listOf(
+    private fun showColumns(
+        maxColumns: Int,
+        items: List<ServiceListItem> = listOf(
             ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)
         ) + (1..4).map { n ->
             ServiceListItem(n, "1:0:1:$n:1:1:1:0:0:0:", "Channel $n", ServiceRowKind.CHANNEL)
         }
+    ) {
         composeRule.setContent {
             DreamDroidTheme {
                 Box(Modifier.requiredWidth(700.dp)) {
