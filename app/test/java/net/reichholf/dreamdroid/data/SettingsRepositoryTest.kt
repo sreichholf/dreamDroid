@@ -89,6 +89,15 @@ class SettingsRepositoryTest {
     }
 
     @Test
+    fun maxGridColumnsParsesTheStoredValue() {
+        assertEquals(AUTO_FIT_COLUMNS, repository.current().maxGridColumns)
+        preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "3").apply()
+        assertEquals(3, repository.current().maxGridColumns)
+        preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "").apply()
+        assertEquals(AUTO_FIT_COLUMNS, repository.current().maxGridColumns)
+    }
+
+    @Test
     fun settingsFlowEmitsTheCurrentValuesThenEachChange() {
         val seen = mutableListOf<AppSettings>()
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Unconfined)

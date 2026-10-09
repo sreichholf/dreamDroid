@@ -15,6 +15,7 @@ import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
@@ -30,6 +31,7 @@ import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.compose.RowMenuState
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -124,25 +126,30 @@ class ServiceListScreenTest {
     fun wideListFitsTwoColumnsUnderAFullWidthHeader() {
         showColumns(AUTO_FIT_COLUMNS)
 
-        val one = composeRule.onNodeWithText("Channel 1").getBoundsInRoot()
-        val two = composeRule.onNodeWithText("Channel 2").getBoundsInRoot()
+        val one = composeRule.onNodeWithText("Channel 1").getUnclippedBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getUnclippedBoundsInRoot()
         assertEquals(one.top.value, two.top.value, 1f)
         assertTrue("Channel 2 sits right of Channel 1", two.left > one.right)
-        val header = composeRule.onNode(hasText("Doku") and isHeading()).getBoundsInRoot()
-        assertTrue("the marker spans both columns", header.top < one.top)
+        val header = composeRule.onNode(hasText("Doku") and isHeading())
+            .getUnclippedBoundsInRoot()
+        assertTrue("the marker sits above the first row", header.bottom <= one.top)
+        assertTrue("the marker spans both columns", header.right > two.left)
     }
 
     @Test
     fun maxColumnsCapsTheGrid() {
         showColumns(1)
 
-        val one = composeRule.onNodeWithText("Channel 1").getBoundsInRoot()
-        val two = composeRule.onNodeWithText("Channel 2").getBoundsInRoot()
+        val one = composeRule.onNodeWithText("Channel 1").getUnclippedBoundsInRoot()
+        val two = composeRule.onNodeWithText("Channel 2").getUnclippedBoundsInRoot()
         assertEquals(one.left.value, two.left.value, 1f)
         assertTrue("Channel 2 sits under Channel 1", two.top >= one.bottom)
     }
 
-    /** A marker and four channels, 700dp wide: room for two 300dp columns. */
+    /**
+     * A marker and four channels, 700dp wide: room for two 300dp columns. That is wider
+     * than a portrait phone, so the tests compare unclipped bounds.
+     */
     private fun showColumns(maxColumns: Int) {
         val items = listOf(
             ServiceListItem(0, "1:64:1:0:0:0:0:0:0:0::Doku", "Doku", ServiceRowKind.MARKER)

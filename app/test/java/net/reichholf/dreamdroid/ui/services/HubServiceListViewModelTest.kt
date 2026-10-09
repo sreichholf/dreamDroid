@@ -563,9 +563,10 @@ class HubServiceListViewModelTest {
     }
 
     @Test
-    fun maxColumnsFollowsTheGridSetting() = runBlocking {
+    fun maxColumnsStartsAtTheGridSettingAndFollowsIt() = runBlocking {
+        preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "1").commit()
         val viewModel = viewModel()
-        assertEquals(AUTO_FIT_COLUMNS, viewModel.uiState.value.maxColumns)
+        assertEquals(1, viewModel.uiState.value.maxColumns)
 
         preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "2").commit()
 

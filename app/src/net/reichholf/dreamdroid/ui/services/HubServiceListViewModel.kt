@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.data.EpgRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.NowNextListLoad
@@ -135,6 +136,7 @@ class HubServiceListViewModel @AssistedInject constructor(
                 currentRef = restored.currentRef,
                 currentName = restored.currentName,
                 historyDepth = history.size,
+                maxColumns = settings.current().maxGridColumns,
                 isDefaultBouquet = isDefault(restored.currentRef)
             )
         )

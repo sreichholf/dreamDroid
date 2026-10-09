@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.AUTO_FIT_COLUMNS
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
@@ -59,9 +60,6 @@ private val ProgressBarHeight = 6.dp
 
 const val SERVICE_LIST_PROGRESS_TAG = "service_list_progress"
 
-/** `grid_max_cols` value for "as many columns as fit". */
-const val AUTO_FIT_COLUMNS = -1
-
 /** Narrowest service column, as the 1.x `AutofitRecyclerView` laid it out. */
 private val ServiceColumnMinWidth = 300.dp
 
@@ -85,8 +83,8 @@ fun ServiceListScreen(
         modifier = modifier.fillMaxSize()
     ) {
         for (item in items) {
-            when {
-                item.kind != ServiceRowKind.MARKER -> item(key = serviceRowKey(item)) {
+            when (item.slot) {
+                ServiceSlot.ROW -> item(key = serviceRowKey(item)) {
                     Box {
                         ServiceRow(
                             item = item,
@@ -97,11 +95,14 @@ fun ServiceListScreen(
                     }
                 }
 
-                item.isSectionHeader -> stickyHeader(key = serviceRowKey(item)) {
+                ServiceSlot.HEADER -> stickyHeader(key = serviceRowKey(item)) {
                     ListSectionHeader(item.name)
                 }
 
-                else -> item(key = serviceRowKey(item), span = { GridItemSpan(maxLineSpan) }) {
+                ServiceSlot.GAP -> item(
+                    key = serviceRowKey(item),
+                    span = { GridItemSpan(maxLineSpan) }
+                ) {
                     Spacer(Modifier.height(SpacerGap))
                 }
             }
@@ -125,29 +126,41 @@ private data class AutoFitCells(private val minSize: Dp, private val maxCount: I
 }
 
 /**
- * [items] as list entries (the phone zap list; [ServiceListScreen] lays them out the same
- * way as a grid): a bouquet marker is a sticky section header over the rows up to
- * the next marker, a spacer is a plain gap, every other item is drawn by [row]. Each item
- * stays one list entry, so an item's index in [items] is its list index.
+ * [items] as list entries, laid out like [ServiceListScreen]'s grid (see [ServiceSlot]),
+ * every row drawn by [row]. Each item stays one list entry, so an item's index in [items]
+ * is its list index.
  */
 fun LazyListScope.serviceListItems(
     items: List<ServiceListItem>,
     row: @Composable (ServiceListItem) -> Unit
 ) {
     for (item in items) {
-        when {
-            item.kind != ServiceRowKind.MARKER -> item(key = serviceRowKey(item)) { row(item) }
+        when (item.slot) {
+            ServiceSlot.ROW -> item(key = serviceRowKey(item)) { row(item) }
 
-            item.isSectionHeader -> stickyHeader(key = serviceRowKey(item)) {
+            ServiceSlot.HEADER -> stickyHeader(key = serviceRowKey(item)) {
                 ListSectionHeader(item.name)
             }
 
-            else -> item(key = serviceRowKey(item)) {
+            ServiceSlot.GAP -> item(key = serviceRowKey(item)) {
                 Spacer(Modifier.height(SpacerGap))
             }
         }
     }
 }
+
+/**
+ * How a list item is laid out: a bouquet marker is a sticky section [HEADER] over the rows
+ * up to the next marker, a spacer is a plain [GAP] across the list, everything else a [ROW].
+ */
+private enum class ServiceSlot { ROW, HEADER, GAP }
+
+private val ServiceListItem.slot: ServiceSlot
+    get() = when {
+        kind != ServiceRowKind.MARKER -> ServiceSlot.ROW
+        isSectionHeader -> ServiceSlot.HEADER
+        else -> ServiceSlot.GAP
+    }
 
 /**
  * A marker with a name. Spacers (`1:832:`) are markers too, but unnamed gaps that must
