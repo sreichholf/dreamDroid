@@ -2,11 +2,18 @@ package net.reichholf.dreamdroid.ui.compose
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.layout.AnimatedPane
@@ -25,9 +32,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.reichholf.dreamdroid.R
 
 const val LIST_DETAIL_DETAIL_PANE_TAG = "list_detail_detail_pane"
 
@@ -43,9 +55,10 @@ private fun listDetailDirective(): PaneScaffoldDirective =
 /**
  * Material 3 list-detail for a list whose detail is UI state the caller owns. Where the window
  * fits two panes ([showsListDetailPanes]), [detailContent] sits beside [list] in a
- * [ListDetailPaneScaffold], with [emptyDetail] while [detail] is null; back clears a shown
- * detail before it leaves the screen. Narrower windows draw [list] alone and hand a shown
- * detail to [singlePaneDetail] (a bottom sheet, say). [list] keeps its state, such as its scroll
+ * [ListDetailPaneScaffold], with [emptyDetail] while [detail] is null. Narrower windows draw
+ * [list] and a shown detail's [singlePaneDetail] over it: a bottom sheet, or the detail filling
+ * the space as Material 3's single-pane list-detail does. Back clears a shown detail before it
+ * leaves the screen. [list] keeps its state, such as its scroll
  * position, when the window crosses between the two. The pane's state starts fresh whenever
  * [detailKey] of the detail changes.
  */
@@ -64,9 +77,12 @@ fun <T : Any> ListDetailPanes(
     val currentList by rememberUpdatedState(list)
     val movableList = remember { movableContentOf { currentList() } }
     val directive = listDetailDirective()
+    BackHandler(enabled = detail != null, onBack = onDetailDismiss)
     if (directive.maxHorizontalPartitions < 2) {
-        Box(modifier) { movableList() }
-        detail?.let { singlePaneDetail(it) }
+        Box(modifier) {
+            movableList()
+            detail?.let { singlePaneDetail(it) }
+        }
         return
     }
     val destination = ThreePaneScaffoldDestinationItem<Nothing>(
@@ -77,7 +93,6 @@ fun <T : Any> ListDetailPanes(
         adaptStrategies = ListDetailPaneScaffoldDefaults.adaptStrategies(),
         currentDestination = destination
     )
-    BackHandler(enabled = detail != null, onBack = onDetailDismiss)
     ListDetailPaneScaffold(
         directive = directive,
         value = value,
@@ -120,4 +135,41 @@ fun ListDetailEmptyPane(message: String, modifier: Modifier = Modifier) {
             textAlign = TextAlign.Center
         )
     }
+}
+
+/**
+ * Top app bar of a detail pane that stands on its own, with a close button: the shell's bar
+ * belongs to the list beside it. It sits on the pane's container.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ListDetailPaneTopBar(
+    title: String,
+    onClose: () -> Unit,
+    actions: @Composable RowScope.() -> Unit = {}
+) {
+    TopAppBar(
+        title = { Text(text = title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
+        navigationIcon = {
+            IconButton(onClick = onClose) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_action_close),
+                    contentDescription = stringResource(R.string.close)
+                )
+            }
+        },
+        actions = actions,
+        windowInsets = WindowInsets(0, 0, 0, 0),
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
+    )
+}
+
+/** A detail filling a window too narrow for two panes, over the list. */
+@Composable
+fun ListDetailSinglePane(content: @Composable () -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+        content = content
+    )
 }

@@ -172,8 +172,9 @@ fun ShellTopAppBar(
     )
 }
 
+/** [action] as a top app bar button: its icon, or its label without one. */
 @Composable
-private fun ShellTopBarActionButton(action: ShellTopBarAction) {
+fun ShellTopBarActionButton(action: ShellTopBarAction) {
     val iconRes = action.iconRes
     if (iconRes == null) {
         TextButton(onClick = action.onClick, enabled = action.enabled) {

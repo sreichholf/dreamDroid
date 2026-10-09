@@ -69,8 +69,7 @@ abstract class TimerFormViewModel(
     val description = SavedTextField(viewModelScope, handle, KEY_DESCRIPTION)
 
     /** The timer as the receiver has it; null while creating. */
-    protected var original: Timer? = handle?.get<Timer>(KEY_ORIGINAL)
-        private set
+    private var original: Timer? = handle?.get<Timer>(KEY_ORIGINAL)
 
     private var choicesJob: Job? = null
     private var requestJob: Job? = null
@@ -113,10 +112,13 @@ abstract class TimerFormViewModel(
         return true
     }
 
-    /** Stops editing; the next [load] starts fresh. */
+    /** Stops editing and drops the saved working copy; the next [load] starts fresh. */
     protected fun close() {
         cancelWork()
         original = null
+        handle?.remove<Timer>(KEY_TIMER)
+        handle?.remove<Timer>(KEY_ORIGINAL)
+        handle?.remove<Boolean>(KEY_CREATE)
         _uiState.update {
             it.copy(timer = null, progress = null, saveError = null, finished = false)
         }
@@ -168,15 +170,28 @@ abstract class TimerFormViewModel(
         copy(serviceName = service.name, reference = service.reference)
     }
 
+    /** The timer as edited so far, typed fields included; null while not editing. */
+    private fun workingCopy(): Timer? =
+        _uiState.value.timer?.copy(name = name.text, description = description.text)
+
     /** Sends the working copy to the receiver. Ignored while blocked or busy. */
     fun save() {
         val state = _uiState.value
-        val timer = state.timer ?: return
-        val edited = timer.copy(name = name.text, description = description.text)
-            .normalized(state.locations, state.vpsPlugin)
+        val edited = workingCopy()?.normalized(state.locations, state.vpsPlugin) ?: return
         edit { edited }
         val replaced = original
         request(R.string.saving) { timers.save(edited, replaced) }
+    }
+
+    /** Deletes the timer on the receiver. Creating has nothing to delete. */
+    fun delete() {
+        val state = _uiState.value
+        val timer = state.timer ?: return
+        if (state.isCreate) {
+            return
+        }
+        val deleted = original ?: timer
+        request(R.string.deleting) { timers.delete(deleted) }
     }
 
     fun onFinishHandled() {

@@ -3,7 +3,6 @@ package net.reichholf.dreamdroid.ui.timers
 import androidx.lifecycle.SavedStateHandle
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.ui.nav.TimerEdit
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
@@ -23,17 +22,6 @@ class TimerEditViewModel @Inject constructor(
             val route = savedStateHandle.timerEditRoute()
             load(route.toTimer(), route.create)
         }
-    }
-
-    /** Deletes the timer on the receiver. Creating has nothing to delete. */
-    fun delete() {
-        val state = uiState.value
-        val timer = state.timer ?: return
-        if (state.isCreate) {
-            return
-        }
-        val deleted = original ?: timer
-        request(R.string.deleting) { timers.delete(deleted) }
     }
 }
 
