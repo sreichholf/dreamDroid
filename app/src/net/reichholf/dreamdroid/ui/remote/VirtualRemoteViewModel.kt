@@ -103,8 +103,8 @@ class VirtualRemoteViewModel @Inject constructor(
             val response =
                 receiver.remoteCommand(keyCode, profile.simpleRemote, longClick)
             val value = response.value
-            val failed = response.error != null || value?.stateText.isNullOrEmpty() ||
-                Python.FALSE == value?.state
+            val failed = response.error != null || value == null ||
+                value.stateText.isNullOrEmpty() || Python.FALSE == value.state
             _uiState.update {
                 it.copy(
                     userMessage = if (failed) {
