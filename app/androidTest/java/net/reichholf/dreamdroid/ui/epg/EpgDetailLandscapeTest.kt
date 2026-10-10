@@ -3,21 +3,27 @@ package net.reichholf.dreamdroid.ui.epg
 import android.content.pm.ActivityInfo
 import android.content.res.Configuration
 import androidx.activity.ComponentActivity
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.ui.compose.showsListDetailPanes
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.After
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
 /**
- * [EpgDetailModalSheet] on the phone emulator turned to landscape (compact height). The sheet
- * measures against the real window, which `WithWindowSize` cannot shrink.
+ * The phone emulator turned to landscape: expanded wide, compact tall, as a current phone. The pane
+ * rule and [EpgDetailModalSheet] see the real window here, which `WithWindowSize` only fakes for
+ * the size class and cannot shrink for a sheet.
  */
 class EpgDetailLandscapeTest {
     @get:Rule
@@ -39,6 +45,22 @@ class EpgDetailLandscapeTest {
         composeRule.activityRule.scenario.onActivity {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
         }
+    }
+
+    @Test
+    fun aPhoneInLandscapeShowsOnePane() {
+        var expandedWide = false
+        var twoPanes = true
+        composeRule.setContent {
+            expandedWide = currentWindowAdaptiveInfoV2().windowSizeClass
+                .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+            twoPanes = showsListDetailPanes()
+        }
+        composeRule.waitForIdle()
+
+        // Material 3 alone would give this window two panes; the CI phone must be that wide.
+        assertTrue("landscape window is expanded wide (CI AVD profile)", expandedWide)
+        assertFalse(twoPanes)
     }
 
     @Test
