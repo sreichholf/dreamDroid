@@ -30,7 +30,9 @@ concurrency:
 env:
   AVD_API_LEVEL: 30
   AVD_TARGET: aosp_atd
-  AVD_PROFILE: pixel_4
+  # Pixel 7: in landscape expanded wide (~914dp) but compact tall (~411dp), like current
+  # phones; EpgDetailLandscapeTest needs that window. Pixel 4 (~829dp) is only medium wide.
+  AVD_PROFILE: pixel_7
   # Part of the AVD cache key. Bump it whenever the snapshot step or
   # .github/emulator/settle-snapshot.sh changes, so the old snapshot is not reused.
   AVD_SNAPSHOT_VERSION: v2

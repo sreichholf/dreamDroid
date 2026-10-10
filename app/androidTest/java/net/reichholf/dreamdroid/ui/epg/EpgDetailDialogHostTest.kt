@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
@@ -23,6 +24,7 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.unit.Dp
@@ -342,6 +344,35 @@ class EpgDetailDialogHostTest {
                 .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
             assertFalse(label, layouts.single().isLineEllipsized(0))
         }
+    }
+
+    @Test
+    fun aShortPaneScrollsTheActionsWithTheBody() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(Modifier.size(width = 400.dp, height = 200.dp)) {
+                    EpgDetailScreen(
+                        content = EpgDetailContent(
+                            title = "Tagesschau",
+                            serviceName = "Das Erste HD",
+                            description = "News",
+                            descriptionExtended = "Die Nachrichten um 20 Uhr.",
+                            dateLine = "20:00 (15 min)",
+                            isNext = false
+                        ),
+                        onSetTimer = {},
+                        onEditTimer = {},
+                        onImdb = {},
+                        onSimilar = {},
+                        bodyHeightCap = null,
+                        onRecordSeries = {}
+                    )
+                }
+            }
+        }
+        composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("IMDb").assertIsDisplayed()
+        composeRule.onNodeWithText("Record series").performScrollTo().assertIsDisplayed()
     }
 
     @Test

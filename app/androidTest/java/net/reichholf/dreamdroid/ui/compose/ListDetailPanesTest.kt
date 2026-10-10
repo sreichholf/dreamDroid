@@ -15,6 +15,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.testutil.COMPACT_WINDOW_WIDTH
 import net.reichholf.dreamdroid.testutil.EXPANDED_WINDOW_WIDTH
 import net.reichholf.dreamdroid.testutil.LARGE_WINDOW_WIDTH
@@ -25,7 +26,10 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
-/** [ListDetailPanes] by window width: two panes, a list that waits for a detail, one pane. */
+/**
+ * [ListDetailPanes] by window size: two panes, a list that waits for a detail, one pane on a narrow
+ * or short window.
+ */
 class ListDetailPanesTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
@@ -132,6 +136,25 @@ class ListDetailPanesTest {
         assertNull(detail)
     }
 
+    @Test
+    fun aPhoneInLandscapeKeepsOnePane() {
+        detail = "Tagesschau"
+        show(EXPANDED_WINDOW_WIDTH, withEmptyDetail = true, height = PHONE_LANDSCAPE_HEIGHT)
+
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertDoesNotExist()
+        composeRule.onNodeWithText("Single Tagesschau").assertIsDisplayed()
+    }
+
+    @Test
+    fun aTabletInLandscapeShowsTwoPanes() {
+        detail = "Tagesschau"
+        show(EXPANDED_WINDOW_WIDTH, withEmptyDetail = true, height = TABLET_LANDSCAPE_HEIGHT)
+
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("Detail Tagesschau").assertIsDisplayed()
+        composeRule.onNodeWithText("Single Tagesschau").assertDoesNotExist()
+    }
+
     private fun pressBack() {
         composeRule.runOnUiThread {
             composeRule.activity.onBackPressedDispatcher.onBackPressed()
@@ -139,9 +162,9 @@ class ListDetailPanesTest {
         composeRule.waitForIdle()
     }
 
-    private fun show(width: Dp, withEmptyDetail: Boolean) {
+    private fun show(width: Dp, withEmptyDetail: Boolean, height: Dp = 900.dp) {
         composeRule.setContent {
-            WithWindowSize(width) {
+            WithWindowSize(width, height) {
                 Box(Modifier.fillMaxSize().testTag(HOST_TAG)) {
                     ListDetailPanes(
                         detail = detail,
@@ -167,5 +190,11 @@ class ListDetailPanesTest {
     private companion object {
         const val HOST_TAG = "list_detail_host"
         const val LIST_TAG = "list_detail_list"
+
+        /** Compact height: a phone in landscape is under 480dp tall. */
+        val PHONE_LANDSCAPE_HEIGHT = 400.dp
+
+        /** Medium height, as a tablet in landscape. */
+        val TABLET_LANDSCAPE_HEIGHT = 800.dp
     }
 }

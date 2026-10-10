@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -148,90 +149,116 @@ fun EpgDetailScreen(
     /** Opens a new AutoTimer for this event; null hides the action. */
     onRecordSeries: (() -> Unit)? = null
 ) {
-    // Body scrolls; action panel stays pinned like the old XML buttonPanel (when shown).
-    Column(modifier = modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(
-                    if (bodyHeightCap != null) {
-                        Modifier.heightIn(max = bodyHeightCap)
-                    } else {
-                        // Uncapped in a bounded pane: the body scrolls, the actions stay.
-                        Modifier.weight(1f, fill = false)
-                    }
-                )
-                .testTag(
-                    if (bodyHeightCap == null) {
-                        EPG_DETAIL_UNCAPPED_TAG
-                    } else {
-                        EPG_DETAIL_CAPPED_TAG
-                    }
-                )
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp)
-                .padding(top = 16.dp, bottom = 8.dp)
-        ) {
-            EpgDetailBody(
-                content = content,
-                titleActions = {
-                    if (showActions) {
-                        IconButton(onClick = onSimilar) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_action_search),
-                                contentDescription = stringResource(R.string.similar)
-                            )
-                        }
-                        IconButton(onClick = onImdb) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_menu_movie),
-                                contentDescription = stringResource(R.string.imdb)
-                            )
-                        }
-                    }
-                }
-            )
-        }
-        if (showActions) {
-            // One row where the labels fit, wrapped otherwise; each button takes an equal share.
-            // FlowRow breaks lines for weighted items by their min intrinsic width (the longest
-            // word); IntrinsicSize.Max makes that the whole one-line label.
-            FlowRow(
-                modifier = Modifier
+    BoxWithConstraints(modifier.fillMaxWidth()) {
+        val bodyTag = if (bodyHeightCap == null) EPG_DETAIL_UNCAPPED_TAG else EPG_DETAIL_CAPPED_TAG
+        val body = @Composable { bodyModifier: Modifier ->
+            Column(
+                bodyModifier
                     .fillMaxWidth()
+                    .testTag(bodyTag)
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(top = 16.dp, bottom = 8.dp)
             ) {
-                Button(
-                    onClick = onSetTimer,
-                    modifier = Modifier
-                        .weight(1f)
-                        .width(IntrinsicSize.Max)
-                        .onlineOnlyLook(timerWritesBlocked)
-                ) {
-                    ActionLabel(stringResource(R.string.set_timer))
-                }
-                OutlinedButton(
-                    onClick = onEditTimer,
-                    modifier = Modifier
-                        .weight(1f)
-                        .width(IntrinsicSize.Max)
-                        .onlineOnlyLook(timerWritesBlocked)
-                ) {
-                    ActionLabel(stringResource(R.string.edit_timer))
-                }
-                if (onRecordSeries != null) {
-                    OutlinedButton(
-                        onClick = onRecordSeries,
-                        modifier = Modifier
-                            .weight(1f)
-                            .width(IntrinsicSize.Max)
-                            .onlineOnlyLook(timerWritesBlocked)
-                    ) {
-                        ActionLabel(stringResource(R.string.autotimer_record_series))
+                EpgDetailBody(
+                    content = content,
+                    titleActions = {
+                        if (showActions) {
+                            IconButton(onClick = onSimilar) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_action_search),
+                                    contentDescription = stringResource(R.string.similar)
+                                )
+                            }
+                            IconButton(onClick = onImdb) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_menu_movie),
+                                    contentDescription = stringResource(R.string.imdb)
+                                )
+                            }
+                        }
                     }
-                }
+                )
+            }
+        }
+        val actions = @Composable {
+            EpgDetailActions(onSetTimer, onEditTimer, onRecordSeries, timerWritesBlocked)
+        }
+        val bounded = constraints.hasBoundedHeight
+        // One state for both layouts keeps the reading position when the height crosses over.
+        val scrollState = rememberScrollState()
+        if (!showActions || !bounded || maxHeight >= MinHeightForPinnedActions) {
+            // The body scrolls; the actions stay pinned below it.
+            Column(Modifier.fillMaxWidth()) {
+                body(
+                    Modifier
+                        .then(bodyHeightCap?.let { Modifier.heightIn(max = it) } ?: Modifier)
+                        // Leaves the actions their room in a bounded pane or sheet.
+                        .then(if (bounded) Modifier.weight(1f, fill = false) else Modifier)
+                        .verticalScroll(scrollState)
+                )
+                if (showActions) actions()
+            }
+        } else {
+            // Too short to pin the actions (a short pane or sheet): everything scrolls together.
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                body(Modifier)
+                actions()
+            }
+        }
+    }
+}
+
+/** Below this height the actions scroll with the body instead of taking most of the space. */
+private val MinHeightForPinnedActions = 320.dp
+
+@Composable
+private fun EpgDetailActions(
+    onSetTimer: () -> Unit,
+    onEditTimer: () -> Unit,
+    onRecordSeries: (() -> Unit)?,
+    timerWritesBlocked: Boolean
+) {
+    // One row where the labels fit, wrapped otherwise; each button takes an equal share.
+    // FlowRow breaks lines for weighted items by their min intrinsic width (the longest
+    // word); IntrinsicSize.Max makes that the whole one-line label.
+    FlowRow(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(bottom = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Button(
+            onClick = onSetTimer,
+            modifier = Modifier
+                .weight(1f)
+                .width(IntrinsicSize.Max)
+                .onlineOnlyLook(timerWritesBlocked)
+        ) {
+            ActionLabel(stringResource(R.string.set_timer))
+        }
+        OutlinedButton(
+            onClick = onEditTimer,
+            modifier = Modifier
+                .weight(1f)
+                .width(IntrinsicSize.Max)
+                .onlineOnlyLook(timerWritesBlocked)
+        ) {
+            ActionLabel(stringResource(R.string.edit_timer))
+        }
+        if (onRecordSeries != null) {
+            OutlinedButton(
+                onClick = onRecordSeries,
+                modifier = Modifier
+                    .weight(1f)
+                    .width(IntrinsicSize.Max)
+                    .onlineOnlyLook(timerWritesBlocked)
+            ) {
+                ActionLabel(stringResource(R.string.autotimer_record_series))
             }
         }
     }
