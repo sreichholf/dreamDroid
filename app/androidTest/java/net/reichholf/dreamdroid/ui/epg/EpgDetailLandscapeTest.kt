@@ -8,7 +8,6 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performScrollTo
 import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.compose.showsListDetailPanes
@@ -64,7 +63,7 @@ class EpgDetailLandscapeTest {
     }
 
     @Test
-    fun theSheetKeepsTheTitleAndReachesEveryAction() {
+    fun theSheetKeepsTheTitleAndShowsEveryAction() {
         composeRule.setContent {
             DreamDroidTheme {
                 EpgEventDetailSheet(
@@ -82,7 +81,11 @@ class EpgDetailLandscapeTest {
 
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("IMDb").assertIsDisplayed()
-        composeRule.onNodeWithText("Record series").performScrollTo().assertIsDisplayed()
+        // The sheet (~387dp on the CI Pixel 7) pins the actions and lets the text yield; before,
+        // the text kept its 360dp cap and pushed the second row of actions out of the sheet.
+        composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
+        composeRule.onNodeWithText("Edit Timer").assertIsDisplayed()
+        composeRule.onNodeWithText("Record series").assertIsDisplayed()
     }
 
     /** More text than the sheet's 360dp body cap, as a long film description has. */
