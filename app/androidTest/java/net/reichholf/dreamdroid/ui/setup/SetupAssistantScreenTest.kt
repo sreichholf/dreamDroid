@@ -6,10 +6,12 @@ import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
@@ -285,7 +287,8 @@ class SetupAssistantScreenTest {
                         localNetworkGranted = true,
                         onRequestLocalNetwork = {},
                         onFinished = {},
-                        onLeave = {}
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
                     )
                 }
             }
@@ -295,7 +298,7 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
         composeRule.waitForIdle()
 
-        val root = composeRule.onRoot().getBoundsInRoot()
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
         val row = composeRule.onNodeWithTag("setup_device_192.168.1.10")
             .assertIsDisplayed()
             .getBoundsInRoot()
@@ -322,7 +325,8 @@ class SetupAssistantScreenTest {
                         localNetworkGranted = true,
                         onRequestLocalNetwork = {},
                         onFinished = {},
-                        onLeave = {}
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
                     )
                 }
             }
@@ -337,7 +341,7 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Check connection").performClick()
         composeRule.waitForIdle()
 
-        val root = composeRule.onRoot().getBoundsInRoot()
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
         val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
         val error = composeRule.onNodeWithText("unreachable")
             .assertIsDisplayed()
@@ -369,7 +373,8 @@ class SetupAssistantScreenTest {
                         localNetworkGranted = true,
                         onRequestLocalNetwork = {},
                         onFinished = {},
-                        onLeave = {}
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
                     )
                 }
             }
@@ -395,7 +400,7 @@ class SetupAssistantScreenTest {
         size = DpSize(960.dp, 300.dp)
         composeRule.waitForIdle()
 
-        val root = composeRule.onRoot().getBoundsInRoot()
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
         val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
         val password = composeRule.onNodeWithTag("setup_password")
             .assertIsFocused()
