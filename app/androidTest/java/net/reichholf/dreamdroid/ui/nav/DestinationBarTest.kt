@@ -11,6 +11,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -46,5 +47,24 @@ class DestinationBarTest {
         composeRule.onNodeWithText("TV").assertIsSelected()
         composeRule.onNodeWithText("Radio").performClick()
         assertEquals(listOf(1), selected)
+    }
+
+    @Test
+    fun itemsShareTheBarSideBySide() {
+        val items = listOf(
+            DestinationBarItem(R.string.tv, R.drawable.ic_menu_tv),
+            DestinationBarItem(R.string.radio, R.drawable.ic_menu_radio)
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                DestinationBar(items = items, selectedIndex = 0, onSelect = {})
+            }
+        }
+        val tv = composeRule.onNodeWithText("TV").assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot
+        val radio = composeRule.onNodeWithText("Radio").assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue("Radio starts after TV", radio.left >= tv.right)
+        assertEquals("both items get half the bar", tv.width, radio.width, 1f)
     }
 }
