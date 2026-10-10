@@ -14,6 +14,7 @@
 * NEU: Auf breiten Fenstern öffnet die Senderliste das EPG eines Senders daneben und eine Sendung daraus neben dem EPG (auf den breitesten Fenstern alle drei nebeneinander); aktuelle und nächste Sendung eines Senders öffnen sich ebenfalls neben der Liste
 * UPD: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
 * UPD: Sender-EPG nach Tag gruppiert
+* UPD: Kompaktere EPG-Details: Timer-Aktionen nebeneinander, IMDb und ähnliche Sendungen als Symbole neben dem Titel
 * UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
 * UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
 * UPD: Tablets zeigen die Bereiche von TV & Movies und Werkzeuge wie Telefone in der unteren Leiste; auf Tablets und Telefonen im Querformat stehen Symbol und Text nebeneinander

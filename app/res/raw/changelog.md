@@ -15,6 +15,7 @@
 * NEW: On wide windows the services list opens a channel's EPG beside it and an event of that EPG next to the EPG (all three side by side on the widest windows); a channel's current and next event open beside the list too
 * UPD: EPG search as you type, with recent searches and results grouped by day
 * UPD: Channel EPG grouped by day
+* UPD: Compact EPG event details: timer actions side by side, IMDb and similar events as icons next to the title
 * UPD: Modernized architecture and Material 3 UI across phone screens
 * UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
 * UPD: Tablets show the TV & Movies and Tools sections in the bottom bar like phones; on tablets and phones in landscape, icon and label sit side by side

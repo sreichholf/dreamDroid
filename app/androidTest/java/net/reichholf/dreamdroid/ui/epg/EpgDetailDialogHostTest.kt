@@ -11,9 +11,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.hasStateDescription
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -122,6 +124,7 @@ class EpgDetailDialogHostTest {
         composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
         composeRule.onNodeWithText("Edit Timer").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("IMDb").assertDoesNotExist()
         composeRule.onNodeWithTag(EPG_DETAIL_UNCAPPED_TAG).assertExists()
         composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
@@ -242,7 +245,7 @@ class EpgDetailDialogHostTest {
         val needsReceiver = composeRule.activity.getString(R.string.session_needs_receiver)
         composeRule.onNodeWithText("Set Timer").assert(hasStateDescription(needsReceiver))
         composeRule.onNodeWithText("Edit Timer").assert(hasStateDescription(needsReceiver))
-        composeRule.onNodeWithText("IMDb").assert(!hasStateDescription(needsReceiver))
+        composeRule.onNodeWithContentDescription("IMDb").assert(!hasStateDescription(needsReceiver))
     }
 
     @Test
@@ -261,7 +264,7 @@ class EpgDetailDialogHostTest {
                 )
             }
         }
-        composeRule.onNodeWithText(composeRule.activity.getString(R.string.similar))
+        composeRule.onNodeWithContentDescription(composeRule.activity.getString(R.string.similar))
             .performClick()
         composeRule.waitForIdle()
         composeRule.runOnIdle {
@@ -269,6 +272,32 @@ class EpgDetailDialogHostTest {
             assertEquals(null, state.event)
         }
         composeRule.onNodeWithText("Tagesschau").assertDoesNotExist()
+    }
+
+    @Test
+    fun timerActionsShareOneRowAndLookupsSitInTheTitleRow() {
+        var imdb: Event? = null
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgEventDetailSheet(
+                    state = EpgEventDetailUiState(event = tagesschau()),
+                    onDismiss = {},
+                    onSetTimer = {},
+                    onEditTimer = {},
+                    onImdb = { imdb = it },
+                    onSimilar = {}
+                )
+            }
+        }
+        val setTimer = composeRule.onNodeWithText("Set Timer").getUnclippedBoundsInRoot()
+        val editTimer = composeRule.onNodeWithText("Edit Timer").getUnclippedBoundsInRoot()
+        assertEquals(setTimer.top, editTimer.top)
+        val title = composeRule.onNodeWithText("Tagesschau").getUnclippedBoundsInRoot()
+        val imdbIcon = composeRule.onNodeWithContentDescription("IMDb")
+        assertTrue(imdbIcon.getUnclippedBoundsInRoot().top < title.bottom)
+
+        imdbIcon.performClick()
+        composeRule.runOnIdle { assertEquals(tagesschau(), imdb) }
     }
 
     @Test

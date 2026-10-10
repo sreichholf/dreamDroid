@@ -1,18 +1,26 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -72,13 +80,22 @@ fun Event.toEpgDetailContentOrUnavailable(
 }
 
 @Composable
-fun EpgDetailBody(content: EpgDetailContent, modifier: Modifier = Modifier) {
+fun EpgDetailBody(
+    content: EpgDetailContent,
+    modifier: Modifier = Modifier,
+    /** Icon buttons at the end of the title row. */
+    titleActions: @Composable RowScope.() -> Unit = {}
+) {
     Column(modifier.fillMaxWidth()) {
-        Text(
-            text = content.title,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = content.title,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            titleActions()
+        }
         if (content.serviceName.isNotEmpty()) {
             Text(
                 text = content.serviceName,
@@ -152,46 +169,60 @@ fun EpgDetailScreen(
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp, bottom = 8.dp)
         ) {
-            EpgDetailBody(content)
+            EpgDetailBody(
+                content = content,
+                titleActions = {
+                    if (showActions) {
+                        IconButton(onClick = onSimilar) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_action_search),
+                                contentDescription = stringResource(R.string.similar)
+                            )
+                        }
+                        IconButton(onClick = onImdb) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_menu_movie),
+                                contentDescription = stringResource(R.string.imdb)
+                            )
+                        }
+                    }
+                }
+            )
         }
         if (showActions) {
-            Column(
+            // One row where the labels fit, wrapped otherwise; each button takes an equal share.
+            FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
-                    .padding(bottom = 16.dp)
+                    .padding(bottom = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
                     onClick = onSetTimer,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .onlineOnlyLook(timerWritesBlocked)
                 ) {
-                    Text(stringResource(R.string.set_timer))
+                    Text(stringResource(R.string.set_timer), maxLines = 1)
                 }
-                TextButton(
+                OutlinedButton(
                     onClick = onEditTimer,
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .weight(1f)
                         .onlineOnlyLook(timerWritesBlocked)
                 ) {
-                    Text(stringResource(R.string.edit_timer))
+                    Text(stringResource(R.string.edit_timer), maxLines = 1)
                 }
                 if (onRecordSeries != null) {
-                    TextButton(
+                    OutlinedButton(
                         onClick = onRecordSeries,
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .onlineOnlyLook(timerWritesBlocked)
                     ) {
-                        Text(stringResource(R.string.autotimer_record_series))
+                        Text(stringResource(R.string.autotimer_record_series), maxLines = 1)
                     }
-                }
-                TextButton(onClick = onImdb, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.imdb))
-                }
-                TextButton(onClick = onSimilar, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.similar))
                 }
             }
         }
