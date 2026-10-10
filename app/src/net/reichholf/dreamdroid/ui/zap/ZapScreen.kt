@@ -19,6 +19,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,12 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import net.reichholf.dreamdroid.R
+import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
@@ -74,10 +74,7 @@ fun ZapScreen(
         return
     }
 
-    val itemHeight = dimensionResource(R.dimen.zap_grid_item_height)
-    val minCellWidth = with(LocalDensity.current) {
-        (itemHeight.toPx() / 9f * 16f).toDp()
-    }
+    val minCellWidth = zapCardHeight() * 16f / 9f
 
     LazyVerticalGrid(
         columns = GridCells.Adaptive(minSize = minCellWidth),
@@ -95,6 +92,25 @@ fun ZapScreen(
                 onLongClick = { onItemLongClick(service) }
             )
         }
+    }
+}
+
+/**
+ * The card height the grid aims for; cells are at least 16:9 of it. Larger cards need a medium
+ * or expanded width and at least medium height, so a phone in landscape keeps the small ones.
+ */
+@Composable
+private fun zapCardHeight(): Dp {
+    val sizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    val minHeight = WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+    return when {
+        sizeClass.isAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND, minHeight) ->
+            105.dp
+
+        sizeClass.isAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND, minHeight) ->
+            90.dp
+
+        else -> 70.dp
     }
 }
 

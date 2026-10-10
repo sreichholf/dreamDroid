@@ -4,11 +4,13 @@ import android.os.Handler
 import android.os.Looper
 import android.os.VibrationEffect
 import android.os.Vibrator
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -17,12 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
@@ -50,7 +52,7 @@ fun VirtualRemoteDestination(
     val vibrator = remember {
         context.getSystemService(Vibrator::class.java)
     }
-    val showScreenshot = LocalConfiguration.current.screenWidthDp >= 720
+    val showScreenshot = showsRemoteScreenshot()
 
     fun abortScreenshotReload() {
         pendingScreenshot?.let { handler.removeCallbacks(it) }
@@ -104,43 +106,77 @@ fun VirtualRemoteDestination(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
-        if (showScreenshot) {
-            Column(modifier = Modifier.fillMaxSize()) {
+    val pad: @Composable (Modifier) -> Unit = { padModifier ->
+        VirtualRemoteScreen(
+            layout = uiState.layout,
+            playButtonAsPlayPause = uiState.playAsPlayPause,
+            onKey = ::onKey,
+            onToggleLayout = viewModel::onToggleLayout,
+            toggleIconRes = toggleIcon,
+            toggleContentDescription = toggleDescription,
+            keysBlocked = uiState.keysBlocked,
+            modifier = padModifier
+        )
+    }
+    if (showScreenshot) {
+        RemoteWithScreenshot(
+            screenshot = { screenshotModifier ->
                 ScreenshotDestination(
                     handle = handle,
                     actionsEnabled = false,
                     setTitle = false,
                     reloadTrigger = screenshotReload,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .padding(20.dp)
+                    modifier = screenshotModifier
                 )
-                VirtualRemoteScreen(
-                    layout = uiState.layout,
-                    playButtonAsPlayPause = uiState.playAsPlayPause,
-                    onKey = ::onKey,
-                    onToggleLayout = viewModel::onToggleLayout,
-                    toggleIconRes = toggleIcon,
-                    toggleContentDescription = toggleDescription,
-                    keysBlocked = uiState.keysBlocked,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 15.dp)
-                )
-            }
-        } else {
-            VirtualRemoteScreen(
-                layout = uiState.layout,
-                playButtonAsPlayPause = uiState.playAsPlayPause,
-                onKey = ::onKey,
-                onToggleLayout = viewModel::onToggleLayout,
-                toggleIconRes = toggleIcon,
-                toggleContentDescription = toggleDescription,
-                keysBlocked = uiState.keysBlocked,
-                modifier = Modifier.fillMaxSize()
-            )
+            },
+            pad = pad,
+            modifier = modifier
+        )
+    } else {
+        pad(modifier.fillMaxSize())
+    }
+}
+
+/**
+ * The receiver screenshot beside the pad on expanded width, above it otherwise. The pad fills
+ * whatever it is given, so both are weighted; unweighted, the pad would leave the screenshot
+ * no height.
+ */
+@Composable
+internal fun RemoteWithScreenshot(
+    screenshot: @Composable (Modifier) -> Unit,
+    pad: @Composable (Modifier) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val expanded = currentWindowAdaptiveInfoV2().windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND)
+    if (expanded) {
+        Row(modifier.fillMaxSize()) {
+            screenshot(Modifier.weight(1f).fillMaxHeight().padding(20.dp))
+            pad(Modifier.weight(1f).fillMaxHeight())
+        }
+    } else {
+        Column(modifier.fillMaxSize()) {
+            screenshot(Modifier.weight(2f).fillMaxWidth().padding(20.dp))
+            pad(Modifier.weight(3f).fillMaxWidth().padding(bottom = 15.dp))
         }
     }
+}
+
+/**
+ * Whether the receiver screenshot fits next to the pad: beside it on an expanded width with
+ * medium height (tablets in landscape, open foldables), or above it on a medium width with
+ * expanded height (tablets upright). Phones and smaller windows keep the pad alone.
+ */
+@Composable
+internal fun showsRemoteScreenshot(): Boolean {
+    val sizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    return sizeClass.isAtLeastBreakpoint(
+        WindowSizeClass.WIDTH_DP_EXPANDED_LOWER_BOUND,
+        WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND
+    ) ||
+        sizeClass.isAtLeastBreakpoint(
+            WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND,
+            WindowSizeClass.HEIGHT_DP_EXPANDED_LOWER_BOUND
+        )
 }

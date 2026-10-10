@@ -6,7 +6,7 @@
 - [opendreambox/enigma2-plugin-vps](https://github.com/opendreambox/enigma2-plugin-vps) at `7126152`: `src_py/web/*.xml` (endpoints), `src_py/WebComponents/Sources/Vps.py` (what they do), `src_py/Modifications.py` (the on-box editor), `src_py/Vps.py` (runtime), `src_py/plugin.py` (registration). It lived in `enigma2-plugins/vps` until 4.2; the web API is unchanged since. oe-alliance's `enigma2-plugins/vps` is the same plugin.
 - E2OpenPlugins/e2openplugin-OpenWebif at `e46534f`, under `plugin/controllers/` (as in [`openwebif.md`](openwebif.md)).
 
-**Architecture:** [`modernize-dreamdroid.md`](modernize-dreamdroid.md#target-architecture), [`AGENTS.md`](../AGENTS.md), and the `ReceiverApi` seam of [`openwebif.md`](openwebif.md#22-shape): no request is built above the clients.
+**Architecture:** [`AGENTS.md`](../AGENTS.md), and the `ReceiverApi` seam of [`openwebif.md`](openwebif.md#22-shape): no request is built above the clients.
 
 VPS lets the box follow a broadcast's real start and end, so a recording follows a show that starts late or runs over. That works for EPG timers, including single episodes of a series, and for manual timers.
 

@@ -1,7 +1,7 @@
 # Graphical MultiEPG (plan)
 
 **Status:** **Shipped** on phone (phases 0–4, including timer clocks) and on TV (§9). Defaults accepted by the operator 2026-09-12 (“Defaults look good”). Still open: prime-time jump (polish), live `epgmulti` size measurements (§5), and the `epgservice` fallback (deferred until a box without `epgmulti` shows up).  
-**Architecture:** `MultiEpgSync` / Room access move behind `EpgRepository` with injected dependencies, and the MultiEPG ViewModels move to the target shape — see remediation B1, B4, C2 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The fetch, cache, and TTL rules in this doc do not change.  
+**Architecture:** `MultiEpgSync` and Room access sit behind `EpgRepository` with injected dependencies, and the MultiEPG ViewModels follow **Architecture** in [`AGENTS.md`](../AGENTS.md). The fetch, cache, and TTL rules in this doc do not change.  
 **Product reference:** on-box **GraphMultiEPG** (`enigma2-plugin-extensions-graphmultiepg` on DreamOS; same family as [Vu+ GraphMultiEPG](https://wiki.vuplus-support.org/index.php?title=GraphMultiEPG)) — channel rows × time columns, prime time, zoom, timer clocks.  
 **Target API:** `epgmulti` over the network: `/web/epgmulti` on the Dreambox WebInterface (`DreamboxWebIfApi`), `/api/epgmulti` on OpenWebif (`OpenWebifApi`, see [`openwebif.md`](openwebif.md)); `endTime` is minutes on both. This doc was written when only the Dreambox WebInterface was in scope. On-box GraphMultiEPG reads `eEPGCache` locally.  
 **Reference (read-only):** [opendreambox/enigma2-plugins `webinterface`](https://github.com/opendreambox/enigma2-plugins/tree/master/webinterface) — we will **not** patch or extend the box webif. GraphMultiEPG plugin source (behaviour reference): Enigma2 `Plugins/Extensions/GraphMultiEPG/` (e.g. OpenPLi tree; DreamOS ships the same plugin package).
@@ -174,7 +174,7 @@ One windowed `epgmulti` is still one heavy cache lookup on the box; bounds + TTL
 
 ## 4. App architecture
 
-Target (after remediation B4 / C2 / D1 in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md)):
+Target (repositories, ViewModel shape and Compose navigation per [`AGENTS.md`](../AGENTS.md)):
 
 ```text
 Hub top bar action or list EPG Timeline

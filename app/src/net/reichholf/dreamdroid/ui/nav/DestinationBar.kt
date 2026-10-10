@@ -3,7 +3,7 @@ package net.reichholf.dreamdroid.ui.nav
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationItemIconPosition
 import androidx.compose.material3.ShortNavigationBar
@@ -36,7 +36,10 @@ fun DestinationBar(
     val wide = isWideWindow()
     // The shell already pads by the system bars (#263/#264).
     ShortNavigationBar(
-        modifier = modifier.fillMaxWidth(),
+        // Its Surface hands minimum constraints on to the item layout, which then stretches
+        // every item to the minimum width and pushes all but the first off the bar. Measured
+        // without them, the bar still takes the full width it is offered.
+        modifier = modifier.wrapContentSize(),
         windowInsets = WindowInsets(0, 0, 0, 0),
         arrangement = if (wide) {
             ShortNavigationBarArrangement.Centered

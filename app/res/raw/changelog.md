@@ -22,6 +22,7 @@
 * UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer / playlist browser
+* FIX: Virtual Remote on tablets shows the receiver screenshot again, beside the pad in landscape and above it upright
 * FIX: Wide screens show the service list in several columns again; "Max. servicelist columns" caps them
 * FIX: Screenshots on receivers whose /grab returns no image (e.g. Dreambox Two with Gemini Project) use /screenshot instead
 * FIX: Android TV movie cards no longer clip a partial last line of text
