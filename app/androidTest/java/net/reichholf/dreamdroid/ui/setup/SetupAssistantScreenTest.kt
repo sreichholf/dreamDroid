@@ -3,6 +3,8 @@ package net.reichholf.dreamdroid.ui.setup
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
@@ -19,6 +21,8 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -243,6 +247,44 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Next").assertIsEnabled()
         assertEquals(1, searches)
         assertEquals(1, checks)
+    }
+
+    @Test
+    fun scanResultsAreVisibleInATvSizedWindow() {
+        val device = Profile().apply {
+            id = 1
+            name = "Living room"
+            host = "192.168.1.10"
+            port = 80
+        }
+        val viewModel = model(onSearch = { listOf(device) })
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 540.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {}
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+
+        val row = composeRule.onNodeWithTag("setup_device_192.168.1.10")
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertTrue(
+            "The first scan result must be fully visible, was ${row.bottom - row.top} tall",
+            row.bottom - row.top >= 48.dp
+        )
     }
 
     private val profiles = memoryProfiles()

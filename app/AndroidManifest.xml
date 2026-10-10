@@ -48,6 +48,7 @@
 
         <activity
             android:name=".tv.activities.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:theme="@style/Theme.DreamDroid"
             android:exported="true">
             <intent-filter>
@@ -106,6 +107,7 @@
         </activity>
         <activity
             android:name=".activities.MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:launchMode="singleTop">
             <intent-filter>

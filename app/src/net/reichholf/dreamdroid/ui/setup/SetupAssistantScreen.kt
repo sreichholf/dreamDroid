@@ -19,16 +19,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -74,6 +71,11 @@ import net.reichholf.dreamdroid.ui.text.asString
 private const val INTRO_HOLD_MS: Int = 700
 
 private const val INTRO_MOVE_MS: Int = 800
+
+/** The logo fills the Welcome step; later steps only keep it as a compact mark. */
+private val WELCOME_LOGO_HEIGHT = 320.dp
+
+private val STEP_LOGO_HEIGHT = 120.dp
 
 @Composable
 fun SetupAssistantScreen(
@@ -158,11 +160,7 @@ fun SetupAssistantScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .windowInsetsPadding(
-                WindowInsets.statusBars
-                    .union(WindowInsets.displayCutout)
-                    .union(WindowInsets.navigationBars)
-            ),
+            .windowInsetsPadding(WindowInsets.safeDrawing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         BoxWithConstraints(
@@ -171,7 +169,8 @@ fun SetupAssistantScreen(
                 .fillMaxWidth()
         ) {
             val room = (maxHeight - 28.dp - 160.dp).coerceAtLeast(0.dp)
-            val logoHeight = 320.dp.coerceAtMost(room).coerceAtLeast(160.dp.coerceAtMost(room))
+            val logoCap = if (step == SetupStep.Welcome) WELCOME_LOGO_HEIGHT else STEP_LOGO_HEIGHT
+            val logoHeight = logoCap.coerceAtMost(room)
             Column(
                 modifier = Modifier.fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -349,10 +348,6 @@ private fun FindStep(
     portText: String,
     onPick: (SetupReceiver) -> Unit
 ) {
-    val addressFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        runCatching { addressFocus.requestFocus() }
-    }
     Text(
         text = stringResource(R.string.setup_find_body),
         style = MaterialTheme.typography.bodyLarge
@@ -364,7 +359,6 @@ private fun FindStep(
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
-            .focusRequester(addressFocus)
             .testTag("setup_address")
     )
     Spacer(Modifier.height(12.dp))
@@ -402,6 +396,7 @@ private fun FindStep(
                 supportingContent = { Text(receiver.host) },
                 modifier = Modifier
                     .fillMaxWidth()
+                    .testTag("setup_device_${receiver.host}")
                     .background(
                         if (selected) {
                             MaterialTheme.colorScheme.secondaryContainer
@@ -422,10 +417,6 @@ private fun ConnectionStep(
     onHttpsChange: (Boolean) -> Unit,
     port: TextFieldState
 ) {
-    val hostFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        runCatching { hostFocus.requestFocus() }
-    }
     Text(
         text = stringResource(R.string.setup_connection_body),
         style = MaterialTheme.typography.bodyLarge
@@ -435,9 +426,7 @@ private fun ConnectionStep(
         state = host,
         label = { Text(stringResource(R.string.host_long)) },
         lineLimits = TextFieldLineLimits.SingleLine,
-        modifier = Modifier
-            .fillMaxWidth()
-            .focusRequester(hostFocus)
+        modifier = Modifier.fillMaxWidth()
     )
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
