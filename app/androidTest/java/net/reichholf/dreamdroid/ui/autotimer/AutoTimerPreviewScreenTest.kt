@@ -9,6 +9,7 @@ import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -92,7 +93,7 @@ class AutoTimerPreviewScreenTest {
         composeRule.onNodeWithText("Georg Wilsberg ermittelt.").assertIsDisplayed()
         composeRule.onNodeWithText("Krimi").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
-        composeRule.onNodeWithText("Similar").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("Similar").assertDoesNotExist()
     }
 
     @Test

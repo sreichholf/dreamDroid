@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.current
 
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
@@ -72,7 +73,7 @@ class NowPlayingDetailScreenTest {
         composeRule.onNodeWithText("Wetter").assertIsDisplayed()
         composeRule.onNodeWithText("Der Wetterbericht.").assertIsDisplayed()
         composeRule.onNodeWithText("Set Timer").assertDoesNotExist()
-        composeRule.onNodeWithText("IMDb").assertDoesNotExist()
+        composeRule.onNodeWithContentDescription("IMDb").assertDoesNotExist()
         composeRule.onNodeWithText("Stream current").assertIsDisplayed().performClick()
         assertEquals(1, streamClicks)
     }

@@ -5,6 +5,7 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.lifecycle.createSavedStateHandle
@@ -148,7 +149,7 @@ class ServiceEpgRetentionTest {
             composeRule.onAllNodesWithText("Tagesschau").fetchSemanticsNodes().isNotEmpty()
         }
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed().performClick()
-        composeRule.onNodeWithText(app.getString(R.string.similar)).performClick()
+        composeRule.onNodeWithContentDescription(app.getString(R.string.similar)).performClick()
         composeRule.onNodeWithText("Search").assertIsDisplayed()
 
         composeRule.runOnIdle { handle.popNavBackStack() }
