@@ -21,6 +21,7 @@
 * UPD: Verbesserte Verbindungserkennung (Online / Offline / Prüfung, erneute Prüfung im Hintergrund)
 * UPD: Benötigt Android 8.0 oder neuer
 * DEL: Eingebauter Mediaplayer / Playlist-Browser
+* FIX: Virtual Remote zeigt auf Tablets wieder den Receiver-Screenshot, im Querformat neben der Fernbedienung, im Hochformat darüber
 * FIX: Breite Bildschirme zeigen die Kanalliste wieder mehrspaltig; „Max. Spalten in Kanalliste“ begrenzt sie
 * FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
 * UPD: Android-TV-Senderkarten sind kompakt, mit vorangestelltem Picon und Fortschrittsbalken für die laufende Sendung
