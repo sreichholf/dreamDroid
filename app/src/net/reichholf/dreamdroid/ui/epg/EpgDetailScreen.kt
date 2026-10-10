@@ -184,6 +184,8 @@ fun EpgDetailScreen(
             EpgDetailActions(onSetTimer, onEditTimer, onRecordSeries, timerWritesBlocked)
         }
         val bounded = constraints.hasBoundedHeight
+        // One state for both layouts keeps the reading position when the height crosses over.
+        val scrollState = rememberScrollState()
         if (!showActions || !bounded || maxHeight >= MinHeightForPinnedActions) {
             // The body scrolls; the actions stay pinned below it.
             Column(Modifier.fillMaxWidth()) {
@@ -192,7 +194,7 @@ fun EpgDetailScreen(
                         .then(bodyHeightCap?.let { Modifier.heightIn(max = it) } ?: Modifier)
                         // Leaves the actions their room in a bounded pane or sheet.
                         .then(if (bounded) Modifier.weight(1f, fill = false) else Modifier)
-                        .verticalScroll(rememberScrollState())
+                        .verticalScroll(scrollState)
                 )
                 if (showActions) actions()
             }
@@ -201,7 +203,7 @@ fun EpgDetailScreen(
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(scrollState)
             ) {
                 body(Modifier)
                 actions()

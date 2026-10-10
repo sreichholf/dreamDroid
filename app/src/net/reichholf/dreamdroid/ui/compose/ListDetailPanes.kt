@@ -68,7 +68,7 @@ private fun listDetailDirective(): PaneScaffoldDirective {
     return if (tallEnough) {
         directive
     } else {
-        directive.copy(maxHorizontalPartitions = 1, horizontalPartitionSpacerSize = 0.dp)
+        directive.copy(maxHorizontalPartitions = 1)
     }
 }
 
