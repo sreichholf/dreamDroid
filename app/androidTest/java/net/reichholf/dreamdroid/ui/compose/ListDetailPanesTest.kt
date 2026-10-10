@@ -10,12 +10,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsNotDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.Dp
 import net.reichholf.dreamdroid.testutil.COMPACT_WINDOW_WIDTH
 import net.reichholf.dreamdroid.testutil.EXPANDED_WINDOW_WIDTH
+import net.reichholf.dreamdroid.testutil.LARGE_WINDOW_WIDTH
 import net.reichholf.dreamdroid.testutil.WithWindowSize
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -29,6 +31,7 @@ class ListDetailPanesTest {
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
     private var detail by mutableStateOf<String?>(null)
+    private var extra by mutableStateOf<String?>(null)
 
     @Test
     fun withoutAnEmptyDetailTheListTakesTheWholeWidthUntilADetailIsShown() {
@@ -74,6 +77,68 @@ class ListDetailPanesTest {
         composeRule.onNodeWithText("Single Tagesschau").assertDoesNotExist()
     }
 
+    @Test
+    fun anExtraPaneSitsBesideTheDetailAndBackClosesItFirst() {
+        detail = "Tagesschau"
+        extra = "heute"
+        show(EXPANDED_WINDOW_WIDTH, withEmptyDetail = false)
+
+        val pane = composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG)
+            .fetchSemanticsNode().boundsInRoot
+        val extraPane = composeRule.onNodeWithTag(LIST_DETAIL_EXTRA_PANE_TAG)
+            .assertIsDisplayed()
+            .fetchSemanticsNode().boundsInRoot
+        assertTrue("extra pane beside the detail", extraPane.left >= pane.right)
+        composeRule.onNodeWithText("Extra heute").assertIsDisplayed()
+        composeRule.onNodeWithTag(LIST_TAG).assertIsNotDisplayed()
+
+        pressBack()
+
+        assertNull(extra)
+        assertEquals("Tagesschau", detail)
+        composeRule.onNodeWithText("Extra heute").assertDoesNotExist()
+        composeRule.onNodeWithTag(LIST_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    fun aWindowForThreePanesShowsAllAndClosingTheExtraHidesIt() {
+        detail = "Tagesschau"
+        extra = "heute"
+        show(LARGE_WINDOW_WIDTH, withEmptyDetail = false)
+
+        composeRule.onNodeWithTag(LIST_TAG).assertIsDisplayed()
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertIsDisplayed()
+        composeRule.onNodeWithText("Extra heute").assertIsDisplayed()
+
+        // As the pane's close button does.
+        extra = null
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Extra heute").assertDoesNotExist()
+        composeRule.onNodeWithTag(LIST_TAG).assertIsDisplayed()
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertIsDisplayed()
+    }
+
+    @Test
+    fun aNarrowWindowLeavesTheExtraPaneToTheCaller() {
+        detail = "Tagesschau"
+        extra = "heute"
+        show(COMPACT_WINDOW_WIDTH, withEmptyDetail = false)
+
+        composeRule.onNodeWithTag(LIST_DETAIL_EXTRA_PANE_TAG).assertDoesNotExist()
+        pressBack()
+
+        assertEquals("heute", extra)
+        assertNull(detail)
+    }
+
+    private fun pressBack() {
+        composeRule.runOnUiThread {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.waitForIdle()
+    }
+
     private fun show(width: Dp, withEmptyDetail: Boolean) {
         composeRule.setContent {
             WithWindowSize(width) {
@@ -87,7 +152,9 @@ class ListDetailPanesTest {
                         } else {
                             null
                         },
-                        singlePaneDetail = { Text("Single $it") }
+                        singlePaneDetail = { Text("Single $it") },
+                        extraPane = extra?.let { { Text("Extra $it") } },
+                        onExtraDismiss = { extra = null }
                     ) {
                         Text("Detail $it")
                     }

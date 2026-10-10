@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -11,7 +13,9 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.ListDetailEmptyPane
+import net.reichholf.dreamdroid.ui.compose.ListDetailPaneTopBar
 import net.reichholf.dreamdroid.ui.compose.ListDetailPanes
+import net.reichholf.dreamdroid.ui.compose.showsListDetailPanes
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.nav.AutoTimerEdit
@@ -53,7 +57,7 @@ private fun phoneEpgEventActions(
 
 /**
  * The EPG detail sheet of [viewModel] in a phone destination that is not an EPG list (MultiEPG,
- * the current service, the services hub). Similar events open EPG search.
+ * the current service). Similar events open EPG search.
  */
 @Composable
 fun EpgEventDetailHost(handle: PhoneNavHandle, viewModel: EpgEventDetailViewModel) {
@@ -91,6 +95,60 @@ fun EpgEventListDetailHost(
         list = list,
         modifier = modifier
     )
+}
+
+/**
+ * The EPG detail of [viewModel] in a pane that can be closed, for a screen whose
+ * [ListDetailPanes] places it (the services hub: beside the services list, or as the extra pane
+ * beside a channel's schedule). Where the window fits two panes, [content] gets the shown
+ * event's pane; narrower windows show the event in the EPG sheet and [content] gets null.
+ * Either way it posts [viewModel]'s messages and its saving progress.
+ */
+@Composable
+fun EpgEventPaneHost(
+    handle: PhoneNavHandle,
+    viewModel: EpgEventDetailViewModel,
+    content: @Composable (eventPane: (@Composable () -> Unit)?) -> Unit
+) {
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    val actions = phoneEpgEventActions(handle, viewModel)
+    val event = uiState.event
+    val twoPanes = showsListDetailPanes()
+    // One call site, so [content] keeps its state when the window crosses the breakpoint.
+    content(
+        event?.takeIf { twoPanes }?.let {
+            { EpgEventPane(uiState, it, actions, onClose = viewModel::dismissDetail) }
+        }
+    )
+    if (!twoPanes) {
+        event?.let { EpgEventSheet(uiState, it, viewModel::dismissDetail, actions) }
+    }
+    EpgEventSavingProgress(uiState)
+}
+
+/** [event] in a list-detail pane, under a bar with only a close button. */
+@Composable
+fun EpgEventPane(
+    state: EpgEventDetailUiState,
+    event: Event,
+    actions: EpgEventActions,
+    onClose: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier.fillMaxSize()) {
+        ListDetailPaneTopBar(title = "", onClose = onClose)
+        EpgDetailScreen(
+            content = event.detailContent(),
+            onSetTimer = { actions.onSetTimer(event) },
+            onEditTimer = { actions.onEditTimer(event) },
+            onImdb = { actions.onImdb(event) },
+            onSimilar = { actions.onSimilar(event) },
+            timerWritesBlocked = state.timerWritesBlocked,
+            bodyHeightCap = null,
+            onRecordSeries = state.recordSeries(event, actions)
+        )
+    }
 }
 
 /** [EpgEventDetailUiState.event] as a Material 3 modal sheet, plus the saving progress. */

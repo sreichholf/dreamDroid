@@ -11,7 +11,8 @@
 * NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable; EPG search works offline too
 * NEW: Settings option to reset the offline cache (current profile or all profiles)
 * NEW: Android TV can use an external video player (same Settings toggle as phone)
-* NEW: Wide windows (tablets, foldables, large phones in landscape) show a recording's info beside the Movies list, and an event's details beside channel EPG, bouquet EPG, EPG search and AutoTimer preview; timers open for editing beside the timer list, and a channel's EPG opens beside the services list
+* NEW: Wide windows (tablets, foldables, large phones in landscape) show a recording's info beside the Movies list, and an event's details beside channel EPG, bouquet EPG, EPG search and AutoTimer preview, and timers open for editing beside the timer list
+* NEW: On wide windows the services list opens a channel's EPG beside it and an event of that EPG next to the EPG (all three side by side on the widest windows); a channel's current and next event open beside the list too
 * UPD: EPG search as you type, with recent searches and results grouped by day
 * UPD: Channel EPG grouped by day
 * UPD: Modernized architecture and Material 3 UI across phone screens
