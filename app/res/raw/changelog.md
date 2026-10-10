@@ -34,7 +34,7 @@
 * FIX: Switching channels in the player no longer freezes the app ("not responding") while the previous stream closes
 * UPD: libVLC 3.7.7
 * UPD: Online picons are set per profile (on/off, remote path, by service name); your previous global setting carries over. Android TV settings can now sync picons
-* FIX: Setup assistant keeps its fields, actions and scan results on screen when the keyboard is open (especially on TV), and no longer opens the keyboard while it checks the connection
+* FIX: Setup assistant keeps its fields, actions and scan results on screen when the keyboard is open (especially on TV), and no longer opens the keyboard while it checks the connection; on TV the focused action stands out like in the rest of the app
 * FIX: multiple smaller issues
 
 ## 1.15.460

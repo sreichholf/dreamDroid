@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -37,9 +38,12 @@ import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
@@ -62,7 +66,9 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -74,6 +80,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
@@ -253,10 +260,14 @@ fun SetupAssistantScreen(
                                             .padding(top = 28.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
+                                        val focus = rememberRemoteFocus()
                                         Button(
                                             onClick = viewModel::advance,
                                             enabled = progress >= 1f,
-                                            modifier = Modifier
+                                            colors = focus.buttonColors(
+                                                ButtonDefaults.buttonColors()
+                                            ),
+                                            modifier = focus.modifier
                                                 .focusRequester(startFocus)
                                                 .graphicsLayer { alpha = progress }
                                         ) {
@@ -311,20 +322,32 @@ fun SetupAssistantScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = { viewModel.back() }) {
+                val backFocus = rememberRemoteFocus()
+                TextButton(
+                    onClick = { viewModel.back() },
+                    colors = backFocus.buttonColors(ButtonDefaults.textButtonColors()),
+                    modifier = backFocus.modifier
+                ) {
                     Text(stringResource(R.string.setup_back))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (step == SetupStep.SignIn && failed && !checking) {
-                        TextButton(onClick = viewModel::check) {
+                        val retryFocus = rememberRemoteFocus()
+                        TextButton(
+                            onClick = viewModel::check,
+                            colors = retryFocus.buttonColors(ButtonDefaults.textButtonColors()),
+                            modifier = retryFocus.modifier
+                        ) {
                             Text(stringResource(R.string.setup_retry))
                         }
                     }
                     val checkingText = stringResource(R.string.checking)
+                    val actionFocus = rememberRemoteFocus()
                     Button(
                         onClick = viewModel::advance,
                         enabled = actionEnabled,
-                        modifier = Modifier.semantics {
+                        colors = actionFocus.buttonColors(ButtonDefaults.buttonColors()),
+                        modifier = actionFocus.modifier.semantics {
                             if (step == SetupStep.SignIn && checking) {
                                 stateDescription = checkingText
                             }
@@ -336,6 +359,41 @@ fun SetupAssistantScreen(
             }
         }
     }
+}
+
+/**
+ * The TV hub's focus look (`dreamDroidTvCardColors()`, focused scale 1.05) for the wizard's
+ * actions. Only while a remote or keyboard drives the UI: touch mode keeps the phone look.
+ * [modifier] must come first in the chain, above the component's own focus target.
+ */
+private class RemoteFocus(val modifier: Modifier, val highlighted: Boolean) {
+    @Composable
+    fun buttonColors(default: ButtonColors): ButtonColors = if (highlighted) {
+        default.copy(
+            containerColor = MaterialTheme.colorScheme.inverseSurface,
+            contentColor = MaterialTheme.colorScheme.inverseOnSurface
+        )
+    } else {
+        default
+    }
+}
+
+@Composable
+private fun rememberRemoteFocus(): RemoteFocus {
+    val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    var focused by remember { mutableStateOf(false) }
+    val highlighted = keyboard && focused
+    val scale by animateFloatAsState(if (highlighted) 1.05f else 1f, label = "remote-focus")
+    return RemoteFocus(
+        modifier = Modifier
+            .zIndex(if (highlighted) 1f else 0f)
+            .onFocusChanged { focused = it.isFocused }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        highlighted = highlighted
+    )
 }
 
 /** Height of the wizard's scrolling area; it shrinks when the on-screen keyboard opens. */
@@ -439,10 +497,21 @@ private fun FindStep(
         items(devices, key = { "${it.host}:${it.port}" }) { receiver ->
             val selected =
                 host.text.toString() == receiver.host && portText == receiver.port.toString()
+            val focus = rememberRemoteFocus()
             ListItem(
                 headlineContent = { Text(receiver.name) },
                 supportingContent = { Text(receiver.host) },
-                modifier = Modifier
+                colors = if (focus.highlighted) {
+                    val scheme = MaterialTheme.colorScheme
+                    ListItemDefaults.colors(
+                        containerColor = scheme.inverseSurface,
+                        headlineColor = scheme.inverseOnSurface,
+                        supportingColor = scheme.inverseOnSurface
+                    )
+                } else {
+                    ListItemDefaults.colors()
+                },
+                modifier = focus.modifier
                     .fillMaxWidth()
                     .testTag("setup_device_${receiver.host}")
                     .background(

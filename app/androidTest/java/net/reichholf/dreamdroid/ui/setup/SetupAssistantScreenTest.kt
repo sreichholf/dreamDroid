@@ -1,5 +1,8 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import android.os.SystemClock
+import android.view.InputDevice
+import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -12,6 +15,7 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
@@ -464,6 +468,114 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Next").assertIsEnabled().assertIsFocused()
         composeRule.onNodeWithTag("setup_user").assertIsNotFocused()
         assertEquals(1, checks)
+    }
+
+    @Test
+    fun remoteFocusEnlargesTheFocusedAction() {
+        val viewModel = model()
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        val next = composeRule.onNodeWithText("Next").assertIsNotFocused()
+        val back = composeRule.onNodeWithText("Back").assertIsNotFocused()
+        val nextIdle = next.size()
+        val backIdle = back.size()
+
+        next.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        next.assertIsFocused()
+        assertGrown(nextIdle, next.size())
+        assertEquals(backIdle, back.size())
+
+        back.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        back.assertIsFocused()
+        assertGrown(backIdle, back.size())
+        assertEquals(nextIdle, next.size())
+    }
+
+    @Test
+    fun touchModeKeepsTheActionsAsTheyAre() {
+        val viewModel = model()
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // Touch mode is global below API 33, so an earlier test (or a D-pad-driven TV) can
+        // leave the device out of it. requestInputMode(Touch) is not supported and the
+        // rule's own touch input bypasses the system, so inject a real tap.
+        enterTouchMode()
+        composeRule.waitUntil { inputModeManager.inputMode == InputMode.Touch }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsNotFocused().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        val next = composeRule.onNodeWithText("Next")
+        val idle = next.size()
+        next.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        next.assertIsNotFocused()
+        assertEquals(idle, next.size())
+    }
+
+    private fun enterTouchMode() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val time = SystemClock.uptimeMillis()
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(time, time, action, 1f, 1f, 0)
+            event.source = InputDevice.SOURCE_TOUCHSCREEN
+            automation.injectInputEvent(event, true)
+            event.recycle()
+        }
+    }
+
+    private fun SemanticsNodeInteraction.size(): DpSize {
+        val bounds = getBoundsInRoot()
+        return DpSize(bounds.right - bounds.left, bounds.bottom - bounds.top)
+    }
+
+    private fun assertGrown(idle: DpSize, focused: DpSize) {
+        val ratio = focused.width / idle.width
+        assertTrue(
+            "A focused action must scale up by about 5%, was $idle -> $focused",
+            ratio > 1.03f && ratio < 1.07f
+        )
+        assertTrue(
+            "A focused action must scale up by about 5%, was $idle -> $focused",
+            focused.height > idle.height
+        )
     }
 
     private val profiles = memoryProfiles()
