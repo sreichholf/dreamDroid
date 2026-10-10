@@ -2,17 +2,16 @@
 
 Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; never merge rewrite work into it). Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Gradle 9.6.1 / AGP 9.4.1 / Kotlin 2.4.20; CI builds with **JDK 25** — use it locally too (Gradle does not enforce it; app bytecode stays Java 17).
 
-Modernization plan and remaining work: [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
+Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 
 ## Before you open a PR
 
 1. `./gradlew spotlessApply` on every Kotlin file you touched; keep its output.
 2. `./gradlew -Pci --no-configuration-cache :app:prCheck` (`gradlew.bat` on Windows) — the exact checks the PR jobs run: spotless, JVM tests, androidTest compile, lint. CI runs the same tasks, so do not assemble the task list from memory.
 3. Phone UI changed? Write or update the instrumented test (see **Tests**). Run it locally on a device/emulator, or trigger `workflow_dispatch` on `android-ci.yml` — the emulator job does not run on PRs.
-4. Touched Room, DataStore, legacy SharedPreferences, or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
+4. Touched Room, settings (`SharedPreferences`), or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
 5. User-visible change? Add a line to both changelogs (see **Changelog and strings**).
-6. Completed a remediation step from `docs/modernize-dreamdroid.md`? Tick it off in that doc in the same PR.
-7. Keep commit messages and PR descriptions to the essence of the change: what changed and why, short and precise. No file-by-file tour or restated diff. Name the checks you ran and their result in a line or two. A PR is written like a commit message: the title is the subject line, the description is the body (what and why, then the checks); a one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead.
+6. Keep commit messages and PR descriptions to the essence of the change: what changed and why, short and precise. No file-by-file tour or restated diff. Name the checks you ran and their result in a line or two. A PR is written like a commit message: the title is the subject line, the description is the body (what and why, then the checks); a one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead.
 
 ## Where things are
 
@@ -23,7 +22,7 @@ Modernization plan and remaining work: [`docs/modernize-dreamdroid.md`](docs/mod
 - `app/schemas/net.reichholf.dreamdroid.room.AppDatabase/<version>.json` — exported Room schemas, committed.
 - `app/res/raw/changelog.md`, `app/res/raw-de/changelog.md` — in-app changelogs (EN/DE). `fastlane/metadata/android/` holds store descriptions and screenshots only, no changelogs.
 - `scripts/` — helper scripts shared by CI and the agent hooks. `.cursor/`, `.claude/`, `.agents/` — per-tool setup and skills.
-- Design docs in `docs/`: `modernize-dreamdroid.md` (plan, target architecture, deliberate exceptions), `offline-and-errors.md` (what is cached and who decides), `hilt-migration.md`, `multiepg.md`, `openwebif.md`, `autotimer.md`, `vps.md`, `tv-focus-testing.md` (D-pad focus in instrumented tests). Read the one for the area you touch before changing behavior there.
+- Design docs in `docs/`: `deliberate-exceptions.md` (legacy patterns kept on purpose; do not "fix" them), `offline-and-errors.md` (what is cached and who decides), `hilt-migration.md`, `multiepg.md`, `openwebif.md`, `autotimer.md`, `vps.md`, `tv-focus-testing.md` (D-pad focus in instrumented tests). Read the one for the area you touch before changing behavior there.
 
 ## Code rules
 
@@ -31,7 +30,7 @@ Modernization plan and remaining work: [`docs/modernize-dreamdroid.md`](docs/mod
 
 **Style:** [Google's Android Kotlin style guide](https://developer.android.com/kotlin/style-guide), enforced by Spotless + ktlint `android_studio` with `.editorconfig` as the source of truth (4-space indent, 100 columns, braces, wrapping, import order without wildcards, semicolons). `spotlessCheck` runs in CI over `app/src`, `app/test`, `app/androidTest`. Do not hand-retab or invent a house indent; if `spotlessApply` changes your code, keep its output.
 
-**Architecture:** new and touched code follows the target architecture in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md#target-architecture): repositories + Hilt, ViewModels without `Application`/`Context` exposing `StateFlow` UI state, Material 3 `TopAppBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`, type-safe routes, DataStore. Do not copy a legacy pattern from neighboring code because it is still there; it is listed under remediation.
+**Architecture:** new and touched code follows the [guide to app architecture](https://developer.android.com/topic/architecture): Compose screens and ViewModels over repositories (Hilt) that own Enigma HTTP, Room and settings; screens never call `ReceiverApi`, DAOs or `SharedPreferences` directly. ViewModels take repositories and `SavedStateHandle` (no `Application`/`Context`), work in `viewModelScope`, and expose one `StateFlow` UI state that screens collect with `collectAsStateWithLifecycle()`. Stateless `*Screen(state, onAction…)` composables, Material 3 `TopAppBar` / `SearchBar` (no `MenuProvider` / options menu), Snackbar instead of `Toast`. One activity per form factor (phone, TV), each with one Navigation Compose `NavHost` and type-safe routes; Navigation 3 was evaluated and rejected. The phone shell keeps the bottom `ShortNavigationBar` on every window size: its items are app destinations, and the tablet rail it replaced held hub-local sections, so do not bring back a `NavigationRail` / `NavigationSuiteScaffold` for wide windows. Deferrable background work uses WorkManager. Settings go through `SettingsRepository` (still over `SharedPreferences`; moving it to DataStore needs the maintainer's sign-off). Layout follows window size classes from `currentWindowAdaptiveInfoV2()`, not `smallestScreenWidthDp` or `sw` resource qualifiers. Every interactive element has a role, label and state, with 48dp touch targets; tests assert semantics. Do not copy a legacy pattern from neighboring code because it is still there; the ones that stay on purpose are in [`docs/deliberate-exceptions.md`](docs/deliberate-exceptions.md).
 
 **Repositories decide between Room and the receiver; ViewModels and screens do not.** A list is read cache-first through `data/CacheFirstLoad.kt`: Room paints first, the receiver is skipped while the session is Offline and Room had the list, and Room is the fallback when the receiver fails. A ViewModel collects that flow and passes only `forceRefresh` (pull-to-refresh, Retry, reload after a write). It does not call `cached*()` itself, does not read `sessions.status` to choose between Room and HTTP, and does not hold in-memory copies of receiver data as the "known" value. Composables hold UI state only in `remember` / `rememberSaveable` (scroll, expansion, text field state), never backend data. Which datasets are cached, and the lists that are deliberately not cache-first, are in [`docs/offline-and-errors.md` §4.4](docs/offline-and-errors.md#44-datasets).
 
@@ -118,7 +117,7 @@ The 1.15 → 2.0 upgrade over live user data is a release gate. If you touch any
 
 - `room/AppDatabase.kt` (currently `version = 12`, `exportSchema = true`): any entity, DAO or index change bumps `version`, adds an explicit `MIGRATION_<n>_<n+1>` to `addMigrations(...)`, and commits the new `app/schemas/.../<n+1>.json` that KSP writes. There is no `fallbackToDestructiveMigration` and none may be added; users' offline cache and profiles live in this file.
 - `DatabaseHelper.kt` and the legacy-profile import that `DreamDroid.onCreate()` runs after Hilt injection (the pre-2.0 SQLite profile store); `DreamDroidBackupAgent.kt`.
-- Settings keys (`PreferenceManager` defaults / DataStore) and the backup/restore screen under `ui/backup/`.
+- Settings keys (`PreferenceManager` defaults, `SettingsRepository`) and the backup/restore screen under `ui/backup/`.
 
 ## Changelog and strings
 
@@ -169,7 +168,7 @@ Claude Code running locally on a machine with JDK 25, the SDK, and a device or e
 - Do not pass `-Pandroid.testInstrumentationRunnerArguments...` to Gradle. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -e class ...` instead; shard with `-PtestShardCount=N -PtestShardIndex=i`.
 - `-Pci` and the ABI-split path in `.cursor/cloud/connected-test.sh` are both **intentional** (see **Build modes and CI**). Do not force the helper onto `-Pci` or drop `-Pci` from CI.
 - The SDK package list (platforms and build-tools) lives in one place, `scripts/android-sdk-packages.txt`, read by the CI composite action `.github/actions/ensure-android-sdk`, the Claude Code hook, and the Cursor install script. Change it there only. The callers share nothing else: each finds or bootstraps `sdkmanager` itself and adds its own extras (`platform-tools` in the hook; `platform-tools`, `emulator` and the system image in the Cursor script).
-- Remaining modernization work (the remediation steps, anything still listed under **Still to do**, and the **Deliberate exceptions** that must not be "fixed") lives in [`docs/modernize-dreamdroid.md`](docs/modernize-dreamdroid.md). Do not quietly fold those into unrelated PRs.
+- Out of scope until asked: Enigma2 server / webif patches, VLC codec or stream protocol work, a Media3 swap, deleting the widget, merging `master` into `main`.
 
 ## Engineering workflow (poteto-mode)
 

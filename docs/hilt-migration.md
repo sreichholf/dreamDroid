@@ -1,7 +1,7 @@
 # Hilt migration plan (B1, with C2 and B4)
 
 **Status:** decisions accepted 2026-09-28 (see **Decisions**). PRs 1–15 merged; the migration is complete. The **End state** holds on `main` since 14b. Progress is tracked in **Progress** below.
-**Scope:** remediation items B1 (Hilt), C2 (ViewModel shape), and B4 (repositories) in [`modernize-dreamdroid.md`](modernize-dreamdroid.md). The modernization doc already says Hilt lands with the first C2 ViewModel, not alone. This plan orders the whole wave into PRs.
+**Scope:** Hilt, the ViewModel shape, and repositories (the former modernization plan's items B1, C2 and B4). Hilt lands with the first migrated ViewModel, not alone. This plan orders the whole wave into PRs.
 **Names since:** this record keeps the names of its time. With [`openwebif.md`](openwebif.md), `EnigmaClient` became `DreamboxWebIfApi` behind the `ReceiverApi` interface (next to `OpenWebifApi`), and `EnigmaClientFactory` became `ReceiverApiFactory`, which picks the client by the detected receiver flavor. Decision 1 holds for both.
 
 ## End state
@@ -38,7 +38,7 @@ Android components outside activities: `PiconSyncWorker` (WorkManager), `Virtual
 4. **Delete with the last caller.** The PR that moves the last caller of a static, `*Load.kt` helper, or `*Snapshot`/`*Cache` object deletes it. There is no separate cleanup PR unless something is left over at the end (PR 14).
 5. **Unmigrated screens keep working.** An `@AndroidEntryPoint` activity's default factory is `HiltViewModelFactory`. It hands non-`@HiltViewModel` classes to the normal delegate factory, and `viewModel()` inside a `NavHost` still uses the back-stack entry's own factory. So `AndroidViewModel` screens that have not moved yet keep working next to migrated ones.
 6. **Proof per PR:** the PR job (`./gradlew -Pci spotlessCheck :app:testGoogleDebugUnitTest :app:compileGoogleDebugAndroidTestKotlin :app:lintGoogleDebug`). Also a new JVM ViewModel test, updated `*Screen` tests, and a `workflow_dispatch` run of the emulator job before merge. PRs 1, 3, 11, 12, 13, and 14 change activities or the Application class, so they also get a `googleRelease` (R8) smoke on a device.
-7. Each PR moves its item into **Done** in `modernize-dreamdroid.md` and ticks it here.
+7. Each PR ticks its item here.
 
 ### Transitional pattern for existing singletons
 
@@ -94,7 +94,7 @@ The smallest screen that exercises every part of the pattern: one read-only Enig
 - `UiText` (`Resource(@StringRes id, args)` / `Raw(String)`). `Raw` is needed because box error texts arrive as server strings. `EnigmaFailure` gets a `UiText` mapping next to the existing `userMessage(context)`; the old mapping is deleted when its last caller moves.
 - Delete `loadDeviceInfo`.
 - Tests: JVM `DeviceInfoViewModelTest` (load, failure message, restore from `SavedStateHandle`) against a fake at the boundary chosen in decision 6. Update `DeviceInfoScreenTest` for the new state type.
-- Docs: add the Hilt rules in short form to `AGENTS.md` (bindings land with their first consumer, `hiltViewModel()` for migrated screens, Hilt wraps statics until their last caller moves). The coordinator keeps this doc's progress and `modernize-dreamdroid.md` current.
+- Docs: add the Hilt rules in short form to `AGENTS.md` (bindings land with their first consumer, `hiltViewModel()` for migrated screens, Hilt wraps statics until their last caller moves). The coordinator keeps this doc's progress current.
 
 Proof beyond the PR job: emulator job (the Application class changed, so every instrumented test starts the new app). A `googleRelease` build that opens Device info on a device.
 

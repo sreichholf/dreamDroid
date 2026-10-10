@@ -53,8 +53,8 @@ const val AUTO_FIT_COLUMNS = -1
 
 /**
  * [AppSettings] over the default [SharedPreferences], under the `DreamDroid.PREFS_KEY_*`
- * keys that the rest of the app and backups read. A later DataStore swap (B2) changes
- * only this class.
+ * keys that the rest of the app and backups read. A later DataStore swap changes only
+ * this class.
  */
 @Singleton
 class SettingsRepository @Inject constructor(private val preferences: SharedPreferences) {

@@ -178,7 +178,7 @@ Phases 1 and 2 change no behavior on Dreambox.
    - Transcoding on port 8002 becomes a profile option. Setup gives it a default from the detected flavor. There are no per-flavor URL builders; stream URLs keep coming from profile settings.
    - Picons on OWIF: decide between the `picon` field from `getservices?picon=1` and `/picon/` (mounted only when the box has a picon path).
 6. [x] **Docs and discovery.**
-   - Update the scope statements in `multiepg.md`, `autotimer.md`, `offline-and-errors.md` and `modernize-dreamdroid.md`.
+   - Update the scope statements in `multiepg.md`, `autotimer.md`, and `offline-and-errors.md`.
    - Fix the `SignalParser` comment: DM emits `e2acg` too.
    - Optionally widen `DeviceDetector` and mDNS beyond `dm*` host names. Not done (§5).
    - Run the emulator job via `workflow_dispatch` for the profile-setup and timer screens. Pending.
@@ -188,7 +188,6 @@ Phases 1 and 2 change no behavior on Dreambox.
 - **Which images matter?** OpenATV and OpenPLi differ in their AutoTimer fork and OWIF version. The first real captures should come from what users actually run.
 - **Real captures before release.** The OWIF client is tested against synthetic fixtures until someone with a box runs the capture script. Ship it marked experimental, or wait?
 - **Minimum OWIF version.** Check the `/api` fields used in phase 3 against `CHANGES.md` and document the floor. Below it the flavor stays unknown, which keeps the Dreambox path.
-- **2.0 blockers.** This plan does not say whether it waits for the open 2.0 blockers in `modernize-dreamdroid.md`.
 
 ## 5. As built: differences from the plan
 

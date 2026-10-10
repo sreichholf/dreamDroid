@@ -2,8 +2,8 @@
 
 **Status:** Phone shipped and operator-verified (2026-09-19). Plan accepted 2026-09-17.  
 **Trunk:** `main`. Slices 1–7 are implemented on phone. Do not reopen as a mega-PR. TV hub session, Room cache paint, and Online-only streaming have landed. Widget still follows.  
-**Follow-ups shipped:** accessibility semantics on greyed Online-only actions (A1) and the Compose `SnackbarHost` for mutation results (A2). See [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md).
-**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). Architecture target and remediation (repositories, DI, ViewModel shape) live in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md). The cache guards and `hasCache` rules below move into repositories there (step B4) unchanged; this doc stays the source of truth for **what** is cached. The widget is Glance + `AndroidRemoteViews` for the dense RCU grid (a deliberate exception).
+**Follow-ups shipped:** accessibility semantics on greyed Online-only actions and the Compose `SnackbarHost` for mutation results.
+**Related:** MultiEPG cache/TTL already ships ([`docs/multiepg.md`](multiepg.md)). The architecture (repositories, DI, ViewModel shape) is in [`AGENTS.md`](../AGENTS.md); this doc is the source of truth for **what** is cached. The widget is Glance + `AndroidRemoteViews` for the dense RCU grid (a [deliberate exception](deliberate-exceptions.md)).
 
 Phone Enigma2 remote. New types are Kotlin. Proof is instrumented Compose tests for UI (`bash .cursor/cloud/connected-test.sh …` on Cloud VMs) and JVM tests for failure mapping, guards, and now/next.
 
@@ -145,7 +145,7 @@ Online, Provider/All still load over HTTP as today.
 
 ### 4.6 Shared sync
 
-Hub slice 4 and MultiEPG share **one process-wide** `MultiEpgSync` (shipped as `MultiEpgSyncHolder.shared`), so `inFlight` dedupes across callers and opening Favourites plus MultiEPG does not double `epgmulti` for the same chunk. The single instance stays; how it is provided changes from an `object` holder to a Hilt `@Singleton` behind `EpgRepository` (remediation B1 / B4).
+Hub slice 4 and MultiEPG share **one process-wide** `MultiEpgSync`, so `inFlight` dedupes across callers and opening Favourites plus MultiEPG does not double `epgmulti` for the same chunk. The single instance is a property of the `@Singleton` `EpgRepository`.
 
 ## 5. Error and chrome (Material 3)
 
@@ -224,7 +224,7 @@ Reuse `epg_event.bouquetRef` as the container `bRef` (tab or opened folder). Nes
 - Caching Provider / All Services
 - Optimistic offline writes or a command queue
 - OS `ConnectivityManager` as a third copy — box unreachable is enough for v1
-- Folding architecture remediation (repositories, DI, ViewModel shape, toolbar, navigation) into offline fixes. Those are separate steps in [`docs/modernize-dreamdroid.md`](modernize-dreamdroid.md).
+- Folding architecture remediation (repositories, DI, ViewModel shape, toolbar, navigation) into offline fixes. Those are separate changes.
 - Changing MultiEPG zoom/TTL/retention defaults
 - Switching Online hub off `epgnownext` unless the operator re-locks that
 

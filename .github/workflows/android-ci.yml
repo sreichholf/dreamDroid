@@ -220,7 +220,7 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
-  # E2 release check: 1.15 → 2.0 over live app data. Both debug builds share
+  # Release check: 1.15 → 2.0 over live app data. Both debug builds share
   # debug.keystore and net.reichholf.dreamdroid.debug, so `adb install -r` is a
   # real in-place upgrade. See .github/upgrade-from-115/run.sh.
   build115:
