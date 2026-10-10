@@ -66,6 +66,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
@@ -586,51 +588,67 @@ private fun ConnectionCheck(
     trustAllCerts: Boolean,
     onTrustAllChange: (Boolean) -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.setup_test_body),
-        style = MaterialTheme.typography.bodyLarge
-    )
-    Spacer(Modifier.height(16.dp))
-    val outcome = result
-    if (checking) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator()
-            Text(
-                text = stringResource(R.string.checking),
-                modifier = Modifier.padding(start = 12.dp)
-            )
+    // A failed check is the moment the user must read the block; on a short TV window it
+    // otherwise lies below the fold. The first frame after composition has not placed it yet.
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(result) {
+        if (result?.hasError == true) {
+            withFrameNanos { }
+            bringIntoView.bringIntoView()
         }
-    } else if (outcome != null && !outcome.hasError) {
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .bringIntoViewRequester(bringIntoView)
+    ) {
         Text(
-            text = stringResource(R.string.setup_connected),
+            text = stringResource(R.string.setup_test_body),
             style = MaterialTheme.typography.bodyLarge
         )
-    } else if (outcome != null && outcome.hasError) {
-        Text(
-            text = outcome.setupMessage()?.asString().orEmpty(),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
-        )
-    }
-    if (trustAllCerts || outcome?.isCertificateFailure() == true) {
         Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        val outcome = result
+        if (checking) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator()
+                Text(
+                    text = stringResource(R.string.checking),
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
+        } else if (outcome != null && !outcome.hasError) {
             Text(
-                text = stringResource(R.string.trust_all_certs),
-                modifier = Modifier.weight(1f),
+                text = stringResource(R.string.setup_connected),
                 style = MaterialTheme.typography.bodyLarge
             )
-            Switch(
-                checked = trustAllCerts,
-                onCheckedChange = onTrustAllChange,
-                modifier = Modifier.testTag("setup_trust_all")
+        } else if (outcome != null && outcome.hasError) {
+            Text(
+                text = outcome.setupMessage()?.asString().orEmpty(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
             )
         }
-        Text(
-            text = stringResource(R.string.trust_all_certs_confirm),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+        if (trustAllCerts || outcome?.isCertificateFailure() == true) {
+            Spacer(Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.trust_all_certs),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Switch(
+                    checked = trustAllCerts,
+                    onCheckedChange = onTrustAllChange,
+                    modifier = Modifier.testTag("setup_trust_all")
+                )
+            }
+            Text(
+                text = stringResource(R.string.trust_all_certs_confirm),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }

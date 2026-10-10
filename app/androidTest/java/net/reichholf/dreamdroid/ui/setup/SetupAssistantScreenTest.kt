@@ -7,6 +7,7 @@ import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
@@ -297,6 +298,56 @@ class SetupAssistantScreenTest {
         assertTrue(
             "The first scan result must lie within the window, was $row in $root",
             row.top >= root.top && row.bottom <= root.bottom
+        )
+    }
+
+    @Test
+    fun failedCheckScrollsItsErrorIntoATvSizedWindow() {
+        val viewModel = model(
+            onCheck = {
+                ProfileCheckResult(hasError = true, errorText = UiText.Raw("unreachable"))
+            }
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 540.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {}
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitForIdle()
+
+        val root = composeRule.onRoot().getBoundsInRoot()
+        val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
+        val error = composeRule.onNodeWithText("unreachable")
+            .assertIsDisplayed()
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
+            )
+            .getBoundsInRoot()
+        assertTrue(
+            "The check error must lie within the window, was $error in $root",
+            error.top >= root.top && error.bottom <= root.bottom
+        )
+        assertTrue(
+            "The check error must sit above the button row, was $error, $back",
+            error.bottom <= back.top
         )
     }
 
