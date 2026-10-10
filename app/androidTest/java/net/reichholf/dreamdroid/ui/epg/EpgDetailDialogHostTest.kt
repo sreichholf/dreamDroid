@@ -340,7 +340,7 @@ class EpgDetailDialogHostTest {
             val layouts = mutableListOf<TextLayoutResult>()
             composeRule.onNodeWithText(label, useUnmergedTree = true)
                 .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
-            assertFalse(label, layouts.single().hasVisualOverflow)
+            assertFalse(label, layouts.single().isLineEllipsized(0))
         }
     }
 
