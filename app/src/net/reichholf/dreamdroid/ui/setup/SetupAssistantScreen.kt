@@ -29,6 +29,8 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
@@ -45,14 +47,20 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -157,6 +165,8 @@ fun SetupAssistantScreen(
 
         else -> R.string.setup_next
     }
+    val scrollState = rememberScrollState()
+    LaunchedEffect(step) { scrollState.scrollTo(0) }
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -171,114 +181,116 @@ fun SetupAssistantScreen(
             val room = (maxHeight - 28.dp - 160.dp).coerceAtLeast(0.dp)
             val logoCap = if (step == SetupStep.Welcome) WELCOME_LOGO_HEIGHT else STEP_LOGO_HEIGHT
             val logoHeight = logoCap.coerceAtMost(room)
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.height(8.dp))
-                Image(
-                    painter = painterResource(R.drawable.dreamdroid_logo_simple),
-                    contentDescription = stringResource(R.string.app_name),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .height(logoHeight)
-                        .testTag("setup_logo")
-                )
-                Spacer(Modifier.height(28.dp))
-                AnimatedContent(
-                    targetState = step,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(
-                            y = if (step == SetupStep.Welcome) {
-                                48.dp * (1f - progress)
-                            } else {
-                                0.dp
-                            }
-                        ),
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(durationMillis = 320)) togetherWith
-                            fadeOut(animationSpec = tween(durationMillis = 200))
-                    },
-                    label = "setup-title"
-                ) { current ->
-                    SetupTitle(
-                        step = current,
-                        progress = if (current == SetupStep.Welcome) progress else 1f
-                    )
-                }
+            CompositionLocalProvider(LocalWizardViewport provides maxHeight) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp)
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(Modifier.height(8.dp))
+                    Image(
+                        painter = painterResource(R.drawable.dreamdroid_logo_simple),
+                        contentDescription = stringResource(R.string.app_name),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .height(logoHeight)
+                            .testTag("setup_logo")
+                    )
+                    Spacer(Modifier.height(28.dp))
                     AnimatedContent(
                         targetState = step,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(
+                                y = if (step == SetupStep.Welcome) {
+                                    48.dp * (1f - progress)
+                                } else {
+                                    0.dp
+                                }
+                            ),
                         transitionSpec = {
-                            (
-                                fadeIn(animationSpec = tween(durationMillis = 320)) +
-                                    slideInVertically(
-                                        animationSpec = tween(durationMillis = 320)
-                                    ) { it / 8 }
-                                ) togetherWith
+                            fadeIn(animationSpec = tween(durationMillis = 320)) togetherWith
                                 fadeOut(animationSpec = tween(durationMillis = 200))
                         },
-                        label = "setup-body"
+                        label = "setup-title"
                     ) { current ->
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            when (current) {
-                                SetupStep.Welcome -> Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 28.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Button(
-                                        onClick = viewModel::advance,
-                                        enabled = progress >= 1f,
+                        SetupTitle(
+                            step = current,
+                            progress = if (current == SetupStep.Welcome) progress else 1f
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        AnimatedContent(
+                            targetState = step,
+                            modifier = Modifier.fillMaxWidth(),
+                            transitionSpec = {
+                                (
+                                    fadeIn(animationSpec = tween(durationMillis = 320)) +
+                                        slideInVertically(
+                                            animationSpec = tween(durationMillis = 320)
+                                        ) { it / 8 }
+                                    ) togetherWith
+                                    fadeOut(animationSpec = tween(durationMillis = 200))
+                            },
+                            label = "setup-body"
+                        ) { current ->
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                when (current) {
+                                    SetupStep.Welcome -> Box(
                                         modifier = Modifier
-                                            .focusRequester(startFocus)
-                                            .graphicsLayer { alpha = progress }
+                                            .fillMaxWidth()
+                                            .padding(top = 28.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Text(stringResource(R.string.setup_start))
+                                        Button(
+                                            onClick = viewModel::advance,
+                                            enabled = progress >= 1f,
+                                            modifier = Modifier
+                                                .focusRequester(startFocus)
+                                                .graphicsLayer { alpha = progress }
+                                        ) {
+                                            Text(stringResource(R.string.setup_start))
+                                        }
                                     }
+
+                                    SetupStep.Find -> FindStep(
+                                        host = viewModel.host.state,
+                                        devices = state.devices,
+                                        searching = state.searching,
+                                        searched = state.searched,
+                                        localNetworkGranted = localNetworkGranted,
+                                        portText = portText,
+                                        onPick = viewModel::onPick
+                                    )
+
+                                    SetupStep.Connection -> ConnectionStep(
+                                        host = viewModel.host.state,
+                                        useHttps = draft.useHttps,
+                                        onHttpsChange = viewModel::onHttpsChange,
+                                        port = viewModel.port.state
+                                    )
+
+                                    SetupStep.SignIn -> SignInStep(
+                                        login = draft.login,
+                                        onLoginChange = viewModel::onLoginChange,
+                                        user = viewModel.user.state,
+                                        pass = viewModel.pass.state,
+                                        checking = checking,
+                                        result = checkResult,
+                                        trustAllCerts = draft.trustAllCerts,
+                                        onTrustAllChange = viewModel::onTrustAllChange,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+
+                                    SetupStep.Name -> NameStep(
+                                        profileName = viewModel.profileName.state
+                                    )
                                 }
-
-                                SetupStep.Find -> FindStep(
-                                    host = viewModel.host.state,
-                                    devices = state.devices,
-                                    searching = state.searching,
-                                    searched = state.searched,
-                                    localNetworkGranted = localNetworkGranted,
-                                    portText = portText,
-                                    onPick = viewModel::onPick
-                                )
-
-                                SetupStep.Connection -> ConnectionStep(
-                                    host = viewModel.host.state,
-                                    useHttps = draft.useHttps,
-                                    onHttpsChange = viewModel::onHttpsChange,
-                                    port = viewModel.port.state
-                                )
-
-                                SetupStep.SignIn -> SignInStep(
-                                    login = draft.login,
-                                    onLoginChange = viewModel::onLoginChange,
-                                    user = viewModel.user.state,
-                                    pass = viewModel.pass.state,
-                                    checking = checking,
-                                    result = checkResult,
-                                    trustAllCerts = draft.trustAllCerts,
-                                    onTrustAllChange = viewModel::onTrustAllChange,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                SetupStep.Name -> NameStep(
-                                    profileName = viewModel.profileName.state
-                                )
                             }
                         }
                     }
@@ -312,6 +324,29 @@ fun SetupAssistantScreen(
             }
         }
     }
+}
+
+/** Height of the wizard's scrolling area; it shrinks when the on-screen keyboard opens. */
+private val LocalWizardViewport = compositionLocalOf { 0.dp }
+
+/**
+ * Scrolls a focused field back into view when the scrolling area gets shorter. The scroll
+ * container does not do this when the keyboard opens (seen on an API 26 TV); only typing would
+ * scroll to the cursor.
+ */
+@Composable
+private fun Modifier.keepInViewWhenFocused(): Modifier {
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    val viewport = LocalWizardViewport.current
+    LaunchedEffect(focused, viewport) {
+        if (focused) {
+            // The logo resizes with the window in the same pass; scroll once it is placed.
+            withFrameNanos { }
+            requester.bringIntoView()
+        }
+    }
+    return bringIntoViewRequester(requester).onFocusChanged { focused = it.hasFocus }
 }
 
 @Composable
@@ -359,6 +394,7 @@ private fun FindStep(
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
+            .keepInViewWhenFocused()
             .testTag("setup_address")
     )
     Spacer(Modifier.height(12.dp))
@@ -426,7 +462,9 @@ private fun ConnectionStep(
         state = host,
         label = { Text(stringResource(R.string.host_long)) },
         lineLimits = TextFieldLineLimits.SingleLine,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .keepInViewWhenFocused()
     )
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -450,6 +488,7 @@ private fun ConnectionStep(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
+            .keepInViewWhenFocused()
             .testTag("setup_port")
     )
 }
@@ -486,13 +525,18 @@ private fun SignInStep(
                 state = user,
                 label = { Text(stringResource(R.string.user)) },
                 lineLimits = TextFieldLineLimits.SingleLine,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .keepInViewWhenFocused()
             )
             Spacer(Modifier.height(12.dp))
             OutlinedSecureTextField(
                 state = pass,
                 label = { Text(stringResource(R.string.pass)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .keepInViewWhenFocused()
+                    .testTag("setup_password")
             )
         }
         if (checking || result != null) {
@@ -518,7 +562,9 @@ private fun NameStep(profileName: TextFieldState) {
         state = profileName,
         label = { Text(stringResource(R.string.profile_name)) },
         lineLimits = TextFieldLineLimits.SingleLine,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .keepInViewWhenFocused()
     )
 }
 

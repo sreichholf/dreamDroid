@@ -3,11 +3,16 @@ package net.reichholf.dreamdroid.ui.setup
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
@@ -20,6 +25,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -278,12 +284,69 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
         composeRule.waitForIdle()
 
+        val root = composeRule.onRoot().getBoundsInRoot()
         val row = composeRule.onNodeWithTag("setup_device_192.168.1.10")
             .assertIsDisplayed()
             .getBoundsInRoot()
         assertTrue(
-            "The first scan result must be fully visible, was ${row.bottom - row.top} tall",
-            row.bottom - row.top >= 48.dp
+            "The first scan result must lie within the window, was $row in $root",
+            row.top >= root.top && row.bottom <= root.bottom
+        )
+    }
+
+    @Test
+    fun focusedPasswordStaysVisibleWhenTheKeyboardShrinksATvWindow() {
+        val viewModel = model()
+        var size by mutableStateOf(DpSize(960.dp, 540.dp))
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(size)) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {}
+                    )
+                }
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("setup_password")
+            .assertIsDisplayed()
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.onNodeWithTag("setup_password").assertIsFocused()
+
+        // The soft keyboard shrinks the window from below while the field keeps focus.
+        size = DpSize(960.dp, 300.dp)
+        composeRule.waitForIdle()
+
+        val root = composeRule.onRoot().getBoundsInRoot()
+        val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
+        val password = composeRule.onNodeWithTag("setup_password")
+            .assertIsFocused()
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertTrue(
+            "The focused password field must lie within the window, was $password in $root",
+            password.top >= root.top && password.bottom <= root.bottom
+        )
+        assertTrue(
+            "The focused password field must sit above the button row, was $password, $back",
+            password.bottom <= back.top
         )
     }
 
