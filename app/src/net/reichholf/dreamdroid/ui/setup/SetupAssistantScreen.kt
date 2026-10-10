@@ -66,6 +66,8 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -150,7 +152,9 @@ fun SetupAssistantScreen(
             hostText.isNotBlank() && port != null && port in 1..65535
         }
 
-        SetupStep.SignIn -> signInReady && (signInChecked || !checking)
+        // Stays enabled during a check: a disabled button drops D-pad focus onto a text
+        // field, which opens the keyboard on TV. advance() ignores presses meanwhile.
+        SetupStep.SignIn -> signInReady
 
         SetupStep.Name -> !checking
 
@@ -314,9 +318,15 @@ fun SetupAssistantScreen(
                             Text(stringResource(R.string.setup_retry))
                         }
                     }
+                    val checkingText = stringResource(R.string.checking)
                     Button(
                         onClick = viewModel::advance,
-                        enabled = actionEnabled
+                        enabled = actionEnabled,
+                        modifier = Modifier.semantics {
+                            if (step == SetupStep.SignIn && checking) {
+                                stateDescription = checkingText
+                            }
+                        }
                     ) {
                         Text(stringResource(actionLabel))
                     }
@@ -528,6 +538,7 @@ private fun SignInStep(
                 modifier = Modifier
                     .fillMaxWidth()
                     .keepInViewWhenFocused()
+                    .testTag("setup_user")
             )
             Spacer(Modifier.height(12.dp))
             OutlinedSecureTextField(

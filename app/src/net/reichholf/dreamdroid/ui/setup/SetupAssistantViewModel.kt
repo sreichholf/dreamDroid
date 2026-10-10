@@ -127,7 +127,10 @@ class SetupAssistantViewModel @Inject constructor(
             SetupStep.Connection -> updateDraft { it.copy(step = SetupStep.SignIn) }
 
             SetupStep.SignIn -> {
-                if (state.checkResult == null || state.checking) {
+                if (state.checking) {
+                    // The button stays enabled during a check so it keeps D-pad focus.
+                    return
+                } else if (state.checkResult == null) {
                     check()
                 } else {
                     if (!state.draft.nameEdited) {

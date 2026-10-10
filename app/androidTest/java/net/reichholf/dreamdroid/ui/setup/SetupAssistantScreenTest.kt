@@ -5,15 +5,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.getBoundsInRoot
@@ -24,9 +28,11 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
@@ -348,6 +354,65 @@ class SetupAssistantScreenTest {
             "The focused password field must sit above the button row, was $password, $back",
             password.bottom <= back.top
         )
+    }
+
+    @Test
+    fun checkKeepsFocusOnThePrimaryButtonAndOffTheUserField() {
+        val gate = CompletableDeferred<ProfileCheckResult>()
+        var checks = 0
+        val viewModel = model(
+            onCheck = {
+                checks += 1
+                gate.await()
+            }
+        )
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        val action = composeRule.onNodeWithText("Check connection")
+        action.performSemanticsAction(SemanticsActions.RequestFocus)
+        action.assertIsFocused()
+        action.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+
+        assertTrue(viewModel.uiState.value.checking)
+        val checkingText = InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.checking)
+        composeRule.onNodeWithText("Check connection")
+            .assertIsEnabled()
+            .assertIsFocused()
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, checkingText)
+            )
+        composeRule.onNodeWithTag("setup_user").assertIsNotFocused()
+
+        gate.complete(ProfileCheckResult())
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").assertIsEnabled().assertIsFocused()
+        composeRule.onNodeWithTag("setup_user").assertIsNotFocused()
+        assertEquals(1, checks)
     }
 
     private val profiles = memoryProfiles()

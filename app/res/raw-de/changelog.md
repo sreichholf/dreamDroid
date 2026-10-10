@@ -30,7 +30,7 @@
 * FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
 * UPD: Android-TV-Senderkarten sind kompakt, mit vorangestelltem Picon und Fortschrittsbalken für die laufende Sendung
 * UPD: Online-Picons werden pro Profil eingestellt (an/aus, Pfad auf dem Receiver, über Kanalnamen); die bisherige globale Einstellung wird übernommen. Die Android-TV-Einstellungen können jetzt Picons synchronisieren
-* FIX: Einrichtungsassistent lässt Felder, Aktionen und Suchergebnisse sichtbar, während die Tastatur offen ist (besonders auf TV)
+* FIX: Einrichtungsassistent lässt Felder, Aktionen und Suchergebnisse sichtbar, während die Tastatur offen ist (besonders auf TV), und öffnet während der Verbindungsprüfung nicht mehr die Tastatur
 * FIX: diverse kleinere Probleme
 
 ## 1.15.460
