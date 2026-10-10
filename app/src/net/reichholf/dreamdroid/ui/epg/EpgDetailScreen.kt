@@ -3,11 +3,13 @@ package net.reichholf.dreamdroid.ui.epg
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
@@ -22,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
@@ -191,6 +194,8 @@ fun EpgDetailScreen(
         }
         if (showActions) {
             // One row where the labels fit, wrapped otherwise; each button takes an equal share.
+            // FlowRow breaks lines for weighted items by their min intrinsic width (the longest
+            // word); IntrinsicSize.Max makes that the whole one-line label.
             FlowRow(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -202,29 +207,37 @@ fun EpgDetailScreen(
                     onClick = onSetTimer,
                     modifier = Modifier
                         .weight(1f)
+                        .width(IntrinsicSize.Max)
                         .onlineOnlyLook(timerWritesBlocked)
                 ) {
-                    Text(stringResource(R.string.set_timer), maxLines = 1)
+                    ActionLabel(stringResource(R.string.set_timer))
                 }
                 OutlinedButton(
                     onClick = onEditTimer,
                     modifier = Modifier
                         .weight(1f)
+                        .width(IntrinsicSize.Max)
                         .onlineOnlyLook(timerWritesBlocked)
                 ) {
-                    Text(stringResource(R.string.edit_timer), maxLines = 1)
+                    ActionLabel(stringResource(R.string.edit_timer))
                 }
                 if (onRecordSeries != null) {
                     OutlinedButton(
                         onClick = onRecordSeries,
                         modifier = Modifier
                             .weight(1f)
+                            .width(IntrinsicSize.Max)
                             .onlineOnlyLook(timerWritesBlocked)
                     ) {
-                        Text(stringResource(R.string.autotimer_record_series), maxLines = 1)
+                        ActionLabel(stringResource(R.string.autotimer_record_series))
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+private fun ActionLabel(text: String) {
+    Text(text, maxLines = 1, overflow = TextOverflow.Ellipsis)
 }
