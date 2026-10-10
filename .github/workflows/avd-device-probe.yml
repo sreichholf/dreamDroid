@@ -1,0 +1,20 @@
+# Temporary: lists the AVD device profiles on the GitHub runner. Not for main.
+name: AVD device probe
+on:
+  push:
+    branches: [avd_device_probe]
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          SDK="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          ls "$SDK/cmdline-tools"
+          for d in "$SDK"/cmdline-tools/*/; do
+            echo "== $d"
+            cat "$d/source.properties" 2>/dev/null | grep -i revision || true
+            "$d/bin/avdmanager" list device -c | grep -i pixel | tr '\n' ' '
+            echo
+          done
+          echo "== pixel_9/10 details"
+          "$SDK/cmdline-tools/latest/bin/avdmanager" list device | grep -i -A6 'id: .*"pixel_\(9\|10\)' || echo "no pixel_9/pixel_10"
