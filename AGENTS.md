@@ -1,6 +1,6 @@
 # dreamDroid agent notes
 
-Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; never merge rewrite work into it). Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Gradle 9.6.1 / AGP 9.4.1 / Kotlin 2.4.20; CI builds with **JDK 25** — use it locally too (Gradle does not enforce it; app bytecode stays Java 17).
+Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; never merge rewrite work into it). Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Gradle 9.8.0 / AGP 9.4.1 / Kotlin 2.4.20; CI builds with **JDK 25** — use it locally too (Gradle does not enforce it; app bytecode stays Java 17).
 
 Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 

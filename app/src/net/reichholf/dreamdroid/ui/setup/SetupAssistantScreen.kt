@@ -4,6 +4,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -19,28 +20,30 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
@@ -48,23 +51,36 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
@@ -74,6 +90,11 @@ import net.reichholf.dreamdroid.ui.text.asString
 private const val INTRO_HOLD_MS: Int = 700
 
 private const val INTRO_MOVE_MS: Int = 800
+
+/** The logo fills the Welcome step; later steps only keep it as a compact mark. */
+private val WELCOME_LOGO_HEIGHT = 320.dp
+
+private val STEP_LOGO_HEIGHT = 120.dp
 
 @Composable
 fun SetupAssistantScreen(
@@ -140,7 +161,9 @@ fun SetupAssistantScreen(
             hostText.isNotBlank() && port != null && port in 1..65535
         }
 
-        SetupStep.SignIn -> signInReady && (signInChecked || !checking)
+        // Stays enabled during a check: a disabled button drops D-pad focus onto a text
+        // field, which opens the keyboard on TV. advance() ignores presses meanwhile.
+        SetupStep.SignIn -> signInReady
 
         SetupStep.Name -> !checking
 
@@ -155,14 +178,12 @@ fun SetupAssistantScreen(
 
         else -> R.string.setup_next
     }
+    val scrollState = rememberScrollState()
+    LaunchedEffect(step) { scrollState.scrollTo(0) }
     Column(
         modifier = modifier
             .fillMaxSize()
-            .windowInsetsPadding(
-                WindowInsets.statusBars
-                    .union(WindowInsets.displayCutout)
-                    .union(WindowInsets.navigationBars)
-            ),
+            .windowInsetsPadding(WindowInsets.safeDrawing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         BoxWithConstraints(
@@ -171,115 +192,122 @@ fun SetupAssistantScreen(
                 .fillMaxWidth()
         ) {
             val room = (maxHeight - 28.dp - 160.dp).coerceAtLeast(0.dp)
-            val logoHeight = 320.dp.coerceAtMost(room).coerceAtLeast(160.dp.coerceAtMost(room))
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(Modifier.height(8.dp))
-                Image(
-                    painter = painterResource(R.drawable.dreamdroid_logo_simple),
-                    contentDescription = stringResource(R.string.app_name),
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .height(logoHeight)
-                        .testTag("setup_logo")
-                )
-                Spacer(Modifier.height(28.dp))
-                AnimatedContent(
-                    targetState = step,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .offset(
-                            y = if (step == SetupStep.Welcome) {
-                                48.dp * (1f - progress)
-                            } else {
-                                0.dp
-                            }
-                        ),
-                    transitionSpec = {
-                        fadeIn(animationSpec = tween(durationMillis = 320)) togetherWith
-                            fadeOut(animationSpec = tween(durationMillis = 200))
-                    },
-                    label = "setup-title"
-                ) { current ->
-                    SetupTitle(
-                        step = current,
-                        progress = if (current == SetupStep.Welcome) progress else 1f
-                    )
-                }
+            val logoCap = if (step == SetupStep.Welcome) WELCOME_LOGO_HEIGHT else STEP_LOGO_HEIGHT
+            val logoHeight = logoCap.coerceAtMost(room)
+            CompositionLocalProvider(LocalWizardViewport provides maxHeight) {
                 Column(
                     modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(horizontal = 24.dp)
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    Spacer(Modifier.height(8.dp))
+                    Image(
+                        painter = painterResource(R.drawable.dreamdroid_logo_simple),
+                        contentDescription = stringResource(R.string.app_name),
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier
+                            .height(logoHeight)
+                            .testTag("setup_logo")
+                    )
+                    Spacer(Modifier.height(28.dp))
                     AnimatedContent(
                         targetState = step,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(
+                                y = if (step == SetupStep.Welcome) {
+                                    48.dp * (1f - progress)
+                                } else {
+                                    0.dp
+                                }
+                            ),
                         transitionSpec = {
-                            (
-                                fadeIn(animationSpec = tween(durationMillis = 320)) +
-                                    slideInVertically(
-                                        animationSpec = tween(durationMillis = 320)
-                                    ) { it / 8 }
-                                ) togetherWith
+                            fadeIn(animationSpec = tween(durationMillis = 320)) togetherWith
                                 fadeOut(animationSpec = tween(durationMillis = 200))
                         },
-                        label = "setup-body"
+                        label = "setup-title"
                     ) { current ->
-                        Column(modifier = Modifier.fillMaxWidth()) {
-                            when (current) {
-                                SetupStep.Welcome -> Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(top = 28.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Button(
-                                        onClick = viewModel::advance,
-                                        enabled = progress >= 1f,
+                        SetupTitle(
+                            step = current,
+                            progress = if (current == SetupStep.Welcome) progress else 1f
+                        )
+                    }
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 24.dp)
+                    ) {
+                        AnimatedContent(
+                            targetState = step,
+                            modifier = Modifier.fillMaxWidth(),
+                            transitionSpec = {
+                                (
+                                    fadeIn(animationSpec = tween(durationMillis = 320)) +
+                                        slideInVertically(
+                                            animationSpec = tween(durationMillis = 320)
+                                        ) { it / 8 }
+                                    ) togetherWith
+                                    fadeOut(animationSpec = tween(durationMillis = 200))
+                            },
+                            label = "setup-body"
+                        ) { current ->
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                when (current) {
+                                    SetupStep.Welcome -> Box(
                                         modifier = Modifier
-                                            .focusRequester(startFocus)
-                                            .graphicsLayer { alpha = progress }
+                                            .fillMaxWidth()
+                                            .padding(top = 28.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Text(stringResource(R.string.setup_start))
+                                        val focus = rememberRemoteFocus()
+                                        Button(
+                                            onClick = viewModel::advance,
+                                            enabled = progress >= 1f,
+                                            colors = focus.buttonColors(
+                                                ButtonDefaults.buttonColors()
+                                            ),
+                                            modifier = focus.modifier
+                                                .focusRequester(startFocus)
+                                                .graphicsLayer { alpha = progress }
+                                        ) {
+                                            Text(stringResource(R.string.setup_start))
+                                        }
                                     }
+
+                                    SetupStep.Find -> FindStep(
+                                        host = viewModel.host.state,
+                                        devices = state.devices,
+                                        searching = state.searching,
+                                        searched = state.searched,
+                                        localNetworkGranted = localNetworkGranted,
+                                        portText = portText,
+                                        onPick = viewModel::onPick
+                                    )
+
+                                    SetupStep.Connection -> ConnectionStep(
+                                        host = viewModel.host.state,
+                                        useHttps = draft.useHttps,
+                                        onHttpsChange = viewModel::onHttpsChange,
+                                        port = viewModel.port.state
+                                    )
+
+                                    SetupStep.SignIn -> SignInStep(
+                                        login = draft.login,
+                                        onLoginChange = viewModel::onLoginChange,
+                                        user = viewModel.user.state,
+                                        pass = viewModel.pass.state,
+                                        checking = checking,
+                                        result = checkResult,
+                                        trustAllCerts = draft.trustAllCerts,
+                                        onTrustAllChange = viewModel::onTrustAllChange,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+
+                                    SetupStep.Name -> NameStep(
+                                        profileName = viewModel.profileName.state
+                                    )
                                 }
-
-                                SetupStep.Find -> FindStep(
-                                    host = viewModel.host.state,
-                                    devices = state.devices,
-                                    searching = state.searching,
-                                    searched = state.searched,
-                                    localNetworkGranted = localNetworkGranted,
-                                    portText = portText,
-                                    onPick = viewModel::onPick
-                                )
-
-                                SetupStep.Connection -> ConnectionStep(
-                                    host = viewModel.host.state,
-                                    useHttps = draft.useHttps,
-                                    onHttpsChange = viewModel::onHttpsChange,
-                                    port = viewModel.port.state
-                                )
-
-                                SetupStep.SignIn -> SignInStep(
-                                    login = draft.login,
-                                    onLoginChange = viewModel::onLoginChange,
-                                    user = viewModel.user.state,
-                                    pass = viewModel.pass.state,
-                                    checking = checking,
-                                    result = checkResult,
-                                    trustAllCerts = draft.trustAllCerts,
-                                    onTrustAllChange = viewModel::onTrustAllChange,
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-
-                                SetupStep.Name -> NameStep(
-                                    profileName = viewModel.profileName.state
-                                )
                             }
                         }
                     }
@@ -294,18 +322,36 @@ fun SetupAssistantScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                TextButton(onClick = { viewModel.back() }) {
+                val backFocus = rememberRemoteFocus()
+                TextButton(
+                    onClick = { viewModel.back() },
+                    colors = backFocus.buttonColors(ButtonDefaults.textButtonColors()),
+                    modifier = backFocus.modifier
+                ) {
                     Text(stringResource(R.string.setup_back))
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (step == SetupStep.SignIn && failed && !checking) {
-                        TextButton(onClick = viewModel::check) {
+                        val retryFocus = rememberRemoteFocus()
+                        TextButton(
+                            onClick = viewModel::check,
+                            colors = retryFocus.buttonColors(ButtonDefaults.textButtonColors()),
+                            modifier = retryFocus.modifier
+                        ) {
                             Text(stringResource(R.string.setup_retry))
                         }
                     }
+                    val checkingText = stringResource(R.string.checking)
+                    val actionFocus = rememberRemoteFocus()
                     Button(
                         onClick = viewModel::advance,
-                        enabled = actionEnabled
+                        enabled = actionEnabled,
+                        colors = actionFocus.buttonColors(ButtonDefaults.buttonColors()),
+                        modifier = actionFocus.modifier.semantics {
+                            if (step == SetupStep.SignIn && checking) {
+                                stateDescription = checkingText
+                            }
+                        }
                     ) {
                         Text(stringResource(actionLabel))
                     }
@@ -313,6 +359,64 @@ fun SetupAssistantScreen(
             }
         }
     }
+}
+
+/**
+ * The TV hub's focus look (`dreamDroidTvCardColors()`, focused scale 1.05) for the wizard's
+ * actions. Only while a remote or keyboard drives the UI: touch mode keeps the phone look.
+ * [modifier] must come first in the chain, above the component's own focus target.
+ */
+private class RemoteFocus(val modifier: Modifier, val highlighted: Boolean) {
+    @Composable
+    fun buttonColors(default: ButtonColors): ButtonColors = if (highlighted) {
+        default.copy(
+            containerColor = MaterialTheme.colorScheme.inverseSurface,
+            contentColor = MaterialTheme.colorScheme.inverseOnSurface
+        )
+    } else {
+        default
+    }
+}
+
+@Composable
+private fun rememberRemoteFocus(): RemoteFocus {
+    val keyboard = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    var focused by remember { mutableStateOf(false) }
+    val highlighted = keyboard && focused
+    val scale by animateFloatAsState(if (highlighted) 1.05f else 1f, label = "remote-focus")
+    return RemoteFocus(
+        modifier = Modifier
+            .zIndex(if (highlighted) 1f else 0f)
+            .onFocusChanged { focused = it.isFocused }
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            },
+        highlighted = highlighted
+    )
+}
+
+/** Height of the wizard's scrolling area; it shrinks when the on-screen keyboard opens. */
+private val LocalWizardViewport = compositionLocalOf { 0.dp }
+
+/**
+ * Scrolls a focused field back into view when the scrolling area gets shorter. The scroll
+ * container does not do this when the keyboard opens (seen on an API 26 TV); only typing would
+ * scroll to the cursor.
+ */
+@Composable
+private fun Modifier.keepInViewWhenFocused(): Modifier {
+    val requester = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    val viewport = LocalWizardViewport.current
+    LaunchedEffect(focused, viewport) {
+        if (focused) {
+            // The logo resizes with the window in the same pass; scroll once it is placed.
+            withFrameNanos { }
+            requester.bringIntoView()
+        }
+    }
+    return bringIntoViewRequester(requester).onFocusChanged { focused = it.hasFocus }
 }
 
 @Composable
@@ -349,10 +453,6 @@ private fun FindStep(
     portText: String,
     onPick: (SetupReceiver) -> Unit
 ) {
-    val addressFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        runCatching { addressFocus.requestFocus() }
-    }
     Text(
         text = stringResource(R.string.setup_find_body),
         style = MaterialTheme.typography.bodyLarge
@@ -364,7 +464,7 @@ private fun FindStep(
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
-            .focusRequester(addressFocus)
+            .keepInViewWhenFocused()
             .testTag("setup_address")
     )
     Spacer(Modifier.height(12.dp))
@@ -397,11 +497,23 @@ private fun FindStep(
         items(devices, key = { "${it.host}:${it.port}" }) { receiver ->
             val selected =
                 host.text.toString() == receiver.host && portText == receiver.port.toString()
+            val focus = rememberRemoteFocus()
             ListItem(
                 headlineContent = { Text(receiver.name) },
                 supportingContent = { Text(receiver.host) },
-                modifier = Modifier
+                colors = if (focus.highlighted) {
+                    val scheme = MaterialTheme.colorScheme
+                    ListItemDefaults.colors(
+                        containerColor = scheme.inverseSurface,
+                        headlineColor = scheme.inverseOnSurface,
+                        supportingColor = scheme.inverseOnSurface
+                    )
+                } else {
+                    ListItemDefaults.colors()
+                },
+                modifier = focus.modifier
                     .fillMaxWidth()
+                    .testTag("setup_device_${receiver.host}")
                     .background(
                         if (selected) {
                             MaterialTheme.colorScheme.secondaryContainer
@@ -422,10 +534,6 @@ private fun ConnectionStep(
     onHttpsChange: (Boolean) -> Unit,
     port: TextFieldState
 ) {
-    val hostFocus = remember { FocusRequester() }
-    LaunchedEffect(Unit) {
-        runCatching { hostFocus.requestFocus() }
-    }
     Text(
         text = stringResource(R.string.setup_connection_body),
         style = MaterialTheme.typography.bodyLarge
@@ -437,7 +545,7 @@ private fun ConnectionStep(
         lineLimits = TextFieldLineLimits.SingleLine,
         modifier = Modifier
             .fillMaxWidth()
-            .focusRequester(hostFocus)
+            .keepInViewWhenFocused()
     )
     Spacer(Modifier.height(12.dp))
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -461,6 +569,7 @@ private fun ConnectionStep(
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
+            .keepInViewWhenFocused()
             .testTag("setup_port")
     )
 }
@@ -497,13 +606,19 @@ private fun SignInStep(
                 state = user,
                 label = { Text(stringResource(R.string.user)) },
                 lineLimits = TextFieldLineLimits.SingleLine,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .keepInViewWhenFocused()
+                    .testTag("setup_user")
             )
             Spacer(Modifier.height(12.dp))
             OutlinedSecureTextField(
                 state = pass,
                 label = { Text(stringResource(R.string.pass)) },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .keepInViewWhenFocused()
+                    .testTag("setup_password")
             )
         }
         if (checking || result != null) {
@@ -529,7 +644,9 @@ private fun NameStep(profileName: TextFieldState) {
         state = profileName,
         label = { Text(stringResource(R.string.profile_name)) },
         lineLimits = TextFieldLineLimits.SingleLine,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .keepInViewWhenFocused()
     )
 }
 
@@ -540,51 +657,67 @@ private fun ConnectionCheck(
     trustAllCerts: Boolean,
     onTrustAllChange: (Boolean) -> Unit
 ) {
-    Text(
-        text = stringResource(R.string.setup_test_body),
-        style = MaterialTheme.typography.bodyLarge
-    )
-    Spacer(Modifier.height(16.dp))
-    val outcome = result
-    if (checking) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularProgressIndicator()
-            Text(
-                text = stringResource(R.string.checking),
-                modifier = Modifier.padding(start = 12.dp)
-            )
+    // A failed check is the moment the user must read the block; on a short TV window it
+    // otherwise lies below the fold. The first frame after composition has not placed it yet.
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(result) {
+        if (result?.hasError == true) {
+            withFrameNanos { }
+            bringIntoView.bringIntoView()
         }
-    } else if (outcome != null && !outcome.hasError) {
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .bringIntoViewRequester(bringIntoView)
+    ) {
         Text(
-            text = stringResource(R.string.setup_connected),
+            text = stringResource(R.string.setup_test_body),
             style = MaterialTheme.typography.bodyLarge
         )
-    } else if (outcome != null && outcome.hasError) {
-        Text(
-            text = outcome.setupMessage()?.asString().orEmpty(),
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.error
-        )
-    }
-    if (trustAllCerts || outcome?.isCertificateFailure() == true) {
         Spacer(Modifier.height(16.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        val outcome = result
+        if (checking) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularProgressIndicator()
+                Text(
+                    text = stringResource(R.string.checking),
+                    modifier = Modifier.padding(start = 12.dp)
+                )
+            }
+        } else if (outcome != null && !outcome.hasError) {
             Text(
-                text = stringResource(R.string.trust_all_certs),
-                modifier = Modifier.weight(1f),
+                text = stringResource(R.string.setup_connected),
                 style = MaterialTheme.typography.bodyLarge
             )
-            Switch(
-                checked = trustAllCerts,
-                onCheckedChange = onTrustAllChange,
-                modifier = Modifier.testTag("setup_trust_all")
+        } else if (outcome != null && outcome.hasError) {
+            Text(
+                text = outcome.setupMessage()?.asString().orEmpty(),
+                style = MaterialTheme.typography.bodyLarge,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite }
             )
         }
-        Text(
-            text = stringResource(R.string.trust_all_certs_confirm),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.error,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+        if (trustAllCerts || outcome?.isCertificateFailure() == true) {
+            Spacer(Modifier.height(16.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.trust_all_certs),
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Switch(
+                    checked = trustAllCerts,
+                    onCheckedChange = onTrustAllChange,
+                    modifier = Modifier.testTag("setup_trust_all")
+                )
+            }
+            Text(
+                text = stringResource(R.string.trust_all_certs_confirm),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }

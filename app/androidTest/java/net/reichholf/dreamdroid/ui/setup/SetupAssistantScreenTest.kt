@@ -1,12 +1,30 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import android.os.SystemClock
+import android.view.InputDevice
+import android.view.MotionEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.getBoundsInRoot
@@ -17,8 +35,13 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -243,6 +266,321 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Next").assertIsEnabled()
         assertEquals(1, searches)
         assertEquals(1, checks)
+    }
+
+    @Test
+    fun scanResultsAreVisibleInATvSizedWindow() {
+        val device = Profile().apply {
+            id = 1
+            name = "Living room"
+            host = "192.168.1.10"
+            port = 80
+        }
+        val viewModel = model(onSearch = { listOf(device) })
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 540.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
+        val row = composeRule.onNodeWithTag("setup_device_192.168.1.10")
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertTrue(
+            "The first scan result must lie within the window, was $row in $root",
+            row.top >= root.top && row.bottom <= root.bottom
+        )
+    }
+
+    @Test
+    fun failedCheckScrollsItsErrorIntoATvSizedWindow() {
+        val viewModel = model(
+            onCheck = {
+                ProfileCheckResult(hasError = true, errorText = UiText.Raw("unreachable"))
+            }
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 540.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitForIdle()
+
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
+        val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
+        val error = composeRule.onNodeWithText("unreachable")
+            .assertIsDisplayed()
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.LiveRegion, LiveRegionMode.Polite)
+            )
+            .getBoundsInRoot()
+        assertTrue(
+            "The check error must lie within the window, was $error in $root",
+            error.top >= root.top && error.bottom <= root.bottom
+        )
+        assertTrue(
+            "The check error must sit above the button row, was $error, $back",
+            error.bottom <= back.top
+        )
+    }
+
+    @Test
+    fun focusedPasswordStaysVisibleWhenTheKeyboardShrinksATvWindow() {
+        val viewModel = model()
+        var size by mutableStateOf(DpSize(960.dp, 540.dp))
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(size)) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
+                    )
+                }
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("setup_password")
+            .assertIsDisplayed()
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.onNodeWithTag("setup_password").assertIsFocused()
+
+        // The soft keyboard shrinks the window from below while the field keeps focus.
+        size = DpSize(960.dp, 300.dp)
+        composeRule.waitForIdle()
+
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
+        val back = composeRule.onNodeWithText("Back").assertIsDisplayed().getBoundsInRoot()
+        val password = composeRule.onNodeWithTag("setup_password")
+            .assertIsFocused()
+            .assertIsDisplayed()
+            .getBoundsInRoot()
+        assertTrue(
+            "The focused password field must lie within the window, was $password in $root",
+            password.top >= root.top && password.bottom <= root.bottom
+        )
+        assertTrue(
+            "The focused password field must sit above the button row, was $password, $back",
+            password.bottom <= back.top
+        )
+    }
+
+    @Test
+    fun checkKeepsFocusOnThePrimaryButtonAndOffTheUserField() {
+        val gate = CompletableDeferred<ProfileCheckResult>()
+        var checks = 0
+        val viewModel = model(
+            onCheck = {
+                checks += 1
+                gate.await()
+            }
+        )
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        val action = composeRule.onNodeWithText("Check connection")
+        action.performSemanticsAction(SemanticsActions.RequestFocus)
+        action.assertIsFocused()
+        action.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+
+        assertTrue(viewModel.uiState.value.checking)
+        val checkingText = InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.checking)
+        composeRule.onNodeWithText("Check connection")
+            .assertIsEnabled()
+            .assertIsFocused()
+            .assert(
+                SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, checkingText)
+            )
+        composeRule.onNodeWithTag("setup_user").assertIsNotFocused()
+
+        gate.complete(ProfileCheckResult())
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Next").assertIsEnabled().assertIsFocused()
+        composeRule.onNodeWithTag("setup_user").assertIsNotFocused()
+        assertEquals(1, checks)
+    }
+
+    @Test
+    fun remoteFocusEnlargesTheFocusedAction() {
+        val viewModel = model()
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        val next = composeRule.onNodeWithText("Next").assertIsNotFocused()
+        val back = composeRule.onNodeWithText("Back").assertIsNotFocused()
+        val nextIdle = next.size()
+        val backIdle = back.size()
+
+        next.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        next.assertIsFocused()
+        assertGrown(nextIdle, next.size())
+        assertEquals(backIdle, back.size())
+
+        back.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        back.assertIsFocused()
+        assertGrown(backIdle, back.size())
+        assertEquals(nextIdle, next.size())
+    }
+
+    @Test
+    fun touchModeKeepsTheActionsAsTheyAre() {
+        val viewModel = model()
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // Touch mode is global below API 33, so an earlier test (or a D-pad-driven TV) can
+        // leave the device out of it. requestInputMode(Touch) is not supported and the
+        // rule's own touch input bypasses the system, so inject a real tap.
+        enterTouchMode()
+        composeRule.waitUntil { inputModeManager.inputMode == InputMode.Touch }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsNotFocused().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        val next = composeRule.onNodeWithText("Next")
+        val idle = next.size()
+        next.performSemanticsAction(SemanticsActions.RequestFocus)
+        composeRule.waitForIdle()
+        next.assertIsNotFocused()
+        assertEquals(idle, next.size())
+    }
+
+    private fun enterTouchMode() {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        val time = SystemClock.uptimeMillis()
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(time, time, action, 1f, 1f, 0)
+            event.source = InputDevice.SOURCE_TOUCHSCREEN
+            automation.injectInputEvent(event, true)
+            event.recycle()
+        }
+    }
+
+    private fun SemanticsNodeInteraction.size(): DpSize {
+        val bounds = getBoundsInRoot()
+        return DpSize(bounds.right - bounds.left, bounds.bottom - bounds.top)
+    }
+
+    private fun assertGrown(idle: DpSize, focused: DpSize) {
+        val ratio = focused.width / idle.width
+        assertTrue(
+            "A focused action must scale up by about 5%, was $idle -> $focused",
+            ratio > 1.03f && ratio < 1.07f
+        )
+        assertTrue(
+            "A focused action must scale up by about 5%, was $idle -> $focused",
+            focused.height > idle.height
+        )
     }
 
     private val profiles = memoryProfiles()

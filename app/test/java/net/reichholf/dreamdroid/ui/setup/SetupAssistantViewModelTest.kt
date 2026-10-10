@@ -4,6 +4,7 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -13,8 +14,10 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
+import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -116,6 +119,40 @@ class SetupAssistantViewModelTest {
     }
 
     @Test
+    fun advanceDuringARunningCheckDoesNothing() = runTest {
+        val gate = CompletableDeferred<ProfileCheckResult>()
+        var checks = 0
+        val viewModel = viewModel(
+            SavedStateHandle(),
+            object : ProfileCheckRepository {
+                override suspend fun check(profile: Profile): ProfileCheckResult {
+                    checks++
+                    return gate.await()
+                }
+
+                override suspend fun checkReusingDeviceInfo(profile: Profile) = check(profile)
+            }
+        )
+        viewModel.advance()
+        type(viewModel.host, "10.0.0.7")
+        viewModel.advance()
+        viewModel.advance()
+        viewModel.advance()
+        assertTrue(viewModel.uiState.value.checking)
+
+        viewModel.advance()
+
+        assertEquals(1, checks)
+        assertTrue(viewModel.uiState.value.checking)
+        assertEquals(SetupStep.SignIn, viewModel.uiState.value.draft.step)
+        gate.complete(ProfileCheckResult())
+        val checked = viewModel.uiState.first { it.checkResult != null }
+        assertFalse(checked.checking)
+        assertEquals(SetupStep.SignIn, checked.draft.step)
+        assertEquals(1, checks)
+    }
+
+    @Test
     fun editingTheDraftDropsTheCheckResult() = runTest {
         server.enqueue(MockResponse().setBody(loadWebFixture("deviceinfo.xml")))
         val viewModel = viewModel(SavedStateHandle())
@@ -178,14 +215,17 @@ class SetupAssistantViewModelTest {
         Snapshot.sendApplyNotifications()
     }
 
-    private fun viewModel(handle: SavedStateHandle) = SetupAssistantViewModel(
-        handle,
-        profiles,
-        ReceiverProfileCheckRepository(
+    private fun viewModel(
+        handle: SavedStateHandle,
+        checks: ProfileCheckRepository = ReceiverProfileCheckRepository(
             profiles,
             receiverApis(profiles, testProfiles.context, testProfiles.capabilities),
             testProfiles.capabilities
-        ),
+        )
+    ) = SetupAssistantViewModel(
+        handle,
+        profiles,
+        checks,
         ReceiverDiscovery {
             searches++
             listOf(
