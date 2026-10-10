@@ -40,19 +40,37 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.window.core.layout.WindowSizeClass
 import net.reichholf.dreamdroid.R
 
 const val LIST_DETAIL_DETAIL_PANE_TAG = "list_detail_detail_pane"
 const val LIST_DETAIL_EXTRA_PANE_TAG = "list_detail_extra_pane"
 
-/** Whether the window fits Material 3 list-detail as two panes (expanded width and up). */
+/**
+ * Whether the window fits Material 3 list-detail as two panes: expanded width and up, and at least
+ * medium height.
+ */
 @Composable
 fun showsListDetailPanes(): Boolean = listDetailDirective().maxHorizontalPartitions > 1
 
+/**
+ * Material 3's directive, kept to one pane on a compact-height window. A phone in landscape is
+ * expanded wide but too short for a pane's content beside the list; its details open as on a
+ * phone in portrait.
+ */
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
-private fun listDetailDirective(): PaneScaffoldDirective =
-    calculatePaneScaffoldDirective(currentWindowAdaptiveInfoV2())
+private fun listDetailDirective(): PaneScaffoldDirective {
+    val adaptiveInfo = currentWindowAdaptiveInfoV2()
+    val directive = calculatePaneScaffoldDirective(adaptiveInfo)
+    val tallEnough = adaptiveInfo.windowSizeClass
+        .isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    return if (tallEnough) {
+        directive
+    } else {
+        directive.copy(maxHorizontalPartitions = 1, horizontalPartitionSpacerSize = 0.dp)
+    }
+}
 
 /**
  * Material 3 list-detail for a list whose detail is UI state the caller owns. Where the window
