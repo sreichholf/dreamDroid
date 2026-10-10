@@ -115,6 +115,9 @@
     <string name="standard">Standard-Layout</string>
     <string name="quickzap">QuickZap-Layout</string>
     <string name="no_epg_available">Aktuell stehen keine EPG-Informationen für diesen Kanal zur Verfügung!</string>
+    <string name="movie_detail_pane_empty">Wähle Info bei einer Aufnahme, um hier ihre Details zu sehen</string>
+    <string name="epg_detail_pane_empty">Wähle eine Sendung, um hier ihre Details zu sehen</string>
+    <string name="timer_detail_pane_empty">Wähle einen Timer, um ihn hier zu bearbeiten</string>
     <string name="ok">OK</string>
     <string name="activate">Aktivieren</string>
     <string name="confirm_delete_profile">Wollen Sie dieses Profil wirklich löschen?</string>

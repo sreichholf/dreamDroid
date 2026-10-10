@@ -10,11 +10,14 @@
 * NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist; auch die EPG-Suche funktioniert offline
 * NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
 * NEU: Android TV kann denselben externen Videoplayer nutzen wie das Telefon (gleicher Einstellungs-Schalter)
+* NEU: Breite Fenster (Tablets, Foldables, große Telefone im Querformat) zeigen die Infos einer Aufnahme neben der Filmliste und die Details einer Sendung neben Sender-EPG, Bouquet-EPG, EPG-Suche und AutoTimer-Vorschau, und Timer öffnen sich zum Bearbeiten neben der Timerliste
+* NEU: Auf breiten Fenstern öffnet die Senderliste das EPG eines Senders daneben und eine Sendung daraus neben dem EPG (auf den breitesten Fenstern alle drei nebeneinander); aktuelle und nächste Sendung eines Senders öffnen sich ebenfalls neben der Liste
 * UPD: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
 * UPD: Sender-EPG nach Tag gruppiert
 * UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
 * UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
 * UPD: Tablets zeigen die Bereiche von TV & Movies und Werkzeuge wie Telefone in der unteren Leiste; auf Tablets und Telefonen im Querformat stehen Symbol und Text nebeneinander
+* UPD: Tablets und Telefone im Querformat nutzen den Material-3-Seitenrand statt eines breiten festen Rands
 * UPD: Android-TV-Browse-Hub überarbeitet
 * UPD: Bouquet-EPG mit Datums-/Zeit-Sprungchips (inkl. Jetzt / Prime)
 * UPD: Virtual-Remote-Homescreen-Widget

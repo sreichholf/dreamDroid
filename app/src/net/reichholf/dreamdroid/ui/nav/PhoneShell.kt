@@ -59,6 +59,9 @@ import net.reichholf.dreamdroid.ui.drawer.DrawerScreen
 
 const val SHELL_PROFILE_NAME_TAG = "shell_profile_name"
 
+/** Material 3 window margin for medium and expanded widths. */
+private val WIDE_WINDOW_CONTENT_MARGIN = 24.dp
+
 /**
  * Phone and tablet shell: modal drawer, top app bar, bottom chrome, and the shared FAB.
  * The top bar and the bottom chrome slide away while content scrolls down
@@ -193,11 +196,7 @@ private fun ShellBody(
         derivedStateOf { chromeScroll.topBar.collapsedFraction == 0f }
     }
     val showsBottomChrome = destinationController.content !is ShellDestinationBarContent.Hidden
-    val contentMargin = if (isWideWindow()) {
-        dimensionResource(R.dimen.content_margin_horizontal)
-    } else {
-        0.dp
-    }
+    val contentMargin = if (isWideWindow()) WIDE_WINDOW_CONTENT_MARGIN else 0.dp
     Column(
         modifier = Modifier
             .fillMaxSize()

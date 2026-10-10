@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.epg
 import androidx.activity.ComponentActivity
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -16,6 +17,7 @@ import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.unit.Dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -23,6 +25,10 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.testutil.COMPACT_WINDOW_WIDTH
+import net.reichholf.dreamdroid.testutil.EXPANDED_WINDOW_WIDTH
+import net.reichholf.dreamdroid.testutil.WithWindowSize
+import net.reichholf.dreamdroid.ui.compose.LIST_DETAIL_DETAIL_PANE_TAG
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
 import net.reichholf.dreamdroid.ui.multiepg.MultiEpgScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -318,6 +324,68 @@ class EpgDetailDialogHostTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Set Timer").assertIsDisplayed()
         composeRule.onNodeWithText("Die Nachrichten um 20 Uhr.").assertIsDisplayed()
+    }
+
+    @Test
+    fun twoPaneWindowShowsTheEventBesideTheListWithItsActions() {
+        val timers = mutableListOf<Event>()
+        showListDetail(
+            EpgEventDetailUiState(event = tagesschau()),
+            EXPANDED_WINDOW_WIDTH,
+            onSetTimer = { timers += it }
+        )
+
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertIsDisplayed()
+        composeRule.onNodeWithTag(EPG_DETAIL_UNCAPPED_TAG).assertExists()
+        composeRule.onNode(isDialog()).assertDoesNotExist()
+        composeRule.onNodeWithText("Set Timer").performClick()
+
+        assertEquals(listOf("Tagesschau"), timers.map { it.title })
+    }
+
+    @Test
+    fun twoPaneWindowKeepsTheSavingProgress() {
+        showListDetail(EpgEventDetailUiState(saving = true), EXPANDED_WINDOW_WIDTH)
+
+        composeRule.onNodeWithText(
+            composeRule.activity.getString(R.string.epg_detail_pane_empty)
+        ).assertExists()
+        composeRule.onNodeWithText(composeRule.activity.getString(R.string.saving))
+            .assertIsDisplayed()
+    }
+
+    @Test
+    fun compactWindowShowsTheEventInASheet() {
+        showListDetail(EpgEventDetailUiState(event = tagesschau()), COMPACT_WINDOW_WIDTH)
+
+        composeRule.onNode(isDialog()).assertExists()
+        composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertIsDisplayed()
+        composeRule.onNodeWithTag(LIST_DETAIL_DETAIL_PANE_TAG).assertDoesNotExist()
+    }
+
+    private fun showListDetail(
+        state: EpgEventDetailUiState,
+        width: Dp,
+        onSetTimer: (Event) -> Unit = {}
+    ) {
+        composeRule.setContent {
+            DreamDroidTheme {
+                WithWindowSize(width) {
+                    EpgEventListDetail(
+                        state = state,
+                        onDismiss = {},
+                        actions = EpgEventActions(
+                            onSetTimer = onSetTimer,
+                            onEditTimer = {},
+                            onImdb = {},
+                            onSimilar = {}
+                        ),
+                        list = { Text("Tonight") }
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
     }
 
     private fun tagesschau() = Event(

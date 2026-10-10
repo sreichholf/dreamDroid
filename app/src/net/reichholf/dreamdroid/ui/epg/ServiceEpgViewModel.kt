@@ -23,7 +23,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
  * The schedule of one service, grouped by day. An empty [serviceRef] means the route had
- * none.
+ * none, or that the services hub's detail pane shows no service.
  */
 data class ServiceEpgUiState(
     val serviceRef: String = "",
@@ -44,13 +44,14 @@ data class ServiceEpgUiState(
 }
 
 /**
- * Service EPG of one back-stack entry; the service comes from the [ServiceEpg] route. It
- * loads when created and when the connection session changes, not when the destination is
- * shown again, so opening an event and popping back keeps the list.
+ * Service EPG of one back-stack entry; the service comes from the [ServiceEpg] route, or from
+ * [show] in the services hub's detail pane. It loads when given a service and when the
+ * connection session changes, not when the destination is shown again, so opening an event and
+ * popping back keeps the list.
  */
 @HiltViewModel
 class ServiceEpgViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
+    private val savedStateHandle: SavedStateHandle,
     private val epg: EpgRepository,
     sessions: SessionConnectionHolder
 ) : ViewModel() {
@@ -65,11 +66,36 @@ class ServiceEpgViewModel @Inject constructor(
     private var loadJob: Job? = null
 
     init {
-        if (_uiState.value.serviceRef.isNotEmpty()) {
-            viewModelScope.launch {
-                sessions.status.map { it.session }.distinctUntilChanged().collect { reload() }
-            }
+        viewModelScope.launch {
+            sessions.status.map { it.session }.distinctUntilChanged().collect { reload() }
         }
+    }
+
+    /**
+     * Shows the schedule of [serviceRef]. The same service again keeps a loaded list and asks
+     * the receiver again when there is none (a failed load, say).
+     */
+    fun show(serviceRef: String, serviceName: String) {
+        val state = _uiState.value
+        if (serviceRef == state.serviceRef) {
+            if (state.sections.isEmpty() && !state.refreshing) {
+                reload()
+            }
+            return
+        }
+        savedStateHandle[ServiceEpg::serviceRef.name] = serviceRef
+        savedStateHandle[ServiceEpg::serviceName.name] = serviceName
+        loadJob?.cancel()
+        _uiState.value = ServiceEpgUiState(serviceRef = serviceRef, serviceName = serviceName)
+        reload()
+    }
+
+    /** Shows no service. */
+    fun clear() {
+        savedStateHandle.remove<String>(ServiceEpg::serviceRef.name)
+        savedStateHandle.remove<String>(ServiceEpg::serviceName.name)
+        loadJob?.cancel()
+        _uiState.value = ServiceEpgUiState()
     }
 
     fun reload(forceRefresh: Boolean = false) {

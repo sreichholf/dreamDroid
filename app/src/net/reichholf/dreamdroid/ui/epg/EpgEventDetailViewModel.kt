@@ -22,8 +22,8 @@ import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * The EPG detail sheet: the [event] shown, a timer being [saving], and its result.
- * [timerWritesBlocked] follows the session.
+ * The EPG detail (sheet or list-detail pane): the [event] shown, a timer being [saving], and
+ * its result. [timerWritesBlocked] follows the session.
  */
 data class EpgEventDetailUiState(
     val event: Event? = null,
@@ -35,7 +35,7 @@ data class EpgEventDetailUiState(
 )
 
 /**
- * The EPG detail sheet of list EPG, MultiEPG, and hub destinations. The shown event lives
+ * The EPG detail of list EPG, MultiEPG, and hub destinations. The shown event lives
  * in the [SavedStateHandle]. Setting a timer runs on [viewModelScope], so the result
  * arrives even when the sheet closed meanwhile.
  */

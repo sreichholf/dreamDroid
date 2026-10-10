@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 /** A window wide enough for two list-detail panes (expanded width). */
 val EXPANDED_WINDOW_WIDTH = 900.dp
 
+/** A window wide enough for three list-detail panes (large width, 1200dp and up). */
+val LARGE_WINDOW_WIDTH = 1300.dp
+
 /** A phone-sized window (compact width). */
 val COMPACT_WINDOW_WIDTH = 400.dp
 

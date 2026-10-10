@@ -19,12 +19,15 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
+import net.reichholf.dreamdroid.ui.compose.ListDetailEmptyPane
+import net.reichholf.dreamdroid.ui.compose.ListDetailPanes
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressHost
 import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.movies.MovieDetailModalSheet
+import net.reichholf.dreamdroid.ui.movies.MovieDetailScreen
 import net.reichholf.dreamdroid.ui.nav.BindShellTopBarActions
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.ShellTitle
@@ -110,7 +113,11 @@ fun HubMovieListPage(
     )
 }
 
-/** [HubMovieListPage] without its ViewModel: the list, its row menu, and its dialogs. */
+/**
+ * [HubMovieListPage] without its ViewModel: the list, its row menu, and its dialogs. Where the
+ * window fits two panes, a recording's info sits in a detail pane beside the list; elsewhere it
+ * opens in a bottom sheet.
+ */
 @Composable
 fun HubMovieListScreen(
     state: HubMovieListUiState,
@@ -125,31 +132,37 @@ fun HubMovieListScreen(
     onDeleteDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    DreamDroidPullRefresh(
-        refreshing = state.refreshing,
-        onRefresh = onRefresh,
-        modifier = modifier
-    ) {
-        if (state.items.isEmpty()) {
-            ListEmptyState(
-                loading = state.refreshing,
-                message = state.emptyMessage?.asString(),
-                onRetry = onRefresh
-            )
-        } else {
-            MovieListScreen(
-                items = state.items,
-                onItemClick = { onItemClick(it, false) },
-                onItemLongClick = { onItemClick(it, true) },
-                menu = state.menu,
-                onMenuAction = onMenuAction,
-                onMenuDismiss = onMenuDismiss
-            )
+    val list = @Composable {
+        DreamDroidPullRefresh(refreshing = state.refreshing, onRefresh = onRefresh) {
+            if (state.items.isEmpty()) {
+                ListEmptyState(
+                    loading = state.refreshing,
+                    message = state.emptyMessage?.asString(),
+                    onRetry = onRefresh
+                )
+            } else {
+                MovieListScreen(
+                    items = state.items,
+                    onItemClick = { onItemClick(it, false) },
+                    onItemLongClick = { onItemClick(it, true) },
+                    menu = state.menu,
+                    onMenuAction = onMenuAction,
+                    onMenuDismiss = onMenuDismiss
+                )
+            }
         }
     }
-
-    state.detail?.let { content ->
-        MovieDetailModalSheet(content = content, onDismiss = onDetailDismiss)
+    ListDetailPanes(
+        detail = state.detail,
+        onDetailDismiss = onDetailDismiss,
+        list = list,
+        emptyDetail = { ListDetailEmptyPane(stringResource(R.string.movie_detail_pane_empty)) },
+        singlePaneDetail = { content ->
+            MovieDetailModalSheet(content = content, onDismiss = onDetailDismiss)
+        },
+        modifier = modifier
+    ) { content ->
+        MovieDetailScreen(content = content, heightCap = null)
     }
 
     state.tagPicker?.let { tags ->

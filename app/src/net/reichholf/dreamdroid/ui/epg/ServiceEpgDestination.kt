@@ -33,18 +33,17 @@ fun ServiceEpgDestination(
         }
     }
 
-    DreamDroidPullRefresh(
-        refreshing = uiState.refreshing,
-        onRefresh = { viewModel.reload(forceRefresh = true) },
-        enabled = true,
-        modifier = modifier
-    ) {
-        ServiceEpgScreen(
-            sections = uiState.sections,
-            emptyMessage = uiState.emptyMessage?.asString(),
-            onItemClick = detailViewModel::showDetail
-        )
+    EpgEventListDetailHost(handle, detailViewModel, modifier) {
+        DreamDroidPullRefresh(
+            refreshing = uiState.refreshing,
+            onRefresh = { viewModel.reload(forceRefresh = true) },
+            enabled = true
+        ) {
+            ServiceEpgScreen(
+                sections = uiState.sections,
+                emptyMessage = uiState.emptyMessage?.asString(),
+                onItemClick = detailViewModel::showDetail
+            )
+        }
     }
-
-    EpgEventDetailHost(handle, detailViewModel)
 }

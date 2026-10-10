@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -23,14 +24,18 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.Statics
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.ui.compose.ListEmptyState
 import net.reichholf.dreamdroid.ui.current.HubNowPlaying
 import net.reichholf.dreamdroid.ui.nav.LocalShellChromeScrollState
+import net.reichholf.dreamdroid.ui.nav.NavExtras
 import net.reichholf.dreamdroid.ui.nav.PhoneNavHandle
 import net.reichholf.dreamdroid.ui.nav.RegisterShellDestinationBar
 import net.reichholf.dreamdroid.ui.nav.ShellDestinationBarContent
 import net.reichholf.dreamdroid.ui.text.asString
+import net.reichholf.dreamdroid.ui.timers.TimerPaneViewModel
 
 /**
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
@@ -43,7 +48,8 @@ import net.reichholf.dreamdroid.ui.text.asString
 fun HubDestination(
     handle: PhoneNavHandle,
     modifier: Modifier = Modifier,
-    viewModel: HubViewModel = hiltViewModel()
+    viewModel: HubViewModel = hiltViewModel(),
+    timerPane: TimerPaneViewModel = hiltViewModel()
 ) {
     val resources = LocalResources.current
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -120,20 +126,11 @@ fun HubDestination(
     // disposal to hub content load (bar vanished after bouquet / list refresh finished).
     RegisterShellDestinationBar(ShellDestinationBarContent.TvMovies(destinationBarState))
 
-    DisposableEffect(handle) {
-        val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, _ ->
-            if (requestCode == Statics.REQUEST_EDIT_TIMER && resultCode == Activity.RESULT_OK) {
-                viewModel.bumpTimerRemount()
-            }
-        }
-        handle.composeActivityResultListener = listener
-        handle.dispatchPendingComposeActivityResult()
-        onDispose {
-            if (handle.composeActivityResultListener === listener) {
-                handle.composeActivityResultListener = null
-            }
-        }
-    }
+    HubActivityResults(
+        handle = handle,
+        onTimerEdited = viewModel::bumpTimerRemount,
+        onTimerServicePicked = timerPane::onServicePicked
+    )
 
     LaunchedEffect(viewModel) { viewModel.ensureLocations() }
 
@@ -240,10 +237,46 @@ fun HubDestination(
                     HubModes.TIMER -> {
                         HubTimerListPage(
                             handle = handle,
-                            remountEpoch = uiState.timerRemountEpoch
+                            remountEpoch = uiState.timerRemountEpoch,
+                            paneViewModel = timerPane
                         )
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * The hub's results from the destinations it opens: a timer saved on the TimerEdit route
+ * ([onTimerEdited]), and the service picked for the timer form in the Timers detail pane
+ * ([onTimerServicePicked]). One listener owns both, so a result held while the hub was away
+ * reaches it when the hub is back.
+ */
+@Composable
+internal fun HubActivityResults(
+    handle: PhoneNavHandle,
+    onTimerEdited: () -> Unit,
+    onTimerServicePicked: (Service) -> Unit
+) {
+    val currentOnTimerEdited by rememberUpdatedState(onTimerEdited)
+    val currentOnTimerServicePicked by rememberUpdatedState(onTimerServicePicked)
+    DisposableEffect(handle) {
+        val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, data ->
+            if (resultCode != Activity.RESULT_OK) return@ActivityResultListener
+            when (requestCode) {
+                Statics.REQUEST_EDIT_TIMER -> currentOnTimerEdited()
+
+                Statics.REQUEST_PICK_SERVICE ->
+                    data?.getSerializableExtraCompat<Service>(NavExtras.DATA)
+                        ?.let(currentOnTimerServicePicked)
+            }
+        }
+        handle.composeActivityResultListener = listener
+        handle.dispatchPendingComposeActivityResult()
+        onDispose {
+            if (handle.composeActivityResultListener === listener) {
+                handle.composeActivityResultListener = null
             }
         }
     }

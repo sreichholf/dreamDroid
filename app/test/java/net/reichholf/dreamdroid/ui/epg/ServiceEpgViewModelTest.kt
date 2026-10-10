@@ -137,6 +137,51 @@ class ServiceEpgViewModelTest {
     }
 
     @Test
+    fun showLoadsTheServiceAndTheSameServiceKeepsTheList() = runTest {
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.show(CHANNEL, "Das Erste HD")
+        val state = viewModel.uiState.first { it.sections.isNotEmpty() }
+        viewModel.show(CHANNEL, "Das Erste HD")
+
+        assertEquals(listOf("Tagesschau", "N/A"), state.titles())
+        assertEquals(state, viewModel.uiState.value)
+        assertEquals(1, receiver.server.requestCount)
+    }
+
+    @Test
+    fun showingAFailedServiceAgainRetries() = runTest {
+        val answer = receiver.answer
+        receiver.answer = { MockResponse().setResponseCode(500) }
+        val viewModel = viewModel(SavedStateHandle())
+        viewModel.show(CHANNEL, "Das Erste HD")
+        viewModel.uiState.first { it.emptyMessage != null && !it.refreshing }
+
+        receiver.answer = answer
+        viewModel.show(CHANNEL, "Das Erste HD")
+
+        assertEquals(
+            listOf("Tagesschau", "N/A"),
+            viewModel.uiState.first { it.sections.isNotEmpty() }.titles()
+        )
+    }
+
+    @Test
+    fun aShownServiceSurvivesProcessDeathUntilCleared() = runTest {
+        val handle = SavedStateHandle()
+        val viewModel = viewModel(handle)
+        viewModel.show(CHANNEL, "Das Erste HD")
+        viewModel.uiState.first { !it.refreshing }
+
+        assertEquals(CHANNEL, viewModel(handle).uiState.value.serviceRef)
+
+        viewModel.clear()
+
+        assertEquals(ServiceEpgUiState(), viewModel.uiState.value)
+        assertEquals("", viewModel(handle).uiState.value.serviceRef)
+    }
+
+    @Test
     fun titleSaysLoadingWhileRefreshing() {
         assertEquals(
             UiText.Resource(R.string.loading),

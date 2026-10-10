@@ -62,6 +62,7 @@ dependencies {
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
     implementation(libs.compose.adaptive)
+    implementation(libs.compose.adaptive.layout)
     implementation(libs.reorderable)
     implementation(libs.activity.compose)
     implementation(libs.lifecycle.runtime.compose)
