@@ -1,7 +1,10 @@
 package net.reichholf.dreamdroid.multiepg
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -116,21 +119,33 @@ class MultiEpgSync(
             }
         }
 
-        val deferred: CompletableDeferred<List<Event>>
-        var created = false
-        mutex.withLock {
-            val existing = inFlight[key]
-            if (existing != null) {
-                deferred = existing
-            } else {
-                deferred = CompletableDeferred()
-                inFlight[key] = deferred
-                created = true
+        var deferred: CompletableDeferred<List<Event>>
+        while (true) {
+            var created = false
+            mutex.withLock {
+                val existing = inFlight[key]
+                if (existing != null) {
+                    deferred = existing
+                } else {
+                    deferred = CompletableDeferred()
+                    inFlight[key] = deferred
+                    created = true
+                }
             }
-        }
-
-        if (!created) {
-            return deferred.await()
+            if (created) {
+                break
+            }
+            try {
+                return deferred.await()
+            } catch (_: CancellationException) {
+                // The caller that started this fetch was cancelled, not this one: fetch again.
+                currentCoroutineContext().ensureActive()
+                mutex.withLock {
+                    if (inFlight[key] === deferred) {
+                        inFlight.remove(key)
+                    }
+                }
+            }
         }
 
         try {
