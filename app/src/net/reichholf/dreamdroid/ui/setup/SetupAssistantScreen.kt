@@ -11,8 +11,6 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -29,10 +27,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
@@ -58,7 +58,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -73,6 +75,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
@@ -83,6 +86,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.ui.text.asString
@@ -179,7 +183,15 @@ fun SetupAssistantScreen(
         else -> R.string.setup_next
     }
     val scrollState = rememberScrollState()
-    LaunchedEffect(step) { scrollState.scrollTo(0) }
+    // Saved, so recreation (rotation) keeps the restored scroll; only a new step starts at the top.
+    var scrolledStep by rememberSaveable { mutableStateOf(step) }
+    LaunchedEffect(step) {
+        if (step != scrolledStep) {
+            scrolledStep = step
+            scrollState.scrollTo(0)
+        }
+    }
+    val remote = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -282,6 +294,7 @@ fun SetupAssistantScreen(
                                         searched = state.searched,
                                         localNetworkGranted = localNetworkGranted,
                                         portText = portText,
+                                        remote = remote,
                                         onPick = viewModel::onPick
                                     )
 
@@ -451,6 +464,7 @@ private fun FindStep(
     searched: Boolean,
     localNetworkGranted: Boolean,
     portText: String,
+    remote: Boolean,
     onPick: (SetupReceiver) -> Unit
 ) {
     Text(
@@ -493,35 +507,58 @@ private fun FindStep(
         )
         Spacer(Modifier.height(12.dp))
     }
-    LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
-        items(devices, key = { "${it.host}:${it.port}" }) { receiver ->
+    val firstResult = remember { FocusRequester() }
+    // Once per visit, unless an address is being typed: a remote starts on the first result, not
+    // on the address field above it, whose focus opens the keyboard. Where focus went when Start
+    // left the screen does not matter.
+    var firstResultClaimed by remember { mutableStateOf(false) }
+    var addressEdited by remember { mutableStateOf(false) }
+    LaunchedEffect(host) {
+        snapshotFlow { host.text.toString() }.drop(1).collect { addressEdited = true }
+    }
+    LazyColumn(
+        modifier = Modifier
+            .heightIn(max = 240.dp)
+            .selectableGroup()
+    ) {
+        itemsIndexed(devices, key = { _, it -> "${it.host}:${it.port}" }) { index, receiver ->
             val selected =
                 host.text.toString() == receiver.host && portText == receiver.port.toString()
+            if (index == 0 && remote && !firstResultClaimed && !addressEdited) {
+                LaunchedEffect(Unit) {
+                    runCatching { firstResult.requestFocus() }
+                    firstResultClaimed = true
+                }
+            }
             val focus = rememberRemoteFocus()
+            val scheme = MaterialTheme.colorScheme
             ListItem(
                 headlineContent = { Text(receiver.name) },
                 supportingContent = { Text(receiver.host) },
-                colors = if (focus.highlighted) {
-                    val scheme = MaterialTheme.colorScheme
-                    ListItemDefaults.colors(
+                // The container is the ListItem's own: a background modifier would sit under it.
+                colors = when {
+                    focus.highlighted -> ListItemDefaults.colors(
                         containerColor = scheme.inverseSurface,
                         headlineColor = scheme.inverseOnSurface,
                         supportingColor = scheme.inverseOnSurface
                     )
-                } else {
-                    ListItemDefaults.colors()
+
+                    selected -> ListItemDefaults.colors(
+                        containerColor = scheme.secondaryContainer,
+                        headlineColor = scheme.onSecondaryContainer,
+                        supportingColor = scheme.onSecondaryContainer
+                    )
+
+                    else -> ListItemDefaults.colors()
                 },
-                modifier = focus.modifier
+                modifier = Modifier
+                    .then(if (index == 0) Modifier.focusRequester(firstResult) else Modifier)
+                    .then(focus.modifier)
                     .fillMaxWidth()
                     .testTag("setup_device_${receiver.host}")
-                    .background(
-                        if (selected) {
-                            MaterialTheme.colorScheme.secondaryContainer
-                        } else {
-                            MaterialTheme.colorScheme.surface
-                        }
-                    )
-                    .clickable { onPick(receiver) }
+                    .selectable(selected = selected, role = Role.RadioButton) {
+                        onPick(receiver)
+                    }
             )
         }
     }

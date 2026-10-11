@@ -1,12 +1,13 @@
 package net.reichholf.dreamdroid.ui.setup
 
-import android.os.SystemClock
-import android.view.InputDevice
-import android.view.MotionEvent
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
@@ -25,11 +26,15 @@ import androidx.compose.ui.test.assertIsEnabled
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsNotFocused
+import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isToggleable
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -45,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
@@ -54,6 +60,7 @@ import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.testutil.enterTouchMode
 import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -535,11 +542,7 @@ class SetupAssistantScreenTest {
                 )
             }
         }
-        // Touch mode is global below API 33, so an earlier test (or a D-pad-driven TV) can
-        // leave the device out of it. requestInputMode(Touch) is not supported and the
-        // rule's own touch input bypasses the system, so inject a real tap.
-        enterTouchMode()
-        composeRule.waitUntil { inputModeManager.inputMode == InputMode.Touch }
+        composeRule.enterTouchMode(inputModeManager)
         composeRule.mainClock.advanceTimeBy(2_000)
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Start").assertIsNotFocused().performClick()
@@ -555,15 +558,173 @@ class SetupAssistantScreenTest {
         assertEquals(idle, next.size())
     }
 
-    private fun enterTouchMode() {
-        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
-        val time = SystemClock.uptimeMillis()
-        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
-            val event = MotionEvent.obtain(time, time, action, 1f, 1f, 0)
-            event.source = InputDevice.SOURCE_TOUCHSCREEN
-            automation.injectInputEvent(event, true)
-            event.recycle()
+    @Test
+    fun remoteStartsOnTheFirstScanResult() {
+        val viewModel =
+            model(onSearch = { listOf(receiver("192.168.1.10"), receiver("192.168.1.11")) })
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
         }
+        // A remote drives the TV setup; buttons take focus only outside touch mode.
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("setup_device_192.168.1.10").assertIsFocused()
+        composeRule.onNodeWithTag("setup_device_192.168.1.11").assertIsNotFocused()
+        composeRule.onNodeWithTag("setup_address").assertIsNotFocused()
+    }
+
+    @Test
+    fun typingAnAddressKeepsFocusWhenResultsArrive() {
+        val gate = CompletableDeferred<List<Profile>>()
+        val viewModel = model(onSearch = { gate.await() })
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").performClick()
+        composeRule.waitForIdle()
+        val address = composeRule.onNodeWithTag("setup_address")
+        address.performSemanticsAction(SemanticsActions.RequestFocus)
+        address.performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        gate.complete(listOf(receiver("192.168.1.10")))
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("setup_device_192.168.1.10").assertIsNotFocused()
+        address.assertIsFocused()
+    }
+
+    @Test
+    fun pickedScanResultIsSelectedInItsOwnColor() {
+        val viewModel =
+            model(onSearch = { listOf(receiver("192.168.1.10"), receiver("192.168.1.11")) })
+        lateinit var inputModeManager: InputModeManager
+        lateinit var scheme: ColorScheme
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                scheme = MaterialTheme.colorScheme
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        // In keyboard mode the first result takes focus and shows the focus colour instead.
+        composeRule.enterTouchMode(inputModeManager)
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").performClick()
+        composeRule.waitForIdle()
+
+        val picked = composeRule.onNodeWithTag("setup_device_192.168.1.10")
+        val other = composeRule.onNodeWithTag("setup_device_192.168.1.11")
+        picked.assertIsNotSelected()
+        assertContainer(scheme.surface, other)
+        // A semantics click: a real press would draw a ripple over the sampled pixel.
+        picked.performSemanticsAction(SemanticsActions.OnClick)
+        composeRule.waitForIdle()
+
+        picked.assertIsSelected()
+        other.assertIsNotSelected()
+        assertContainer(scheme.secondaryContainer, picked)
+        assertContainer(scheme.surface, other)
+    }
+
+    @Test
+    fun recreationKeepsTheStepScrolled() {
+        val viewModel = model()
+        val restoration = StateRestorationTester(composeRule)
+        restoration.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 240.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {}
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        // The step body is the only vertical scroller on SignIn.
+        val body = composeRule.onNode(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange)
+        )
+        body.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
+        composeRule.waitForIdle()
+        val scrolled = body.scrollOffset()
+        assertTrue("The step must scroll in this window, offset was $scrolled", scrolled > 0f)
+
+        restoration.emulateSavedInstanceStateRestore()
+        composeRule.waitForIdle()
+
+        assertEquals(scrolled, body.scrollOffset())
+    }
+
+    private fun SemanticsNodeInteraction.scrollOffset(): Float =
+        fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
+
+    private fun receiver(host: String) = Profile().apply {
+        name = host
+        this.host = host
+        port = 80
+    }
+
+    /** Samples the row's container beside its text, inside the start padding. */
+    private fun assertContainer(expected: Color, row: SemanticsNodeInteraction) {
+        val pixels = row.captureToImage().toPixelMap()
+        val actual = pixels[4, pixels.height / 2]
+        val close = listOf(
+            expected.red to actual.red,
+            expected.green to actual.green,
+            expected.blue to actual.blue
+        ).all { (want, got) -> abs(want - got) < 0.02f }
+        assertTrue("Row container was $actual, expected $expected", close)
     }
 
     private fun SemanticsNodeInteraction.size(): DpSize {
