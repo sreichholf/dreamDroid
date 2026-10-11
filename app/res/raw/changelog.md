@@ -1,40 +1,25 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
-## 2.0.465
-* NEW: Setup assistant when no profile is saved: finds the box, sets address, HTTP or HTTPS and sign-in, then checks the connection (replaces the offline demo receiver)
-* NEW: MultiEPG — graphical EPG grid
-* NEW: Optional now-playing strip on TV & Movies (toggle in Settings)
-* NEW: Choose which screen opens when the app starts (Settings → Start screen)
-* NEW: Tools hub groups Screenshot, Device Info, and Signal Meter with a shared bottom bar
-* NEW: Bouquet editor under Tools: add, rename, reorder, and remove bouquets and channels (needs the WebBouquetEditor plugin on the receiver)
-* NEW: AutoTimer in the drawer: list, enable, preview, create, edit, and delete AutoTimers, run them now, and "Record series" from the EPG (needs the AutoTimer plugin on the receiver)
-* NEW: Offline mode with usage-based caching — lists, EPG, timers, and movies you already opened stay readable when the receiver is unreachable; EPG search works offline too
-* NEW: Settings option to reset the offline cache (current profile or all profiles)
-* NEW: Android TV can use an external video player (same Settings toggle as phone)
-* NEW: Wide windows (tablets and unfolded foldables) show a recording's info beside the Movies list, and an event's details beside channel EPG, bouquet EPG, EPG search and AutoTimer preview, and timers open for editing beside the timer list; the list marks the row whose details are shown
-* NEW: On wide windows the services list opens a channel's EPG beside it and an event of that EPG next to the EPG (all three side by side on the widest windows); a channel's current and next event open beside the list too
-* UPD: EPG search as you type, with recent searches and results grouped by day
-* UPD: Channel EPG grouped by day
-* UPD: Compact EPG event details: timer actions side by side, IMDb and similar events as icons next to the title
-* UPD: Modernized architecture and Material 3 UI across phone screens
-* UPD: Slimmer navigation drawer; About, Changelog, and Backup live under Settings
-* UPD: Tablets show the TV & Movies and Tools sections in the bottom bar like phones; on tablets and phones in landscape, icon and label sit side by side
-* UPD: Tablets and phones in landscape use the Material 3 side margin instead of a wide fixed one
-* UPD: Android TV browse hub refreshed
-* UPD: Bouquet EPG date/time jump chips (incl. Now / Prime)
-* UPD: Virtual Remote home-screen widget
-* UPD: Improved connectivity handling (Online / Offline / Checking, background recheck)
+## 2.0.466
+* NEW: Initial setup assistant
+* NEW: MultiEPG
+* NEW: Now-playing strip on TV & Movies
+* NEW: Selectable start screen
+* NEW: Tools hub
+* NEW: Bouquet editor (WebBouquetEditor plugin)
+* NEW: AutoTimer (AutoTimer plugin)
+* NEW: Offline mode
+* NEW: External video player on Android TV
+* NEW: Multi-pane layouts on wide screens
+* UPD: EPG search as you type
+* UPD: Many UI improvements
+* UPD: Bouquet EPG date/time jump chips
+* UPD: Virtual Remote widget
+* UPD: Better connectivity handling
+* UPD: Online picons per profile
+* UPD: Updated external libraries
 * UPD: Requires Android 8.0 or newer
-* DEL: Built-in Mediaplayer / playlist browser
-* FIX: Virtual Remote on tablets shows the receiver screenshot again, beside the pad in landscape and above it upright
-* FIX: Wide screens show the service list in several columns again; "Max. servicelist columns" caps them
-* FIX: Screenshots on receivers whose /grab returns no image (e.g. Dreambox Two with Gemini Project) use /screenshot instead
-* FIX: Android TV movie cards no longer clip a partial last line of text
-* UPD: Android TV service cards are compact, with a leading picon and a progress bar for the current programme
-* FIX: Switching channels in the player no longer freezes the app ("not responding") while the previous stream closes
-* UPD: libVLC 3.7.7
-* UPD: Online picons are set per profile (on/off, remote path, by service name); your previous global setting carries over. Android TV settings can now sync picons
-* FIX: Setup assistant keeps its fields, actions and scan results on screen when the keyboard is open (especially on TV), and no longer opens the keyboard while it checks the connection; on TV the focused action stands out like in the rest of the app and the remote starts on the first scan result. The picked scan result is highlighted again
+* DEL: Built-in Mediaplayer
 * FIX: multiple smaller issues
 
 ## 1.15.460
