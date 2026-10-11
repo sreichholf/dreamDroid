@@ -19,7 +19,7 @@ sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
   openjdk-25-jdk qemu-kvm unzip curl
 
-# Pin the Gradle JVM to JDK 25 (AGP 9.4 + Gradle 9.6). Fail if missing.
+# Pin the Gradle JVM to JDK 25. Fail if missing.
 # Also write env.sh so later shells (start/tests) inherit it.
 if [ ! -x "$JAVA_HOME_25/bin/java" ]; then
   echo "install: JDK 25 missing at $JAVA_HOME_25" >&2
