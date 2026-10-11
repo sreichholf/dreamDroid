@@ -1,19 +1,25 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
@@ -75,16 +81,29 @@ data class TvHubUiState(
  * the hub leaving composition. [TvHubUiState.stream] is a stream for the player; the host
  * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data,
  * except Online after a browse that already asked the receiver while the session was unknown;
- * switching headers keeps movies the receiver already sent for a location.
+ * switching headers keeps movies the receiver already sent for a location. While the hub is
+ * shown ([onShown]) and a browse got a receiver answer, the selected bouquet's EPG for the coming
+ * week is synced ([TvHubBrowse.syncEpg]) once the header stayed selected for
+ * [EPG_SYNC_DELAY_MS], so moving through the headers with the D-pad syncs nothing.
  */
 @HiltViewModel
-class TvHubViewModel @Inject constructor(
+class TvHubViewModel internal constructor(
     private val browse: TvHubBrowse,
     private val timers: TimerRepository,
     private val receiver: ReceiverRepository,
     private val movies: MovieRepository,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val epgSyncDelayMs: Long
 ) : ViewModel() {
+    @Inject
+    constructor(
+        browse: TvHubBrowse,
+        timers: TimerRepository,
+        receiver: ReceiverRepository,
+        movies: MovieRepository,
+        sessions: SessionConnectionHolder
+    ) : this(browse, timers, receiver, movies, sessions, EPG_SYNC_DELAY_MS)
+
     private val _uiState = MutableStateFlow(TvHubUiState())
 
     private val sessionWord = sessions.status.map { it.session }.distinctUntilChanged()
@@ -105,6 +124,11 @@ class TvHubViewModel @Inject constructor(
     /** Locations whose movies came from the receiver; Room's snapshot is asked again. */
     private val liveMovieLocations = mutableSetOf<String>()
 
+    private val shown = MutableStateFlow(false)
+
+    /** Browses the receiver answered; each one starts the EPG sync again. */
+    private val liveBrowses = MutableStateFlow(0)
+
     init {
         viewModelScope.launch {
             sessionWord.collect { session ->
@@ -113,6 +137,24 @@ class TvHubViewModel @Inject constructor(
                 }
             }
         }
+        viewModelScope.launch {
+            combine(
+                shown,
+                liveBrowses,
+                _uiState.map { it.selectedBouquetRef() }.distinctUntilChanged()
+            ) { shown, live, ref -> ref?.takeIf { shown && live > 0 }?.let { it to live } }
+                .syncWhenSettled(epgSyncDelayMs) { syncEpg(it.first) }
+        }
+    }
+
+    /** The hub is on screen; the EPG sync of the selected bouquet may run. */
+    fun onShown() {
+        shown.value = true
+    }
+
+    /** The hub left the screen; stops the EPG sync. */
+    fun onHidden() {
+        shown.value = false
     }
 
     fun reload() {
@@ -148,6 +190,9 @@ class TvHubViewModel @Inject constructor(
 
     private fun applyBrowse(result: TvHubBrowseResult) {
         browseLive = browseLive || !result.usedCache
+        if (!result.usedCache) {
+            liveBrowses.update { it + 1 }
+        }
         _uiState.update { state ->
             val stillValid = TvComposeHubHost.hubHeaderSurvivesReload(
                 state.selectedHeaderId,
@@ -299,4 +344,37 @@ class TvHubViewModel @Inject constructor(
             )
         }
     }
+
+    /** Best effort: the rows already show the receiver's now/next. */
+    private suspend fun syncEpg(ref: String) {
+        try {
+            browse.syncEpg(ref)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Log.w(DreamDroid.LOG_TAG, "TV hub EPG sync failed", e)
+        }
+    }
+
+    companion object {
+        /** How long a bouquet header stays selected before its EPG sync starts. */
+        const val EPG_SYNC_DELAY_MS: Long = 1_000L
+    }
 }
+
+/**
+ * Runs [sync] for each value that stays for [settleMs]. A new value cancels the wait or the
+ * running sync; null only cancels.
+ */
+internal suspend fun <T : Any> Flow<T?>.syncWhenSettled(settleMs: Long, sync: suspend (T) -> Unit) {
+    distinctUntilChanged().collectLatest { target ->
+        if (target != null) {
+            delay(settleMs)
+            sync(target)
+        }
+    }
+}
+
+/** The selected header when it is one of the bouquet rows. */
+private fun TvHubUiState.selectedBouquetRef(): String? =
+    selectedHeaderId.takeIf { id -> bouquetRows.any { it.bouquet.reference == id } }

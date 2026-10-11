@@ -193,6 +193,39 @@ class EpgRepository @Inject constructor(
         return multiEpgSync.ensureChunk(profileId, containerRef, nowSec, persist = true)
     }
 
+    /**
+     * Use-driven EPG sync of [containerRef]: the chunk at [nowSec] and the ones after it, up to
+     * [MultiEpgWindows.SYNC_CHUNKS], one request at a time. Stops at the first chunk without
+     * programmes, where the receiver's EPG ends. Chunks still within their TTL are not fetched
+     * again. Runs until done, until the session is Offline, or until the caller cancels it,
+     * which the caller does once the user leaves the container. Same cacheable-container rule
+     * as [fillNowChunk]; failures throw.
+     */
+    suspend fun syncContainer(
+        containerRef: String,
+        tabRootRef: String,
+        nowSec: Long = System.currentTimeMillis() / 1000L
+    ) {
+        val profileId = profiles.requireCurrent().id ?: return
+        if (!services.isCacheableContainer(containerRef, tabRootRef)) {
+            return
+        }
+        repeat(MultiEpgWindows.SYNC_CHUNKS) { day ->
+            if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
+                return
+            }
+            val events = multiEpgSync.ensureChunk(
+                profileId,
+                containerRef,
+                nowSec + day * MultiEpgWindows.CHUNK_SECONDS,
+                persist = true
+            )
+            if (events.isEmpty()) {
+                return
+            }
+        }
+    }
+
     /** Drops MultiEPG events and chunks that ended two days before [nowSec] or earlier. */
     suspend fun pruneExpiredMultiEpgCache(nowSec: Long = System.currentTimeMillis() / 1000L) {
         database.epgDao().pruneOlderThan(MultiEpgWindows.retentionCutoffSec(nowSec))

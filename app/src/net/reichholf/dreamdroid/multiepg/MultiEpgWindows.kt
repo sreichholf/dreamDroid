@@ -11,6 +11,12 @@ object MultiEpgWindows {
     const val CHUNK_SECONDS: Long = 24L * 60L * 60L
     const val DEFAULT_TTL_MS: Long = 25L * 60L * 1000L
 
+    /** TTL of chunks from the day after tomorrow on: EPG that far ahead rarely changes. */
+    const val FAR_TTL_MS: Long = 6L * 60L * 60L * 1000L
+
+    /** Chunks a bouquet sync covers, starting with the one at now: about a week. */
+    const val SYNC_CHUNKS: Int = 7
+
     /** Drop cached programmes/chunks that ended at least this long ago. */
     const val RETENTION_SECONDS: Long = 2L * CHUNK_SECONDS
 
@@ -20,6 +26,21 @@ object MultiEpgWindows {
     const val MAX_SLIDING_CHUNKS: Int = 8
 
     data class Chunk(val startSec: Long, val endSec: Long)
+
+    /**
+     * TTL of the chunk starting at [chunkStartSec]: [nearTtlMs] for the chunks of today and
+     * tomorrow, [farTtlMs] for later ones.
+     */
+    fun ttlMs(
+        chunkStartSec: Long,
+        nowSec: Long,
+        nearTtlMs: Long = DEFAULT_TTL_MS,
+        farTtlMs: Long = FAR_TTL_MS,
+        chunkSeconds: Long = CHUNK_SECONDS
+    ): Long {
+        val farFrom = chunkContaining(nowSec, chunkSeconds).startSec + 2L * chunkSeconds
+        return if (chunkStartSec >= farFrom) farTtlMs else nearTtlMs
+    }
 
     fun chunkContaining(unixSec: Long, chunkSeconds: Long = CHUNK_SECONDS): Chunk {
         require(chunkSeconds > 0L) { "chunkSeconds must be positive" }

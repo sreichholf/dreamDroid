@@ -13,6 +13,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -93,8 +94,9 @@ data class HubServiceListUiState(
  * entry, so a tab change keeps the loaded list and the opened folder; the folder survives
  * process death with one back step to the tab. Loads follow the session: each change of the
  * connection, and each edit of the tab's bouquet ([ServiceRepository.bouquetEdits]), loads
- * again. A
- * live answer fills the Room EPG chunk of a cacheable list.
+ * again. While the page is shown ([onShown]), a live answer of a cacheable list syncs its
+ * EPG for the coming week into Room ([EpgRepository.syncContainer]); hiding the page or opening
+ * another list stops that sync.
  */
 @HiltViewModel(assistedFactory = HubServiceListViewModel.Factory::class)
 class HubServiceListViewModel @AssistedInject constructor(
@@ -121,6 +123,9 @@ class HubServiceListViewModel @AssistedInject constructor(
     private var menuRow: ServiceNowNext? = null
     private var loadJob: Job? = null
     private var streamJob: Job? = null
+    private val shown = MutableStateFlow(false)
+    private val epgSyncTarget = MutableStateFlow<EpgSyncTarget?>(null)
+    private var liveLoads = 0
 
     init {
         val saved = readHubServiceListSaved(savedStateHandle, rootRef)
@@ -148,6 +153,10 @@ class HubServiceListViewModel @AssistedInject constructor(
             ) { session, edit -> session to edit }.collect { reload() }
         }
         viewModelScope.launch {
+            combine(shown, epgSyncTarget) { shown, target -> target.takeIf { shown } }
+                .collectLatest { target -> target?.let { syncEpg(it.ref) } }
+        }
+        viewModelScope.launch {
             settings.settings.map { it.maxGridColumns }.distinctUntilChanged().collect { cols ->
                 _uiState.update { it.copy(maxColumns = cols) }
             }
@@ -171,10 +180,20 @@ class HubServiceListViewModel @AssistedInject constructor(
             services.nowNextList(ref, rootRef, forceRefresh).collect { load ->
                 apply(load)
                 if (load is NowNextListLoad.Rows && !load.cached) {
-                    fillEpg(ref)
+                    epgSyncTarget.value = EpgSyncTarget(ref, ++liveLoads)
                 }
             }
         }
+    }
+
+    /** The page is on screen; the EPG sync of a live list may run. */
+    fun onShown() {
+        shown.value = true
+    }
+
+    /** The page left the screen; stops the EPG sync. */
+    fun onHidden() {
+        shown.value = false
     }
 
     /** Opens the folder at [index]. */
@@ -335,6 +354,7 @@ class HubServiceListViewModel @AssistedInject constructor(
                 menu = null
             )
         }
+        epgSyncTarget.value = null
         reload()
     }
 
@@ -358,14 +378,12 @@ class HubServiceListViewModel @AssistedInject constructor(
     }
 
     /** Best effort: the list already shows the receiver's now/next. */
-    private fun fillEpg(ref: String) {
-        viewModelScope.launch {
-            try {
-                epg.fillNowChunk(ref, rootRef)
-            } catch (e: CancellationException) {
-                throw e
-            } catch (_: Exception) {
-            }
+    private suspend fun syncEpg(ref: String) {
+        try {
+            epg.syncContainer(ref, rootRef)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
         }
     }
 
@@ -390,3 +408,6 @@ class HubServiceListViewModel @AssistedInject constructor(
     private fun isDefault(ref: String): Boolean =
         profiles.current.value?.defaultBouquetTv?.let { it == ref } ?: false
 }
+
+/** A live load of [ref]; each one starts the EPG sync of that list again. */
+private data class EpgSyncTarget(val ref: String, val load: Int)
