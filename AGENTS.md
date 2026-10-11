@@ -150,6 +150,8 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 
 Claude Code reads this file through the one-line `CLAUDE.md` (`@AGENTS.md`). It finds skills in `.claude/skills/`, which is a symlink to `.agents/skills/`, so `poteto-mode` and the other pstack skills load by name. On Windows, enable symlinks (`git config core.symlinks true` with Developer Mode) or read `.agents/skills/<name>/SKILL.md` directly.
 
+Google's official Android skills ([android/skills](https://github.com/android/skills): `edge-to-edge`, `adaptive`, `r8-analyzer`, `agp-9-upgrade`, …) live in `.agents/skills/` too, listed with their source commit in `.agents/skills/ANDROID_SKILLS.md`. Update them only with `scripts/update-android-skills.sh`, never by hand. Where one contradicts this file, this file wins: Navigation 3 stays rejected (ignore `navigation-3`), and the phone shell keeps its bottom bar whatever `adaptive` suggests.
+
 Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Instead, the SessionStart hook [`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh) (registered in `.claude/settings.json`, remote sessions only) installs JDK 25 and the Android SDK into `~/Android/Sdk` (the packages in `scripts/android-sdk-packages.txt`), writes `local.properties`, exports `JAVA_HOME` / `ANDROID_HOME`, and installs the Maven Central mirror init script. It does not install an emulator or system image. So:
 
 - Run `./gradlew -Pci --no-configuration-cache :app:prCheck` as usual.
