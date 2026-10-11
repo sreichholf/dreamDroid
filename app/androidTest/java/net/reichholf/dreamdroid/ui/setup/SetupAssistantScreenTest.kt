@@ -589,6 +589,41 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun typingAnAddressKeepsFocusWhenResultsArrive() {
+        val gate = CompletableDeferred<List<Profile>>()
+        val viewModel = model(onSearch = { gate.await() })
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").performClick()
+        composeRule.waitForIdle()
+        val address = composeRule.onNodeWithTag("setup_address")
+        address.performSemanticsAction(SemanticsActions.RequestFocus)
+        address.performTextInput("192.168.1.2")
+        composeRule.waitForIdle()
+
+        gate.complete(listOf(receiver("192.168.1.10")))
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithTag("setup_device_192.168.1.10").assertIsNotFocused()
+        address.assertIsFocused()
+    }
+
+    @Test
     fun pickedScanResultIsSelectedInItsOwnColor() {
         val viewModel =
             model(onSearch = { listOf(receiver("192.168.1.10"), receiver("192.168.1.11")) })
@@ -607,7 +642,7 @@ class SetupAssistantScreenTest {
                 )
             }
         }
-        // In keyboard mode the tapped row would take focus and show the focus colour instead.
+        // In keyboard mode the first result takes focus and shows the focus colour instead.
         composeRule.enterTouchMode(inputModeManager)
         composeRule.mainClock.advanceTimeBy(2_000)
         composeRule.waitForIdle()
@@ -618,7 +653,8 @@ class SetupAssistantScreenTest {
         val other = composeRule.onNodeWithTag("setup_device_192.168.1.11")
         picked.assertIsNotSelected()
         assertContainer(scheme.surface, other)
-        picked.performClick()
+        // A semantics click: a real press would draw a ripple over the sampled pixel.
+        picked.performSemanticsAction(SemanticsActions.OnClick)
         composeRule.waitForIdle()
 
         picked.assertIsSelected()
@@ -655,20 +691,23 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Next").performClick()
         composeRule.waitForIdle()
 
-        val logoTop = composeRule.onNodeWithTag("setup_logo").getBoundsInRoot().top
-        val password = composeRule.onNodeWithTag("setup_password").performScrollTo()
-        composeRule.waitForIdle()
-        val scrolled = password.getBoundsInRoot()
-        assertTrue(
-            "The password field must need a scroll in this window",
-            composeRule.onNodeWithTag("setup_logo").getBoundsInRoot().top < logoTop
+        // The step body is the only vertical scroller on SignIn.
+        val body = composeRule.onNode(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange)
         )
+        body.performSemanticsAction(SemanticsActions.ScrollBy) { it(0f, 10_000f) }
+        composeRule.waitForIdle()
+        val scrolled = body.scrollOffset()
+        assertTrue("The step must scroll in this window, offset was $scrolled", scrolled > 0f)
 
         restoration.emulateSavedInstanceStateRestore()
         composeRule.waitForIdle()
 
-        assertEquals(scrolled, composeRule.onNodeWithTag("setup_password").getBoundsInRoot())
+        assertEquals(scrolled, body.scrollOffset())
     }
+
+    private fun SemanticsNodeInteraction.scrollOffset(): Float =
+        fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
 
     private fun receiver(host: String) = Profile().apply {
         name = host

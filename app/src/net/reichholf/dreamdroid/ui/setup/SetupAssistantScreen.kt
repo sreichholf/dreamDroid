@@ -32,6 +32,7 @@ import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
@@ -59,6 +60,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,6 +86,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.drop
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.ui.text.asString
@@ -188,12 +191,10 @@ fun SetupAssistantScreen(
             scrollState.scrollTo(0)
         }
     }
-    var screenHasFocus by remember { mutableStateOf(false) }
     val remote = LocalInputModeManager.current.inputMode == InputMode.Keyboard
     Column(
         modifier = modifier
             .fillMaxSize()
-            .onFocusChanged { screenHasFocus = it.hasFocus }
             .windowInsetsPadding(WindowInsets.safeDrawing),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -293,7 +294,7 @@ fun SetupAssistantScreen(
                                         searched = state.searched,
                                         localNetworkGranted = localNetworkGranted,
                                         portText = portText,
-                                        focusFirstResult = remote && !screenHasFocus,
+                                        remote = remote,
                                         onPick = viewModel::onPick
                                     )
 
@@ -463,7 +464,7 @@ private fun FindStep(
     searched: Boolean,
     localNetworkGranted: Boolean,
     portText: String,
-    focusFirstResult: Boolean,
+    remote: Boolean,
     onPick: (SetupReceiver) -> Unit
 ) {
     Text(
@@ -507,14 +508,27 @@ private fun FindStep(
         Spacer(Modifier.height(12.dp))
     }
     val firstResult = remember { FocusRequester() }
-    LazyColumn(modifier = Modifier.heightIn(max = 240.dp)) {
+    // Once per visit, unless an address is being typed: a remote starts on the first result, not
+    // on the address field above it, whose focus opens the keyboard. Where focus went when Start
+    // left the screen does not matter.
+    var firstResultClaimed by remember { mutableStateOf(false) }
+    var addressEdited by remember { mutableStateOf(false) }
+    LaunchedEffect(host) {
+        snapshotFlow { host.text.toString() }.drop(1).collect { addressEdited = true }
+    }
+    LazyColumn(
+        modifier = Modifier
+            .heightIn(max = 240.dp)
+            .selectableGroup()
+    ) {
         itemsIndexed(devices, key = { _, it -> "${it.host}:${it.port}" }) { index, receiver ->
             val selected =
                 host.text.toString() == receiver.host && portText == receiver.port.toString()
-            if (index == 0 && focusFirstResult) {
-                // When nothing has focus, a remote starts on the first result rather than on the
-                // address field above it, whose focus would open the keyboard.
-                LaunchedEffect(Unit) { runCatching { firstResult.requestFocus() } }
+            if (index == 0 && remote && !firstResultClaimed && !addressEdited) {
+                LaunchedEffect(Unit) {
+                    runCatching { firstResult.requestFocus() }
+                    firstResultClaimed = true
+                }
             }
             val focus = rememberRemoteFocus()
             val scheme = MaterialTheme.colorScheme
