@@ -19,7 +19,8 @@ fun ServiceEpgPane(
     onRefresh: () -> Unit,
     onEventClick: (Event) -> Unit,
     onClose: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedEvent: Event? = null
 ) {
     Column(modifier.fillMaxSize()) {
         ListDetailPaneTopBar(title = state.title.asString(), onClose = onClose)
@@ -27,7 +28,8 @@ fun ServiceEpgPane(
             ServiceEpgScreen(
                 sections = state.sections,
                 emptyMessage = state.emptyMessage?.asString(),
-                onItemClick = onEventClick
+                onItemClick = onEventClick,
+                selectedEvent = selectedEvent
             )
         }
     }

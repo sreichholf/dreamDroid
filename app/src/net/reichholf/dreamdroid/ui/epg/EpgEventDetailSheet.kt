@@ -77,14 +77,15 @@ fun EpgEventDetailHost(handle: PhoneNavHandle, viewModel: EpgEventDetailViewMode
 
 /**
  * An EPG [list] and the EPG detail of [viewModel] in a phone destination: beside the list where
- * the window fits two panes, a sheet elsewhere ([EpgEventListDetail]).
+ * the window fits two panes, a sheet elsewhere ([EpgEventListDetail]). [list] gets the shown
+ * event, the row to mark selected.
  */
 @Composable
 fun EpgEventListDetailHost(
     handle: PhoneNavHandle,
     viewModel: EpgEventDetailViewModel,
     modifier: Modifier = Modifier,
-    list: @Composable () -> Unit
+    list: @Composable (shownEvent: Event?) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
@@ -92,7 +93,7 @@ fun EpgEventListDetailHost(
         state = uiState,
         onDismiss = viewModel::dismissDetail,
         actions = phoneEpgEventActions(handle, viewModel),
-        list = list,
+        list = { list(uiState.event) },
         modifier = modifier
     )
 }

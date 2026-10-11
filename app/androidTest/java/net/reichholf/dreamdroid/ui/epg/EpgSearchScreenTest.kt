@@ -2,10 +2,15 @@ package net.reichholf.dreamdroid.ui.epg
 
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
@@ -195,7 +200,8 @@ class EpgSearchScreenTest {
         onRecentClick: (String) -> Unit = {},
         onRecentRemove: (String) -> Unit = {},
         onItemClick: (Event) -> Unit = {},
-        focusOnStart: Boolean = false
+        focusOnStart: Boolean = false,
+        selectedEvent: Event? = null
     ) {
         composeRule.setContent {
             DreamDroidTheme {
@@ -207,7 +213,8 @@ class EpgSearchScreenTest {
                     onRecentClick = onRecentClick,
                     onRecentRemove = onRecentRemove,
                     onItemClick = onItemClick,
-                    focusOnStart = focusOnStart
+                    focusOnStart = focusOnStart,
+                    selectedEvent = selectedEvent
                 )
             }
         }
@@ -226,4 +233,20 @@ class EpgSearchScreenTest {
         startTimeReadable = time,
         durationReadable = "15"
     )
+
+    @Test
+    fun theResultShownBesideTheListIsSelected() {
+        val first = event("100", "Tatort", "Das Erste HD", "20:15")
+        val second = event("101", "Polizeiruf", "Das Erste HD", "21:45")
+        setScreen(
+            state = results(EpgDaySection(null, listOf(first, second))),
+            selectedEvent = second
+        )
+        composeRule.onNode(
+            hasText("Polizeiruf") and hasClickAction()
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNode(
+            hasText("Tatort") and hasClickAction()
+        ).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
+    }
 }

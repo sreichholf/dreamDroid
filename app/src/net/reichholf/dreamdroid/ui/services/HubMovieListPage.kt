@@ -147,7 +147,8 @@ fun HubMovieListScreen(
                     onItemLongClick = { onItemClick(it, true) },
                     menu = state.menu,
                     onMenuAction = onMenuAction,
-                    onMenuDismiss = onMenuDismiss
+                    onMenuDismiss = onMenuDismiss,
+                    selectedReference = state.detailReference
                 )
             }
         }

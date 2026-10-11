@@ -108,6 +108,24 @@ class TimerPaneViewModelTest {
     }
 
     @Test
+    fun theFormNamesTheListedTimerItEdits() = runTest {
+        val handle = SavedStateHandle()
+        val viewModel = viewModel(handle)
+
+        viewModel.open(TIMER, isCreate = false)
+        assertEquals(TIMER, viewModel.uiState.value.original)
+        viewModel.cancelAndJoin()
+        assertEquals(TIMER, viewModel(handle).uiState.value.original)
+
+        val creating = viewModel(SavedStateHandle())
+        creating.open(TIMER, isCreate = true)
+        assertNull(creating.uiState.value.original)
+        creating.open(TIMER, isCreate = false)
+        creating.dismiss()
+        assertNull(creating.uiState.value.original)
+    }
+
+    @Test
     fun savingSendsTheTypedFieldsOfTheOpenTimer() = runTest {
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val viewModel = viewModel(SavedStateHandle())

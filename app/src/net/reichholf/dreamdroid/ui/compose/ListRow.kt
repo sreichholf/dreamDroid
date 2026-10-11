@@ -15,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 
 /** Inset from the list edge so a slightly brighter row can read as a Gmail-style tile. */
@@ -33,6 +35,9 @@ const val LIST_ROW_TAG = "list_row"
  * [onLongClick], and a toggle or selection passed in [modifier] all land on the node that
  * carries the row's label. [onLongClick] and [enabled] only apply together with [onClick].
  *
+ * A [selected] row is the one whose detail shows beside the list (Material 3 list-detail): it
+ * takes the secondary container colour and reports itself selected.
+ *
  * Material 3 1.4 has no interactive [ListItem]. The Material 3 Expressive overloads in the
  * 1.5 alphas (`ListItem(onClick, …)`, `ListItem(checked, onCheckedChange, …)`,
  * `ListItem(selected, onClick, …)`, and `SegmentedListItem`) replace the modifier approach.
@@ -49,7 +54,8 @@ fun ListRow(
     supportingContent: (@Composable () -> Unit)? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
-    color: Color = MaterialTheme.colorScheme.surfaceContainerHigh
+    selected: Boolean = false,
+    color: Color = listRowColor(selected)
 ) {
     // The gutter sits on a plain parent: ListItem's merged node takes its bounds from the start
     // of the ListItem modifier, so padding there would widen the row's node into the gutter.
@@ -71,6 +77,7 @@ fun ListRow(
                         Modifier
                     }
                 )
+                .then(if (selected) Modifier.semantics { this.selected = true } else Modifier)
                 .then(modifier),
             overlineContent = overlineContent,
             supportingContent = supportingContent,
@@ -87,16 +94,28 @@ fun ListRow(
  * use [ListRow] for those rows.
  */
 @Composable
-fun ListRowSurface(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+fun ListRowSurface(
+    modifier: Modifier = Modifier,
+    selected: Boolean = false,
+    content: @Composable ColumnScope.() -> Unit
+) {
     Surface(
         modifier = Modifier
             .listRowGutter()
             .testTag(LIST_ROW_TAG)
             .then(modifier),
-        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+        color = listRowColor(selected),
         shape = MaterialTheme.shapes.medium,
         content = { Column(content = content) }
     )
+}
+
+/** The tile colour; the row whose detail is shown takes the secondary container. */
+@Composable
+private fun listRowColor(selected: Boolean): Color = if (selected) {
+    MaterialTheme.colorScheme.secondaryContainer
+} else {
+    MaterialTheme.colorScheme.surfaceContainerHigh
 }
 
 private fun Modifier.listRowGutter(): Modifier = fillMaxWidth()

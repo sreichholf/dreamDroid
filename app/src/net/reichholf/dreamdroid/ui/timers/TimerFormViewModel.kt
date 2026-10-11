@@ -34,6 +34,8 @@ import net.reichholf.dreamdroid.ui.text.UiText
 data class TimerEditUiState(
     val timer: Timer? = null,
     val isCreate: Boolean = true,
+    /** The receiver's timer being edited, as listed; null while creating one. */
+    val original: Timer? = null,
     val locations: List<String> = emptyList(),
     val tags: List<String> = emptyList(),
     val vpsPlugin: Boolean = false,
@@ -94,6 +96,7 @@ abstract class TimerFormViewModel(
             it.copy(
                 timer = timer,
                 isCreate = isCreate,
+                original = original,
                 progress = null,
                 saveError = null,
                 finished = false
@@ -107,7 +110,7 @@ abstract class TimerFormViewModel(
     protected fun restore(): Boolean {
         val timer = handle?.get<Timer>(KEY_TIMER) ?: return false
         val isCreate = handle.get<Boolean>(KEY_CREATE) ?: (original == null)
-        _uiState.update { it.copy(timer = timer, isCreate = isCreate) }
+        _uiState.update { it.copy(timer = timer, isCreate = isCreate, original = original) }
         loadChoices()
         return true
     }
@@ -120,7 +123,13 @@ abstract class TimerFormViewModel(
         handle?.remove<Timer>(KEY_ORIGINAL)
         handle?.remove<Boolean>(KEY_CREATE)
         _uiState.update {
-            it.copy(timer = null, progress = null, saveError = null, finished = false)
+            it.copy(
+                timer = null,
+                original = null,
+                progress = null,
+                saveError = null,
+                finished = false
+            )
         }
     }
 

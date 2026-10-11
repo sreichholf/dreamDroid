@@ -60,7 +60,8 @@ fun EpgBouquetScreen(
     emptyMessage: String? = null,
     bouquetPick: EpgBouquetPickUi? = null,
     timeJump: EpgTimeJumpUi? = null,
-    piconsEnabled: Boolean = false
+    piconsEnabled: Boolean = false,
+    selectedEvent: Event? = null
 ) {
     val loadingLabel = stringResource(R.string.loading)
     Column(modifier = modifier.fillMaxSize()) {
@@ -92,7 +93,8 @@ fun EpgBouquetScreen(
                     EpgBouquetRow(
                         event = event,
                         piconsEnabled = piconsEnabled,
-                        onClick = { onItemClick(event) }
+                        onClick = { onItemClick(event) },
+                        selected = event == selectedEvent
                     )
                 }
             }
@@ -199,9 +201,11 @@ internal fun EpgBouquetRow(
     event: Event,
     piconsEnabled: Boolean,
     onClick: () -> Unit,
-    showDate: Boolean = true
+    showDate: Boolean = true,
+    selected: Boolean = false
 ) {
     ListRow(
+        selected = selected,
         headlineContent = {
             Text(
                 text = event.title,

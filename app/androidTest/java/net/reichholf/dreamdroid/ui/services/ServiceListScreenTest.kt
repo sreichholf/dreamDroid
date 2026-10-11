@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.ui.services
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.requiredWidth
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -9,6 +10,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotDisplayed
@@ -436,5 +441,44 @@ class ServiceListScreenTest {
         val bg = (b shr 8) and 0xff
         val bb = b and 0xff
         return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
+    }
+
+    @Test
+    fun theServiceShownBesideTheListIsSelectedInItsTile() {
+        lateinit var scheme: ColorScheme
+        val items = listOf(
+            ServiceListItem(0, "1:0:1:1:1:1:1:0:0:0:", "Das Erste HD", ServiceRowKind.CHANNEL),
+            ServiceListItem(1, "1:0:1:2:1:1:1:0:0:0:", "ZDF HD", ServiceRowKind.CHANNEL)
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                scheme = MaterialTheme.colorScheme
+                ServiceListScreen(
+                    items = items,
+                    onItemClick = {},
+                    onItemLongClick = {},
+                    maxColumns = 1,
+                    selectedReference = "1:0:1:2:1:1:1:0:0:0:"
+                )
+            }
+        }
+        val shown = composeRule.onNode(
+            hasText("ZDF HD") and hasClickAction()
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNode(
+            hasText("Das Erste HD") and hasClickAction()
+        ).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
+        // The ListItem draws transparent over the tile; sample the tile's start padding.
+        val pixels = shown.captureToImage().toPixelMap()
+        val actual = pixels[8, pixels.height / 2]
+        val expected = scheme.secondaryContainer
+        assertTrue(
+            "Tile was $actual, expected $expected",
+            listOf(
+                expected.red to actual.red,
+                expected.green to actual.green,
+                expected.blue to actual.blue
+            ).all { (want, got) -> abs(want - got) < 0.02f }
+        )
     }
 }

@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,7 +78,8 @@ fun ServiceListScreen(
     maxColumns: Int = AUTO_FIT_COLUMNS,
     menu: RowMenuState<ServiceRowAction>? = null,
     onMenuAction: (ServiceRowAction) -> Unit = {},
-    onMenuDismiss: () -> Unit = {}
+    onMenuDismiss: () -> Unit = {},
+    selectedReference: String? = null
 ) {
     BoxWithConstraints(modifier.fillMaxSize()) {
         val columns = autoFitColumns(maxWidth, maxColumns)
@@ -87,6 +90,8 @@ fun ServiceListScreen(
                         item = item,
                         onClick = { onItemClick(item) },
                         onLongClick = { onItemLongClick(item) },
+                        selected = !selectedReference.isNullOrEmpty() &&
+                            item.reference == selectedReference,
                         modifier = Modifier.fillMaxHeight()
                     )
                     RowMenu(serviceRowKey(item), menu, onMenuAction, onMenuDismiss)
@@ -180,14 +185,15 @@ internal fun ServiceRow(
     item: ServiceListItem,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selected: Boolean = false
 ) {
     val hasNowNext =
         item.kind == ServiceRowKind.CHANNEL &&
             (item.nowTitle.isNotEmpty() || item.nextTitle.isNotEmpty())
     // The strip sits on the tile above the ListItem. ListItem merges its own semantics, so
     // the click goes on it, next to the label.
-    ListRowSurface(modifier) {
+    ListRowSurface(modifier, selected = selected) {
         if (item.kind == ServiceRowKind.CHANNEL && item.progressMax > 0) {
             // Card-top strip: opt out of M3 track, gap, and trailing stop indicator.
             LinearProgressIndicator(
@@ -243,7 +249,9 @@ internal fun ServiceRow(
                     null
                 },
             colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-            modifier = Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+            modifier = Modifier
+                .combinedClickable(onClick = onClick, onLongClick = onLongClick)
+                .then(if (selected) Modifier.semantics { this.selected = true } else Modifier)
         )
     }
 }

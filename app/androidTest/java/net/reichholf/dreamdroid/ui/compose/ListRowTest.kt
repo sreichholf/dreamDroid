@@ -2,15 +2,23 @@ package net.reichholf.dreamdroid.ui.compose
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.selection.toggleable
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasTestTag
@@ -23,9 +31,11 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -133,5 +143,38 @@ class ListRowTest {
         val second = tiles[1].getBoundsInRoot()
         // Padding snaps to whole pixels, so allow the same 0.5dp as the position assertions.
         assertEquals((ListRowVerticalInset * 2).value, (second.top - first.bottom).value, 0.5f)
+    }
+
+    @Test
+    fun theSelectedRowTakesTheSecondaryContainerAndSaysSo() {
+        lateinit var scheme: ColorScheme
+        composeRule.setContent {
+            DreamDroidTheme {
+                scheme = MaterialTheme.colorScheme
+                Column {
+                    ListRow(headlineContent = { Text("Shown") }, onClick = {}, selected = true)
+                    ListRow(headlineContent = { Text("Other") }, onClick = {})
+                }
+            }
+        }
+
+        val shown = composeRule.onNode(hasText("Shown") and hasClickAction())
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        val other = composeRule.onNode(hasText("Other") and hasClickAction())
+            .assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
+        assertTileColor(scheme.secondaryContainer, shown)
+        assertTileColor(scheme.surfaceContainerHigh, other)
+    }
+
+    /** Samples the tile beside its text, inside the start padding. */
+    private fun assertTileColor(expected: Color, row: SemanticsNodeInteraction) {
+        val pixels = row.captureToImage().toPixelMap()
+        val actual = pixels[8, pixels.height / 2]
+        val close = listOf(
+            expected.red to actual.red,
+            expected.green to actual.green,
+            expected.blue to actual.blue
+        ).all { (want, got) -> abs(want - got) < 0.02f }
+        assertTrue("Tile was $actual, expected $expected", close)
     }
 }
