@@ -62,6 +62,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
@@ -276,6 +277,10 @@ fun ComposeTvHubApp(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
+    LifecycleStartEffect(viewModel) {
+        viewModel.onShown()
+        onStopOrDispose { viewModel.onHidden() }
+    }
     val stream = uiState.stream
     LaunchedEffect(stream) {
         if (stream != null) {

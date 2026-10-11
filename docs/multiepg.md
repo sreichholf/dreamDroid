@@ -15,7 +15,7 @@ Related history in dreamDroid: 2014 EPG-sync sketches (`aa657268`), unfinished t
 | **UI** | Phone Compose grid mirroring on-box GraphMultiEPG (rows = channels, bars = programmes); keep list EPG as the drawer entry; MultiEPG is nested from the hub toolbar/overflow and list EPG Timeline |
 | **Fetch** | Dreambox `/web/epgmulti?bRef=&time=&endTime=` — `time` unix seconds, `endTime` **minutes of duration** (default 24 h cache chunk); never unbounded |
 | **Visible** | Default **~2 h** (GraphMultiEPG `prev_time_period` default 120, range 60–300); zoom 1 / 2 / 4 / 5 h |
-| **Sync** | Room cache + ~20–30 min TTL; 2-day retention prune; **one** in-flight request; no idle background sync in v1 |
+| **Sync** | Room cache; 25 min TTL for today and tomorrow, 6 h after that; 2-day retention prune; **one** in-flight request; no idle background sync in v1 |
 | **Fallback** | Throttled `/web/epgservice` only if spike shows `epgmulti` missing |
 | **Out** | No webif patches; no OpenWebif-only APIs. Timer overlays from `/web/timerlist` shipped. TV was out of the phone v1 lock-in and shipped later as its own surface (§9). |
 | **Next** | Prime-time jump; operator live-size run of `scripts/epgmulti-spike.sh` (§5) |
@@ -138,9 +138,10 @@ Open MultiEPG(bouquet B)
 | Chunk size | Rolling **24 h** windows (`time` unix + `endTime` minutes for that span), aligned to the viewport’s day/hour floor — not “full EPG dump” |
 | Visible span | Default 2 h UI (data chunk still 24 h) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
-| TTL | ~20–30 minutes |
+| TTL | 25 minutes for the chunks of today and tomorrow (UTC days, like the chunks), 6 hours from the day after tomorrow on (`MultiEpgWindows.ttlMs`) |
 | Retention | Drop Room events/chunks that ended **≥ 2 days** ago; prune on process start and after each chunk write |
 | Idle background sync | **No** in v1 |
+| Hub week sync | While a cacheable hub list is on screen, `EpgRepository.syncContainer` fetches its chunks one after another, from now’s chunk up to **7**; it stops at the first chunk without programmes (a programme running past midnight can cost one more request), when the session is Offline, when the page is hidden, or when another list opens. The TV hub syncs the selected bouquet row the same way once its header stayed selected for 1 s |
 | Cache store | **Room** EPG entities (do **not** revive orphan `DatabaseHelper.events`) |
 | Fallback | Throttled serial `/web/epgservice` per channel only if `epgmulti` unavailable |
 | Unbounded `epgmulti` | Forbidden in app code |
@@ -186,7 +187,7 @@ Hub top bar action or list EPG Timeline
        └── At this time → list EPG (pop if nested on EPG)
 ```
 
-`MultiEpgViewModel` and `TvMultiEpgViewModel` are `@HiltViewModel`s over `EpgRepository` and `TimerRepository`. Each owns a `MultiEpgGrid` (the sliding-window loader, `StateFlow<MultiEpgGridState>`) and exposes it inside its `StateFlow` UI state. `EpgRepository` builds the one `MultiEpgSync` per process; the hub service list and the TV hub browse fill it through `EpgRepository.fillNowChunk`.
+`MultiEpgViewModel` and `TvMultiEpgViewModel` are `@HiltViewModel`s over `EpgRepository` and `TimerRepository`. Each owns a `MultiEpgGrid` (the sliding-window loader, `StateFlow<MultiEpgGridState>`) and exposes it inside its `StateFlow` UI state. `EpgRepository` builds the one `MultiEpgSync` per process; the hub service list syncs the list on screen through `EpgRepository.syncContainer`, the TV hub browse fills now’s chunk of each row through `EpgRepository.fillNowChunk`, and the TV hub syncs the selected bouquet through `TvHubBrowse.syncEpg`.
 
 ### Code map
 
@@ -298,8 +299,8 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 | --- | --- | --- |
 | 1 | Navigation | Keep list EPG as the drawer entry; MultiEPG is nested from hub toolbar/overflow and list EPG Timeline |
 | 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
-| 3 | Prefetch | +24 h Room chunks |
-| 4 | Cache TTL | ~20–30 min; 2-day retention prune; no idle sync |
+| 3 | Prefetch | +24 h Room chunks in the grid; the hub syncs 7 days of the list on screen (operator, 2026-10-11) |
+| 4 | Cache TTL | 25 min for today and tomorrow, 6 h after that (operator, 2026-10-11); 2-day retention prune; no idle sync |
 | 5 | Fallback | Defer `epgservice` fallback until spike proves need |
 | 6 | TV | Phone-only v1 (TV shipped later, §9) |
 | 7 | Timer bars | v1.1 (`show_record_clocks`) — shipped as phase 4 |

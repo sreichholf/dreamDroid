@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
@@ -76,6 +77,11 @@ fun HubServiceListPage(
     DisposableEffect(viewModel) {
         onProvideGoUp(viewModel::upOrReload)
         onDispose { onProvideGoUp(null) }
+    }
+
+    LifecycleStartEffect(viewModel) {
+        viewModel.onShown()
+        onStopOrDispose { viewModel.onHidden() }
     }
 
     BindShellTopBarActions(

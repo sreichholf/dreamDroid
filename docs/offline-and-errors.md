@@ -74,7 +74,7 @@ Skip **UI** ≠ skip **work**. Always still run `CheckProfile` when a profile is
 
 Opening a screen (or drilling into a folder / movie location) may write Room for **that container**. Leaving the app, idling, or never opening a tab writes nothing.
 
-MultiEPG’s +24 h prefetch of the bouquet **already on screen** is using it. Prefetching a sibling folder or another bouquet is not.
+MultiEPG’s +24 h prefetch of the bouquet **already on screen** is using it, and so is the hub’s week sync of the list on screen, which stops when the page is hidden or another list opens, and the TV hub’s week sync of the selected bouquet, which stops when another header is selected. Prefetching a sibling folder or another bouquet is not.
 
 ### 4.2 Cacheable containers (enforcement)
 

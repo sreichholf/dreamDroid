@@ -146,6 +146,14 @@ class TvHubBrowse @Inject constructor(
             }
         }
 
+    /**
+     * The week of EPG of the bouquet [ref] the user selected ([EpgRepository.syncContainer]).
+     * Runs until done or cancelled; failures throw.
+     */
+    suspend fun syncEpg(ref: String) {
+        epg.syncContainer(ref, ref)
+    }
+
     private suspend fun fillNowChunk(ref: String, nowSec: Long) {
         try {
             epg.fillNowChunk(ref, ref, nowSec)

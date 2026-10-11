@@ -23,6 +23,7 @@ class MultiEpgSync(
     private val fetch: suspend (bouquetRef: String, timeSec: Long, endTimeSec: Long) -> List<Event>,
     private val clockMs: () -> Long = { System.currentTimeMillis() },
     private val ttlMs: Long = MultiEpgWindows.DEFAULT_TTL_MS,
+    private val farTtlMs: Long = MultiEpgWindows.FAR_TTL_MS,
     private val chunkSeconds: Long = MultiEpgWindows.CHUNK_SECONDS
 ) {
     private val mutex = Mutex()
@@ -62,7 +63,8 @@ class MultiEpgSync(
                     chunk.endSec
                 ).map { it.toEvent() }
             }
-            val fresh = clockMs() - meta.fetchedAtMs <= ttlMs
+            val nowMs = clockMs()
+            val fresh = nowMs - meta.fetchedAtMs <= ttlFor(chunk, nowMs)
             return CachedChunk(events, chunk.startSec, chunk.endSec, meta.fetchedAtMs, fresh)
         }
         val overlapping = withContext(Dispatchers.IO) {
@@ -107,7 +109,7 @@ class MultiEpgSync(
             val cached = withContext(Dispatchers.IO) {
                 dao.getChunk(profileId, bouquetRef, chunk.startSec)
             }
-            if (cached != null && now - cached.fetchedAtMs <= ttlMs) {
+            if (cached != null && now - cached.fetchedAtMs <= ttlFor(chunk, now)) {
                 return withContext(Dispatchers.IO) {
                     dao.eventsOverlapping(
                         profileId,
@@ -190,4 +192,12 @@ class MultiEpgSync(
             }
         }
     }
+
+    private fun ttlFor(chunk: MultiEpgWindows.Chunk, nowMs: Long): Long = MultiEpgWindows.ttlMs(
+        chunkStartSec = chunk.startSec,
+        nowSec = nowMs / 1000L,
+        nearTtlMs = ttlMs,
+        farTtlMs = farTtlMs,
+        chunkSeconds = chunkSeconds
+    )
 }

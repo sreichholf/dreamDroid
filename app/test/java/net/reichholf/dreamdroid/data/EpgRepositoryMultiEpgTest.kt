@@ -231,6 +231,67 @@ class EpgRepositoryMultiEpgTest {
         assertEquals(0, receiver.server.requestCount)
     }
 
+    @Test
+    fun syncFetchesDayByDayUntilTheEpgEnds() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        receiver.answer = epgUntilDay(2)
+
+        repository.syncContainer(BOUQUET, BOUQUET, NOW)
+
+        assertEquals(
+            (0L..3L).map { chunk.startSec + it * MultiEpgWindows.CHUNK_SECONDS },
+            receiver.requestsTo("/web/epgmulti").map { it.time() }
+        )
+    }
+
+    @Test
+    fun syncStopsAfterAWeek() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        receiver.answer = epgUntilDay(Int.MAX_VALUE)
+
+        repository.syncContainer(BOUQUET, BOUQUET, NOW)
+
+        assertEquals(
+            MultiEpgWindows.SYNC_CHUNKS,
+            receiver.requestsTo("/web/epgmulti").size
+        )
+    }
+
+    @Test
+    fun syncOfAnUnknownTabNeverFetches() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+
+        repository.syncContainer(OTHER_BOUQUET, OTHER_BOUQUET, NOW)
+
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
+    fun syncWhileOfflineNeverFetches() = runBlocking {
+        receiver.writeTabStrip(Service(BOUQUET, "Favourites"))
+        receiver.goOffline()
+
+        repository.syncContainer(BOUQUET, BOUQUET, NOW)
+
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    /** `epgmulti` with two programmes in each requested day up to [lastDay], then none. */
+    private fun epgUntilDay(lastDay: Int): (RecordedRequest) -> MockResponse = { request ->
+        val time = request.time()
+        val day = (time - chunk.startSec) / MultiEpgWindows.CHUNK_SECONDS
+        val body = if (day <= lastDay) {
+            loadWebFixture("epgmulti.xml")
+                .replace("1893456000", (time + 600L).toString())
+                .replace("<e2eventid>", "<e2eventid>$day")
+        } else {
+            "<e2eventlist></e2eventlist>"
+        }
+        MockResponse().setBody(body)
+    }
+
+    private fun RecordedRequest.time(): Long = requestUrl!!.queryParameter("time")!!.toLong()
+
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {
             "/web/epgmulti" -> MockResponse().setBody(loadWebFixture("epgmulti.xml"))

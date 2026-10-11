@@ -2,10 +2,16 @@ package net.reichholf.dreamdroid.tv.ui
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runCurrent
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.R
@@ -18,6 +24,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
@@ -69,6 +76,10 @@ class TvHubViewModelTest {
     @Volatile
     private var receiverDown = false
 
+    /** `epgmulti` answers with programmes inside each requested window. */
+    @Volatile
+    private var epgInEveryWindow = false
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -96,6 +107,58 @@ class TvHubViewModelTest {
         assertEquals(listOf(HDD), movies.cachedLocations())
         assertTrue(receiver.services.hasCache(PROFILE_ID))
         assertEquals(1, receiver.requestsTo(EPG_MULTI).size)
+    }
+
+    @Test
+    fun shownHubSyncsTheWeekOfTheSelectedBouquet() = runBlocking<Unit> {
+        epgInEveryWindow = true
+        bouquets = listOf(FAVOURITES to "Favourites", OTHER to "Other")
+        val viewModel = viewModel(epgSyncDelayMs = 0L)
+        awaitLoaded(viewModel)
+        val browseFills = receiver.requestsTo(EPG_MULTI)
+        assertEquals(2, browseFills.size)
+
+        viewModel.selectHeader(OTHER)
+        viewModel.onShown()
+
+        // Only OTHER's requests: the header change can reach the sync after a brief start for
+        // FAVOURITES under the unconfined test Main. syncWaitsUntilTheTargetSettles covers that.
+        val synced = receiver.awaitRequests(MultiEpgWindows.SYNC_CHUNKS) {
+            it.requestUrl?.encodedPath == EPG_MULTI && it.bRef() == OTHER
+        }
+        val today = browseFills.first().time()
+        assertEquals(
+            (0 until MultiEpgWindows.SYNC_CHUNKS).map {
+                today + it * MultiEpgWindows.CHUNK_SECONDS
+            },
+            synced.map { it.time() }
+        )
+    }
+
+    @Test
+    fun syncWaitsUntilTheTargetSettles() = runTest {
+        val synced = mutableListOf<String>()
+        val targets = MutableStateFlow<String?>(null)
+        val job = launch {
+            targets.syncWhenSettled(TvHubViewModel.EPG_SYNC_DELAY_MS) { synced += it }
+        }
+        runCurrent()
+
+        targets.value = FAVOURITES
+        advanceTimeBy(TvHubViewModel.EPG_SYNC_DELAY_MS / 2)
+        targets.value = OTHER
+        advanceTimeBy(TvHubViewModel.EPG_SYNC_DELAY_MS - 1L)
+        assertTrue(synced.isEmpty())
+        advanceTimeBy(2L)
+        assertEquals(listOf(OTHER), synced)
+
+        targets.value = null
+        targets.value = FAVOURITES
+        advanceTimeBy(TvHubViewModel.EPG_SYNC_DELAY_MS / 2)
+        targets.value = null
+        advanceUntilIdle()
+        assertEquals(listOf(OTHER), synced)
+        job.cancel()
     }
 
     @Test
@@ -391,7 +454,14 @@ class TvHubViewModelTest {
 
             "/web/epgnownext" -> MockResponse().setBody(loadWebFixture("epgnownext.xml"))
 
-            EPG_MULTI -> MockResponse().setBody(loadWebFixture("epgmulti.xml"))
+            EPG_MULTI -> MockResponse().setBody(
+                if (epgInEveryWindow) {
+                    loadWebFixture("epgmulti.xml")
+                        .replace("1893456000", (request.time() + 600L).toString())
+                } else {
+                    loadWebFixture("epgmulti.xml")
+                }
+            )
 
             "/web/getlocations" -> MockResponse().setBody(
                 "<e2locations><e2location>$HDD</e2location></e2locations>"
@@ -412,20 +482,22 @@ class TvHubViewModelTest {
         }
     }
 
-    private fun viewModel(): TvHubViewModel = TvHubViewModel(
-        TvHubBrowse(
-            receiver.services,
-            receiver.repository,
-            movies,
+    private fun viewModel(epgSyncDelayMs: Long = TvHubViewModel.EPG_SYNC_DELAY_MS): TvHubViewModel =
+        TvHubViewModel(
+            TvHubBrowse(
+                receiver.services,
+                receiver.repository,
+                movies,
+                timers,
+                receiver.profiles.repository,
+                receiver.sessions
+            ),
             timers,
-            receiver.profiles.repository,
-            receiver.sessions
-        ),
-        timers,
-        ReceiverRepository(clients, receiver.profiles.repository),
-        movies,
-        receiver.sessions
-    ).also { viewModels += it }
+            ReceiverRepository(clients, receiver.profiles.repository),
+            movies,
+            receiver.sessions,
+            epgSyncDelayMs
+        ).also { viewModels += it }
 
     private suspend fun awaitLoaded(viewModel: TvHubViewModel): TvHubUiState =
         awaitState(viewModel) { !it.loading }
@@ -434,6 +506,10 @@ class TvHubViewModelTest {
         viewModel: TvHubViewModel,
         condition: (TvHubUiState) -> Boolean
     ): TvHubUiState = withTimeout(5_000L) { viewModel.uiState.first(condition) }
+
+    private fun RecordedRequest.time(): Long = requestUrl!!.queryParameter("time")!!.toLong()
+
+    private fun RecordedRequest.bRef(): String? = requestUrl?.queryParameter("bRef")
 
     private fun TvHubUiState.rowRefs(): List<String> = bouquetRows.map { it.bouquet.reference }
 

@@ -102,7 +102,7 @@ class HubServiceListViewModelTest {
     fun liveAnswerOfAHubTabStoresTheRosterAndFillsTheEpg() = runBlocking {
         receiver.writeTabStrip(Service(TAB, "Tab"))
 
-        viewModel().settled()
+        viewModel().apply { onShown() }.settled()
         receiver.awaitRequestsTo(EPG_MULTI, 1)
 
         assertEquals(
@@ -113,6 +113,46 @@ class HubServiceListViewModelTest {
             TAB,
             receiver.requestsTo(EPG_MULTI).single().requestUrl!!.queryParameter("bRef")
         )
+    }
+
+    @Test
+    fun epgSyncWaitsUntilThePageIsShown() = runBlocking {
+        receiver.writeTabStrip(Service(TAB, "Tab"))
+        val viewModel = viewModel()
+        viewModel.settled()
+
+        assertTrue(receiver.requestsTo(EPG_MULTI).isEmpty())
+        viewModel.onShown()
+        receiver.awaitRequestsTo(EPG_MULTI, 1)
+        Unit
+    }
+
+    @Test
+    fun hidingThePageStopsTheEpgSync() = runBlocking {
+        receiver.writeTabStrip(Service(TAB, "Tab"))
+        val release = CountDownLatch(1)
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == EPG_MULTI) {
+                val time = request.requestUrl!!.queryParameter("time")!!.toLong()
+                if (receiver.requestsTo(EPG_MULTI).size == 2) {
+                    release.await(5, TimeUnit.SECONDS)
+                }
+                MockResponse().setBody(
+                    loadWebFixture("epgmulti.xml").replace("1893456000", (time + 600L).toString())
+                )
+            } else {
+                routes(request)
+            }
+        }
+        val viewModel = viewModel().apply { onShown() }
+        val dayTwo = receiver.awaitRequestsTo(EPG_MULTI, 2)[1].time()
+
+        viewModel.onHidden()
+        release.countDown()
+        viewModel.onShown()
+
+        // The hidden sync never stored day two, so the next one asks for it again.
+        assertEquals(dayTwo, receiver.awaitRequestsTo(EPG_MULTI, 3)[2].time())
     }
 
     @Test
@@ -600,6 +640,8 @@ class HubServiceListViewModelTest {
     private fun RecordedRequest.sRef(): String? = requestUrl?.queryParameter("sRef")
 
     private fun RecordedRequest.bRef(): String? = requestUrl?.queryParameter("bRef")
+
+    private fun RecordedRequest.time(): Long = requestUrl!!.queryParameter("time")!!.toLong()
 
     private fun serviceList(name: String): String =
         "<e2servicelist><e2service><e2servicereference>$CHANNEL_44D</e2servicereference>" +
