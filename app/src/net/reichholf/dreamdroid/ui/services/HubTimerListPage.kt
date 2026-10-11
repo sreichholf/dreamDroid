@@ -128,6 +128,10 @@ fun HubTimerListPage(
                 } else {
                     TimerListScreen(
                         items = items,
+                        selectedIndex = paneState.original
+                            ?.takeIf { openedPane != null }
+                            ?.let { uiState.timers.indexOf(it) }
+                            ?.takeIf { it >= 0 },
                         onItemClick = { item ->
                             uiState.timers.getOrNull(item.index)?.let { timer ->
                                 edit(timer, create = false)

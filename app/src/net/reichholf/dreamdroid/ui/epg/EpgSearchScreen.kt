@@ -66,7 +66,8 @@ fun EpgSearchScreen(
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
-    focusOnStart: Boolean = false
+    focusOnStart: Boolean = false,
+    selectedEvent: Event? = null
 ) {
     var editing by rememberSaveable { mutableStateOf(focusOnStart) }
     val focusRequester = remember { FocusRequester() }
@@ -147,7 +148,12 @@ fun EpgSearchScreen(
                     onRemove = onRecentRemove
                 )
             } else {
-                SearchResults(state = state, onItemClick = onItemClick, onRetry = onRetry)
+                SearchResults(
+                    state = state,
+                    onItemClick = onItemClick,
+                    onRetry = onRetry,
+                    selectedEvent = selectedEvent
+                )
             }
         }
     }
@@ -209,7 +215,8 @@ private fun RecentSearches(
 private fun SearchResults(
     state: EpgSearchUiState,
     onItemClick: (Event) -> Unit,
-    onRetry: () -> Unit
+    onRetry: () -> Unit,
+    selectedEvent: Event?
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
         if (state.cached) {
@@ -260,7 +267,8 @@ private fun SearchResults(
                         event = event,
                         piconsEnabled = state.piconsEnabled,
                         onClick = { onItemClick(event) },
-                        showDate = day == null || eventIndex < section.earlierStarts
+                        showDate = day == null || eventIndex < section.earlierStarts,
+                        selected = event == selectedEvent
                     )
                 }
             }

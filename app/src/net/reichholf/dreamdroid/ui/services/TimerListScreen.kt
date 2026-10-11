@@ -20,19 +20,21 @@ private val TimerStateBarWidth = 4.dp
 fun TimerListScreen(
     items: List<TimerListItem>,
     onItemClick: (TimerListItem) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedIndex: Int? = null
 ) {
     LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { it.index }) { item ->
-            TimerRow(item, onClick = { onItemClick(item) })
+            TimerRow(item, selected = item.index == selectedIndex, onClick = { onItemClick(item) })
         }
     }
 }
 
 @Composable
-private fun TimerRow(item: TimerListItem, onClick: () -> Unit) {
+private fun TimerRow(item: TimerListItem, selected: Boolean, onClick: () -> Unit) {
     val stateColor = timerStateColor(item.stateColor)
     ListRow(
+        selected = selected,
         headlineContent = {
             Text(
                 text = item.name,

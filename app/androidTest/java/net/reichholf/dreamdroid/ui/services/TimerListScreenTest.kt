@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.ui.services
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasClickAction
@@ -131,5 +134,34 @@ class TimerListScreenTest {
         val bg = (b shr 8) and 0xff
         val bb = b and 0xff
         return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
+    }
+
+    @Test
+    fun theTimerOpenBesideTheListIsSelected() {
+        fun timer(index: Int, name: String) = TimerListItem(
+            index = index,
+            name = name,
+            serviceName = "ARD",
+            begin = "20:00",
+            end = "20:15",
+            action = "Record",
+            state = "Waiting",
+            stateColor = 0
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                TimerListScreen(
+                    items = listOf(timer(0, "Evening news"), timer(1, "Late show")),
+                    onItemClick = {},
+                    selectedIndex = 1
+                )
+            }
+        }
+        composeRule.onNode(
+            hasText("Late show") and hasClickAction()
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNode(
+            hasText("Evening news") and hasClickAction()
+        ).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
     }
 }

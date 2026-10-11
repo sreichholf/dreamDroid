@@ -488,6 +488,23 @@ class HubMovieListViewModelTest {
     }
 
     @Test
+    fun theDetailNamesTheRowItDescribes() = runTest {
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.onItemMenu(0)
+
+        viewModel.onMenuAction(MovieRowAction.Info)
+
+        val state = viewModel.uiState.value
+        val reference = receiver.movies.cachedMovies(HDD)!!.first().reference
+        assertTrue(reference.isNotEmpty())
+        assertEquals(reference, state.detailReference)
+        assertEquals(listOf(0), state.items.filter { it.reference == reference }.map { it.index })
+        viewModel.onDetailDismissed()
+        assertNull(viewModel.uiState.value.detailReference)
+    }
+
+    @Test
     fun instantZapSwapsTapAndLongPress() {
         val viewModel = viewModel()
         assertFalse(viewModel.zapsOnTap(isLong = false))

@@ -34,7 +34,8 @@ fun MovieListScreen(
     modifier: Modifier = Modifier,
     menu: RowMenuState<MovieRowAction>? = null,
     onMenuAction: (MovieRowAction) -> Unit = {},
-    onMenuDismiss: () -> Unit = {}
+    onMenuDismiss: () -> Unit = {},
+    selectedReference: String? = null
 ) {
     LazyColumn(modifier.fillMaxSize()) {
         items(items, key = { it.index }) { item ->
@@ -42,7 +43,9 @@ fun MovieListScreen(
                 MovieRow(
                     item = item,
                     onClick = { onItemClick(item) },
-                    onLongClick = { onItemLongClick(item) }
+                    onLongClick = { onItemLongClick(item) },
+                    selected =
+                        !selectedReference.isNullOrEmpty() && item.reference == selectedReference
                 )
                 RowMenu(item.index, menu, onMenuAction, onMenuDismiss)
             }
@@ -51,8 +54,14 @@ fun MovieListScreen(
 }
 
 @Composable
-private fun MovieRow(item: MovieListItem, onClick: () -> Unit, onLongClick: () -> Unit) {
+private fun MovieRow(
+    item: MovieListItem,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+    selected: Boolean
+) {
     ListRow(
+        selected = selected,
         headlineContent = {
             Text(
                 text = item.title,

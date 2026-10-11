@@ -145,12 +145,14 @@ fun HubServiceListPage(
         viewModel.onEffectHandled()
     }
 
+    val epgEvent by epgEventViewModel.uiState.collectAsStateWithLifecycle()
     val epgPane = @Composable {
         ServiceEpgPane(
             state = epgState,
             onRefresh = { epgViewModel.reload(forceRefresh = true) },
             onEventClick = epgEventViewModel::showDetail,
-            onClose = closeEpg
+            onClose = closeEpg,
+            selectedEvent = epgEvent.event
         )
     }
     val rowEvent by detailViewModel.uiState.collectAsStateWithLifecycle()
@@ -193,7 +195,12 @@ fun HubServiceListPage(
                                 viewModel.onMenuAction(action)
                             }
                         },
-                        onMenuDismiss = viewModel::onMenuDismiss
+                        onMenuDismiss = viewModel::onMenuDismiss,
+                        selectedReference = when (detail) {
+                            is HubDetail.Epg -> detail.key
+                            is HubDetail.RowEvent -> detail.key.serviceReference
+                            null -> null
+                        }
                     )
                 },
                 // The services grid keeps the whole width until a service's EPG is asked for.
@@ -238,7 +245,8 @@ fun HubServiceListScreen(
     onItemClick: (item: ServiceListItem, isLong: Boolean) -> Unit,
     onMenuAction: (ServiceRowAction) -> Unit,
     onMenuDismiss: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedReference: String? = null
 ) {
     DreamDroidPullRefresh(
         refreshing = state.refreshing,
@@ -259,7 +267,8 @@ fun HubServiceListScreen(
                 maxColumns = state.maxColumns,
                 menu = state.menu,
                 onMenuAction = onMenuAction,
-                onMenuDismiss = onMenuDismiss
+                onMenuDismiss = onMenuDismiss,
+                selectedReference = selectedReference
             )
         }
     }

@@ -56,6 +56,8 @@ data class HubMovieListUiState(
     val selectedTags: List<String> = emptyList(),
     val menu: RowMenuState<MovieRowAction>? = null,
     val detail: MovieDetailContent? = null,
+    /** [MovieListItem.reference] of the recording [detail] describes. */
+    val detailReference: String? = null,
     val tagPicker: List<String>? = null,
     val deleteConfirm: String? = null,
     val progress: UiText? = null,
@@ -183,7 +185,12 @@ class HubMovieListViewModel @AssistedInject constructor(
             MovieRowAction.Info -> if (movie.descriptionExtended.isEmpty()) {
                 showMessage(UiText.Resource(R.string.no_epg_available))
             } else {
-                _uiState.update { it.copy(detail = movie.toMovieDetailContent()) }
+                _uiState.update {
+                    it.copy(
+                        detail = movie.toMovieDetailContent(),
+                        detailReference = movie.reference
+                    )
+                }
             }
 
             MovieRowAction.Zap -> zapTo(movie)
@@ -200,7 +207,7 @@ class HubMovieListViewModel @AssistedInject constructor(
     }
 
     fun onDetailDismissed() {
-        _uiState.update { it.copy(detail = null) }
+        _uiState.update { it.copy(detail = null, detailReference = null) }
     }
 
     fun onDeleteDismissed() {

@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.ui.epg
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
@@ -221,5 +224,44 @@ class EpgBouquetScreenTest {
         val bg = (b shr 8) and 0xff
         val bb = b and 0xff
         return abs(ar - br) + abs(ag - bg) + abs(ab - bb)
+    }
+
+    @Test
+    fun theEventShownBesideTheListIsSelected() {
+        val first = Event(
+            eventId = "100",
+            title = "Tagesschau",
+            start = "100",
+            serviceReference = "1:0:1:100:44D:1:C00000:0:0:0:",
+            serviceName = "Das Erste HD",
+            startReadable = "20:00",
+            startTimeReadable = "20:00",
+            durationReadable = "15"
+        )
+        val second = Event(
+            eventId = "101",
+            title = "Wetter",
+            start = "101",
+            serviceReference = "1:0:1:101:44D:1:C00000:0:0:0:",
+            serviceName = "Das Erste HD",
+            startReadable = "20:00",
+            startTimeReadable = "20:00",
+            durationReadable = "15"
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                EpgBouquetScreen(
+                    items = listOf(first, second),
+                    onItemClick = {},
+                    selectedEvent = first
+                )
+            }
+        }
+        composeRule.onNode(
+            hasText("Tagesschau") and hasClickAction()
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNode(
+            hasText("Wetter") and hasClickAction()
+        ).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
     }
 }

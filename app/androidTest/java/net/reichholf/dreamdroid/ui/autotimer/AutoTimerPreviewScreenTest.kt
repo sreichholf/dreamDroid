@@ -256,4 +256,19 @@ class AutoTimerPreviewScreenTest {
             log = "Skipping an event because of timespan check"
         )
     }
+
+    @Test
+    fun theMatchShownBesideTheListIsSelected() {
+        show(
+            ready(upcoming = listOf(UPCOMING), skipped = listOf(SKIPPED.copy(log = "")))
+                .copy(detail = AutoTimerMatchDetail(UPCOMING)),
+            width = EXPANDED_WINDOW_WIDTH
+        )
+        composeRule.onNode(
+            hasText(UPCOMING.title) and hasClickAction()
+        ).assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNode(
+            hasText(SKIPPED.title) and hasClickAction()
+        ).assert(SemanticsMatcher.keyNotDefined(SemanticsProperties.Selected))
+    }
 }

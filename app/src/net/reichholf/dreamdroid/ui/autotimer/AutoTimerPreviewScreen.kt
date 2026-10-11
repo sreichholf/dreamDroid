@@ -110,6 +110,7 @@ private fun PreviewList(
                         header = R.string.autotimer_upcoming,
                         matches = content.upcoming,
                         empty = R.string.autotimer_no_matches,
+                        shown = state.detail?.match,
                         onClick = onOpenMatch
                     )
                     if (content.skipped.isNotEmpty()) {
@@ -117,6 +118,7 @@ private fun PreviewList(
                             header = R.string.autotimer_skipped,
                             matches = content.skipped,
                             expanded = state.expanded,
+                            shown = state.detail?.match,
                             // A skipped event without a reason opens like an upcoming one.
                             onClick = { if (it.log.isEmpty()) onOpenMatch(it) else onToggleLog(it) }
                         )
@@ -244,6 +246,7 @@ private fun LazyListScope.matches(
     matches: List<PreviewMatch>,
     empty: Int? = null,
     expanded: Set<String> = emptySet(),
+    shown: PreviewMatch? = null,
     onClick: (PreviewMatch) -> Unit
 ) {
     item(key = "header-$header") {
@@ -261,6 +264,7 @@ private fun LazyListScope.matches(
     items(matches, key = { "$header-${it.key}" }) { match ->
         MatchRow(
             match = match,
+            selected = match == shown,
             showLog = match.key in expanded,
             logState = if (match.log.isEmpty() || header != R.string.autotimer_skipped) {
                 null
@@ -281,6 +285,7 @@ private fun LazyListScope.matches(
 @Composable
 private fun MatchRow(
     match: PreviewMatch,
+    selected: Boolean,
     showLog: Boolean,
     logState: String?,
     onClick: () -> Unit
@@ -291,6 +296,7 @@ private fun MatchRow(
         Modifier
     }
     ListRow(
+        selected = selected,
         overlineContent = {
             Text("${formatBegin(match.begin)} · ${match.serviceName}")
         },

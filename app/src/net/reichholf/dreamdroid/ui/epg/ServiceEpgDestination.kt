@@ -33,7 +33,7 @@ fun ServiceEpgDestination(
         }
     }
 
-    EpgEventListDetailHost(handle, detailViewModel, modifier) {
+    EpgEventListDetailHost(handle, detailViewModel, modifier) { shownEvent ->
         DreamDroidPullRefresh(
             refreshing = uiState.refreshing,
             onRefresh = { viewModel.reload(forceRefresh = true) },
@@ -42,7 +42,8 @@ fun ServiceEpgDestination(
             ServiceEpgScreen(
                 sections = uiState.sections,
                 emptyMessage = uiState.emptyMessage?.asString(),
-                onItemClick = detailViewModel::showDetail
+                onItemClick = detailViewModel::showDetail,
+                selectedEvent = shownEvent
             )
         }
     }

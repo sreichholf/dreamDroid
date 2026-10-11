@@ -27,7 +27,8 @@ fun ServiceEpgScreen(
     sections: List<EpgDaySection>,
     onItemClick: (Event) -> Unit,
     modifier: Modifier = Modifier,
-    emptyMessage: String? = null
+    emptyMessage: String? = null,
+    selectedEvent: Event? = null
 ) {
     val loadingLabel = stringResource(R.string.loading)
     if (sections.isEmpty()) {
@@ -52,7 +53,8 @@ fun ServiceEpgScreen(
                 ServiceEpgRow(
                     event = event,
                     onClick = { onItemClick(event) },
-                    showDate = day == null || eventIndex < section.earlierStarts
+                    showDate = day == null || eventIndex < section.earlierStarts,
+                    selected = event == selectedEvent
                 )
             }
         }
@@ -60,8 +62,9 @@ fun ServiceEpgScreen(
 }
 
 @Composable
-private fun ServiceEpgRow(event: Event, onClick: () -> Unit, showDate: Boolean) {
+private fun ServiceEpgRow(event: Event, onClick: () -> Unit, showDate: Boolean, selected: Boolean) {
     ListRow(
+        selected = selected,
         headlineContent = {
             Text(
                 text = event.title,

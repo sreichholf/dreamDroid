@@ -12,6 +12,7 @@ fun movieListItemsFromMovies(movies: List<Movie>): List<MovieListItem> = movies.
         serviceName = movie.serviceName,
         fileSize = movie.fileSizeReadable,
         time = movie.timeReadable,
-        length = movie.length
+        length = movie.length,
+        reference = movie.reference
     )
 }
