@@ -1,5 +1,5 @@
 name: Set up the Gradle build
-description: JDK 25, Android SDK packages, Gradle with caches, and the Maven Central mirror. Run after checkout.
+description: JDK, Android SDK packages, Gradle with caches, and the Maven Central mirror. Run after checkout.
 inputs:
   gradle-cache-read-only:
     description: Passed to setup-gradle's cache-read-only.
@@ -9,7 +9,9 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set up JDK 25
+    # The one place the build JDK is set. scripts/ci-jdk.sh reads java-version
+    # for the agent setup scripts; keep it a plain major version on one line.
+    - name: Set up JDK
       uses: actions/setup-java@v5
       with:
         java-version: "25"

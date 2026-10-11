@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Cloud Agent install phase for dreamDroid.
-# Idempotent: installs JDK 25, the Android SDK, an emulator AVD, and warms the
+# Idempotent: installs the CI JDK, the Android SDK, an emulator AVD, and warms the
 # Gradle build. Safe to re-run. Heavy stable state that a build snapshot keeps.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
-JAVA_HOME_25="/usr/lib/jvm/java-25-openjdk-amd64"
+# shellcheck source=../../scripts/ci-jdk.sh
+source "$REPO_ROOT/scripts/ci-jdk.sh"
 CMDLINE_TOOLS_VERSION="11076708"
 AVD_NAME="dreamdroid-verify"
 SYSTEM_IMAGE="system-images;android-34;google_apis;x86_64"
@@ -14,32 +15,32 @@ mapfile -t SDK_PACKAGES < <(grep -Ev '^[[:space:]]*(#|$)' "$REPO_ROOT/scripts/an
 SDK_PACKAGES+=("platform-tools" "emulator" "$SYSTEM_IMAGE")
 ENV_FILE="$HOME/.cursor/dreamdroid/env.sh"
 
-echo "== install: system packages (JDK 25, KVM, tools) =="
+echo "== install: system packages (JDK $CI_JDK_VERSION, KVM, tools) =="
 sudo apt-get update -qq
 sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \
-  openjdk-25-jdk qemu-kvm unzip curl
+  "openjdk-${CI_JDK_VERSION}-jdk" qemu-kvm unzip curl
 
-# Pin the Gradle JVM to JDK 25 (AGP 9.4 + Gradle 9.6). Fail if missing.
+# Pin the Gradle JVM to the CI JDK. Fail if missing.
 # Also write env.sh so later shells (start/tests) inherit it.
-if [ ! -x "$JAVA_HOME_25/bin/java" ]; then
-  echo "install: JDK 25 missing at $JAVA_HOME_25" >&2
+if [ ! -x "$CI_JDK_HOME/bin/java" ]; then
+  echo "install: JDK $CI_JDK_VERSION missing at $CI_JDK_HOME" >&2
   exit 1
 fi
-sudo update-java-alternatives -s java-1.25.0-openjdk-amd64 >/dev/null 2>&1 || \
-  echo "install: update-java-alternatives failed; relying on JAVA_HOME=$JAVA_HOME_25" >&2
-export JAVA_HOME="$JAVA_HOME_25"
+sudo update-java-alternatives -s "java-1.${CI_JDK_VERSION}.0-openjdk-amd64" >/dev/null 2>&1 || \
+  echo "install: update-java-alternatives failed; relying on JAVA_HOME=$CI_JDK_HOME" >&2
+export JAVA_HOME="$CI_JDK_HOME"
 export PATH="$JAVA_HOME/bin:$PATH"
 mkdir -p "$(dirname "$ENV_FILE")"
 cat > "$ENV_FILE" <<EOF
-export JAVA_HOME="$JAVA_HOME_25"
+export JAVA_HOME="$CI_JDK_HOME"
 export PATH="\$JAVA_HOME/bin:\$PATH"
 export ANDROID_SDK_ROOT="$ANDROID_SDK_ROOT"
 export ANDROID_HOME="$ANDROID_SDK_ROOT"
 EOF
 echo "JAVA_HOME=$JAVA_HOME"
 java -version
-java -version 2>&1 | grep -q 'version "25\.' || {
-  echo "install: expected JDK 25 on PATH, got:" >&2
+java -version 2>&1 | grep -q "version \"${CI_JDK_VERSION}\\." || {
+  echo "install: expected JDK $CI_JDK_VERSION on PATH, got:" >&2
   java -version >&2
   exit 1
 }

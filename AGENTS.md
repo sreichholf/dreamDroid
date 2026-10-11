@@ -1,6 +1,11 @@
 # dreamDroid agent notes
 
-Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; never merge rewrite work into it). Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Gradle 9.8.0 / AGP 9.4.1 / Kotlin 2.4.20; CI builds with **JDK 25** — use it locally too (Gradle does not enforce it; app bytecode stays Java 17).
+Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; never merge rewrite work into it). Sources live in `app/src` and `app/res`, not `src/main`. Debug package is `net.reichholf.dreamdroid.debug`. Versions are not repeated here; read them where they are set:
+
+- Gradle: `gradle/wrapper/gradle-wrapper.properties`.
+- AGP, Kotlin, and libraries: `gradle/libs.versions.toml`.
+- `compileSdk`: `COMPILE_SDK_VERSION` in `gradle.properties`. `minSdk`, `targetSdk`, and the Java bytecode level: `app/build.gradle.kts`.
+- JDK: `java-version` in `.github/actions/setup-build/action.yml`. That is the **CI JDK**; use it locally too, because Gradle does not enforce it. The agent setup scripts read it through `scripts/ci-jdk.sh`.
 
 Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 
@@ -11,7 +16,7 @@ Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). 
 3. Phone UI changed? Write or update the instrumented test (see **Tests**). Run it locally on a device/emulator, or trigger `workflow_dispatch` on `android-ci.yml` — the emulator job does not run on PRs.
 4. Touched Room, settings (`SharedPreferences`), or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
 5. User-visible change? Add a line to both changelogs (see **Changelog and strings**).
-6. Keep commit messages and PR descriptions to the essence of the change: what changed and why, short and precise. No file-by-file tour or restated diff. Name the checks you ran and their result in a line or two. A PR is written like a commit message: the title is the subject line, the description is the body (what and why, then the checks); a one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead.
+6. Keep commit messages and PR descriptions to the essence of the change: what changed and why, short and precise. No file-by-file tour or restated diff. Name the checks you ran and their result in a line or two. A PR is written like a commit message: the title is the subject line, the description is the body (what and why, then the checks); a one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead. When the PR gets more commits, rewrite the description as a whole instead of appending to it; the PR template (`.github/pull_request_template.md`) carries the same rule.
 
 ## Where things are
 
@@ -69,11 +74,11 @@ Instrumented tests are the default proof for Compose and in-app UI. Do not prove
 ./gradlew.bat :app:connectedGoogleDebugAndroidTest  # Windows
 ```
 
-Use `JAVA_HOME` pointing at JDK 25. Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
+Use `JAVA_HOME` pointing at the CI JDK. Dialogs are Compose Material 3 / Navigation `dialog` destinations; host tests in composition or a NavHost `dialog` route. A `ComposeView` inside a View dialog must be tested in that host — a naked `setContent { }` will not catch `LocalContentColor` leaks from the View theme.
 
-**D-pad focus needs keyboard input mode.** Compose tests start in touch mode, where buttons, switches and other clickables cannot take focus: `requestFocus()` returns false silently. Pressing keys with `performKeyInput` does not change that, and text fields or TV `Surface`s focus anyway, so a passing test can prove nothing. Before relying on D-pad focus, request `InputMode.Keyboard` as `SleepTimerCountdownTest` does, and keep a TV screen's initial focus off text fields (it opens the soft keyboard). Why, sources, and the ui-test 1.13 replacement: [`docs/tv-focus-testing.md`](docs/tv-focus-testing.md).
+**D-pad focus needs keyboard input mode.** Compose tests start in touch mode, where buttons, switches and other clickables cannot take focus: `requestFocus()` returns false silently. Pressing keys with `performKeyInput` does not change that, and text fields or TV `Surface`s focus anyway, so a passing test can prove nothing. Before relying on D-pad focus, request `InputMode.Keyboard` as `SleepTimerCountdownTest` does, and keep a TV screen's initial focus off text fields (it opens the soft keyboard). Why, sources, and the planned ui-test replacement: [`docs/tv-focus-testing.md`](docs/tv-focus-testing.md).
 
-**CI runs instrumented tests on `aosp_atd`, API 30, x86_64, headless (no Play / Google APIs).** A test must not depend on Google Play services or a Google-APIs-only feature, and API 30 is the only level exercised in CI (`minSdk` 26, `targetSdk` 37; the Cursor Cloud VM boots `system-images;android-34;google_apis;x86_64` instead). The suite runs in 3 shards (`-PtestShardCount=3 -PtestShardIndex=i`; `app/build.gradle.kts` maps them to `numShards`/`shardIndex`).
+**CI runs instrumented tests on one headless x86_64 emulator image without Google Play services**: `AVD_TARGET` and `AVD_API_LEVEL` in `android-ci.yml`. A test must not depend on Google Play services or a Google-APIs-only feature, and that API level is the only one CI exercises. The Cursor Cloud VM boots a different image, `SYSTEM_IMAGE` in `.cursor/cloud/install.sh`. The suite is sharded (`-PtestShardCount=N -PtestShardIndex=i`; the shard matrix is in `android-ci.yml`, and `app/build.gradle.kts` maps the properties to `numShards`/`shardIndex`).
 
 **Tests wait for a signal, never for time.** Do not use `Thread.sleep`, `delay(n)`, `SystemClock.sleep` or a poll-with-delay loop when there is something to await:
 
@@ -115,13 +120,13 @@ Maven Central: Sonatype rate-limits per egress IP (`429 Too Many Requests` on sh
 
 The 1.15 → 2.0 upgrade over live user data is a release gate. If you touch any of these, run the upgrade dispatch before merge and say so in the PR:
 
-- `room/AppDatabase.kt` (currently `version = 12`, `exportSchema = true`): any entity, DAO or index change bumps `version`, adds an explicit `MIGRATION_<n>_<n+1>` to `addMigrations(...)`, and commits the new `app/schemas/.../<n+1>.json` that KSP writes. There is no `fallbackToDestructiveMigration` and none may be added; users' offline cache and profiles live in this file.
+- `room/AppDatabase.kt` (`exportSchema = true`): any entity, DAO or index change bumps `version`, adds an explicit `MIGRATION_<n>_<n+1>` to `addMigrations(...)`, and commits the new `app/schemas/.../<n+1>.json` that KSP writes. There is no `fallbackToDestructiveMigration` and none may be added; users' offline cache and profiles live in this file.
 - `DatabaseHelper.kt` and the legacy-profile import that `DreamDroid.onCreate()` runs after Hilt injection (the pre-2.0 SQLite profile store); `DreamDroidBackupAgent.kt`.
 - Settings keys (`PreferenceManager` defaults, `SettingsRepository`) and the backup/restore screen under `ui/backup/`.
 
 ## Changelog and strings
 
-- A user-visible change gets one line in `app/res/raw/changelog.md` **and** `app/res/raw-de/changelog.md`. The whole unreleased 2.0 is one entry, `## 2.0.465`, with `* NEW:` / `* UPD:` / `* FIX:` / `* DEL:` lines (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:`/`TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release.
+- A user-visible change gets one line in `app/res/raw/changelog.md` **and** `app/res/raw-de/changelog.md`. All unreleased changes go under the top `##` version heading of each file, with `* NEW:` / `* UPD:` / `* FIX:` / `* DEL:` lines (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:`/`TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release.
 - New strings go in `app/res/values/strings.xml` in English and `app/res/values-de/strings.xml` in German, in the same PR. The other locales (`values-ar` … `values-zh`) are left to translators; lint's `MissingTranslation` is set to `ignore` in `app/lint.xml`, `ExtraTranslation` too.
 - Removing or renaming a string: remove it from every `values-*` folder it exists in, or `UnusedResources` (severity `error`) fails lint.
 
@@ -133,7 +138,7 @@ Hand off broad exploration, investigation, and independent slices of work to sub
 
 ## Cursor Cloud Agents
 
-This section applies to Cursor Cloud Agent VMs only; Claude Code sessions are covered in the next section. Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs JDK 25 + the Android SDK (the platforms and build-tools from `scripts/android-sdk-packages.txt`, the same list CI uses, plus `system-images;android-34;google_apis;x86_64`), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
+This section applies to Cursor Cloud Agent VMs only; Claude Code sessions are covered in the next section. Setup lives in [`.cursor/environment.json`](.cursor/environment.json) with scripts under `.cursor/cloud/`. `install.sh` installs the CI JDK + the Android SDK (the platforms and build-tools from `scripts/android-sdk-packages.txt`, the same list CI uses, plus the emulator system image), creates the `dreamdroid-verify` AVD, warms the Gradle build, and bakes a booted quickboot snapshot. `start.sh` boots that emulator each session.
 
 **Do not visually drive the emulator in Cloud Agent sessions.** Do not use `computerUse`, GUI tapping, screenshot/recording walkthroughs of the phone UI, or `verify-dreamdroid.py launch` / adb tap loops to "look at" the app. Soft-accelerated TCG plus the agent display path is too slow and unreliable here; those attempts waste the session. Prove UI with instrumented tests (`bash .cursor/cloud/connected-test.sh …`) and log/output artifacts only.
 
@@ -150,14 +155,16 @@ bash .cursor/cloud/connected-test.sh net.reichholf.dreamdroid.ui.about.AboutScre
 
 Claude Code reads this file through the one-line `CLAUDE.md` (`@AGENTS.md`). It finds skills in `.claude/skills/`, which is a symlink to `.agents/skills/`, so `poteto-mode` and the other pstack skills load by name. On Windows, enable symlinks (`git config core.symlinks true` with Developer Mode) or read `.agents/skills/<name>/SKILL.md` directly.
 
-Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Instead, the SessionStart hook [`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh) (registered in `.claude/settings.json`, remote sessions only) installs JDK 25 and the Android SDK into `~/Android/Sdk` (the packages in `scripts/android-sdk-packages.txt`), writes `local.properties`, exports `JAVA_HOME` / `ANDROID_HOME`, and installs the Maven Central mirror init script. It does not install an emulator or system image. So:
+Google's official Android skills ([android/skills](https://github.com/android/skills): `edge-to-edge`, `adaptive`, `r8-analyzer`, `agp-9-upgrade`, …) live in `.agents/skills/` too, listed with their source commit in `.agents/skills/ANDROID_SKILLS.md`. Update them only with `scripts/update-android-skills.sh`, never by hand. Where one contradicts this file, this file wins: Navigation 3 stays rejected (ignore `navigation-3`), and the phone shell keeps its bottom bar whatever `adaptive` suggests.
+
+Claude Code on the web (cloud sessions) does **not** run `.cursor/environment.json` or `.cursor/cloud/*.sh`. Instead, the SessionStart hook [`.claude/hooks/session-start.sh`](.claude/hooks/session-start.sh) (registered in `.claude/settings.json`, remote sessions only) installs the CI JDK and the Android SDK into `~/Android/Sdk` (the packages in `scripts/android-sdk-packages.txt`), writes `local.properties`, exports `JAVA_HOME` / `ANDROID_HOME`, and installs the Maven Central mirror init script. It does not install an emulator or system image. So:
 
 - Run `./gradlew -Pci --no-configuration-cache :app:prCheck` as usual.
 - `~/.gradle` lives as long as the container. For a warm cache across sessions, set the environment's setup script to [`scripts/cloud-env-setup.sh`](scripts/cloud-env-setup.sh) (the command is in its header); the environment snapshot then carries the JDK, SDK, and Gradle cache for about a week.
 - Do not run `.cursor/cloud/connected-test.sh` or try to boot an emulator there.
 - Proof of phone UI in a cloud session is: write or update the instrumented test and make it compile (`:app:compileGoogleDebugAndroidTestKotlin` is part of `:app:prCheck`), then rely on CI. Run `workflow_dispatch` on `android-ci.yml` for the emulator job if the change needs it before merge, and say in your report that the test compiled but did not run here.
 
-Claude Code running locally on a machine with JDK 25, the SDK, and a device or emulator follows the normal rules above (`./gradlew :app:connectedGoogleDebugAndroidTest`).
+Claude Code running locally on a machine with the CI JDK, the SDK, and a device or emulator follows the normal rules above (`./gradlew :app:connectedGoogleDebugAndroidTest`).
 
 ## Other traps
 
