@@ -21,7 +21,9 @@ fi
 # shellcheck source=/dev/null
 source "$SCRIPT_DIR/emulator.sh"
 
-export JAVA_HOME="${JAVA_HOME:-/usr/lib/jvm/java-25-openjdk-amd64}"
+# shellcheck source=../../scripts/ci-jdk.sh
+source "$REPO_ROOT/scripts/ci-jdk.sh"
+export JAVA_HOME="${JAVA_HOME:-$CI_JDK_HOME}"
 export PATH="$JAVA_HOME/bin:$PATH"
 APP_APK="$REPO_ROOT/app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk"
 TEST_APK="$REPO_ROOT/app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk"

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # SessionStart hook for Claude Code on the web.
-# Installs JDK 25 and the Android SDK (no emulator) so Gradle checks run in
+# Installs the CI JDK and the Android SDK (no emulator) so Gradle checks run in
 # cloud sessions, and routes Maven Central through Google's mirror.
 # Idempotent; the container is cached after the first run.
 set -euo pipefail
@@ -11,7 +11,8 @@ fi
 
 REPO_ROOT="${CLAUDE_PROJECT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}"
 ANDROID_SDK_ROOT="${ANDROID_SDK_ROOT:-$HOME/Android/Sdk}"
-JAVA_HOME_25="/usr/lib/jvm/java-25-openjdk-amd64"
+# shellcheck source=../../scripts/ci-jdk.sh
+source "$REPO_ROOT/scripts/ci-jdk.sh"
 CMDLINE_TOOLS_VERSION="11076708"
 mapfile -t SDK_PACKAGES < <(grep -Ev '^[[:space:]]*(#|$)' "$REPO_ROOT/scripts/android-sdk-packages.txt")
 SDK_PACKAGES+=("platform-tools")
@@ -21,10 +22,10 @@ if [ "$(id -u)" -ne 0 ]; then
   SUDO="sudo"
 fi
 
-if [ ! -x "$JAVA_HOME_25/bin/java" ]; then
-  echo "session-start: installing JDK 25" >&2
+if [ ! -x "$CI_JDK_HOME/bin/java" ]; then
+  echo "session-start: installing JDK $CI_JDK_VERSION" >&2
   $SUDO apt-get update -qq
-  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq openjdk-25-jdk-headless unzip >/dev/null
+  $SUDO env DEBIAN_FRONTEND=noninteractive apt-get install -y -qq "openjdk-${CI_JDK_VERSION}-jdk-headless" unzip >/dev/null
 fi
 
 SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
@@ -40,7 +41,7 @@ if [ ! -x "$SDKMANAGER" ]; then
   rm -rf "$tmp_dir"
 fi
 
-export JAVA_HOME="$JAVA_HOME_25"
+export JAVA_HOME="$CI_JDK_HOME"
 export PATH="$JAVA_HOME/bin:$PATH"
 
 missing=()
@@ -63,8 +64,8 @@ cp "$REPO_ROOT/scripts/gradle/maven-central-mirror.init.gradle.kts" "$GRADLE_INI
 
 if [ -n "${CLAUDE_ENV_FILE:-}" ]; then
   {
-    echo "export JAVA_HOME=\"$JAVA_HOME_25\""
-    echo "export PATH=\"$JAVA_HOME_25/bin:$ANDROID_SDK_ROOT/platform-tools:\$PATH\""
+    echo "export JAVA_HOME=\"$CI_JDK_HOME\""
+    echo "export PATH=\"$CI_JDK_HOME/bin:$ANDROID_SDK_ROOT/platform-tools:\$PATH\""
     echo "export ANDROID_HOME=\"$ANDROID_SDK_ROOT\""
     echo "export ANDROID_SDK_ROOT=\"$ANDROID_SDK_ROOT\""
   } >> "$CLAUDE_ENV_FILE"

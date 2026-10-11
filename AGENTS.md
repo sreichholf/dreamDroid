@@ -5,7 +5,7 @@ Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; nev
 - Gradle: `gradle/wrapper/gradle-wrapper.properties`.
 - AGP, Kotlin, and libraries: `gradle/libs.versions.toml`.
 - `compileSdk`: `COMPILE_SDK_VERSION` in `gradle.properties`. `minSdk`, `targetSdk`, and the Java bytecode level: `app/build.gradle.kts`.
-- JDK: `java-version` in `.github/actions/setup-build/action.yml`. That is the **CI JDK**; use it locally too, because Gradle does not enforce it.
+- JDK: `java-version` in `.github/actions/setup-build/action.yml`. That is the **CI JDK**; use it locally too, because Gradle does not enforce it. The agent setup scripts read it through `scripts/ci-jdk.sh`.
 
 Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 
