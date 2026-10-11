@@ -15,7 +15,7 @@ Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). 
 2. `./gradlew -Pci --no-configuration-cache :app:prCheck` (`gradlew.bat` on Windows) — the exact checks the PR jobs run: spotless, JVM tests, androidTest compile, lint. CI runs the same tasks, so do not assemble the task list from memory.
 3. Phone UI changed? Write or update the instrumented test (see **Tests**). Run it locally on a device/emulator, or trigger `workflow_dispatch` on `android-ci.yml` — the emulator job does not run on PRs.
 4. Touched Room, settings (`SharedPreferences`), or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
-5. User-visible change? Add a line to both changelogs (see **Changelog and strings**).
+5. User-visible change? Add a line to both changelogs (see **Changelog**).
 6. Keep commit messages and PR descriptions to the essence of the change: what changed and why, short and precise. No file-by-file tour or restated diff. Name the checks you ran and their result in a line or two. A PR is written like a commit message: the title is the subject line, the description is the body (what and why, then the checks); a one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead. When the PR gets more commits, rewrite the description as a whole instead of appending to it; the PR template (`.github/pull_request_template.md`) carries the same rule.
 
 ## Where things are
@@ -124,9 +124,19 @@ The 1.15 → 2.0 upgrade over live user data is a release gate. If you touch any
 - `DatabaseHelper.kt` and the legacy-profile import that `DreamDroid.onCreate()` runs after Hilt injection (the pre-2.0 SQLite profile store); `DreamDroidBackupAgent.kt`.
 - Settings keys (`PreferenceManager` defaults, `SettingsRepository`) and the backup/restore screen under `ui/backup/`.
 
-## Changelog and strings
+## Changelog
 
-- A user-visible change gets one line in `app/res/raw/changelog.md` **and** `app/res/raw-de/changelog.md`. All unreleased changes go under the top `##` version heading of each file, with `* NEW:` / `* UPD:` / `* FIX:` / `* DEL:` lines (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:`/`TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release.
+`app/res/raw/changelog.md` and `app/res/raw-de/changelog.md` are the in-app changelogs, English and German. A user-visible change gets one line in both, under the top `##` version heading, with `* NEW:`, `* UPD:`, `* FIX:` or `* DEL:` (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:` / `TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release, and a version bump renames the existing one.
+
+Write it for a user who has never run a development build.
+
+- An entry is a short label, not a sentence. `NEW: Initial setup assistant`, not a sentence listing what it finds and sets. Name the feature; the app shows the rest.
+- One line per thing a user would notice or act on. Fold the rest into one generic line: cosmetic changes, spacing, layout and other "visual improvements" become `UPD: Many UI improvements`; an internal dependency bump becomes `UPD: Updated external libraries`. A line a user would neither notice nor act on does not get its own line.
+- A `FIX:` line is a bug in a **shipped** version. Do not log a fix for a feature that non-developers never had: while a rewrite or a new feature is unreleased, its bugs were never seen, so the feature's own line already covers it. When the same thing has both a feature line and a fix line, keep the feature line and drop the fix.
+- Keep the German file in sync with the English one: same entries, same order, same count, written in the same change.
+
+## Strings
+
 - New strings go in `app/res/values/strings.xml` in English and `app/res/values-de/strings.xml` in German, in the same PR. The other locales (`values-ar` … `values-zh`) are left to translators; lint's `MissingTranslation` is set to `ignore` in `app/lint.xml`, `ExtraTranslation` too.
 - Removing or renaming a string: remove it from every `values-*` folder it exists in, or `UnusedResources` (severity `error`) fails lint.
 

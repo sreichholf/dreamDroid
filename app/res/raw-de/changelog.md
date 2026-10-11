@@ -1,36 +1,25 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
-## 2.0.465
-* NEU: Einrichtungsassistent, solange kein Profil gespeichert ist: findet die Box, setzt Adresse, HTTP oder HTTPS und Anmeldung und prüft die Verbindung (ersetzt das Offline-Demoprofil)
-* NEU: MultiEPG — grafische EPG-Übersicht
-* NEU: Optionale Es-läuft-Leiste auf TV & Movies (Schalter in den Einstellungen)
-* NEU: Startbildschirm wählbar (Einstellungen → Startbildschirm)
-* NEU: Werkzeuge-Hub bündelt Screenshot, Geräte-Info und Signal Meter mit gemeinsamer Leiste
-* NEU: Bouquet-Editor unter Werkzeuge: Bouquets und Sender hinzufügen, umbenennen, sortieren und entfernen (benötigt das WebBouquetEditor-Plugin auf dem Receiver)
-* NEU: Offline-Modus mit nutzungsbasiertem Cache — bereits geöffnete Listen, EPG, Timer und Filme bleiben lesbar, wenn die Box nicht erreichbar ist; auch die EPG-Suche funktioniert offline
-* NEU: Offline-Cache in den Einstellungen zurücksetzen (aktuelles Profil oder alle Profile)
-* NEU: Android TV kann denselben externen Videoplayer nutzen wie das Telefon (gleicher Einstellungs-Schalter)
-* NEU: Breite Fenster (Tablets und aufgeklappte Foldables) zeigen die Infos einer Aufnahme neben der Filmliste und die Details einer Sendung neben Sender-EPG, Bouquet-EPG, EPG-Suche und AutoTimer-Vorschau, und Timer öffnen sich zum Bearbeiten neben der Timerliste; die Liste hebt die Zeile hervor, deren Details gezeigt werden
-* NEU: Auf breiten Fenstern öffnet die Senderliste das EPG eines Senders daneben und eine Sendung daraus neben dem EPG (auf den breitesten Fenstern alle drei nebeneinander); aktuelle und nächste Sendung eines Senders öffnen sich ebenfalls neben der Liste
-* UPD: EPG-Suche beim Tippen, mit letzten Suchen und Treffern nach Tag gruppiert
-* UPD: Sender-EPG nach Tag gruppiert
-* UPD: Kompaktere EPG-Details: Timer-Aktionen nebeneinander, IMDb und ähnliche Sendungen als Symbole neben dem Titel
-* UPD: Modernisierte Architektur und Material-3-Oberfläche auf dem Telefon
-* UPD: Schlankeres Navigationsmenü; Über, Änderungen und Backup unter Einstellungen
-* UPD: Tablets zeigen die Bereiche von TV & Movies und Werkzeuge wie Telefone in der unteren Leiste; auf Tablets und Telefonen im Querformat stehen Symbol und Text nebeneinander
-* UPD: Tablets und Telefone im Querformat nutzen den Material-3-Seitenrand statt eines breiten festen Rands
-* UPD: Android-TV-Browse-Hub überarbeitet
-* UPD: Bouquet-EPG mit Datums-/Zeit-Sprungchips (inkl. Jetzt / Prime)
-* UPD: Virtual-Remote-Homescreen-Widget
-* UPD: Verbesserte Verbindungserkennung (Online / Offline / Prüfung, erneute Prüfung im Hintergrund)
+## 2.0.466
+* NEU: Einrichtungsassistent
+* NEU: MultiEPG
+* NEU: Es-läuft-Leiste auf TV & Movies
+* NEU: Startbildschirm wählbar
+* NEU: Werkzeuge-Hub
+* NEU: Bouquet-Editor (WebBouquetEditor-Plugin)
+* NEU: AutoTimer (AutoTimer-Plugin)
+* NEU: Offline-Modus
+* NEU: Externer Videoplayer auf Android TV
+* NEU: Mehrbereich-Layouts auf breiten Bildschirmen
+* UPD: EPG-Suche beim Tippen
+* UPD: Viele UI-Verbesserungen
+* UPD: Bouquet-EPG mit Datums-/Zeit-Sprungchips
+* UPD: Virtual-Remote-Widget
+* UPD: Verbesserte Verbindungserkennung
+* UPD: Online-Picons pro Profil
+* UPD: Externe Bibliotheken aktualisiert
 * UPD: Benötigt Android 8.0 oder neuer
-* DEL: Eingebauter Mediaplayer / Playlist-Browser
-* FIX: Virtual Remote zeigt auf Tablets wieder den Receiver-Screenshot, im Querformat neben der Fernbedienung, im Hochformat darüber
-* FIX: Breite Bildschirme zeigen die Kanalliste wieder mehrspaltig; „Max. Spalten in Kanalliste“ begrenzt sie
-* FIX: Android-TV-Filmkarten schneiden die letzte Textzeile nicht mehr mitten ab
-* UPD: Android-TV-Senderkarten sind kompakt, mit vorangestelltem Picon und Fortschrittsbalken für die laufende Sendung
-* UPD: Online-Picons werden pro Profil eingestellt (an/aus, Pfad auf dem Receiver, über Kanalnamen); die bisherige globale Einstellung wird übernommen. Die Android-TV-Einstellungen können jetzt Picons synchronisieren
-* FIX: Einrichtungsassistent lässt Felder, Aktionen und Suchergebnisse sichtbar, während die Tastatur offen ist (besonders auf TV), und öffnet während der Verbindungsprüfung nicht mehr die Tastatur; auf TV hebt er die fokussierte Aktion wie der Rest der App hervor und die Fernbedienung beginnt beim ersten Suchergebnis. Das gewählte Suchergebnis ist wieder hervorgehoben
+* DEL: Eingebauter Mediaplayer
 * FIX: diverse kleinere Probleme
 
 ## 1.15.460
