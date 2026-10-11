@@ -121,16 +121,18 @@ class TvHubViewModelTest {
         viewModel.selectHeader(OTHER)
         viewModel.onShown()
 
-        val synced = receiver.awaitRequestsTo(EPG_MULTI, 2 + MultiEpgWindows.SYNC_CHUNKS - 1)
-            .drop(2)
+        // Only OTHER's requests: the header change can reach the sync after a brief start for
+        // FAVOURITES under the unconfined test Main. syncWaitsUntilTheTargetSettles covers that.
+        val synced = receiver.awaitRequests(MultiEpgWindows.SYNC_CHUNKS) {
+            it.requestUrl?.encodedPath == EPG_MULTI && it.bRef() == OTHER
+        }
         val today = browseFills.first().time()
         assertEquals(
-            (1 until MultiEpgWindows.SYNC_CHUNKS).map {
+            (0 until MultiEpgWindows.SYNC_CHUNKS).map {
                 today + it * MultiEpgWindows.CHUNK_SECONDS
             },
             synced.map { it.time() }
         )
-        assertTrue(synced.all { it.bRef() == OTHER })
     }
 
     @Test
