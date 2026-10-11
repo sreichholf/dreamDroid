@@ -367,6 +367,57 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun runningCheckShowsProgressAndScrollsItIntoATvSizedWindow() {
+        val gate = CompletableDeferred<ProfileCheckResult>()
+        val viewModel = model(onCheck = { gate.await() })
+        composeRule.setContent {
+            DreamDroidTheme {
+                DeviceConfigurationOverride(
+                    DeviceConfigurationOverride.WindowSize(DpSize(960.dp, 540.dp))
+                ) {
+                    SetupAssistantScreen(
+                        viewModel = viewModel,
+                        localNetworkGranted = true,
+                        onRequestLocalNetwork = {},
+                        onFinished = {},
+                        onLeave = {},
+                        modifier = Modifier.testTag("setup_window")
+                    )
+                }
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_address").performTextInput("192.168.1.2")
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.onNodeWithText("Next").performClick()
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Check connection").performClick()
+        composeRule.waitForIdle()
+
+        assertTrue(viewModel.uiState.value.checking)
+        // Progress stays on the action, which is pinned above the scrolled body.
+        composeRule.onNodeWithTag("setup_checking").assertIsDisplayed()
+        // The body's checking row is also brought into the window.
+        val checking = InstrumentationRegistry.getInstrumentation().targetContext
+            .getString(R.string.checking)
+        val root = composeRule.onNodeWithTag("setup_window").getBoundsInRoot()
+        val row = composeRule.onNodeWithText(checking).assertIsDisplayed().getBoundsInRoot()
+        assertTrue(
+            "The checking row must lie within the window, was $row in $root",
+            row.top >= root.top && row.bottom <= root.bottom
+        )
+
+        gate.complete(ProfileCheckResult())
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_checking").assertDoesNotExist()
+        composeRule.onNodeWithText("Next").assertIsEnabled()
+    }
+
+    @Test
     fun focusedPasswordStaysVisibleWhenTheKeyboardShrinksATvWindow() {
         val viewModel = model()
         var size by mutableStateOf(DpSize(960.dp, 540.dp))

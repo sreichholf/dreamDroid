@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -44,6 +46,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedSecureTextField
 import androidx.compose.material3.OutlinedTextField
@@ -366,6 +369,18 @@ fun SetupAssistantScreen(
                             }
                         }
                     ) {
+                        if (step == SetupStep.SignIn && checking) {
+                            // The only spinner otherwise sits in the scrolling body, below
+                            // the fold on TV; keep progress on the action the remote holds.
+                            CircularProgressIndicator(
+                                color = LocalContentColor.current,
+                                strokeWidth = 2.dp,
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .testTag("setup_checking")
+                            )
+                            Spacer(Modifier.width(8.dp))
+                        }
                         Text(stringResource(actionLabel))
                     }
                 }
@@ -694,11 +709,12 @@ private fun ConnectionCheck(
     trustAllCerts: Boolean,
     onTrustAllChange: (Boolean) -> Unit
 ) {
-    // A failed check is the moment the user must read the block; on a short TV window it
-    // otherwise lies below the fold. The first frame after composition has not placed it yet.
+    // A running or failed check is the moment the user must read the block; on a short TV
+    // window it otherwise lies below the fold. The first frame after composition has not
+    // placed it yet.
     val bringIntoView = remember { BringIntoViewRequester() }
-    LaunchedEffect(result) {
-        if (result?.hasError == true) {
+    LaunchedEffect(checking, result) {
+        if (checking || result?.hasError == true) {
             withFrameNanos { }
             bringIntoView.bringIntoView()
         }
