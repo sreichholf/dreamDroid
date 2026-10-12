@@ -18,6 +18,10 @@ on:
         description: Upgrade a real v1.15.460 install to this build on an emulator, instead of the instrumented suite
         type: boolean
         default: false
+      screenshots:
+        description: Take the phone store screenshots (fastlane) on an emulator, instead of the instrumented suite
+        type: boolean
+        default: false
 
 concurrency:
   group: android-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -137,7 +141,7 @@ jobs:
   # (AndroidJUnitRunner numShards/shardIndex) on the cached AVD.
   androidTest:
     name: Instrumented Compose tests (shard ${{ matrix.shard }}/3)
-    if: github.event_name != 'pull_request' && !inputs.upgrade_from_115
+    if: github.event_name != 'pull_request' && !inputs.upgrade_from_115 && !inputs.screenshots
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -372,5 +376,92 @@ jobs:
         with:
           name: upgrade-115-logs
           path: upgrade-logs/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Store screenshots: StoreScreenshotsTest drives the app against a fake receiver
+  # with the fake picon, one flow per device type; each artifact holds the PNGs for one
+  # fastlane/metadata/android/en-US/images folder. See .github/store-screenshots/run.sh.
+  # Full system images: the headless ATD image the test jobs use returns black
+  # UiAutomation screenshots and has no status bar to put in demo mode. The API 30 TV
+  # image exists for x86 only; run.sh installs the APK split for the emulator's ABI.
+  screenshots:
+    name: Store screenshots (${{ matrix.device }})
+    if: github.event_name == 'workflow_dispatch' && inputs.screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - device: phone
+            target: default
+            arch: x86_64
+            profile: pixel_7
+          - device: tablet
+            target: default
+            arch: x86_64
+            profile: pixel_tablet
+          - device: tv
+            target: android-tv
+            arch: x86
+            profile: tv_1080p
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Set up build
+        uses: ./.github/actions/setup-build
+
+      # ABI splits on, as in upgrade115: run.sh installs one split with adb directly.
+      - name: Assemble googleDebug + androidTest
+        run: ./gradlew --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
+
+      - name: AVD cache
+        uses: actions/cache@v5
+        id: avd-cache
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ matrix.target }}-${{ matrix.arch }}-${{ matrix.profile }}-${{ env.AVD_SNAPSHOT_VERSION }}
+
+      - name: Create AVD and generate snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: ${{ matrix.arch }}
+          target: ${{ matrix.target }}
+          profile: ${{ matrix.profile }}
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: bash .github/emulator/settle-snapshot.sh
+
+      - name: Take screenshots
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ env.AVD_API_LEVEL }}
+          arch: ${{ matrix.arch }}
+          target: ${{ matrix.target }}
+          profile: ${{ matrix.profile }}
+          force-avd-creation: false
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: bash .github/store-screenshots/run.sh ${{ matrix.device }} app/build/outputs/apk/google/debug app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk store-screenshots
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: store-screenshots-${{ matrix.device }}
+          path: store-screenshots/
           if-no-files-found: ignore
           retention-days: 14

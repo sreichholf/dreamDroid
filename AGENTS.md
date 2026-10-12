@@ -114,6 +114,8 @@ Three ways to build the APK; each exists for a reason, do not unify them:
 
 **Upgrade job (`build115` + `upgrade115`)** — `workflow_dispatch` with `upgrade_from_115`: builds the last 1.x release (`v1.15.460`, JDK 17) and does a real `adb install -r` upgrade to the current build on the emulator, then runs `.github/upgrade-from-115/run.sh`. Both builds share `debug.keystore` and the debug package, which is what makes the in-place upgrade real. ABI splits are **on** for this job (no `-Pci`) so the x86_64 split's `versionCode` beats 1.15's, as on Play.
 
+**Store screenshots (`screenshots`)** — `workflow_dispatch` with `screenshots`: one job per device type (phone: Pixel 7; tablet: Pixel Tablet in landscape, for the three list-detail panes; tv: Android TV 1080p) runs that flow of `StoreScreenshotsTest` (`app/androidTest/.../screenshots/`) against `ScreenshotReceiver`, a fake Dreambox WebInterface whose programme follows the device clock, with the fake picon and a demo-mode status bar (`.github/store-screenshots/run.sh`). The `store-screenshots-<device>` artifacts hold the PNGs for `fastlane/metadata/android/en-US/images/` (`phoneScreenshots`, `tenInchScreenshots`, `tvScreenshots`). Outside that job the test skips itself (instrumentation argument `screenshots`).
+
 Maven Central: Sonatype rate-limits per egress IP (`429 Too Many Requests` on shared runners and the Claude Code web proxy). CI and the agent hooks install [`scripts/gradle/maven-central-mirror.init.gradle.kts`](scripts/gradle/maven-central-mirror.init.gradle.kts) into `~/.gradle/init.d`, which resolves Maven Central through Google's mirror. If a `429` still shows up, re-run; Gradle keeps what it already downloaded.
 
 ## Data migrations
