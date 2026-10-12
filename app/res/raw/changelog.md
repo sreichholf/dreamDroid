@@ -1,6 +1,6 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
-## 2.0.466
+## 2.0.467
 * NEW: Initial setup assistant
 * NEW: MultiEPG
 * NEW: Now-playing strip on TV & Movies
