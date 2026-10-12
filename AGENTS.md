@@ -128,7 +128,7 @@ The 1.15 → 2.0 upgrade over live user data is a release gate. If you touch any
 
 ## Changelog
 
-`app/res/raw/changelog.md` and `app/res/raw-de/changelog.md` are the in-app changelogs, English and German. A user-visible change gets one line in both, under the top `##` version heading, with `* NEW:`, `* UPD:`, `* FIX:` or `* DEL:` (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:` / `TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release, and a version bump renames the existing one.
+`app/res/raw/changelog.md` and `app/res/raw-de/changelog.md` are the in-app changelogs, English and German. A user-visible change gets one line in both, under the top `##` version heading, with `* NEW:`, `* UPD:`, `* FIX:` or `* DEL:` (`NEU:` / `UPD:` / `FIX:` / `DEL:` in German; `DEV:` / `TEC:` for developer-facing notes). Do not start a new version heading; the maintainer does that at release.
 
 Write it for a user who has never run a development build.
 

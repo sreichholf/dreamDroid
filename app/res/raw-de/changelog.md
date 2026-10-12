@@ -1,6 +1,6 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
-## 2.0.466
+## 2.0.467
 * NEU: Einrichtungsassistent
 * NEU: MultiEPG
 * NEU: Es-läuft-Leiste auf TV & Movies
