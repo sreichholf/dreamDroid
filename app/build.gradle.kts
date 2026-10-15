@@ -167,6 +167,7 @@ android {
     productFlavors {
         create("google") {
             dimension = "distribution"
+            isDefault = true
             applicationId = "net.reichholf.dreamdroid"
         }
         create("fdroid") {
@@ -204,6 +205,7 @@ android {
 
     buildTypes {
         getByName("debug") {
+            isDefault = true
             buildConfigField("long", "BUILD_TIME", "0L")
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
