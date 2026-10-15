@@ -20,6 +20,7 @@
 * UPD: Updated external libraries
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer
+* FIX: Importing backups made with 1.15
 * FIX: multiple smaller issues
 
 ## 1.15.460
