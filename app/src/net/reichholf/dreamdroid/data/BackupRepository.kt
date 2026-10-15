@@ -199,6 +199,7 @@ internal fun backupCopyForExport(source: BackupData, includePasswords: Boolean):
 internal fun parseBackupImport(content: String?): BackupData? {
     val backupData = try {
         val tree = JsonParser.parseString(content.orEmpty())
+        upgradeMinifiedLegacy(tree)
         upgradeStreamMode(tree)
         upgradeVpsDefault(tree)
         upgradeOnlinePicons(tree)
@@ -211,6 +212,119 @@ internal fun parseBackupImport(content: String?): BackupData? {
     }
     return backupData
 }
+
+/**
+ * Release builds of 1.15 were minified without keep rules for the backup classes, so Gson
+ * wrote R8's field names: `{"a":[settings],"b":[profiles]}`, each setting `{"a":key,"b":value}`
+ * without its type, each profile keyed by [MINIFIED_PROFILE_FIELDS]. The names were read
+ * from the v1.15.460 APK. Such a file gets the real names back; a document with any other
+ * key is left as it is.
+ */
+private fun upgradeMinifiedLegacy(tree: JsonElement) {
+    val root = tree as? JsonObject ?: return
+    if (root.keySet().isEmpty() || !root.keySet().all { it == "a" || it == "b" }) {
+        return
+    }
+    val settings = root.get("a")?.let { it as? JsonArray ?: return }
+    val profiles = root.get("b")?.let { it as? JsonArray ?: return }
+    val settingObjects = settings?.map { setting ->
+        val fields = setting as? JsonObject ?: return
+        if (!fields.keySet().all { it == "a" || it == "b" }) {
+            return
+        }
+        fields
+    }.orEmpty()
+    val profileObjects = profiles?.map { profile ->
+        val fields = profile as? JsonObject ?: return
+        if (!MINIFIED_PROFILE_FIELDS.keys.containsAll(fields.keySet())) {
+            return
+        }
+        fields
+    }.orEmpty()
+
+    root.add("mSettings", JsonArray().apply { settingObjects.forEach { add(legacySetting(it)) } })
+    root.add(
+        "mProfiles",
+        JsonArray().apply {
+            profileObjects.forEach { profile ->
+                add(
+                    JsonObject().apply {
+                        profile.entrySet().forEach { (key, value) ->
+                            add(MINIFIED_PROFILE_FIELDS.getValue(key), value)
+                        }
+                    }
+                )
+            }
+        }
+    )
+    root.remove("a")
+    root.remove("b")
+}
+
+/**
+ * A minified 1.15 setting with its type restored: 1.15 stored ints only under
+ * [LEGACY_INT_KEYS] and has no string preference holding `true` or `false`, so those are
+ * booleans and the rest are strings.
+ */
+private fun legacySetting(setting: JsonObject): JsonObject {
+    val key = setting.primitiveString("a")
+    val value = setting.primitiveString("b")
+    val type = when {
+        key != null && isLegacyIntKey(key) -> "Integer"
+        value == "true" || value == "false" -> "Boolean"
+        else -> "String"
+    }
+    return JsonObject().apply {
+        add("mKey", setting.get("a"))
+        add("mValue", setting.get("b"))
+        addProperty("mType", type)
+    }
+}
+
+/** The keys 1.15 wrote with `putInt`, the widget's profile id among them. */
+private fun isLegacyIntKey(key: String): Boolean = key in LEGACY_INT_KEYS ||
+    (key.startsWith(LEGACY_WIDGET_PROFILE_PREFIX) && !key.endsWith("isFull"))
+
+private val LEGACY_INT_KEYS =
+    setOf(DreamDroid.CURRENT_PROFILE, DreamDroid.PREFS_KEY_LAST_VERSION_CODE, "initial_bits")
+
+private const val LEGACY_WIDGET_PROFILE_PREFIX = "virtual_remote."
+
+/** R8's name for each 1.15 `Profile` field; `E` and `F` were never stored. */
+private val MINIFIED_PROFILE_FIELDS = mapOf(
+    "c" to "id",
+    "d" to "name",
+    "e" to "host",
+    "f" to "streamHost",
+    "g" to "encoderPath",
+    "h" to "user",
+    "i" to "pass",
+    "j" to "encoderUser",
+    "k" to "encoderPass",
+    "l" to "login",
+    "m" to "ssl",
+    "n" to "allCertsTrusted",
+    "o" to "streamLogin",
+    "p" to "fileLogin",
+    "q" to "encoderLogin",
+    "r" to "encoderStream",
+    "s" to "fileSsl",
+    "t" to "simpleRemote",
+    "u" to "port",
+    "v" to "streamPort",
+    "w" to "filePort",
+    "x" to "encoderPort",
+    "y" to "encoderAudioBitrate",
+    "z" to "encoderVideoBitrate",
+    "A" to "defaultBouquetTv",
+    "B" to "defaultBouquetTvName",
+    "C" to "defaultParentBouquetTv",
+    "D" to "defaultParentBouquetTvName",
+    "E" to "sessionId",
+    "F" to "cachedDeviceInfo",
+    "G" to "ssid",
+    "H" to "isDefaultProfileOnNoWifi"
+)
 
 /**
  * Files written before [StreamMode] carry the `encoderStream` flag. An unknown or missing

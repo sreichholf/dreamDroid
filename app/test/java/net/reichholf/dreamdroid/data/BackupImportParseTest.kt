@@ -140,6 +140,52 @@ class BackupImportParseTest {
         assertEquals("/media/usb/picon", profile.piconsOnlinePath)
     }
 
+    /** The shape of a backup from the 1.15 release APK, whose Gson fields R8 renamed. */
+    @Test
+    fun minified115BackupGetsItsFieldNamesBack() {
+        val json = """{"a":[
+            {"a":"currentProfile","b":"7"},
+            {"a":"theme_type","b":"1"},
+            {"a":"picons_online","b":"true"},
+            {"a":"last_version_code","b":"460"}
+        ],"b":[
+            {"c":7,"d":"Living room","e":"10.0.0.2","f":"","g":"stream","h":"root",
+            "i":"secret","j":"","k":"","l":true,"m":true,"n":false,"o":false,"p":false,
+            "q":false,"r":true,"s":false,"t":false,"u":443,"v":8001,"w":80,"x":554,
+            "y":128,"z":2500,"A":"1:7:1:0:0:0:0:0:0:0:","B":"Favourites","G":"home",
+            "H":true}
+        ]}"""
+        val imported = checkNotNull(parseBackupImport(json))
+        val profile = imported.profiles.single()
+        assertEquals(7, profile.id)
+        assertEquals("Living room", profile.name)
+        assertEquals("10.0.0.2", profile.host)
+        assertEquals("root", profile.user)
+        assertEquals("secret", profile.pass)
+        assertTrue(profile.login)
+        assertTrue(profile.ssl)
+        assertEquals(StreamMode.Encoder, profile.streamMode)
+        assertEquals(443, profile.port)
+        assertEquals(8001, profile.streamPort)
+        assertEquals(554, profile.encoderPort)
+        assertEquals(128, profile.encoderAudioBitrate)
+        assertEquals(2500, profile.encoderVideoBitrate)
+        assertEquals("Favourites", profile.defaultBouquetTvName)
+        assertEquals("home", profile.ssid)
+        assertTrue(profile.isDefaultProfileOnNoWifi)
+        assertTrue(profile.piconsOnline)
+        val types = checkNotNull(imported.settings).associate { it.key to it.type }
+        assertEquals("Integer", types["currentProfile"])
+        assertEquals("String", types["theme_type"])
+        assertEquals("Boolean", types["picons_online"])
+        assertEquals("Integer", types["last_version_code"])
+    }
+
+    @Test
+    fun documentWithOtherShortKeysIsNotTakenForA115Backup() {
+        assertTrue(checkNotNull(parseBackupImport("""{"b":[{"zz":1}]}""")).profiles.isEmpty())
+    }
+
     private fun settingJson(type: String, value: String): String {
         val data = BackupData()
         data.addGenericSetting(GenericSetting("probe", value, type))
