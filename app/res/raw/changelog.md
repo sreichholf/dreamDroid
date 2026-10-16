@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.468
+* FIX: Importing backups made with 1.15
+
 ## 2.0.467
 * NEW: Initial setup assistant
 * NEW: MultiEPG
@@ -20,7 +23,6 @@
 * UPD: Updated external libraries
 * UPD: Requires Android 8.0 or newer
 * DEL: Built-in Mediaplayer
-* FIX: Importing backups made with 1.15
 * FIX: multiple smaller issues
 
 ## 1.15.460
