@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.468
+* FIX: Importing backups made with 1.15
+
 ## 2.0.467
 * NEW: Initial setup assistant
 * NEW: MultiEPG

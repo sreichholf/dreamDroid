@@ -1,5 +1,8 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.468
+* FIX: Import von Backups aus 1.15
+
 ## 2.0.467
 * NEU: Einrichtungsassistent
 * NEU: MultiEPG
