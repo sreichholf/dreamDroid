@@ -7,6 +7,7 @@ import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import android.widget.RemoteViews
 import android.widget.TextView
 import androidx.preference.PreferenceManager
@@ -51,7 +52,9 @@ class VirtualRemoteWidgetConfigureTest {
     @Before
     fun bindWidget() {
         hiltRule.inject()
-        shell("appwidget grantbind --package ${context.packageName} --user current")
+        // API 30 passes "current" through as user -2 and fails; name the user id.
+        val userId = Process.myUid() / PER_USER_RANGE
+        shell("appwidget grantbind --package ${context.packageName} --user $userId")
         instrumentation.runOnMainSync {
             widgetHost = TestWidgetHost(context)
             widgetHost.startListening()
@@ -59,7 +62,7 @@ class VirtualRemoteWidgetConfigureTest {
         appWidgetId = widgetHost.allocateAppWidgetId()
         val manager = AppWidgetManager.getInstance(context)
         val provider = ComponentName(context, VirtualRemoteWidgetProvider::class.java)
-        assertTrue(manager.bindAppWidgetIdIfAllowed(appWidgetId, provider))
+        assertTrue("bind not allowed", manager.bindAppWidgetIdIfAllowed(appWidgetId, provider))
         instrumentation.runOnMainSync {
             widgetHost.createView(context, appWidgetId, manager.getAppWidgetInfo(appWidgetId))
         }
@@ -68,8 +71,9 @@ class VirtualRemoteWidgetConfigureTest {
     @After
     fun deleteWidget() {
         instrumentation.runOnMainSync {
-            widgetHost.stopListening()
+            // Before stopListening: the service fails on a host that still holds an unbound id.
             widgetHost.deleteHost()
+            widgetHost.stopListening()
         }
         VirtualRemoteWidgetConfiguration.deleteWidgetConfiguration(context, appWidgetId)
     }
@@ -126,5 +130,8 @@ class VirtualRemoteWidgetConfigureTest {
 
     private companion object {
         const val HOST_ID = 606
+
+        /** `UserHandle.PER_USER_RANGE`: uids of one user span this range. */
+        const val PER_USER_RANGE = 100_000
     }
 }
