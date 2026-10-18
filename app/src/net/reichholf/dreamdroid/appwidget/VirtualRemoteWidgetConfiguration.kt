@@ -90,15 +90,10 @@ class VirtualRemoteWidgetConfiguration : AppCompatActivity() {
     private suspend fun finishWithProfile(profileId: Int, isFull: Boolean) {
         saveWidgetConfiguration(profileId, isFull)
         val context = applicationContext
-        val appWidgetManager = AppWidgetManager.getInstance(context)
         val profile = getWidgetProfile(context, profileRepository, appWidgetId)
-        VirtualRemoteWidgetProvider.updateWidget(
-            applicationScope,
-            context,
-            appWidgetManager,
-            appWidgetId,
-            profile
-        )
+        applicationScope.launch {
+            VirtualRemoteWidgetProvider.updateWidget(context, appWidgetId, profile)
+        }
         val data = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(RESULT_OK, data)
         finish()

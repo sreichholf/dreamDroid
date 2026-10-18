@@ -3,6 +3,8 @@
 ## 2.0.468
 * FIX: Import von Backups aus 1.15
 * FIX: Sender mit Alternativen fehlten im MultiEPG
+* FIX: Neue Widgets ignorieren gewähltes Layout und Profil
+* UPD: Virtual-Remote-Widget in der Größe veränderbar
 
 ## 2.0.467
 * NEU: Einrichtungsassistent

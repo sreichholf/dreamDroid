@@ -6,8 +6,6 @@ import android.content.Intent
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 
 /**
@@ -38,28 +36,20 @@ class VirtualRemoteWidgetProvider : GlanceAppWidgetReceiver() {
         const val WIDGET_PREFERENCE_PREFIX = "virtual_remote."
 
         /**
-         * Refresh one widget after configure, in [scope]. Prefers Glance update; falls back to
-         * a direct [RemoteViews] push if Glance has not bound the id yet.
+         * Refresh one widget after configure. Prefers Glance; falls back to a direct
+         * [RemoteViews] push if Glance has not bound the id yet.
          */
-        fun updateWidget(
-            scope: CoroutineScope,
-            context: Context,
-            appWidgetManager: AppWidgetManager,
-            appWidgetId: Int,
-            profile: Profile?
-        ) {
+        suspend fun updateWidget(context: Context, appWidgetId: Int, profile: Profile?) {
             if (profile == null) return
             val appContext = context.applicationContext
-            scope.launch {
-                try {
-                    val glanceId = GlanceAppWidgetManager(appContext).getGlanceIdBy(appWidgetId)
-                    VirtualRemoteWidget().update(appContext, glanceId)
-                } catch (_: IllegalArgumentException) {
-                    appWidgetManager.updateAppWidget(
-                        appWidgetId,
-                        VirtualRemoteWidgetViews.build(appContext, appWidgetId, profile)
-                    )
-                }
+            try {
+                val glanceId = GlanceAppWidgetManager(appContext).getGlanceIdBy(appWidgetId)
+                VirtualRemoteWidget.reconfigure(appContext, glanceId)
+            } catch (_: IllegalArgumentException) {
+                AppWidgetManager.getInstance(appContext).updateAppWidget(
+                    appWidgetId,
+                    VirtualRemoteWidgetViews.build(appContext, appWidgetId, profile)
+                )
             }
         }
     }

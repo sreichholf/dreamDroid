@@ -21,14 +21,33 @@
         <item name="android:stateListAnimator">@animator/button_elevation</item>
     </style>
 
-    <style name="RemoteButton.Big" parent="RemoteButton">
-        <item name="android:layout_margin">5dp</item>
+    <!-- Home-screen widget keys: weighted cells that grow and shrink with the widget. -->
+    <style name="WidgetRemoteButton" parent="RemoteButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">2dp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:autoSizeMinTextSize">6sp</item>
+        <item name="android:autoSizeMaxTextSize">12sp</item>
     </style>
 
-    <style name="RemoteButton.Medium" parent="RemoteButton">
-        <item name="android:textColor">@android:color/white</item>
+    <style name="WidgetRemoteButton.Medium">
         <item name="android:textStyle">bold</item>
-        <item name="android:textAppearance">@android:style/TextAppearance.Medium</item>
+        <item name="android:autoSizeMaxTextSize">18sp</item>
+    </style>
+
+    <style name="WidgetRemoteImageButton" parent="RemoteButton">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:scaleType">centerInside</item>
     </style>
 
     <style name="FloatingActionButton.Primary" parent="Widget.Material3.FloatingActionButton.Primary" />
