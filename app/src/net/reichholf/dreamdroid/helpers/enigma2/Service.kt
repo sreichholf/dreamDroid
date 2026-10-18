@@ -39,6 +39,13 @@ object Service {
 
     fun isBouquet(ref: String): Boolean = ref.startsWith("1:7:")
 
+    /**
+     * An alternatives group (`1:134:`): one channel whose members are other services. Its
+     * reference names the members' bouquet, so [isDirectory] is true for it too.
+     */
+    fun isAlternatives(ref: String?): Boolean =
+        (getFlags(ref) and FLAGS.IS_GROUP.value()) == FLAGS.IS_GROUP.value()
+
     fun isMarker(ref: String?): Boolean =
         (getFlags(ref) and FLAGS.IS_MARKER.value()) == FLAGS.IS_MARKER.value()
 

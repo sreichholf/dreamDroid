@@ -1,0 +1,31 @@
+{
+ "events": [
+  {
+   "id": 4711,
+   "begin_timestamp": 1893456000,
+   "duration_sec": 900,
+   "title": "Tagesschau",
+   "shortdesc": "Nachrichten",
+   "longdesc": "",
+   "sref": "1:0:19:283D:3FB:1:C00000:0:0:0:",
+   "sname": "Das Erste HD",
+   "now_timestamp": 1893456000,
+   "genre": "",
+   "genreid": 0
+  },
+  {
+   "id": 800,
+   "begin_timestamp": 1893456000,
+   "duration_sec": 1800,
+   "title": "heute journal",
+   "shortdesc": "",
+   "longdesc": "",
+   "sref": "1:134:1:0:0:0:0:0:0:0:FROM BOUQUET \"alternatives.__zdf___.tv\" ORDER BY bouquet",
+   "sname": "ZDF HD",
+   "now_timestamp": 1893456000,
+   "genre": "",
+   "genreid": 0
+  }
+ ],
+ "result": true
+}

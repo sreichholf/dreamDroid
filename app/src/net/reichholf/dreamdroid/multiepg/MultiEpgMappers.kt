@@ -15,7 +15,7 @@ internal fun Event.toEpgEventEntity(
     if (id.isEmpty() || ref.isEmpty()) {
         return null
     }
-    if (EnigmaService.isDirectory(ref) || EnigmaService.isMarker(ref)) {
+    if (!isMultiEpgChannel(ref)) {
         return null
     }
     val startSec = start.toLongOrNull() ?: return null
@@ -57,10 +57,7 @@ internal fun List<Event>.toEpgEventEntities(
     val out = ArrayList<EpgEventEntity>(size)
     for (event in this) {
         val ref = event.serviceReference.trim()
-        if (ref.isEmpty() ||
-            EnigmaService.isDirectory(ref) ||
-            EnigmaService.isMarker(ref)
-        ) {
+        if (ref.isEmpty() || !isMultiEpgChannel(ref)) {
             continue
         }
         val pos = posByRef.getOrPut(ref) { posByRef.size }
@@ -69,3 +66,7 @@ internal fun List<Event>.toEpgEventEntities(
     }
     return out
 }
+
+/** Whether [ref] is a channel with a MultiEPG row: not a marker or folder. */
+internal fun isMultiEpgChannel(ref: String): Boolean = !EnigmaService.isMarker(ref) &&
+    (EnigmaService.isAlternatives(ref) || !EnigmaService.isDirectory(ref))

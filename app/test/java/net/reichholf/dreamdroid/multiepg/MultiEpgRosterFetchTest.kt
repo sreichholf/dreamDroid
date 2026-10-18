@@ -13,6 +13,24 @@ import org.junit.jupiter.api.Test
 
 class MultiEpgRosterFetchTest {
     @Test
+    fun alternativesGroupsKeepTheirRowFoldersAndMarkersDoNot() {
+        val group =
+            "1:134:1:0:0:0:0:0:0:0:FROM BOUQUET \"alternatives.__zdf___.tv\" ORDER BY bouquet"
+        val roster = playableMultiEpgRoster(
+            listOf(
+                Service("1:0:1:1:1:1:0:0:0:0:", "Das Erste"),
+                Service(group, "ZDF"),
+                Service(
+                    "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.news.tv\" ORDER BY bouquet",
+                    "News"
+                ),
+                Service("1:64:1:0:0:0:0:0:0:0:", "--------")
+            )
+        )
+        assertEquals(listOf("Das Erste", "ZDF"), roster.map { it.name })
+    }
+
+    @Test
     fun failedGetservicesKeepsLastGoodRoster() {
         val previous = playableMultiEpgRoster(
             listOf(

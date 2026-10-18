@@ -8,7 +8,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
+import net.reichholf.dreamdroid.enigma.DeviceInfo
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
+import net.reichholf.dreamdroid.enigma.ReceiverFlavor
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -16,6 +18,7 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
+import net.reichholf.dreamdroid.testutil.loadOwifFixture
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.RecordedRequest
@@ -144,6 +147,42 @@ class EpgRepositoryMultiEpgTest {
         assertThrows(EnigmaFailureException::class.java) {
             runBlocking { sync.ensureChunk(PROFILE_ID, BOUQUET, NOW) }
         }
+    }
+
+    @Test
+    fun anAlternativesGroupIsStoredAsAChannel() = runBlocking {
+        receiver.answer = { MockResponse().setBody(loadWebFixture("epgmulti_alternatives.xml")) }
+
+        val events = sync.ensureChunk(PROFILE_ID, BOUQUET, NOW)
+
+        assertEquals(
+            listOf(
+                "1:0:1:6DCA:44D:1:C00000:0:0:0:" to "Tagesschau",
+                ALTERNATIVES to "heute"
+            ),
+            events.map { it.serviceReference to it.title }
+        )
+    }
+
+    @Test
+    fun anOpenWebifAlternativesGroupIsStoredAsAChannel() = runBlocking {
+        receiver.profiles.repository.setDeviceInfo(
+            receiver.profiles.repository.requireCurrent(),
+            DeviceInfo(interfaceVersion = "OWIF 1.5.2"),
+            ReceiverFlavor.OpenWebif
+        )
+        receiver.answer = { MockResponse().setBody(loadOwifFixture("epgmulti_alternatives.json")) }
+
+        val events = sync.ensureChunk(PROFILE_ID, BOUQUET, NOW)
+
+        assertEquals(
+            listOf(
+                "1:0:19:283D:3FB:1:C00000:0:0:0:" to "Tagesschau",
+                ALTERNATIVES to "heute journal"
+            ),
+            events.map { it.serviceReference to it.title }
+        )
+        assertEquals(BOUQUET, receiver.requestsTo("/api/epgmulti").single().bRef())
     }
 
     @Test
@@ -305,6 +344,8 @@ class EpgRepositoryMultiEpgTest {
         const val OTHER_BOUQUET =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.other.tv\" ORDER BY bouquet"
         const val FOLDER = "1:7:1:0:0:0:0:0:0:0:FROM SATELLITES ORDER BY satellite"
+        const val ALTERNATIVES =
+            "1:134:1:0:0:0:0:0:0:0:FROM BOUQUET \"alternatives.__zdf___.tv\" ORDER BY bouquet"
 
         private fun RecordedRequest.bRef(): String? = requestUrl?.queryParameter("bRef")
     }
