@@ -2,6 +2,7 @@
 
 ## 2.0.468
 * FIX: Import von Backups aus 1.15
+* FIX: Streaming mit Stream-Login über http
 
 ## 2.0.467
 * NEU: Einrichtungsassistent

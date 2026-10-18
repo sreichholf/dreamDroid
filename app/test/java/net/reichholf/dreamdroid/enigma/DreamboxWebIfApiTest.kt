@@ -366,9 +366,9 @@ class DreamboxWebIfApiTest {
     }
 
     @Test
-    fun liveStreamOnTheStreamPortLeavesCredentialsOutOfPlainHttp() {
+    fun liveStreamOnTheStreamPortCarriesTheStreamLogin() {
         assertEquals(
-            "http://box.local:8001/$SERVICE_ENCODED",
+            "http://root:secret@box.local:8001/$SERVICE_ENCODED",
             urlClient().liveStreamUrl(SERVICE)
         )
     }
@@ -379,7 +379,7 @@ class DreamboxWebIfApiTest {
         val movie = Movie(reference = RECORDING_REF, fileName = RECORDING_PATH)
 
         assertEquals(
-            "http://box.local:8080/file?file=$RECORDING_ENCODED",
+            "http://root:secret@box.local:8080/file?file=$RECORDING_ENCODED",
             client.recordingStreamUrl(movie)
         )
         assertEquals(

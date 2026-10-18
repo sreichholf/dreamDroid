@@ -2,6 +2,7 @@
 
 ## 2.0.468
 * FIX: Importing backups made with 1.15
+* FIX: Streaming with stream login over http
 
 ## 2.0.467
 * NEW: Initial setup assistant
