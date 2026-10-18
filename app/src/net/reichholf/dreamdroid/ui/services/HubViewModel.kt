@@ -108,17 +108,7 @@ class HubViewModel @Inject constructor(
 
     /** Until the movie locations are known, shows row 0; the page shows them loading. */
     fun selectMovies() {
-        val state = _uiState.value
-        if (!state.locationsReady || state.movieLocations.isEmpty()) {
-            update { it.copy(mode = HubModes.MOVIES, selectedRow = 0) }
-            return
-        }
-        update {
-            it.copy(
-                mode = HubModes.MOVIES,
-                selectedRow = indexOfLocation(it.movieLocations, currentMovie)
-            )
-        }
+        update { it.copy(mode = HubModes.MOVIES, selectedRow = movieRow(it)) }
     }
 
     fun selectTimer() {
@@ -198,38 +188,43 @@ class HubViewModel @Inject constructor(
     }
 
     private fun applyBouquets(tv: List<Service>, radio: List<Service>, error: UiText?) {
-        val state = _uiState.value
-        val selected = when (state.mode) {
-            HubModes.TV -> {
-                val (index, ref) =
-                    resolveBouquetSelection(tvTabs(tv), currentTv, defaultTvBouquet())
-                currentTv = ref
-                index
-            }
-
-            HubModes.RADIO -> {
-                val (index, ref) = resolveBouquetSelection(radioTabs(radio), currentRadio, null)
-                currentRadio = ref
-                index
-            }
-
-            HubModes.MOVIES -> if (state.locationsReady) {
-                indexOfLocation(state.movieLocations, currentMovie)
-            } else {
-                state.selectedRow
-            }
-
-            else -> 0
-        }
-        update {
-            it.copy(
+        // Derive the row from the state being replaced, not an earlier snapshot: the movie
+        // locations can land in between.
+        update { state ->
+            state.copy(
                 tvBouquets = tv.toList(),
                 radioBouquets = radio.toList(),
                 bouquetsLoaded = true,
                 bouquetError = error,
-                selectedRow = selected
+                selectedRow = when (state.mode) {
+                    HubModes.TV -> {
+                        val (index, ref) =
+                            resolveBouquetSelection(tvTabs(tv), currentTv, defaultTvBouquet())
+                        currentTv = ref
+                        index
+                    }
+
+                    HubModes.RADIO -> {
+                        val (index, ref) =
+                            resolveBouquetSelection(radioTabs(radio), currentRadio, null)
+                        currentRadio = ref
+                        index
+                    }
+
+                    HubModes.MOVIES ->
+                        if (state.locationsReady) movieRow(state) else state.selectedRow
+
+                    else -> 0
+                }
             )
         }
+    }
+
+    /** Row 0 until the movie locations are known, then the row of [currentMovie]. */
+    private fun movieRow(state: HubUiState): Int = if (state.locationsReady) {
+        indexOfLocation(state.movieLocations, currentMovie)
+    } else {
+        0
     }
 
     /**
