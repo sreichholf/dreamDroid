@@ -4,7 +4,6 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayText
-import net.reichholf.dreamdroid.helpers.enigma2.Service as EnigmaServiceFlags
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /** One programme bar in the MultiEPG grid (precomputed unix bounds). */
@@ -26,9 +25,7 @@ fun playableMultiEpgRoster(services: List<Service>): List<Service> {
     for (service in services) {
         val ref = service.reference.trim()
         if (ref.isEmpty()) continue
-        if (EnigmaServiceFlags.isMarker(ref) || EnigmaServiceFlags.isDirectory(ref)) {
-            continue
-        }
+        if (!isMultiEpgChannel(ref)) continue
         out.add(
             if (ref == service.reference && service.name.isNotBlank()) {
                 service

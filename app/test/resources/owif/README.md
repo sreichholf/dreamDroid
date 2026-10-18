@@ -13,6 +13,7 @@ with `ensure_ascii`. A real capture replaces its fixture (docs/openwebif.md §3)
 | `epgnownext.json` | `/api/epgnownext` | `web.py:1547-1556`, `models/services.py:955-993` | escaped title and texts; ZDF lacks next and Sky lacks now: rows with null `begin_timestamp` from enigma2's `X` flag (`:964`), see `web.py:1547` "TODO: fix missing now or next"; `info` added by the handler |
 | `epgbouquet.json` | `/api/epgbouquet` | `web.py:1440-1460`, `models/services.py:879-916` | an image that answers a range: ZDF has an event ending at `time` before the one running; Sky's only event starts after `time` |
 | `epgmulti.json` | `/api/epgmulti` | `web.py:1465-1496`, `models/services.py:879-916` | |
+| `epgmulti_alternatives.json` | `/api/epgmulti` | same | an alternatives group answered under its own `1:134:` ref: `sref` is the ref the box asked for (`'R'`) |
 | `epgservice.json` | `/api/epgservice` | `web.py:1636-1654`, `models/services.py:799-872` | escaped texts; `\x8a` in `longdesc` turned into `\n` by `convertDesc` (`:101`) |
 | `epgservice_empty.json` | `/api/epgservice` | `models/services.py:852-870` | the filler row for an event without id: `begin_timestamp` 0, title `N/A` |
 | `epgsearch.json` | `/api/epgsearch` | `web.py:1570-1600`, `models/services.py:1085-1139` | `now_timestamp` null; escaped `&` in a title |

@@ -2,6 +2,7 @@
 
 ## 2.0.468
 * FIX: Importing backups made with 1.15
+* FIX: Channels with alternatives missing in MultiEPG
 
 ## 2.0.467
 * NEW: Initial setup assistant

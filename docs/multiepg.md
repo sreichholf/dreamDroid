@@ -113,6 +113,12 @@ Source of truth (opendreambox tree): `webinterface/src/WebComponents/Sources/EPG
 - `time` is a **unix timestamp** (start of window). `endTime` is **minutes of duration**, not a unix end (same 4th eEPGCache tuple arg GraphMultiEPG uses). Sending a unix end (~1.7e9) overflows `startTimeQuery` → **0 events**.
 - Omitting them (`-1`) is what the stock web UI MultiEPG does (`bRef` only) and can dump a large unbounded schedule — **dreamDroid must always send a bounded window**. `EpgRepository.fetchEpgMulti` converts the unix window to minutes.
 
+### Alternatives groups (`1:134:`)
+
+Both webifs build the `epgmulti` lookup the same way: `eServiceCenter.list(bRef).getContent('S')`, one tuple per entry, one `eEPGCache.lookupEvent`, with each event's service reference taken from `'R'`, the ref that was asked for (Dreambox `EPG.getEPGofBouquet`, OpenWebif `models/services.py` `getBouquetEpg`). The EPG cache resolves a group to its member (OpenPLi `handleGroup`; Dreambox OS is closed source, but its `epgbouquet` and `epgnownext` answer for groups through the same lookup), so a group's programmes come back under the group's own ref.
+
+A group ref names its members' `FROM BOUQUET`, so `Service.isDirectory` is true for it. MultiEPG classifies rows with `isMultiEpgChannel`, which keeps groups (`Service.isAlternatives`, flag 128); filtering on `isDirectory` alone hid them (#609).
+
 OpenWebif’s wiki note that `epgmulti` is “not in Enigma2 WebInterface API” is **incorrect** for this Dreambox tree. When this was written, dreamDroid did not rely on OpenWebif-only endpoints. OpenWebif boxes now go through their own client, which uses `/api/epgmulti` ([`openwebif.md`](openwebif.md)); `epgmultigz` is still unused.
 
 ---
