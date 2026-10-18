@@ -5,6 +5,7 @@
 * FIX: Channels with alternatives missing in MultiEPG
 * FIX: New widgets ignoring the chosen layout and profile
 * UPD: Resizable Virtual Remote widget
+* FIX: Streaming with stream login over http
 
 ## 2.0.467
 * NEW: Initial setup assistant

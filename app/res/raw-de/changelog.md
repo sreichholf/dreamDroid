@@ -5,6 +5,7 @@
 * FIX: Sender mit Alternativen fehlten im MultiEPG
 * FIX: Neue Widgets ignorieren gewähltes Layout und Profil
 * UPD: Virtual-Remote-Widget in der Größe veränderbar
+* FIX: Streaming mit Stream-Login über http
 
 ## 2.0.467
 * NEU: Einrichtungsassistent
