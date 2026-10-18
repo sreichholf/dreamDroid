@@ -1,505 +1,407 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Weighted rows so the remote fills any widget size. -->
 <merge xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp">
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonHelp"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="30dp"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="Help"/>
+            android:text="Help" />
 
         <Button
             android:id="@+id/Button1"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonHelp"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="1"
-            android:layout_toEndOf="@id/ButtonHelp"/>
+            android:text="1" />
 
         <Button
             android:id="@+id/Button2"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/Button1"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="2"
-            android:layout_toEndOf="@id/Button1"/>
+            android:text="2" />
 
         <Button
             android:id="@+id/Button3"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/Button2"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="3"
-            android:layout_toEndOf="@id/Button2"/>
+            android:text="3" />
 
         <Button
             android:id="@+id/ButtonPower"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@id/Button3"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_red"
-            android:text="PWR"
-            android:layout_toEndOf="@id/Button3"/>
+            android:text="PWR" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/Button4"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button1"
-            android:layout_toRightOf="@id/ButtonHelp"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="4"
-            android:layout_toEndOf="@id/ButtonHelp"/>
+            android:text="4" />
 
         <Button
             android:id="@+id/Button5"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button2"
-            android:layout_toRightOf="@id/Button4"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="5"
-            android:layout_toEndOf="@id/Button4"/>
+            android:text="5" />
 
         <Button
             android:id="@+id/Button6"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button3"
-            android:layout_toRightOf="@id/Button5"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="6"
-            android:layout_toEndOf="@id/Button5"/>
+            android:text="6" />
 
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonVolP"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button4"
-            android:layout_toLeftOf="@id/Button4"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_light"
-            android:text="V+"
-            android:layout_toStartOf="@id/Button4"/>
-
-        <Button
-            android:id="@+id/ButtonVolM"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonVolP"
-            android:background="@drawable/button_key_light"
-            android:text="V-"/>
+            android:text="V+" />
 
         <Button
             android:id="@+id/Button7"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button4"
-            android:layout_toRightOf="@id/ButtonVolM"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="7"
-            android:layout_toEndOf="@id/ButtonVolM"/>
+            android:text="7" />
 
         <Button
             android:id="@+id/Button8"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button5"
-            android:layout_toRightOf="@id/Button7"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="8"
-            android:layout_toEndOf="@id/Button7"/>
+            android:text="8" />
 
         <Button
             android:id="@+id/Button9"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button6"
-            android:layout_toRightOf="@id/Button8"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="9"
-            android:layout_toEndOf="@id/Button8"/>
+            android:text="9" />
 
         <Button
             android:id="@+id/ButtonBouP"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button6"
-            android:layout_toRightOf="@id/Button9"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_light"
-            android:text="B+"
-            android:layout_toEndOf="@id/Button9"/>
+            android:text="B+" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <Button
+            android:id="@+id/ButtonVolM"
+            style="@style/WidgetRemoteButton"
+            android:background="@drawable/button_key_light"
+            android:text="V-" />
 
         <Button
             android:id="@+id/ButtonLeftArrow"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button7"
-            android:layout_toRightOf="@id/ButtonVolM"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="&lt;"
-            android:layout_toEndOf="@id/ButtonVolM"/>
+            android:text="&lt;" />
 
         <Button
             android:id="@+id/Button0"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button8"
-            android:layout_toRightOf="@id/ButtonLeftArrow"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text="0"
-            android:layout_toEndOf="@id/ButtonLeftArrow"/>
+            android:text="0" />
 
         <Button
             android:id="@+id/ButtonRightArrow"
-            style="@style/RemoteButton.Medium"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/Button9"
-            android:layout_toRightOf="@id/Button0"
+            style="@style/WidgetRemoteButton.Medium"
             android:background="@drawable/button_key_dark"
-            android:text=">"
-            android:layout_toEndOf="@id/Button0"/>
+            android:text="&gt;" />
 
         <Button
             android:id="@+id/ButtonBouM"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonBouP"
-            android:layout_toRightOf="@id/ButtonRightArrow"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_light"
-            android:text="B-"
-            android:layout_toEndOf="@id/ButtonRightArrow"/>
+            android:text="B-" />
+    </LinearLayout>
 
-    </RelativeLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp">
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.75"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonRed"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
-            android:background="@drawable/button_key_red"/>
+            style="@style/WidgetRemoteButton"
+            android:background="@drawable/button_key_red" />
 
         <Button
             android:id="@+id/ButtonGreen"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@id/ButtonRed"
-            android:background="@drawable/button_key_green"
-            android:layout_toEndOf="@id/ButtonRed"/>
+            style="@style/WidgetRemoteButton"
+            android:background="@drawable/button_key_green" />
 
         <Button
             android:id="@+id/ButtonYellow"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@id/ButtonGreen"
-            android:background="@drawable/button_key_yellow"
-            android:layout_toEndOf="@id/ButtonGreen"/>
+            style="@style/WidgetRemoteButton"
+            android:background="@drawable/button_key_yellow" />
 
         <Button
             android:id="@+id/ButtonBlue"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@id/ButtonYellow"
-            android:background="@drawable/button_key_blue"
-            android:layout_toEndOf="@id/ButtonYellow"/>
+            style="@style/WidgetRemoteButton"
+            android:background="@drawable/button_key_blue" />
+    </LinearLayout>
 
-    </RelativeLayout>
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingBottom="10dp"
-        android:paddingTop="10dp">
-
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonInfo"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="Info"/>
+            android:text="Info" />
 
-        <Button
-            android:id="@+id/ButtonInfoSpacer"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonInfo"
-            android:background="@android:color/transparent"
-            android:layout_toEndOf="@id/ButtonInfo"/>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/ButtonUp"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonInfoSpacer"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_light"
-            android:src="@drawable/ic_key_up"
-            android:text="UP"
-            android:layout_toEndOf="@id/ButtonInfoSpacer"/>
+            android:contentDescription="Up"
+            android:src="@drawable/ic_key_up" />
 
-        <Button
-            android:id="@+id/ButtonUpSpacer"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonUp"
-            android:background="@android:color/transparent"
-            android:layout_toEndOf="@id/ButtonUp"/>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/ButtonMenu"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonUpSpacer"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="Menu"
-            android:layout_toEndOf="@id/ButtonUpSpacer"/>
+            android:text="Menu" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/ButtonLeft"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonMenu"
-            android:layout_toLeftOf="@id/ButtonUp"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_light"
-            android:src="@drawable/ic_key_left"
-            android:text="LEFT"
-            android:layout_toStartOf="@id/ButtonUp"/>
+            android:contentDescription="Left"
+            android:src="@drawable/ic_key_left" />
 
         <Button
             android:id="@+id/ButtonOk"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonUp"
-            android:layout_toRightOf="@id/ButtonLeft"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_light"
-            android:text="OK"
-            android:layout_toEndOf="@id/ButtonLeft"/>
+            android:text="OK" />
 
         <ImageButton
             android:id="@+id/ButtonRight"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonMenu"
-            android:layout_toRightOf="@id/ButtonOk"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_light"
-            android:src="@drawable/ic_key_right"
-            android:text="RIGHT"
-            android:layout_toEndOf="@id/ButtonOk"/>
+            android:contentDescription="Right"
+            android:src="@drawable/ic_key_right" />
 
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonAudio"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonLeft"
-            android:layout_toLeftOf="@id/ButtonLeft"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="Audio"
-            android:layout_toStartOf="@id/ButtonLeft"/>
+            android:text="Audio" />
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <ImageButton
             android:id="@+id/ButtonDown"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonLeft"
-            android:layout_toRightOf="@id/ButtonLeft"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_light"
-            android:src="@drawable/ic_key_down"
-            android:text="DOWN"
-            android:layout_toEndOf="@id/ButtonLeft"/>
+            android:contentDescription="Down"
+            android:src="@drawable/ic_key_down" />
+
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/ButtonPvr"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonRight"
-            android:layout_toRightOf="@id/ButtonRight"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="PVR"
-            android:layout_toEndOf="@id/ButtonRight"/>
-    </RelativeLayout>
+            android:text="PVR" />
+    </LinearLayout>
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp">
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.75"
+        android:orientation="horizontal">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5" />
 
         <Button
             android:id="@+id/ButtonMute"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark"
-            android:text="Mute"/>
+            android:text="Mute" />
 
         <Button
             android:id="@+id/ButtonExit"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="30dp"
-            android:layout_toRightOf="@id/ButtonMute"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_red"
-            android:text="Exit"
-            android:layout_toEndOf="@id/ButtonMute"/>
-    </RelativeLayout>
+            android:text="Exit" />
 
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:orientation="vertical"
-        android:paddingBottom="5dp"
-        android:paddingTop="5dp">
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1.5" />
+    </LinearLayout>
 
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.2" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <ImageButton
             android:id="@+id/ButtonRwd"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_column="1"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_dark_oval"
-            android:src="@drawable/ic_media_previous_dark"
-            android:text="RWD"/>
+            android:contentDescription="Rewind"
+            android:src="@drawable/ic_media_previous_dark" />
 
-        <ImageButton
-            android:id="@+id/ButtonPlay"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonRwd"
-            android:background="@drawable/button_key_dark_oval"
-            android:src="@drawable/ic_media_play_dark"
-            android:text="PLAY"
-            android:layout_toEndOf="@id/ButtonRwd"/>
+        <FrameLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1">
 
-        <ImageButton
-            android:id="@+id/ButtonPlayPause"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonRwd"
-            android:background="@drawable/button_key_dark_oval"
-            android:src="@drawable/ic_media_play_pause_dark"
-            android:text="PLAY/PAUSE"
-            android:layout_toEndOf="@id/ButtonRwd"/>
+            <ImageButton
+                android:id="@+id/ButtonPlay"
+                style="@style/WidgetRemoteImageButton"
+                android:layout_width="match_parent"
+                android:background="@drawable/button_key_dark_oval"
+                android:contentDescription="Play"
+                android:src="@drawable/ic_media_play_dark" />
+
+            <ImageButton
+                android:id="@+id/ButtonPlayPause"
+                style="@style/WidgetRemoteImageButton"
+                android:layout_width="match_parent"
+                android:background="@drawable/button_key_dark_oval"
+                android:contentDescription="Play/Pause"
+                android:src="@drawable/ic_media_play_pause_dark" />
+
+        </FrameLayout>
 
         <ImageButton
             android:id="@+id/ButtonStop"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonPlay"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_dark_oval"
-            android:src="@drawable/ic_media_stop_dark"
-            android:text="STOP"
-            android:layout_toEndOf="@id/ButtonPlay"/>
+            android:contentDescription="Stop"
+            android:src="@drawable/ic_media_stop_dark" />
 
         <ImageButton
             android:id="@+id/ButtonFwd"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_toRightOf="@id/ButtonStop"
+            style="@style/WidgetRemoteImageButton"
             android:background="@drawable/button_key_dark_oval"
-            android:src="@drawable/ic_media_next_dark"
-            android:text="FWD"
-            android:layout_toEndOf="@id/ButtonStop"/>
+            android:contentDescription="Fast forward"
+            android:src="@drawable/ic_media_next_dark" />
+    </LinearLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
         <Button
             android:id="@+id/ButtonTv"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonRwd"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark_oval"
-            android:text="TV"/>
+            android:text="TV" />
 
         <Button
             android:id="@+id/ButtonRadio"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonRwd"
-            android:layout_toRightOf="@id/ButtonTv"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark_oval"
-            android:text="RADIO"
-            android:layout_toEndOf="@id/ButtonTv"/>
+            android:text="RADIO" />
 
         <Button
             android:id="@+id/ButtonText"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonRwd"
-            android:layout_toRightOf="@id/ButtonRadio"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark_oval"
-            android:text="TEXT"
-            android:layout_toEndOf="@id/ButtonRadio"/>
+            android:text="TEXT" />
 
         <Button
             android:id="@+id/ButtonRec"
-            style="@style/RemoteButton"
-            android:layout_width="@dimen/remote_key_width_big"
-            android:layout_height="@dimen/remote_key_height"
-            android:layout_below="@id/ButtonRwd"
-            android:layout_toRightOf="@id/ButtonText"
+            style="@style/WidgetRemoteButton"
             android:background="@drawable/button_key_dark_oval"
-            android:text="REC"
-            android:textColor="#F00"
-            android:layout_toEndOf="@id/ButtonText"/>
+            android:text="REC" />
+    </LinearLayout>
 
-    </RelativeLayout>
 </merge>
