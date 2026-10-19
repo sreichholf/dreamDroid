@@ -50,6 +50,9 @@ sealed interface PlayerEvent {
 
     data object Playing : PlayerEvent
 
+    /** The stream's first audio or video track is known: the receiver sends the service. */
+    data object TracksFound : PlayerEvent
+
     /** Playback time moved: the stream is playing. */
     data object Progress : PlayerEvent
 

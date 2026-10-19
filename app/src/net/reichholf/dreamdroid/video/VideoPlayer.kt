@@ -41,6 +41,13 @@ class VideoPlayer(
     private var reconnectJob: Job? = null
 
     /**
+     * Times a live stream's start: first its tracks ([VideoPlayback.tracksTimeoutMs]), then
+     * playback ([VideoPlayback.playTimeoutMs]). A stream that misses either is opened again.
+     */
+    private var startWatchJob: Job? = null
+    private var awaitingTracks = false
+
+    /**
      * True once a hardware decoder showed no picture: the device's decoder fails on this
      * receiver's streams, so later streams of the session start in software right away.
      */
@@ -68,12 +75,14 @@ class VideoPlayer(
     /** Detaches the views and stops the stream; [release] also frees the decoder. */
     fun detach() {
         reconnectJob?.cancel()
+        stopStartWatch()
         views = null
         engine.detach()
     }
 
     fun release() {
         reconnectJob?.cancel()
+        stopStartWatch()
         request = null
         engine.release()
     }
@@ -85,7 +94,7 @@ class VideoPlayer(
         reconnect = LiveReconnect()
         val target = VideoPlayback.engineFor(request.engine, request.url.substringBefore("://"))
         use(if (target == Engine.Media3) media3 else vlc)
-        engine.start(request)
+        startStream(request, reopened = false)
     }
 
     fun play() = engine.play()
@@ -126,7 +135,17 @@ class VideoPlayer(
             return
         }
         when (event) {
-            PlayerEvent.Progress -> reconnect.onPlayed()
+            PlayerEvent.TracksFound -> {
+                val request = request
+                if (awaitingTracks && request != null) {
+                    watchStart(VideoPlayback.playTimeoutMs(request.bufferMs), tracks = false)
+                }
+            }
+
+            PlayerEvent.Progress -> {
+                stopStartWatch()
+                reconnect.onPlayed()
+            }
 
             is PlayerEvent.Failed -> {
                 if (event.unsupported && fallBackToVlc()) return
@@ -142,7 +161,37 @@ class VideoPlayer(
 
             else -> Unit
         }
+        if (event is PlayerEvent.Failed || event == PlayerEvent.Ended) stopStartWatch()
         listener?.invoke(event)
+    }
+
+    /**
+     * Starts [request] on the playing engine. A live stream that shows no track or does not
+     * play in time is opened again; a [reopened] one gets longer for its tracks.
+     */
+    private fun startStream(request: PlayRequest, reopened: Boolean = true) {
+        engine.start(request)
+        stopStartWatch()
+        if (request.live) watchStart(VideoPlayback.tracksTimeoutMs(reopened), tracks = true)
+    }
+
+    private fun watchStart(timeoutMs: Long, tracks: Boolean) {
+        startWatchJob?.cancel()
+        awaitingTracks = tracks
+        startWatchJob = scope.launch(Dispatchers.Main.immediate) {
+            delay(timeoutMs)
+            Log.i(
+                LOG_TAG,
+                if (tracks) "Live stream showed no track" else "Live stream did not play"
+            )
+            awaitingTracks = false
+            if (!reconnectLive()) listener?.invoke(PlayerEvent.Failed())
+        }
+    }
+
+    private fun stopStartWatch() {
+        startWatchJob?.cancel()
+        awaitingTracks = false
     }
 
     private fun fallBackToVlc(): Boolean {
@@ -152,7 +201,7 @@ class VideoPlayer(
         val fallback = request.copy(engine = Engine.Vlc)
         this.request = fallback
         use(vlc)
-        vlc.start(fallback)
+        startStream(fallback)
         listener?.invoke(PlayerEvent.FellBackToVlc)
         return true
     }
@@ -165,23 +214,25 @@ class VideoPlayer(
         val software = request.inSoftware()
         this.request = software
         use(vlc)
-        vlc.start(software)
+        startStream(software)
         listener?.invoke(PlayerEvent.SoftwareDecoding)
     }
 
     private fun PlayRequest.inSoftware() = copy(engine = Engine.Vlc, hwAccelFlags = 0)
 
     /**
-     * Opens a live stream that failed or ended again after [LiveReconnect]'s wait. False when
-     * the stream is not live or the attempts ran out; the event then reaches the listener.
+     * Opens a live stream that failed, ended, or did not start again after [LiveReconnect]'s
+     * wait. False when the stream is not live or the attempts ran out; the event then reaches
+     * the listener.
      */
     private fun reconnectLive(): Boolean {
         val request = request?.takeIf { it.live } ?: return false
         val delayMs = reconnect.onFailure() ?: return false
         Log.i(LOG_TAG, "Live stream dropped, reconnecting in $delayMs ms")
+        stopStartWatch()
         reconnectJob = scope.launch(Dispatchers.Main.immediate) {
             delay(delayMs)
-            engine.start(request)
+            startStream(request)
         }
         return true
     }

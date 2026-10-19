@@ -147,15 +147,80 @@ class VideoPlayerTest {
         player.playUri(request(Engine.Vlc))
         repeat(3) {
             vlc.emit(PlayerEvent.Failed())
-            advanceUntilIdle()
+            advanceTimeBy(5_000)
         }
 
         vlc.emit(PlayerEvent.Progress)
         vlc.emit(PlayerEvent.Failed())
-        advanceUntilIdle()
+        advanceTimeBy(1_001)
 
         assertEquals(5, vlc.started.size)
         assertEquals(listOf<PlayerEvent>(PlayerEvent.Progress), events)
+    }
+
+    @Test
+    fun aStreamWithoutTracksIsReopenedAfterThreeSecondsThenTen() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+
+        // 3 s for the tracks, then the first reconnect wait of 1 s.
+        advanceTimeBy(4_001)
+        assertEquals(2, vlc.started.size)
+
+        advanceTimeBy(9_000)
+        assertEquals(2, vlc.started.size)
+
+        // 10 s for the reopened stream's tracks, then the second wait of 2 s.
+        advanceTimeBy(3_000)
+        assertEquals(3, vlc.started.size)
+        assertTrue(events.isEmpty())
+    }
+
+    @Test
+    fun aStreamWithTracksGetsTheBufferAndFiveSecondsToPlay() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        vlc.emit(PlayerEvent.TracksFound)
+
+        advanceTimeBy(6_999)
+        assertEquals(1, vlc.started.size)
+
+        advanceTimeBy(1_002)
+        assertEquals(2, vlc.started.size)
+    }
+
+    @Test
+    fun everyChannelSwitchStartsWithThreeSecondsAgain() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+        advanceTimeBy(4_001)
+
+        player.playUri(request(Engine.Vlc, url = OTHER_URL))
+        advanceTimeBy(4_001)
+
+        assertEquals(
+            listOf(request(Engine.Vlc), request(Engine.Vlc), request(Engine.Vlc, OTHER_URL)),
+            vlc.started.take(3)
+        )
+        assertEquals(request(Engine.Vlc, OTHER_URL), vlc.started.last())
+        assertEquals(4, vlc.started.size)
+    }
+
+    @Test
+    fun aLiveStreamThatNeverStartsFailsOnceTheAttemptsRunOut() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+
+        advanceUntilIdle()
+
+        assertEquals(4, vlc.started.size)
+        assertEquals(listOf<PlayerEvent>(PlayerEvent.Failed()), events)
+    }
+
+    @Test
+    fun aPlayingLiveStreamIsLeftAlone() = scope.runTest {
+        player.playUri(request(Engine.Vlc))
+
+        vlc.emit(PlayerEvent.Progress)
+        advanceUntilIdle()
+
+        assertEquals(1, vlc.started.size)
     }
 
     @Test

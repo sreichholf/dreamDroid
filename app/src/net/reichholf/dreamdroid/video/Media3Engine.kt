@@ -234,6 +234,7 @@ class Media3Engine @Inject constructor(
         /** Opening and Playing go out once per stream, as VLC sends them; not per rebuffer. */
         private var started = false
         private var firstFrame = false
+        private var tracksFound = false
 
         private fun emit(event: PlayerEvent) {
             if (player === exo) listener?.invoke(event)
@@ -263,6 +264,14 @@ class Media3Engine @Inject constructor(
 
         override fun onTracksChanged(tracks: Tracks) {
             if (player !== exo) return
+            if (!tracksFound &&
+                tracks.groups.any {
+                    it.type == C.TRACK_TYPE_AUDIO || it.type == C.TRACK_TYPE_VIDEO
+                }
+            ) {
+                tracksFound = true
+                emit(PlayerEvent.TracksFound)
+            }
             stateFlow.update {
                 it.copy(
                     audioTracks = tracksOf(exo, C.TRACK_TYPE_AUDIO).size,
