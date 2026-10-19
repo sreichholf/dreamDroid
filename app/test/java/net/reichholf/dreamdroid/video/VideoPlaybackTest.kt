@@ -13,6 +13,17 @@ class VideoPlaybackTest {
     }
 
     @Test
+    fun aNewStreamGetsThreeSecondsForItsTracksAReopenedOneTen() {
+        assertEquals(3_000L, VideoPlayback.tracksTimeoutMs(reopened = false))
+        assertEquals(10_000L, VideoPlayback.tracksTimeoutMs(reopened = true))
+    }
+
+    @Test
+    fun aStreamWithTracksGetsTheBufferAndFiveSecondsToPlay() {
+        assertEquals(7_000L, VideoPlayback.playTimeoutMs(2_000))
+    }
+
+    @Test
     fun media3PlaysHttpStreamsOnly() {
         assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "http"))
         assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "HTTPS"))

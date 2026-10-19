@@ -21,6 +21,7 @@ import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.helpers.HttpUserInfo
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
+import org.videolan.libvlc.interfaces.IMedia
 
 /**
  * The process's libVLC [MediaPlayer].
@@ -61,6 +62,9 @@ class VlcEngine @Inject constructor(
     /** How the next stream's first picture is awaited; set by [start], used on Playing. */
     private var videoWatch: VideoWatch? = null
     private var videoWatchJob: Job? = null
+
+    /** True once the stream [start] began reported an audio or video track. */
+    private var tracksFound = false
     private var views: PlayerViews? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
@@ -118,6 +122,7 @@ class VlcEngine @Inject constructor(
         val mp = mediaPlayer()
         val gen = ++generation
         stateFlow.value = PlayerState()
+        tracksFound = false
         val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = request.hwAccelFlags and MEDIA_HWACCEL_FORCE > 0
         videoWatchJob?.cancel()
@@ -258,7 +263,19 @@ class VlcEngine @Inject constructor(
                 null
             }
 
-            MediaPlayer.Event.ESAdded,
+            MediaPlayer.Event.ESAdded -> {
+                refreshTrackCounts(mp)
+                val type = event.esChangedType
+                if (!tracksFound &&
+                    (type == IMedia.Track.Type.Audio || type == IMedia.Track.Type.Video)
+                ) {
+                    tracksFound = true
+                    PlayerEvent.TracksFound
+                } else {
+                    null
+                }
+            }
+
             MediaPlayer.Event.ESDeleted -> {
                 refreshTrackCounts(mp)
                 null
