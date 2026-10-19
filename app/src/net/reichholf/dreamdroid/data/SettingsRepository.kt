@@ -22,6 +22,9 @@ data class AppSettings(
     val integratedVideoPlayer: Boolean = true,
     val videoEnableGestures: Boolean = true,
     val videoHardwareAcceleration: String = VLCPlayer.MEDIA_HWACCEL_ENABLED.toString(),
+    val streamBufferMs: String = "2000",
+    /** The package of the external player; empty: the system asks or uses its default. */
+    val externalPlayer: String = "",
     val startScreen: String = StartScreen.VALUE_SERVICES,
     val volumeControl: Boolean = false,
     val instantZap: Boolean = false,
@@ -46,6 +49,10 @@ data class AppSettings(
     /** [gridMaxCols] as a column cap; [AUTO_FIT_COLUMNS] or below 1: as many as fit. */
     val maxGridColumns: Int
         get() = gridMaxCols.toIntOrNull() ?: AUTO_FIT_COLUMNS
+
+    /** [streamBufferMs] as milliseconds; the default for a value that is not a number. */
+    val streamBuffer: Int
+        get() = streamBufferMs.toIntOrNull() ?: AppSettings().streamBufferMs.toInt()
 }
 
 /** `grid_max_cols` value for "as many columns as fit". */
@@ -81,6 +88,8 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DreamDroid.PREFS_KEY_HWACCEL,
             DEFAULTS.videoHardwareAcceleration
         ),
+        streamBufferMs = string(DreamDroid.PREFS_KEY_STREAM_BUFFER, DEFAULTS.streamBufferMs),
+        externalPlayer = string(DreamDroid.PREFS_KEY_EXTERNAL_PLAYER, DEFAULTS.externalPlayer),
         startScreen = StartScreen.read(preferences),
         volumeControl = bool(DreamDroid.PREFS_KEY_VOLUME_CONTROL, DEFAULTS.volumeControl),
         instantZap = bool(DreamDroid.PREFS_KEY_INSTANT_ZAP, DEFAULTS.instantZap),
@@ -218,6 +227,8 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
 
         val STRINGS: List<Pair<String, (AppSettings) -> String>> = listOf(
             DreamDroid.PREFS_KEY_HWACCEL to AppSettings::videoHardwareAcceleration,
+            DreamDroid.PREFS_KEY_STREAM_BUFFER to AppSettings::streamBufferMs,
+            DreamDroid.PREFS_KEY_EXTERNAL_PLAYER to AppSettings::externalPlayer,
             DreamDroid.PREFS_KEY_START_SCREEN to AppSettings::startScreen,
             DreamDroid.PREFS_KEY_THEME_TYPE to AppSettings::themeType,
             DreamDroid.PREFS_KEY_GRID_MAX_COLS to AppSettings::gridMaxCols,

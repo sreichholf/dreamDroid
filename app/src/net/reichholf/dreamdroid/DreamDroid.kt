@@ -260,6 +260,8 @@ class DreamDroid : Application() {
         const val PREFS_KEY_FAKE_PICON: String = "fake_picon"
         const val PREFS_KEY_XML_DEBUG: String = "xml_debug"
         const val PREFS_KEY_INTEGRATED_PLAYER: String = "integrated_video_player"
+        const val PREFS_KEY_EXTERNAL_PLAYER: String = "external_video_player"
+        const val PREFS_KEY_STREAM_BUFFER: String = "video_stream_buffer"
         const val PREFS_KEY_THEME_TYPE: String = "theme_type"
         const val PREFS_KEY_INSTANT_ZAP: String = "instant_zap"
         const val PREFS_KEY_NOW_PLAYING_STRIP: String = "now_playing_strip"

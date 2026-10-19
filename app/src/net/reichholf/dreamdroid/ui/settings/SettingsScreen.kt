@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.ExternalPlayer
 import net.reichholf.dreamdroid.ui.compose.ListRow
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
@@ -45,6 +46,7 @@ fun SettingsScreen(
     settings: AppSettings,
     onChange: ((AppSettings) -> AppSettings) -> Unit,
     onSyncPicons: () -> Unit,
+    externalPlayers: List<ExternalPlayer> = emptyList(),
     showDeveloperCategory: Boolean = false,
     showDynamicThemeColors: Boolean = false,
     syncPiconsPathDraft: TextFieldState? = null,
@@ -89,6 +91,7 @@ fun SettingsScreen(
                 onChange { it.copy(integratedVideoPlayer = checked) }
             }
         )
+        ExternalPlayerPreferenceRow(settings, externalPlayers) { listDialog = it }
         SwitchPreferenceRow(
             title = stringResource(R.string.video_enable_gestures),
             summary = stringResource(R.string.video_enable_gestures_long),
@@ -115,6 +118,7 @@ fun SettingsScreen(
                 )
             }
         )
+        StreamBufferPreferenceRow(settings) { listDialog = it }
 
         PreferenceCategoryHeader(stringResource(R.string.usability))
         val startEntries = stringArrayResource(R.array.start_screen_entries)

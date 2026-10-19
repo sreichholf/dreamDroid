@@ -10,6 +10,7 @@ import javax.inject.Singleton
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +31,13 @@ data class PlayerState(
     val audioTracks: Int = 0,
     val subtitleTracks: Int = 0
 )
+
+/**
+ * A stream for [VLCPlayer.playUri]. [hwAccelFlags] are [VLCPlayer.MEDIA_HWACCEL_ENABLED] and
+ * [VLCPlayer.MEDIA_HWACCEL_FORCE]; [bufferMs] is libVLC's network caching. A [live] stream is
+ * opened again when it fails or ends (see [LiveReconnect]).
+ */
+data class PlayRequest(val uri: Uri, val hwAccelFlags: Int, val bufferMs: Int, val live: Boolean)
 
 /**
  * The process's libVLC [MediaPlayer].
@@ -54,7 +62,7 @@ class VLCPlayer @Inject constructor(
     private var mediaPlayer: MediaPlayer? = null
 
     /**
-     * Counts streams on the main thread: [playUri] starts one, [detach] and [release] end it.
+     * Counts streams on the main thread: [start] begins one, [detach] and [release] end it.
      * Events and a pending play() tagged with an older value belong to a stream that is gone.
      */
     private var generation: Int = 0
@@ -67,6 +75,10 @@ class VLCPlayer @Inject constructor(
      * main-thread call would wait for it.
      */
     private val switching: Boolean get() = startedGeneration != generation
+
+    /** The stream [playUri] asked for last; a reconnect opens it again. */
+    private var request: PlayRequest? = null
+    private var reconnect = LiveReconnect()
     private var listener: MediaPlayer.EventListener? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
@@ -132,20 +144,29 @@ class VLCPlayer @Inject constructor(
         }
     }
 
-    fun playUri(uri: Uri, flags: Int) {
+    fun playUri(request: PlayRequest) {
+        this.request = request
+        reconnect = LiveReconnect()
+        start(request)
+    }
+
+    private fun start(request: PlayRequest) {
         val mp = mediaPlayer()
         val gen = ++generation
         stateFlow.value = PlayerState()
-        val isHwAccel = flags and MEDIA_HWACCEL_ENABLED > 0
-        val isHwAccelForce = flags and MEDIA_HWACCEL_FORCE > 0
+        val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
+        val isHwAccelForce = request.hwAccelFlags and MEDIA_HWACCEL_FORCE > 0
         // VLC for Android's PlayerController.startPlayback: setMedia off main, then listener
         // and play() on main. setMedia joins the old stream's threads, which can take long.
         scope.launch(Dispatchers.Main.immediate) {
             try {
                 commands.call {
-                    val media = Media(VLCInstance.get(context), uri)
+                    val media = Media(VLCInstance.get(context), request.uri)
                     try {
                         media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
+                        // DVB streams start anywhere in a long GOP; a bigger buffer rides out
+                        // the wait for a keyframe and the receiver's slow start after a zap.
+                        media.addOption(":network-caching=${request.bufferMs}")
                         // The old stream's teardown events must not reach the overlay.
                         mp.setEventListener(null)
                         mp.media = media
@@ -154,7 +175,7 @@ class VLCPlayer @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(uri.toString())} failed", e)
+                Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(request.uri.toString())} failed", e)
                 return@launch
             }
             // A zap, detach, or release since then owns the player now.
@@ -164,6 +185,24 @@ class VLCPlayer @Inject constructor(
             mp.rate = 1.0f
             mp.play()
         }
+    }
+
+    /**
+     * Opens a live stream that failed or ended again after [LiveReconnect]'s wait. False when
+     * the stream is not live or the attempts ran out; the event then reaches the overlay.
+     */
+    private fun reconnectLive(): Boolean {
+        val request = request?.takeIf { it.live } ?: return false
+        val delayMs = reconnect.onFailure() ?: return false
+        Log.i(LOG_TAG, "Live stream dropped, reconnecting in $delayMs ms")
+        // The dropped stream's later events (an error is often followed by its end) are stale.
+        val gen = ++generation
+        scope.launch(Dispatchers.Main.immediate) {
+            delay(delayMs)
+            // A zap, detach, or release since then owns the player now.
+            if (gen == generation) start(request)
+        }
+        return true
     }
 
     /** Pauses a stream playing at normal speed; otherwise plays at normal speed. */
@@ -241,8 +280,13 @@ class VLCPlayer @Inject constructor(
         // The old stream's events still arrive after a zap or release() posted them.
         if (gen != generation) return
         when (event.type) {
-            MediaPlayer.Event.TimeChanged ->
+            MediaPlayer.Event.TimeChanged -> {
+                reconnect.onPlayed()
                 stateFlow.update { it.copy(timeMs = event.timeChanged) }
+            }
+
+            MediaPlayer.Event.EncounteredError,
+            MediaPlayer.Event.EndReached -> if (reconnectLive()) return
 
             MediaPlayer.Event.PositionChanged ->
                 stateFlow.update { it.copy(position = event.positionChanged) }

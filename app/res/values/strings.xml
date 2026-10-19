@@ -351,6 +351,17 @@
     <string name="use_hw_accel">Accelerated decoding</string>
     <string name="use_hw_accel_long">Use Hardware acceleration for video decoding (%s)</string>
     <string name="video_player">Video Player</string>
+    <string-array name="stream_buffer_entries">
+        <item>1 second</item>
+        <item>2 seconds</item>
+        <item>3 seconds</item>
+        <item>5 seconds</item>
+    </string-array>
+    <string name="stream_buffer">Stream buffer</string>
+    <string name="stream_buffer_long">Raise it if streams stutter or stop (%s)</string>
+    <string name="external_player">External player</string>
+    <string name="external_player_long">%s. If live TV does not start, set the profile\'s stream mode to Transcoding.</string>
+    <string name="external_player_ask">Ask every time</string>
     <string name="video_enable_gestures_long">Enable gestures for volume and brightness control</string>
     <string name="video_enable_gestures">Enable gestures</string>
     <string name="online_picons">Use "online" picons</string>

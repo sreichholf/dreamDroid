@@ -9,6 +9,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasSetTextAction
@@ -29,6 +32,7 @@ import java.util.Locale
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.ExternalPlayer
 import net.reichholf.dreamdroid.ui.compose.LIST_ROW_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -162,6 +166,55 @@ class SettingsScreenTest {
         composeRule.waitForIdle()
         assertEquals("compact", settings.multiEpgTextSize)
         composeRule.onNodeWithText("Compact").performScrollTo().assertIsDisplayed()
+    }
+
+    @Test
+    fun externalPlayerIsChosenOnlyWhileTheIntegratedPlayerIsOff() {
+        var settings by mutableStateOf(AppSettings())
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    settings = settings,
+                    onChange = { settings = it(settings) },
+                    onSyncPicons = {},
+                    externalPlayers = listOf(ExternalPlayer("org.videolan.vlc", "VLC"))
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("External player").assertIsNotEnabled()
+        composeRule.onNode(hasText("Integrated video player") and isToggleable())
+            .performClick()
+        composeRule.onNodeWithText("External player").assertIsEnabled().performClick()
+        composeRule.onNode(hasText("Ask every time") and isSelectable()).assertIsSelected()
+        composeRule.onNodeWithText("VLC").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals("org.videolan.vlc", settings.externalPlayer)
+        composeRule.onNodeWithText("VLC", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun streamBufferDefaultsToTwoSecondsAndChoosesFive() {
+        var settings by mutableStateOf(AppSettings())
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    settings = settings,
+                    onChange = { settings = it(settings) },
+                    onSyncPicons = {}
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("2 seconds", substring = true).performScrollTo()
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Stream buffer").performScrollTo().performClick()
+        composeRule.onNodeWithText("5 seconds").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals("5000", settings.streamBufferMs)
+        composeRule.onNodeWithText("5 seconds", substring = true).assertIsDisplayed()
     }
 
     @Test

@@ -36,14 +36,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlinx.coroutines.launch
-import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.isTelevision
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
@@ -57,6 +56,7 @@ import net.reichholf.dreamdroid.ui.video.SleepTimerCountdown
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
+import net.reichholf.dreamdroid.video.PlayRequest
 import net.reichholf.dreamdroid.video.VLCPlayer
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IMedia
@@ -83,6 +83,9 @@ class VideoActivity :
 
     @Inject
     lateinit var player: VLCPlayer
+
+    @Inject
+    lateinit var settings: SettingsRepository
 
     /** Views, vout callback, and event listener are on [player] between onStart and onStop. */
     private var playerAttached: Boolean = false
@@ -276,16 +279,17 @@ class VideoActivity :
         overlay?.applyPlaybackExtras(intent.extras)
         if (!playerAttached) return
         val data = intent.data ?: return
-        val accel =
-            Integer.parseInt(
-                PreferenceManager
-                    .getDefaultSharedPreferences(this)
-                    .getString(
-                        DreamDroid.PREFS_KEY_HWACCEL,
-                        Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)
-                    ) ?: Integer.toString(VLCPlayer.MEDIA_HWACCEL_ENABLED)
+        val values = settings.current()
+        player.playUri(
+            PlayRequest(
+                uri = data,
+                hwAccelFlags = values.videoHardwareAcceleration.toIntOrNull()
+                    ?: VLCPlayer.MEDIA_HWACCEL_ENABLED,
+                bufferMs = values.streamBuffer,
+                // Live services carry their reference; recordings do not.
+                live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
             )
-        player.playUri(data, accel)
+        )
         playbackAlreadyStarted = true
     }
 
