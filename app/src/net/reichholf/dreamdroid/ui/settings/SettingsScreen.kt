@@ -40,6 +40,7 @@ import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.compose.ListRowSurface
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
+import net.reichholf.dreamdroid.video.Engine
 
 @Composable
 fun SettingsScreen(
@@ -47,6 +48,7 @@ fun SettingsScreen(
     onChange: ((AppSettings) -> AppSettings) -> Unit,
     onSyncPicons: () -> Unit,
     externalPlayers: List<ExternalPlayer> = emptyList(),
+    media3Unsupported: List<String> = emptyList(),
     showDeveloperCategory: Boolean = false,
     showDynamicThemeColors: Boolean = false,
     syncPiconsPathDraft: TextFieldState? = null,
@@ -92,6 +94,7 @@ fun SettingsScreen(
             }
         )
         ExternalPlayerPreferenceRow(settings, externalPlayers) { listDialog = it }
+        PlayerEnginePreferenceRow(settings, media3Unsupported) { listDialog = it }
         SwitchPreferenceRow(
             title = stringResource(R.string.video_enable_gestures),
             summary = stringResource(R.string.video_enable_gestures_long),
@@ -107,7 +110,7 @@ fun SettingsScreen(
                 R.string.use_hw_accel_long,
                 entryLabel(hwEntries, hwValues, settings.videoHardwareAcceleration)
             ),
-            enabled = settings.integratedVideoPlayer,
+            enabled = settings.integratedVideoPlayer && settings.engine == Engine.Vlc,
             onClick = {
                 listDialog = ListDialogSpec(
                     title = hwAccelDialogTitle,

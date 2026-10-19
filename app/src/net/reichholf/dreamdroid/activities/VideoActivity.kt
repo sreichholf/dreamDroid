@@ -19,10 +19,10 @@ import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup.LayoutParams
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.getValue
@@ -57,20 +57,19 @@ import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
 import net.reichholf.dreamdroid.video.PlayRequest
-import net.reichholf.dreamdroid.video.VLCPlayer
-import org.videolan.libvlc.MediaPlayer
-import org.videolan.libvlc.interfaces.IMedia
-import org.videolan.libvlc.interfaces.IVLCVout
+import net.reichholf.dreamdroid.video.PlayerEvent
+import net.reichholf.dreamdroid.video.PlayerViews
+import net.reichholf.dreamdroid.video.VideoLayout
+import net.reichholf.dreamdroid.video.VideoPlayer
+import net.reichholf.dreamdroid.video.VlcEngine
 
 /**
  * Created by reichi on 16/02/16.
  */
 @AndroidEntryPoint
 class VideoActivity :
-    AppCompatActivity(),
-    IVLCVout.OnNewVideoLayoutListener,
-    DialogActionListener,
-    MediaPlayer.EventListener {
+    ComponentActivity(),
+    DialogActionListener {
 
     var surfaceFrame: FrameLayout? = null
     var surfaceView: SurfaceView? = null
@@ -82,12 +81,12 @@ class VideoActivity :
     lateinit var sessions: SessionConnectionHolder
 
     @Inject
-    lateinit var player: VLCPlayer
+    lateinit var player: VideoPlayer
 
     @Inject
     lateinit var settings: SettingsRepository
 
-    /** Views, vout callback, and event listener are on [player] between onStart and onStop. */
+    /** Views and event listener are on [player] between onStart and onStop. */
     private var playerAttached: Boolean = false
 
     var onLayoutChangeListener: View.OnLayoutChangeListener? = null
@@ -282,9 +281,10 @@ class VideoActivity :
         val values = settings.current()
         player.playUri(
             PlayRequest(
-                uri = data,
+                url = data.toString(),
+                engine = values.engine,
                 hwAccelFlags = values.videoHardwareAcceleration.toIntOrNull()
-                    ?: VLCPlayer.MEDIA_HWACCEL_ENABLED,
+                    ?: VlcEngine.MEDIA_HWACCEL_ENABLED,
                 bufferMs = values.streamBuffer,
                 // Live services carry their reference; recordings do not.
                 live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
@@ -310,8 +310,10 @@ class VideoActivity :
         subtitlesSurfaceView.setZOrderMediaOverlay(true)
         subtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
 
-        player.attach(this, surfaceView, subtitlesSurfaceView)
-        player.setEventListener(this)
+        player.attach(
+            PlayerViews(surfaceView!!, subtitlesSurfaceView, findViewById(R.id.subtitles_view))
+        )
+        player.setEventListener(::onPlayerEvent)
         playerAttached = true
 
         handleIntent(intent)
@@ -471,21 +473,13 @@ class VideoActivity :
             WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
-    override fun onNewVideoLayout(
-        vlcVout: IVLCVout,
-        width: Int,
-        height: Int,
-        visibleWidth: Int,
-        visibleHeight: Int,
-        sarNum: Int,
-        sarDen: Int
-    ) {
-        videoWidth = width
-        videoHeight = height
-        videoVisibleWidth = visibleWidth
-        videoVisibleHeight = visibleHeight
-        this.sarNum = sarNum
-        this.sarDen = sarDen
+    private fun onVideoLayout(layout: VideoLayout) {
+        videoWidth = layout.width
+        videoHeight = layout.height
+        videoVisibleWidth = layout.visibleWidth
+        videoVisibleHeight = layout.visibleHeight
+        sarNum = layout.sarNum
+        sarDen = layout.sarDen
         changeSurfaceLayout()
         if (playerAttached) {
             // The size arrives after Playing; PiP needs it for the aspect ratio.
@@ -511,27 +505,20 @@ class VideoActivity :
         cleanup()
     }
 
-    override fun onEvent(event: MediaPlayer.Event) {
-        if (event.type == MediaPlayer.Event.Playing) {
+    private fun onPlayerEvent(event: PlayerEvent) {
+        if (event == PlayerEvent.Playing) {
             playbackAlreadyStarted = true
         }
+        // The engine reports the size while views are attached, the overlay or not.
+        if (event is PlayerEvent.Layout) {
+            onVideoLayout(event.layout)
+            return
+        }
         val chrome = overlay ?: return
-        when (event.type) {
-            MediaPlayer.Event.Playing -> {
-                onMediaPlaying()
-                // Fall through from Playing into ESSelected (matches Java switch).
-                if (event.esChangedType == IMedia.Track.Type.Video) {
-                    changeSurfaceLayout()
-                }
-            }
-
-            MediaPlayer.Event.ESSelected -> {
-                if (event.esChangedType == IMedia.Track.Type.Video) {
-                    changeSurfaceLayout()
-                }
-            }
-
-            MediaPlayer.Event.EndReached -> finish()
+        when (event) {
+            PlayerEvent.Playing -> onMediaPlaying()
+            PlayerEvent.Ended -> finish()
+            else -> Unit
         }
         chrome.onEvent(event)
     }

@@ -357,6 +357,14 @@
         <item>3 seconds</item>
         <item>5 seconds</item>
     </string-array>
+    <string-array name="player_engine_entries">
+        <item>VLC</item>
+        <item>Media3 (device decoders)</item>
+    </string-array>
+    <string name="player_engine">Player engine</string>
+    <string name="player_engine_media3_missing">Not supported on this device: %s. These channels play with VLC.</string>
+    <string name="player_fell_back_to_vlc">Media3 cannot play this stream, using VLC</string>
+    <string name="track_off">Off</string>
     <string name="stream_buffer">Stream buffer</string>
     <string name="stream_buffer_long">Raise it if streams stutter or stop (%s)</string>
     <string name="external_player">External player</string>

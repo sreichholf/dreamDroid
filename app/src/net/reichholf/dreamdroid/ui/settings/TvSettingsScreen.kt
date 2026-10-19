@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.ExternalPlayer
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
+import net.reichholf.dreamdroid.video.Engine
 
 /**
  * TV settings subset matching [R.xml.preferences] on television
@@ -34,6 +35,7 @@ fun TvSettingsScreen(
     onChange: ((AppSettings) -> AppSettings) -> Unit,
     onSyncPicons: () -> Unit = {},
     externalPlayers: List<ExternalPlayer> = emptyList(),
+    media3Unsupported: List<String> = emptyList(),
     showDeveloperCategory: Boolean = false,
     syncPiconsPathDraft: TextFieldState? = null,
     onEditSyncPiconsPath: () -> Unit = {},
@@ -67,13 +69,14 @@ fun TvSettingsScreen(
                 }
             )
             ExternalPlayerPreferenceRow(settings, externalPlayers) { listDialog = it }
+            PlayerEnginePreferenceRow(settings, media3Unsupported) { listDialog = it }
             ListPreferenceRow(
                 title = stringResource(R.string.use_hw_accel),
                 summary = stringResource(
                     R.string.use_hw_accel_long,
                     entryLabel(hwEntries, hwValues, settings.videoHardwareAcceleration)
                 ),
-                enabled = settings.integratedVideoPlayer,
+                enabled = settings.integratedVideoPlayer && settings.engine == Engine.Vlc,
                 onClick = {
                     listDialog = ListDialogSpec(
                         title = hwAccelDialogTitle,

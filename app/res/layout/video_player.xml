@@ -28,6 +28,12 @@
                 android:id="@+id/subtitles_surface"
                 android:layout_width="1dp"
                 android:layout_height="1dp" />
+
+            <!-- Media3 draws subtitles here; VLC uses subtitles_surface. -->
+            <androidx.media3.ui.SubtitleView
+                android:id="@+id/subtitles_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
         </FrameLayout>
     </FrameLayout>
 

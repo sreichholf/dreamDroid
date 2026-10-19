@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
 import net.reichholf.dreamdroid.ui.text.SavedTextField
 import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.video.Media3Formats
 
 /** What a settings change asks of the activity. The destination runs it, then clears it. */
 enum class SettingsEffect {
@@ -36,6 +37,8 @@ enum class SettingsEffect {
 data class SettingsUiState(
     val settings: AppSettings,
     val externalPlayers: List<ExternalPlayer> = emptyList(),
+    /** Receiver formats Media3 cannot decode on this device. */
+    val media3Unsupported: List<String> = emptyList(),
     val editingSyncPiconsPath: Boolean = false,
     val userMessage: UiText? = null,
     val effect: SettingsEffect? = null
@@ -54,7 +57,8 @@ class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     private val services: ServiceRepository,
     private val piconSync: PiconSyncScheduler,
-    private val externalPlayers: ExternalPlayers
+    private val externalPlayers: ExternalPlayers,
+    private val media3Formats: Media3Formats
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         SettingsUiState(
@@ -75,6 +79,10 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             val players = externalPlayers.installed()
             _uiState.update { it.copy(externalPlayers = players) }
+        }
+        viewModelScope.launch {
+            val unsupported = media3Formats.unsupported()
+            _uiState.update { it.copy(media3Unsupported = unsupported) }
         }
     }
 

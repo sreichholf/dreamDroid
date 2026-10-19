@@ -187,11 +187,39 @@ class SettingsScreenTest {
             .performClick()
         composeRule.onNodeWithText("External player").assertIsEnabled().performClick()
         composeRule.onNode(hasText("Ask every time") and isSelectable()).assertIsSelected()
-        composeRule.onNodeWithText("VLC").performClick()
+        composeRule.onNode(hasText("VLC") and isSelectable()).performClick()
         composeRule.waitForIdle()
 
         assertEquals("org.videolan.vlc", settings.externalPlayer)
-        composeRule.onNodeWithText("VLC", substring = true).assertIsDisplayed()
+        composeRule.onNodeWithText("VLC. If live TV", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun media3NamesWhatTheDeviceCannotDecodeAndTurnsOffVlcDecoding() {
+        var settings by mutableStateOf(AppSettings())
+        composeRule.setContent {
+            DreamDroidTheme {
+                SettingsScreen(
+                    settings = settings,
+                    onChange = { settings = it(settings) },
+                    onSyncPicons = {},
+                    media3Unsupported = listOf("MPEG-2", "AC3")
+                )
+            }
+        }
+
+        composeRule.onNodeWithText("Accelerated decoding").assertIsEnabled()
+        composeRule.onNodeWithText("Not supported", substring = true).assertDoesNotExist()
+        composeRule.onNodeWithText("Player engine").performScrollTo().performClick()
+        composeRule.onNodeWithText("Media3 (device decoders)").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals("media3", settings.playerEngine)
+        composeRule.onNodeWithText(
+            "Not supported on this device: MPEG-2, AC3",
+            substring = true
+        ).performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Accelerated decoding").assertIsNotEnabled()
     }
 
     @Test

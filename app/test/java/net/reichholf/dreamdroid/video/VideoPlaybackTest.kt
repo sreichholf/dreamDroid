@@ -8,6 +8,14 @@ import org.junit.jupiter.api.Test
 
 class VideoPlaybackTest {
     @Test
+    fun media3PlaysHttpStreamsOnly() {
+        assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "http"))
+        assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "HTTPS"))
+        assertEquals(Engine.Vlc, VideoPlayback.engineFor(Engine.Media3, "rtsp"))
+        assertEquals(Engine.Vlc, VideoPlayback.engineFor(Engine.Vlc, "http"))
+    }
+
+    @Test
     fun nextIndexIncludesLastItemThenWraps() {
         assertEquals(1, VideoPlayback.nextIndex(0, 3))
         assertEquals(2, VideoPlayback.nextIndex(1, 3))

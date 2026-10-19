@@ -48,21 +48,21 @@ import net.reichholf.dreamdroid.tv.ui.bindTvZapList
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
-import net.reichholf.dreamdroid.video.VLCPlayer
+import net.reichholf.dreamdroid.video.MediaTrack
+import net.reichholf.dreamdroid.video.PlayerEvent
 import net.reichholf.dreamdroid.video.VideoPlayback
-import org.videolan.libvlc.MediaPlayer
+import net.reichholf.dreamdroid.video.VideoPlayer
 
 /**
- * VLC overlay chrome hosted by [VideoActivity]. Not a Fragment — inflate into
+ * Player overlay chrome hosted by [VideoActivity]. Not a Fragment — inflate into
  * [R.id.overlay], wire Compose / gestures, and drive playback chrome.
  */
 class VideoOverlayController(
     private val activity: VideoActivity,
     private val playback: VideoPlaybackViewModel,
     private val sessions: SessionConnectionHolder,
-    private val player: VLCPlayer
-) : MediaPlayer.EventListener,
-    DialogActionListener {
+    private val player: VideoPlayer
+) : DialogActionListener {
 
     private var attached: Boolean = false
     private var resumed: Boolean = false
@@ -517,7 +517,7 @@ class VideoOverlayController(
 
     private fun showTrackSelection(
         title: String,
-        descriptions: Array<MediaPlayer.TrackDescription>?,
+        descriptions: List<MediaTrack>?,
         dialogTag: String
     ) {
         if (descriptions == null || descriptions.isEmpty()) {
@@ -971,25 +971,30 @@ class VideoOverlayController(
         return sdroot.visibility == View.VISIBLE
     }
 
-    override fun onEvent(event: MediaPlayer.Event) {
+    fun onEvent(event: PlayerEvent) {
         val view = rootView ?: return
-        when (event.type) {
-            MediaPlayer.Event.Opening -> {
+        when (event) {
+            PlayerEvent.Opening -> {
                 val progressView = view.findViewById<View>(R.id.video_load_progress)
                 fadeInView(progressView)
             }
 
-            MediaPlayer.Event.Playing -> {
+            PlayerEvent.Playing -> {
                 val progressView = view.findViewById<View>(R.id.video_load_progress)
                 fadeOutView(progressView)
                 updateProgress()
                 hideOverlays()
             }
 
-            MediaPlayer.Event.PositionChanged -> updateProgress()
+            PlayerEvent.Progress -> updateProgress()
 
-            MediaPlayer.Event.EncounteredError ->
+            is PlayerEvent.Failed ->
                 playback.showMessage(UiText.Resource(R.string.playback_failed))
+
+            PlayerEvent.FellBackToVlc ->
+                playback.showMessage(UiText.Resource(R.string.player_fell_back_to_vlc))
+
+            else -> Unit
         }
     }
 

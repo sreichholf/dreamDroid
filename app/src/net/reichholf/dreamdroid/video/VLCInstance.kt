@@ -21,6 +21,7 @@ package net.reichholf.dreamdroid.video
  *****************************************************************************/
 
 import android.content.Context
+import net.reichholf.dreamdroid.BuildConfig
 import org.videolan.libvlc.LibVLC
 
 /** The process-wide [LibVLC], created on first use from the caller's application context. */
@@ -30,7 +31,14 @@ object VLCInstance {
 
     @Synchronized
     fun get(context: Context): LibVLC = libVLC
-        ?: LibVLC(context.applicationContext, arrayListOf("--http-reconnect")).also {
+        ?: LibVLC(context.applicationContext, options()).also {
             libVLC = it
         }
+
+    /** Debug builds log libVLC's decoder and output choices to logcat, for field reports. */
+    private fun options(): ArrayList<String> = if (BuildConfig.DEBUG) {
+        arrayListOf("--http-reconnect", "-vv")
+    } else {
+        arrayListOf("--http-reconnect")
+    }
 }

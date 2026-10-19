@@ -12,7 +12,8 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.ui.nav.DrawerEpgMode
 import net.reichholf.dreamdroid.ui.nav.StartScreen
-import net.reichholf.dreamdroid.video.VLCPlayer
+import net.reichholf.dreamdroid.video.Engine
+import net.reichholf.dreamdroid.video.VlcEngine
 
 /**
  * The settings screen's preferences. Defaults match `R.xml.preferences`. List values stay
@@ -21,7 +22,8 @@ import net.reichholf.dreamdroid.video.VLCPlayer
 data class AppSettings(
     val integratedVideoPlayer: Boolean = true,
     val videoEnableGestures: Boolean = true,
-    val videoHardwareAcceleration: String = VLCPlayer.MEDIA_HWACCEL_ENABLED.toString(),
+    val videoHardwareAcceleration: String = VlcEngine.MEDIA_HWACCEL_ENABLED.toString(),
+    val playerEngine: String = Engine.Vlc.prefValue,
     val streamBufferMs: String = "2000",
     /** The package of the external player; empty: the system asks or uses its default. */
     val externalPlayer: String = "",
@@ -49,6 +51,9 @@ data class AppSettings(
     /** [gridMaxCols] as a column cap; [AUTO_FIT_COLUMNS] or below 1: as many as fit. */
     val maxGridColumns: Int
         get() = gridMaxCols.toIntOrNull() ?: AUTO_FIT_COLUMNS
+
+    val engine: Engine
+        get() = Engine.fromPref(playerEngine)
 
     /** [streamBufferMs] as milliseconds; the default for a value that is not a number. */
     val streamBuffer: Int
@@ -88,6 +93,7 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DreamDroid.PREFS_KEY_HWACCEL,
             DEFAULTS.videoHardwareAcceleration
         ),
+        playerEngine = string(DreamDroid.PREFS_KEY_PLAYER_ENGINE, DEFAULTS.playerEngine),
         streamBufferMs = string(DreamDroid.PREFS_KEY_STREAM_BUFFER, DEFAULTS.streamBufferMs),
         externalPlayer = string(DreamDroid.PREFS_KEY_EXTERNAL_PLAYER, DEFAULTS.externalPlayer),
         startScreen = StartScreen.read(preferences),
@@ -228,6 +234,7 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
         val STRINGS: List<Pair<String, (AppSettings) -> String>> = listOf(
             DreamDroid.PREFS_KEY_HWACCEL to AppSettings::videoHardwareAcceleration,
             DreamDroid.PREFS_KEY_STREAM_BUFFER to AppSettings::streamBufferMs,
+            DreamDroid.PREFS_KEY_PLAYER_ENGINE to AppSettings::playerEngine,
             DreamDroid.PREFS_KEY_EXTERNAL_PLAYER to AppSettings::externalPlayer,
             DreamDroid.PREFS_KEY_START_SCREEN to AppSettings::startScreen,
             DreamDroid.PREFS_KEY_THEME_TYPE to AppSettings::themeType,

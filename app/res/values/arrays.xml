@@ -30,6 +30,10 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+    <string-array name="player_engine_values">
+        <item>vlc</item>
+        <item>media3</item>
+    </string-array>
     <string-array name="stream_buffer_values">
         <item>1000</item>
         <item>2000</item>

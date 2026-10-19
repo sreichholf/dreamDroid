@@ -168,6 +168,7 @@ private fun TvSettingsDestination(navController: NavHostController, viewModel: S
             settings = uiState.settings,
             onChange = viewModel::update,
             externalPlayers = uiState.externalPlayers,
+            media3Unsupported = uiState.media3Unsupported,
             onSyncPicons = {
                 if (context.needsNotificationPermission()) {
                     notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
