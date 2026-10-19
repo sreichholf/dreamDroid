@@ -22,6 +22,15 @@ object VideoPlayback {
         return if (current == 0) size - 1 else current - 1
     }
 
+    /**
+     * How long a hardware decoder may take to show the first frame once the stream plays: the
+     * buffer, then a short grace for the decoder and a keyframe. A working decoder shows a
+     * frame well within it; one that takes DVB streams and outputs nothing never does.
+     */
+    fun noVideoTimeoutMs(bufferMs: Int): Long = bufferMs + NO_VIDEO_GRACE_MS
+
+    private const val NO_VIDEO_GRACE_MS = 2_500L
+
     /** Media3 plays http(s) only; RTSP (the encoder stream mode) and the rest stay on VLC. */
     fun engineFor(preferred: Engine, scheme: String?): Engine =
         if (preferred == Engine.Media3 && scheme?.lowercase() in setOf("http", "https")) {

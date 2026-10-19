@@ -364,6 +364,7 @@
     <string name="player_engine">Player engine</string>
     <string name="player_engine_media3_missing">Not supported on this device: %s. These channels play with VLC.</string>
     <string name="player_fell_back_to_vlc">Media3 cannot play this stream, using VLC</string>
+    <string name="player_software_decoding">No picture from the hardware decoder, switching to software decoding</string>
     <string name="track_off">Off</string>
     <string name="stream_buffer">Stream buffer</string>
     <string name="stream_buffer_long">Raise it if streams stutter or stop (%s)</string>

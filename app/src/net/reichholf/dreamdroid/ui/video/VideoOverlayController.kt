@@ -972,27 +972,31 @@ class VideoOverlayController(
     }
 
     fun onEvent(event: PlayerEvent) {
-        val view = rootView ?: return
+        if (rootView == null) return
+        val spinner = activity.findViewById<View>(R.id.video_load_progress)
         when (event) {
-            PlayerEvent.Opening -> {
-                val progressView = view.findViewById<View>(R.id.video_load_progress)
-                fadeInView(progressView)
-            }
+            PlayerEvent.Opening -> fadeInView(spinner)
 
+            // The spinner stays until a picture shows: audio often plays first.
             PlayerEvent.Playing -> {
-                val progressView = view.findViewById<View>(R.id.video_load_progress)
-                fadeOutView(progressView)
                 updateProgress()
                 hideOverlays()
             }
 
+            PlayerEvent.PictureReady -> fadeOutView(spinner)
+
             PlayerEvent.Progress -> updateProgress()
 
-            is PlayerEvent.Failed ->
+            is PlayerEvent.Failed -> {
+                fadeOutView(spinner)
                 playback.showMessage(UiText.Resource(R.string.playback_failed))
+            }
 
             PlayerEvent.FellBackToVlc ->
                 playback.showMessage(UiText.Resource(R.string.player_fell_back_to_vlc))
+
+            PlayerEvent.SoftwareDecoding ->
+                playback.showMessage(UiText.Resource(R.string.player_software_decoding))
 
             else -> Unit
         }

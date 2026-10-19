@@ -40,6 +40,12 @@ class VideoPlayer(
     private var reconnect = LiveReconnect()
     private var reconnectJob: Job? = null
 
+    /**
+     * True once a hardware decoder showed no picture: the device's decoder fails on this
+     * receiver's streams, so later streams of the session start in software right away.
+     */
+    private var softwareVideo = false
+
     private val stateFlow = MutableStateFlow(PlayerState())
 
     /** The playing engine's state. */
@@ -72,8 +78,9 @@ class VideoPlayer(
         engine.release()
     }
 
-    fun playUri(request: PlayRequest) {
+    fun playUri(requested: PlayRequest) {
         reconnectJob?.cancel()
+        val request = if (softwareVideo) requested.inSoftware() else requested
         this.request = request
         reconnect = LiveReconnect()
         val target = VideoPlayback.engineFor(request.engine, request.url.substringBefore("://"))
@@ -86,10 +93,6 @@ class VideoPlayer(
     fun setPosition(position: Float) = engine.setPosition(position)
 
     fun slower() = engine.slower()
-
-    fun setWindowSize(width: Int, height: Int) = engine.setWindowSize(width, height)
-
-    fun resetScale() = engine.resetScale()
 
     fun audioTracks(): List<MediaTrack>? = engine.audioTracks()
 
@@ -132,6 +135,11 @@ class VideoPlayer(
 
             PlayerEvent.Ended -> if (reconnectLive()) return
 
+            PlayerEvent.NoVideo -> {
+                decodeInSoftware()
+                return
+            }
+
             else -> Unit
         }
         listener?.invoke(event)
@@ -148,6 +156,20 @@ class VideoPlayer(
         listener?.invoke(PlayerEvent.FellBackToVlc)
         return true
     }
+
+    /** Plays the stream again with VLC's software decoder, and later streams start there. */
+    private fun decodeInSoftware() {
+        val request = request ?: return
+        Log.i(LOG_TAG, "No picture from the hardware decoder, decoding in software")
+        softwareVideo = true
+        val software = request.inSoftware()
+        this.request = software
+        use(vlc)
+        vlc.start(software)
+        listener?.invoke(PlayerEvent.SoftwareDecoding)
+    }
+
+    private fun PlayRequest.inSoftware() = copy(engine = Engine.Vlc, hwAccelFlags = 0)
 
     /**
      * Opens a live stream that failed or ended again after [LiveReconnect]'s wait. False when

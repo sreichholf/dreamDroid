@@ -3,8 +3,10 @@ package net.reichholf.dreamdroid.video
 import android.view.SurfaceView
 import androidx.annotation.OptIn
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.SubtitleView
 import kotlinx.coroutines.flow.StateFlow
+import org.videolan.libvlc.util.VLCVideoLayout
 
 /** What the overlay shows of the playing stream, kept from the engine's events. */
 data class PlayerState(
@@ -48,8 +50,11 @@ sealed interface PlayerEvent {
 
     data object Playing : PlayerEvent
 
-    /** Playback time moved: the stream is showing frames. */
+    /** Playback time moved: the stream is playing. */
     data object Progress : PlayerEvent
+
+    /** The first video frame is on screen, or the stream turned out to have no video. */
+    data object PictureReady : PlayerEvent
 
     data class Layout(val layout: VideoLayout) : PlayerEvent
 
@@ -60,6 +65,16 @@ sealed interface PlayerEvent {
 
     /** Media3 could not decode the stream, VLC plays it now. */
     data object FellBackToVlc : PlayerEvent
+
+    /**
+     * The stream has video, but the hardware decoder showed no frame of it in time (see
+     * [VideoPlayback.noVideoTimeoutMs]). Some decoders take a DVB stream and output nothing.
+     */
+    data object NoVideo : PlayerEvent
+
+    /** The hardware decoder showed no picture; VLC decodes the stream in software now, and
+     * every later stream of this session starts there. */
+    data object SoftwareDecoding : PlayerEvent
 }
 
 /** Video size in pixels; the sample aspect ratio is [sarNum]:[sarDen]. */
@@ -75,11 +90,16 @@ data class VideoLayout(
 /** An audio or subtitle track as the track dialog offers it. */
 data class MediaTrack(val id: Int, val name: String)
 
-/** VLC draws into [surface] and [subtitlesSurface]; Media3 into [surface] and [subtitleView]. */
+/**
+ * Each engine's own video view; the playing engine shows its view and hides it when released.
+ * VLC fits its picture into [vlcLayout] itself; Media3 draws into [media3Surface], which
+ * [media3Frame] keeps at the video's aspect ratio, with subtitles in [subtitleView].
+ */
 @OptIn(UnstableApi::class)
 class PlayerViews(
-    val surface: SurfaceView,
-    val subtitlesSurface: SurfaceView,
+    val vlcLayout: VLCVideoLayout,
+    val media3Frame: AspectRatioFrameLayout,
+    val media3Surface: SurfaceView,
     val subtitleView: SubtitleView
 )
 
@@ -109,11 +129,6 @@ interface PlayerEngine {
 
     /** Rewinds a seekable stream. */
     fun slower()
-
-    fun setWindowSize(width: Int, height: Int)
-
-    /** Lets the engine fit the video to the surface again. */
-    fun resetScale()
 
     /** Null while no stream plays or one is still starting. */
     fun audioTracks(): List<MediaTrack>?

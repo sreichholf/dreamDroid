@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.video
 
 import android.content.Context
 import android.util.Log
+import android.view.View
 import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
@@ -9,6 +10,8 @@ import javax.inject.Singleton
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +21,6 @@ import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.helpers.HttpUserInfo
 import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
-import org.videolan.libvlc.interfaces.IVLCVout
 
 /**
  * The process's libVLC [MediaPlayer].
@@ -56,58 +58,49 @@ class VlcEngine @Inject constructor(
     private val switching: Boolean get() = startedGeneration != generation
     private var listener: ((PlayerEvent) -> Unit)? = null
 
+    /** How the next stream's first picture is awaited; set by [start], used on Playing. */
+    private var videoWatch: VideoWatch? = null
+    private var videoWatchJob: Job? = null
+    private var views: PlayerViews? = null
+
     private val stateFlow = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
-
-    private val layoutListener =
-        IVLCVout.OnNewVideoLayoutListener {
-                _,
-                width,
-                height,
-                visibleWidth,
-                visibleHeight,
-                sarNum,
-                sarDen
-            ->
-            listener?.invoke(
-                PlayerEvent.Layout(
-                    VideoLayout(width, height, visibleWidth, visibleHeight, sarNum, sarDen)
-                )
-            )
-        }
 
     override fun setEventListener(listener: ((PlayerEvent) -> Unit)?) {
         this.listener = listener
     }
 
+    /** libVLC sizes and places the picture inside [PlayerViews.vlcLayout] itself. */
     override fun attach(views: PlayerViews) {
-        val vlcVout = mediaPlayer().vlcVout
-        if (vlcVout.areViewsAttached()) {
-            vlcVout.detachViews()
+        this.views = views
+        val mp = mediaPlayer()
+        if (mp.vlcVout.areViewsAttached()) {
+            mp.detachViews()
         }
-        vlcVout.setVideoView(views.surface)
-        vlcVout.setSubtitlesView(views.subtitlesSurface)
-        vlcVout.attachViews(layoutListener)
+        views.vlcLayout.visibility = View.VISIBLE
+        mp.attachViews(views.vlcLayout, null, true, false)
+        mp.videoScale = MediaPlayer.ScaleType.SURFACE_BEST_FIT
     }
 
     override fun detach() {
         val mp = mediaPlayer ?: return
-        val vlcVout = mp.vlcVout
-        if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
+        if (!VideoPlayback.shouldDetachViews(true, mp.vlcVout.areViewsAttached())) {
             return
         }
         generation++
-        vlcVout.detachViews()
+        mp.detachViews()
+        hideViews()
         commands.post { mp.stop() }
     }
 
     override fun release() {
+        hideViews()
         val mp = mediaPlayer ?: return
         mediaPlayer = null
         generation++
         mp.setEventListener(null)
         if (mp.vlcVout.areViewsAttached()) {
-            mp.vlcVout.detachViews()
+            mp.detachViews()
         }
         commands.post {
             mp.stop()
@@ -116,16 +109,9 @@ class VlcEngine @Inject constructor(
         stateFlow.value = PlayerState()
     }
 
-    override fun setWindowSize(width: Int, height: Int) {
-        mediaPlayer?.vlcVout?.setWindowSize(width, height)
-    }
-
-    override fun resetScale() {
-        val mp = mediaPlayer ?: return
-        commands.post {
-            mp.setAspectRatio(null)
-            mp.setScale(0f)
-        }
+    private fun hideViews() {
+        views?.vlcLayout?.visibility = View.GONE
+        views = null
     }
 
     override fun start(request: PlayRequest) {
@@ -134,6 +120,12 @@ class VlcEngine @Inject constructor(
         stateFlow.value = PlayerState()
         val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = request.hwAccelFlags and MEDIA_HWACCEL_FORCE > 0
+        videoWatchJob?.cancel()
+        videoWatch = VideoWatch(
+            timeoutMs = VideoPlayback.noVideoTimeoutMs(request.bufferMs),
+            // Only a hardware decoder VLC may leave falls back; software has nowhere to go.
+            reportNoVideo = isHwAccel && !isHwAccelForce
+        )
         // VLC for Android's PlayerController.startPlayback: setMedia off main, then listener
         // and play() on main. setMedia joins the old stream's threads, which can take long.
         scope.launch(Dispatchers.Main.immediate) {
@@ -223,11 +215,7 @@ class VlcEngine @Inject constructor(
             mp.setEventListener(eventListener(mp, generation))
             // No setVideoTrackEnabled: libVLC turns video on itself once the surfaces are
             // ready. Queued, it would land while a stream starts and pick the track mid-start.
-            commands.post {
-                mp.setAspectRatio(null)
-                mp.setScale(0f)
-                mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0)
-            }
+            commands.post { mp.setVideoTitleDisplay(MediaPlayer.Position.Disable, 0) }
         }
 
     private fun eventListener(mp: MediaPlayer, gen: Int) =
@@ -241,6 +229,7 @@ class VlcEngine @Inject constructor(
 
             MediaPlayer.Event.Playing -> {
                 refreshTrackCounts(mp)
+                watchForVideo(mp, gen)
                 PlayerEvent.Playing
             }
 
@@ -264,6 +253,11 @@ class VlcEngine @Inject constructor(
                 null
             }
 
+            MediaPlayer.Event.Vout -> {
+                if (event.voutCount > 0) emitVideoLayout(mp, gen)
+                null
+            }
+
             MediaPlayer.Event.ESAdded,
             MediaPlayer.Event.ESDeleted -> {
                 refreshTrackCounts(mp)
@@ -279,6 +273,69 @@ class VlcEngine @Inject constructor(
         forwarded?.let { listener?.invoke(it) }
     }
 
+    /**
+     * Once per stream, polls libVLC's picture counts: [PlayerEvent.PictureReady] when the first
+     * picture is decoded or shown, or when the stream turns out to have no video;
+     * [PlayerEvent.NoVideo] when a hardware decoder has shown nothing in time.
+     */
+    private fun watchForVideo(mp: MediaPlayer, gen: Int) {
+        val watch = videoWatch ?: return
+        videoWatch = null
+        videoWatchJob = scope.launch(Dispatchers.Main.immediate) {
+            var waitedMs = 0L
+            while (waitedMs < MAX_PICTURE_WAIT_MS) {
+                delay(PICTURE_POLL_MS)
+                waitedMs += PICTURE_POLL_MS
+                if (gen != generation) return@launch
+                val (hasVideo, shown) = commands.call {
+                    val media = mp.media
+                    try {
+                        val stats = media?.stats
+                        val shown = stats != null &&
+                            (stats.decodedVideo > 0 || stats.displayedPictures > 0)
+                        (mp.videoTracksCount > 0) to shown
+                    } finally {
+                        media?.release()
+                    }
+                }
+                if (gen != generation) return@launch
+                val event = when {
+                    shown -> PlayerEvent.PictureReady
+                    waitedMs < watch.timeoutMs -> null
+                    !hasVideo -> PlayerEvent.PictureReady
+                    watch.reportNoVideo -> PlayerEvent.NoVideo
+                    else -> null
+                }
+                if (event != null) {
+                    if (event == PlayerEvent.NoVideo) {
+                        Log.i(LOG_TAG, "Hardware decoder showed no video in $waitedMs ms")
+                    }
+                    listener?.invoke(event)
+                    return@launch
+                }
+            }
+        }
+    }
+
+    private fun emitVideoLayout(mp: MediaPlayer, gen: Int) {
+        scope.launch(Dispatchers.Main.immediate) {
+            val track = commands.call { mp.currentVideoTrack } ?: return@launch
+            if (gen != generation || track.width == 0 || track.height == 0) return@launch
+            listener?.invoke(
+                PlayerEvent.Layout(
+                    VideoLayout(
+                        track.width,
+                        track.height,
+                        track.width,
+                        track.height,
+                        track.sarNum,
+                        track.sarDen
+                    )
+                )
+            )
+        }
+    }
+
     private fun refreshTrackCounts(mp: MediaPlayer) {
         if (switching || !mp.hasMedia()) return
         val audio = mp.audioTracksCount
@@ -289,7 +346,15 @@ class VlcEngine @Inject constructor(
     companion object {
         private const val LOG_TAG = "VlcEngine"
 
+        private const val PICTURE_POLL_MS = 250L
+
+        /** Stops watching a stream that shows no picture, so the poll does not run forever. */
+        private const val MAX_PICTURE_WAIT_MS = 120_000L
+
         const val MEDIA_HWACCEL_ENABLED = 0x01
         const val MEDIA_HWACCEL_FORCE = 0x02
     }
 }
+
+/** [timeoutMs] after Playing, a stream with video should show a picture. */
+private class VideoWatch(val timeoutMs: Long, val reportNoVideo: Boolean)
