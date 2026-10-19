@@ -1,6 +1,9 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.468
+* UPD: Live TV streams reconnect after dropouts
+* NEW: Stream buffer setting
+* NEW: Choose the external video player
 * FIX: Importing backups made with 1.15
 * FIX: Channels with alternatives missing in MultiEPG
 * FIX: New widgets ignoring the chosen layout and profile

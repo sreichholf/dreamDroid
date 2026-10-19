@@ -27,6 +27,14 @@
     <uses-feature android:name="android.hardware.faketouch" android:required="false"/>
     <uses-feature android:name="android.hardware.wifi" android:required="false" />
 
+    <!-- The apps the external player setting offers (IntentFactory.externalPlayerQuery). -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="http" android:mimeType="video/*"/>
+        </intent>
+    </queries>
+
     <application
         android:name=".DreamDroid"
         android:allowBackup="true"

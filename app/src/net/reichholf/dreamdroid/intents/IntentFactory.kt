@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
@@ -41,18 +42,33 @@ object IntentFactory {
 
     /**
      * Playback intent for a stream URI. Honors [DreamDroid.PREFS_KEY_INTEGRATED_PLAYER]:
-     * integrated player targets [VideoActivity]; otherwise a generic `ACTION_VIEW`.
+     * integrated player targets [VideoActivity]; otherwise `ACTION_VIEW` for the app in
+     * [DreamDroid.PREFS_KEY_EXTERNAL_PLAYER], or for any player while none is chosen or the
+     * chosen one is gone.
      */
     fun videoPlaybackIntent(context: Context, uriString: String): Intent {
-        val intent = if (usesIntegratedPlayer(context)) {
+        val integrated = usesIntegratedPlayer(context)
+        val intent = if (integrated) {
             Intent(context, VideoActivity::class.java)
         } else {
             Intent(Intent.ACTION_VIEW)
         }
         intent.action = Intent.ACTION_VIEW
         intent.setDataAndType(Uri.parse(uriString), "video/*")
+        if (!integrated) {
+            intent.`package` = PreferenceManager.getDefaultSharedPreferences(context)
+                .getString(DreamDroid.PREFS_KEY_EXTERNAL_PLAYER, null)
+                ?.takeIf { it.isNotEmpty() }
+                ?.takeIf {
+                    Intent(intent).setPackage(it).resolveActivity(context.packageManager) != null
+                }
+        }
         return intent
     }
+
+    /** What an external player must open; [videoPlaybackIntent] sends the same. */
+    fun externalPlayerQuery(): Intent = Intent(Intent.ACTION_VIEW)
+        .setDataAndType("http://localhost/".toUri(), "video/*")
 
     /** Plays [stream], a live service of the list [bouquetRef]. */
     fun getStreamServiceIntent(

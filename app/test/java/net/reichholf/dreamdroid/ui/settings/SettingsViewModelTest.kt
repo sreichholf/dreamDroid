@@ -17,6 +17,8 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.ExternalPlayer
+import net.reichholf.dreamdroid.data.ExternalPlayers
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
@@ -75,6 +77,30 @@ class SettingsViewModelTest {
         assertFalse(preferences.getBoolean(DreamDroid.PREFS_KEY_NOW_PLAYING_STRIP, true))
         assertFalse(viewModel.uiState.value.settings.nowPlayingStrip)
         assertNull(viewModel.uiState.value.effect)
+    }
+
+    @Test
+    fun listsTheInstalledPlayersAndStoresTheChosenOne() {
+        val viewModel = viewModel()
+
+        assertEquals(FakeExternalPlayers.PLAYERS, viewModel.uiState.value.externalPlayers)
+        viewModel.update { it.copy(externalPlayer = "org.videolan.vlc") }
+
+        assertEquals(
+            "org.videolan.vlc",
+            preferences.getString(DreamDroid.PREFS_KEY_EXTERNAL_PLAYER, null)
+        )
+    }
+
+    @Test
+    fun streamBufferDefaultsToTwoSecondsAndFallsBackOnGarbage() {
+        assertEquals(2_000, viewModel().uiState.value.settings.streamBuffer)
+
+        preferences.edit().putString(DreamDroid.PREFS_KEY_STREAM_BUFFER, "5000").apply()
+        assertEquals(5_000, SettingsRepository(preferences).current().streamBuffer)
+
+        preferences.edit().putString(DreamDroid.PREFS_KEY_STREAM_BUFFER, "x").apply()
+        assertEquals(2_000, SettingsRepository(preferences).current().streamBuffer)
     }
 
     @Test
@@ -210,7 +236,8 @@ class SettingsViewModelTest {
             handle,
             SettingsRepository(preferences),
             testProfiles.services,
-            piconSync
+            piconSync,
+            FakeExternalPlayers
         ).also { viewModels += it }
 
     private fun type(viewModel: SettingsViewModel, text: String) {
@@ -251,4 +278,10 @@ private class FakePiconSync : PiconSyncScheduler {
         enqueued += 1
         return true
     }
+}
+
+private object FakeExternalPlayers : ExternalPlayers {
+    val PLAYERS = listOf(ExternalPlayer("org.videolan.vlc", "VLC"))
+
+    override suspend fun installed(): List<ExternalPlayer> = PLAYERS
 }

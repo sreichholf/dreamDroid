@@ -12,6 +12,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.ExternalPlayer
+import net.reichholf.dreamdroid.data.ExternalPlayers
 import net.reichholf.dreamdroid.data.ServiceRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.PiconSyncScheduler
@@ -33,6 +35,7 @@ enum class SettingsEffect {
  */
 data class SettingsUiState(
     val settings: AppSettings,
+    val externalPlayers: List<ExternalPlayer> = emptyList(),
     val editingSyncPiconsPath: Boolean = false,
     val userMessage: UiText? = null,
     val effect: SettingsEffect? = null
@@ -50,7 +53,8 @@ class SettingsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val settings: SettingsRepository,
     private val services: ServiceRepository,
-    private val piconSync: PiconSyncScheduler
+    private val piconSync: PiconSyncScheduler,
+    private val externalPlayers: ExternalPlayers
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         SettingsUiState(
@@ -67,6 +71,10 @@ class SettingsViewModel @Inject constructor(
             settings.settings.collect { values ->
                 _uiState.update { it.copy(settings = values) }
             }
+        }
+        viewModelScope.launch {
+            val players = externalPlayers.installed()
+            _uiState.update { it.copy(externalPlayers = players) }
         }
     }
 

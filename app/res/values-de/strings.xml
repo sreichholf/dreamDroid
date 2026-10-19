@@ -291,6 +291,17 @@
     <string name="use_hw_accel">Bechleunigtes dekodieren</string>
     <string name="use_hw_accel_long">Hardware-Beschleunigung zum Dekodieren von Videos verwenden (%s)</string>
     <string name="video_player">Video Player</string>
+    <string-array name="stream_buffer_entries">
+        <item>1 Sekunde</item>
+        <item>2 Sekunden</item>
+        <item>3 Sekunden</item>
+        <item>5 Sekunden</item>
+    </string-array>
+    <string name="stream_buffer">Stream-Puffer</string>
+    <string name="stream_buffer_long">Erhöhen, wenn Streams ruckeln oder abbrechen (%s)</string>
+    <string name="external_player">Externer Player</string>
+    <string name="external_player_long">%s. Startet Live-TV nicht, im Profil den Stream-Modus Transcoding wählen.</string>
+    <string name="external_player_ask">Jedes Mal fragen</string>
     <string name="video_enable_gestures_long">Gesten zur Steuerung von Lautstärke und Helligkeit aktivieren</string>
     <string name="video_enable_gestures">Gesten aktivieren</string>
     <string name="online_picons">Online Picons</string>

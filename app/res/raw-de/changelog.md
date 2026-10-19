@@ -1,6 +1,9 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
 ## 2.0.468
+* UPD: Live-TV-Streams verbinden sich nach Abbrüchen neu
+* NEU: Einstellung für den Stream-Puffer
+* NEU: Externer Videoplayer wählbar
 * FIX: Import von Backups aus 1.15
 * FIX: Sender mit Alternativen fehlten im MultiEPG
 * FIX: Neue Widgets ignorieren gewähltes Layout und Profil

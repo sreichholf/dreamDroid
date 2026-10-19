@@ -20,6 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
+import net.reichholf.dreamdroid.data.ExternalPlayer
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
 
@@ -32,6 +33,7 @@ fun TvSettingsScreen(
     settings: AppSettings,
     onChange: ((AppSettings) -> AppSettings) -> Unit,
     onSyncPicons: () -> Unit = {},
+    externalPlayers: List<ExternalPlayer> = emptyList(),
     showDeveloperCategory: Boolean = false,
     syncPiconsPathDraft: TextFieldState? = null,
     onEditSyncPiconsPath: () -> Unit = {},
@@ -64,6 +66,7 @@ fun TvSettingsScreen(
                     onChange { it.copy(integratedVideoPlayer = checked) }
                 }
             )
+            ExternalPlayerPreferenceRow(settings, externalPlayers) { listDialog = it }
             ListPreferenceRow(
                 title = stringResource(R.string.use_hw_accel),
                 summary = stringResource(
@@ -81,6 +84,7 @@ fun TvSettingsScreen(
                     )
                 }
             )
+            StreamBufferPreferenceRow(settings) { listDialog = it }
 
             PreferenceCategoryHeader(stringResource(R.string.picons))
             Text(
