@@ -65,10 +65,15 @@ class EnigmaUrlsTest {
     }
 
     @Test
-    fun serviceStream_httpOmitsUserInfo() {
+    fun serviceStream_httpEmbedsUserInfoWhenStreamLogin() {
         val profile = streamProfile(streamLogin = true)
         val url = EnigmaUrls.serviceStream(profile, "1:0:1")
-        assertFalse(url.contains("root:secret@"))
+        assertEquals("http://root:secret@box.local:8001/1%3A0%3A1", url)
+    }
+
+    @Test
+    fun serviceStream_httpOmitsUserInfoWithoutStreamLogin() {
+        val url = EnigmaUrls.serviceStream(streamProfile(), "1:0:1")
         assertEquals("http://box.local:8001/1%3A0%3A1", url)
     }
 
@@ -88,11 +93,10 @@ class EnigmaUrlsTest {
     }
 
     @Test
-    fun fileStream_httpOmitsUserInfo() {
+    fun fileStream_httpEmbedsUserInfoWhenFileLogin() {
         val profile = fileProfile(fileLogin = true, fileSsl = false)
         val url = EnigmaUrls.fileStream(profile, "1:0:1", "/tmp/a.ts")
-        assertFalse(url.contains("root:secret@"))
-        assertEquals("http://box.local:80/file?file=%2Ftmp%2Fa.ts", url)
+        assertEquals("http://root:secret@box.local:80/file?file=%2Ftmp%2Fa.ts", url)
     }
 
     @Test

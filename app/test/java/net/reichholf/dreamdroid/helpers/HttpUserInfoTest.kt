@@ -5,59 +5,18 @@ import org.junit.jupiter.api.Test
 
 class HttpUserInfoTest {
     @Test
-    fun httpNeverEmbedsCredentials() {
-        assertEquals(
-            "",
-            HttpUserInfo.embed(
-                enabled = true,
-                user = "root",
-                pass = "secret",
-                scheme = "http"
-            )
-        )
-        assertEquals(
-            "",
-            HttpUserInfo.embed(
-                enabled = true,
-                user = "root",
-                pass = "secret",
-                scheme = "HTTP"
-            )
-        )
-    }
-
-    @Test
-    fun httpsEmbedsWhenLoginEnabled() {
+    fun httpEmbedsWhenLoginEnabled() {
         assertEquals(
             "root:secret@",
-            HttpUserInfo.embed(
-                enabled = true,
-                user = "root",
-                pass = "secret",
-                scheme = "https"
-            )
-        )
-        assertEquals(
-            "",
-            HttpUserInfo.embed(
-                enabled = false,
-                user = "root",
-                pass = "secret",
-                scheme = "https"
-            )
+            HttpUserInfo.embed(enabled = true, user = "root", pass = "secret")
         )
     }
 
     @Test
-    fun rtspEmbedsWhenLoginEnabled() {
+    fun nothingWhenLoginDisabled() {
         assertEquals(
-            "enc:pw@",
-            HttpUserInfo.embed(
-                enabled = true,
-                user = "enc",
-                pass = "pw",
-                scheme = "rtsp"
-            )
+            "",
+            HttpUserInfo.embed(enabled = false, user = "root", pass = "secret")
         )
     }
 
@@ -68,8 +27,7 @@ class HttpUserInfoTest {
             HttpUserInfo.embed(
                 enabled = true,
                 user = "me@home",
-                pass = "p:w/d#? x",
-                scheme = "https"
+                pass = "p:w/d#? x"
             )
         )
     }

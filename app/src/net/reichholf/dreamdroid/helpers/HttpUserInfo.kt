@@ -3,15 +3,15 @@ package net.reichholf.dreamdroid.helpers
 import java.net.URLEncoder
 
 /**
- * Credentials in a URI. Cleartext `http://` never carries userinfo — the
- * password would sit on the wire and in logs. HTTPS/RTSP may still embed it.
+ * Credentials in a stream URI. Players and the box (zap to stream) get the stream login only
+ * through the URL, so it carries them whenever the profile enables that login, plain http
+ * included, as 1.x did. Log URLs through [redact].
  */
 object HttpUserInfo {
     private val userInfo = Regex("^([A-Za-z][A-Za-z0-9+.-]*://)[^/?#@]*@")
 
-    fun embed(enabled: Boolean, user: String?, pass: String?, scheme: String): String {
+    fun embed(enabled: Boolean, user: String?, pass: String?): String {
         if (!enabled) return ""
-        if (scheme.equals("http", ignoreCase = true)) return ""
         return "${encode(user)}:${encode(pass)}@"
     }
 

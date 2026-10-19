@@ -79,12 +79,10 @@ object EnigmaUrls {
         if (profile.streamMode == StreamMode.Transcoding) {
             return streamOrigin(profile, profile.transcodePort) + URIStore.FILE + parms
         }
-        val fileScheme = if (profile.fileSsl) "https" else "http"
         val fileAuthString = HttpUserInfo.embed(
             enabled = profile.fileLogin,
             user = profile.user,
-            pass = profile.pass,
-            scheme = fileScheme
+            pass = profile.pass
         )
         return filePrefix(profile) + fileAuthString + profile.streamHostOrHost + ":" +
             profile.filePort + URIStore.FILE + parms
@@ -96,8 +94,7 @@ object EnigmaUrls {
         val userInfo = HttpUserInfo.embed(
             enabled = profile.streamLogin,
             user = profile.user,
-            pass = profile.pass,
-            scheme = scheme
+            pass = profile.pass
         )
         return "$scheme://$userInfo${profile.streamHostOrHost}:$port"
     }
