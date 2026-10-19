@@ -187,7 +187,7 @@ Claude Code running locally on a machine with the CI JDK, the SDK, and a device 
 - Do not pass `-Pandroid.testInstrumentationRunnerArguments...` to Gradle. Gradle then sets project property `android` to a String and `android.applicationVariants` breaks. Filter with `adb shell am instrument -e class ...` instead; shard with `-PtestShardCount=N -PtestShardIndex=i`.
 - `-Pci` and the ABI-split path in `.cursor/cloud/connected-test.sh` are both **intentional** (see **Build modes and CI**). Do not force the helper onto `-Pci` or drop `-Pci` from CI.
 - The SDK package list (platforms and build-tools) lives in one place, `scripts/android-sdk-packages.txt`, read by the CI composite action `.github/actions/ensure-android-sdk`, the Claude Code hook, and the Cursor install script. Change it there only. The callers share nothing else: each finds or bootstraps `sdkmanager` itself and adds its own extras (`platform-tools` in the hook; `platform-tools`, `emulator` and the system image in the Cursor script).
-- Out of scope until asked: Enigma2 server / webif patches, VLC codec or stream protocol work, a Media3 swap, deleting the widget, merging `master` into `main`.
+- Out of scope until asked: Enigma2 server / webif patches, VLC codec or stream protocol work, replacing libVLC with Media3 (Media3 is an opt-in engine beside it), deleting the widget, merging `master` into `main`.
 
 ## Engineering workflow (poteto-mode)
 

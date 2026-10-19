@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.ExternalPlayer
+import net.reichholf.dreamdroid.video.Engine
 
 /** The app that plays streams while the integrated player is off. */
 @Composable
@@ -37,7 +38,46 @@ internal fun ExternalPlayerPreferenceRow(
     )
 }
 
-/** libVLC's network caching for the integrated player. */
+/**
+ * The integrated player's engine. With Media3 chosen, names the receiver formats this device
+ * cannot decode; those streams fall back to VLC.
+ */
+@Composable
+internal fun PlayerEnginePreferenceRow(
+    settings: AppSettings,
+    media3Unsupported: List<String>,
+    onOpenDialog: (ListDialogSpec) -> Unit
+) {
+    val title = stringResource(R.string.player_engine)
+    val entries = stringArrayResource(R.array.player_engine_entries)
+    val values = stringArrayResource(R.array.player_engine_values)
+    val label = entryLabel(entries, values, settings.playerEngine)
+    ListPreferenceRow(
+        title = title,
+        summary = if (settings.engine == Engine.Media3 && media3Unsupported.isNotEmpty()) {
+            label + "\n" + stringResource(
+                R.string.player_engine_media3_missing,
+                media3Unsupported.joinToString(", ")
+            )
+        } else {
+            label
+        },
+        enabled = settings.integratedVideoPlayer,
+        onClick = {
+            onOpenDialog(
+                ListDialogSpec(
+                    title = title,
+                    entries = entries.toList(),
+                    values = values.toList(),
+                    selectedValue = settings.playerEngine,
+                    set = { copy(playerEngine = it) }
+                )
+            )
+        }
+    )
+}
+
+/** How much the integrated player buffers before it plays. */
 @Composable
 internal fun StreamBufferPreferenceRow(
     settings: AppSettings,

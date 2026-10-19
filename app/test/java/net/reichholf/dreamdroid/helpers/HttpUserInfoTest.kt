@@ -47,4 +47,17 @@ class HttpUserInfoTest {
             HttpUserInfo.redact("http://box.local:80/file?file=%2Fa%40b.ts")
         )
     }
+
+    @Test
+    fun basicAuthMovesTheLoginIntoAHeader() {
+        val (url, header) = HttpUserInfo.toBasicAuth("http://me%40home:p%3Aw@box:8001/1:0:1:")
+
+        assertEquals("http://box:8001/1:0:1:", url)
+        assertEquals(okhttp3.Credentials.basic("me@home", "p:w", Charsets.UTF_8), header)
+    }
+
+    @Test
+    fun basicAuthLeavesAUrlWithoutLoginAlone() {
+        assertEquals("http://box:8001/x" to null, HttpUserInfo.toBasicAuth("http://box:8001/x"))
+    }
 }

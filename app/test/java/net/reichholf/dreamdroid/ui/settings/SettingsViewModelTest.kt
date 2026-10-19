@@ -27,6 +27,8 @@ import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.text.UiText
+import net.reichholf.dreamdroid.video.Engine
+import net.reichholf.dreamdroid.video.Media3Formats
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -90,6 +92,14 @@ class SettingsViewModelTest {
             "org.videolan.vlc",
             preferences.getString(DreamDroid.PREFS_KEY_EXTERNAL_PLAYER, null)
         )
+    }
+
+    @Test
+    fun vlcIsTheDefaultEngineAndMedia3sGapsAreListed() {
+        val state = viewModel().uiState.value
+
+        assertEquals(Engine.Vlc, state.settings.engine)
+        assertEquals(listOf("MPEG-2", "AC3"), state.media3Unsupported)
     }
 
     @Test
@@ -237,7 +247,8 @@ class SettingsViewModelTest {
             SettingsRepository(preferences),
             testProfiles.services,
             piconSync,
-            FakeExternalPlayers
+            FakeExternalPlayers,
+            FakeMedia3Formats
         ).also { viewModels += it }
 
     private fun type(viewModel: SettingsViewModel, text: String) {
@@ -284,4 +295,8 @@ private object FakeExternalPlayers : ExternalPlayers {
     val PLAYERS = listOf(ExternalPlayer("org.videolan.vlc", "VLC"))
 
     override suspend fun installed(): List<ExternalPlayer> = PLAYERS
+}
+
+private object FakeMedia3Formats : Media3Formats {
+    override suspend fun unsupported(): List<String> = listOf("MPEG-2", "AC3")
 }

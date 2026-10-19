@@ -4,6 +4,7 @@
 * UPD: Live TV streams reconnect after dropouts
 * NEW: Stream buffer setting
 * NEW: Choose the external video player
+* NEW: Media3 as an optional player engine
 * FIX: Importing backups made with 1.15
 * FIX: Channels with alternatives missing in MultiEPG
 * FIX: New widgets ignoring the chosen layout and profile

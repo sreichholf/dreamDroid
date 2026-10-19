@@ -61,6 +61,12 @@ fun dreamDroidLicenses(): List<ThirdPartyLicense> = listOf(
         website = "https://code.videolan.org/videolan/libvlc-android"
     ),
     ThirdPartyLicense(
+        name = "AndroidX Media3",
+        copyright = "Copyright The Android Open Source Project",
+        license = "Apache License 2.0",
+        website = "https://github.com/androidx/media"
+    ),
+    ThirdPartyLicense(
         name = "OkHttp",
         copyright = "Copyright 2019 Square, Inc.",
         license = "Apache License 2.0",

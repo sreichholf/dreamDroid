@@ -22,6 +22,14 @@ object VideoPlayback {
         return if (current == 0) size - 1 else current - 1
     }
 
+    /** Media3 plays http(s) only; RTSP (the encoder stream mode) and the rest stay on VLC. */
+    fun engineFor(preferred: Engine, scheme: String?): Engine =
+        if (preferred == Engine.Media3 && scheme?.lowercase() in setOf("http", "https")) {
+            Engine.Media3
+        } else {
+            Engine.Vlc
+        }
+
     fun shouldTogglePause(isPlaying: Boolean, rate: Float): Boolean = isPlaying && rate == 1.0f
 
     /**

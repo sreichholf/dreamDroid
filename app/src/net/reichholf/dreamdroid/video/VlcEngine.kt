@@ -1,16 +1,14 @@
 package net.reichholf.dreamdroid.video
 
 import android.content.Context
-import android.net.Uri
 import android.util.Log
-import android.view.SurfaceView
+import androidx.core.net.toUri
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.math.max
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,41 +20,22 @@ import org.videolan.libvlc.Media
 import org.videolan.libvlc.MediaPlayer
 import org.videolan.libvlc.interfaces.IVLCVout
 
-/** What the overlay shows of the playing stream, kept from libVLC's events. */
-data class PlayerState(
-    val seekable: Boolean = false,
-    val lengthMs: Long = 0,
-    val timeMs: Long = 0,
-    val position: Float = 0f,
-    val audioTracks: Int = 0,
-    val subtitleTracks: Int = 0
-)
-
-/**
- * A stream for [VLCPlayer.playUri]. [hwAccelFlags] are [VLCPlayer.MEDIA_HWACCEL_ENABLED] and
- * [VLCPlayer.MEDIA_HWACCEL_FORCE]; [bufferMs] is libVLC's network caching. A [live] stream is
- * opened again when it fails or ends (see [LiveReconnect]).
- */
-data class PlayRequest(val uri: Uri, val hwAccelFlags: Int, val bufferMs: Int, val live: Boolean)
-
 /**
  * The process's libVLC [MediaPlayer].
  *
- * Call it from the main thread. Video views and the event listener are main-thread work.
  * Calls that can wait for a stream to close (setMedia, stop, release, seeking, track and
  * scale changes) go through [commands]. As in VLC for Android, play(), pause, and the track
  * getters run on the main thread, but only once setMedia has returned (see [switching]).
- * Read time, length, and track counts from [state].
  *
  * One wait is left, as in VLC for Android: detaching the views while a stream is still
  * closing makes libVLC disable the video track on the main thread, and that waits too.
  * Leaving the player in the middle of a stuck zap can still be slow.
  */
 @Singleton
-class VLCPlayer @Inject constructor(
+class VlcEngine @Inject constructor(
     @param:ApplicationContext private val context: Context,
     @param:ApplicationScope private val scope: CoroutineScope
-) {
+) : PlayerEngine {
     private val commands = PlayerCommandQueue(scope, Dispatchers.IO)
 
     private var mediaPlayer: MediaPlayer? = null
@@ -75,36 +54,43 @@ class VLCPlayer @Inject constructor(
      * main-thread call would wait for it.
      */
     private val switching: Boolean get() = startedGeneration != generation
-
-    /** The stream [playUri] asked for last; a reconnect opens it again. */
-    private var request: PlayRequest? = null
-    private var reconnect = LiveReconnect()
-    private var listener: MediaPlayer.EventListener? = null
+    private var listener: ((PlayerEvent) -> Unit)? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
-    val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
+    override val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
 
-    /** Receives libVLC's events on the main thread after [state] took them in. */
-    fun setEventListener(listener: MediaPlayer.EventListener?) {
+    private val layoutListener =
+        IVLCVout.OnNewVideoLayoutListener {
+                _,
+                width,
+                height,
+                visibleWidth,
+                visibleHeight,
+                sarNum,
+                sarDen
+            ->
+            listener?.invoke(
+                PlayerEvent.Layout(
+                    VideoLayout(width, height, visibleWidth, visibleHeight, sarNum, sarDen)
+                )
+            )
+        }
+
+    override fun setEventListener(listener: ((PlayerEvent) -> Unit)?) {
         this.listener = listener
     }
 
-    fun attach(
-        newVideoLayoutListener: IVLCVout.OnNewVideoLayoutListener?,
-        surfaceView: SurfaceView?,
-        subtitleSurfaceView: SurfaceView?
-    ) {
+    override fun attach(views: PlayerViews) {
         val vlcVout = mediaPlayer().vlcVout
         if (vlcVout.areViewsAttached()) {
             vlcVout.detachViews()
         }
-        vlcVout.setVideoView(surfaceView)
-        vlcVout.setSubtitlesView(subtitleSurfaceView)
-        vlcVout.attachViews(newVideoLayoutListener)
+        vlcVout.setVideoView(views.surface)
+        vlcVout.setSubtitlesView(views.subtitlesSurface)
+        vlcVout.attachViews(layoutListener)
     }
 
-    /** Detaches the views and stops the stream; [release] also frees the player. */
-    fun detach() {
+    override fun detach() {
         val mp = mediaPlayer ?: return
         val vlcVout = mp.vlcVout
         if (!VideoPlayback.shouldDetachViews(true, vlcVout.areViewsAttached())) {
@@ -115,8 +101,7 @@ class VLCPlayer @Inject constructor(
         commands.post { mp.stop() }
     }
 
-    /** Frees the player. The next call creates a new one. */
-    fun release() {
+    override fun release() {
         val mp = mediaPlayer ?: return
         mediaPlayer = null
         generation++
@@ -131,12 +116,11 @@ class VLCPlayer @Inject constructor(
         stateFlow.value = PlayerState()
     }
 
-    fun setWindowSize(width: Int, height: Int) {
+    override fun setWindowSize(width: Int, height: Int) {
         mediaPlayer?.vlcVout?.setWindowSize(width, height)
     }
 
-    /** Lets libVLC fit the video to the surface. */
-    fun resetScale() {
+    override fun resetScale() {
         val mp = mediaPlayer ?: return
         commands.post {
             mp.setAspectRatio(null)
@@ -144,13 +128,7 @@ class VLCPlayer @Inject constructor(
         }
     }
 
-    fun playUri(request: PlayRequest) {
-        this.request = request
-        reconnect = LiveReconnect()
-        start(request)
-    }
-
-    private fun start(request: PlayRequest) {
+    override fun start(request: PlayRequest) {
         val mp = mediaPlayer()
         val gen = ++generation
         stateFlow.value = PlayerState()
@@ -161,7 +139,7 @@ class VLCPlayer @Inject constructor(
         scope.launch(Dispatchers.Main.immediate) {
             try {
                 commands.call {
-                    val media = Media(VLCInstance.get(context), request.uri)
+                    val media = Media(VLCInstance.get(context), request.url.toUri())
                     try {
                         media.setHWDecoderEnabled(isHwAccel || isHwAccelForce, isHwAccelForce)
                         // DVB streams start anywhere in a long GOP; a bigger buffer rides out
@@ -175,7 +153,7 @@ class VLCPlayer @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(request.uri.toString())} failed", e)
+                Log.w(LOG_TAG, "Starting ${HttpUserInfo.redact(request.url)} failed", e)
                 return@launch
             }
             // A zap, detach, or release since then owns the player now.
@@ -187,26 +165,7 @@ class VLCPlayer @Inject constructor(
         }
     }
 
-    /**
-     * Opens a live stream that failed or ended again after [LiveReconnect]'s wait. False when
-     * the stream is not live or the attempts ran out; the event then reaches the overlay.
-     */
-    private fun reconnectLive(): Boolean {
-        val request = request?.takeIf { it.live } ?: return false
-        val delayMs = reconnect.onFailure() ?: return false
-        Log.i(LOG_TAG, "Live stream dropped, reconnecting in $delayMs ms")
-        // The dropped stream's later events (an error is often followed by its end) are stale.
-        val gen = ++generation
-        scope.launch(Dispatchers.Main.immediate) {
-            delay(delayMs)
-            // A zap, detach, or release since then owns the player now.
-            if (gen == generation) start(request)
-        }
-        return true
-    }
-
-    /** Pauses a stream playing at normal speed; otherwise plays at normal speed. */
-    fun play() {
+    override fun play() {
         val mp = mediaPlayer ?: return
         if (switching || !mp.hasMedia()) return
         if (VideoPlayback.shouldTogglePause(mp.isPlaying, mp.rate)) {
@@ -217,14 +176,14 @@ class VLCPlayer @Inject constructor(
         mp.rate = 1.0f
     }
 
-    fun setPosition(position: Float) {
+    override fun setPosition(position: Float) {
         val mp = mediaPlayer ?: return
         stateFlow.update { it.copy(position = position) }
         commands.post { mp.position = position }
     }
 
     /** Rewinds faster each call, down to -64x, while a seekable stream plays. */
-    fun slower() {
+    override fun slower() {
         val mp = mediaPlayer ?: return
         commands.post {
             if (!mp.isSeekable || !mp.isPlaying) return@post
@@ -236,26 +195,24 @@ class VLCPlayer @Inject constructor(
         }
     }
 
-    /** Null while no stream plays or one is still switching. */
-    fun audioTracks(): Array<MediaPlayer.TrackDescription>? {
+    override fun audioTracks(): List<MediaTrack>? {
         val mp = mediaPlayer ?: return null
         if (switching || !mp.hasMedia()) return null
-        return mp.audioTracks
+        return mp.audioTracks?.map { MediaTrack(it.id, it.name) }
     }
 
-    /** Null while no stream plays or one is still switching. */
-    fun subtitleTracks(): Array<MediaPlayer.TrackDescription>? {
+    override fun subtitleTracks(): List<MediaTrack>? {
         val mp = mediaPlayer ?: return null
         if (switching || !mp.hasMedia()) return null
-        return mp.spuTracks
+        return mp.spuTracks?.map { MediaTrack(it.id, it.name) }
     }
 
-    fun setAudioTrack(id: Int) {
+    override fun setAudioTrack(id: Int) {
         val mp = mediaPlayer ?: return
         commands.post { mp.setAudioTrack(id) }
     }
 
-    fun setSubtitleTrack(id: Int) {
+    override fun setSubtitleTrack(id: Int) {
         val mp = mediaPlayer ?: return
         commands.post { mp.setSpuTrack(id) }
     }
@@ -279,29 +236,47 @@ class VLCPlayer @Inject constructor(
     private fun onEvent(mp: MediaPlayer, gen: Int, event: MediaPlayer.Event) {
         // The old stream's events still arrive after a zap or release() posted them.
         if (gen != generation) return
-        when (event.type) {
-            MediaPlayer.Event.TimeChanged -> {
-                reconnect.onPlayed()
-                stateFlow.update { it.copy(timeMs = event.timeChanged) }
+        val forwarded = when (event.type) {
+            MediaPlayer.Event.Opening -> PlayerEvent.Opening
+
+            MediaPlayer.Event.Playing -> {
+                refreshTrackCounts(mp)
+                PlayerEvent.Playing
             }
 
-            MediaPlayer.Event.EncounteredError,
-            MediaPlayer.Event.EndReached -> if (reconnectLive()) return
+            MediaPlayer.Event.TimeChanged -> {
+                stateFlow.update { it.copy(timeMs = event.timeChanged) }
+                PlayerEvent.Progress
+            }
 
-            MediaPlayer.Event.PositionChanged ->
+            MediaPlayer.Event.PositionChanged -> {
                 stateFlow.update { it.copy(position = event.positionChanged) }
+                PlayerEvent.Progress
+            }
 
-            MediaPlayer.Event.LengthChanged ->
+            MediaPlayer.Event.LengthChanged -> {
                 stateFlow.update { it.copy(lengthMs = event.lengthChanged) }
+                null
+            }
 
-            MediaPlayer.Event.SeekableChanged ->
+            MediaPlayer.Event.SeekableChanged -> {
                 stateFlow.update { it.copy(seekable = event.seekable) }
+                null
+            }
 
-            MediaPlayer.Event.Playing,
             MediaPlayer.Event.ESAdded,
-            MediaPlayer.Event.ESDeleted -> refreshTrackCounts(mp)
+            MediaPlayer.Event.ESDeleted -> {
+                refreshTrackCounts(mp)
+                null
+            }
+
+            MediaPlayer.Event.EncounteredError -> PlayerEvent.Failed()
+
+            MediaPlayer.Event.EndReached -> PlayerEvent.Ended
+
+            else -> null
         }
-        listener?.onEvent(event)
+        forwarded?.let { listener?.invoke(it) }
     }
 
     private fun refreshTrackCounts(mp: MediaPlayer) {
@@ -312,7 +287,7 @@ class VLCPlayer @Inject constructor(
     }
 
     companion object {
-        private const val LOG_TAG = "VLCPlayer"
+        private const val LOG_TAG = "VlcEngine"
 
         const val MEDIA_HWACCEL_ENABLED = 0x01
         const val MEDIA_HWACCEL_FORCE = 0x02
