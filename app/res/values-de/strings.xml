@@ -304,6 +304,7 @@
     <string name="player_engine">Player-Engine</string>
     <string name="player_engine_media3_missing">Auf diesem Gerät nicht unterstützt: %s. Diese Sender laufen mit VLC.</string>
     <string name="player_fell_back_to_vlc">Media3 kann diesen Stream nicht abspielen, VLC übernimmt</string>
+    <string name="player_software_decoding">Kein Bild vom Hardware-Decoder, wechsle zur Software-Dekodierung</string>
     <string name="track_off">Aus</string>
     <string name="stream_buffer">Stream-Puffer</string>
     <string name="stream_buffer_long">Erhöhen, wenn Streams ruckeln oder abbrechen (%s)</string>

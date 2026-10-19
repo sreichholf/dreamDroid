@@ -65,6 +65,46 @@ class VideoPlayerTest {
     }
 
     @Test
+    fun noPictureFromTheHardwareDecoderReplaysTheStreamInSoftware() {
+        player.playUri(request(Engine.Vlc))
+
+        vlc.emit(PlayerEvent.NoVideo)
+
+        assertEquals(listOf(request(Engine.Vlc), software()), vlc.started)
+        assertEquals(listOf<PlayerEvent>(PlayerEvent.SoftwareDecoding), events)
+    }
+
+    @Test
+    fun media3WithoutPictureAlsoGoesToVlcInSoftware() {
+        player.playUri(request(Engine.Media3))
+
+        media3.emit(PlayerEvent.NoVideo)
+
+        assertEquals(listOf(software()), vlc.started)
+        assertEquals(1, media3.released)
+    }
+
+    @Test
+    fun afterOneStreamShowedNoPictureEveryStreamStartsInSoftware() {
+        player.playUri(request(Engine.Vlc))
+        vlc.emit(PlayerEvent.NoVideo)
+
+        player.playUri(request(Engine.Media3))
+        player.playUri(request(Engine.Vlc, url = OTHER_URL))
+
+        assertEquals(
+            listOf(
+                request(Engine.Vlc),
+                software(),
+                software(),
+                request(Engine.Vlc, OTHER_URL).copy(hwAccelFlags = 0)
+            ),
+            vlc.started
+        )
+        assertEquals(emptyList<PlayRequest>(), media3.started)
+    }
+
+    @Test
     fun theStateFollowsThePlayingEngine() = scope.runTest {
         player.playUri(request(Engine.Media3))
         runCurrent()
@@ -140,12 +180,16 @@ class VideoPlayerTest {
         assertEquals(1, vlc.started.size)
     }
 
+    private fun software() = request(Engine.Vlc).copy(hwAccelFlags = 0)
+
     private fun request(
         engine: Engine,
         url: String = "http://box:8001/1:0:19:283D:3FB:1:C00000:0:0:0:",
         live: Boolean = true
     ) = PlayRequest(url, engine, VlcEngine.MEDIA_HWACCEL_ENABLED, 2_000, live)
 }
+
+private const val OTHER_URL = "http://box:8001/1:0:19:2B66:3F3:1:C00000:0:0:0:"
 
 private class FakeEngine : PlayerEngine {
     val stateFlow = MutableStateFlow(PlayerState())
@@ -179,10 +223,6 @@ private class FakeEngine : PlayerEngine {
     override fun setPosition(position: Float) = Unit
 
     override fun slower() = Unit
-
-    override fun setWindowSize(width: Int, height: Int) = Unit
-
-    override fun resetScale() = Unit
 
     override fun audioTracks(): List<MediaTrack>? = null
 

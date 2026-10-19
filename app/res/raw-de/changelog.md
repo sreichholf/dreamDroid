@@ -5,6 +5,7 @@
 * NEU: Einstellung für den Stream-Puffer
 * NEU: Externer Videoplayer wählbar
 * NEU: Media3 als optionale Player-Engine
+* FIX: Kein Bild bei manchen Live-Sendern mit Hardware-Dekodierung
 * FIX: Import von Backups aus 1.15
 * FIX: Sender mit Alternativen fehlten im MultiEPG
 * FIX: Neue Widgets ignorieren gewähltes Layout und Profil

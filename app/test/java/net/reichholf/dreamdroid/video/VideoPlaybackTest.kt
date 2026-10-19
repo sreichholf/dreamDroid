@@ -8,6 +8,11 @@ import org.junit.jupiter.api.Test
 
 class VideoPlaybackTest {
     @Test
+    fun theHardwareDecoderGetsTheBufferAndTwoAndAHalfSeconds() {
+        assertEquals(4_500L, VideoPlayback.noVideoTimeoutMs(2_000))
+    }
+
+    @Test
     fun media3PlaysHttpStreamsOnly() {
         assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "http"))
         assertEquals(Engine.Media3, VideoPlayback.engineFor(Engine.Media3, "HTTPS"))

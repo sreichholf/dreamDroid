@@ -9,14 +9,6 @@
     android:fitsSystemWindows="true"
     android:padding="0dp">
 
-    <ProgressBar
-        android:id="@+id/video_load_progress"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
-        android:layout_centerInParent="true"
-        android:indeterminate="true"
-        android:visibility="gone" />
-
     <androidx.compose.ui.platform.ComposeView
         android:id="@+id/compose_overlay"
         android:layout_width="match_parent"

@@ -2,6 +2,7 @@ package net.reichholf.dreamdroid.video
 
 import android.content.Context
 import android.util.Log
+import android.view.View
 import androidx.annotation.OptIn
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -58,6 +59,7 @@ class Media3Engine @Inject constructor(
     private var views: PlayerViews? = null
     private var listener: ((PlayerEvent) -> Unit)? = null
     private var progressJob: Job? = null
+    private var noVideoJob: Job? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
@@ -66,9 +68,11 @@ class Media3Engine @Inject constructor(
         this.listener = listener
     }
 
+    /** [PlayerViews.media3Frame] keeps the surface at the video's aspect ratio. */
     override fun attach(views: PlayerViews) {
         this.views = views
-        player?.setVideoSurfaceView(views.surface)
+        views.media3Frame.visibility = View.VISIBLE
+        player?.setVideoSurfaceView(views.media3Surface)
     }
 
     override fun detach() {
@@ -78,7 +82,8 @@ class Media3Engine @Inject constructor(
     }
 
     override fun release() {
-        views?.subtitleView?.setCues(emptyList())
+        views?.let { unbind(it) }
+        views = null
         releasePlayer()
         stateFlow.value = PlayerState()
     }
@@ -100,10 +105,10 @@ class Media3Engine @Inject constructor(
         )
             .setLoadControl(loadControl(request.bufferMs))
             .build()
-        exo.addListener(PlayerListener(exo))
+        exo.addListener(PlayerListener(exo, VideoPlayback.noVideoTimeoutMs(request.bufferMs)))
         // Decoder names, formats, first frame and dropped frames in logcat, for field reports.
         if (BuildConfig.DEBUG) exo.addAnalyticsListener(EventLogger())
-        views?.let { exo.setVideoSurfaceView(it.surface) }
+        views?.let { exo.setVideoSurfaceView(it.media3Surface) }
         exo.setMediaSource(source)
         exo.playWhenReady = true
         exo.prepare()
@@ -129,10 +134,6 @@ class Media3Engine @Inject constructor(
         if (!exo.isCurrentMediaItemSeekable) return
         exo.seekTo(max(0L, exo.currentPosition - REWIND_STEP_MS))
     }
-
-    override fun setWindowSize(width: Int, height: Int) = Unit
-
-    override fun resetScale() = Unit
 
     override fun audioTracks(): List<MediaTrack>? = player?.let { tracksOf(it, C.TRACK_TYPE_AUDIO) }
 
@@ -178,12 +179,14 @@ class Media3Engine @Inject constructor(
             }
 
     private fun unbind(views: PlayerViews) {
-        player?.clearVideoSurfaceView(views.surface)
+        player?.clearVideoSurfaceView(views.media3Surface)
         views.subtitleView.setCues(emptyList())
+        views.media3Frame.visibility = View.GONE
     }
 
     private fun releasePlayer() {
         progressJob?.cancel()
+        noVideoJob?.cancel()
         val exo = player ?: return
         // Its listener drops what release() still reports.
         player = null
@@ -224,9 +227,13 @@ class Media3Engine @Inject constructor(
         }
     }
 
-    private inner class PlayerListener(private val exo: ExoPlayer) : Player.Listener {
+    private inner class PlayerListener(
+        private val exo: ExoPlayer,
+        private val noVideoTimeoutMs: Long
+    ) : Player.Listener {
         /** Opening and Playing go out once per stream, as VLC sends them; not per rebuffer. */
         private var started = false
+        private var firstFrame = false
 
         private fun emit(event: PlayerEvent) {
             if (player === exo) listener?.invoke(event)
@@ -267,11 +274,40 @@ class Media3Engine @Inject constructor(
             }
             if (Media3Streams.missingDecoder(support)) {
                 emit(PlayerEvent.Failed(unsupported = true))
+            } else if (firstFrame || noVideoJob != null) {
+                return
+            } else if (tracks.isTypeSelected(C.TRACK_TYPE_VIDEO)) {
+                watchForVideo()
+            } else {
+                // Radio: nothing to wait for.
+                firstFrame = true
+                emit(PlayerEvent.PictureReady)
+            }
+        }
+
+        override fun onRenderedFirstFrame() {
+            if (firstFrame) return
+            firstFrame = true
+            noVideoJob?.cancel()
+            emit(PlayerEvent.PictureReady)
+        }
+
+        /** Reports [PlayerEvent.NoVideo] when the video decoder shows no frame in time. */
+        private fun watchForVideo() {
+            noVideoJob = scope.launch(Dispatchers.Main.immediate) {
+                delay(noVideoTimeoutMs)
+                if (!firstFrame && player === exo) {
+                    Log.i(LOG_TAG, "Video decoder showed no frame in $noVideoTimeoutMs ms")
+                    emit(PlayerEvent.NoVideo)
+                }
             }
         }
 
         override fun onVideoSizeChanged(videoSize: VideoSize) {
             if (videoSize.width == 0 || videoSize.height == 0) return
+            views?.media3Frame?.setAspectRatio(
+                videoSize.width * videoSize.pixelWidthHeightRatio / videoSize.height
+            )
             val sarDen = SAR_SCALE
             val sarNum = (videoSize.pixelWidthHeightRatio * sarDen).toInt()
             emit(

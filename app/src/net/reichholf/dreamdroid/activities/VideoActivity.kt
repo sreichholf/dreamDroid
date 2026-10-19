@@ -5,20 +5,13 @@ import android.app.PictureInPictureParams
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.Color
-import android.graphics.PixelFormat
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.MenuItem
-import android.view.SurfaceView
 import android.view.View
-import android.view.ViewGroup.LayoutParams
-import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -38,8 +31,6 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-import kotlin.math.ceil
-import kotlin.math.floor
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.SettingsRepository
@@ -71,9 +62,8 @@ class VideoActivity :
     ComponentActivity(),
     DialogActionListener {
 
-    var surfaceFrame: FrameLayout? = null
-    var surfaceView: SurfaceView? = null
-    lateinit var subtitlesSurfaceView: SurfaceView
+    /** Holds the engines' video views; the source of the PiP transition. */
+    private var playerContainer: View? = null
     var overlay: VideoOverlayController? = null
     private val playbackViewModel: VideoPlaybackViewModel by viewModels()
 
@@ -89,18 +79,10 @@ class VideoActivity :
     /** Views and event listener are on [player] between onStart and onStop. */
     private var playerAttached: Boolean = false
 
-    var onLayoutChangeListener: View.OnLayoutChangeListener? = null
+    /** The picture's display size, for the PiP aspect ratio; 0 until the engine reports it. */
+    private var videoWidth: Int = 0
+    private var videoHeight: Int = 0
 
-    var currentScreenOrientation: Int = 0
-
-    var videoWidth: Int = 0
-    var videoHeight: Int = 0
-    var videoVisibleWidth: Int = 0
-    var videoVisibleHeight: Int = 0
-    var sarNum: Int = 0
-    var sarDen: Int = 0
-
-    private val handler = Handler(Looper.getMainLooper())
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this)
     private var playbackAlreadyStarted: Boolean = false
     private var tvStreamingRejected: Boolean = false
@@ -149,8 +131,6 @@ class VideoActivity :
                 }
             }
         }
-        surfaceFrameAddLayoutListener(true)
-        currentScreenOrientation = resources.configuration.orientation
         title = ""
         initializeOverlay()
     }
@@ -171,41 +151,6 @@ class VideoActivity :
                     overlay?.setTvStreamingChromeEnabled(status.allowsStreaming())
                 }
             }
-        }
-    }
-
-    private fun surfaceFrameAddLayoutListener(add: Boolean) {
-        if (surfaceFrame == null || add == (onLayoutChangeListener != null)) return
-        if (add) {
-            onLayoutChangeListener =
-                object : View.OnLayoutChangeListener {
-                    private val runnable = Runnable { changeSurfaceLayout() }
-
-                    override fun onLayoutChange(
-                        v: View,
-                        left: Int,
-                        top: Int,
-                        right: Int,
-                        bottom: Int,
-                        oldLeft: Int,
-                        oldTop: Int,
-                        oldRight: Int,
-                        oldBottom: Int
-                    ) {
-                        if (left != oldLeft || top != oldTop || right != oldRight ||
-                            bottom != oldBottom
-                        ) {
-                            /* changeSurfaceLayout need to be called after the layout changed */
-                            handler.removeCallbacks(runnable)
-                            handler.post(runnable)
-                        }
-                    }
-                }
-            surfaceFrame!!.addOnLayoutChangeListener(onLayoutChangeListener)
-            changeSurfaceLayout()
-        } else {
-            surfaceFrame!!.removeOnLayoutChangeListener(onLayoutChangeListener)
-            onLayoutChangeListener = null
         }
     }
 
@@ -242,7 +187,6 @@ class VideoActivity :
         if (!tvStreamingRejected) {
             cleanup()
             player.release()
-            surfaceFrameAddLayoutListener(false)
         }
         super.onStop()
     }
@@ -264,12 +208,6 @@ class VideoActivity :
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleIntent(intent)
-    }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        currentScreenOrientation = newConfig.orientation
-        changeSurfaceLayout()
     }
 
     fun handleIntent(intent: Intent) {
@@ -304,14 +242,14 @@ class VideoActivity :
     private fun initialize() {
         cleanup()
 
-        surfaceFrame = findViewById(R.id.player_surface_frame)
-        surfaceView = findViewById(R.id.player_surface)
-        subtitlesSurfaceView = findViewById(R.id.subtitles_surface)
-        subtitlesSurfaceView.setZOrderMediaOverlay(true)
-        subtitlesSurfaceView.holder.setFormat(PixelFormat.TRANSLUCENT)
-
+        playerContainer = findViewById(R.id.player_container)
         player.attach(
-            PlayerViews(surfaceView!!, subtitlesSurfaceView, findViewById(R.id.subtitles_view))
+            PlayerViews(
+                vlcLayout = findViewById(R.id.vlc_video_layout),
+                media3Frame = findViewById(R.id.media3_frame),
+                media3Surface = findViewById(R.id.media3_surface),
+                subtitleView = findViewById(R.id.subtitles_view)
+            )
         )
         player.setEventListener(::onPlayerEvent)
         playerAttached = true
@@ -332,7 +270,6 @@ class VideoActivity :
         if (!playerAttached) return
         playerAttached = false
         player.detach()
-        surfaceView = null
         player.setEventListener(null)
     }
 
@@ -340,100 +277,9 @@ class VideoActivity :
         setPictureInPictureParams(getPipParams())
     }
 
-    private fun changeSurfaceLayout() {
-        if (!playerAttached) return
-        var sw: Int
-        var sh: Int
-
-        // get screen size
-        sw = window.decorView.width
-        sh = window.decorView.height
-
-        // DecorView size ignores orientation sometimes; swap width/height if needed.
-        val isPortrait = currentScreenOrientation == Configuration.ORIENTATION_PORTRAIT
-
-        if ((sw > sh && isPortrait) || (sw < sh && !isPortrait)) {
-            val w = sw
-            sw = sh
-            sh = w
-        }
-
-        // sanity check
-        if (sw * sh == 0) {
-            Log.e(TAG, "Invalid surface size")
-            return
-        }
-        player.setWindowSize(sw, sh)
-
-        val surface = surfaceView!!
-        val subtitlesSurface = subtitlesSurfaceView
-        val surfaceFrame = this.surfaceFrame!!
-        var lp = surface.layoutParams
-
-        // Size comes from onNewVideoLayout; until then the surface fills the frame.
-        if (videoWidth * videoHeight == 0 || isInPictureInPictureMode) {
-            /* Case of OpenGL vouts: handles the placement of the video using MediaPlayer API */
-            lp.width = LayoutParams.MATCH_PARENT
-            lp.height = LayoutParams.MATCH_PARENT
-            surface.layoutParams = lp
-            lp = surfaceFrame.layoutParams
-            lp.width = LayoutParams.MATCH_PARENT
-            lp.height = LayoutParams.MATCH_PARENT
-            surfaceFrame.layoutParams = lp
-            if (videoWidth * videoHeight == 0) {
-                player.resetScale()
-            }
-            return
-        }
-
-        if (lp.width == lp.height && lp.width == LayoutParams.MATCH_PARENT) {
-            /* We handle the placement of the video using Android View LayoutParams */
-            player.resetScale()
-        }
-
-        // compute the aspect ratio
-        val ar: Double
-        val vw: Double
-        if (sarDen == sarNum) {
-            /* No indication about the density, assuming 1:1 */
-            vw = videoVisibleWidth.toDouble()
-            ar = videoVisibleWidth.toDouble() / videoVisibleHeight.toDouble()
-        } else {
-            /* Use the specified aspect ratio */
-            vw = videoVisibleWidth * sarNum.toDouble() / sarDen
-            ar = vw / videoVisibleHeight
-        }
-
-        var dw = sw.toDouble()
-        var dh = sh.toDouble()
-
-        // compute the display aspect ratio
-        val dar = dw / dh
-        if (dar < ar) {
-            dh = dw / ar
-        } else {
-            dw = dh * ar
-        }
-
-        // set display size
-        lp.width = ceil(dw * videoWidth / videoVisibleWidth).toInt()
-        lp.height = ceil(dh * videoHeight / videoVisibleHeight).toInt()
-        surface.layoutParams = lp
-        subtitlesSurface.layoutParams = lp
-
-        // set frame size (crop if necessary)
-        lp = surfaceFrame.layoutParams
-        lp.width = floor(dw).toInt()
-        lp.height = floor(dh).toInt()
-        surfaceFrame.layoutParams = lp
-
-        surface.invalidate()
-        subtitlesSurface.invalidate()
-    }
-
     private fun getPipParams(): PictureInPictureParams {
         val sourceRectHint = Rect()
-        surfaceView!!.getGlobalVisibleRect(sourceRectHint)
+        playerContainer?.getGlobalVisibleRect(sourceRectHint)
         val ar = Rational(videoWidth, videoHeight)
         val builder = PictureInPictureParams.Builder()
         if (ar.isFinite && !ar.isZero) {
@@ -474,13 +320,14 @@ class VideoActivity :
     }
 
     private fun onVideoLayout(layout: VideoLayout) {
-        videoWidth = layout.width
-        videoHeight = layout.height
-        videoVisibleWidth = layout.visibleWidth
-        videoVisibleHeight = layout.visibleHeight
-        sarNum = layout.sarNum
-        sarDen = layout.sarDen
-        changeSurfaceLayout()
+        // The engines place the picture themselves; PiP only needs its shape.
+        val sar = if (layout.sarNum > 0 && layout.sarDen > 0) {
+            layout.sarNum.toDouble() / layout.sarDen
+        } else {
+            1.0
+        }
+        videoWidth = (layout.visibleWidth * sar).toInt()
+        videoHeight = layout.visibleHeight
         if (playerAttached) {
             // The size arrives after Playing; PiP needs it for the aspect ratio.
             setPictureInPictureParams(getPipParams())
@@ -492,7 +339,6 @@ class VideoActivity :
         newConfig: Configuration
     ) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig)
-        changeSurfaceLayout()
         overlay?.onPictureInPictureModeChanged()
     }
 
@@ -521,9 +367,5 @@ class VideoActivity :
             else -> Unit
         }
         chrome.onEvent(event)
-    }
-
-    companion object {
-        val TAG: String = VideoActivity::class.java.simpleName
     }
 }

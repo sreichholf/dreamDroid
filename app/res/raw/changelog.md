@@ -5,6 +5,7 @@
 * NEW: Stream buffer setting
 * NEW: Choose the external video player
 * NEW: Media3 as an optional player engine
+* FIX: No picture on some live channels with hardware decoding
 * FIX: Importing backups made with 1.15
 * FIX: Channels with alternatives missing in MultiEPG
 * FIX: New widgets ignoring the chosen layout and profile

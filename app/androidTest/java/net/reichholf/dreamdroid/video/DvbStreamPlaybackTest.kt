@@ -1,13 +1,11 @@
 package net.reichholf.dreamdroid.video
 
-import android.view.SurfaceView
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.widget.FrameLayout
+import android.view.LayoutInflater
+import android.view.View
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.media3.ui.SubtitleView
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import javax.inject.Inject
@@ -16,6 +14,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.activities.VideoActivity
 import net.reichholf.dreamdroid.testing.HiltComposeTestActivity
 import net.reichholf.dreamdroid.testutil.DVB_NON_IDR_STREAM
 import net.reichholf.dreamdroid.testutil.DVB_STREAM_HEIGHT
@@ -91,7 +91,6 @@ class DvbStreamPlaybackTest {
         val trouble = mutableListOf<PlayerEvent>()
         withContext(Dispatchers.Main) {
             player.attach(views)
-            player.setWindowSize(views.surface.width, views.surface.height)
             player.setEventListener { event ->
                 when (event) {
                     PlayerEvent.Playing -> playing.complete(Unit)
@@ -124,29 +123,28 @@ class DvbStreamPlaybackTest {
         return layout
     }
 
+    /** The player's own layout, at full size as in [VideoActivity]. */
     private fun showViews(): PlayerViews {
-        var views: PlayerViews? = null
+        var root: View? = null
         composeRule.setContent {
             AndroidView(
                 factory = { context ->
-                    val surface = SurfaceView(context)
-                    val subtitlesSurface = SurfaceView(context)
-                    val subtitleView = SubtitleView(context)
-                    views = PlayerViews(surface, subtitlesSurface, subtitleView)
-                    // Full size, as in VideoActivity: VLC shows video only in a window it can size.
-                    FrameLayout(context).apply {
-                        addView(surface, MATCH_PARENT, MATCH_PARENT)
-                        addView(subtitlesSurface, MATCH_PARENT, MATCH_PARENT)
-                        addView(subtitleView, MATCH_PARENT, MATCH_PARENT)
-                    }
+                    LayoutInflater.from(context).inflate(R.layout.video_player, null)
+                        .also { root = it }
                 },
                 modifier = Modifier.fillMaxSize()
             )
         }
         composeRule.waitUntil(TIMEOUT_MS) {
-            views?.surface?.let { it.width > 0 && it.height > 0 } == true
+            root?.findViewById<View>(R.id.player_container)?.let { it.width > 0 } == true
         }
-        return checkNotNull(views)
+        val layout = checkNotNull(root)
+        return PlayerViews(
+            vlcLayout = layout.findViewById(R.id.vlc_video_layout),
+            media3Frame = layout.findViewById(R.id.media3_frame),
+            media3Surface = layout.findViewById(R.id.media3_surface),
+            subtitleView = layout.findViewById(R.id.subtitles_view)
+        )
     }
 
     private companion object {
