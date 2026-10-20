@@ -225,7 +225,8 @@ class VideoActivity :
                     ?: VlcEngine.MEDIA_HWACCEL_ENABLED,
                 bufferMs = values.streamBuffer,
                 // Live services carry their reference; recordings do not.
-                live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
+                live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE),
+                preferredAudioLanguage = values.preferredAudioLanguage
             )
         )
         playbackAlreadyStarted = true

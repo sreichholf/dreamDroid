@@ -1,10 +1,15 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.requestFocus
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -66,6 +71,23 @@ class TvHubNavHostTest {
         composeRule.onNodeWithTag("tv_profiles_list").assertExists()
         composeRule.onNodeWithTag("tv_profiles_add").assertExists()
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
+    }
+
+    @Test
+    fun profilesRouteOpensBackupAndRestore() {
+        show(TvProfiles)
+        val backup = composeRule.onNodeWithTag("tv_profiles_backup_restore")
+        backup.assertHasClickAction()
+        backup.requestFocus()
+        backup.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tv_backup_screen").assertExists()
+        composeRule.onNodeWithText("Backup").assertIsDisplayed()
+        composeRule.onNodeWithText("Choose file").assertIsDisplayed()
+        composeRule.runOnIdle {
+            composeRule.activity.onBackPressedDispatcher.onBackPressed()
+        }
+        composeRule.onNodeWithTag("tv_profiles_list").assertExists()
     }
 
     private fun show(route: Any) {

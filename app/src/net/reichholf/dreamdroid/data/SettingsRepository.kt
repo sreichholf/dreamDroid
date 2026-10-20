@@ -37,6 +37,8 @@ data class AppSettings(
     val playButtonAsPlayPause: Boolean = false,
     val themeType: String = "1",
     val dynamicThemeColors: Boolean = false,
+    val autoStartLastStream: Boolean = false,
+    val preferredAudioLanguage: String = "",
     val enableAnimations: Boolean = true,
     val gridMaxCols: String = AUTO_FIT_COLUMNS.toString(),
     val multiEpgTextSize: String = MultiEpgTextSize.DEFAULT.prefValue,
@@ -111,6 +113,14 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
         dynamicThemeColors = bool(
             DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS,
             DEFAULTS.dynamicThemeColors
+        ),
+        autoStartLastStream = bool(
+            DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM,
+            DEFAULTS.autoStartLastStream
+        ),
+        preferredAudioLanguage = string(
+            DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE,
+            DEFAULTS.preferredAudioLanguage
         ),
         enableAnimations = bool(
             DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS,
@@ -221,6 +231,7 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DreamDroid.PREFS_KEY_CONFIRM_APP_CLOSE to AppSettings::confirmAppClose,
             DreamDroid.PREFS_KEY_PLAY_BUTTON_AS_PLAY_PAUSE to AppSettings::playButtonAsPlayPause,
             DreamDroid.PREFS_KEY_DYNAMIC_THEME_COLORS to AppSettings::dynamicThemeColors,
+            DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM to AppSettings::autoStartLastStream,
             DreamDroid.PREFS_KEY_ENABLE_ANIMATIONS to AppSettings::enableAnimations,
             DreamDroid.PREFS_KEY_PICONS_ENABLED to AppSettings::picons,
             DreamDroid.PREFS_KEY_PICONS_USE_NAME to AppSettings::useNameAsPiconFilename,
@@ -238,6 +249,7 @@ class SettingsRepository @Inject constructor(private val preferences: SharedPref
             DreamDroid.PREFS_KEY_EXTERNAL_PLAYER to AppSettings::externalPlayer,
             DreamDroid.PREFS_KEY_START_SCREEN to AppSettings::startScreen,
             DreamDroid.PREFS_KEY_THEME_TYPE to AppSettings::themeType,
+            DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE to AppSettings::preferredAudioLanguage,
             DreamDroid.PREFS_KEY_GRID_MAX_COLS to AppSettings::gridMaxCols,
             DreamDroid.PREFS_KEY_MULTIEPG_TEXT_SIZE to AppSettings::multiEpgTextSize,
             DreamDroid.PREFS_KEY_SYNC_PICONS_PATH to AppSettings::syncPiconsPath

@@ -47,6 +47,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
@@ -101,6 +102,7 @@ object TvComposeHubHost {
     const val HEADER_SETTINGS_ID: String = "settings"
     const val HEADER_TIMERS_ID: String = "timers"
     const val HEADER_MULTIEPG_ID: String = "multiepg"
+    const val HEADER_MOVIES_ID: String = "movies"
     const val HEADER_PLACEHOLDER_ID: String = "placeholder"
     const val HEADER_MOVIE_PREFIX: String = "movie:"
 
@@ -137,32 +139,17 @@ object TvComposeHubHost {
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
     }
 
-    /**
-     * Drawer order: the bouquets (or a placeholder while there are none), MultiEPG when
-     * there are bouquets to show in it, the movie locations, Timers, then Preferences.
-     */
+    /** The drawer contains only bouquets returned by the receiver. */
     fun hubNavHeaders(
         bouquetRows: List<HubBouquetRow>,
-        movieLocations: List<String>,
-        placeholderTitle: String,
-        multiEpgTitle: String,
-        timersTitle: String,
-        settingsTitle: String
+        placeholderTitle: String
     ): List<HubNavHeader> = buildList {
-        if (bouquetRows.isEmpty()) {
-            add(HubNavHeader(HEADER_PLACEHOLDER_ID, placeholderTitle))
-        } else {
-            bouquetRows.forEach { row ->
+        bouquetRows.forEach { row ->
+            if (row.bouquet.reference.isNotBlank()) {
                 val title = row.bouquet.name.ifBlank { placeholderTitle }
                 add(HubNavHeader(row.bouquet.reference, title))
             }
-            add(HubNavHeader(HEADER_MULTIEPG_ID, multiEpgTitle))
         }
-        movieLocations.forEach { dirname ->
-            add(HubNavHeader(movieHeaderId(dirname), dirname))
-        }
-        add(HubNavHeader(HEADER_TIMERS_ID, timersTitle))
-        add(HubNavHeader(HEADER_SETTINGS_ID, settingsTitle))
     }
 
     /** The top of the drawer, which the hub opens on: the first bouquet, else the placeholder. */
@@ -181,6 +168,8 @@ object TvComposeHubHost {
         headerId == HEADER_SETTINGS_ID || headerId == HEADER_TIMERS_ID -> true
 
         headerId == HEADER_MULTIEPG_ID -> bouquetRows.isNotEmpty()
+
+        headerId == HEADER_MOVIES_ID -> movieLocations.isNotEmpty()
 
         headerId == HEADER_PLACEHOLDER_ID -> bouquetRows.isEmpty()
 
@@ -257,13 +246,13 @@ private val HubGridItemSpacing = 24.dp
 private val HubGridFocusInset = 16.dp
 
 /** One compact card size for the hub grid and the zap overlay. */
-internal val HubServiceCardHeight = 96.dp
-private val HubServiceProgressHeight = 6.dp
-private val HubServicePiconWidth = 64.dp
-private val HubServicePiconHeight = 40.dp
+internal val HubServiceCardHeight = 120.dp
+private val HubServiceProgressHeight = 8.dp
+private val HubServicePiconWidth = 80.dp
+private val HubServicePiconHeight = 48.dp
 
 /** Zap overlay row card: wide enough for text next to the leading picon. */
-private val HubServiceRowCardWidth = 280.dp
+private val HubServiceRowCardWidth = 300.dp
 
 @Composable
 fun ComposeTvHubApp(
@@ -297,28 +286,14 @@ fun ComposeTvHubApp(
         return
     }
     val status = uiState.connection
-    val settingsTitle = stringResource(R.string.preferences)
-    val timersTitle = stringResource(R.string.timer)
-    val multiEpgTitle = stringResource(R.string.multiepg)
     val placeholderTitle = stringResource(R.string.services)
     val bouquetRows = uiState.bouquetRows
     val movieLocations = uiState.movieLocations
 
-    val headers = remember(
-        settingsTitle,
-        timersTitle,
-        multiEpgTitle,
-        placeholderTitle,
-        bouquetRows,
-        movieLocations
-    ) {
+    val headers = remember(placeholderTitle, bouquetRows) {
         TvComposeHubHost.hubNavHeaders(
             bouquetRows = bouquetRows,
-            movieLocations = movieLocations,
-            placeholderTitle = placeholderTitle,
-            multiEpgTitle = multiEpgTitle,
-            timersTitle = timersTitle,
-            settingsTitle = settingsTitle
+            placeholderTitle = placeholderTitle
         )
     }
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
@@ -343,6 +318,7 @@ fun ComposeTvHubApp(
             selectedHeaderId = uiState.selectedHeaderId,
             onHeaderSelected = viewModel::selectHeader,
             settingsItems = settingsItems,
+            movieLocations = movieLocations,
             onSettingsClick = { kind ->
                 when (kind) {
                     BrowseItem.Kind.Reload -> viewModel.reload()
@@ -411,6 +387,7 @@ fun ComposeTvHubChrome(
     onSettingsClick: (BrowseItem.Kind) -> Unit,
     modifier: Modifier = Modifier,
     bouquetRows: List<HubBouquetRow> = emptyList(),
+    movieLocations: List<String> = emptyList(),
     moviesByLocation: Map<String, List<Movie>> = emptyMap(),
     loading: Boolean = false,
     movieLoading: Boolean = false,
@@ -448,6 +425,10 @@ fun ComposeTvHubChrome(
     val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
     val hasPaintedContent = selectedBouquet?.services?.isNotEmpty() == true ||
         (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty()) ||
+        (
+            selectedHeaderId == TvComposeHubHost.HEADER_MOVIES_ID &&
+                movieLocations.isNotEmpty()
+            ) ||
         (
             selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID &&
                 bouquetRows.isNotEmpty()
@@ -540,13 +521,27 @@ fun ComposeTvHubChrome(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(24.dp)
+                        .background(
+                            Brush.linearGradient(
+                                colors = listOf(
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                                    MaterialTheme.colorScheme.background
+                                )
+                            )
+                        )
+                        .padding(horizontal = 32.dp, vertical = 28.dp)
                         .testTag("compose_tv_hub_rows"),
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
                     val title = headers.firstOrNull { header ->
                         header.id == selectedHeaderId
-                    }?.title.orEmpty()
+                    }?.title ?: when (selectedHeaderId) {
+                        TvComposeHubHost.HEADER_SETTINGS_ID -> stringResource(R.string.preferences)
+                        TvComposeHubHost.HEADER_TIMERS_ID -> stringResource(R.string.timer)
+                        TvComposeHubHost.HEADER_MULTIEPG_ID -> stringResource(R.string.multiepg)
+                        TvComposeHubHost.HEADER_MOVIES_ID -> stringResource(R.string.movies)
+                        else -> movieDir ?: stringResource(R.string.services)
+                    }
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -554,44 +549,48 @@ fun ComposeTvHubChrome(
                     ) {
                         Text(
                             text = title,
-                            style = MaterialTheme.typography.headlineSmall,
+                            style = MaterialTheme.typography.headlineMedium,
                             modifier = Modifier.weight(1f)
                         )
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(12.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            if (selectedBouquet != null) {
-                                Surface(
-                                    onClick = {
-                                        val bouquet = selectedBouquet.bouquet
-                                        onOpenMultiEpg(
-                                            bouquet.reference,
-                                            bouquet.name.ifBlank { bouquet.reference }
-                                        )
-                                    },
-                                    modifier = Modifier.testTag("hub_bouquet_multiepg"),
-                                    colors = dreamDroidTvCardColors(),
-                                    scale = ClickableSurfaceDefaults.scale(
-                                        focusedScale = 1.05f
-                                    ),
-                                    shape = ClickableSurfaceDefaults.shape()
-                                ) {
-                                    Image(
-                                        painter = painterResource(
-                                            R.drawable.ic_multiepg
-                                        ),
-                                        contentDescription = stringResource(
-                                            R.string.multiepg
-                                        ),
-                                        colorFilter = ColorFilter.tint(
-                                            LocalContentColor.current
-                                        ),
-                                        modifier = Modifier
-                                            .padding(8.dp)
-                                            .size(32.dp)
-                                    )
+                            HubTopAction(
+                                title = stringResource(R.string.settings),
+                                iconRes = R.drawable.ic_badge_settings,
+                                testTag = "hub_action_settings",
+                                onClick = {
+                                    onHeaderSelected(TvComposeHubHost.HEADER_SETTINGS_ID)
                                 }
+                            )
+                            if (bouquetRows.isNotEmpty()) {
+                                HubTopAction(
+                                    title = stringResource(R.string.multiepg),
+                                    iconRes = R.drawable.ic_multiepg,
+                                    testTag = "hub_action_multiepg",
+                                    onClick = {
+                                        onHeaderSelected(TvComposeHubHost.HEADER_MULTIEPG_ID)
+                                    }
+                                )
+                            }
+                            HubTopAction(
+                                title = stringResource(R.string.timer),
+                                iconRes = R.drawable.ic_menu_timer,
+                                testTag = "hub_action_timers",
+                                onClick = {
+                                    onHeaderSelected(TvComposeHubHost.HEADER_TIMERS_ID)
+                                }
+                            )
+                            if (movieLocations.isNotEmpty()) {
+                                HubTopAction(
+                                    title = stringResource(R.string.movies),
+                                    iconRes = R.drawable.ic_menu_movie,
+                                    testTag = "hub_action_movies",
+                                    onClick = {
+                                        onHeaderSelected(TvComposeHubHost.HEADER_MOVIES_ID)
+                                    }
+                                )
                             }
                             if (sessionChipLabel != null) {
                                 HubSessionStatus(
@@ -640,6 +639,13 @@ fun ComposeTvHubChrome(
                             HubMultiEpgBouquetGrid(
                                 bouquetRows = bouquetRows,
                                 onOpenMultiEpg = onOpenMultiEpg
+                            )
+                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MOVIES_ID) {
+                            HubMovieLocationGrid(
+                                locations = movieLocations,
+                                onSelectLocation = { dirname ->
+                                    onHeaderSelected(TvComposeHubHost.movieHeaderId(dirname))
+                                }
                             )
                         } else if (selectedBouquet != null) {
                             // Per bouquet, so scroll position and the restored card do not
@@ -768,6 +774,37 @@ private fun HubSessionStatus(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                 )
             }
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubTopAction(
+    title: String,
+    iconRes: Int,
+    testTag: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier.testTag(testTag),
+        colors = dreamDroidTvCardColors(),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        shape = ClickableSurfaceDefaults.shape()
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(iconRes),
+                contentDescription = title,
+                colorFilter = ColorFilter.tint(LocalContentColor.current),
+                modifier = Modifier.size(24.dp)
+            )
+            Text(text = title, style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -1205,6 +1242,58 @@ fun HubMovieGrid(
                 onClick = { onMovieClick(movie) },
                 fillWidth = true
             )
+        }
+    }
+}
+
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubMovieLocationGrid(
+    locations: List<String>,
+    onSelectLocation: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyVerticalGrid(
+        columns = GridCells.Adaptive(minSize = 200.dp),
+        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
+        contentPadding = PaddingValues(
+            start = HubGridFocusInset,
+            top = HubGridFocusInset,
+            end = HubGridFocusInset,
+            bottom = 48.dp
+        ),
+        modifier = modifier
+            .fillMaxSize()
+            .testTag("hub_movie_location_grid")
+    ) {
+        gridItemsIndexed(locations, key = { _, location -> location }) { index, location ->
+            Surface(
+                onClick = { onSelectLocation(location) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag("hub_movie_location_$index"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+                shape = ClickableSurfaceDefaults.shape()
+            ) {
+                Column {
+                    Image(
+                        painter = painterResource(R.drawable.ic_menu_movie),
+                        contentDescription = location,
+                        contentScale = ContentScale.Fit,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp)
+                    )
+                    Text(
+                        text = location,
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
+                    )
+                }
+            }
         }
     }
 }

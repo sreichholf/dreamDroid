@@ -36,9 +36,11 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
 import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.isTelevision
+import net.reichholf.dreamdroid.intents.autoStartLastLiveStream
 import net.reichholf.dreamdroid.tv.activities.MainActivity as TvMainActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
@@ -94,6 +96,9 @@ class MainActivity :
     lateinit var settings: SettingsRepository
 
     @Inject
+    lateinit var receiver: ReceiverRepository
+
+    @Inject
     lateinit var sessions: SessionConnectionHolder
 
     private var themeJob: Job? = null
@@ -107,6 +112,7 @@ class MainActivity :
     val shellActions: ShellViewModel by viewModels()
 
     private var phoneShellReady: Boolean = false
+    private var autoStartLastStreamOnLaunch = false
 
     /**
      * Lowest-priority back handler: drawer close, then NavHost pop, then optional leave-confirm.
@@ -159,6 +165,8 @@ class MainActivity :
             navigationHelper?.onProfileChanged()
         }
         val outcome = state.profileCheckOutcome ?: return
+        val shouldAutoStartLastStream =
+            autoStartLastStreamOnLaunch && outcome is ProfileCheckOutcome.Leave
         ensureNavigationHelper()
         when (outcome) {
             is ProfileCheckOutcome.Failed -> phoneNav.navigateToProfileCheck()
@@ -172,6 +180,18 @@ class MainActivity :
             toggle()
         }
         shellActions.onProfileCheckOutcomeHandled()
+        if (shouldAutoStartLastStream) {
+            autoStartLastStreamOnLaunch = false
+            lifecycleScope.launch {
+                autoStartLastLiveStream(
+                    activity = this@MainActivity,
+                    settings = settings,
+                    receiver = receiver,
+                    sessions = sessions,
+                    onError = shellActions::showMessage
+                )
+            }
+        }
     }
 
     /** The shell asks once it starts, and setup at its search step. */
@@ -182,12 +202,14 @@ class MainActivity :
             // Whatever starts the plain LAUNCHER entry on a TV would get the phone shell in
             // its tablet layout. Leanback launches the TV hub; send this one there too.
             super.onCreate(savedInstanceState)
+            autoStartLastStreamOnLaunch = savedInstanceState == null
             startActivity(Intent(this, TvMainActivity::class.java))
             finish()
             return
         }
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        autoStartLastStreamOnLaunch = savedInstanceState == null
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 shellActions.uiState.collect { state ->

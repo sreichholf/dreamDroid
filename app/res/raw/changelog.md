@@ -7,6 +7,10 @@
 * NEW: Media3 as an optional player engine
 * FIX: No picture on some live channels with hardware decoding
 * FIX: Live streams not starting after switching channels
+* UPD: Refreshed the TV hub for Google TV
+* UPD: Improved D-pad navigation in TV settings
+* NEW: Option to auto-start the last watched live channel
+* NEW: Preferred audio language for the integrated player
 * FIX: Importing backups made with 1.15
 * FIX: Channels with alternatives missing in MultiEPG
 * FIX: Movies sometimes showing the first location instead of the saved one
@@ -292,4 +296,3 @@
 * UPD: Latest state-of-the art UI and external libraries (HUGE internal changes!)
 * FIX: Some smaller fixes (e.g. broken EPG with older devices, doubled location/tag entries, ...)
 * NEW: Bugs we haven't yet discovered ;)
-

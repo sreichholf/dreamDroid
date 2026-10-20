@@ -21,7 +21,11 @@ private const val BACKUP_MIME_TYPE = "application/json"
 
 /** Backup as a NavHost destination. The system document pickers run here. */
 @Composable
-fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel = hiltViewModel()) {
+fun BackupDestination(
+    modifier: Modifier = Modifier,
+    inlineExport: Boolean = false,
+    viewModel: BackupViewModel = hiltViewModel()
+) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
@@ -60,13 +64,15 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         }
     }
 
-    BindShellFab(
-        contentDescription = stringResource(R.string.backup_export),
-        iconRes = R.drawable.ic_action_fab_export,
-        onClick = viewModel::requestExport,
-        text = stringResource(R.string.backup_export),
-        lookDisabled = !uiState.canExport
-    )
+    if (!inlineExport) {
+        BindShellFab(
+            contentDescription = stringResource(R.string.backup_export),
+            iconRes = R.drawable.ic_action_fab_export,
+            onClick = viewModel::requestExport,
+            text = stringResource(R.string.backup_export),
+            lookDisabled = !uiState.canExport
+        )
+    }
 
     BackupScreen(
         state = uiState,
@@ -75,6 +81,7 @@ fun BackupDestination(modifier: Modifier = Modifier, viewModel: BackupViewModel 
         onAllProfilesCheckedChange = viewModel::setAllProfilesChecked,
         onExportSettingsChange = viewModel::setExportSettings,
         onIncludePasswordsChange = viewModel::setIncludePasswords,
+        onExport = if (inlineExport) viewModel::requestExport else null,
         modifier = modifier
     )
 

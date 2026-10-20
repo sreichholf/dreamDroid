@@ -2,13 +2,18 @@ package net.reichholf.dreamdroid.tv.ui
 
 import android.Manifest
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +22,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -28,6 +38,8 @@ import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.backup.BackupDestination
 import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
@@ -38,6 +50,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /** Hub entry flag. A settings write or a profile save sets it; the hub consumes it. */
 internal const val TV_HUB_RELOAD_KEY: String = "tv_hub_reload"
+private const val TV_PROFILES_RELOAD_KEY: String = "tv_profiles_reload"
 
 internal fun markTvHubReload(handle: SavedStateHandle?) {
     handle?.set(TV_HUB_RELOAD_KEY, true)
@@ -135,7 +148,10 @@ private fun TvHubNavGraph(
         composable<TvSettings> {
             TvSettingsDestination(navController, hiltViewModel())
         }
-        composable<TvProfiles> {
+        composable<TvProfiles> { entry ->
+            val reloadProfiles by entry.savedStateHandle
+                .getStateFlow(TV_PROFILES_RELOAD_KEY, false)
+                .collectAsStateWithLifecycle()
             DreamDroidTvTheme {
                 TvProfilesHost(
                     onMarkReload = {
@@ -143,8 +159,40 @@ private fun TvHubNavGraph(
                             navController.previousBackStackEntry?.savedStateHandle
                         )
                     },
-                    onLeave = { navController.popBackStack() }
+                    onLeave = { navController.popBackStack() },
+                    onBackup = { navController.navigate(TvBackup) },
+                    reloadProfiles = reloadProfiles,
+                    onReloadHandled = {
+                        entry.savedStateHandle[TV_PROFILES_RELOAD_KEY] = false
+                        markTvHubReload(navController.previousBackStackEntry?.savedStateHandle)
+                    }
                 )
+            }
+        }
+        composable<TvBackup> {
+            BackHandler {
+                navController.previousBackStackEntry?.savedStateHandle
+                    ?.set(TV_PROFILES_RELOAD_KEY, true)
+                navController.popBackStack()
+            }
+            DreamDroidTvTheme {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("tv_backup_screen")
+                ) {
+                    Text(
+                        text = stringResource(R.string.backup),
+                        style = MaterialTheme.typography.headlineMedium,
+                        modifier = Modifier
+                            .padding(start = 32.dp, top = 24.dp, bottom = 8.dp)
+                            .semantics { heading() }
+                    )
+                    BackupDestination(
+                        modifier = Modifier.weight(1f),
+                        inlineExport = true
+                    )
+                }
             }
         }
     }
@@ -181,7 +229,13 @@ private fun TvSettingsDestination(navController: NavHostController, viewModel: S
             },
             onEditSyncPiconsPath = viewModel::editSyncPiconsPath,
             onConfirmSyncPiconsPath = viewModel::confirmSyncPiconsPath,
-            onDismissSyncPiconsPath = viewModel::dismissSyncPiconsPath
+            onDismissSyncPiconsPath = viewModel::dismissSyncPiconsPath,
+            preferredAudioLanguageDraft = viewModel.preferredAudioLanguage.state.takeIf {
+                uiState.editingPreferredAudioLanguage
+            },
+            onEditPreferredAudioLanguage = viewModel::editPreferredAudioLanguage,
+            onConfirmPreferredAudioLanguage = viewModel::confirmPreferredAudioLanguage,
+            onDismissPreferredAudioLanguage = viewModel::dismissPreferredAudioLanguage
         )
     }
 }

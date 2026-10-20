@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
+import net.reichholf.dreamdroid.data.LastLiveStreamStore
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
@@ -77,15 +78,20 @@ object IntentFactory {
         title: String,
         bouquetRef: String? = null,
         serviceInfo: ServiceNowNext? = null
-    ): Intent = streamIntent(
-        context,
-        stream.url,
-        "Service-Streaming URL set to",
-        title,
-        stream.reference,
-        bouquetRef,
-        serviceInfo
-    )
+    ): Intent {
+        LastLiveStreamStore(
+            PreferenceManager.getDefaultSharedPreferences(context)
+        ).save(stream.reference, title, bouquetRef)
+        return streamIntent(
+            context,
+            stream.url,
+            "Service-Streaming URL set to",
+            title,
+            stream.reference,
+            bouquetRef,
+            serviceInfo
+        )
+    }
 
     /** Plays the recording at [uriString] (see `MovieRepository.streamUrl`). */
     fun getStreamFileIntent(

@@ -4,17 +4,21 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.hasSetTextAction
-import androidx.compose.ui.test.hasText
-import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
+import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.requestFocus
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
@@ -57,7 +61,7 @@ class TvSettingsScreenTest {
     }
 
     @Test
-    fun integratedPlayerDefaultsOnAndTurnsOff() {
+    fun integratedPlayerOnlyChangesWhenActivatedWithCenter() {
         var settings by mutableStateOf(AppSettings())
         assertTrue(settings.integratedVideoPlayer)
         composeRule.setContent {
@@ -66,9 +70,86 @@ class TvSettingsScreenTest {
             }
         }
 
-        composeRule.onNode(hasText("Integrated video player") and isToggleable()).performClick()
+        val setting = composeRule.onNodeWithTag("tv_setting_integrated_video_player")
+        setting.assertIsFocused()
+        setting.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("tv_setting_video_hardware_acceleration").assertIsFocused()
+        assertTrue(settings.integratedVideoPlayer)
+
+        setting.requestFocus()
+        setting.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         assertFalse(settings.integratedVideoPlayer)
+    }
+
+    @Test
+    fun autoStartLastStreamChangesOnlyWhenActivatedWithCenter() {
+        var settings by mutableStateOf(AppSettings())
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
+            }
+        }
+
+        val setting = composeRule.onNodeWithTag("tv_setting_auto_start_last_stream")
+        setting.performScrollTo()
+        setting.requestFocus()
+        setting.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        assertTrue(settings.autoStartLastStream)
+    }
+
+    @Test
+    fun listSettingOpensOnlyWhenActivatedWithCenter() {
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                TvSettingsScreen(settings = AppSettings(), onChange = {})
+            }
+        }
+
+        val setting = composeRule.onNodeWithTag("tv_setting_video_hardware_acceleration")
+        setting.requestFocus()
+        setting.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+        composeRule.onAllNodesWithText("Hardware Acceleration").assertCountEquals(0)
+
+        setting.requestFocus()
+        setting.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("Hardware Acceleration").assertIsDisplayed()
+    }
+
+    @Test
+    fun preferredAudioLanguageCanBeEnteredAndSaved() {
+        var settings by mutableStateOf(AppSettings())
+        var editing by mutableStateOf(false)
+        val draft = TextFieldState()
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                TvSettingsScreen(
+                    settings = settings,
+                    onChange = { settings = it(settings) },
+                    preferredAudioLanguageDraft = draft.takeIf { editing },
+                    onEditPreferredAudioLanguage = { editing = true },
+                    onConfirmPreferredAudioLanguage = {
+                        settings = settings.copy(preferredAudioLanguage = draft.text.toString())
+                        editing = false
+                    },
+                    onDismissPreferredAudioLanguage = { editing = false }
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("tv_setting_preferred_audio_language")
+            .performScrollTo()
+            .performClick()
+        composeRule.onNodeWithText("Preferred audio language").assertIsDisplayed()
+        composeRule.onNode(hasSetTextAction()).performTextReplacement("eng")
+        composeRule.onNodeWithText("OK").performClick()
+        composeRule.waitForIdle()
+
+        assertEquals("eng", settings.preferredAudioLanguage)
     }
 
     @Test

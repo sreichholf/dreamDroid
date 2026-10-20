@@ -28,7 +28,8 @@ data class PlayRequest(
     val engine: Engine,
     val hwAccelFlags: Int,
     val bufferMs: Int,
-    val live: Boolean
+    val live: Boolean,
+    val preferredAudioLanguage: String = ""
 )
 
 /** The decoder library that plays a stream in the integrated player. */

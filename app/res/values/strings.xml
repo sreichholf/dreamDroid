@@ -278,6 +278,11 @@
     <string name="usability">Useability</string>
     <string name="start_screen">Start screen</string>
     <string name="start_screen_long">Screen shown when the app opens (main drawer destinations)</string>
+    <string name="preferred_audio_language">Preferred audio language</string>
+    <string name="preferred_audio_language_long">Enter a language code or part of its name (for example en, eng, or English). The integrated player uses the stream default when there is no match; leave empty to always use the stream default.</string>
+    <string name="audio_language_default">Use stream default</string>
+    <string name="auto_start_last_stream">Auto-start last live channel</string>
+    <string name="auto_start_last_stream_long">Start the last watched live channel when the app is launched</string>
     <string name="use_picons">Use Picons</string>
     <string name="use_picons_long">Enable the use of picons in certain areas.\nRequires picons in app storage (picons/)</string>
     <string name="sync_picons">Sync Picons</string>
@@ -394,6 +399,7 @@
     <string name="seek">Seek</string>
     <string name="preferences">Preferences</string>
     <string name="backup">Backup</string>
+    <string name="backup_restore">Backup &amp; Restore</string>
     <string name="backup_current_profile">Current</string>
     <string name="backup_export">Export</string>
     <string name="backup_import">Import</string>

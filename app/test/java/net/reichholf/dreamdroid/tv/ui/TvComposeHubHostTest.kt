@@ -43,37 +43,20 @@ class TvComposeHubHostTest {
     }
 
     @Test
-    fun drawerListsBouquetsMultiEpgMoviesTimersThenPreferences() {
-        val headers = hubNavHeaders(
-            bouquetRows = listOf(row(FAVOURITES, "Favourites"), row(SPORTS, "")),
-            movieLocations = listOf("/media/hdd/movie/")
-        )
+    fun drawerListsOnlyReceiverBouquets() {
+        val headers = hubNavHeaders(listOf(row(FAVOURITES, "Favourites"), row(SPORTS, "")))
         assertEquals(
             listOf(
                 HubNavHeader(FAVOURITES, "Favourites"),
-                HubNavHeader(SPORTS, "Services"),
-                HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                HubNavHeader(
-                    TvComposeHubHost.movieHeaderId("/media/hdd/movie/"),
-                    "/media/hdd/movie/"
-                ),
-                HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timers"),
-                HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
+                HubNavHeader(SPORTS, "Services")
             ),
             headers
         )
     }
 
     @Test
-    fun drawerWithoutBouquetsShowsPlaceholderAndNoMultiEpg() {
-        assertEquals(
-            listOf(
-                HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services"),
-                HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timers"),
-                HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
-            ),
-            hubNavHeaders(bouquetRows = emptyList(), movieLocations = emptyList())
-        )
+    fun drawerWithoutReceiverBouquetsIsEmpty() {
+        assertEquals(emptyList<HubNavHeader>(), hubNavHeaders(emptyList()))
     }
 
     @Test
@@ -94,6 +77,20 @@ class TvComposeHubHostTest {
             TvComposeHubHost.hubHeaderSurvivesReload(
                 TvComposeHubHost.HEADER_MULTIEPG_ID,
                 emptyList(),
+                emptyList()
+            )
+        )
+        assertTrue(
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_MOVIES_ID,
+                rows,
+                listOf("/media/hdd/movie/")
+            )
+        )
+        assertFalse(
+            TvComposeHubHost.hubHeaderSurvivesReload(
+                TvComposeHubHost.HEADER_MOVIES_ID,
+                rows,
                 emptyList()
             )
         )
@@ -270,14 +267,10 @@ class TvComposeHubHostTest {
         )
     }
 
-    private fun hubNavHeaders(bouquetRows: List<HubBouquetRow>, movieLocations: List<String>) =
+    private fun hubNavHeaders(bouquetRows: List<HubBouquetRow>) =
         TvComposeHubHost.hubNavHeaders(
             bouquetRows = bouquetRows,
-            movieLocations = movieLocations,
-            placeholderTitle = "Services",
-            multiEpgTitle = "MultiEPG",
-            timersTitle = "Timers",
-            settingsTitle = "Preferences"
+            placeholderTitle = "Services"
         )
 
     private fun row(reference: String, name: String) =
