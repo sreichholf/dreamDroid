@@ -24,6 +24,7 @@ fun TextInputDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     error: String? = null,
+    supportingText: String? = null,
     confirmLabel: String = stringResource(R.string.ok)
 ) {
     AlertDialog(
@@ -35,7 +36,7 @@ fun TextInputDialog(
                 modifier = Modifier.fillMaxWidth(),
                 lineLimits = TextFieldLineLimits.SingleLine,
                 isError = error != null,
-                supportingText = error?.let { { Text(it) } }
+                supportingText = (error ?: supportingText)?.let { { Text(it) } }
             )
         },
         confirmButton = {

@@ -13,6 +13,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
@@ -118,6 +119,27 @@ class BackupScreenTest {
     }
 
     @Test
+    fun inlineExportButtonInvokesExportCallback() {
+        var exported = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                BackupScreen(
+                    state = BackupUiState(exportSettings = true),
+                    onImport = {},
+                    onProfileCheckedChange = { _, _ -> },
+                    onAllProfilesCheckedChange = {},
+                    onExportSettingsChange = {},
+                    onIncludePasswordsChange = {},
+                    onExport = { exported = true }
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("backup_export_button").assertIsDisplayed().performClick()
+        assertEquals(true, exported)
+    }
+
+    @Test
     fun withoutAChosenProfileThePasswordSwitchIsOffLimits() {
         setScreen(
             BackupUiState(
@@ -144,7 +166,11 @@ class BackupScreenTest {
         composeRule.onNodeWithText("Select all").assertDoesNotExist()
     }
 
-    private fun setScreen(state: BackupUiState, events: MutableList<String> = mutableListOf()) {
+    private fun setScreen(
+        state: BackupUiState,
+        events: MutableList<String> = mutableListOf(),
+        onExport: (() -> Unit)? = null
+    ) {
         composeRule.setContent {
             DreamDroidTheme {
                 BackupScreen(
@@ -153,7 +179,8 @@ class BackupScreenTest {
                     onProfileCheckedChange = { id, checked -> events += "profile $id $checked" },
                     onAllProfilesCheckedChange = { events += "all $it" },
                     onExportSettingsChange = { events += "settings $it" },
-                    onIncludePasswordsChange = { events += "passwords $it" }
+                    onIncludePasswordsChange = { events += "passwords $it" },
+                    onExport = onExport
                 )
             }
         }

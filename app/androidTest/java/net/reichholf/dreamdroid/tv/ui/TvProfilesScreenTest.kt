@@ -41,6 +41,7 @@ class TvProfilesScreenTest {
                     TvProfilesScreen(
                         profiles = sampleProfiles(),
                         onAdd = {},
+                        onBackup = {},
                         onActivate = {},
                         onEdit = {},
                         onDelete = {},
@@ -76,6 +77,7 @@ class TvProfilesScreenTest {
                     TvProfilesScreen(
                         profiles = sampleProfiles(),
                         onAdd = { added = true },
+                        onBackup = {},
                         onActivate = {},
                         onEdit = {},
                         onDelete = {},
@@ -89,6 +91,28 @@ class TvProfilesScreenTest {
     }
 
     @Test
+    fun backupAndRestoreEntryInvokesCallback() {
+        var opened = false
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                SizedHost {
+                    TvProfilesScreen(
+                        profiles = sampleProfiles(),
+                        onAdd = {},
+                        onBackup = { opened = true },
+                        onActivate = {},
+                        onEdit = {},
+                        onDelete = {},
+                        onDeleteConfirmed = {}
+                    )
+                }
+            }
+        }
+        dpadActivate("tv_profiles_backup_restore") { opened }
+        assertEquals(true, opened)
+    }
+
+    @Test
     fun directionCenterOnNonActiveRowInvokesOnActivate() {
         var activated: Int? = null
         composeRule.setContent {
@@ -97,6 +121,7 @@ class TvProfilesScreenTest {
                     TvProfilesScreen(
                         profiles = sampleProfiles(),
                         onAdd = {},
+                        onBackup = {},
                         onActivate = { activated = it },
                         onEdit = {},
                         onDelete = {},
@@ -119,6 +144,7 @@ class TvProfilesScreenTest {
                     TvProfilesScreen(
                         profiles = sampleProfiles(),
                         onAdd = {},
+                        onBackup = {},
                         onActivate = {},
                         onEdit = { edited = it },
                         onDelete = { deleted = it },
@@ -143,6 +169,7 @@ class TvProfilesScreenTest {
                     TvProfilesScreen(
                         profiles = sampleProfiles(),
                         onAdd = {},
+                        onBackup = {},
                         onActivate = {},
                         onEdit = {},
                         onDelete = { deleted = it },

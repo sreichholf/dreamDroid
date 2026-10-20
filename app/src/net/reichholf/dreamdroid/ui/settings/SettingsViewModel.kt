@@ -40,6 +40,7 @@ data class SettingsUiState(
     /** Receiver formats Media3 cannot decode on this device. */
     val media3Unsupported: List<String> = emptyList(),
     val editingSyncPiconsPath: Boolean = false,
+    val editingPreferredAudioLanguage: Boolean = false,
     val userMessage: UiText? = null,
     val effect: SettingsEffect? = null
 ) {
@@ -48,8 +49,8 @@ data class SettingsUiState(
 }
 
 /**
- * Phone and TV settings. Values live in [SettingsRepository]; the open picon path
- * dialog and its text survive process death in the [SavedStateHandle].
+ * Phone and TV settings. Values live in [SettingsRepository]; open text dialogs and drafts
+ * survive process death in the [SavedStateHandle].
  */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
@@ -63,12 +64,19 @@ class SettingsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         SettingsUiState(
             settings = settings.current(),
-            editingSyncPiconsPath = savedStateHandle[KEY_EDITING_SYNC_PATH] ?: false
+            editingSyncPiconsPath = savedStateHandle[KEY_EDITING_SYNC_PATH] ?: false,
+            editingPreferredAudioLanguage =
+                savedStateHandle[KEY_EDITING_PREFERRED_AUDIO_LANGUAGE] ?: false
         )
     )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     val syncPiconsPath = SavedTextField(viewModelScope, savedStateHandle, KEY_SYNC_PATH)
+    val preferredAudioLanguage = SavedTextField(
+        viewModelScope,
+        savedStateHandle,
+        KEY_PREFERRED_AUDIO_LANGUAGE
+    )
 
     init {
         viewModelScope.launch {
@@ -118,6 +126,21 @@ class SettingsViewModel @Inject constructor(
         setEditingSyncPiconsPath(false)
     }
 
+    fun editPreferredAudioLanguage() {
+        preferredAudioLanguage.set(_uiState.value.settings.preferredAudioLanguage)
+        setEditingPreferredAudioLanguage(true)
+    }
+
+    fun confirmPreferredAudioLanguage() {
+        val language = preferredAudioLanguage.text.trim()
+        setEditingPreferredAudioLanguage(false)
+        update { it.copy(preferredAudioLanguage = language) }
+    }
+
+    fun dismissPreferredAudioLanguage() {
+        setEditingPreferredAudioLanguage(false)
+    }
+
     fun resetCache(allProfiles: Boolean) {
         viewModelScope.launch {
             services.clearUseDrivenCache(allProfiles)
@@ -146,8 +169,16 @@ class SettingsViewModel @Inject constructor(
         _uiState.update { it.copy(editingSyncPiconsPath = editing) }
     }
 
+    private fun setEditingPreferredAudioLanguage(editing: Boolean) {
+        savedStateHandle[KEY_EDITING_PREFERRED_AUDIO_LANGUAGE] = editing
+        _uiState.update { it.copy(editingPreferredAudioLanguage = editing) }
+    }
+
     private companion object {
         const val KEY_SYNC_PATH = "settings_sync_picons_path"
         const val KEY_EDITING_SYNC_PATH = "settings_editing_sync_picons_path"
+        const val KEY_PREFERRED_AUDIO_LANGUAGE = "settings_preferred_audio_language"
+        const val KEY_EDITING_PREFERRED_AUDIO_LANGUAGE =
+            "settings_editing_preferred_audio_language"
     }
 }

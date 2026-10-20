@@ -9,6 +9,7 @@ object TvRoutes {
     const val MULTI_EPG = "tv_multi_epg"
     const val SETTINGS = "tv_settings"
     const val PROFILES = "tv_profiles"
+    const val BACKUP = "tv_backup"
 }
 
 @Serializable
@@ -26,3 +27,7 @@ data object TvSettings
 @Serializable
 @SerialName(TvRoutes.PROFILES)
 data object TvProfiles
+
+@Serializable
+@SerialName(TvRoutes.BACKUP)
+data object TvBackup

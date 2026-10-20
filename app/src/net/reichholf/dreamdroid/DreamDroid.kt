@@ -269,6 +269,12 @@ class DreamDroid : Application() {
         const val PREFS_KEY_START_SCREEN: String = "start_screen"
         const val PREFS_KEY_VIDEO_ENABLE_GESTURES: String = "video_enable_gestures"
         const val PREFS_KEY_LAST_VERSION_CODE: String = "last_version_code"
+        const val PREFS_KEY_AUTO_START_LAST_STREAM: String = "auto_start_last_stream"
+        const val PREFS_KEY_PREFERRED_AUDIO_LANGUAGE: String = "preferred_audio_language"
+        const val PREFS_KEY_LAST_STREAM_REFERENCE: String = "last_stream_reference"
+        const val PREFS_KEY_LAST_STREAM_TITLE: String = "last_stream_title"
+        const val PREFS_KEY_LAST_STREAM_BOUQUET: String = "last_stream_bouquet"
+        const val PREFS_KEY_LAST_STREAM_PROFILE: String = "last_stream_profile"
         const val PREFS_KEY_AUTO_SWITCH_PROFILE_WIFI_BASED: String =
             "auto_switch_profile_wifi_based"
         const val PREFS_KEY_DYNAMIC_THEME_COLORS: String = "dynamic_theme_colors"

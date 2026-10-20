@@ -182,6 +182,23 @@ class SettingsViewModelTest {
     }
 
     @Test
+    fun preferredAudioLanguageDialogStoresTrimmedLanguage() {
+        val viewModel = viewModel()
+
+        viewModel.editPreferredAudioLanguage()
+        assertTrue(viewModel.uiState.value.editingPreferredAudioLanguage)
+        typePreferredAudioLanguage(viewModel, "  eng  ")
+        viewModel.confirmPreferredAudioLanguage()
+
+        assertFalse(viewModel.uiState.value.editingPreferredAudioLanguage)
+        assertEquals("eng", viewModel.uiState.value.settings.preferredAudioLanguage)
+        assertEquals(
+            "eng",
+            preferences.getString(DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE, null)
+        )
+    }
+
+    @Test
     fun resettingTheCurrentProfileLeavesOtherProfilesCached() = runTest {
         val living = saved("Living Room")
         val bedroom = saved("Bedroom")
@@ -253,6 +270,11 @@ class SettingsViewModelTest {
 
     private fun type(viewModel: SettingsViewModel, text: String) {
         viewModel.syncPiconsPath.state.setTextAndPlaceCursorAtEnd(text)
+        Snapshot.sendApplyNotifications()
+    }
+
+    private fun typePreferredAudioLanguage(viewModel: SettingsViewModel, text: String) {
+        viewModel.preferredAudioLanguage.state.setTextAndPlaceCursorAtEnd(text)
         Snapshot.sendApplyNotifications()
     }
 

@@ -60,6 +60,8 @@ class Media3Engine @Inject constructor(
     private var listener: ((PlayerEvent) -> Unit)? = null
     private var progressJob: Job? = null
     private var noVideoJob: Job? = null
+    private var preferredAudioLanguage = ""
+    private var preferredAudioTrackSelected = false
 
     private val stateFlow = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
@@ -91,6 +93,8 @@ class Media3Engine @Inject constructor(
     override fun start(request: PlayRequest) {
         releasePlayer()
         stateFlow.value = PlayerState()
+        preferredAudioLanguage = request.preferredAudioLanguage
+        preferredAudioTrackSelected = false
         val (url, authorization) = HttpUserInfo.toBasicAuth(request.url)
         val trustAll = profiles.current.value?.allCertsTrusted == true
         val dataSource = OkHttpDataSource.Factory(okHttp.client(STREAM_TIMEOUT_MS, trustAll))
@@ -149,6 +153,10 @@ class Media3Engine @Inject constructor(
 
     private fun select(type: Int, id: Int) {
         val exo = player ?: return
+        select(exo, type, id)
+    }
+
+    private fun select(exo: ExoPlayer, type: Int, id: Int) {
         val builder = exo.trackSelectionParameters.buildUpon()
         if (id == TRACK_OFF) {
             builder.setTrackTypeDisabled(type, true)
@@ -277,6 +285,18 @@ class Media3Engine @Inject constructor(
                     audioTracks = tracksOf(exo, C.TRACK_TYPE_AUDIO).size,
                     subtitleTracks = tracksOf(exo, C.TRACK_TYPE_TEXT).size
                 )
+            }
+            if (!preferredAudioTrackSelected && preferredAudioLanguage.isNotBlank()) {
+                val preferredTrack = preferredAudioTrackId(
+                    preferredAudioLanguage,
+                    tracksOf(exo, C.TRACK_TYPE_AUDIO).map {
+                        AudioTrackOption(it.id, it.name)
+                    }
+                )
+                if (preferredTrack != null) {
+                    preferredAudioTrackSelected = true
+                    select(exo, C.TRACK_TYPE_AUDIO, preferredTrack)
+                }
             }
             val support = tracks.groups.map {
                 Media3Streams.GroupSupport(it.type, it.isSupported)

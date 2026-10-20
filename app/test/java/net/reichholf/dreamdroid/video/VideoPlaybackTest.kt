@@ -32,6 +32,32 @@ class VideoPlaybackTest {
     }
 
     @Test
+    fun preferredAudioLanguageMatchesShortCodesOrPartialNames() {
+        val tracks = listOf(
+            AudioTrackOption(1, "French"),
+            AudioTrackOption(2, "English (AAC)"),
+            AudioTrackOption(3, "German")
+        )
+
+        assertEquals(2, preferredAudioTrackId("en", tracks))
+        assertEquals(2, preferredAudioTrackId("eng", tracks))
+        assertEquals(2, preferredAudioTrackId("lish", tracks))
+        assertNull(preferredAudioTrackId("en", listOf(AudioTrackOption(4, "French"))))
+    }
+
+    @Test
+    fun preferredAudioLanguageKeepsDefaultWhenThereIsNoMatch() {
+        val tracks = listOf(
+            AudioTrackOption(1, "French"),
+            AudioTrackOption(2, "German")
+        )
+
+        assertNull(preferredAudioTrackId("English", tracks))
+        assertNull(preferredAudioTrackId("", tracks))
+        assertNull(preferredAudioTrackId("en", emptyList()))
+    }
+
+    @Test
     fun nextIndexIncludesLastItemThenWraps() {
         assertEquals(1, VideoPlayback.nextIndex(0, 3))
         assertEquals(2, VideoPlayback.nextIndex(1, 3))

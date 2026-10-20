@@ -29,8 +29,14 @@ class BackupRepositoryTest {
     fun backupHoldsEveryPreferenceWithItsTypeAndTheProfiles() = runBlocking<Unit> {
         preferences.edit()
             .putBoolean(DreamDroid.PREFS_KEY_XML_DEBUG, true)
+            .putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, true)
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "0")
+            .putString(DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE, "eng")
             .putInt(DreamDroid.CURRENT_PROFILE, 3)
+            .putString(DreamDroid.PREFS_KEY_LAST_STREAM_REFERENCE, "1:0:1:channel")
+            .putString(DreamDroid.PREFS_KEY_LAST_STREAM_TITLE, "Channel")
+            .putString(DreamDroid.PREFS_KEY_LAST_STREAM_BOUQUET, "1:0:1:bouquet")
+            .putInt(DreamDroid.PREFS_KEY_LAST_STREAM_PROFILE, 3)
             .apply()
         saved("Living Room", "10.0.0.1")
 
@@ -39,7 +45,9 @@ class BackupRepositoryTest {
         assertEquals(
             setOf(
                 Triple(DreamDroid.PREFS_KEY_XML_DEBUG, "true", "Boolean"),
+                Triple(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, "true", "Boolean"),
                 Triple(DreamDroid.PREFS_KEY_THEME_TYPE, "0", "String"),
+                Triple(DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE, "eng", "String"),
                 Triple(DreamDroid.CURRENT_PROFILE, "3", "Integer")
             ),
             data.settings.orEmpty().map { Triple(it.key, it.value, it.type) }.toSet()

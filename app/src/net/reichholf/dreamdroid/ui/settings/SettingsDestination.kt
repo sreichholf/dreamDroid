@@ -73,6 +73,12 @@ fun SettingsDestination(
         onEditSyncPiconsPath = viewModel::editSyncPiconsPath,
         onConfirmSyncPiconsPath = viewModel::confirmSyncPiconsPath,
         onDismissSyncPiconsPath = viewModel::dismissSyncPiconsPath,
+        preferredAudioLanguageDraft = viewModel.preferredAudioLanguage.state.takeIf {
+            uiState.editingPreferredAudioLanguage
+        },
+        onEditPreferredAudioLanguage = viewModel::editPreferredAudioLanguage,
+        onConfirmPreferredAudioLanguage = viewModel::confirmPreferredAudioLanguage,
+        onDismissPreferredAudioLanguage = viewModel::dismissPreferredAudioLanguage,
         onAbout = handle::navigateToAbout,
         onChangelog = {
             (context as? MainActivity)?.showChangeLog(false)

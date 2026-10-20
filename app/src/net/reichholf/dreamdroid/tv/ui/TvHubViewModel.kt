@@ -302,6 +302,10 @@ class TvHubViewModel internal constructor(
         _uiState.update { it.copy(userMessage = UiText.Resource(R.string.missing_stream_player)) }
     }
 
+    fun showMessage(message: UiText) {
+        _uiState.update { it.copy(userMessage = message) }
+    }
+
     fun onMessageShown() {
         _uiState.update { it.copy(userMessage = null) }
     }

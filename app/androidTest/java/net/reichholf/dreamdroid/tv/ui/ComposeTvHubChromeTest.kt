@@ -61,13 +61,11 @@ class ComposeTvHubChromeTest {
 
     @Test
     fun chromeHostsNavigationDrawer() {
+        val bouquet = demoMultiEpgBouquetRows().first().bouquet
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                headers = listOf(HubNavHeader(bouquet.reference, bouquet.name)),
+                selectedHeaderId = bouquet.reference,
                 onHeaderSelected = {},
                 settingsItems = listOf(
                     BrowseItem.Kind.Reload to "Reload",
@@ -81,9 +79,14 @@ class ComposeTvHubChromeTest {
         // *cards* may not measure. Assert drawer chrome itself; card activation is
         // covered by settingsRowClickInvokesCallback with a sized parent.
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
-        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_header_icon_settings", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_header_${bouquet.reference}", useUnmergedTree = true)
+            .assertExists()
+        composeRule.onAllNodesWithTag("hub_header_settings", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onAllNodesWithTag("hub_header_placeholder", useUnmergedTree = true)
+            .assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_action_settings", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_action_timers", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("compose_tv_hub_rows", useUnmergedTree = true).assertExists()
     }
 
@@ -120,16 +123,12 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun movingBetweenDrawerHeadersSelectsBouquetGrid() {
-        var selected by mutableStateOf(TvComposeHubHost.HEADER_SETTINGS_ID)
+    fun topMultiEpgActionSelectsBouquetGrid() {
+        var selected by mutableStateOf(demoMultiEpgBouquetRows()[0].bouquet.reference)
         val rows = demoMultiEpgBouquetRows()
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name)
-                ),
+                headers = rows.map { HubNavHeader(it.bouquet.reference, it.bouquet.name) },
                 selectedHeaderId = selected,
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -137,15 +136,10 @@ class ComposeTvHubChromeTest {
                 bouquetRows = rows
             )
         }
-        // The standard TV drawer updates the page when focus moves from one nav item to
-        // another; landing on the first item is not a move.
-        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).requestFocus()
-        composeRule.waitForIdle()
-        assertEquals(TvComposeHubHost.HEADER_SETTINGS_ID, selected)
-        val header = composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true)
-        header.assertExists()
-        header.requestFocus()
-        composeRule.waitForIdle()
+        val action = composeRule.onNodeWithTag("hub_action_multiepg", useUnmergedTree = true)
+        action.assertExists().assertHasClickAction()
+        action.requestFocus()
+        action.performKeyInput { pressKey(Key.DirectionCenter) }
         assertEquals(TvComposeHubHost.HEADER_MULTIEPG_ID, selected)
         composeRule.onNodeWithTag("hub_multiepg_bouquet_grid", useUnmergedTree = true)
             .assertExists()
@@ -155,7 +149,7 @@ class ComposeTvHubChromeTest {
             .assertCountEquals(0)
         composeRule.onAllNodesWithTag("hub_multiepg_open", useUnmergedTree = true)
             .assertCountEquals(0)
-        composeRule.onAllNodesWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
+        composeRule.onAllNodesWithTag("hub_header_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
     }
 
@@ -165,8 +159,7 @@ class ComposeTvHubChromeTest {
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
-                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name),
-                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
+                    HubNavHeader(rows[0].bouquet.reference, rows[0].bouquet.name)
                 ),
                 selectedHeaderId = rows[0].bouquet.reference,
                 onHeaderSelected = {},
@@ -355,47 +348,42 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun bouquetServiceGridShowsMultiEpgAction() {
-        var openedRef: String? = null
-        var openedName: String? = null
+    fun movieActionOpensLocationPicker() {
         val rows = demoMultiEpgBouquetRows()
-        val bouquet = rows[0].bouquet
+        var selected by mutableStateOf(rows[0].bouquet.reference)
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(bouquet.reference, bouquet.name)
-                ),
-                selectedHeaderId = bouquet.reference,
-                onHeaderSelected = {},
+                headers = rows.map { HubNavHeader(it.bouquet.reference, it.bouquet.name) },
+                selectedHeaderId = selected,
+                onHeaderSelected = { selected = it },
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = rows,
-                onOpenMultiEpg = { reference, name ->
-                    openedRef = reference
-                    openedName = name
-                }
+                movieLocations = listOf("/media/hdd/movie/")
             )
         }
-        val action = composeRule.onNodeWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
+        val action = composeRule.onNodeWithTag("hub_action_movies", useUnmergedTree = true)
         action.assertExists().assertHasClickAction()
         action.requestFocus()
         action.performKeyInput { pressKey(Key.DirectionCenter) }
-        if (openedRef == null) {
-            action.performClick()
-        }
-        assertEquals(bouquet.reference, openedRef)
-        assertEquals(bouquet.name, openedName)
+        assertEquals(TvComposeHubHost.HEADER_MOVIES_ID, selected)
+        composeRule.onNodeWithTag("hub_movie_location_grid", useUnmergedTree = true)
+            .assertExists()
+        val location = composeRule.onNodeWithTag("hub_movie_location_0", useUnmergedTree = true)
+        location.assertExists().assertHasClickAction()
+        location.requestFocus()
+        location.performKeyInput { pressKey(Key.DirectionCenter) }
+        assertEquals(
+            TvComposeHubHost.movieHeaderId("/media/hdd/movie/"),
+            selected
+        )
     }
 
     @Test
-    fun settingsChromeHidesBouquetMultiEpgAction() {
+    fun settingsChromeKeepsGlobalTopActions() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -404,7 +392,8 @@ class ComposeTvHubChromeTest {
             )
         }
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
-        composeRule.onAllNodesWithTag("hub_bouquet_multiepg", useUnmergedTree = true)
+        composeRule.onNodeWithTag("hub_action_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_header_multiepg", useUnmergedTree = true)
             .assertCountEquals(0)
     }
 
@@ -412,10 +401,7 @@ class ComposeTvHubChromeTest {
     fun placeholderSelectionShowsPlaceholderRowHost() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -433,24 +419,24 @@ class ComposeTvHubChromeTest {
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                    HubNavHeader("bouquet-one", "Bouquet one"),
+                    HubNavHeader("bouquet-two", "Bouquet two")
                 ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                selectedHeaderId = "bouquet-one",
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
                 onSettingsClick = {}
             )
         }
         // Entering the drawer on its first item is not a nav move, so it must not select.
-        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).requestFocus()
+        composeRule.onNodeWithTag("hub_header_bouquet-one", useUnmergedTree = true).requestFocus()
         composeRule.waitForIdle()
         assertNull(selected)
-        val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
+        val node = composeRule.onNodeWithTag("hub_header_bouquet-two", useUnmergedTree = true)
         node.assertExists()
         node.requestFocus()
         composeRule.waitForIdle()
-        assertEquals(TvComposeHubHost.HEADER_PLACEHOLDER_ID, selected)
+        assertEquals("bouquet-two", selected)
     }
 
     /** Phase 3.1c-iv-g: drawer header click must drive selection (Leanback parity). */
@@ -460,32 +446,29 @@ class ComposeTvHubChromeTest {
         composeRule.setContent {
             ComposeTvHubChrome(
                 headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
+                    HubNavHeader("bouquet", "Bouquet")
                 ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
+                selectedHeaderId = "bouquet",
                 onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
                 onSettingsClick = {}
             )
         }
-        val node = composeRule.onNodeWithTag("hub_header_placeholder", useUnmergedTree = true)
+        val node = composeRule.onNodeWithTag("hub_header_bouquet", useUnmergedTree = true)
         node.assertExists()
         node.requestFocus()
         node.performKeyInput { pressKey(Key.DirectionCenter) }
         if (selected == null) {
             node.performClick()
         }
-        assertEquals(TvComposeHubHost.HEADER_PLACEHOLDER_ID, selected)
+        assertEquals("bouquet", selected)
     }
 
     @Test
     fun loadingStateShowsLoadingTag() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
@@ -500,10 +483,7 @@ class ComposeTvHubChromeTest {
     fun settingsHeaderHidesBrowseError() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -521,10 +501,7 @@ class ComposeTvHubChromeTest {
     fun settingsHeaderShowsOfflineSessionChip() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -593,10 +570,7 @@ class ComposeTvHubChromeTest {
         val headerId = TvComposeHubHost.movieHeaderId("/hdd/movie")
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(headerId, "/hdd/movie")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = headerId,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
@@ -609,18 +583,17 @@ class ComposeTvHubChromeTest {
     }
 
     @Test
-    fun timersHeaderIsInDrawerAfterSettings() {
+    fun timersActionIsBesideOtherTopActions() {
+        val bouquet = demoMultiEpgBouquetRows()[0].bouquet
+        var selected by mutableStateOf(bouquet.reference)
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
-                onHeaderSelected = {},
+                headers = listOf(HubNavHeader(bouquet.reference, bouquet.name)),
+                selectedHeaderId = selected,
+                onHeaderSelected = { selected = it },
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
                 onSettingsClick = {},
+                bouquetRows = demoMultiEpgBouquetRows(),
                 timerContent = {
                     Box(
                         modifier = Modifier
@@ -630,22 +603,19 @@ class ComposeTvHubChromeTest {
                 }
             )
         }
-        composeRule.onNodeWithTag("hub_header_settings", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_header_timers", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
-        composeRule.onAllNodesWithTag("hub_timers_host", useUnmergedTree = true)
-            .assertCountEquals(0)
+        composeRule.onNodeWithTag("hub_action_settings", useUnmergedTree = true).assertExists()
+        val action = composeRule.onNodeWithTag("hub_action_timers", useUnmergedTree = true)
+        action.assertExists().assertHasClickAction()
+        action.requestFocus()
+        action.performKeyInput { pressKey(Key.DirectionCenter) }
+        assertEquals(TvComposeHubHost.HEADER_TIMERS_ID, selected)
     }
 
     @Test
     fun timersSelectionHostsTimerContentNotBrowseRows() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_TIMERS_ID,
                 onHeaderSelected = {},
                 settingsItems = listOf(BrowseItem.Kind.Reload to "Reload"),
@@ -659,7 +629,9 @@ class ComposeTvHubChromeTest {
                 }
             )
         }
-        composeRule.onNodeWithTag("hub_header_timers", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_action_timers", useUnmergedTree = true).assertExists()
+        composeRule.onAllNodesWithTag("hub_header_timers", useUnmergedTree = true)
+            .assertCountEquals(0)
         composeRule.onNodeWithTag("hub_timers_host", useUnmergedTree = true).assertExists()
         composeRule.onAllNodesWithTag("hub_service_row", useUnmergedTree = true)
             .assertCountEquals(0)
@@ -673,10 +645,7 @@ class ComposeTvHubChromeTest {
     fun timersHeaderHidesBrowseError() {
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_TIMERS_ID,
                 onHeaderSelected = {},
                 settingsItems = emptyList(),
@@ -702,20 +671,17 @@ class ComposeTvHubChromeTest {
                 kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
             }
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(TvComposeHubHost.HEADER_MULTIEPG_ID, "MultiEPG"),
-                    HubNavHeader(TvComposeHubHost.HEADER_PLACEHOLDER_ID, "Services")
-                ),
+                headers = emptyList(),
                 selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
                 onHeaderSelected = {},
                 settingsItems = settingsItems,
-                onSettingsClick = {}
+                onSettingsClick = {},
+                bouquetRows = demoMultiEpgBouquetRows()
             )
         }
         composeRule.onNodeWithTag("compose_tv_hub_chrome").assertExists()
-        composeRule.onNodeWithTag("hub_header_multiepg", useUnmergedTree = true).assertExists()
-        composeRule.onNodeWithTag("hub_header_icon_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_action_multiepg", useUnmergedTree = true).assertExists()
+        composeRule.onNodeWithTag("hub_action_settings", useUnmergedTree = true).assertExists()
         composeRule.onNodeWithTag("hub_settings_row", useUnmergedTree = true).assertExists()
     }
 }
