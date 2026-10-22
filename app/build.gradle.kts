@@ -93,7 +93,7 @@ dependencies {
     testImplementation(libs.sqlite.bundled.jvm)
 }
 
-private val baseVersionCode = 468
+private val baseVersionCode = 469
 
 private val abiVersionCodes = mapOf(
     "armeabi" to 1,
@@ -111,7 +111,7 @@ android {
 
     defaultConfig {
         versionCode = baseVersionCode
-        versionName = "2.0.468"
+        versionName = "2.0.469"
         minSdk = 26
         targetSdk = 37
         // Runs every instrumented test on HiltTestApplication (docs/hilt-migration.md, PR 15).

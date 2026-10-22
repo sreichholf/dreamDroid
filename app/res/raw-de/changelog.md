@@ -1,5 +1,12 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
+## 2.0.469
+* UPD: Neue TV-Oberfläche mit Tabs
+* NEU: Weiterschauen auf dem TV
+* NEU: Backup & Wiederherstellung auf dem TV
+* NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
+* NEU: Bevorzugte Audiosprache für den integrierten Player
+
 ## 2.0.468
 * UPD: Live-TV-Streams verbinden sich nach Abbrüchen neu
 * NEU: Einstellung für den Stream-Puffer
@@ -7,11 +14,6 @@
 * NEU: Media3 als optionale Player-Engine
 * FIX: Kein Bild bei manchen Live-Sendern mit Hardware-Dekodierung
 * FIX: Live-Streams starteten nach Senderwechsel nicht
-* UPD: Neue TV-Oberfläche mit Tabs
-* NEU: Weiterschauen auf dem TV
-* NEU: Backup & Wiederherstellung auf dem TV
-* NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
-* NEU: Bevorzugte Audiosprache für den integrierten Player
 * FIX: Import von Backups aus 1.15
 * FIX: Sender mit Alternativen fehlten im MultiEPG
 * FIX: Movies zeigten manchmal den ersten statt des gespeicherten Speicherorts
