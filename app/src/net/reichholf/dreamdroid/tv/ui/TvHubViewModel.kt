@@ -21,6 +21,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -53,7 +55,8 @@ sealed interface TvStreamOpen {
 /**
  * The TV hub: the section on screen ([navigation]), the bouquet rows and movie locations, the
  * movies loaded per location, the open service overlay or timer editor, the active profile's
- * name, and the session.
+ * name and the channel it played last ([lastStream], Live TV's "Continue watching"), and the
+ * session.
  */
 data class TvHubUiState(
     val navigation: HubNavigation = HubNavigation(),
@@ -70,6 +73,7 @@ data class TvHubUiState(
     val userMessage: UiText? = null,
     val stream: TvStreamOpen? = null,
     val profileName: String = "",
+    val lastStream: LastLiveStream? = null,
     val connection: ConnectionStatus = ConnectionStatus()
 ) {
     val section: HubSection
@@ -100,6 +104,7 @@ class TvHubViewModel internal constructor(
     private val movies: MovieRepository,
     private val sessions: SessionConnectionHolder,
     profiles: ProfileRepository,
+    lastStreams: LastLiveStreamRepository,
     private val epgSyncDelayMs: Long
 ) : ViewModel() {
     @Inject
@@ -109,8 +114,9 @@ class TvHubViewModel internal constructor(
         receiver: ReceiverRepository,
         movies: MovieRepository,
         sessions: SessionConnectionHolder,
-        profiles: ProfileRepository
-    ) : this(browse, timers, receiver, movies, sessions, profiles, EPG_SYNC_DELAY_MS)
+        profiles: ProfileRepository,
+        lastStreams: LastLiveStreamRepository
+    ) : this(browse, timers, receiver, movies, sessions, profiles, lastStreams, EPG_SYNC_DELAY_MS)
 
     private val _uiState = MutableStateFlow(TvHubUiState())
 
@@ -119,9 +125,14 @@ class TvHubViewModel internal constructor(
     val uiState: StateFlow<TvHubUiState> = combine(
         _uiState,
         sessions.status,
-        profiles.current
-    ) { state, status, profile ->
-        state.copy(connection = status, profileName = profile?.name.orEmpty())
+        profiles.current,
+        lastStreams.lastStream
+    ) { state, status, profile, lastStream ->
+        state.copy(
+            connection = status,
+            profileName = profile?.name.orEmpty(),
+            lastStream = lastStream
+        )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var browseJob: Job? = null

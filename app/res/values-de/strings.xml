@@ -167,6 +167,7 @@
     <string name="tv_hub_recordings">Aufnahmen</string>
     <string name="tv_hub_timers">Timer</string>
     <string name="tv_hub_no_bouquets">Keine TV-Bouquets auf diesem Receiver.</string>
+    <string name="tv_hub_continue_watching">Weiterschauen</string>
     <string name="error">FEHLER!</string>
     <string name="version_too_low">Version &lt; 1.6</string>
     <string name="connection_error">Verbindungsfehler</string>

@@ -89,6 +89,7 @@ import androidx.tv.material3.TabRow
 import androidx.tv.material3.TabRowDefaults
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
@@ -261,6 +262,7 @@ fun ComposeTvHubApp(
             streamingEnabled = streamingEnabled,
             onServiceClick = viewModel::streamService,
             onMovieClick = viewModel::streamMovie,
+            lastStream = uiState.lastStream,
             profileName = uiState.profileName,
             sessionChipLabel = stringResource(status.chipLabelRes()),
             onOpenProfiles = onOpenProfiles,
@@ -338,6 +340,7 @@ fun ComposeTvHubChrome(
     streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {},
+    lastStream: LastLiveStream? = null,
     profileName: String = "",
     sessionChipLabel: String? = null,
     onOpenProfiles: () -> Unit = {},
@@ -366,17 +369,24 @@ fun ComposeTvHubChrome(
         bouquetRows.firstOrNull { it.bouquet.reference == ref }
     }
     val movieDir = (section as? HubSection.Recordings)?.location
-    // On start the hub focuses the first service card so the remote acts on content
-    // instead of an unclear cursor. One-shot per hub entry, and never once the user has
-    // moved through the drawer, so late-loading rows do not pull focus out of it.
+    // Live TV's content starts with "Continue watching" above the grid, when a channel was
+    // saved for the active profile.
+    val continueWatching = lastStream.takeIf { selectedBouquet != null }
+    // On start the hub focuses Live TV's first card (Continue watching, else the first
+    // service) so the remote acts on content instead of an unclear cursor. One-shot per hub
+    // entry, and never once the user has moved through the drawer, so late-loading rows do
+    // not pull focus out of it.
     val serviceGridFocus = remember { FocusRequester() }
+    val continueWatchingFocus = remember { FocusRequester() }
+    val gridFocus = serviceGridFocus.takeIf { selectedBouquet?.services?.isNotEmpty() == true }
+    val liveContentFocus = if (continueWatching != null) continueWatchingFocus else gridFocus
     val liveTabFocus = remember { FocusRequester() }
     var initialGridFocusDone by remember { mutableStateOf(false) }
-    LaunchedEffect(selectedBouquet?.bouquet?.reference, selectedBouquet?.services?.isNotEmpty()) {
-        if (!initialGridFocusDone && selectedBouquet?.services?.isNotEmpty() == true) {
+    LaunchedEffect(selectedBouquet?.bouquet?.reference, liveContentFocus) {
+        if (!initialGridFocusDone && liveContentFocus != null) {
             // The grid composes its cards during layout; wait for that frame.
             withFrameNanos {}
-            initialGridFocusDone = serviceGridFocus.tryRequestFocus()
+            initialGridFocusDone = liveContentFocus.tryRequestFocus()
         }
     }
     // Back lands on Live TV's grid (its last focused card), else on the Live TV tab.
@@ -463,16 +473,32 @@ fun ComposeTvHubChrome(
                                         onOpenProfiles = onOpenProfiles
                                     )
                                 } else if (selectedBouquet != null) {
-                                    // Per bouquet, so scroll position and the restored card
-                                    // do not carry over into another bouquet.
-                                    key(selectedBouquet.bouquet.reference) {
-                                        HubServiceGrid(
-                                            bouquetRef = selectedBouquet.bouquet.reference,
-                                            services = selectedBouquet.services,
-                                            onServiceClick = gatedServiceClick,
-                                            focusRequester = serviceGridFocus,
-                                            onServiceInfo = onServiceInfo
-                                        )
+                                    Column(modifier = Modifier.fillMaxSize()) {
+                                        if (continueWatching != null) {
+                                            HubContinueWatchingCard(
+                                                stream = continueWatching,
+                                                onClick = {
+                                                    gatedServiceClick(
+                                                        continueWatching.asService(),
+                                                        continueWatching.bouquetRef
+                                                    )
+                                                },
+                                                focusRequester = continueWatchingFocus,
+                                                downFocus = gridFocus
+                                            )
+                                        }
+                                        // Per bouquet, so scroll position and the restored
+                                        // card do not carry over into another bouquet.
+                                        key(selectedBouquet.bouquet.reference) {
+                                            HubServiceGrid(
+                                                bouquetRef = selectedBouquet.bouquet.reference,
+                                                services = selectedBouquet.services,
+                                                onServiceClick = gatedServiceClick,
+                                                modifier = Modifier.weight(1f),
+                                                focusRequester = serviceGridFocus,
+                                                onServiceInfo = onServiceInfo
+                                            )
+                                        }
                                     }
                                 }
 
@@ -525,9 +551,7 @@ fun ComposeTvHubChrome(
                                     iconRes = section.drawerIconRes,
                                     onSelect = onDrawerItemSelected,
                                     onMovedThroughDrawer = { initialGridFocusDone = true },
-                                    rightFocus = serviceGridFocus.takeIf {
-                                        selectedBouquet?.services?.isNotEmpty() == true
-                                    }
+                                    rightFocus = liveContentFocus
                                 )
                             }
                         ) {
@@ -1135,6 +1159,75 @@ private fun HubBouquetServiceItem(
                 { info(service, bouquetRef) }
             }
         )
+    }
+}
+
+/** [LastLiveStream] as the service the hub's stream path plays. */
+private fun LastLiveStream.asService(): ServiceNowNext =
+    ServiceNowNext(serviceReference = reference, serviceName = serviceName)
+
+/**
+ * "Continue watching": the channel the active profile played last, in a service card's size
+ * above Live TV's grid. OK plays it like its card in the grid; Down goes to [downFocus].
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubContinueWatchingCard(
+    stream: LastLiveStream,
+    onClick: () -> Unit,
+    focusRequester: FocusRequester,
+    downFocus: FocusRequester?
+) {
+    Surface(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(start = HubGridFocusInset, top = HubGridFocusInset, end = HubGridFocusInset)
+            .width(HubServiceRowCardWidth)
+            .height(HubServiceCardHeight)
+            .focusRequester(focusRequester)
+            .focusProperties {
+                if (downFocus != null) {
+                    down = downFocus
+                }
+            }
+            .semantics(mergeDescendants = true) { role = Role.Button }
+            .testTag("hub_continue_watching"),
+        colors = dreamDroidTvCardColors(),
+        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
+        shape = ClickableSurfaceDefaults.shape()
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            PiconImage(
+                reference = stream.reference,
+                name = stream.serviceName,
+                contentDescription = null,
+                modifier = Modifier
+                    .padding(end = 12.dp)
+                    .size(width = HubServicePiconWidth, height = HubServicePiconHeight)
+                    .testTag("hub_continue_watching_picon")
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.tv_hub_continue_watching),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = stream.serviceName,
+                    style = MaterialTheme.typography.titleMedium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.testTag("hub_continue_watching_name")
+                )
+            }
+        }
     }
 }
 

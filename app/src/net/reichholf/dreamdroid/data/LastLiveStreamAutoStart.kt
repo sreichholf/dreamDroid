@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.data
 
 import javax.inject.Inject
+import kotlinx.coroutines.flow.first
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -36,7 +37,7 @@ class LastLiveStreamAutoStart @Inject constructor(
         ) {
             return null
         }
-        val service = lastStreams.forActiveProfile() ?: return null
+        val service = lastStreams.lastStream.first() ?: return null
         return when (val stream = receiver.liveStream(service.reference)) {
             is LiveStream.Ready -> LastStreamStart.Play(stream, service)
             is LiveStream.Failed -> LastStreamStart.Failed(stream.message)

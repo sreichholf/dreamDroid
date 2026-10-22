@@ -14,7 +14,10 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
@@ -27,6 +30,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
@@ -67,6 +71,8 @@ class TvHubViewModelTest {
         receiver.sessions,
         timers
     )
+    private val lastStreams =
+        LastLiveStreamRepository(MemorySharedPreferences(), receiver.profiles.repository)
     private val viewModels = mutableListOf<TvHubViewModel>()
 
     /** The TV bouquet index the receiver answers; empty means none. */
@@ -421,6 +427,23 @@ class TvHubViewModelTest {
     }
 
     @Test
+    fun lastStreamFollowsThePlayerAndTheActiveProfile() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        assertNull(viewModel.uiState.value.lastStream)
+        val zdf = LastLiveStream(CHANNEL, "Das Erste HD", FAVOURITES)
+
+        lastStreams.save(zdf)
+        awaitState(viewModel) { it.lastStream == zdf }
+
+        val active = receiver.profiles.repository.requireCurrent()
+        receiver.profiles.repository.setCurrent(Profile().apply { id = PROFILE_ID + 1 })
+        awaitState(viewModel) { it.lastStream == null }
+
+        receiver.profiles.repository.setCurrent(active)
+        awaitState(viewModel) { it.lastStream == zdf }
+    }
+
+    @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
         receiver.profiles.repository.requireCurrent().zapAndStream = true
         val viewModel = viewModel()
@@ -518,6 +541,7 @@ class TvHubViewModelTest {
             movies,
             receiver.sessions,
             receiver.profiles.repository,
+            lastStreams,
             epgSyncDelayMs
         ).also { viewModels += it }
 
