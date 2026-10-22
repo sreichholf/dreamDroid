@@ -370,16 +370,34 @@ class VlcEngine @Inject constructor(
         if (preferredAudioTrackGeneration == gen || gen != generation) return
         val language = preferredAudioLanguage
         if (language.isBlank()) return
+        if (switching || !mp.hasMedia()) return
         val tracks = mp.audioTracks ?: return
+        val languages = audioLanguages(mp)
         val trackId = preferredAudioTrackId(
             language,
-            tracks.map { AudioTrackOption(it.id, it.name.orEmpty()) }
+            tracks.map { AudioTrackOption(it.id, it.name.orEmpty(), languages[it.id]) }
         ) ?: return
         preferredAudioTrackGeneration = gen
         if (mp.audioTrack != trackId) {
             commands.post {
                 if (gen == generation) mp.setAudioTrack(trackId)
             }
+        }
+    }
+
+    /**
+     * The language code of each audio ES, by the id [MediaPlayer.setAudioTrack] takes. The
+     * media keeps the first list it reads, so ESs added later have none and match by name.
+     */
+    private fun audioLanguages(mp: MediaPlayer): Map<Int, String> {
+        val media = mp.media ?: return emptyMap()
+        return try {
+            (0 until media.trackCount)
+                .mapNotNull { media.getTrack(it) }
+                .filter { it.type == IMedia.Track.Type.Audio && !it.language.isNullOrBlank() }
+                .associate { it.id to it.language }
+        } finally {
+            media.release()
         }
     }
 
