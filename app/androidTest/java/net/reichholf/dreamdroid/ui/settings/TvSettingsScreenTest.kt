@@ -1,13 +1,18 @@
 package net.reichholf.dreamdroid.ui.settings
 
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -22,6 +27,7 @@ import androidx.compose.ui.test.requestFocus
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -64,20 +70,19 @@ class TvSettingsScreenTest {
     fun integratedPlayerOnlyChangesWhenActivatedWithCenter() {
         var settings by mutableStateOf(AppSettings())
         assertTrue(settings.integratedVideoPlayer)
-        composeRule.setContent {
-            DreamDroidTvTheme {
-                TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
-            }
+        setDpadContent {
+            TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
         }
 
         val setting = composeRule.onNodeWithTag("tv_setting_integrated_video_player")
         setting.assertIsFocused()
         setting.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
-        composeRule.onNodeWithTag("tv_setting_video_hardware_acceleration").assertIsFocused()
+        setting.assertIsNotFocused()
         assertTrue(settings.integratedVideoPlayer)
 
         setting.requestFocus()
+        setting.assertIsFocused()
         setting.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         assertFalse(settings.integratedVideoPlayer)
@@ -86,14 +91,18 @@ class TvSettingsScreenTest {
     @Test
     fun autoStartLastStreamChangesOnlyWhenActivatedWithCenter() {
         var settings by mutableStateOf(AppSettings())
-        composeRule.setContent {
-            DreamDroidTvTheme {
-                TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
-            }
+        setDpadContent {
+            TvSettingsScreen(settings = settings, onChange = { settings = it(settings) })
         }
 
         val setting = composeRule.onNodeWithTag("tv_setting_auto_start_last_stream")
         setting.performScrollTo()
+        setting.requestFocus()
+        setting.assertIsFocused()
+        setting.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+        assertFalse(settings.autoStartLastStream)
+
         setting.requestFocus()
         setting.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
@@ -101,15 +110,27 @@ class TvSettingsScreenTest {
     }
 
     @Test
+    fun streamBufferBelongsToTheVideoPlayer() {
+        setDpadContent {
+            TvSettingsScreen(settings = AppSettings(), onChange = {})
+        }
+
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        fun top(title: Int) = composeRule.onNodeWithText(context.getString(title))
+            .fetchSemanticsNode().positionInRoot.y
+        assertTrue(top(R.string.use_hw_accel) < top(R.string.stream_buffer))
+        assertTrue(top(R.string.stream_buffer) < top(R.string.usability))
+    }
+
+    @Test
     fun listSettingOpensOnlyWhenActivatedWithCenter() {
-        composeRule.setContent {
-            DreamDroidTvTheme {
-                TvSettingsScreen(settings = AppSettings(), onChange = {})
-            }
+        setDpadContent {
+            TvSettingsScreen(settings = AppSettings(), onChange = {})
         }
 
         val setting = composeRule.onNodeWithTag("tv_setting_video_hardware_acceleration")
         setting.requestFocus()
+        setting.assertIsFocused()
         setting.performKeyInput { pressKey(Key.DirectionDown) }
         composeRule.waitForIdle()
         composeRule.onAllNodesWithText("Hardware Acceleration").assertCountEquals(0)
@@ -195,5 +216,29 @@ class TvSettingsScreenTest {
 
         assertTrue(confirmed)
         assertEquals("/media/hdd/picon", draft.text.toString())
+    }
+
+    /**
+     * Shows [content] in keyboard input mode, as on a TV remote. In touch mode clickable rows
+     * cannot take focus, so D-pad moves would skip them and prove nothing. The screen comes
+     * after the switch, so its initial focus request runs in keyboard mode.
+     */
+    private fun setDpadContent(content: @Composable () -> Unit) {
+        var showContent by mutableStateOf(false)
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DreamDroidTvTheme {
+                if (showContent) {
+                    content()
+                }
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle {
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
+            showContent = true
+        }
+        composeRule.waitForIdle()
     }
 }
