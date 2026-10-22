@@ -76,8 +76,8 @@ data class TvMultiEpgUiState(
 }
 
 /**
- * State of the TV MultiEPG route. The grid loads on [viewModelScope], so it outlives
- * recomposition and configuration changes.
+ * State of the TV hub's Guide. The grid loads on [viewModelScope], so it outlives
+ * recomposition, configuration changes and switching to another hub section.
  */
 @HiltViewModel
 class TvMultiEpgViewModel @Inject constructor(
@@ -123,11 +123,27 @@ class TvMultiEpgViewModel @Inject constructor(
     private var startJob: Job? = null
     private var streamJob: Job? = null
 
-    /** Loads the bouquet list and the launch bouquet once per ViewModel. */
-    fun start(extraRef: String?, extraName: String?) {
-        if (startJob != null) {
-            return
+    /**
+     * Shows the bouquet [ref] named [name]: the first call loads the bouquet list with it as
+     * the launch bouquet, later calls switch to it ([pickBouquet]).
+     */
+    fun open(ref: String?, name: String?) {
+        val job = startJob
+        when {
+            job == null -> start(ref, name)
+
+            job.isActive -> {
+                job.cancel()
+                startJob = null
+                start(ref, name)
+            }
+
+            ref != null -> pickBouquet(Service(ref, name.orEmpty()))
         }
+    }
+
+    /** Loads the bouquet list and the launch bouquet. */
+    private fun start(extraRef: String?, extraName: String?) {
         startJob = viewModelScope.launch {
             val tvBouquets = services.tvBouquets()
             persistGate.knownTabRefs = services.userBouquetTabs(tvBouquets).map { it.reference }
