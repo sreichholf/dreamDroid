@@ -186,6 +186,15 @@ class Media3Engine @Inject constructor(
                 }
             }
 
+    /** The audio [tracksOf] with each track's language code, for [preferredAudioTrackId]. */
+    private fun audioTrackOptions(exo: ExoPlayer): List<AudioTrackOption> {
+        val groups = exo.currentTracks.groups
+        return tracksOf(exo, C.TRACK_TYPE_AUDIO).map { track ->
+            val format = groups[track.id shr TRACK_SHIFT].getTrackFormat(track.id and TRACK_MASK)
+            AudioTrackOption(track.id, track.name, format.language)
+        }
+    }
+
     private fun unbind(views: PlayerViews) {
         player?.clearVideoSurfaceView(views.media3Surface)
         views.subtitleView.setCues(emptyList())
@@ -289,9 +298,7 @@ class Media3Engine @Inject constructor(
             if (!preferredAudioTrackSelected && preferredAudioLanguage.isNotBlank()) {
                 val preferredTrack = preferredAudioTrackId(
                     preferredAudioLanguage,
-                    tracksOf(exo, C.TRACK_TYPE_AUDIO).map {
-                        AudioTrackOption(it.id, it.name)
-                    }
+                    audioTrackOptions(exo)
                 )
                 if (preferredTrack != null) {
                     preferredAudioTrackSelected = true
