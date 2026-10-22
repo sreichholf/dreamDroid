@@ -15,7 +15,8 @@ VPS lets the box follow a broadcast's real start and end, so a recording follows
 | | |
 | --- | --- |
 | **Where** | One extra field in the existing timer editor, phone and TV. No new screen. |
-| **Visibility** | Only when the receiver has the VPS plugin (§3), the timer's VPS is known, and the timer records and does not repeat (the box's own rule). The rule keys off the plugin, not the web interface. |
+| **Profile switch** | **VPS for timers**, per profile, off by default. Off, the app does not ask for the plugin and treats the receiver as one without it: no VPS field, no default, stock Dreambox pages. Added after a timer save failed silently on an old Dreambox image (dm7020hd), whose VPS plugin may predate the web API read here. |
+| **Visibility** | Only when the profile's VPS switch is on, the receiver has the VPS plugin (§3), the timer's VPS is known, and the timer records and does not repeat (the box's own rule). The rule keys off the plugin, not the web interface. |
 | **Choice** | One three-way choice, as on the box: **No / Yes (safe mode) / Yes**. Manual timers (no event id or no name) also get **VPS time**. |
 | **Box switch** | Not read. `/web/settings` would send the whole saved config, credentials included, to read one key. A one-line note under the field says VPS must be on in the receiver's VPS settings. If it is off, the box keeps the flag and records at the planned time. |
 | **Default for new timers** | A per-profile setting, default **No**, for new timers from the editor and EPG quick adds. The box's own default is not read, for the reason above; it also applies only after a per-channel PDC check that is not reachable over HTTP. |
@@ -84,12 +85,15 @@ data class Timer(
 - `vps == null` means **unknown**: a Dreambox list without the plugin, or a snapshot row stored before this change. Unknown VPS is never sent, so it never overwrites what the box has (§4).
 - Parsing: Dreambox `TimerParser` reads the `e2vpsplugin_*` tags (absent tags: null); OpenWebif `OwifMapping` reads the list fields. A time `<= 0` is none.
 - Writing: `TimerVps.params()` (`enigma/TimerVpsParams.kt`) yields all three params for both clients. `Off` sends `0`, `0`, `-1`.
-- Profile: `vpsDefault: VpsMode = Off`, column `vps_default`.
+- Profile: `vpsEnabled: Boolean = false`, column `vps_enabled`; `vpsDefault: VpsMode = Off`, column `vps_default`, shown in the profile editor only while `vpsEnabled`.
 - Form: `TimerEditForm.vps: VpsForm?`, null when the field is hidden. `VpsForm(mode, time, manual)`; `manual` decides whether the time pickers show.
 - Room: version 11. `MIGRATION_10_11` adds `timer_list.vpsMode TEXT`, `timer_list.vpsTime INTEGER` and `profile.vps_default TEXT NOT NULL DEFAULT 'Off'`; schema `11.json`. (Version 10 is OpenWebif's `stream_mode`.)
-- Backups carry `vpsDefault`; a missing or unknown value imports as `Off`, next to the `streamMode` upgrade.
+- Room: version 14. `MIGRATION_13_14` adds `profile.vps_enabled INTEGER NOT NULL DEFAULT 0`, so existing profiles start with VPS off; schema `14.json`.
+- Backups carry `vpsEnabled` (missing reads as off) and `vpsDefault`; a missing or unknown value imports as `Off`, next to the `streamMode` upgrade.
 
 ## 3. Plugin presence
+
+Only for a profile with `vpsEnabled`: `TimerRepository.hasVpsPlugin()` answers false without a request while the switch is off.
 
 `ReceiverApi.plugins()` answers for the AutoTimer plugin (with its `api_version`) and the VPS plugin in one `ReceiverPlugins`:
 

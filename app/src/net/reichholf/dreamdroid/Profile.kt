@@ -165,7 +165,14 @@ class Profile : Serializable {
     @ColumnInfo(name = "defaultProfileOnNoWifi")
     var isDefaultProfileOnNoWifi: Boolean = false
 
-    /** VPS choice for new timers when the receiver has the VPS plugin. */
+    /**
+     * Use the receiver's VPS plugin for timers: its timer pages, the VPS field and
+     * [vpsDefault]. Off by default, so timers go through the stock web interface pages.
+     */
+    @ColumnInfo(name = "vps_enabled", defaultValue = "0")
+    var vpsEnabled: Boolean = false
+
+    /** VPS choice for new timers when [vpsEnabled] and the receiver has the VPS plugin. */
     @ColumnInfo(name = "vps_default", defaultValue = "'Off'")
     var vpsDefault: VpsMode = VpsMode.Off
 

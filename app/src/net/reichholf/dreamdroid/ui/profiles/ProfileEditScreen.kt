@@ -82,13 +82,21 @@ fun ProfileEditScreen(
                     onCheckedChange = { onFormChange(form.copy(simpleRemote = it)) },
                     label = stringResource(R.string.simple_remote)
                 )
-                EditDropdownField(
-                    options = stringArrayResource(R.array.vps_modes).toList(),
-                    selectedIndex = form.vpsDefault.ordinal,
-                    onSelected = { onFormChange(form.copy(vpsDefault = VpsMode.entries[it])) },
-                    label = stringResource(R.string.vps_default),
-                    supportingText = stringResource(R.string.vps_default_hint)
+                EditSwitchRow(
+                    checked = form.vpsEnabled,
+                    onCheckedChange = { onFormChange(form.copy(vpsEnabled = it)) },
+                    label = stringResource(R.string.vps_enabled),
+                    summary = stringResource(R.string.vps_enabled_summary)
                 )
+                if (form.vpsEnabled) {
+                    EditDropdownField(
+                        options = stringArrayResource(R.array.vps_modes).toList(),
+                        selectedIndex = form.vpsDefault.ordinal,
+                        onSelected = { onFormChange(form.copy(vpsDefault = VpsMode.entries[it])) },
+                        label = stringResource(R.string.vps_default),
+                        supportingText = stringResource(R.string.vps_default_hint)
+                    )
+                }
             }
 
             EditFormSection(title = stringResource(R.string.connection)) {

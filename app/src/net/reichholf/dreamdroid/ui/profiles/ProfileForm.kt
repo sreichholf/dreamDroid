@@ -25,6 +25,7 @@ data class ProfileForm(
     val streamMode: StreamMode = StreamMode.Direct,
     val zapAndStream: Boolean = false,
     val encoderLogin: Boolean = false,
+    val vpsEnabled: Boolean = false,
     val vpsDefault: VpsMode = VpsMode.Off,
     val piconsOnline: Boolean = false,
     val piconsOnlineUseName: Boolean = false
@@ -43,6 +44,7 @@ data class ProfileForm(
             streamMode = profile.streamMode,
             zapAndStream = profile.zapAndStream,
             encoderLogin = profile.encoderLogin,
+            vpsEnabled = profile.vpsEnabled,
             vpsDefault = profile.vpsDefault,
             piconsOnline = profile.piconsOnline,
             piconsOnlineUseName = profile.piconsOnlineUseName
@@ -125,6 +127,7 @@ class ProfileTextFields(
         profile.isDefaultProfileOnNoWifi = form.defaultOnNoWifi
         profile.streamMode = form.streamMode
         profile.zapAndStream = form.zapAndStream
+        profile.vpsEnabled = form.vpsEnabled
         profile.vpsDefault = form.vpsDefault
         profile.piconsOnline = form.piconsOnline
         profile.piconsOnlineUseName = form.piconsOnlineUseName

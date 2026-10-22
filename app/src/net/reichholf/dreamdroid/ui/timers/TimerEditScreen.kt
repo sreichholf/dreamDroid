@@ -11,7 +11,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +42,7 @@ import net.reichholf.dreamdroid.ui.dialogs.IndeterminateProgressState
 import net.reichholf.dreamdroid.ui.dialogs.MultiChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
+import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
 
 /** A field of the timer form that opens a picker. */
@@ -60,7 +60,8 @@ enum class TimerEditPick {
 
 /**
  * The timer form of [uiState] plus its pickers and request progress. The service pick is
- * the host's: [onPickService] runs instead of a dialog.
+ * the host's: [onPickService] runs instead of a dialog. A save error shows in the shell
+ * snackbar, so it is seen wherever the form is scrolled.
  */
 @Composable
 fun TimerEditContent(
@@ -75,6 +76,7 @@ fun TimerEditContent(
     initialFocusRequester: FocusRequester? = null,
     serviceFocusRequester: FocusRequester? = null
 ) {
+    ShowShellUserMessage(uiState.saveError, actions::onSaveErrorShown)
     val form = uiState.form(name.text) ?: return
     var picker by remember { mutableStateOf<TimerEditPick?>(null) }
     val is24Hour = DateFormat.is24HourFormat(LocalContext.current)
@@ -87,7 +89,6 @@ fun TimerEditContent(
         onPick = { pick ->
             if (pick == TimerEditPick.Service) onPickService() else picker = pick
         },
-        saveError = uiState.saveError?.asString(),
         showSaveFab = showSaveFab,
         mutating = uiState.progress != null,
         onSave = onSave,
@@ -180,7 +181,6 @@ fun TimerEditScreen(
     actions: TimerFormActions,
     onPick: (TimerEditPick) -> Unit,
     modifier: Modifier = Modifier,
-    saveError: String? = null,
     showSaveFab: Boolean = true,
     mutating: Boolean = false,
     onSave: () -> Unit = {},
@@ -219,13 +219,6 @@ fun TimerEditScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            if (!saveError.isNullOrEmpty()) {
-                Text(
-                    text = saveError,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
             EditFormSection(title = stringResource(R.string.timer)) {
                 EditOutlinedTextField(
                     state = name,

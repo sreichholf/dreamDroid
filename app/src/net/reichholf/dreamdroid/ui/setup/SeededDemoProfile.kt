@@ -38,6 +38,7 @@ fun Profile.matchesSeededDemo(): Boolean = name == SEEDED_DEMO_NAME &&
     encoderVideoBitrate == 2500 &&
     encoderAudioBitrate == 128 &&
     !zapAndStream &&
+    !vpsEnabled &&
     vpsDefault == VpsMode.Off &&
     ssid.isNullOrEmpty() &&
     !isDefaultProfileOnNoWifi

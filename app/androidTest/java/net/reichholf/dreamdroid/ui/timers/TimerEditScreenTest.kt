@@ -3,8 +3,15 @@ package net.reichholf.dreamdroid.ui.timers
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.assertIsDisplayed
@@ -29,6 +36,7 @@ import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
 import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
+import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -224,14 +232,42 @@ class TimerEditScreenTest {
     }
 
     @Test
-    fun saveErrorShowsAboveTheForm() {
-        composeRule.setContent {
-            DreamDroidTheme {
-                Form(form(sampleTimer()), saveError = "Conflicting timer exists")
+    fun saveErrorShowsInTheShellSnackbarOnceTheFormIsScrolled() {
+        var shown = 0
+        val actions = object : TimerFormActions {
+            override fun onSaveErrorShown() {
+                shown++
             }
         }
+        var state by mutableStateOf(TimerEditUiState(timer = sampleTimer(), locations = LOCATIONS))
+        val hostState = SnackbarHostState()
+        composeRule.setContent {
+            DreamDroidTheme {
+                CompositionLocalProvider(LocalShellSnackbarHostState provides hostState) {
+                    Box(Modifier.fillMaxSize()) {
+                        TimerEditContent(
+                            uiState = state,
+                            name = remember { TextFieldState("Sample") },
+                            description = remember { TextFieldState() },
+                            actions = actions,
+                            onPickService = {}
+                        )
+                        SnackbarHost(hostState, Modifier.align(Alignment.BottomCenter))
+                    }
+                }
+            }
+        }
+        composeRule.onNodeWithContentDescription(string(R.string.repeatings)).performScrollTo()
+
+        // The snackbar's timeout runs on the test clock.
+        composeRule.mainClock.autoAdvance = false
+        state = state.copy(saveError = UiText.Raw("Conflicting timer exists"))
+        composeRule.mainClock.advanceTimeBy(1_000)
 
         composeRule.onNodeWithText("Conflicting timer exists").assertIsDisplayed()
+        assertEquals(0, shown)
+        composeRule.mainClock.advanceTimeBy(SNACKBAR_GONE_MILLIS)
+        assertEquals(1, shown)
     }
 
     @Test
@@ -319,7 +355,6 @@ class TimerEditScreenTest {
         name: TextFieldState = remember { TextFieldState("Sample") },
         actions: TimerFormActions = object : TimerFormActions {},
         showSaveFab: Boolean = true,
-        saveError: String? = null,
         onPick: (TimerEditPick) -> Unit = {}
     ) {
         TimerEditScreen(
@@ -328,7 +363,6 @@ class TimerEditScreenTest {
             description = remember { TextFieldState("Desc") },
             actions = actions,
             onPick = onPick,
-            saveError = saveError,
             showSaveFab = showSaveFab
         )
     }
@@ -373,5 +407,8 @@ class TimerEditScreenTest {
 
     private companion object {
         val LOCATIONS = listOf("/hdd/movie/", "/media/hdd/")
+
+        /** Past a short snackbar's timeout, with room for an accessibility-longer one. */
+        const val SNACKBAR_GONE_MILLIS = 15_000L
     }
 }

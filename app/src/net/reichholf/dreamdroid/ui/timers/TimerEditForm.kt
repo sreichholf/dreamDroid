@@ -239,4 +239,7 @@ interface TimerFormActions {
     fun onVpsDatePicked(utcDateMillis: Long) {}
 
     fun onVpsTimePicked(hourOfDay: Int, minute: Int) {}
+
+    /** The save error went to the shell snackbar. */
+    fun onSaveErrorShown() {}
 }

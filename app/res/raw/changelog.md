@@ -6,11 +6,15 @@
 * NEW: Choose the external video player
 * NEW: Media3 as an optional player engine
 * FIX: No picture on some live channels with hardware decoding
+* FIX: Live streams not starting after switching channels
 * FIX: Importing backups made with 1.15
 * FIX: Channels with alternatives missing in MultiEPG
+* FIX: Movies sometimes showing the first location instead of the saved one
 * FIX: New widgets ignoring the chosen layout and profile
 * UPD: Resizable Virtual Remote widget
 * FIX: Streaming with stream login over http
+* FIX: Errors when saving a timer were not shown
+* UPD: VPS for timers is an option in the profile, off by default
 
 ## 2.0.467
 * NEW: Initial setup assistant

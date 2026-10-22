@@ -23,6 +23,8 @@ import org.junit.jupiter.api.Test
  * against the exported schema 11.
  * [AppDatabase.MIGRATION_11_12] adds `profile.stream_ssl`, off for existing profiles; the
  * `profile` table is checked against the exported schema 12.
+ * [AppDatabase.MIGRATION_13_14] adds `profile.vps_enabled`, off for existing profiles; the
+ * `profile` table is checked against the exported schema 14.
  * Raw [androidx.room3.migration.Migration.migrate] calls do not bump
  * `user_version`. Room does that when it opens the file.
  */
@@ -47,6 +49,24 @@ class AppDatabaseMigrationTest {
                 Profile.DEFAULT_PICON_PATH
             )
             assertTableMatchesSchema(connection, "profile", SCHEMA_13)
+        }
+    }
+
+    @Test
+    fun migratesV13ProfileWithVpsOff() {
+        withMigratedV12 { connection ->
+            runBlocking {
+                AppDatabase.migration12To13(
+                    PiconSeed(
+                        online = false,
+                        onlineUseName = false,
+                        onlinePath = Profile.DEFAULT_PICON_PATH
+                    )
+                ).migrate(connection)
+                AppDatabase.MIGRATION_13_14.migrate(connection)
+            }
+            assertProfileColumn(connection, "vps_enabled", expected = 0L)
+            assertTableMatchesSchema(connection, "profile", SCHEMA_14)
         }
     }
 
@@ -374,6 +394,7 @@ class AppDatabaseMigrationTest {
         private const val SCHEMA_12 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/12.json"
 
         private const val SCHEMA_13 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/13.json"
+        private const val SCHEMA_14 = "schemas/net.reichholf.dreamdroid.room.AppDatabase/14.json"
 
         /** A version-10 timer snapshot row, from before dreamDroid kept VPS. */
         private val V10_TIMER_LIST_ROW =

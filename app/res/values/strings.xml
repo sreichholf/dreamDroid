@@ -243,6 +243,8 @@
     <string name="show_now_playing_strip">Now-playing strip</string>
     <string name="show_now_playing_strip_long">Show what\'s currently on the box on TV &amp; Movies</string>
     <string name="simple_remote">Simple remote layout</string>
+    <string name="vps_enabled">VPS for timers</string>
+    <string name="vps_enabled_summary">Uses the receiver\'s VPS plugin for timers.</string>
     <string name="vps_default">VPS default for new timers</string>
     <string name="vps_default_hint">Used when the receiver has the VPS plugin.</string>
     <string name="screenshot_saved">Screenshot saved to \'%s\'</string>

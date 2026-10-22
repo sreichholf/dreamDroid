@@ -203,6 +203,10 @@ abstract class TimerFormViewModel(
         request(R.string.deleting) { timers.delete(deleted) }
     }
 
+    override fun onSaveErrorShown() {
+        _uiState.update { it.copy(saveError = null) }
+    }
+
     fun onFinishHandled() {
         _uiState.update { it.copy(finished = false) }
     }

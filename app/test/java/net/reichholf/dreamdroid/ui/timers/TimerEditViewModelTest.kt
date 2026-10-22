@@ -130,6 +130,7 @@ class TimerEditViewModelTest {
 
     @Test
     fun vpsModeAndTimeEditsSurviveProcessDeath() = runTest {
+        receiver.repository.requireCurrent().vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         val handle = route(create = false, vpsMode = VpsMode.Off)
         val viewModel = viewModel(handle)
@@ -157,6 +158,7 @@ class TimerEditViewModelTest {
 
     @Test
     fun vpsNeedsATimeOnlyWhileTheTitleIsBlankOrThereIsNoEvent() = runTest {
+        receiver.repository.requireCurrent().vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Off, eit = "4711"))
         val state = viewModel.ready()
@@ -174,6 +176,7 @@ class TimerEditViewModelTest {
 
     @Test
     fun zapTimerSavesVpsOff() = runTest {
+        receiver.repository.requireCurrent().vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(VPS_TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Safe))
@@ -189,6 +192,7 @@ class TimerEditViewModelTest {
 
     @Test
     fun aListedTimerShowsNoVpsFieldWithoutThePluginAndKeepsItsVps() = runTest {
+        receiver.repository.requireCurrent().vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("autotimer"))
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val viewModel = viewModel(route(create = false, vpsMode = VpsMode.Safe))
@@ -213,6 +217,7 @@ class TimerEditViewModelTest {
 
     @Test
     fun newTimerTakesTheProfilesVpsDefaultWhenTheReceiverHasThePlugin() = runTest {
+        receiver.repository.requireCurrent().vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.repository.requireCurrent().vpsDefault = VpsMode.Safe
         val viewModel = viewModel(route(create = true))
@@ -260,6 +265,8 @@ class TimerEditViewModelTest {
         assertEquals(UiText.Raw("Conflicting timer exists"), state.saveError)
         assertNull(state.progress)
         assertFalse(state.finished)
+        viewModel.onSaveErrorShown()
+        assertNull(viewModel.uiState.value.saveError)
     }
 
     @Test

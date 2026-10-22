@@ -388,8 +388,35 @@ class ProfileEditScreenTest {
     }
 
     @Test
-    fun vpsDefaultStartsAtNoAndRoundTripsThroughTheProfile() {
+    fun vpsStartsOffAndItsDefaultShowsOnlyWhileOn() {
         show(Profile.getDefault())
+        composeRule.setContent {
+            DreamDroidTheme {
+                EditableScreen(showSaveFab = false)
+            }
+        }
+
+        val vps = composeRule.onNode(hasText("VPS for timers") and isToggleable())
+        vps.performScrollTo().assertIsOff()
+        composeRule.onNodeWithText("Uses the receiver's VPS plugin for timers.")
+            .assertIsDisplayed()
+        composeRule.onNodeWithContentDescription("VPS default for new timers")
+            .assertDoesNotExist()
+
+        vps.performClick()
+
+        vps.assertIsOn()
+        composeRule.onNodeWithContentDescription("VPS default for new timers")
+            .performScrollTo()
+            .assertIsDisplayed()
+        val profile = Profile.getDefault()
+        fields.applyTo(profile, form)
+        assertTrue(profile.vpsEnabled)
+    }
+
+    @Test
+    fun vpsDefaultStartsAtNoAndRoundTripsThroughTheProfile() {
+        show(Profile.getDefault().apply { vpsEnabled = true })
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen(showSaveFab = false)
@@ -412,7 +439,12 @@ class ProfileEditScreenTest {
 
     @Test
     fun editModeShowsTheSavedVpsDefault() {
-        show(Profile.getDefault().apply { vpsDefault = VpsMode.Overwrite })
+        show(
+            Profile.getDefault().apply {
+                vpsEnabled = true
+                vpsDefault = VpsMode.Overwrite
+            }
+        )
         composeRule.setContent {
             DreamDroidTheme {
                 EditableScreen(showSaveFab = false)
