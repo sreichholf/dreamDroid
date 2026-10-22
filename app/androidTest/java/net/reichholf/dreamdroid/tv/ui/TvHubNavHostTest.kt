@@ -48,18 +48,6 @@ class TvHubNavHostTest {
     }
 
     @Test
-    fun multiEpgRouteShowsHost() {
-        show(
-            TvMultiEpg(
-                bouquetRef = "1:7:1:0:0:0:0:0:0:0:Favourites",
-                bouquetName = "Favourites"
-            )
-        )
-        composeRule.onNodeWithTag("tv_multi_epg_screen").assertExists()
-        composeRule.onNodeWithTag("compose_tv_hub_chrome").assertDoesNotExist()
-    }
-
-    @Test
     fun settingsRouteShowsSettingsScreen() {
         show(TvSettings)
         composeRule.onNodeWithText("Video Player").assertIsDisplayed()

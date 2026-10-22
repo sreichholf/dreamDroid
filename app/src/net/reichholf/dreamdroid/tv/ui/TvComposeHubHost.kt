@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,9 +19,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -61,17 +64,29 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.tv.material3.Button
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
+import androidx.tv.material3.IconButton
 import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.NavigationDrawer
 import androidx.tv.material3.NavigationDrawerItem
+import androidx.tv.material3.NavigationDrawerScope
 import androidx.tv.material3.Surface
+import androidx.tv.material3.Tab
+import androidx.tv.material3.TabRow
+import androidx.tv.material3.TabRowDefaults
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LiveStream
@@ -99,27 +114,6 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
  *   is Compose TV cards (`androidx.leanback` removed).
  */
 object TvComposeHubHost {
-    const val HEADER_SETTINGS_ID: String = "settings"
-    const val HEADER_TIMERS_ID: String = "timers"
-    const val HEADER_MULTIEPG_ID: String = "multiepg"
-    const val HEADER_MOVIES_ID: String = "movies"
-    const val HEADER_PLACEHOLDER_ID: String = "placeholder"
-    const val HEADER_MOVIE_PREFIX: String = "movie:"
-
-    fun movieHeaderId(dirname: String): String = HEADER_MOVIE_PREFIX + dirname
-
-    fun movieDirnameFromHeader(headerId: String): String? =
-        headerId.takeIf { it.startsWith(HEADER_MOVIE_PREFIX) }
-            ?.removePrefix(HEADER_MOVIE_PREFIX)
-            ?.takeIf { it.isNotEmpty() }
-
-    /** Blank ref or name is omitted, matching a launch that used to send no extras. */
-    fun tvMultiEpgRoute(bouquetRef: String? = null, bouquetName: String? = null): TvMultiEpg =
-        TvMultiEpg(
-            bouquetRef = bouquetRef?.takeIf { it.isNotBlank() }.orEmpty(),
-            bouquetName = bouquetName?.takeIf { it.isNotBlank() }.orEmpty()
-        )
-
     fun defaultSettingsKinds(): List<BrowseItem.Kind> = listOf(
         BrowseItem.Kind.Reload,
         BrowseItem.Kind.Preferences,
@@ -137,53 +131,6 @@ object TvComposeHubHost {
         BrowseItem.Kind.Reload -> R.drawable.ic_badge_reload
         BrowseItem.Kind.Preferences -> R.drawable.ic_badge_settings
         BrowseItem.Kind.Profile -> R.drawable.ic_badge_profiles
-    }
-
-    /** The drawer contains only bouquets returned by the receiver. */
-    fun hubNavHeaders(
-        bouquetRows: List<HubBouquetRow>,
-        placeholderTitle: String
-    ): List<HubNavHeader> = buildList {
-        bouquetRows.forEach { row ->
-            if (row.bouquet.reference.isNotBlank()) {
-                val title = row.bouquet.name.ifBlank { placeholderTitle }
-                add(HubNavHeader(row.bouquet.reference, title))
-            }
-        }
-    }
-
-    /** The top of the drawer, which the hub opens on: the first bouquet, else the placeholder. */
-    fun firstHubHeader(bouquetRows: List<HubBouquetRow>): String =
-        bouquetRows.firstOrNull()?.bouquet?.reference ?: HEADER_PLACEHOLDER_ID
-
-    /**
-     * Whether [headerId] is still in the drawer after a hub reload with [bouquetRows] and
-     * [movieLocations]. Otherwise the selection falls back to [firstHubHeader].
-     */
-    fun hubHeaderSurvivesReload(
-        headerId: String,
-        bouquetRows: List<HubBouquetRow>,
-        movieLocations: List<String>
-    ): Boolean = when {
-        headerId == HEADER_SETTINGS_ID || headerId == HEADER_TIMERS_ID -> true
-
-        headerId == HEADER_MULTIEPG_ID -> bouquetRows.isNotEmpty()
-
-        headerId == HEADER_MOVIES_ID -> movieLocations.isNotEmpty()
-
-        headerId == HEADER_PLACEHOLDER_ID -> bouquetRows.isEmpty()
-
-        else -> bouquetRows.any { it.bouquet.reference == headerId } ||
-            movieDirnameFromHeader(headerId) in movieLocations
-    }
-
-    /** Collapsed TV drawer shows only this; empty leading content is a nameless blue disc. */
-    fun hubHeaderIconRes(headerId: String): Int = when {
-        headerId == HEADER_SETTINGS_ID -> R.drawable.ic_badge_settings
-        headerId == HEADER_TIMERS_ID -> R.drawable.ic_menu_timer
-        headerId == HEADER_MULTIEPG_ID -> R.drawable.ic_multiepg
-        headerId.startsWith(HEADER_MOVIE_PREFIX) -> R.drawable.ic_menu_movie
-        else -> R.drawable.ic_menu_tv
     }
 
     /** Plays [stream] of [service], titled by its now event, as a channel of [bouquetRef]. */
@@ -218,26 +165,12 @@ object TvComposeHubHost {
         }
     }
 
-    fun shouldShowBrowseError(
-        selectedHeaderId: String,
-        loading: Boolean,
-        errorText: String?,
-        hasPaintedContent: Boolean = false
-    ): Boolean = shouldShowTvBrowseError(
-        selectedHeaderId,
-        loading,
-        errorText,
-        hasPaintedContent
-    )
-
     fun install(activity: ComponentActivity) {
         activity.setContent {
             TvHubNavHost(activity = activity)
         }
     }
 }
-
-data class HubNavHeader(val id: String, val title: String)
 
 data class HubBouquetRow(val bouquet: Service, val services: List<ServiceNowNext>)
 
@@ -254,6 +187,9 @@ private val HubServicePiconHeight = 48.dp
 /** Zap overlay row card: wide enough for text next to the leading picon. */
 private val HubServiceRowCardWidth = 300.dp
 
+/** The smallest D-pad / touch target of the top bar and the empty state. */
+private val HubMinTouchTarget = 48.dp
+
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
@@ -261,8 +197,7 @@ fun ComposeTvHubApp(
     onRecheckProfile: () -> Unit,
     viewModel: TvHubViewModel,
     onOpenSettings: () -> Unit = {},
-    onOpenProfiles: () -> Unit = {},
-    onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> }
+    onOpenProfiles: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
@@ -286,16 +221,6 @@ fun ComposeTvHubApp(
         return
     }
     val status = uiState.connection
-    val placeholderTitle = stringResource(R.string.services)
-    val bouquetRows = uiState.bouquetRows
-    val movieLocations = uiState.movieLocations
-
-    val headers = remember(placeholderTitle, bouquetRows) {
-        TvComposeHubHost.hubNavHeaders(
-            bouquetRows = bouquetRows,
-            placeholderTitle = placeholderTitle
-        )
-    }
     val settingsItems = TvComposeHubHost.defaultSettingsKinds().map { kind ->
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
     }
@@ -314,11 +239,12 @@ fun ComposeTvHubApp(
     val streamingEnabled = uiState.streamingEnabled
     Box(modifier = Modifier.fillMaxSize()) {
         ComposeTvHubChrome(
-            headers = headers,
-            selectedHeaderId = uiState.selectedHeaderId,
-            onHeaderSelected = viewModel::selectHeader,
+            section = uiState.section,
+            onOpenTab = viewModel::openTab,
+            onOpenSettings = viewModel::openSettings,
+            onDrawerItemSelected = viewModel::selectDrawerItem,
+            onBack = { viewModel.back() },
             settingsItems = settingsItems,
-            movieLocations = movieLocations,
             onSettingsClick = { kind ->
                 when (kind) {
                     BrowseItem.Kind.Reload -> viewModel.reload()
@@ -326,7 +252,8 @@ fun ComposeTvHubApp(
                     BrowseItem.Kind.Profile -> onOpenProfiles()
                 }
             },
-            bouquetRows = bouquetRows,
+            bouquetRows = uiState.bouquetRows,
+            movieLocations = uiState.movieLocations,
             moviesByLocation = uiState.moviesByLocation,
             loading = uiState.loading,
             movieLoading = uiState.movieLoading,
@@ -334,14 +261,24 @@ fun ComposeTvHubApp(
             streamingEnabled = streamingEnabled,
             onServiceClick = viewModel::streamService,
             onMovieClick = viewModel::streamMovie,
-            onOpenMultiEpg = onOpenMultiEpg,
+            profileName = uiState.profileName,
             sessionChipLabel = stringResource(status.chipLabelRes()),
+            onOpenProfiles = onOpenProfiles,
+            onReload = viewModel::reload,
             onSessionRecheck = if (shouldShowTvSessionRecheck(status)) {
                 onRecheckProfile
             } else {
                 null
             },
-            onServiceInfo = viewModel::showServiceTimer
+            onServiceInfo = viewModel::showServiceTimer,
+            guideContent = { bouquetRef, bouquetName ->
+                TvMultiEpgHost(
+                    activity = activity,
+                    bouquetRef = bouquetRef,
+                    bouquetName = bouquetName,
+                    onBouquetChange = viewModel::selectDrawerItem
+                )
+            }
         )
         val overlayTarget = uiState.serviceTimerTarget
         val editorEvent = uiState.editTimerEvent
@@ -376,16 +313,22 @@ fun ComposeTvHubApp(
     }
 }
 
-/** Side headers ([NavigationDrawer]) + row list focus chrome (Phase 3.1c-iv-c/d/e). */
+/**
+ * The hub for [section]: the top bar tabs (Live TV, Guide, Recordings, Timers) with the
+ * profile + connection chip and the Settings icon, then the section's drawer, if it has one,
+ * beside its content. Back from any section but Live TV calls [onBack].
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun ComposeTvHubChrome(
-    headers: List<HubNavHeader>,
-    selectedHeaderId: String,
-    onHeaderSelected: (String) -> Unit,
+    section: HubSection,
+    onOpenTab: (HubTab) -> Unit,
+    onOpenSettings: () -> Unit,
+    onDrawerItemSelected: (String) -> Unit,
     settingsItems: List<Pair<BrowseItem.Kind, String>>,
     onSettingsClick: (BrowseItem.Kind) -> Unit,
     modifier: Modifier = Modifier,
+    onBack: () -> Unit = {},
     bouquetRows: List<HubBouquetRow> = emptyList(),
     movieLocations: List<String> = emptyList(),
     moviesByLocation: Map<String, List<Movie>> = emptyMap(),
@@ -395,44 +338,67 @@ fun ComposeTvHubChrome(
     streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {},
-    onOpenMultiEpg: (reference: String, name: String) -> Unit = { _, _ -> },
+    profileName: String = "",
     sessionChipLabel: String? = null,
+    onOpenProfiles: () -> Unit = {},
+    onReload: () -> Unit = {},
     onSessionRecheck: (() -> Unit)? = null,
     sessionRecheckLabel: String? = null,
     onServiceInfo: ((ServiceNowNext, String?) -> Unit)? = null,
     timerContent: @Composable () -> Unit = {
         TvTimerHost(modifier = Modifier.fillMaxSize())
-    }
+    },
+    guideContent: @Composable (bouquetRef: String, bouquetName: String) -> Unit =
+        { bouquetRef, bouquetName ->
+            TvMultiEpgHost(
+                activity = LocalActivity.current as ComponentActivity,
+                bouquetRef = bouquetRef,
+                bouquetName = bouquetName,
+                onBouquetChange = onDrawerItemSelected
+            )
+        }
 ) {
     var showStreamUnavailable by remember { mutableStateOf(false) }
-    // The standard TV drawer updates the page as focus moves between nav items. Focus
-    // that merely lands here when content changes (restoration) is not a nav move and
-    // must not select, or the hub would jump to the first bouquet.
-    var lastFocusedHeaderId by remember { mutableStateOf<String?>(null) }
-    val selectedBouquet = bouquetRows.firstOrNull { it.bouquet.reference == selectedHeaderId }
+    val tabs = hubTabs(bouquetRows, movieLocations)
+    val unnamedBouquet = stringResource(R.string.services)
+    val drawerItems = section.drawerItems(bouquetRows, movieLocations, unnamedBouquet)
+    val selectedBouquet = (section as? HubSection.Live)?.bouquetRef?.let { ref ->
+        bouquetRows.firstOrNull { it.bouquet.reference == ref }
+    }
+    val movieDir = (section as? HubSection.Recordings)?.location
     // On start the hub focuses the first service card so the remote acts on content
     // instead of an unclear cursor. One-shot per hub entry, and never once the user has
     // moved through the drawer, so late-loading rows do not pull focus out of it.
     val serviceGridFocus = remember { FocusRequester() }
+    val liveTabFocus = remember { FocusRequester() }
     var initialGridFocusDone by remember { mutableStateOf(false) }
     LaunchedEffect(selectedBouquet?.bouquet?.reference, selectedBouquet?.services?.isNotEmpty()) {
         if (!initialGridFocusDone && selectedBouquet?.services?.isNotEmpty() == true) {
             // The grid composes its cards during layout; wait for that frame.
             withFrameNanos {}
-            initialGridFocusDone = serviceGridFocus.requestFocus()
+            initialGridFocusDone = serviceGridFocus.tryRequestFocus()
         }
     }
-    val movieDir = TvComposeHubHost.movieDirnameFromHeader(selectedHeaderId)
+    // Back lands on Live TV's grid (its last focused card), else on the Live TV tab.
+    var focusLiveAfterBack by remember { mutableStateOf(false) }
+    BackHandler(enabled = section !is HubSection.Live) {
+        focusLiveAfterBack = true
+        onBack()
+    }
+    LaunchedEffect(focusLiveAfterBack, section) {
+        if (focusLiveAfterBack && section is HubSection.Live) {
+            focusLiveAfterBack = false
+            withFrameNanos {}
+            if (!serviceGridFocus.tryRequestFocus()) {
+                liveTabFocus.tryRequestFocus()
+            }
+        }
+    }
+    val liveEmpty = section is HubSection.Live && drawerItems.isNullOrEmpty() && !loading
     val hasPaintedContent = selectedBouquet?.services?.isNotEmpty() == true ||
-        (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty()) ||
-        (
-            selectedHeaderId == TvComposeHubHost.HEADER_MOVIES_ID &&
-                movieLocations.isNotEmpty()
-            ) ||
-        (
-            selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID &&
-                bouquetRows.isNotEmpty()
-            )
+        (movieDir != null && moviesByLocation[movieDir].orEmpty().isNotEmpty())
+    val showError = !liveEmpty &&
+        shouldShowTvBrowseError(section, loading, errorText, hasPaintedContent)
     val gatedServiceClick: (ServiceNowNext, String?) -> Unit = { service, bouquetRef ->
         when (tvHubServiceRowKind(service.serviceReference)) {
             TvHubServiceRowKind.MARKER_HEADER -> Unit
@@ -456,230 +422,281 @@ fun ComposeTvHubChrome(
     }
     DreamDroidTvTheme {
         Box(modifier = Modifier.fillMaxSize()) {
-            NavigationDrawer(
+            Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .testTag("compose_tv_hub_chrome"),
-                drawerContent = {
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(vertical = 24.dp)
-                            .onFocusChanged { focusState ->
-                                if (!focusState.hasFocus) {
-                                    lastFocusedHeaderId = null
-                                }
-                            },
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(headers, key = { header -> header.id }) { header ->
-                            NavigationDrawerItem(
-                                selected = header.id == selectedHeaderId,
-                                onClick = { onHeaderSelected(header.id) },
-                                leadingContent = {
-                                    Image(
-                                        painter = painterResource(
-                                            TvComposeHubHost.hubHeaderIconRes(header.id)
-                                        ),
-                                        contentDescription = header.title,
-                                        colorFilter = ColorFilter.tint(LocalContentColor.current),
-                                        modifier = Modifier.testTag("hub_header_icon_${header.id}")
-                                    )
-                                },
-                                colors = dreamDroidTvDrawerItemColors(),
-                                modifier = Modifier
-                                    .testTag("hub_header_${header.id}")
-                                    .focusProperties {
-                                        // D-pad Right into a bouquet goes to its grid (last
-                                        // focused card, else the first), not the toolbar
-                                        // (MultiEPG) action.
-                                        if (
-                                            selectedBouquet?.bouquet?.reference == header.id &&
-                                            selectedBouquet.services.isNotEmpty()
-                                        ) {
-                                            right = serviceGridFocus
-                                        }
-                                    }
-                                    .onFocusChanged { focusState ->
-                                        if (focusState.isFocused) {
-                                            if (
-                                                lastFocusedHeaderId != null &&
-                                                lastFocusedHeaderId != header.id
-                                            ) {
-                                                initialGridFocusDone = true
-                                                onHeaderSelected(header.id)
-                                            }
-                                            lastFocusedHeaderId = header.id
-                                        }
-                                    }
-                            ) {
-                                Text(text = header.title)
-                            }
-                        }
-                    }
-                }
+                    .background(
+                        Brush.linearGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                                MaterialTheme.colorScheme.background
+                            )
+                        )
+                    )
+                    .testTag("compose_tv_hub_chrome")
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(
-                            Brush.linearGradient(
-                                colors = listOf(
-                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
-                                    MaterialTheme.colorScheme.background
-                                )
-                            )
-                        )
-                        .padding(horizontal = 32.dp, vertical = 28.dp)
-                        .testTag("compose_tv_hub_rows"),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    val title = headers.firstOrNull { header ->
-                        header.id == selectedHeaderId
-                    }?.title ?: when (selectedHeaderId) {
-                        TvComposeHubHost.HEADER_SETTINGS_ID -> stringResource(R.string.preferences)
-                        TvComposeHubHost.HEADER_TIMERS_ID -> stringResource(R.string.timer)
-                        TvComposeHubHost.HEADER_MULTIEPG_ID -> stringResource(R.string.multiepg)
-                        TvComposeHubHost.HEADER_MOVIES_ID -> stringResource(R.string.movies)
-                        else -> movieDir ?: stringResource(R.string.services)
-                    }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            modifier = Modifier.weight(1f)
-                        )
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            HubTopAction(
-                                title = stringResource(R.string.settings),
-                                iconRes = R.drawable.ic_badge_settings,
-                                testTag = "hub_action_settings",
-                                onClick = {
-                                    onHeaderSelected(TvComposeHubHost.HEADER_SETTINGS_ID)
-                                }
-                            )
-                            if (bouquetRows.isNotEmpty()) {
-                                HubTopAction(
-                                    title = stringResource(R.string.multiepg),
-                                    iconRes = R.drawable.ic_multiepg,
-                                    testTag = "hub_action_multiepg",
-                                    onClick = {
-                                        onHeaderSelected(TvComposeHubHost.HEADER_MULTIEPG_ID)
+                HubTopBar(
+                    tabs = tabs,
+                    section = section,
+                    onOpenTab = onOpenTab,
+                    onOpenSettings = onOpenSettings,
+                    liveTabFocus = liveTabFocus,
+                    profileName = profileName,
+                    sessionChipLabel = sessionChipLabel,
+                    onOpenProfiles = onOpenProfiles,
+                    onSessionRecheck = onSessionRecheck,
+                    recheckLabel = sessionRecheckLabel ?: stringResource(R.string.recheck)
+                )
+                val pane: @Composable () -> Unit = {
+                    HubSectionPane(
+                        section = section,
+                        title = section.title(bouquetRows)?.asString(),
+                        loading = loading,
+                        errorText = errorText.takeIf { showError },
+                        content = {
+                            when (section) {
+                                is HubSection.Live -> if (liveEmpty) {
+                                    HubLiveEmptyState(
+                                        message = errorText
+                                            ?: stringResource(R.string.tv_hub_no_bouquets),
+                                        onReload = onReload,
+                                        onOpenProfiles = onOpenProfiles
+                                    )
+                                } else if (selectedBouquet != null) {
+                                    // Per bouquet, so scroll position and the restored card
+                                    // do not carry over into another bouquet.
+                                    key(selectedBouquet.bouquet.reference) {
+                                        HubServiceGrid(
+                                            bouquetRef = selectedBouquet.bouquet.reference,
+                                            services = selectedBouquet.services,
+                                            onServiceClick = gatedServiceClick,
+                                            focusRequester = serviceGridFocus,
+                                            onServiceInfo = onServiceInfo
+                                        )
                                     }
-                                )
-                            }
-                            HubTopAction(
-                                title = stringResource(R.string.timer),
-                                iconRes = R.drawable.ic_menu_timer,
-                                testTag = "hub_action_timers",
-                                onClick = {
-                                    onHeaderSelected(TvComposeHubHost.HEADER_TIMERS_ID)
                                 }
-                            )
-                            if (movieLocations.isNotEmpty()) {
-                                HubTopAction(
-                                    title = stringResource(R.string.movies),
-                                    iconRes = R.drawable.ic_menu_movie,
-                                    testTag = "hub_action_movies",
-                                    onClick = {
-                                        onHeaderSelected(TvComposeHubHost.HEADER_MOVIES_ID)
+
+                                is HubSection.Guide -> section.bouquetRef?.let { ref ->
+                                    val name = drawerItems?.firstOrNull { it.id == ref }?.title
+                                    guideContent(ref, name.orEmpty())
+                                }
+
+                                is HubSection.Recordings -> if (movieDir != null) {
+                                    if (movieLoading && movieDir !in moviesByLocation) {
+                                        Text(
+                                            text = stringResource(R.string.loading),
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            modifier = Modifier.testTag("hub_movie_loading")
+                                        )
+                                    } else {
+                                        HubMovieGrid(
+                                            movies = moviesByLocation[movieDir].orEmpty(),
+                                            onMovieClick = gatedMovieClick
+                                        )
                                     }
-                                )
-                            }
-                            if (sessionChipLabel != null) {
-                                HubSessionStatus(
-                                    label = sessionChipLabel,
-                                    recheckLabel = sessionRecheckLabel
-                                        ?: stringResource(R.string.recheck),
-                                    onRecheck = onSessionRecheck
+                                }
+
+                                HubSection.Timers -> timerContent()
+
+                                HubSection.Settings -> HubSettingsRow(
+                                    settingsItems = settingsItems,
+                                    onSettingsClick = onSettingsClick
                                 )
                             }
                         }
-                    }
-                    if (loading && selectedHeaderId != TvComposeHubHost.HEADER_TIMERS_ID) {
-                        Text(
-                            text = stringResource(R.string.loading),
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.testTag("hub_loading")
-                        )
-                    }
-                    if (
-                        TvComposeHubHost.shouldShowBrowseError(
-                            selectedHeaderId,
-                            loading,
-                            errorText,
-                            hasPaintedContent
-                        )
-                    ) {
-                        Text(
-                            text = errorText.orEmpty(),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.testTag("hub_error")
-                        )
-                    }
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth()
-                    ) {
-                        if (selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID) {
-                            timerContent()
-                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_SETTINGS_ID) {
-                            HubSettingsRow(
-                                settingsItems = settingsItems,
-                                onSettingsClick = onSettingsClick
-                            )
-                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MULTIEPG_ID) {
-                            HubMultiEpgBouquetGrid(
-                                bouquetRows = bouquetRows,
-                                onOpenMultiEpg = onOpenMultiEpg
-                            )
-                        } else if (selectedHeaderId == TvComposeHubHost.HEADER_MOVIES_ID) {
-                            HubMovieLocationGrid(
-                                locations = movieLocations,
-                                onSelectLocation = { dirname ->
-                                    onHeaderSelected(TvComposeHubHost.movieHeaderId(dirname))
-                                }
-                            )
-                        } else if (selectedBouquet != null) {
-                            // Per bouquet, so scroll position and the restored card do not
-                            // carry over into another bouquet.
-                            key(selectedBouquet.bouquet.reference) {
-                                HubServiceGrid(
-                                    bouquetRef = selectedBouquet.bouquet.reference,
-                                    services = selectedBouquet.services,
-                                    onServiceClick = gatedServiceClick,
-                                    focusRequester = serviceGridFocus,
-                                    onServiceInfo = onServiceInfo
+                    )
+                }
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                ) {
+                    if (drawerItems.isNullOrEmpty()) {
+                        pane()
+                    } else {
+                        NavigationDrawer(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .testTag("hub_drawer"),
+                            drawerContent = {
+                                HubDrawer(
+                                    rows = drawerItems,
+                                    selectedId = section.drawerSelection,
+                                    iconRes = section.drawerIconRes,
+                                    onSelect = onDrawerItemSelected,
+                                    onMovedThroughDrawer = { initialGridFocusDone = true },
+                                    rightFocus = serviceGridFocus.takeIf {
+                                        selectedBouquet?.services?.isNotEmpty() == true
+                                    }
                                 )
                             }
-                        } else if (movieDir != null) {
-                            if (movieLoading && movieDir !in moviesByLocation) {
-                                Text(
-                                    text = stringResource(R.string.loading),
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.testTag("hub_movie_loading")
-                                )
-                            } else {
-                                HubMovieGrid(
-                                    movies = moviesByLocation[movieDir].orEmpty(),
-                                    onMovieClick = gatedMovieClick
-                                )
-                            }
-                        } else if (!loading) {
-                            HubPlaceholderRow()
+                        ) {
+                            pane()
                         }
                     }
                 }
             }
             if (showStreamUnavailable) {
                 TvNeedsReceiverOverlay(onDismiss = { showStreamUnavailable = false })
+            }
+        }
+    }
+}
+
+/** A focus request that may find its target out of the composition. */
+private fun FocusRequester.tryRequestFocus(): Boolean = try {
+    requestFocus()
+} catch (_: IllegalStateException) {
+    false
+}
+
+/** The section's title, the browse state, and its [content] below. */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubSectionPane(
+    section: HubSection,
+    title: String?,
+    loading: Boolean,
+    errorText: String?,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 32.dp, vertical = 20.dp)
+            .testTag("compose_tv_hub_rows"),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        if (title != null) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .semantics { heading() }
+                    .testTag("hub_title")
+            )
+        }
+        if (loading && (section is HubSection.Live || section is HubSection.Recordings)) {
+            Text(
+                text = stringResource(R.string.loading),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.testTag("hub_loading")
+            )
+        }
+        if (errorText != null) {
+            Text(
+                text = errorText,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.testTag("hub_error")
+            )
+        }
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            content()
+        }
+    }
+}
+
+/**
+ * The section's drawer rows. The standard TV drawer selects as focus moves between rows.
+ * Focus that merely lands here when content changes (restoration) is not a move and does not
+ * select, or the hub would jump to the first row. D-pad Right from the selected bouquet goes
+ * to [rightFocus], its grid.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun NavigationDrawerScope.HubDrawer(
+    rows: List<HubDrawerItem>,
+    selectedId: String?,
+    iconRes: Int,
+    onSelect: (String) -> Unit,
+    onMovedThroughDrawer: () -> Unit,
+    rightFocus: FocusRequester?
+) {
+    var lastFocusedId by remember { mutableStateOf<String?>(null) }
+    LazyColumn(
+        modifier = Modifier
+            .padding(vertical = 24.dp)
+            .onFocusChanged { focusState ->
+                if (!focusState.hasFocus) {
+                    lastFocusedId = null
+                }
+            },
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(rows, key = { item -> item.id }) { item ->
+            NavigationDrawerItem(
+                selected = item.id == selectedId,
+                onClick = { onSelect(item.id) },
+                leadingContent = {
+                    Image(
+                        painter = painterResource(iconRes),
+                        contentDescription = item.title,
+                        colorFilter = ColorFilter.tint(LocalContentColor.current),
+                        modifier = Modifier.testTag("hub_header_icon_${item.id}")
+                    )
+                },
+                colors = dreamDroidTvDrawerItemColors(),
+                modifier = Modifier
+                    .testTag("hub_header_${item.id}")
+                    .focusProperties {
+                        if (item.id == selectedId && rightFocus != null) {
+                            right = rightFocus
+                        }
+                    }
+                    .onFocusChanged { focusState ->
+                        if (focusState.isFocused) {
+                            if (lastFocusedId != null && lastFocusedId != item.id) {
+                                onMovedThroughDrawer()
+                                onSelect(item.id)
+                            }
+                            lastFocusedId = item.id
+                        }
+                    }
+            ) {
+                Text(text = item.title)
+            }
+        }
+    }
+}
+
+/**
+ * Live TV without bouquets: why ([message], the receiver's error when it gave one), Reload,
+ * and Profiles to pick or fix the receiver.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun HubLiveEmptyState(message: String, onReload: () -> Unit, onOpenProfiles: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("hub_live_empty"),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        Text(
+            text = message,
+            style = MaterialTheme.typography.titleMedium,
+            modifier = Modifier.testTag("hub_live_empty_message")
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Button(
+                onClick = onReload,
+                modifier = Modifier
+                    .heightIn(min = HubMinTouchTarget)
+                    .testTag("hub_live_empty_reload")
+            ) {
+                Text(text = stringResource(R.string.reload))
+            }
+            Button(
+                onClick = onOpenProfiles,
+                modifier = Modifier
+                    .heightIn(min = HubMinTouchTarget)
+                    .testTag("hub_live_empty_profiles")
+            ) {
+                Text(text = stringResource(R.string.profiles))
             }
         }
     }
@@ -739,31 +756,101 @@ fun TvNeedsReceiverOverlay(
     }
 }
 
-/** Persistent Online / Offline / Checking chip. Recheck is focusable when Offline / failed. */
+/**
+ * The hub's top bar: the [tabs] (selection follows D-pad moves between tabs; entering the
+ * row from the content does not select), the profile + connection chip that opens Profiles,
+ * Recheck while the session needs one, and the Settings icon at the far right.
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubSessionStatus(
-    label: String,
-    recheckLabel: String,
-    onRecheck: (() -> Unit)?,
-    modifier: Modifier = Modifier
+private fun HubTopBar(
+    tabs: List<HubTab>,
+    section: HubSection,
+    onOpenTab: (HubTab) -> Unit,
+    onOpenSettings: () -> Unit,
+    liveTabFocus: FocusRequester,
+    profileName: String,
+    sessionChipLabel: String?,
+    onOpenProfiles: () -> Unit,
+    onSessionRecheck: (() -> Unit)?,
+    recheckLabel: String
 ) {
     Row(
-        modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 32.dp, end = 32.dp, top = 20.dp)
+            .testTag("hub_top_bar"),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge,
+        val selectedIndex = tabs.indexOf(section.tab)
+        var lastFocusedTab by remember { mutableStateOf<HubTab?>(null) }
+        TabRow(
+            selectedTabIndex = selectedIndex.coerceAtLeast(0),
             modifier = Modifier
-                .testTag("hub_session_chip")
-                .padding(horizontal = 8.dp, vertical = 4.dp)
-        )
-        if (onRecheck != null) {
+                .weight(1f)
+                .focusRestorer()
+                .onFocusChanged { focusState ->
+                    if (!focusState.hasFocus) {
+                        lastFocusedTab = null
+                    }
+                }
+                .testTag("hub_tabs"),
+            indicator = { tabPositions, doesTabRowHaveFocus ->
+                // Settings has no tab: no indicator then.
+                tabPositions.getOrNull(selectedIndex)?.let { position ->
+                    TabRowDefaults.PillIndicator(
+                        currentTabPosition = position,
+                        doesTabRowHaveFocus = doesTabRowHaveFocus
+                    )
+                }
+            }
+        ) {
+            tabs.forEachIndexed { index, tab ->
+                key(tab) {
+                    Tab(
+                        selected = index == selectedIndex,
+                        onFocus = {
+                            if (lastFocusedTab != null && lastFocusedTab != tab) {
+                                onOpenTab(tab)
+                            }
+                            lastFocusedTab = tab
+                        },
+                        onClick = { onOpenTab(tab) },
+                        modifier = Modifier
+                            .heightIn(min = HubMinTouchTarget)
+                            .semantics { role = Role.Tab }
+                            .testTag("hub_tab_${tab.name.lowercase()}")
+                            .then(
+                                if (tab == HubTab.Live) {
+                                    Modifier.focusRequester(liveTabFocus)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                    ) {
+                        Text(
+                            text = stringResource(tab.titleRes),
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+                        )
+                    }
+                }
+            }
+        }
+        if (sessionChipLabel != null) {
+            HubProfileChip(
+                profileName = profileName,
+                sessionLabel = sessionChipLabel,
+                onClick = onOpenProfiles
+            )
+        }
+        if (onSessionRecheck != null) {
             Surface(
-                onClick = onRecheck,
-                modifier = Modifier.testTag("hub_session_recheck"),
+                onClick = onSessionRecheck,
+                modifier = Modifier
+                    .heightIn(min = HubMinTouchTarget)
+                    .testTag("hub_session_recheck"),
                 colors = dreamDroidTvCardColors(),
                 scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
                 shape = ClickableSurfaceDefaults.shape()
@@ -771,40 +858,70 @@ private fun HubSessionStatus(
                 Text(
                     text = recheckLabel,
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp)
                 )
             }
+        }
+        val settingsSelected = section == HubSection.Settings
+        IconButton(
+            onClick = onOpenSettings,
+            modifier = Modifier
+                .size(HubMinTouchTarget)
+                .semantics { selected = settingsSelected }
+                .testTag("hub_action_settings")
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_badge_settings),
+                contentDescription = stringResource(R.string.settings),
+                tint = if (settingsSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    LocalContentColor.current
+                }
+            )
         }
     }
 }
 
+/**
+ * The active profile and the persistent Online / Offline / Checking word in one chip. OK
+ * opens Profiles.
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubTopAction(
-    title: String,
-    iconRes: Int,
-    testTag: String,
-    onClick: () -> Unit
-) {
+private fun HubProfileChip(profileName: String, sessionLabel: String, onClick: () -> Unit) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.testTag(testTag),
+        modifier = Modifier
+            .heightIn(min = HubMinTouchTarget)
+            .semantics(mergeDescendants = true) { role = Role.Button }
+            .testTag("hub_profile_chip"),
         colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape()
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(iconRes),
-                contentDescription = title,
-                colorFilter = ColorFilter.tint(LocalContentColor.current),
-                modifier = Modifier.size(24.dp)
+            if (profileName.isNotEmpty()) {
+                Text(
+                    text = profileName,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .widthIn(max = 220.dp)
+                        .testTag("hub_profile_name")
+                )
+            }
+            Text(
+                text = sessionLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.testTag("hub_session_chip")
             )
-            Text(text = title, style = MaterialTheme.typography.labelLarge)
         }
     }
 }
@@ -843,67 +960,6 @@ fun HubSettingsRow(
                             .fillMaxWidth()
                             .height(120.dp)
                             .testTag("hub_settings_icon_${kind.name.lowercase()}")
-                    )
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-/** Bouquet cards that open GraphMultiEPG. Public for focused instrumented tests. */
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-fun HubMultiEpgBouquetGrid(
-    bouquetRows: List<HubBouquetRow>,
-    onOpenMultiEpg: (reference: String, name: String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 200.dp),
-        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
-        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
-        contentPadding = PaddingValues(
-            start = HubGridFocusInset,
-            top = HubGridFocusInset,
-            end = HubGridFocusInset,
-            bottom = 48.dp
-        ),
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("hub_multiepg_bouquet_grid")
-    ) {
-        gridItemsIndexed(
-            bouquetRows,
-            key = { index, row ->
-                row.bouquet.reference.ifBlank { "bouquet-$index" }
-            }
-        ) { index, row ->
-            val title = row.bouquet.name.ifBlank { row.bouquet.reference }
-            Surface(
-                onClick = {
-                    onOpenMultiEpg(row.bouquet.reference, title)
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("hub_multiepg_bouquet_$index"),
-                colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
-                shape = ClickableSurfaceDefaults.shape()
-            ) {
-                Column {
-                    Image(
-                        painter = painterResource(R.drawable.ic_multiepg),
-                        contentDescription = title,
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(LocalContentColor.current),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
                     )
                     Text(
                         text = title,
@@ -1248,58 +1304,6 @@ fun HubMovieGrid(
 
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun HubMovieLocationGrid(
-    locations: List<String>,
-    onSelectLocation: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 200.dp),
-        horizontalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
-        verticalArrangement = Arrangement.spacedBy(HubGridItemSpacing),
-        contentPadding = PaddingValues(
-            start = HubGridFocusInset,
-            top = HubGridFocusInset,
-            end = HubGridFocusInset,
-            bottom = 48.dp
-        ),
-        modifier = modifier
-            .fillMaxSize()
-            .testTag("hub_movie_location_grid")
-    ) {
-        gridItemsIndexed(locations, key = { _, location -> location }) { index, location ->
-            Surface(
-                onClick = { onSelectLocation(location) },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("hub_movie_location_$index"),
-                colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
-                shape = ClickableSurfaceDefaults.shape()
-            ) {
-                Column {
-                    Image(
-                        painter = painterResource(R.drawable.ic_menu_movie),
-                        contentDescription = location,
-                        contentScale = ContentScale.Fit,
-                        colorFilter = ColorFilter.tint(LocalContentColor.current),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(120.dp)
-                    )
-                    Text(
-                        text = location,
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp)
-                    )
-                }
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
 private fun HubMovieCard(movie: Movie, onClick: () -> Unit, fillWidth: Boolean = false) {
     val descriptionEx = movie.descriptionExtended.replace("\\n", "\n")
     val content = if (descriptionEx.isNotEmpty()) descriptionEx else movie.description
@@ -1336,39 +1340,6 @@ private fun HubMovieCard(movie: Movie, onClick: () -> Unit, fillWidth: Boolean =
                         .weight(1f)
                         .padding(top = 4.dp)
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-private fun HubPlaceholderRow() {
-    LazyRow(
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .testTag("hub_placeholder_row")
-    ) {
-        items(3) { index ->
-            Surface(
-                onClick = {},
-                modifier = Modifier
-                    .width(180.dp)
-                    .height(100.dp)
-                    .testTag("hub_placeholder_card_$index"),
-                colors = dreamDroidTvCardColors(),
-                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
-                shape = ClickableSurfaceDefaults.shape()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Text(text = "…", style = MaterialTheme.typography.titleMedium)
-                }
             }
         }
     }

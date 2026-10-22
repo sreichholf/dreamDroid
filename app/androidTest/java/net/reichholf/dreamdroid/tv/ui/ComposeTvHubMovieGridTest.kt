@@ -67,23 +67,21 @@ class ComposeTvHubMovieGridTest {
     }
 
     @Test
-    fun movieHeaderSelectionShowsMovieRowHost() {
+    fun recordingsLocationShowsMovieGrid() {
         val movie = Movie(
             reference = "1:0:0:0:0:0:0:0:0:1:",
             title = "Another",
             fileName = "another.ts"
         )
-        val headerId = TvComposeHubHost.movieHeaderId("/hdd/movie")
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(headerId, "/hdd/movie")
-                ),
-                selectedHeaderId = headerId,
-                onHeaderSelected = {},
+                section = HubSection.Recordings("/hdd/movie"),
+                onOpenTab = {},
+                onOpenSettings = {},
+                onDrawerItemSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
+                movieLocations = listOf("/hdd/movie"),
                 moviesByLocation = mapOf("/hdd/movie" to listOf(movie))
             )
         }

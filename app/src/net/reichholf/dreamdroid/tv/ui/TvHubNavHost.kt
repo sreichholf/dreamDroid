@@ -33,7 +33,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
@@ -131,20 +130,7 @@ private fun TvHubNavGraph(
                 onRecheckProfile = shellViewModel::recheck,
                 viewModel = hubViewModel,
                 onOpenSettings = { navController.navigate(TvSettings) },
-                onOpenProfiles = { navController.navigate(TvProfiles) },
-                onOpenMultiEpg = { reference, name ->
-                    navController.navigate(
-                        TvComposeHubHost.tvMultiEpgRoute(reference, name)
-                    )
-                }
-            )
-        }
-        composable<TvMultiEpg> { entry ->
-            val route = entry.toRoute<TvMultiEpg>()
-            TvMultiEpgHost(
-                activity = activity,
-                bouquetRef = route.bouquetRef,
-                bouquetName = route.bouquetName
+                onOpenProfiles = { navController.navigate(TvProfiles) }
             )
         }
         composable<TvSettings> {

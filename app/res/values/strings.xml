@@ -206,6 +206,11 @@
     <string name="session_checking">Checking</string>
     <string name="session_needs_receiver">Needs the receiver</string>
     <string name="session_needs_receiver_long">Connect to the receiver to use this.</string>
+    <string name="tv_hub_live">Live TV</string>
+    <string name="tv_hub_guide">Guide</string>
+    <string name="tv_hub_recordings">Recordings</string>
+    <string name="tv_hub_timers">Timers</string>
+    <string name="tv_hub_no_bouquets">No TV bouquets on this receiver.</string>
     <string name="error">ERROR!</string>
     <string name="version_too_low">Version &lt; 1.6.5</string>
     <string name="connection_error">Connection error</string>
@@ -397,7 +402,6 @@
     <string name="forward">Forward</string>
     <string name="info">Info</string>
     <string name="seek">Seek</string>
-    <string name="preferences">Preferences</string>
     <string name="backup">Backup</string>
     <string name="backup_restore">Backup &amp; Restore</string>
     <string name="backup_current_profile">Current</string>

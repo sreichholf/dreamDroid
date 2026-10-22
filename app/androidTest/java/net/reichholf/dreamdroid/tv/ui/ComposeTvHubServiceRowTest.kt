@@ -245,12 +245,10 @@ class ComposeTvHubServiceRowTest {
         )
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(bouquet.reference, bouquet.name)
-                ),
-                selectedHeaderId = bouquet.reference,
-                onHeaderSelected = {},
+                section = HubSection.Live(bouquet.reference),
+                onOpenTab = {},
+                onOpenSettings = {},
+                onDrawerItemSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = listOf(

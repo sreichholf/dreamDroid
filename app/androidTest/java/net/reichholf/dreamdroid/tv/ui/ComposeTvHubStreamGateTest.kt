@@ -99,9 +99,10 @@ class ComposeTvHubStreamGateTest {
                 .height(360.dp)
         ) {
             ComposeTvHubChrome(
-                headers = listOf(HubNavHeader(bouquetRef, "Favourites")),
-                selectedHeaderId = bouquetRef,
-                onHeaderSelected = {},
+                section = HubSection.Live(bouquetRef),
+                onOpenTab = {},
+                onOpenSettings = {},
+                onDrawerItemSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = listOf(
@@ -118,18 +119,20 @@ class ComposeTvHubStreamGateTest {
 
     @Composable
     private fun chromeMovieHost(streamingEnabled: Boolean, onMovieClick: () -> Unit) {
-        val headerId = TvComposeHubHost.movieHeaderId("/media/hdd/movie")
+        val location = "/media/hdd/movie"
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(360.dp)
         ) {
             ComposeTvHubChrome(
-                headers = listOf(HubNavHeader(headerId, "/media/hdd/movie")),
-                selectedHeaderId = headerId,
-                onHeaderSelected = {},
+                section = HubSection.Recordings(location),
+                onOpenTab = {},
+                onOpenSettings = {},
+                onDrawerItemSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
+                movieLocations = listOf(location),
                 moviesByLocation = mapOf("/media/hdd/movie" to listOf(demoMovie())),
                 streamingEnabled = streamingEnabled,
                 onMovieClick = { onMovieClick() }

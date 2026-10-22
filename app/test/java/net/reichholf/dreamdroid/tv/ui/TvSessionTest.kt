@@ -85,64 +85,24 @@ class TvSessionTest {
     }
 
     @Test
-    fun browseErrorHiddenOnSettingsAndWhenContentPainted() {
-        assertFalse(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_SETTINGS_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = false
-            )
-        )
-        assertFalse(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_TIMERS_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = false
-            )
-        )
-        assertTrue(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = false
-            )
-        )
-        assertFalse(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = true
-            )
-        )
-        assertFalse(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
-                loading = true,
-                errorText = "box offline",
-                hasPaintedContent = false
-            )
-        )
-        assertTrue(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = false
-            )
-        )
-        assertFalse(
-            shouldShowTvBrowseError(
-                selectedHeaderId = TvComposeHubHost.HEADER_MULTIEPG_ID,
-                loading = false,
-                errorText = "box offline",
-                hasPaintedContent = true
-            )
-        )
+    fun browseErrorShowsOnlyOnAnUnpaintedLiveOrRecordingsView() {
+        for (section in listOf(HubSection.Live(null), HubSection.Recordings("/hdd/movie"))) {
+            assertTrue(browseError(section))
+            assertFalse(browseError(section, hasPaintedContent = true))
+            assertFalse(browseError(section, loading = true))
+            assertFalse(browseError(section, errorText = null))
+        }
+        for (section in listOf(HubSection.Guide("ref"), HubSection.Timers, HubSection.Settings)) {
+            assertFalse(browseError(section))
+        }
     }
+
+    private fun browseError(
+        section: HubSection,
+        loading: Boolean = false,
+        errorText: String? = "box offline",
+        hasPaintedContent: Boolean = false
+    ): Boolean = shouldShowTvBrowseError(section, loading, errorText, hasPaintedContent)
 
     @Test
     fun profileCheckGateSkippedWhenCacheExists() {
