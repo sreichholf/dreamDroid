@@ -31,6 +31,7 @@
         android:title="@string/usability">
         <CheckBoxPreference
             android:defaultValue="false"
+            android:dependency="integrated_video_player"
             android:key="auto_start_last_stream"
             android:summary="@string/auto_start_last_stream_long"
             android:title="@string/auto_start_last_stream"/>

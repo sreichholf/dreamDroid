@@ -156,6 +156,7 @@ fun SettingsScreen(
             title = stringResource(R.string.auto_start_last_stream),
             summary = stringResource(R.string.auto_start_last_stream_long),
             checked = settings.autoStartLastStream,
+            enabled = settings.integratedVideoPlayer,
             onCheckedChange = { checked ->
                 onChange { it.copy(autoStartLastStream = checked) }
             }

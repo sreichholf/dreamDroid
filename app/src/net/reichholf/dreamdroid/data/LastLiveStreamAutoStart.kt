@@ -24,11 +24,14 @@ class LastLiveStreamAutoStart @Inject constructor(
     /**
      * Asks the receiver for the saved channel's stream. Call it once a profile check applied
      * its result to the session: it does not wait, so a later check cannot answer for this
-     * one. Null when the setting is off, that check did not find the receiver online, or
-     * nothing was saved for the active profile.
+     * one. Null when the setting is off, the integrated player is off (only it records the
+     * last channel), that check did not find the receiver online, or nothing was saved for
+     * the active profile.
      */
     suspend fun streamToStart(): LastStreamStart? {
-        if (!settings.current().autoStartLastStream ||
+        val current = settings.current()
+        if (!current.autoStartLastStream ||
+            !current.integratedVideoPlayer ||
             sessions.status.value.session != ConnectionStatus.Session.Online
         ) {
             return null

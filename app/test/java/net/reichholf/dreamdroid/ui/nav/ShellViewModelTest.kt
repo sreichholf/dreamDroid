@@ -331,6 +331,21 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun anExternalPlayerDoesNotStartTheLastChannel() = runBlocking<Unit> {
+        rememberLastChannel()
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_INTEGRATED_PLAYER, false).apply()
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+
+        val before = viewModel.jobs()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        viewModel.joinJobsSince(before)
+
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
+    @Test
     fun theSettingOffDoesNotStartTheLastChannel() = runBlocking<Unit> {
         rememberLastChannel()
         preferences.edit().putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, false).apply()
