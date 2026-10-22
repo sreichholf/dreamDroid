@@ -197,6 +197,8 @@
     <string name="show_now_playing_strip">Es-läuft-Leiste</string>
     <string name="show_now_playing_strip_long">Aktuelle Sendung als Leiste auf TV &amp; Movies anzeigen</string>
     <string name="simple_remote">Einfache Fernbedienung</string>
+    <string name="vps_enabled">VPS für Timer</string>
+    <string name="vps_enabled_summary">Nutzt das VPS-Plugin des Receivers für Timer.</string>
     <string name="vps_default">VPS-Standard für neue Timer</string>
     <string name="vps_default_hint">Gilt, wenn der Receiver das VPS-Plugin hat.</string>
     <string name="screenshot_saved">Screenshot gespeichert unter \'%s\'</string>

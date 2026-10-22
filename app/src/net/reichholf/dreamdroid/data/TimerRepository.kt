@@ -39,9 +39,10 @@ data class TimerChoices(
  * Timers of the active profile. A live `/web/timerlist` replaces the profile's Room
  * snapshot; the snapshot stands in when the receiver cannot answer.
  *
- * Each request's client learns whether the receiver has the VPS plugin ([vpsPlugin]); the
- * answer comes from [ReceiverPluginsRepository], asked before the first timer request of a
- * profile, and a client that finds the plugin gone marks it absent there.
+ * Each request's client learns whether to use the VPS plugin ([vpsPlugin]): only for a
+ * profile with VPS switched on. The answer comes from [ReceiverPluginsRepository], asked
+ * before the first timer request of such a profile, and a client that finds the plugin gone
+ * marks it absent there.
  */
 @Singleton
 class TimerRepository @Inject constructor(
@@ -109,8 +110,16 @@ class TimerRepository @Inject constructor(
      */
     suspend fun vpsForNewTimer(): TimerVps? = vpsForNewTimer(hasVpsPlugin())
 
-    /** Whether the active profile's receiver has the VPS plugin, asking it while unknown. */
-    suspend fun hasVpsPlugin(): Boolean = (plugins.known() ?: plugins.refresh().value)?.vps == true
+    /**
+     * Whether timers use the VPS plugin: the active profile has VPS on and its receiver has
+     * the plugin, asking it while unknown. With VPS off the receiver is not asked.
+     */
+    suspend fun hasVpsPlugin(): Boolean {
+        if (!profiles.requireCurrent().vpsEnabled) {
+            return false
+        }
+        return (plugins.known() ?: plugins.refresh().value)?.vps == true
+    }
 
     suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> =
         clients.current().deleteTimer(timer)

@@ -11,6 +11,8 @@
 * FIX: Neue Widgets ignorieren gewähltes Layout und Profil
 * UPD: Virtual-Remote-Widget in der Größe veränderbar
 * FIX: Streaming mit Stream-Login über http
+* FIX: Fehler beim Speichern von Timern wurden nicht angezeigt
+* UPD: VPS für Timer ist eine Option im Profil, standardmäßig aus
 
 ## 2.0.467
 * NEU: Einrichtungsassistent

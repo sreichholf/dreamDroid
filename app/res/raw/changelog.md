@@ -11,6 +11,8 @@
 * FIX: New widgets ignoring the chosen layout and profile
 * UPD: Resizable Virtual Remote widget
 * FIX: Streaming with stream login over http
+* FIX: Errors when saving a timer were not shown
+* UPD: VPS for timers is an option in the profile, off by default
 
 ## 2.0.467
 * NEW: Initial setup assistant
