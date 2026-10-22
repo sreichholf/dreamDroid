@@ -10,6 +10,8 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import dagger.hilt.android.testing.HiltAndroidRule
@@ -88,6 +90,28 @@ class TvHubNavHostTest {
             composeRule.activity.onBackPressedDispatcher.onBackPressed()
         }
         composeRule.onNodeWithTag("tv_profiles_list").assertExists()
+    }
+
+    /** Backup has no Back handler of its own: a pop from anywhere returns to Profiles. */
+    @Test
+    fun backupPoppedByTheNavControllerReturnsToProfiles() {
+        lateinit var navController: NavHostController
+        val activity = composeRule.activity
+        composeRule.setContent {
+            navController = rememberNavController()
+            TvHubNavHost(
+                activity = activity,
+                navController = navController,
+                startDestination = TvProfiles
+            )
+        }
+        composeRule.runOnIdle { navController.navigate(TvBackup) }
+        composeRule.onNodeWithTag("tv_backup_screen").assertExists()
+
+        composeRule.runOnIdle { navController.popBackStack() }
+
+        composeRule.onNodeWithTag("tv_profiles_list").assertExists()
+        composeRule.onNodeWithTag("tv_backup_screen").assertDoesNotExist()
     }
 
     private fun show(route: Any) {

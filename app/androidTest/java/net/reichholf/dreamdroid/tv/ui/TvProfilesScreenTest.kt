@@ -7,7 +7,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -22,6 +24,8 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.unit.dp
+import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -108,6 +112,14 @@ class TvProfilesScreenTest {
                 }
             }
         }
+        composeRule.onNodeWithTag("tv_profiles_backup_restore")
+            .assert(
+                hasText(
+                    InstrumentationRegistry.getInstrumentation().targetContext
+                        .getString(R.string.backup_restore)
+                )
+            )
+            .assertHeightIsAtLeast(48.dp)
         dpadActivate("tv_profiles_backup_restore") { opened }
         assertEquals(true, opened)
     }

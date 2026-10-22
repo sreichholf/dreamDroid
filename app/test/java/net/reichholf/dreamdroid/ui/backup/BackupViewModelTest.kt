@@ -232,16 +232,20 @@ class BackupViewModelTest {
         data.addProfile(receiver("Kitchen", "10.0.0.3"))
         data.addGenericSetting(GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean"))
         documents.files[URI] = GsonBuilder().create().toJson(data)
-        val viewModel = viewModel()
+        val handle = SavedStateHandle()
+        val viewModel = viewModel(handle)
 
         viewModel.importFrom(URI)
         val review = viewModel.uiState.first { it.importReview != null }.importReview!!
         assertEquals(listOf("Kitchen"), review.profiles.map { it.name })
         assertTrue(profiles.profiles().isEmpty())
+        assertFalse(viewModel.uiState.value.imported)
 
         viewModel.confirmImport()
         val state = viewModel.uiState.first { it.profiles.isNotEmpty() }
 
+        assertTrue(state.imported)
+        assertTrue(viewModel(handle).uiState.value.imported, "imported survives process death")
         assertEquals(UiText.Resource(R.string.backup_import_successful), state.userMessage)
         assertEquals(null, state.importReview)
         assertEquals(listOf("Kitchen"), state.profiles.map { it.name })
@@ -383,6 +387,7 @@ class BackupViewModelTest {
             UiText.Resource(R.string.backup_import_error),
             viewModel.uiState.first { it.userMessage != null }.userMessage
         )
+        assertFalse(viewModel.uiState.value.imported)
         assertTrue(profiles.profiles().isEmpty())
     }
 
