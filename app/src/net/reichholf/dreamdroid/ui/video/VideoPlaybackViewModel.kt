@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BouquetListLoad
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -34,7 +36,8 @@ import net.reichholf.dreamdroid.ui.text.UiText
 class VideoPlaybackViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val receiver: ReceiverRepository,
-    private val profiles: ProfileRepository
+    private val profiles: ProfileRepository,
+    private val lastStreams: LastLiveStreamRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(VideoPlaybackUiState())
     val uiState: StateFlow<VideoPlaybackUiState> = _uiState.asStateFlow()
@@ -127,6 +130,11 @@ class VideoPlaybackViewModel @Inject constructor(
     /** The overlay started [VideoPlaybackUiState.stream]. */
     fun onStreamStarted() {
         _uiState.update { it.copy(stream = null) }
+    }
+
+    /** The live [stream] plays; the app starts it on launch when the user asked for that. */
+    fun onLiveStreamPlaying(stream: LastLiveStream) {
+        lastStreams.save(stream)
     }
 
     /** Counts [minutes] down to [SleepTimer.Expired]; 0 turns the timer off. */

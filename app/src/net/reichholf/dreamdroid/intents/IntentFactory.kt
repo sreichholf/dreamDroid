@@ -10,7 +10,7 @@ import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
-import net.reichholf.dreamdroid.data.LastLiveStreamStore
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
@@ -78,18 +78,25 @@ object IntentFactory {
         title: String,
         bouquetRef: String? = null,
         serviceInfo: ServiceNowNext? = null
-    ): Intent {
-        LastLiveStreamStore(
-            PreferenceManager.getDefaultSharedPreferences(context)
-        ).save(stream.reference, title, bouquetRef)
-        return streamIntent(
+    ): Intent = streamIntent(
+        context,
+        stream.url,
+        "Service-Streaming URL set to",
+        title,
+        stream.reference,
+        bouquetRef,
+        serviceInfo
+    )
+
+    /** Plays the saved last channel that [start] got the stream for. */
+    fun getLastStreamIntent(context: Context, start: LastStreamStart.Play): Intent {
+        val service = start.service
+        return getStreamServiceIntent(
             context,
-            stream.url,
-            "Service-Streaming URL set to",
-            title,
-            stream.reference,
-            bouquetRef,
-            serviceInfo
+            start.stream,
+            service.serviceName,
+            service.bouquetRef,
+            ServiceNowNext(serviceReference = service.reference, serviceName = service.serviceName)
         )
     }
 

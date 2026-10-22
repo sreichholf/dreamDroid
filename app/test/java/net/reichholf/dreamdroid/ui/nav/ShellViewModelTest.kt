@@ -14,6 +14,9 @@ import kotlinx.coroutines.withTimeout
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
@@ -59,6 +62,7 @@ class ShellViewModelTest {
     private val sessions = receiver.sessions
     private val preferences = MemorySharedPreferences()
     private val settings = SettingsRepository(preferences)
+    private val lastStreams = LastLiveStreamRepository(preferences, profiles)
     private val viewModels = mutableListOf<ShellViewModel>()
 
     /** `/web/deviceinfo` answers a receiver while true, a non-receiver page otherwise. */
@@ -274,6 +278,71 @@ class ShellViewModelTest {
 
         val failed = assertInstanceOf(ProfileCheckUi.Failed::class.java, state.profileCheck)
         assertEquals(UiText.Resource(R.string.auth_error), failed.message)
+    }
+
+    @Test
+    fun theLaunchsFirstOnlineCheckStartsTheLastChannel() = runBlocking<Unit> {
+        rememberLastChannel()
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+
+        viewModel.checkActiveProfile()
+        val state = viewModel.awaitState { it.lastStreamEffect != null }
+
+        val start = state.lastStreamEffect!!
+        assertEquals(LAST_CHANNEL, start.service)
+        assertEquals(LAST_CHANNEL.reference, start.stream.reference)
+        viewModel.onLastStreamEffectHandled()
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
+    @Test
+    fun aFailedFirstCheckUsesUpTheLastChannelStart() = runBlocking<Unit> {
+        rememberLastChannel()
+        settings.firstStart = false
+        isReceiver = false
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome is ProfileCheckOutcome.Failed }
+        viewModel.onProfileCheckOutcomeHandled()
+
+        isReceiver = true
+        val before = viewModel.jobs()
+        viewModel.recheck()
+        viewModel.awaitState { it.profileCheckOutcome is ProfileCheckOutcome.Leave }
+        viewModel.joinJobsSince(before)
+
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
+    @Test
+    fun withoutALaunchTheCheckDoesNotStartTheLastChannel() = runBlocking<Unit> {
+        rememberLastChannel()
+        val viewModel = viewModel()
+
+        val before = viewModel.jobs()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        viewModel.joinJobsSince(before)
+
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
+    @Test
+    fun theSettingOffDoesNotStartTheLastChannel() = runBlocking<Unit> {
+        rememberLastChannel()
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, false).apply()
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+
+        val before = viewModel.jobs()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        viewModel.joinJobsSince(before)
+
+        assertNull(viewModel.uiState.value.lastStreamEffect)
     }
 
     @Test
@@ -499,8 +568,20 @@ class ShellViewModelTest {
         receiver.services,
         sessions,
         settings,
+        LastLiveStreamAutoStart(
+            settings,
+            lastStreams,
+            ReceiverRepository(clients, profiles),
+            sessions
+        ),
         capabilities
     ).also { viewModels += it }
+
+    /** The user wants the last channel on launch, and it played on the active profile. */
+    private fun rememberLastChannel() {
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, true).apply()
+        lastStreams.save(LAST_CHANNEL)
+    }
 
     private fun deviceInfoRequests(): Int = receiver.requestsTo("/web/deviceinfo").size
 
@@ -514,4 +595,12 @@ class ShellViewModelTest {
     private suspend fun ShellViewModel.awaitState(
         condition: (ShellUiState) -> Boolean
     ): ShellUiState = withTimeout(5_000L) { uiState.first(condition) }
+
+    private companion object {
+        val LAST_CHANNEL = LastLiveStream(
+            reference = "1:0:19:2B66:3F3:1:C00000:0:0:0:",
+            serviceName = "ZDF HD",
+            bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\""
+        )
+    }
 }

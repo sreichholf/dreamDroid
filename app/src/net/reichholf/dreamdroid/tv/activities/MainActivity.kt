@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.activities
 
+import android.content.ActivityNotFoundException
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -12,25 +13,22 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.whenResumed
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.ProfileRepository
-import net.reichholf.dreamdroid.data.ReceiverRepository
-import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
-import net.reichholf.dreamdroid.intents.autoStartLastLiveStream
+import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
 import net.reichholf.dreamdroid.tv.ui.TvShellViewModel
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
-import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
@@ -44,15 +42,6 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var profiles: ProfileRepository
-
-    @Inject
-    lateinit var settings: SettingsRepository
-
-    @Inject
-    lateinit var receiver: ReceiverRepository
-
-    @Inject
-    lateinit var sessions: SessionConnectionHolder
 
     private val localNetworkPermissionRequest = LocalNetworkPermissionRequest(this) {
         lanGranted = true
@@ -68,20 +57,45 @@ class MainActivity : AppCompatActivity() {
     private var showingSetup: Boolean = false
     private var lanGranted by mutableStateOf(false)
     private var hubStarted: Boolean = false
-    private var autoStartLastStreamOnLaunch = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        autoStartLastStreamOnLaunch = savedInstanceState == null
+        if (savedInstanceState == null) {
+            shellViewModel.startLastStreamAfterFirstCheck()
+        }
         startSessionReachabilityProbe()
+        playLastStreamWhenReady()
         if (profiles.isLoaded()) {
             openFirstScreen()
         } else {
             lifecycleScope.launch {
                 profiles.awaitLoaded()
                 openFirstScreen()
+            }
+        }
+    }
+
+    /** While resumed, plays the last channel or shows why it cannot, once the shell has it. */
+    private fun playLastStreamWhenReady() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                shellViewModel.uiState.collect { state ->
+                    val effect = state.lastStreamEffect ?: return@collect
+                    shellViewModel.onLastStreamEffectHandled()
+                    when (effect) {
+                        is LastStreamStart.Play -> try {
+                            startActivity(
+                                IntentFactory.getLastStreamIntent(this@MainActivity, effect)
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            hubViewModel.onMissingStreamPlayer()
+                        }
+
+                        is LastStreamStart.Failed -> hubViewModel.showMessage(effect.message)
+                    }
+                }
             }
         }
     }
@@ -129,20 +143,6 @@ class MainActivity : AppCompatActivity() {
         hubStarted = true
         localNetworkPermissionRequest.ensure(this)
         shellViewModel.start()
-        if (autoStartLastStreamOnLaunch) {
-            autoStartLastStreamOnLaunch = false
-            lifecycleScope.launch {
-                lifecycle.whenResumed {
-                    autoStartLastLiveStream(
-                        activity = this@MainActivity,
-                        settings = settings,
-                        receiver = receiver,
-                        sessions = sessions,
-                        onError = hubViewModel::showMessage
-                    )
-                }
-            }
-        }
         TvComposeHubHost.install(this)
         try {
             // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
