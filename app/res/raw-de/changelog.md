@@ -6,8 +6,10 @@
 * NEU: Externer Videoplayer wählbar
 * NEU: Media3 als optionale Player-Engine
 * FIX: Kein Bild bei manchen Live-Sendern mit Hardware-Dekodierung
+* FIX: Live-Streams starteten nach Senderwechsel nicht
 * FIX: Import von Backups aus 1.15
 * FIX: Sender mit Alternativen fehlten im MultiEPG
+* FIX: Movies zeigten manchmal den ersten statt des gespeicherten Speicherorts
 * FIX: Neue Widgets ignorieren gewähltes Layout und Profil
 * UPD: Virtual-Remote-Widget in der Größe veränderbar
 * FIX: Streaming mit Stream-Login über http
