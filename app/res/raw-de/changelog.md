@@ -1,16 +1,10 @@
 ### WICHTIG: Für https Verbindungen mit selbst signierten Zertifikaten muss ab sofort im jeweiligen Profil 'Alle Zertifikate' aktiviert werden!
 
 ## 2.0.469
-* UPD: Neue TV-Oberfläche mit Tabs
-* NEU: Weiterschauen auf dem TV
-* NEU: Backup & Wiederherstellung auf dem TV
-* NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
-* NEU: Bevorzugte Audiosprache für den integrierten Player
-* UPD: TV-Formulare öffnen die Tastatur erst mit OK, nicht bei jedem Feld
-* UPD: Viele UI-Verbesserungen
-* UPD: Neue Player-Einblendung auf dem TV mit Senderliste
-* UPD: TV-Player: Hoch/Runter öffnet die Senderliste
-* FIX: Player-Info zeigte eine bereits beendete Sendung
+* UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet
+* NEU: TV - Weiterschauen, Backup/Wiederherstellung
+* NEU: TV - Stream automatisch starten, bevorzugte Audiosprache
+* FIX: TV - diverse Bedienungsmängel
 
 ## 2.0.468
 * UPD: Live-TV-Streams verbinden sich nach Abbrüchen neu
