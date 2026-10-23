@@ -41,8 +41,11 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.tv.ui.TvPlayerEpgDetailDialog
+import net.reichholf.dreamdroid.tv.ui.TvPlayerMovieDetailDialog
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
@@ -66,6 +69,9 @@ class VideoOverlayUiState {
     var nextTitle by mutableStateOf("")
     var nextDuration by mutableStateOf("")
     var hasNext by mutableStateOf(false)
+
+    /** Live TV: the running event behind the now/next strings, for the TV infobar's times. */
+    var nowEvent by mutableStateOf<Event?>(null)
     var showPvrControls by mutableStateOf(false)
     var progressMax by mutableIntStateOf(0)
     var progress by mutableIntStateOf(0)
@@ -124,9 +130,7 @@ fun VideoOverlayScreen(
     onSleepTimer: () -> Unit,
     onSeekChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    firstControlFocusRequester: FocusRequester? = null,
-    /** TV overlay info sheets are fullscreen-ish; phone overlay keeps height caps. */
-    uncappedDetailSheets: Boolean = false
+    firstControlFocusRequester: FocusRequester? = null
 ) {
     val playLabel = stringResource(R.string.play)
     val rewindLabel = stringResource(R.string.rewind)
@@ -327,42 +331,71 @@ fun VideoOverlayScreen(
             )
         }
     }
+}
 
-    state.epgDetailContent?.let { content ->
-        EpgDetailModalSheet(
-            content = content,
-            onDismiss = { state.epgDetailContent = null },
-            onSetTimer = { state.epgDetailContent = null },
-            onEditTimer = { state.epgDetailContent = null },
-            onImdb = { state.epgDetailContent = null },
-            onSimilar = { state.epgDetailContent = null },
-            showActions = false,
-            bodyHeightCap = if (uncappedDetailSheets) null else 360.dp
-        )
+/**
+ * The overlay's programme or recording details and its track / sleep timer choice. [tv]
+ * shows the details as a dialog: a sheet's drag handle means nothing on a remote.
+ */
+@Composable
+fun VideoOverlayModals(state: VideoOverlayUiState, tv: Boolean) {
+    val epg = state.epgDetailContent
+    val movie = state.movieDetailContent
+    if (tv) {
+        if (epg != null) {
+            TvPlayerEpgDetailDialog(epg, onDismiss = { state.epgDetailContent = null })
+        }
+        if (movie != null) {
+            TvPlayerMovieDetailDialog(movie, onDismiss = { state.movieDetailContent = null })
+        }
+    } else {
+        if (epg != null) {
+            EpgDetailModalSheet(
+                content = epg,
+                onDismiss = { state.epgDetailContent = null },
+                onSetTimer = { state.epgDetailContent = null },
+                onEditTimer = { state.epgDetailContent = null },
+                onImdb = { state.epgDetailContent = null },
+                onSimilar = { state.epgDetailContent = null },
+                showActions = false
+            )
+        }
+        if (movie != null) {
+            MovieDetailModalSheet(
+                content = movie,
+                onDismiss = { state.movieDetailContent = null }
+            )
+        }
     }
-    state.movieDetailContent?.let { content ->
-        MovieDetailModalSheet(
-            content = content,
-            onDismiss = { state.movieDetailContent = null },
-            heightCap = if (uncappedDetailSheets) null else 480.dp
+    val choiceTitle = state.choiceTitle
+    if (choiceTitle != null) {
+        SimpleChoiceAlertDialog(
+            title = choiceTitle,
+            items = state.choiceItems,
+            onDismiss = { state.dismissChoice() },
+            onChoice = { index ->
+                val tag = state.choiceDialogTag
+                val ids = state.choiceActionIds
+                if (tag != null && index in ids.indices) {
+                    state.onChoiceAction?.invoke(ids[index], tag)
+                }
+                state.dismissChoice()
+            }
         )
     }
 }
 
 /**
- * IconButton that fires [onClick] on press-down, then repeats while held
- * (hold-to-repeat: 500ms then every 300ms).
- * Suppresses the IconButton release click so a hold does not seek one extra step.
+ * Hold-to-repeat for a button: fires [onClick] on press-down, then every [repeatDelayMs] after
+ * [initialDelayMs] while held. Pass the returned source to the button and use the returned
+ * click, which drops the release click so a hold does not step once more.
  */
 @Composable
-private fun RepeatIconButton(
+internal fun rememberRepeatingClick(
     onClick: () -> Unit,
-    painter: Painter,
-    contentDescription: String,
-    modifier: Modifier = Modifier,
     initialDelayMs: Long = 500L,
     repeatDelayMs: Long = 300L
-) {
+): Pair<MutableInteractionSource, () -> Unit> {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     var suppressReleaseClick by remember { mutableStateOf(false) }
@@ -378,14 +411,26 @@ private fun RepeatIconButton(
             delay(repeatDelayMs)
         }
     }
-    IconButton(
-        onClick = {
-            if (suppressReleaseClick) {
-                suppressReleaseClick = false
-                return@IconButton
-            }
+    return interactionSource to {
+        if (suppressReleaseClick) {
+            suppressReleaseClick = false
+        } else {
             onClick()
-        },
+        }
+    }
+}
+
+/** IconButton with [rememberRepeatingClick]. */
+@Composable
+private fun RepeatIconButton(
+    onClick: () -> Unit,
+    painter: Painter,
+    contentDescription: String,
+    modifier: Modifier = Modifier
+) {
+    val (interactionSource, click) = rememberRepeatingClick(onClick)
+    IconButton(
+        onClick = click,
         modifier = modifier,
         interactionSource = interactionSource
     ) {
@@ -469,8 +514,7 @@ fun ComposeView.bindVideoOverlayScreen(
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
     onSleepTimer: () -> Unit,
-    onSeekChange: (Int) -> Unit,
-    uncappedDetailSheets: Boolean = false
+    onSeekChange: (Int) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     // Focusable shell so nextFocusDown from the zap row lands here; then forward into Compose.
@@ -491,27 +535,11 @@ fun ComposeView.bindVideoOverlayScreen(
                 onSleepTimer = onSleepTimer,
                 onSeekChange = onSeekChange,
                 firstControlFocusRequester = firstControlFocus,
-                uncappedDetailSheets = uncappedDetailSheets,
                 modifier = Modifier
                     .fillMaxWidth()
                     .focusGroup()
             )
-            val choiceTitle = state.choiceTitle
-            if (choiceTitle != null) {
-                SimpleChoiceAlertDialog(
-                    title = choiceTitle,
-                    items = state.choiceItems,
-                    onDismiss = { state.dismissChoice() },
-                    onChoice = { index ->
-                        val tag = state.choiceDialogTag
-                        val ids = state.choiceActionIds
-                        if (tag != null && index in ids.indices) {
-                            state.onChoiceAction?.invoke(ids[index], tag)
-                        }
-                        state.dismissChoice()
-                    }
-                )
-            }
+            VideoOverlayModals(state, tv = false)
         }
     }
     setOnFocusChangeListener { _, hasFocus ->

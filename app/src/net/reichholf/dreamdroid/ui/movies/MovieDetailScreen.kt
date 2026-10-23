@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.movies
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -58,7 +59,8 @@ fun MovieDetailScreen(
     content: MovieDetailContent,
     modifier: Modifier = Modifier,
     /** Phone bottom sheet caps height; TV fullscreen passes null. */
-    heightCap: Dp? = 480.dp
+    heightCap: Dp? = 480.dp,
+    scrollState: ScrollState = rememberScrollState()
 ) {
     Column(
         modifier = modifier
@@ -71,7 +73,7 @@ fun MovieDetailScreen(
                     MOVIE_DETAIL_CAPPED_TAG
                 }
             )
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(scrollState)
             .padding(horizontal = 16.dp)
             .padding(top = 16.dp, bottom = 24.dp)
     ) {

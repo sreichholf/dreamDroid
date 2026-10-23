@@ -7,6 +7,9 @@
 * NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
 * NEU: Bevorzugte Audiosprache für den integrierten Player
 * UPD: Viele UI-Verbesserungen
+* UPD: Neue Player-Einblendung auf dem TV mit Senderliste
+* UPD: TV-Player: Hoch/Runter öffnet die Senderliste
+* FIX: Player-Info zeigte eine bereits beendete Sendung
 
 ## 2.0.468
 * UPD: Live-TV-Streams verbinden sich nach Abbrüchen neu
