@@ -44,6 +44,8 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
+import net.reichholf.dreamdroid.tv.ui.TvPlayerEpgDetailDialog
+import net.reichholf.dreamdroid.tv.ui.TvPlayerMovieDetailDialog
 import net.reichholf.dreamdroid.ui.dialogs.SimpleChoiceAlertDialog
 import net.reichholf.dreamdroid.ui.epg.EpgDetailContent
 import net.reichholf.dreamdroid.ui.epg.EpgDetailModalSheet
@@ -331,27 +333,39 @@ fun VideoOverlayScreen(
     }
 }
 
-/** The overlay's detail sheets (EPG or movie) and its track / sleep timer choice. */
+/**
+ * The overlay's programme or recording details and its track / sleep timer choice. [tv]
+ * shows the details as a dialog: a sheet's drag handle means nothing on a remote.
+ */
 @Composable
-fun VideoOverlayModals(state: VideoOverlayUiState, uncappedDetailSheets: Boolean) {
-    state.epgDetailContent?.let { content ->
-        EpgDetailModalSheet(
-            content = content,
-            onDismiss = { state.epgDetailContent = null },
-            onSetTimer = { state.epgDetailContent = null },
-            onEditTimer = { state.epgDetailContent = null },
-            onImdb = { state.epgDetailContent = null },
-            onSimilar = { state.epgDetailContent = null },
-            showActions = false,
-            bodyHeightCap = if (uncappedDetailSheets) null else 360.dp
-        )
-    }
-    state.movieDetailContent?.let { content ->
-        MovieDetailModalSheet(
-            content = content,
-            onDismiss = { state.movieDetailContent = null },
-            heightCap = if (uncappedDetailSheets) null else 480.dp
-        )
+fun VideoOverlayModals(state: VideoOverlayUiState, tv: Boolean) {
+    val epg = state.epgDetailContent
+    val movie = state.movieDetailContent
+    if (tv) {
+        if (epg != null) {
+            TvPlayerEpgDetailDialog(epg, onDismiss = { state.epgDetailContent = null })
+        }
+        if (movie != null) {
+            TvPlayerMovieDetailDialog(movie, onDismiss = { state.movieDetailContent = null })
+        }
+    } else {
+        if (epg != null) {
+            EpgDetailModalSheet(
+                content = epg,
+                onDismiss = { state.epgDetailContent = null },
+                onSetTimer = { state.epgDetailContent = null },
+                onEditTimer = { state.epgDetailContent = null },
+                onImdb = { state.epgDetailContent = null },
+                onSimilar = { state.epgDetailContent = null },
+                showActions = false
+            )
+        }
+        if (movie != null) {
+            MovieDetailModalSheet(
+                content = movie,
+                onDismiss = { state.movieDetailContent = null }
+            )
+        }
     }
     val choiceTitle = state.choiceTitle
     if (choiceTitle != null) {
@@ -500,8 +514,7 @@ fun ComposeView.bindVideoOverlayScreen(
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
     onSleepTimer: () -> Unit,
-    onSeekChange: (Int) -> Unit,
-    uncappedDetailSheets: Boolean = false
+    onSeekChange: (Int) -> Unit
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     // Focusable shell so nextFocusDown from the zap row lands here; then forward into Compose.
@@ -526,7 +539,7 @@ fun ComposeView.bindVideoOverlayScreen(
                     .fillMaxWidth()
                     .focusGroup()
             )
-            VideoOverlayModals(state, uncappedDetailSheets)
+            VideoOverlayModals(state, tv = false)
         }
     }
     setOnFocusChangeListener { _, hasFocus ->

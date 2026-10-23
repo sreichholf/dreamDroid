@@ -17,10 +17,11 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.Metadata
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_DIALOG_TAG
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
-import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_UNCAPPED_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
@@ -218,7 +219,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayModals(state, uncappedDetailSheets = false)
+                VideoOverlayModals(state, tv = false)
             }
         }
         composeRule.runOnIdle {
@@ -241,7 +242,7 @@ class VideoOverlayScreenTest {
     }
 
     @Test
-    fun tvOverlayEpgSheetHasNoHeightCap() {
+    fun tvOverlayEpgInfoIsADialogClosedByClose() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         val state = VideoOverlayUiState().apply {
             title = "Live TV"
@@ -249,7 +250,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayModals(state, uncappedDetailSheets = true)
+                VideoOverlayModals(state, tv = true)
             }
         }
         composeRule.runOnIdle {
@@ -266,8 +267,11 @@ class VideoOverlayScreenTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
-        composeRule.onNodeWithTag(EPG_DETAIL_UNCAPPED_TAG).assertExists()
+        composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertExists()
         composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
+        composeRule.onNodeWithText(context.getString(R.string.close)).performClick()
+        composeRule.waitUntil { state.epgDetailContent == null }
+        composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertDoesNotExist()
     }
 
     @Test
@@ -278,7 +282,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayModals(state, uncappedDetailSheets = false)
+                VideoOverlayModals(state, tv = false)
             }
         }
         composeRule.runOnIdle {
@@ -298,14 +302,14 @@ class VideoOverlayScreenTest {
     }
 
     @Test
-    fun tvOverlayMovieSheetHasNoHeightCap() {
+    fun tvOverlayMovieInfoIsADialog() {
         val state = VideoOverlayUiState().apply {
             title = "Recording"
             showInfoButton = true
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayModals(state, uncappedDetailSheets = true)
+                VideoOverlayModals(state, tv = true)
             }
         }
         composeRule.runOnIdle {
@@ -320,6 +324,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tatort").assertIsDisplayed()
+        composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertExists()
         composeRule.onNodeWithTag(MOVIE_DETAIL_UNCAPPED_TAG).assertExists()
         composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }

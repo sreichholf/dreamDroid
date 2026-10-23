@@ -508,7 +508,7 @@ fun ComposeView.bindTvPlayerInfobar(
                         false
                     }
             )
-            VideoOverlayModals(state, uncappedDetailSheets = true)
+            VideoOverlayModals(state, tv = true)
         }
     }
     setOnFocusChangeListener { _, hasFocus ->
