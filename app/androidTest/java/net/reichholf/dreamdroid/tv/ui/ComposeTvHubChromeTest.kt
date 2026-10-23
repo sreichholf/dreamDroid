@@ -65,7 +65,6 @@ import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
@@ -493,7 +492,7 @@ class ComposeTvHubChromeTest {
     /** With a saved channel, Back lands where Live TV starts: the Continue watching card. */
     @Test
     fun backFromAnotherSectionFocusesContinueWatchingWhenItShows() {
-        showHub(lastStream = LAST_CHANNEL)
+        showHub(continueWatching = LAST_CHANNEL)
         useKeyboard()
 
         activate("hub_tab_timers")
@@ -548,7 +547,7 @@ class ComposeTvHubChromeTest {
 
     @Test
     fun continueWatchingShowsTheLastChannelAndPlaysItLikeItsCard() {
-        showHub(lastStream = LAST_CHANNEL)
+        showHub(continueWatching = LAST_CHANNEL)
         useKeyboard()
 
         composeRule.onNodeWithTag("hub_continue_watching")
@@ -558,13 +557,12 @@ class ComposeTvHubChromeTest {
             .assertHeightIsEqualTo(HubServiceCardHeight)
             .assert(hasText(context.getString(R.string.tv_hub_continue_watching)))
             .assert(hasText("ZDF HD"))
+            .assert(hasText("heute journal"))
+        composeRule.onNodeWithTag("hub_continue_watching_progress", useUnmergedTree = true)
+            .assertExists()
         activate("hub_continue_watching")
 
-        assertEquals(
-            ServiceNowNext(serviceReference = LAST_CHANNEL.reference, serviceName = "ZDF HD") to
-                SPORTS,
-            streamed
-        )
+        assertEquals(LAST_CHANNEL.service to SPORTS, streamed)
     }
 
     @Test
@@ -578,7 +576,7 @@ class ComposeTvHubChromeTest {
     /** Continue watching is Live TV's first card: initial focus, then Down into the grid. */
     @Test
     fun continueWatchingTakesTheInitialFocusAndDownEntersTheGrid() {
-        showHub(lastStream = LAST_CHANNEL)
+        showHub(continueWatching = LAST_CHANNEL)
         useKeyboard()
 
         val card = composeRule.onNodeWithTag("hub_continue_watching")
@@ -591,7 +589,7 @@ class ComposeTvHubChromeTest {
 
     @Test
     fun upFromTheFirstServiceReturnsToContinueWatching() {
-        showHub(lastStream = LAST_CHANNEL)
+        showHub(continueWatching = LAST_CHANNEL)
         useKeyboard()
         val service = composeRule.onNodeWithTag("hub_service_card", useUnmergedTree = true)
         service.requestFocus()
@@ -617,7 +615,7 @@ class ComposeTvHubChromeTest {
                 }
             )
         )
-        showHub(rows = rows, lastStream = LAST_CHANNEL)
+        showHub(rows = rows, continueWatching = LAST_CHANNEL)
         composeRule.onNode(
             hasTestTag("hub_service_grid") and hasAnyDescendant(hasTestTag("hub_continue_watching"))
         ).assertExists()
@@ -646,9 +644,11 @@ class ComposeTvHubChromeTest {
     @Test
     fun continueWatchingKeepsOneLineForALongName() {
         val long = LAST_CHANNEL.copy(
-            serviceName = "A channel name far too long to fit on the continue watching card"
+            service = LAST_CHANNEL.service.copy(
+                serviceName = "A channel name far too long to fit on the continue watching card"
+            )
         )
-        showHub(lastStream = long)
+        showHub(continueWatching = long)
 
         // A service card's size, not stretched across the grid's line.
         composeRule.onNodeWithTag("hub_continue_watching")
@@ -663,7 +663,7 @@ class ComposeTvHubChromeTest {
 
     @Test
     fun dpadRightFromTheSelectedBouquetLandsOnContinueWatching() {
-        showHub(lastStream = LAST_CHANNEL)
+        showHub(continueWatching = LAST_CHANNEL)
         useKeyboard()
         val header = composeRule.onNodeWithTag("hub_header_$FAVOURITES", useUnmergedTree = true)
         header.requestFocus()
@@ -822,7 +822,7 @@ class ComposeTvHubChromeTest {
         errorText: String? = null,
         profileName: String = "",
         sessionChipLabel: String? = "Online",
-        lastStream: LastLiveStream? = null,
+        continueWatching: ContinueWatching? = null,
         windowSize: DpSize = TvWindow
     ) {
         navigation = HubNavigation().reconcile(rows, locations)
@@ -840,7 +840,7 @@ class ComposeTvHubChromeTest {
                     errorText,
                     profileName,
                     sessionChipLabel,
-                    lastStream
+                    continueWatching
                 )
             }
         }
@@ -856,7 +856,7 @@ class ComposeTvHubChromeTest {
         errorText: String?,
         profileName: String,
         sessionChipLabel: String?,
-        lastStream: LastLiveStream?
+        continueWatching: ContinueWatching?
     ) {
         ComposeTvHubChrome(
             section = navigation.section,
@@ -878,7 +878,7 @@ class ComposeTvHubChromeTest {
             movieLoading = movieLoading,
             errorText = errorText,
             onServiceClick = { service, bouquetRef -> streamed = service to bouquetRef },
-            lastStream = lastStream,
+            continueWatching = continueWatching,
             profileName = profileName,
             sessionChipLabel = sessionChipLabel,
             onOpenProfiles = { profilesOpened++ },
@@ -1008,7 +1008,14 @@ private const val HDD = "/media/hdd/movie/"
 private const val USB = "/media/usb/movie/"
 
 /** Saved from Sports while Favourites is on screen: the card shows for any bouquet. */
-private val LAST_CHANNEL = LastLiveStream("1:0:19:2B66:3F3:1:C00000:0:0:0:", "ZDF HD", SPORTS)
+private val LAST_CHANNEL = ContinueWatching(
+    ServiceNowNext(
+        serviceReference = "1:0:19:2B66:3F3:1:C00000:0:0:0:",
+        serviceName = "ZDF HD",
+        now = Event(title = "heute journal", start = "100", duration = "60", currentTime = "100")
+    ),
+    SPORTS
+)
 
 private fun demoRows(): List<HubBouquetRow> = listOf(
     HubBouquetRow(

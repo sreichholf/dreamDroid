@@ -14,6 +14,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.Statics
 import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.intents.IntentFactory
@@ -87,7 +88,11 @@ fun ZapDestination(
                     IntentFactory.getStreamServiceIntent(
                         context,
                         effect.stream,
-                        effect.service.name
+                        effect.service.name,
+                        serviceInfo = ServiceNowNext(
+                            serviceReference = effect.service.reference,
+                            serviceName = effect.service.name
+                        )
                     )
                 )
             } catch (_: ActivityNotFoundException) {

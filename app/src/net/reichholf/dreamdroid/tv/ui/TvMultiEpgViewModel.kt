@@ -23,6 +23,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgGridState
@@ -36,8 +37,13 @@ import net.reichholf.dreamdroid.ui.multiepg.writeMultiEpgVisibleMinutes
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** Play [stream], the service of the event [title], as a channel of [bouquetRef]. */
-data class TvMultiEpgStream(val title: String, val bouquetRef: String, val stream: LiveStream.Ready)
+/** Play [stream] of [service], titled by the event [title], as a channel of [bouquetRef]. */
+data class TvMultiEpgStream(
+    val title: String,
+    val service: ServiceNowNext,
+    val bouquetRef: String,
+    val stream: LiveStream.Ready
+)
 
 /**
  * The TV MultiEPG: the bouquet it shows and the ones it can switch to, the loaded grid,
@@ -281,7 +287,17 @@ class TvMultiEpgViewModel @Inject constructor(
         streamJob = viewModelScope.launch {
             when (val stream = receiver.liveStream(event.serviceReference)) {
                 is LiveStream.Ready -> _uiState.update {
-                    it.copy(stream = TvMultiEpgStream(event.title, bouquetRef, stream))
+                    it.copy(
+                        stream = TvMultiEpgStream(
+                            title = event.title,
+                            service = ServiceNowNext(
+                                serviceReference = event.serviceReference,
+                                serviceName = event.serviceName
+                            ),
+                            bouquetRef = bouquetRef,
+                            stream = stream
+                        )
+                    )
                 }
 
                 is LiveStream.Failed -> _uiState.update { it.copy(userMessage = stream.message) }
