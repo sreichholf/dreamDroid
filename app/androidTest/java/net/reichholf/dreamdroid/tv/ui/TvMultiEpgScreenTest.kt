@@ -154,12 +154,11 @@ class TvMultiEpgScreenTest {
         var nowClicks = 0
         var zoomMinutes: Int? = null
         composeRule.setContent {
-            DreamDroidTvTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(480.dp)
-                ) {
+            // The toolbar is laid out for a TV window; a phone-wide one pushes Now off screen.
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.ForcedSize(DpSize(960.dp, 540.dp))
+            ) {
+                DreamDroidTvTheme {
                     fixtureScreen(
                         onJumpToNow = { nowClicks++ },
                         onVisibleMinutesChange = { zoomMinutes = it }
@@ -565,19 +564,30 @@ class TvMultiEpgScreenTest {
             selectedRef = SELECT_NONE,
             nowSec = start + 600L
         )
-        val image = gridImage()
-        val x = ChannelWidth + 30.dp
-        val column = (8..40).map { y -> image.colorAt(x, y.dp) }
-        assertTrue("now-line not drawn", column.any { it.near(scheme.primary) })
+        val ruler = composeRule.onNodeWithTag("tv_multi_epg_ruler").captureToImage()
+        val marker = ruler.colorAt(30.dp, RulerHeight - 2.dp)
         assertTrue(
-            "now-line covers the title",
+            "no ruler marker: ${marker.hex()} vs ${scheme.primary.hex()}",
+            marker.near(scheme.primary)
+        )
+
+        val image = gridImage()
+        // The line's column: the first x near 30 dp that holds the line colour between rows.
+        val x = (-4..4).map { ChannelWidth + 30.dp + it.dp }
+            .firstOrNull { image.colorAt(it, RowHeight - 1.dp).near(scheme.primary) }
+        assertTrue(
+            "now-line not drawn: " +
+                (-4..4).joinToString {
+                    image.colorAt(ChannelWidth + 30.dp + it.dp, RowHeight - 1.dp).hex()
+                } +
+                " vs ${scheme.primary.hex()}",
+            x != null
+        )
+        val column = (8..40).map { y -> image.colorAt(x!!, y.dp) }
+        assertTrue(
+            "now-line covers the title: ${column.joinToString { it.hex() }}",
             column.any { it.near(scheme.onSurfaceVariant, tolerance = 0.12f) }
         )
-        // Between rows, where no text is, the line shows.
-        assertTrue(image.colorAt(x, RowHeight - 1.dp).near(scheme.primary))
-
-        val ruler = composeRule.onNodeWithTag("tv_multi_epg_ruler").captureToImage()
-        assertTrue(ruler.colorAt(30.dp, RulerHeight - 2.dp).near(scheme.primary))
     }
 
     @Test
@@ -650,7 +660,8 @@ class TvMultiEpgScreenTest {
             node.assertHasClickAction()
             composeRule.onNode(hasTestTag(tag) and hasContentDescription(label))
                 .assertExists()
-            node.performClick()
+            node.requestFocus()
+            node.performKeyInput { pressKey(Key.DirectionCenter) }
         }
         composeRule.waitForIdle()
         assertEquals(listOf(1, 1, 1), listOf(prev, next, reloads))
@@ -751,6 +762,8 @@ class TvMultiEpgScreenTest {
         }
         return count
     }
+
+    private fun Color.hex(): String = "#%08x".format(toArgb())
 
     private fun Color.near(other: Color, tolerance: Float = 0.06f): Boolean =
         abs(red - other.red) <= tolerance &&
