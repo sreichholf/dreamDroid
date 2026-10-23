@@ -28,7 +28,8 @@ concurrency:
   cancel-in-progress: true
 
 # One emulator for androidTest and upgrade115; the AVD snapshot cache key is
-# derived from these, so both jobs share one cached, booted AVD.
+# derived from these and the runner's CPU vendor, so both jobs share one
+# cached, booted AVD per vendor.
 # aosp_atd: Automated Test Device image (no Play/Google APIs, fewer system
 # apps, headless). No test needs Google APIs.
 env:
@@ -170,6 +171,13 @@ jobs:
 
       # Boot from a cached AVD snapshot instead of cold booting
       # (reactivecircus/android-emulator-runner README, "Caching AVD").
+      # A snapshot resumes the guest with the CPUID of the runner that took it.
+      # One taken on AMD has AMD-only features (cmp_legacy, vmmcall); restored on
+      # an Intel runner, the media, DRM and camera HALs die with SIGILL and the
+      # codec list waits for them forever. Key the cache by CPU vendor.
+      - name: Host CPU vendor
+        run: echo "AVD_CPU_VENDOR=$(awk '/^vendor_id/ { print $3; exit }' /proc/cpuinfo)" >> "$GITHUB_ENV"
+
       - name: AVD cache
         uses: actions/cache@v5
         id: avd-cache
@@ -177,7 +185,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}-${{ env.AVD_CPU_VENDOR }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -336,6 +344,10 @@ jobs:
 
       # Boot from a cached AVD snapshot instead of cold booting
       # (reactivecircus/android-emulator-runner README, "Caching AVD").
+      # Snapshots are kept per CPU vendor; see the androidTest job.
+      - name: Host CPU vendor
+        run: echo "AVD_CPU_VENDOR=$(awk '/^vendor_id/ { print $3; exit }' /proc/cpuinfo)" >> "$GITHUB_ENV"
+
       - name: AVD cache
         uses: actions/cache@v5
         id: avd-cache
@@ -343,7 +355,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ env.AVD_TARGET }}-${{ env.AVD_PROFILE }}-${{ env.AVD_SNAPSHOT_VERSION }}-${{ env.AVD_CPU_VENDOR }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -423,6 +435,10 @@ jobs:
       - name: Assemble googleDebug + androidTest
         run: ./gradlew --no-configuration-cache :app:assembleGoogleDebug :app:assembleGoogleDebugAndroidTest
 
+      # Snapshots are kept per CPU vendor; see the androidTest job.
+      - name: Host CPU vendor
+        run: echo "AVD_CPU_VENDOR=$(awk '/^vendor_id/ { print $3; exit }' /proc/cpuinfo)" >> "$GITHUB_ENV"
+
       - name: AVD cache
         uses: actions/cache@v5
         id: avd-cache
@@ -430,7 +446,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ env.AVD_API_LEVEL }}-${{ matrix.target }}-${{ matrix.arch }}-${{ matrix.profile }}-${{ env.AVD_SNAPSHOT_VERSION }}
+          key: avd-${{ env.AVD_API_LEVEL }}-${{ matrix.target }}-${{ matrix.arch }}-${{ matrix.profile }}-${{ env.AVD_SNAPSHOT_VERSION }}-${{ env.AVD_CPU_VENDOR }}
 
       - name: Create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
