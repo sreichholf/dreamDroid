@@ -7,6 +7,7 @@
 * NEW: Option to auto-start the last watched live channel
 * NEW: Preferred audio language for the integrated player
 * UPD: Many UI improvements
+* FIX: Recordings not playing with profiles from the setup assistant
 
 ## 2.0.468
 * UPD: Live TV streams reconnect after dropouts

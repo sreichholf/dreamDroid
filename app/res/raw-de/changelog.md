@@ -7,6 +7,7 @@
 * NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
 * NEU: Bevorzugte Audiosprache für den integrierten Player
 * UPD: Viele UI-Verbesserungen
+* FIX: Aufnahmen spielten mit Profilen aus dem Einrichtungsassistenten nicht ab
 
 ## 2.0.468
 * UPD: Live-TV-Streams verbinden sich nach Abbrüchen neu
