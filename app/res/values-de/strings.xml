@@ -156,6 +156,7 @@
     <string name="source_code_link">Der Quellcode ist verfügbar unter: http://github.com/sreichholf/dreamDroid</string>
     <string name="connection">Verbindung</string>
     <string name="not_available">Nicht verfügbar</string>
+    <string name="multiepg_no_information">Keine Informationen</string>
     <string name="checking">prüfe…</string>
     <string name="session_online">Online</string>
     <string name="session_offline">Offline</string>

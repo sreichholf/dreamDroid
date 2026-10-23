@@ -6,6 +6,7 @@
 * NEW: Backup & Restore on TV
 * NEW: Option to auto-start the last watched live channel
 * NEW: Preferred audio language for the integrated player
+* UPD: Many UI improvements
 
 ## 2.0.468
 * UPD: Live TV streams reconnect after dropouts

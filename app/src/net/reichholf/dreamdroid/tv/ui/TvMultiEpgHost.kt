@@ -116,7 +116,8 @@ fun TvMultiEpgHost(
 
     val zoomSeconds = uiState.visibleMinutes * 60L
 
-    DreamDroidTvTheme {
+    // No background of its own: the grid sits on the hub's gradient, the overlays fill theirs.
+    DreamDroidTvTheme(fillBackground = false) {
         Box(modifier = modifier.fillMaxSize()) {
             TvMultiEpgScreen(
                 bouquetName = uiState.title.asString(),
@@ -144,6 +145,7 @@ fun TvMultiEpgHost(
                 visibleMinutes = uiState.visibleMinutes,
                 onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
                 textSize = uiState.textSize,
+                piconsEnabled = uiState.piconsEnabled,
                 timerClocks = grid.timerClocks,
                 keysEnabled = uiState.gridKeysEnabled
             )
@@ -177,7 +179,10 @@ fun TvMultiEpgHost(
                     timer = Timer.createByEvent(editingEvent),
                     isCreate = true,
                     onDismiss = viewModel::dismissTimerEditor,
-                    onSaved = viewModel::onTimerSaved
+                    onSaved = viewModel::onTimerSaved,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(PhoneMaterialTheme.colorScheme.background)
                 )
             }
         }
