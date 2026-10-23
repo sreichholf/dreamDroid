@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.testutil
 
 import androidx.test.platform.app.InstrumentationRegistry
+import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
@@ -23,6 +25,8 @@ fun testShellViewModel(profiles: ProfileRepository): ShellViewModel {
     val capabilities = WebIfCapabilitiesRepository()
     val clients = ReceiverApiFactory(context, profiles, EnigmaOkHttp(), capabilities)
     val sessions = SessionConnectionHolder()
+    val preferences = context.getSharedPreferences("shell-test", 0)
+    val settings = SettingsRepository(preferences)
     return ShellViewModel(
         ReceiverRepository(clients, profiles),
         ReceiverPluginsRepository(clients, profiles),
@@ -37,7 +41,13 @@ fun testShellViewModel(profiles: ProfileRepository): ShellViewModel {
             ReceiverRepository(clients, profiles)
         ),
         sessions,
-        SettingsRepository(context.getSharedPreferences("shell-test", 0)),
+        settings,
+        LastLiveStreamAutoStart(
+            settings,
+            LastLiveStreamRepository(preferences, profiles),
+            ReceiverRepository(clients, profiles),
+            sessions
+        ),
         capabilities
     )
 }

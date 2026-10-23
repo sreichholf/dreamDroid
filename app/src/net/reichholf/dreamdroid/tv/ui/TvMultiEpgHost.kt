@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -51,14 +52,22 @@ import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
+/**
+ * The hub's Guide: the MultiEPG of [bouquetRef]. A bouquet picked with the guide's own
+ * bouquet chip goes to [onBouquetChange], so the hub's selection follows it.
+ */
 @Composable
 fun TvMultiEpgHost(
     activity: ComponentActivity,
-    bouquetRef: String = "",
-    bouquetName: String = "",
+    bouquetRef: String,
+    bouquetName: String,
+    modifier: Modifier = Modifier,
+    onBouquetChange: (String) -> Unit = {},
     viewModel: TvMultiEpgViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val currentBouquetRef by rememberUpdatedState(bouquetRef)
+    val currentOnBouquetChange by rememberUpdatedState(onBouquetChange)
     val grid = uiState.grid
     var nowSec by remember { mutableLongStateOf(MultiEpgNowClock.sec()) }
 
@@ -80,11 +89,17 @@ fun TvMultiEpgHost(
         }
     }
 
-    LaunchedEffect(viewModel) {
-        viewModel.start(
-            extraRef = bouquetRef.takeIf { it.isNotBlank() },
-            extraName = bouquetName.takeIf { it.isNotBlank() }
+    LaunchedEffect(viewModel, bouquetRef) {
+        viewModel.open(
+            ref = bouquetRef.takeIf { it.isNotBlank() },
+            name = bouquetName.takeIf { it.isNotBlank() }
         )
+    }
+    LaunchedEffect(uiState.bouquetRef) {
+        val picked = uiState.bouquetRef
+        if (picked.isNotEmpty() && picked != currentBouquetRef) {
+            currentOnBouquetChange(picked)
+        }
     }
 
     // Restarting on a bouquet change repaints "now" as the new grid loads.
@@ -102,7 +117,7 @@ fun TvMultiEpgHost(
     val zoomSeconds = uiState.visibleMinutes * 60L
 
     DreamDroidTvTheme {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = modifier.fillMaxSize()) {
             TvMultiEpgScreen(
                 bouquetName = uiState.title.asString(),
                 channels = grid.channels,

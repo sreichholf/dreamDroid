@@ -55,6 +55,10 @@ fun SettingsScreen(
     onEditSyncPiconsPath: () -> Unit = {},
     onConfirmSyncPiconsPath: () -> Unit = {},
     onDismissSyncPiconsPath: () -> Unit = {},
+    preferredAudioLanguageDraft: TextFieldState? = null,
+    onEditPreferredAudioLanguage: () -> Unit = {},
+    onConfirmPreferredAudioLanguage: () -> Unit = {},
+    onDismissPreferredAudioLanguage: () -> Unit = {},
     onAbout: () -> Unit = {},
     onChangelog: () -> Unit = {},
     onBackup: () -> Unit = {},
@@ -122,6 +126,14 @@ fun SettingsScreen(
             }
         )
         StreamBufferPreferenceRow(settings) { listDialog = it }
+        ActionPreferenceRow(
+            title = stringResource(R.string.preferred_audio_language),
+            summary = settings.preferredAudioLanguage.ifBlank {
+                stringResource(R.string.audio_language_default)
+            },
+            enabled = settings.integratedVideoPlayer,
+            onClick = onEditPreferredAudioLanguage
+        )
 
         PreferenceCategoryHeader(stringResource(R.string.usability))
         val startEntries = stringArrayResource(R.array.start_screen_entries)
@@ -138,6 +150,15 @@ fun SettingsScreen(
                     selectedValue = settings.startScreen,
                     set = { copy(startScreen = it) }
                 )
+            }
+        )
+        SwitchPreferenceRow(
+            title = stringResource(R.string.auto_start_last_stream),
+            summary = stringResource(R.string.auto_start_last_stream_long),
+            checked = settings.autoStartLastStream,
+            enabled = settings.integratedVideoPlayer,
+            onCheckedChange = { checked ->
+                onChange { it.copy(autoStartLastStream = checked) }
             }
         )
         SwitchPreferenceRow(
@@ -345,6 +366,16 @@ fun SettingsScreen(
             state = syncPiconsPathDraft,
             onDismiss = onDismissSyncPiconsPath,
             onConfirm = onConfirmSyncPiconsPath
+        )
+    }
+
+    if (preferredAudioLanguageDraft != null) {
+        TextInputDialog(
+            title = stringResource(R.string.preferred_audio_language),
+            state = preferredAudioLanguageDraft,
+            supportingText = stringResource(R.string.preferred_audio_language_long),
+            onDismiss = onDismissPreferredAudioLanguage,
+            onConfirm = onConfirmPreferredAudioLanguage
         )
     }
 

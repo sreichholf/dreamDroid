@@ -65,6 +65,8 @@ class VlcEngine @Inject constructor(
 
     /** True once the stream [start] began reported an audio or video track. */
     private var tracksFound = false
+    private var preferredAudioLanguage = ""
+    private var preferredAudioTrackGeneration: Int = -1
     private var views: PlayerViews? = null
 
     private val stateFlow = MutableStateFlow(PlayerState())
@@ -123,6 +125,7 @@ class VlcEngine @Inject constructor(
         val gen = ++generation
         stateFlow.value = PlayerState()
         tracksFound = false
+        preferredAudioLanguage = request.preferredAudioLanguage
         val isHwAccel = request.hwAccelFlags and MEDIA_HWACCEL_ENABLED > 0
         val isHwAccelForce = request.hwAccelFlags and MEDIA_HWACCEL_FORCE > 0
         videoWatchJob?.cancel()
@@ -234,6 +237,7 @@ class VlcEngine @Inject constructor(
 
             MediaPlayer.Event.Playing -> {
                 refreshTrackCounts(mp)
+                selectPreferredAudioTrack(mp, gen)
                 watchForVideo(mp, gen)
                 PlayerEvent.Playing
             }
@@ -265,6 +269,7 @@ class VlcEngine @Inject constructor(
 
             MediaPlayer.Event.ESAdded -> {
                 refreshTrackCounts(mp)
+                selectPreferredAudioTrack(mp, gen)
                 val type = event.esChangedType
                 if (!tracksFound &&
                     (type == IMedia.Track.Type.Audio || type == IMedia.Track.Type.Video)
@@ -278,6 +283,7 @@ class VlcEngine @Inject constructor(
 
             MediaPlayer.Event.ESDeleted -> {
                 refreshTrackCounts(mp)
+                selectPreferredAudioTrack(mp, gen)
                 null
             }
 
@@ -358,6 +364,41 @@ class VlcEngine @Inject constructor(
         val audio = mp.audioTracksCount
         val subtitles = mp.spuTracksCount
         stateFlow.update { it.copy(audioTracks = audio, subtitleTracks = subtitles) }
+    }
+
+    private fun selectPreferredAudioTrack(mp: MediaPlayer, gen: Int) {
+        if (preferredAudioTrackGeneration == gen || gen != generation) return
+        val language = preferredAudioLanguage
+        if (language.isBlank()) return
+        if (switching || !mp.hasMedia()) return
+        val tracks = mp.audioTracks ?: return
+        val languages = audioLanguages(mp)
+        val trackId = preferredAudioTrackId(
+            language,
+            tracks.map { AudioTrackOption(it.id, it.name.orEmpty(), languages[it.id]) }
+        ) ?: return
+        preferredAudioTrackGeneration = gen
+        if (mp.audioTrack != trackId) {
+            commands.post {
+                if (gen == generation) mp.setAudioTrack(trackId)
+            }
+        }
+    }
+
+    /**
+     * The language code of each audio ES, by the id [MediaPlayer.setAudioTrack] takes. The
+     * media keeps the first list it reads, so ESs added later have none and match by name.
+     */
+    private fun audioLanguages(mp: MediaPlayer): Map<Int, String> {
+        val media = mp.media ?: return emptyMap()
+        return try {
+            (0 until media.trackCount)
+                .mapNotNull { media.getTrack(it) }
+                .filter { it.type == IMedia.Track.Type.Audio && !it.language.isNullOrBlank() }
+                .associate { it.id to it.language }
+        } finally {
+            media.release()
+        }
     }
 
     companion object {

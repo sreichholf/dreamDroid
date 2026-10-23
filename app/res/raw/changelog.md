@@ -1,5 +1,12 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.469
+* UPD: New TV hub layout with tabs
+* NEW: Continue watching on TV
+* NEW: Backup & Restore on TV
+* NEW: Option to auto-start the last watched live channel
+* NEW: Preferred audio language for the integrated player
+
 ## 2.0.468
 * UPD: Live TV streams reconnect after dropouts
 * NEW: Stream buffer setting

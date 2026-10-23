@@ -33,8 +33,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
+import net.reichholf.dreamdroid.helpers.getSerializableExtraCompat
 import net.reichholf.dreamdroid.helpers.isTelevision
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
 import net.reichholf.dreamdroid.tv.ui.shouldKeepTvStreamingActivity
@@ -225,7 +228,8 @@ class VideoActivity :
                     ?: VlcEngine.MEDIA_HWACCEL_ENABLED,
                 bufferMs = values.streamBuffer,
                 // Live services carry their reference; recordings do not.
-                live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE)
+                live = intent.hasExtra(VideoOverlayController.SERVICE_REFERENCE),
+                preferredAudioLanguage = values.preferredAudioLanguage
             )
         )
         playbackAlreadyStarted = true
@@ -271,6 +275,23 @@ class VideoActivity :
         playerAttached = false
         player.detach()
         player.setEventListener(null)
+    }
+
+    /**
+     * Saves the live service that plays now as the last channel. [getIntent] is the stream
+     * that plays: [handleIntent] sets it for a new intent and for a zap in the overlay.
+     */
+    private fun rememberLiveStream() {
+        val reference = intent.getStringExtra(VideoOverlayController.SERVICE_REFERENCE) ?: return
+        val service =
+            intent.getSerializableExtraCompat<ServiceNowNext>(VideoOverlayController.SERVICE_INFO)
+        playbackViewModel.onLiveStreamPlaying(
+            LastLiveStream(
+                reference = reference,
+                serviceName = service?.serviceName.orEmpty(),
+                bouquetRef = intent.getStringExtra(VideoOverlayController.BOUQUET_REFERENCE)
+            )
+        )
     }
 
     private fun onMediaPlaying() {
@@ -354,6 +375,7 @@ class VideoActivity :
     private fun onPlayerEvent(event: PlayerEvent) {
         if (event == PlayerEvent.Playing) {
             playbackAlreadyStarted = true
+            rememberLiveStream()
         }
         // The engine reports the size while views are attached, the overlay or not.
         if (event is PlayerEvent.Layout) {

@@ -60,6 +60,8 @@ class Media3Engine @Inject constructor(
     private var listener: ((PlayerEvent) -> Unit)? = null
     private var progressJob: Job? = null
     private var noVideoJob: Job? = null
+    private var preferredAudioLanguage = ""
+    private var preferredAudioTrackSelected = false
 
     private val stateFlow = MutableStateFlow(PlayerState())
     override val state: StateFlow<PlayerState> = stateFlow.asStateFlow()
@@ -91,6 +93,8 @@ class Media3Engine @Inject constructor(
     override fun start(request: PlayRequest) {
         releasePlayer()
         stateFlow.value = PlayerState()
+        preferredAudioLanguage = request.preferredAudioLanguage
+        preferredAudioTrackSelected = false
         val (url, authorization) = HttpUserInfo.toBasicAuth(request.url)
         val trustAll = profiles.current.value?.allCertsTrusted == true
         val dataSource = OkHttpDataSource.Factory(okHttp.client(STREAM_TIMEOUT_MS, trustAll))
@@ -149,6 +153,10 @@ class Media3Engine @Inject constructor(
 
     private fun select(type: Int, id: Int) {
         val exo = player ?: return
+        select(exo, type, id)
+    }
+
+    private fun select(exo: ExoPlayer, type: Int, id: Int) {
         val builder = exo.trackSelectionParameters.buildUpon()
         if (id == TRACK_OFF) {
             builder.setTrackTypeDisabled(type, true)
@@ -177,6 +185,15 @@ class Media3Engine @Inject constructor(
                     MediaTrack((groupIndex shl TRACK_SHIFT) or trackIndex, name)
                 }
             }
+
+    /** The audio [tracksOf] with each track's language code, for [preferredAudioTrackId]. */
+    private fun audioTrackOptions(exo: ExoPlayer): List<AudioTrackOption> {
+        val groups = exo.currentTracks.groups
+        return tracksOf(exo, C.TRACK_TYPE_AUDIO).map { track ->
+            val format = groups[track.id shr TRACK_SHIFT].getTrackFormat(track.id and TRACK_MASK)
+            AudioTrackOption(track.id, track.name, format.language)
+        }
+    }
 
     private fun unbind(views: PlayerViews) {
         player?.clearVideoSurfaceView(views.media3Surface)
@@ -277,6 +294,16 @@ class Media3Engine @Inject constructor(
                     audioTracks = tracksOf(exo, C.TRACK_TYPE_AUDIO).size,
                     subtitleTracks = tracksOf(exo, C.TRACK_TYPE_TEXT).size
                 )
+            }
+            if (!preferredAudioTrackSelected && preferredAudioLanguage.isNotBlank()) {
+                val preferredTrack = preferredAudioTrackId(
+                    preferredAudioLanguage,
+                    audioTrackOptions(exo)
+                )
+                if (preferredTrack != null) {
+                    preferredAudioTrackSelected = true
+                    select(exo, C.TRACK_TYPE_AUDIO, preferredTrack)
+                }
             }
             val support = tracks.groups.map {
                 Media3Streams.GroupSupport(it.type, it.isSupported)

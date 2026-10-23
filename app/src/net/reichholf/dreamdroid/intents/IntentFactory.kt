@@ -10,6 +10,7 @@ import androidx.preference.PreferenceManager
 import java.io.Serializable
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.activities.VideoActivity
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
@@ -86,6 +87,18 @@ object IntentFactory {
         bouquetRef,
         serviceInfo
     )
+
+    /** Plays the saved last channel that [start] got the stream for. */
+    fun getLastStreamIntent(context: Context, start: LastStreamStart.Play): Intent {
+        val service = start.service
+        return getStreamServiceIntent(
+            context,
+            start.stream,
+            service.serviceName,
+            service.bouquetRef,
+            ServiceNowNext(serviceReference = service.reference, serviceName = service.serviceName)
+        )
+    }
 
     /** Plays the recording at [uriString] (see `MovieRepository.streamUrl`). */
     fun getStreamFileIntent(

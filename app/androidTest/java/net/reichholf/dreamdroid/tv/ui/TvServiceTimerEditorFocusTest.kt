@@ -35,7 +35,7 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Opening the timer editor from the hub service INFO overlay must not change the header.
+ * Opening the timer editor from the hub service INFO overlay must not change the bouquet.
  * The overlay leaves the composition while its focused action is removed; focus must not
  * fall back to the drawer and select the first bouquet.
  */
@@ -59,7 +59,7 @@ class TvServiceTimerEditorFocusTest {
             bouquet = Service("1:7:1:0:0:0:0:0:0:0:Sports", "Sports"),
             services = listOf(channel)
         )
-        var selected by mutableStateOf(sports.bouquet.reference)
+        var selected by mutableStateOf<HubSection>(HubSection.Live(sports.bouquet.reference))
         var overlay by mutableStateOf<ServiceNowNext?>(null)
         var editingEvent by mutableStateOf<Event?>(null)
 
@@ -68,13 +68,10 @@ class TvServiceTimerEditorFocusTest {
             inputModeManager = LocalInputModeManager.current
             Box(Modifier.fillMaxSize()) {
                 ComposeTvHubChrome(
-                    headers = listOf(
-                        HubNavHeader(favourites.bouquet.reference, favourites.bouquet.name),
-                        HubNavHeader(sports.bouquet.reference, sports.bouquet.name),
-                        HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
-                    ),
-                    selectedHeaderId = selected,
-                    onHeaderSelected = { selected = it },
+                    section = selected,
+                    onOpenTab = {},
+                    onOpenSettings = {},
+                    onDrawerItemSelected = { selected = HubSection.Live(it) },
                     settingsItems = emptyList(),
                     onSettingsClick = {},
                     bouquetRows = listOf(favourites, sports),
@@ -124,7 +121,11 @@ class TvServiceTimerEditorFocusTest {
         edit.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
 
-        assertEquals("header selection changed", sports.bouquet.reference, selected)
+        assertEquals(
+            "bouquet selection changed",
+            HubSection.Live(sports.bouquet.reference),
+            selected
+        )
         // Focus lands on the first control that is not a text field, so no soft keyboard.
         composeRule.onNodeWithContentDescription(
             InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.enabled)

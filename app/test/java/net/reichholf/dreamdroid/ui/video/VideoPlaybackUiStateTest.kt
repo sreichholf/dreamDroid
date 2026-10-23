@@ -25,6 +25,16 @@ class VideoPlaybackUiStateTest {
         assertEquals("News B", session.currentService?.now?.title)
     }
 
+    /** A zap plays the row's channel: its name is the channel's, not the programme's. */
+    @Test
+    fun zappedServiceIsNamedByItsChannelNotItsProgramme() {
+        val session = live.withServices(listOf(a, b, c)).zappedTo(c)
+
+        assertEquals("C", session.currentService?.serviceName)
+        assertEquals("C", session.title)
+        assertEquals("News C", session.currentService?.now?.title)
+    }
+
     @Test
     fun neighbourWrapsAroundTheList() {
         val session = live.withServices(listOf(a, b, c)).zappedTo(c)

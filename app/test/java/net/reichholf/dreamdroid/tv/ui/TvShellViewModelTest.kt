@@ -8,14 +8,24 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
+import net.reichholf.dreamdroid.data.ReceiverRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
 import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.session.ConnectionStatus
@@ -24,6 +34,7 @@ import okhttp3.mockwebserver.MockResponse
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
@@ -39,6 +50,9 @@ class TvShellViewModelTest {
     private val profiles = receiver.profiles.repository
     private val sessions = receiver.sessions
     private val viewModels = mutableListOf<TvShellViewModel>()
+    private val preferences = MemorySharedPreferences()
+    private val settings = SettingsRepository(preferences)
+    private val lastStreams = LastLiveStreamRepository(preferences, profiles)
 
     /** `/web/deviceinfo` answers a receiver while true, a non-receiver page otherwise. */
     @Volatile
@@ -219,6 +233,42 @@ class TvShellViewModelTest {
         viewModel.awaitGate { it is TvSessionGate.Failed }
     }
 
+    @Test
+    fun theLaunchsFirstOnlineCheckStartsTheLastChannel() = runBlocking<Unit> {
+        rememberLastChannel()
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+
+        viewModel.start()
+        val effect = withTimeout(5_000L) {
+            viewModel.uiState.first { it.lastStreamEffect != null }
+        }.lastStreamEffect
+
+        val play = assertInstanceOf(LastStreamStart.Play::class.java, effect)
+        assertEquals(LAST_CHANNEL, play.service)
+        assertEquals(LAST_CHANNEL.reference, play.stream.reference)
+        viewModel.onLastStreamEffectHandled()
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
+    @Test
+    fun aFailedFirstCheckUsesUpTheLastChannelStart() = runBlocking<Unit> {
+        rememberLastChannel()
+        isReceiver = false
+        val viewModel = viewModel()
+        viewModel.startLastStreamAfterFirstCheck()
+        viewModel.start()
+        awaitStatus { !it.checking && it.lastFailure != null }
+
+        isReceiver = true
+        val before = viewModel.jobs()
+        viewModel.recheck()
+        awaitStatus { it.session == ConnectionStatus.Session.Online }
+        viewModel.joinJobsSince(before)
+
+        assertNull(viewModel.uiState.value.lastStreamEffect)
+    }
+
     private fun viewModel(): TvShellViewModel = TvShellViewModel(
         profiles,
         ReceiverProfileCheckRepository(
@@ -227,8 +277,20 @@ class TvShellViewModelTest {
             receiver.profiles.capabilities
         ),
         receiver.services,
-        sessions
+        sessions,
+        LastLiveStreamAutoStart(
+            settings,
+            lastStreams,
+            ReceiverRepository(receiverApis(profiles), profiles),
+            sessions
+        )
     ).also { viewModels += it }
+
+    /** The user wants the last channel on launch, and it played on the active profile. */
+    private fun rememberLastChannel() {
+        preferences.edit().putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, true).apply()
+        lastStreams.save(LAST_CHANNEL)
+    }
 
     private fun deviceInfoRequests(): Int = receiver.requestsTo("/web/deviceinfo").size
 
@@ -242,5 +304,6 @@ class TvShellViewModelTest {
     companion object {
         const val FAVOURITES =
             "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet"
+        val LAST_CHANNEL = LastLiveStream("1:0:19:2B66:3F3:1:C00000:0:0:0:", "ZDF HD", FAVOURITES)
     }
 }

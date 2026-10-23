@@ -23,6 +23,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -39,8 +40,8 @@ import net.reichholf.dreamdroid.ui.settings.SwitchPreferenceRow
 private val FabHeight = 56.dp
 
 /**
- * Import as a card on top, then what goes into an export. The export action itself is the
- * shell FAB, bound by [BackupDestination].
+ * Import as a card on top, then what goes into an export. [onExport] adds an inline
+ * export action for shells without a FAB.
  */
 @Composable
 fun BackupScreen(
@@ -50,14 +51,19 @@ fun BackupScreen(
     onAllProfilesCheckedChange: (Boolean) -> Unit,
     onExportSettingsChange: (Boolean) -> Unit,
     onIncludePasswordsChange: (Boolean) -> Unit,
+    onExport: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
-    val fabClearance = dimensionResource(R.dimen.fab_margin_bottom) + FabHeight + 16.dp
+    val bottomPadding = if (onExport == null) {
+        dimensionResource(R.dimen.fab_margin_bottom) + FabHeight + 16.dp
+    } else {
+        24.dp
+    }
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(top = 8.dp, bottom = fabClearance)
+            .padding(top = 8.dp, bottom = bottomPadding)
     ) {
         ImportCard(onImport = onImport)
 
@@ -103,6 +109,17 @@ fun BackupScreen(
             checked = state.exportSettings,
             onCheckedChange = onExportSettingsChange
         )
+        if (onExport != null) {
+            FilledTonalButton(
+                onClick = onExport,
+                modifier = Modifier
+                    .align(Alignment.End)
+                    .padding(top = 16.dp, end = ListRowHorizontalInset)
+                    .testTag("backup_export_button")
+            ) {
+                Text(stringResource(R.string.backup_export))
+            }
+        }
     }
 }
 

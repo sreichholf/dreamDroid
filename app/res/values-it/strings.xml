@@ -261,7 +261,6 @@
     <string name="audio_tracks">Tracce audio</string>
     <string name="subtitles">Sottotitoli</string>
     <string name="no_tracks">Nessuna traccia disponibile!</string>
-    <string name="preferences">Preferenze</string>
     <string name="backup">Backup</string>
     <string name="backup_current_profile">Attuale</string>
     <string name="backup_export">Esporta</string>

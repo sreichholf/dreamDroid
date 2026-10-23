@@ -21,8 +21,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
+import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
@@ -50,11 +53,13 @@ sealed interface TvStreamOpen {
 }
 
 /**
- * The TV hub: the selected drawer header, the bouquet rows and movie locations, the movies
- * loaded per location, the open service overlay or timer editor, and the session.
+ * The TV hub: the section on screen ([navigation]), the bouquet rows and movie locations, the
+ * movies loaded per location, the open service overlay or timer editor, the active profile's
+ * name and the channel it played last ([lastStream], Live TV's "Continue watching"), and the
+ * session.
  */
 data class TvHubUiState(
-    val selectedHeaderId: String = TvComposeHubHost.HEADER_PLACEHOLDER_ID,
+    val navigation: HubNavigation = HubNavigation(),
     val loading: Boolean = true,
     val errorText: UiText? = null,
     val bouquetRows: List<HubBouquetRow> = emptyList(),
@@ -67,8 +72,13 @@ data class TvHubUiState(
     val settingTimer: Boolean = false,
     val userMessage: UiText? = null,
     val stream: TvStreamOpen? = null,
+    val profileName: String = "",
+    val lastStream: LastLiveStream? = null,
     val connection: ConnectionStatus = ConnectionStatus()
 ) {
+    val section: HubSection
+        get() = navigation.section
+
     val streamingEnabled: Boolean
         get() = connection.allowsStreaming()
 
@@ -81,10 +91,10 @@ data class TvHubUiState(
  * the hub leaving composition. [TvHubUiState.stream] is a stream for the player; the host
  * starts it and calls [onStreamStarted]. Each new [ConnectionStatus.Session] reloads the browse data,
  * except Online after a browse that already asked the receiver while the session was unknown;
- * switching headers keeps movies the receiver already sent for a location. While the hub is
- * shown ([onShown]) and a browse got a receiver answer, the selected bouquet's EPG for the coming
- * week is synced ([TvHubBrowse.syncEpg]) once the header stayed selected for
- * [EPG_SYNC_DELAY_MS], so moving through the headers with the D-pad syncs nothing.
+ * switching sections keeps movies the receiver already sent for a location. While the hub is
+ * shown ([onShown]) and a browse got a receiver answer, the EPG for the coming week of the Live
+ * TV bouquet on screen is synced ([TvHubBrowse.syncEpg]) once it stayed selected for
+ * [EPG_SYNC_DELAY_MS], so moving through the drawer with the D-pad syncs nothing.
  */
 @HiltViewModel
 class TvHubViewModel internal constructor(
@@ -93,6 +103,8 @@ class TvHubViewModel internal constructor(
     private val receiver: ReceiverRepository,
     private val movies: MovieRepository,
     private val sessions: SessionConnectionHolder,
+    profiles: ProfileRepository,
+    lastStreams: LastLiveStreamRepository,
     private val epgSyncDelayMs: Long
 ) : ViewModel() {
     @Inject
@@ -101,15 +113,26 @@ class TvHubViewModel internal constructor(
         timers: TimerRepository,
         receiver: ReceiverRepository,
         movies: MovieRepository,
-        sessions: SessionConnectionHolder
-    ) : this(browse, timers, receiver, movies, sessions, EPG_SYNC_DELAY_MS)
+        sessions: SessionConnectionHolder,
+        profiles: ProfileRepository,
+        lastStreams: LastLiveStreamRepository
+    ) : this(browse, timers, receiver, movies, sessions, profiles, lastStreams, EPG_SYNC_DELAY_MS)
 
     private val _uiState = MutableStateFlow(TvHubUiState())
 
     private val sessionWord = sessions.status.map { it.session }.distinctUntilChanged()
 
-    val uiState: StateFlow<TvHubUiState> = combine(_uiState, sessions.status) { state, status ->
-        state.copy(connection = status)
+    val uiState: StateFlow<TvHubUiState> = combine(
+        _uiState,
+        sessions.status,
+        profiles.current,
+        lastStreams.lastStream
+    ) { state, status, profile, lastStream ->
+        state.copy(
+            connection = status,
+            profileName = profile?.name.orEmpty(),
+            lastStream = lastStream
+        )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 
     private var browseJob: Job? = null
@@ -141,7 +164,7 @@ class TvHubViewModel internal constructor(
             combine(
                 shown,
                 liveBrowses,
-                _uiState.map { it.selectedBouquetRef() }.distinctUntilChanged()
+                _uiState.map { it.navigation.liveBouquetRef }.distinctUntilChanged()
             ) { shown, live, ref -> ref?.takeIf { shown && live > 0 }?.let { it to live } }
                 .syncWhenSettled(epgSyncDelayMs) { syncEpg(it.first) }
         }
@@ -193,12 +216,8 @@ class TvHubViewModel internal constructor(
         if (!result.usedCache) {
             liveBrowses.update { it + 1 }
         }
+        val location = _uiState.value.navigation.recordingsLocation
         _uiState.update { state ->
-            val stillValid = TvComposeHubHost.hubHeaderSurvivesReload(
-                state.selectedHeaderId,
-                result.rows,
-                result.locations
-            )
             state.copy(
                 loading = false,
                 errorText = unavailableTvHubMessage(
@@ -208,21 +227,38 @@ class TvHubViewModel internal constructor(
                 ),
                 bouquetRows = result.rows,
                 movieLocations = result.locations,
-                selectedHeaderId = if (stillValid) {
-                    state.selectedHeaderId
-                } else {
-                    TvComposeHubHost.firstHubHeader(result.rows)
-                }
+                navigation = state.navigation.reconcile(result.rows, result.locations)
             )
+        }
+        if (_uiState.value.navigation.recordingsLocation != location) {
+            loadSelectedMovies()
         }
     }
 
-    fun selectHeader(headerId: String) {
-        if (headerId == _uiState.value.selectedHeaderId) {
-            return
+    /** Opens the top bar tab [tab]. */
+    fun openTab(tab: HubTab) = navigate { state ->
+        state.navigation.open(tab, state.bouquetRows, state.movieLocations)
+    }
+
+    /** Opens Settings, the top bar's trailing icon. */
+    fun openSettings() = navigate { it.navigation.openSettings() }
+
+    /** Selects the drawer row [id]: a bouquet on Live TV or Guide, a location on Recordings. */
+    fun selectDrawerItem(id: String) = navigate { it.navigation.select(id) }
+
+    /** Back from any section but Live TV returns to Live TV. False on Live TV. */
+    fun back(): Boolean {
+        val target = _uiState.value.navigation.back() ?: return false
+        navigate { target }
+        return true
+    }
+
+    private fun navigate(transform: (TvHubUiState) -> HubNavigation) {
+        val before = _uiState.value.navigation
+        _uiState.update { it.copy(navigation = transform(it)) }
+        if (_uiState.value.navigation != before) {
+            loadSelectedMovies()
         }
-        _uiState.update { it.copy(selectedHeaderId = headerId) }
-        loadSelectedMovies()
     }
 
     fun showServiceTimer(service: ServiceNowNext, bouquetRef: String?) {
@@ -302,14 +338,17 @@ class TvHubViewModel internal constructor(
         _uiState.update { it.copy(userMessage = UiText.Resource(R.string.missing_stream_player)) }
     }
 
+    fun showMessage(message: UiText) {
+        _uiState.update { it.copy(userMessage = message) }
+    }
+
     fun onMessageShown() {
         _uiState.update { it.copy(userMessage = null) }
     }
 
-    // Leanback parity: load movies for a location only when its header is selected.
+    // Leanback parity: load movies for a location only when Recordings shows it.
     private fun loadSelectedMovies() {
-        val state = _uiState.value
-        val dirname = TvComposeHubHost.movieDirnameFromHeader(state.selectedHeaderId) ?: return
+        val dirname = _uiState.value.navigation.recordingsLocation ?: return
         if (dirname in liveMovieLocations) {
             return
         }
@@ -374,7 +413,3 @@ internal suspend fun <T : Any> Flow<T?>.syncWhenSettled(settleMs: Long, sync: su
         }
     }
 }
-
-/** The selected header when it is one of the bouquet rows. */
-private fun TvHubUiState.selectedBouquetRef(): String? =
-    selectedHeaderId.takeIf { id -> bouquetRows.any { it.bouquet.reference == id } }

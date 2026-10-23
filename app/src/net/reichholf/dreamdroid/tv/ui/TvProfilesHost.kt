@@ -64,11 +64,21 @@ fun TvProfilesHost(
     modifier: Modifier = Modifier,
     onMarkReload: () -> Unit = {},
     onLeave: () -> Unit = {},
+    onBackup: () -> Unit = {},
+    reloadProfiles: Boolean = false,
+    onReloadHandled: () -> Unit = {},
     viewModel: TvProfilesHostViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val currentOnMarkReload by rememberUpdatedState(onMarkReload)
     val currentOnLeave by rememberUpdatedState(onLeave)
+
+    LaunchedEffect(reloadProfiles) {
+        if (reloadProfiles) {
+            viewModel.reload()
+            onReloadHandled()
+        }
+    }
 
     LaunchedEffect(uiState.event) {
         val event = uiState.event ?: return@LaunchedEffect
@@ -91,6 +101,7 @@ fun TvProfilesHost(
         TvProfilesScreen(
             profiles = uiState.profiles,
             onAdd = viewModel::showAdd,
+            onBackup = onBackup,
             onActivate = viewModel::activate,
             onEdit = viewModel::showEdit,
             onDelete = {},

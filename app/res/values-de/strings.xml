@@ -162,6 +162,12 @@
     <string name="session_checking">Prüfung</string>
     <string name="session_needs_receiver">Empfänger erforderlich</string>
     <string name="session_needs_receiver_long">Diese Funktion benötigt eine Verbindung zur Box</string>
+    <string name="tv_hub_live">Live-TV</string>
+    <string name="tv_hub_guide">Programm</string>
+    <string name="tv_hub_recordings">Aufnahmen</string>
+    <string name="tv_hub_timers">Timer</string>
+    <string name="tv_hub_no_bouquets">Keine TV-Bouquets auf diesem Receiver.</string>
+    <string name="tv_hub_continue_watching">Weiterschauen</string>
     <string name="error">FEHLER!</string>
     <string name="version_too_low">Version &lt; 1.6</string>
     <string name="connection_error">Verbindungsfehler</string>
@@ -228,6 +234,11 @@
     <string name="usability">Useability</string>
     <string name="start_screen">Startbildschirm</string>
     <string name="start_screen_long">Bildschirm, der beim Öffnen der App angezeigt wird (Hauptziele im Navigationsmenü)</string>
+    <string name="preferred_audio_language">Bevorzugte Audiosprache</string>
+    <string name="preferred_audio_language_long">Sprachcode oder Teil des Namens eingeben (z. B. de, deu oder Deutsch). Der integrierte Player verwendet bei fehlendem Treffer die Standardspur; leer lassen, um immer die Standardspur zu verwenden.</string>
+    <string name="audio_language_default">Stream-Standard verwenden</string>
+    <string name="auto_start_last_stream">Letzten Live-Sender automatisch starten</string>
+    <string name="auto_start_last_stream_long">Den zuletzt angesehenen Live-Sender beim Start der App wiedergeben</string>
     <string name="use_picons">Picons benutzen</string>
     <string name="use_picons_long">Wo möglich werden Picons angezeigt.\nErfordert Picons im App-Speicher (picons/)</string>
     <string name="sync_picons">Picons synchronisieren</string>
@@ -323,6 +334,7 @@
     <string name="zap_and_stream_summary">Vor der Wiedergabe auf diesen Sender umschalten. Ein Einzel-Tuner kann nur einen Dienst auf dem aktuellen Transponder streamen, und der Sender am Fernseher wechselt dabei mit.</string>
     <string name="subtitles">Untertitel</string>
     <string name="backup">Backup</string>
+    <string name="backup_restore">Backup &amp; Wiederherstellung</string>
     <string name="backup_current_profile">Aktiv</string>
     <string name="backup_export">Export</string>
     <string name="backup_export_missing_permission">Bitte Berechtigung für Datenspeicher erteilen</string>
@@ -333,7 +345,6 @@
     <string name="backup_profiles">Profile</string>
     <string name="licenses">Lizenzen</string>
     <string name="no_tracks">Keine Tonspuren verfügbar!</string>
-    <string name="preferences">Einstellungen</string>
     <string name="backup_import_error">Backup-Import fehlgeschlagen!</string>
     <string name="ssid">WLAN Name</string>
     <string name="live_movie"><![CDATA[TV & Filme]]></string>

@@ -33,7 +33,7 @@ class BackupRepository @Inject constructor(
     suspend fun backupData(): BackupData {
         val export = BackupData()
         for ((key, value) in settings.all()) {
-            if (value != null) {
+            if (value != null && key !in LAST_STREAM_KEYS) {
                 export.addGenericSetting(
                     GenericSetting(key, value.toString(), value.javaClass.simpleName)
                 )
@@ -119,6 +119,12 @@ class BackupRepository @Inject constructor(
 
     private companion object {
         const val TAG = "BackupRepository"
+        val LAST_STREAM_KEYS = setOf(
+            DreamDroid.PREFS_KEY_LAST_STREAM_REFERENCE,
+            DreamDroid.PREFS_KEY_LAST_STREAM_SERVICE_NAME,
+            DreamDroid.PREFS_KEY_LAST_STREAM_BOUQUET,
+            DreamDroid.PREFS_KEY_LAST_STREAM_PROFILE
+        )
     }
 }
 

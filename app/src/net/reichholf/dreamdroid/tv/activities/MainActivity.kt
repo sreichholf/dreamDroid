@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.activities
 
+import android.content.ActivityNotFoundException
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,10 +19,12 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermissionRequest
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImageLoader
+import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.TvComposeHubHost
 import net.reichholf.dreamdroid.tv.ui.TvHubViewModel
 import net.reichholf.dreamdroid.tv.ui.TvShellViewModel
@@ -59,13 +62,40 @@ class MainActivity : AppCompatActivity() {
         DreamDroid.setTheme(this)
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            shellViewModel.startLastStreamAfterFirstCheck()
+        }
         startSessionReachabilityProbe()
+        playLastStreamWhenReady()
         if (profiles.isLoaded()) {
             openFirstScreen()
         } else {
             lifecycleScope.launch {
                 profiles.awaitLoaded()
                 openFirstScreen()
+            }
+        }
+    }
+
+    /** While resumed, plays the last channel or shows why it cannot, once the shell has it. */
+    private fun playLastStreamWhenReady() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                shellViewModel.uiState.collect { state ->
+                    val effect = state.lastStreamEffect ?: return@collect
+                    shellViewModel.onLastStreamEffectHandled()
+                    when (effect) {
+                        is LastStreamStart.Play -> try {
+                            startActivity(
+                                IntentFactory.getLastStreamIntent(this@MainActivity, effect)
+                            )
+                        } catch (_: ActivityNotFoundException) {
+                            hubViewModel.onMissingStreamPlayer()
+                        }
+
+                        is LastStreamStart.Failed -> hubViewModel.showMessage(effect.message)
+                    }
+                }
             }
         }
     }

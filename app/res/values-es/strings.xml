@@ -261,7 +261,6 @@
     <string name="audio_tracks">Pistas de audio</string>
     <string name="subtitles">Subtítulos</string>
     <string name="no_tracks">¡No hay pistas disponibles!</string>
-    <string name="preferences">Preferencias</string>
     <string name="backup">Copia de seguridad</string>
     <string name="backup_current_profile">Actual</string>
     <string name="backup_export">Exportar</string>

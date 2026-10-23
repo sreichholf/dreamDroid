@@ -25,6 +25,12 @@
             android:key="video_hardware_acceleration"
             android:summary="@string/use_hw_accel_long"
             android:title="@string/use_hw_accel"/>
+        <EditTextPreference
+            android:defaultValue=""
+            android:dependency="integrated_video_player"
+            android:key="preferred_audio_language"
+            android:summary="@string/preferred_audio_language_long"
+            android:title="@string/preferred_audio_language"/>
     </PreferenceCategory>
     <PreferenceCategory
         android:key="category_usability"
@@ -40,6 +46,12 @@
             android:key="start_screen"
             android:summary="@string/start_screen_long"
             android:title="@string/start_screen"/>
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:dependency="integrated_video_player"
+            android:key="auto_start_last_stream"
+            android:summary="@string/auto_start_last_stream_long"
+            android:title="@string/auto_start_last_stream"/>
         <CheckBoxPreference
             android:key="instant_zap"
             android:summary="@string/enable_instant_zap_long"

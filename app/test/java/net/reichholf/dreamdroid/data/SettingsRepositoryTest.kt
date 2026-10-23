@@ -24,16 +24,20 @@ class SettingsRepositoryTest {
     fun readsStoredValuesUnderTheSharedKeys() {
         preferences.edit()
             .putBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, true)
+            .putBoolean(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM, true)
             .putBoolean(DreamDroid.PREFS_KEY_VOLUME_CONTROL, true)
             .putString(DreamDroid.PREFS_KEY_THEME_TYPE, "2")
+            .putString(DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE, "eng")
             .putString(DreamDroid.PREFS_KEY_START_SCREEN, StartScreen.VALUE_EPG)
             .apply()
 
         val settings = repository.current()
 
         assertEquals(true, settings.instantZap)
+        assertEquals(true, settings.autoStartLastStream)
         assertEquals(true, settings.volumeControl)
         assertEquals("2", settings.themeType)
+        assertEquals("eng", settings.preferredAudioLanguage)
         assertEquals(StartScreen.VALUE_EPG, settings.startScreen)
     }
 
@@ -59,6 +63,8 @@ class SettingsRepositoryTest {
     fun everySettingSurvivesAFreshRead() {
         val changed = AppSettings(
             integratedVideoPlayer = false,
+            autoStartLastStream = true,
+            preferredAudioLanguage = "English",
             videoEnableGestures = false,
             videoHardwareAcceleration = "0",
             startScreen = StartScreen.VALUE_ZAP,
@@ -95,6 +101,32 @@ class SettingsRepositoryTest {
         assertEquals(3, repository.current().maxGridColumns)
         preferences.edit().putString(DreamDroid.PREFS_KEY_GRID_MAX_COLS, "").apply()
         assertEquals(AUTO_FIT_COLUMNS, repository.current().maxGridColumns)
+    }
+
+    @Test
+    fun autoStartLastStreamDefaultsOffAndCanBeUpdated() {
+        assertEquals(false, repository.current().autoStartLastStream)
+
+        val (_, updated) = repository.update { it.copy(autoStartLastStream = true) }
+
+        assertEquals(true, updated.autoStartLastStream)
+        assertEquals(true, SettingsRepository(preferences).current().autoStartLastStream)
+        assertEquals(
+            mapOf(DreamDroid.PREFS_KEY_AUTO_START_LAST_STREAM to true),
+            preferences.all
+        )
+    }
+
+    @Test
+    fun preferredAudioLanguageDefaultsToPlayerDefaultAndPersists() {
+        assertEquals("", repository.current().preferredAudioLanguage)
+
+        repository.update { it.copy(preferredAudioLanguage = "English") }
+
+        assertEquals(
+            "English",
+            SettingsRepository(preferences).current().preferredAudioLanguage
+        )
     }
 
     @Test

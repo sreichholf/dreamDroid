@@ -63,10 +63,10 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
-    fun startLoadsTheLaunchBouquetAndTheBouquetList() = runBlocking {
+    fun openLoadsTheLaunchBouquetAndTheBouquetList() = runBlocking {
         val viewModel = viewModel()
 
-        viewModel.start(BOUQUET, "Favourites")
+        viewModel.open(BOUQUET, "Favourites")
         val state = awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
 
         assertEquals(BOUQUET, state.bouquetRef)
@@ -84,7 +84,7 @@ class TvMultiEpgViewModelTest {
         receiver.repository.fillNowChunk(BOUQUET, BOUQUET, now)
         val viewModel = viewModel()
 
-        viewModel.start(BOUQUET, "Favourites")
+        viewModel.open(BOUQUET, "Favourites")
         val state = awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
 
         val bar = state.grid.channels.single { it.serviceRef == BOUQUET_CHANNEL }.bars.single()
@@ -93,10 +93,10 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
-    fun startWithoutExtraOpensTheFirstBouquet() = runBlocking {
+    fun openWithoutABouquetOpensTheFirstOne() = runBlocking {
         val viewModel = viewModel()
 
-        viewModel.start(null, null)
+        viewModel.open(null, null)
         val state = awaitState(viewModel) { it.bouquetRef.isNotEmpty() }
 
         assertEquals(state.bouquets.first().reference, state.bouquetRef)
@@ -128,7 +128,7 @@ class TvMultiEpgViewModelTest {
     @Test
     fun streamHandsTheEventServiceToTheHost() = runBlocking<Unit> {
         val viewModel = viewModel()
-        viewModel.start(BOUQUET, "Favourites")
+        viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.bouquetRef == BOUQUET }
 
         viewModel.stream(Event(title = "News", serviceReference = BOUQUET_CHANNEL))
@@ -198,7 +198,7 @@ class TvMultiEpgViewModelTest {
     @Test
     fun pickingAnotherBouquetLoadsIt() = runBlocking {
         val viewModel = viewModel()
-        viewModel.start(BOUQUET, "Favourites")
+        viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
 
         viewModel.pickBouquet(Service(OTHER_BOUQUET, "Other"))
@@ -211,6 +211,22 @@ class TvMultiEpgViewModelTest {
         assertTrue(
             receiver.requests.any { it.requestUrl?.queryParameter("bRef") == OTHER_BOUQUET }
         )
+    }
+
+    @Test
+    fun openingAgainSwitchesToThatBouquet() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.open(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+
+        viewModel.open(OTHER_BOUQUET, "Other")
+        val state = awaitState(viewModel) {
+            it.grid.bouquetRef == OTHER_BOUQUET && it.grid.channels.isNotEmpty() &&
+                !it.grid.syncing
+        }
+
+        assertEquals(OTHER_BOUQUET, state.bouquetRef)
+        assertEquals(UiText.Raw("Other"), state.title)
     }
 
     @Test

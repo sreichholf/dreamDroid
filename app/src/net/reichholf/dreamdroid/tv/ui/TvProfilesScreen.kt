@@ -43,12 +43,13 @@ import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
 import net.reichholf.dreamdroid.ui.profiles.ProfileListItem
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
-/** D-pad TV profile list: Add, then activate / edit / delete per Room profile. */
+/** D-pad TV profile list: backup, add, then activate / edit / delete Room profiles. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun TvProfilesScreen(
     profiles: List<ProfileListItem>,
     onAdd: () -> Unit,
+    onBackup: () -> Unit,
     onActivate: (Int) -> Unit,
     onEdit: (Int) -> Unit,
     onDelete: (Int) -> Unit,
@@ -64,7 +65,7 @@ fun TvProfilesScreen(
         if (activeIndex < 0) {
             return@LaunchedEffect
         }
-        listState.scrollToItem(activeIndex + 1)
+        listState.scrollToItem(activeIndex + 2)
         try {
             activeFocusRequester.requestFocus()
         } catch (_: IllegalStateException) {
@@ -80,6 +81,29 @@ fun TvProfilesScreen(
             .fillMaxSize()
             .testTag("tv_profiles_list")
     ) {
+        item(key = "backup_restore") {
+            Surface(
+                onClick = onBackup,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(72.dp)
+                    .testTag("tv_profiles_backup_restore"),
+                colors = dreamDroidTvCardColors(),
+                scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Text(
+                        text = stringResource(R.string.backup_restore),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+        }
         item(key = "add") {
             Surface(
                 onClick = onAdd,

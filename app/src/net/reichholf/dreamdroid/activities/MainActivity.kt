@@ -6,6 +6,7 @@
 
 package net.reichholf.dreamdroid.activities
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
@@ -35,10 +36,12 @@ import net.reichholf.dreamdroid.BuildConfig
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.activities.abs.BaseActivity
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.LocalNetworkPermission
 import net.reichholf.dreamdroid.helpers.isTelevision
+import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.activities.MainActivity as TvMainActivity
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.drawer.DrawerHighlight
@@ -63,6 +66,7 @@ import net.reichholf.dreamdroid.ui.nav.runOnlineOnly
 import net.reichholf.dreamdroid.ui.session.SESSION_REACHABILITY_INTERVAL_MS
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.setup.SetupAssistantScreen
+import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 
 /**
@@ -174,6 +178,14 @@ class MainActivity :
         shellActions.onProfileCheckOutcomeHandled()
     }
 
+    private fun playLastStream(start: LastStreamStart.Play) {
+        try {
+            startActivity(IntentFactory.getLastStreamIntent(this, start))
+        } catch (_: ActivityNotFoundException) {
+            shellActions.showMessage(UiText.Resource(R.string.missing_stream_player))
+        }
+    }
+
     /** The shell asks once it starts, and setup at its search step. */
     override fun requestLocalNetworkOnCreate(): Boolean = false
 
@@ -188,6 +200,9 @@ class MainActivity :
         }
         DreamDroid.setTheme(this)
         super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            shellActions.startLastStreamAfterFirstCheck()
+        }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 shellActions.uiState.collect { state ->
@@ -203,6 +218,10 @@ class MainActivity :
                 shellActions.uiState.collect { state ->
                     if (phoneShellReady) {
                         onProfileCheckEffects(state)
+                    }
+                    state.lastStreamEffect?.let { start ->
+                        shellActions.onLastStreamEffectHandled()
+                        playLastStream(start)
                     }
                 }
             }
