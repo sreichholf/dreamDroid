@@ -565,10 +565,12 @@ class TvMultiEpgScreenTest {
             nowSec = start + 600L
         )
         val ruler = composeRule.onNodeWithTag("tv_multi_epg_ruler").captureToImage()
-        val marker = ruler.colorAt(30.dp, RulerHeight - 2.dp)
+        // The marker is a 10 dp triangle pointing down at the ruler's bottom; 4 dp above its
+        // tip it is about 5 dp wide, so its middle pixels are not anti-aliased edges.
+        val marker = (-2..2).map { ruler.colorAt(30.dp + it.dp, RulerHeight - 4.dp) }
         assertTrue(
-            "no ruler marker: ${marker.hex()} vs ${scheme.primary.hex()}",
-            marker.near(scheme.primary)
+            "no ruler marker: ${marker.joinToString { it.hex() }} vs ${scheme.primary.hex()}",
+            marker.any { it.near(scheme.primary) }
         )
 
         val image = gridImage()
