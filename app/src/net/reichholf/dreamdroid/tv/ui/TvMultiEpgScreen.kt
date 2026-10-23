@@ -138,6 +138,9 @@ private val ChannelCueHeight = 24.dp
 /** The selected row's band: onSurface, faint enough to stay behind the programme bars. */
 private const val ROW_BAND_ALPHA = 0.06f
 
+/** The row band's outer corners: the programme bars' radius (`shapes.medium`). */
+private val RowBandRadius = 12.dp
+
 /**
  * TV GraphMultiEPG grid. Programme bars are not clickable/focusable — one
  * [onPreviewKeyEvent] host owns the D-pad cursor, which is drawn with the hub cards'
@@ -853,7 +856,15 @@ private fun TvMultiEpgChannelLabel(
     }
     Box(
         modifier = modifier.then(
-            if (selected) Modifier.background(tvMultiEpgRowBand()) else Modifier
+            if (selected) {
+                // The band starts here: round its start like the programme bars.
+                Modifier.background(
+                    tvMultiEpgRowBand(),
+                    RoundedCornerShape(topStart = RowBandRadius, bottomStart = RowBandRadius)
+                )
+            } else {
+                Modifier
+            }
         ),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -1079,7 +1090,17 @@ private fun TvMultiEpgChannelTimeline(
         modifier = Modifier
             .width(timelineWidth)
             .height(rowHeight)
-            .then(if (selectedRow) Modifier.background(tvMultiEpgRowBand()) else Modifier)
+            .then(
+                if (selectedRow) {
+                    // The band ends with the timeline: round its end like its start.
+                    Modifier.background(
+                        tvMultiEpgRowBand(),
+                        RoundedCornerShape(topEnd = RowBandRadius, bottomEnd = RowBandRadius)
+                    )
+                } else {
+                    Modifier
+                }
+            )
     ) {
         for ((x, width) in gaps) {
             TvBarBackground(

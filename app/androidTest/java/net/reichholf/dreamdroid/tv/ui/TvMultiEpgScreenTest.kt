@@ -719,6 +719,40 @@ class TvMultiEpgScreenTest {
     }
 
     @Test
+    fun selectedRowBandHasRoundedEnds() {
+        val start = 1_700_000_000L
+        val channels = fixtureChannels(start)
+        setTvGrid(channels = channels, start = start, selectedRef = channels[0].serviceRef)
+        val image = gridImage()
+
+        // Row 0 carries the band, row 1 not: compare the same spot in both rows.
+        fun band(x: Dp, y: Dp) = image.colorAt(x, y) to image.colorAt(x, RowHeight + y)
+        val (corner, cornerOther) = band(1.dp, 1.dp)
+        assertTrue(
+            "band start corner not rounded: ${corner.hex()} vs ${cornerOther.hex()}",
+            corner.near(cornerOther, tolerance = 0.01f)
+        )
+        val (inside, insideOther) = band(8.dp, RowHeight - 4.dp)
+        assertFalse(
+            "band missing just inside its rounded start: ${inside.hex()} vs ${insideOther.hex()}",
+            inside.near(insideOther, tolerance = 0.01f)
+        )
+
+        // At the end of the timeline (no edge fade once it cannot scroll further) the band
+        // ends rounded too.
+        composeRule.runOnIdle { runBlocking { hScroll.scrollTo(hScroll.maxValue) } }
+        composeRule.waitForIdle()
+        val end = gridImage()
+        val right = with(density) { end.width.toDp() } - 1.dp
+        val endCorner = end.colorAt(right, 1.dp)
+        val endCornerOther = end.colorAt(right, RowHeight + 1.dp)
+        assertTrue(
+            "band end corner not rounded: ${endCorner.hex()} vs ${endCornerOther.hex()}",
+            endCorner.near(endCornerOther, tolerance = 0.01f)
+        )
+    }
+
+    @Test
     fun dayLabelLeavesOutTheYear() {
         val start = 1_700_000_000L
         setTvGrid(
