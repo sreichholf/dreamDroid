@@ -105,6 +105,7 @@ import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvPillShape
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTopBarItemScale
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvFocusColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemShape
 
@@ -1034,6 +1035,7 @@ private fun TvMultiEpgChannelTimeline(
     selectedRow: Boolean = false
 ) {
     val scheme = PhoneMaterialTheme.colorScheme
+    val focus = dreamDroidTvFocusColors()
     val shape = MaterialTheme.shapes.medium
     val timeStyle = PhoneMaterialTheme.typography.labelSmall
     val density = LocalDensity.current
@@ -1118,7 +1120,7 @@ private fun TvMultiEpgChannelTimeline(
                     x = slot.x,
                     width = slot.width,
                     color = when {
-                        cursor && cursorFocused -> scheme.inverseSurface
+                        cursor && cursorFocused -> focus.container
                         cursor -> scheme.primaryContainer
                         else -> scheme.surfaceVariant
                     },
@@ -1170,7 +1172,7 @@ private fun TvMultiEpgChannelTimeline(
                     title = bar.event.title,
                     secondLine = secondLine,
                     color = when {
-                        cursor && cursorFocused -> scheme.inverseOnSurface
+                        cursor && cursorFocused -> focus.content
                         cursor -> scheme.onPrimaryContainer
                         else -> scheme.onSurfaceVariant
                     },

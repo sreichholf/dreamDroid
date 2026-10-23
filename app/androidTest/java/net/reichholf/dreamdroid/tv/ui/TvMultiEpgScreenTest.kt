@@ -607,7 +607,7 @@ class TvMultiEpgScreenTest {
 
         composeRule.onNodeWithTag("tv_multi_epg_grid").requestFocus()
         composeRule.waitForIdle()
-        assertTrue(gridImage().colorAt(x, y).near(scheme.inverseSurface))
+        assertTrue(gridImage().colorAt(x, y).near(scheme.secondaryContainer))
     }
 
     @Test

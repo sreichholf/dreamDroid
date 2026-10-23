@@ -69,25 +69,52 @@ fun DreamDroidTvTheme(
     }
 }
 
+/** A container colour and the content colour that reads on it. */
+data class DreamDroidTvFocusColors(val container: Color, val content: Color)
+
 /**
- * Hub cards: phone elevated token (not TV Material 3's default white [surface]),
- * with Leanback-style inverse contrast when D-pad focused.
+ * D-pad focus on TV cards, list rows and the Guide cursor: the phone's selection colours
+ * (secondaryContainer), which stay dark in the dark theme instead of flashing near white.
+ */
+@Composable
+fun dreamDroidTvFocusColors(): DreamDroidTvFocusColors = PhoneMaterialTheme.colorScheme.let {
+    DreamDroidTvFocusColors(it.secondaryContainer, it.onSecondaryContainer)
+}
+
+/**
+ * Focus on an item that already rests in the selection colour (the active profile, an enabled
+ * timer, the chosen receiver): primary, so focus still shows in both themes.
+ */
+@Composable
+fun dreamDroidTvActiveFocusColors(): DreamDroidTvFocusColors = PhoneMaterialTheme.colorScheme.let {
+    DreamDroidTvFocusColors(it.primary, it.onPrimary)
+}
+
+/**
+ * Hub cards: phone elevated token (not TV Material 3's default white [surface]), focused in
+ * [dreamDroidTvFocusColors]. [restContainer] replaces the resting fill; one in the selection
+ * colour takes [dreamDroidTvActiveFocusColors] on focus.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-fun dreamDroidTvCardColors(): ClickableSurfaceColors {
+fun dreamDroidTvCardColors(restContainer: Color? = null): ClickableSurfaceColors {
     val phone = PhoneMaterialTheme.colorScheme
+    val focus = if (restContainer == null) {
+        dreamDroidTvFocusColors()
+    } else {
+        dreamDroidTvActiveFocusColors()
+    }
     return ClickableSurfaceDefaults.colors(
-        containerColor = phone.surfaceContainerLow,
+        containerColor = restContainer ?: phone.surfaceContainerLow,
         contentColor = phone.onSurface,
-        focusedContainerColor = phone.inverseSurface,
-        focusedContentColor = phone.inverseOnSurface,
-        pressedContainerColor = phone.inverseSurface,
-        pressedContentColor = phone.inverseOnSurface
+        focusedContainerColor = focus.container,
+        focusedContentColor = focus.content,
+        pressedContainerColor = focus.container,
+        pressedContentColor = focus.content
     )
 }
 
-/** Round icon buttons beside the hub cards (top bar Settings): the cards' colours. */
+/** Round icon buttons in the hub's top bar (Settings): inverse on focus, like its tabs. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 fun dreamDroidTvIconButtonColors() = PhoneMaterialTheme.colorScheme.let { phone ->
