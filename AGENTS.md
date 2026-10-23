@@ -9,6 +9,10 @@ Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; nev
 
 Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 
+## Writing
+
+Keep it minimal. Changelogs and commit messages are bullet style, cut down to the core. Comments never explain the change; they only explain what the code can't.
+
 ## Before you open a PR
 
 1. `./gradlew spotlessApply` on every Kotlin file you touched; keep its output.
