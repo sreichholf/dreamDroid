@@ -607,4 +607,6 @@
         <item>Yes (safe mode)</item>
         <item>Yes</item>
     </string-array>
+    <string name="tv_minutes_left">%1$d min left</string>
+    <string name="tv_now_playing">Playing</string>
 </resources>

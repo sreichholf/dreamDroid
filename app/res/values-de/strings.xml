@@ -527,4 +527,6 @@
         <item>Ja (Sicherheitsmodus)</item>
         <item>Ja</item>
     </string-array>
+    <string name="tv_minutes_left">noch %1$d Min.</string>
+    <string name="tv_now_playing">Läuft</string>
 </resources>

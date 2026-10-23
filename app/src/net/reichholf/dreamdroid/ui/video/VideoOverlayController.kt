@@ -44,7 +44,8 @@ import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.helpers.isTelevision
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.ui.allowsStreaming
-import net.reichholf.dreamdroid.tv.ui.bindTvZapList
+import net.reichholf.dreamdroid.tv.ui.bindTvChannelList
+import net.reichholf.dreamdroid.tv.ui.bindTvPlayerInfobar
 import net.reichholf.dreamdroid.ui.dialogs.DialogActionListener
 import net.reichholf.dreamdroid.ui.session.SessionConnectionHolder
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -99,7 +100,7 @@ class VideoOverlayController(
     private var playerStateJob: Job? = null
     private var renderedEventKey: String? = null
     private var tvSessionJob: Job? = null
-    private var tvZapListBound: Boolean = false
+    private var tvChannelListBound: Boolean = false
     private var phoneZapListBound: Boolean = false
     private var savedScreenBrightness: Float? = null
     private var backCallback: OnBackPressedCallback? = null
@@ -142,24 +143,37 @@ class VideoOverlayController(
                 }
             }
         )
-        composeOverlay!!.bindVideoOverlayScreen(
-            state = overlayUiState,
-            onPlay = { onPlay() },
-            onRewind = { onRewind() },
-            onForward = { onForward() },
-            onInfo = { onInfo() },
-            onList = { onList() },
-            onAudio = { onSelectAudioTrack() },
-            onSubtitle = { onSelectSubtitleTrack() },
-            onSleepTimer = { onSleepTimer() },
-            onSeekChange = { progress -> seek(progress) },
-            uncappedDetailSheets = tvOverlay
-        )
+        if (tvOverlay) {
+            composeOverlay!!.bindTvPlayerInfobar(
+                state = overlayUiState,
+                onPlay = { onPlay() },
+                onRewind = { onRewind() },
+                onForward = { onForward() },
+                onInfo = { onInfo() },
+                onList = { onList() },
+                onAudio = { onSelectAudioTrack() },
+                onSubtitle = { onSelectSubtitleTrack() },
+                onSleepTimer = { onSleepTimer() }
+            )
+        } else {
+            composeOverlay!!.bindVideoOverlayScreen(
+                state = overlayUiState,
+                onPlay = { onPlay() },
+                onRewind = { onRewind() },
+                onForward = { onForward() },
+                onInfo = { onInfo() },
+                onList = { onList() },
+                onAudio = { onSelectAudioTrack() },
+                onSubtitle = { onSelectSubtitleTrack() },
+                onSleepTimer = { onSleepTimer() },
+                onSeekChange = { progress -> seek(progress) }
+            )
+        }
         overlayUiState.onChoiceAction = { actionId, dialogTag ->
             onDialogAction(actionId, null, dialogTag)
         }
         if (tvOverlay) {
-            bindTvZapListIfAllowed()
+            bindTvChannelListIfAllowed()
         } else {
             bindPhoneZapList()
         }
@@ -241,7 +255,7 @@ class VideoOverlayController(
         playerStateJob?.cancel()
         playerStateJob = null
         playback.cancelReload()
-        tvZapListBound = false
+        tvChannelListBound = false
         phoneZapListBound = false
         activity.findViewById<View>(R.id.overlay)?.setOnTouchListener(null)
         val container = activity.findViewById<ViewGroup>(R.id.overlay)
@@ -265,10 +279,10 @@ class VideoOverlayController(
         if (enabled) {
             overlayUiState.zapServices = session.services
             overlayUiState.zapCurrentRef = session.serviceRef
-            bindTvZapListIfAllowed()
+            bindTvChannelListIfAllowed()
             refreshZapChrome()
         } else {
-            unbindTvZapList()
+            unbindTvChannelList()
         }
     }
 
@@ -279,18 +293,19 @@ class VideoOverlayController(
         return sessions.status.value.allowsStreaming()
     }
 
-    private fun bindTvZapListIfAllowed() {
+    private fun bindTvChannelListIfAllowed() {
         val zapList = composeZapList ?: return
         if (!allowsTvStreaming()) {
-            unbindTvZapList()
+            unbindTvChannelList()
             return
         }
-        if (tvZapListBound) {
+        if (tvChannelListBound) {
             return
         }
-        zapList.bindTvZapList(
+        zapList.bindTvChannelList(
             state = overlayUiState,
-            onServiceClick = { row -> zapToService(row) },
+            onServiceClick = { row -> onTvChannelPicked(row) },
+            onSelectBouquet = { bouquet -> selectBouquet(bouquet) },
             onUserInteraction = { autohide() },
             onScrollInProgress = { scrolling ->
                 if (scrolling) {
@@ -300,10 +315,10 @@ class VideoOverlayController(
                 }
             }
         )
-        tvZapListBound = true
+        tvChannelListBound = true
     }
 
-    private fun unbindTvZapList() {
+    private fun unbindTvChannelList() {
         val zapList = composeZapList ?: return
         hideZapOverlays()
         overlayUiState.showListButton = false
@@ -311,7 +326,7 @@ class VideoOverlayController(
         zapList.setContent { }
         zapList.visibility = View.GONE
         zapList.isFocusable = false
-        tvZapListBound = false
+        tvChannelListBound = false
     }
 
     private fun bindPhoneZapList() {
@@ -504,6 +519,10 @@ class VideoOverlayController(
 
     private fun onList() {
         if (!allowsTvStreaming()) {
+            return
+        }
+        if (tvOverlay) {
+            showTvChannelList()
             return
         }
         if (!servicesViewVisible) {
@@ -769,6 +788,7 @@ class VideoOverlayController(
                 overlayUiState.nowStart = now?.startTimeReadable ?: ""
                 overlayUiState.nowTitle = now?.title ?: ""
                 overlayUiState.nowDuration = now?.durationReadable ?: ""
+                overlayUiState.nowEvent = now
                 overlayUiState.showNow = true
             }
 
@@ -785,6 +805,9 @@ class VideoOverlayController(
             overlayUiState.showNow = false
             overlayUiState.hasNext = false
             overlayUiState.showInfoButton = false
+        }
+        if (currentService == null || isRecording()) {
+            overlayUiState.nowEvent = null
         }
         updateProgress()
         overlayUiState.zapCurrentRef = session.serviceRef
@@ -885,11 +908,21 @@ class VideoOverlayController(
         if (rootView == null) return
         handler.removeCallbacks(autoHideRunnable)
         updateViews()
+        if (tvOverlay) {
+            // TV shows either the channel list or the infobar, never both.
+            composeOverlay?.visibility = if (servicesViewVisible) View.GONE else View.VISIBLE
+        }
         if (servicesViewVisible) {
             showZapOverlays()
+        } else if (tvOverlay) {
+            hideZapOverlays()
         }
         fadeInView(overlayRoot)
         autohide()
+        if (tvOverlay) {
+            val target = if (servicesViewVisible) composeZapList else composeOverlay
+            target?.requestFocus()
+        }
     }
 
     fun hideOverlays() {
@@ -897,6 +930,28 @@ class VideoOverlayController(
         handler.removeCallbacks(autoHideRunnable)
         hideZapOverlays()
         fadeOutView(overlayRoot)
+        if (tvOverlay) {
+            servicesViewVisible = false
+        }
+    }
+
+    private fun showTvChannelList() {
+        if (!allowsTvStreaming() || movie != null) {
+            return
+        }
+        servicesViewVisible = session.services.isNotEmpty() || liveBouquetBarAvailable()
+        showOverlays()
+    }
+
+    /** OK in the TV channel list: zap and close; on the playing channel, only close. */
+    private fun onTvChannelPicked(row: ServiceNowNext) {
+        if (row.serviceReference == session.serviceRef) {
+            hideOverlays()
+            return
+        }
+        servicesViewVisible = false
+        zapToService(row)
+        showOverlays()
     }
 
     private fun showZapOverlays() {
@@ -937,10 +992,11 @@ class VideoOverlayController(
         if (v == null || v.visibility == View.VISIBLE) return
         v.visibility = View.VISIBLE
         v.alpha = 0.0f
-        v.animate().alpha(overlayAlpha).setListener(
+        val alpha = if (tvOverlay) 1f else overlayAlpha
+        v.animate().alpha(alpha).setListener(
             object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
-                    v.alpha = overlayAlpha
+                    v.alpha = alpha
                 }
             }
         )
@@ -978,9 +1034,12 @@ class VideoOverlayController(
             PlayerEvent.Opening -> fadeInView(spinner)
 
             // The spinner stays until a picture shows: audio often plays first.
+            // TV leaves the infobar of a fresh zap to the auto-hide timer.
             PlayerEvent.Playing -> {
                 updateProgress()
-                hideOverlays()
+                if (!tvOverlay) {
+                    hideOverlays()
+                }
             }
 
             PlayerEvent.PictureReady -> fadeOutView(spinner)
@@ -1021,6 +1080,9 @@ class VideoOverlayController(
     fun onKeyDown(keyCode: Int): Boolean {
         var ret = false
         autohide()
+        if (tvOverlay && onTvPlayerKey(keyCode)) {
+            return true
+        }
         when (keyCode) {
             KeyEvent.KEYCODE_BACK, KeyEvent.KEYCODE_BUTTON_B -> {
                 if (isOverlaysVisible()) {
@@ -1078,6 +1140,21 @@ class VideoOverlayController(
         return ret
     }
 
+    private fun onTvPlayerKey(keyCode: Int): Boolean {
+        val key = tvPlayerKey(keyCode, isOverlaysVisible(), live = !isRecording())
+        when (key) {
+            TvPlayerKey.NextChannel -> next()
+            TvPlayerKey.PreviousChannel -> previous()
+            TvPlayerKey.ChannelList -> showTvChannelList()
+            TvPlayerKey.None -> return false
+        }
+        if (key != TvPlayerKey.ChannelList) {
+            servicesViewVisible = false
+            showOverlays()
+        }
+        return true
+    }
+
     companion object {
         const val TITLE: String = "title"
         const val SERVICE_INFO: String = "serviceInfo"
@@ -1093,7 +1170,7 @@ class VideoOverlayController(
 
         private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 
-        /** Live TV chrome stays slightly see-through so the video is always visible. */
+        /** Phone chrome stays see-through so the video shows; TV panels carry their own. */
         var overlayAlpha: Float = 0.85f
 
         var seekStepSize: Float = 0.02f

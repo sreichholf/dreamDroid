@@ -124,8 +124,8 @@ import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemShape
  * Phase 3.1c-iv Compose TV hub host.
  * - **iv-b..e:** Compose hub beachhead through movie rows.
  * - **iv-f:** Compose hub is the TV default; Leanback browse path removed.
- *   Stream intents honor the integrated/external player pref. Overlay zap list
- *   is Compose TV cards (`androidx.leanback` removed).
+ *   Stream intents honor the integrated/external player pref (`androidx.leanback`
+ *   removed).
  */
 object TvComposeHubHost {
     fun defaultSettingsKinds(): List<BrowseItem.Kind> = listOf(

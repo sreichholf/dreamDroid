@@ -218,18 +218,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
-                    onRewind = {},
-                    onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {}
-                )
+                VideoOverlayModals(state, uncappedDetailSheets = false)
             }
         }
         composeRule.runOnIdle {
@@ -260,19 +249,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
-                    onRewind = {},
-                    onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {},
-                    uncappedDetailSheets = true
-                )
+                VideoOverlayModals(state, uncappedDetailSheets = true)
             }
         }
         composeRule.runOnIdle {
@@ -301,18 +278,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
-                    onRewind = {},
-                    onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {}
-                )
+                VideoOverlayModals(state, uncappedDetailSheets = false)
             }
         }
         composeRule.runOnIdle {
@@ -339,19 +305,7 @@ class VideoOverlayScreenTest {
         }
         composeRule.setContent {
             DreamDroidTheme {
-                VideoOverlayScreen(
-                    state = state,
-                    onPlay = {},
-                    onRewind = {},
-                    onForward = {},
-                    onInfo = {},
-                    onList = {},
-                    onAudio = {},
-                    onSubtitle = {},
-                    onSleepTimer = {},
-                    onSeekChange = {},
-                    uncappedDetailSheets = true
-                )
+                VideoOverlayModals(state, uncappedDetailSheets = true)
             }
         }
         composeRule.runOnIdle {
