@@ -42,6 +42,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -286,7 +294,12 @@ fun EditOutlinedTextField(
     enabled: Boolean = true,
     contentDescription: String = label
 ) {
-    val keyboardOptions = KeyboardOptions(keyboardType = keyboardType, imeAction = imeAction)
+    val keyboardOnSelect = rememberKeyboardOnSelect()
+    val keyboardOptions = KeyboardOptions(
+        keyboardType = keyboardType,
+        imeAction = imeAction,
+        showKeyboardOnFocus = keyboardOnSelect.showOnFocus
+    )
     val textStyle = MaterialTheme.typography.bodyLarge.copy(
         color = MaterialTheme.colorScheme.onSurface
     )
@@ -315,7 +328,9 @@ fun EditOutlinedTextField(
             keyboardOptions = keyboardOptions,
             textStyle = textStyle,
             colors = colors,
-            modifier = modifier.fillMaxWidth()
+            modifier = modifier
+                .then(keyboardOnSelect.modifier)
+                .fillMaxWidth()
         )
     } else {
         OutlinedTextField(
@@ -337,10 +352,39 @@ fun EditOutlinedTextField(
             textStyle = textStyle,
             colors = colors,
             modifier = modifier
+                .then(keyboardOnSelect.modifier)
                 .fillMaxWidth()
                 .semantics { this.contentDescription = contentDescription }
         )
     }
+}
+
+private val SelectKeys = setOf(Key.DirectionCenter, Key.Enter, Key.NumPadEnter)
+
+private class KeyboardOnSelect(val showOnFocus: Boolean, val modifier: Modifier)
+
+/**
+ * Under D-pad input the IME opens on OK / Enter instead of on focus, so moving through a
+ * form does not land in the keyboard at every field. Flipping [KeyboardOptions.showKeyboardOnFocus]
+ * on a focused field restarts its input session, which shows the keyboard.
+ */
+@Composable
+private fun rememberKeyboardOnSelect(): KeyboardOnSelect {
+    val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
+    var selected by remember { mutableStateOf(false) }
+    val modifier = remember {
+        Modifier
+            .onFocusChanged { if (!it.isFocused) selected = false }
+            .onPreviewKeyEvent { event ->
+                if (!selected && event.type == KeyEventType.KeyDown && event.key in SelectKeys) {
+                    selected = true
+                    true
+                } else {
+                    false
+                }
+            }
+    }
+    return KeyboardOnSelect(showOnFocus = touch || selected, modifier = modifier)
 }
 
 @Composable

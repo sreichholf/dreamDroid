@@ -6,6 +6,7 @@
 * NEU: Backup & Wiederherstellung auf dem TV
 * NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
 * NEU: Bevorzugte Audiosprache für den integrierten Player
+* UPD: TV-Formulare öffnen die Tastatur erst mit OK, nicht bei jedem Feld
 * UPD: Viele UI-Verbesserungen
 * UPD: Neue Player-Einblendung auf dem TV mit Senderliste
 * UPD: TV-Player: Hoch/Runter öffnet die Senderliste

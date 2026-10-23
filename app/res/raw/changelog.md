@@ -6,6 +6,7 @@
 * NEW: Backup & Restore on TV
 * NEW: Option to auto-start the last watched live channel
 * NEW: Preferred audio language for the integrated player
+* UPD: TV forms open the keyboard on OK, not on every field
 * UPD: Many UI improvements
 * UPD: New TV player overlay with channel list
 * UPD: TV player: Up/Down opens the channel list
