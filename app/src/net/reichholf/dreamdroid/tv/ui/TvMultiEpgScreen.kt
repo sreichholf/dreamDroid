@@ -755,7 +755,14 @@ private fun TvMultiEpgChromeButton(
         colors = dreamDroidTvTopBarItemColors(),
         scale = DreamDroidTvTopBarItemScale
     ) {
-        Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
+        // At least the button's width too: a box only as wide as its icon sits at the
+        // Surface's start, off the pill's centre.
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .widthIn(min = ChromeTargetSize),
+            contentAlignment = Alignment.Center
+        ) {
             content()
         }
     }

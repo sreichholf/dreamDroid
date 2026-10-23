@@ -40,8 +40,10 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.hasTestTag
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -671,6 +673,33 @@ class TvMultiEpgScreenTest {
         composeRule.waitForIdle()
         assertEquals(listOf(1, 1, 1), listOf(prev, next, reloads))
         composeRule.onAllNodesWithText("Previous day").assertCountEquals(0)
+    }
+
+    /** Each toolbar icon and label sits on its control's centre, both ways. */
+    @Test
+    fun toolbarIconsAndLabelsSitOnTheirControlsCentre() {
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            onRefresh = {}
+        )
+        listOf(
+            "tv_multi_epg_prev_day" to hasContentDescription("Previous day"),
+            "tv_multi_epg_next_day" to hasContentDescription("Next day"),
+            "tv_multi_epg_refresh" to hasContentDescription("Reload"),
+            "tv_multi_epg_now" to hasText("Now")
+        ).forEach { (tag, inner) ->
+            val control = composeRule.onNodeWithTag(tag).getUnclippedBoundsInRoot()
+            val content = composeRule.onNode(
+                inner and hasAnyAncestor(hasTestTag(tag)),
+                useUnmergedTree = true
+            ).getUnclippedBoundsInRoot()
+            val dx = (content.left + content.right) / 2 - (control.left + control.right) / 2
+            val dy = (content.top + content.bottom) / 2 - (control.top + control.bottom) / 2
+            assertTrue("$tag off centre by $dx, $dy", abs(dx.value) <= 1f && abs(dy.value) <= 1f)
+        }
     }
 
     @Test
