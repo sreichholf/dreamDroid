@@ -53,10 +53,25 @@ sealed interface TvStreamOpen {
 }
 
 /**
+ * Live TV's "Continue watching": the channel the active profile played last, as [service] with
+ * its name and programme from the loaded bouquets, and the list [bouquetRef] it played from.
+ */
+data class ContinueWatching(val service: ServiceNowNext, val bouquetRef: String?)
+
+/** [stream] as its entry in [rows], from its own bouquet first; the saved name otherwise. */
+internal fun continueWatching(stream: LastLiveStream, rows: List<HubBouquetRow>): ContinueWatching {
+    val service = rows.sortedByDescending { it.bouquet.reference == stream.bouquetRef }
+        .firstNotNullOfOrNull { row ->
+            row.services.firstOrNull { it.serviceReference == stream.reference }
+        }
+        ?: ServiceNowNext(serviceReference = stream.reference, serviceName = stream.serviceName)
+    return ContinueWatching(service, stream.bouquetRef)
+}
+
+/**
  * The TV hub: the section on screen ([navigation]), the bouquet rows and movie locations, the
  * movies loaded per location, the open service overlay or timer editor, the active profile's
- * name and the channel it played last ([lastStream], Live TV's "Continue watching"), and the
- * session.
+ * name and the channel it played last ([continueWatching]), and the session.
  */
 data class TvHubUiState(
     val navigation: HubNavigation = HubNavigation(),
@@ -73,7 +88,7 @@ data class TvHubUiState(
     val userMessage: UiText? = null,
     val stream: TvStreamOpen? = null,
     val profileName: String = "",
-    val lastStream: LastLiveStream? = null,
+    val continueWatching: ContinueWatching? = null,
     val connection: ConnectionStatus = ConnectionStatus()
 ) {
     val section: HubSection
@@ -131,7 +146,7 @@ class TvHubViewModel internal constructor(
         state.copy(
             connection = status,
             profileName = profile?.name.orEmpty(),
-            lastStream = lastStream
+            continueWatching = lastStream?.let { continueWatching(it, state.bouquetRows) }
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 

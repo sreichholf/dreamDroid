@@ -93,6 +93,8 @@ import kotlinx.coroutines.flow.drop
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.ui.text.asString
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvActiveFocusColors
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvFocusColors
 
 private const val INTRO_HOLD_MS: Int = 700
 
@@ -390,17 +392,15 @@ fun SetupAssistantScreen(
 }
 
 /**
- * The TV hub's focus look (`dreamDroidTvCardColors()`, focused scale 1.05) for the wizard's
+ * The TV hub's focus look ([dreamDroidTvFocusColors], focused scale 1.05) for the wizard's
  * actions. Only while a remote or keyboard drives the UI: touch mode keeps the phone look.
  * [modifier] must come first in the chain, above the component's own focus target.
  */
 private class RemoteFocus(val modifier: Modifier, val highlighted: Boolean) {
     @Composable
     fun buttonColors(default: ButtonColors): ButtonColors = if (highlighted) {
-        default.copy(
-            containerColor = MaterialTheme.colorScheme.inverseSurface,
-            contentColor = MaterialTheme.colorScheme.inverseOnSurface
-        )
+        val focus = dreamDroidTvFocusColors()
+        default.copy(containerColor = focus.container, contentColor = focus.content)
     } else {
         default
     }
@@ -552,11 +552,18 @@ private fun FindStep(
                 supportingContent = { Text(receiver.host) },
                 // The container is the ListItem's own: a background modifier would sit under it.
                 colors = when {
-                    focus.highlighted -> ListItemDefaults.colors(
-                        containerColor = scheme.inverseSurface,
-                        headlineColor = scheme.inverseOnSurface,
-                        supportingColor = scheme.inverseOnSurface
-                    )
+                    focus.highlighted -> {
+                        val colors = if (selected) {
+                            dreamDroidTvActiveFocusColors()
+                        } else {
+                            dreamDroidTvFocusColors()
+                        }
+                        ListItemDefaults.colors(
+                            containerColor = colors.container,
+                            headlineColor = colors.content,
+                            supportingColor = colors.content
+                        )
+                    }
 
                     selected -> ListItemDefaults.colors(
                         containerColor = scheme.secondaryContainer,

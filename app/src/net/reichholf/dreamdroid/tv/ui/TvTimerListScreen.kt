@@ -188,23 +188,10 @@ private fun TvTimerRow(
     }
 }
 
-/**
- * Enabled timer activate-card: [dreamDroidTvCardColors] with unfocused container
- * [PhoneMaterialTheme.colorScheme.secondaryContainer]. Focused stays inverse.
- */
+/** Enabled timer activate-card: [dreamDroidTvCardColors] resting in the selection colour. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun tvTimersEnableCardColors(enabled: Boolean): ClickableSurfaceColors {
-    if (!enabled) {
-        return dreamDroidTvCardColors()
-    }
-    val phone = PhoneMaterialTheme.colorScheme
-    return ClickableSurfaceDefaults.colors(
-        containerColor = phone.secondaryContainer,
-        contentColor = phone.onSurface,
-        focusedContainerColor = phone.inverseSurface,
-        focusedContentColor = phone.inverseOnSurface,
-        pressedContainerColor = phone.inverseSurface,
-        pressedContentColor = phone.inverseOnSurface
+private fun tvTimersEnableCardColors(enabled: Boolean): ClickableSurfaceColors =
+    dreamDroidTvCardColors(
+        restContainer = PhoneMaterialTheme.colorScheme.secondaryContainer.takeIf { enabled }
     )
-}

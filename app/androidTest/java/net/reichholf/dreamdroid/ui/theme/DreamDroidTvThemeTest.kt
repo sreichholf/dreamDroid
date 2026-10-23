@@ -6,7 +6,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.luminance
@@ -18,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.tv.material3.ClickableSurfaceScale
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
 import androidx.tv.material3.Surface
@@ -135,6 +141,57 @@ class DreamDroidTvThemeTest {
                 "expected=#${Integer.toHexString(expected)}",
             rgbDistance(px.toArgb(), expected) < 50
         )
+    }
+
+    /**
+     * Focus is the phone's selection colour in both themes, and an item resting in that colour
+     * focuses in primary, so focus still shows on it.
+     */
+    @Test
+    fun focusedCardsTakeThePhoneSelectionColoursInBothThemes() {
+        var dark by mutableStateOf(true)
+        var active by mutableStateOf(false)
+        var selection = Color.Unspecified
+        var primary = Color.Unspecified
+        val focus = FocusRequester()
+        composeRule.setContent {
+            DreamDroidTvTheme(forceDark = dark) {
+                val phone = PhoneMaterialTheme.colorScheme
+                selection = phone.secondaryContainer
+                primary = phone.primary
+                Surface(
+                    onClick = {},
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(80.dp)
+                        .focusRequester(focus)
+                        .testTag("tv_card_surface"),
+                    colors = dreamDroidTvCardColors(
+                        restContainer = phone.secondaryContainer.takeIf { active }
+                    ),
+                    scale = ClickableSurfaceScale.None
+                ) {}
+            }
+        }
+        composeRule.runOnIdle { focus.requestFocus() }
+        for (theme in listOf(true, false)) {
+            for (resting in listOf(false, true)) {
+                composeRule.runOnIdle {
+                    dark = theme
+                    active = resting
+                }
+                composeRule.waitForIdle()
+                val bitmap = composeRule.onNodeWithTag("tv_card_surface").captureToImage()
+                    .asAndroidBitmap()
+                val px = bitmap.getPixel(bitmap.width / 2, bitmap.height / 2)
+                val want = if (resting) primary else selection
+                assertTrue(
+                    "dark=$theme active=$resting focused #${Integer.toHexString(px)} " +
+                        "expected #${Integer.toHexString(want.toArgb())}",
+                    rgbDistance(px, want.toArgb()) < 30
+                )
+            }
+        }
     }
 
     private fun rgbDistance(a: Int, b: Int): Int {
