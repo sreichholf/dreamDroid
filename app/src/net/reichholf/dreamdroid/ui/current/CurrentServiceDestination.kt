@@ -10,6 +10,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.ui.compose.DreamDroidPullRefresh
 import net.reichholf.dreamdroid.ui.epg.EpgEventDetailHost
@@ -74,7 +75,15 @@ internal fun startServiceStream(
 ) {
     try {
         context.startActivity(
-            IntentFactory.getStreamServiceIntent(context, stream.stream, stream.name)
+            IntentFactory.getStreamServiceIntent(
+                context,
+                stream.stream,
+                stream.name,
+                serviceInfo = ServiceNowNext(
+                    serviceReference = stream.stream.reference,
+                    serviceName = stream.name
+                )
+            )
         )
     } catch (_: ActivityNotFoundException) {
         onMissingPlayer()

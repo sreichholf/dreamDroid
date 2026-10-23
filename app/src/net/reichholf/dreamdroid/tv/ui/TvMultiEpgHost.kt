@@ -81,7 +81,8 @@ fun TvMultiEpgHost(
                     activity,
                     stream.stream,
                     stream.title,
-                    stream.bouquetRef
+                    stream.bouquetRef,
+                    stream.service
                 ),
                 viewModel::onMissingStreamPlayer
             )

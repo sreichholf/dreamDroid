@@ -25,6 +25,7 @@ import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
@@ -427,20 +428,40 @@ class TvHubViewModelTest {
     }
 
     @Test
-    fun lastStreamFollowsThePlayerAndTheActiveProfile() = runBlocking<Unit> {
+    fun continueWatchingFollowsThePlayerAndTheActiveProfile() = runBlocking<Unit> {
         val viewModel = viewModel()
-        assertNull(viewModel.uiState.value.lastStream)
+        assertNull(viewModel.uiState.value.continueWatching)
         val zdf = LastLiveStream(CHANNEL, "Das Erste HD", FAVOURITES)
 
         lastStreams.save(zdf)
-        awaitState(viewModel) { it.lastStream == zdf }
+        awaitState(viewModel) { it.continueWatching?.service?.serviceReference == CHANNEL }
 
         val active = receiver.profiles.repository.requireCurrent()
         receiver.profiles.repository.setCurrent(Profile().apply { id = PROFILE_ID + 1 })
-        awaitState(viewModel) { it.lastStream == null }
+        awaitState(viewModel) { it.continueWatching == null }
 
         receiver.profiles.repository.setCurrent(active)
-        awaitState(viewModel) { it.lastStream == zdf }
+        awaitState(viewModel) { it.continueWatching?.bouquetRef == FAVOURITES }
+    }
+
+    /** The card shows the channel as the loaded bouquets have it: name and programme. */
+    @Test
+    fun continueWatchingTakesTheChannelFromTheLoadedBouquets() {
+        val now = Event(title = "heute journal")
+        val zdf = ServiceNowNext(serviceReference = CHANNEL, serviceName = "ZDF HD", now = now)
+        val rows = listOf(
+            HubBouquetRow(Service("other", "Other"), listOf(zdf.copy(now = null))),
+            HubBouquetRow(Service(FAVOURITES, "Favourites"), listOf(zdf))
+        )
+
+        assertEquals(
+            ContinueWatching(zdf, FAVOURITES),
+            continueWatching(LastLiveStream(CHANNEL, "", FAVOURITES), rows)
+        )
+        assertEquals(
+            ContinueWatching(ServiceNowNext(serviceReference = "gone", serviceName = "Old"), null),
+            continueWatching(LastLiveStream("gone", "Old", null), rows)
+        )
     }
 
     @Test

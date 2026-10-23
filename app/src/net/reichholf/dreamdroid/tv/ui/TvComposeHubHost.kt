@@ -97,7 +97,6 @@ import androidx.tv.material3.TabRow
 import androidx.tv.material3.TabRowDefaults
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.enigma.Movie
 import net.reichholf.dreamdroid.enigma.Service
@@ -291,7 +290,7 @@ fun ComposeTvHubApp(
             streamingEnabled = streamingEnabled,
             onServiceClick = viewModel::streamService,
             onMovieClick = viewModel::streamMovie,
-            lastStream = uiState.lastStream,
+            continueWatching = uiState.continueWatching,
             profileName = uiState.profileName,
             sessionChipLabel = stringResource(status.chipLabelRes()),
             onOpenProfiles = onOpenProfiles,
@@ -369,7 +368,7 @@ fun ComposeTvHubChrome(
     streamingEnabled: Boolean = true,
     onServiceClick: (ServiceNowNext, String?) -> Unit = { _, _ -> },
     onMovieClick: (Movie) -> Unit = {},
-    lastStream: LastLiveStream? = null,
+    continueWatching: ContinueWatching? = null,
     profileName: String = "",
     sessionChipLabel: String? = null,
     onOpenProfiles: () -> Unit = {},
@@ -400,7 +399,7 @@ fun ComposeTvHubChrome(
     val movieDir = (section as? HubSection.Recordings)?.location
     // Live TV's grid starts with "Continue watching", when a channel was saved for the active
     // profile; it scrolls away with the services.
-    val continueWatching = lastStream.takeIf { selectedBouquet != null }
+    val continueWatching = continueWatching.takeIf { selectedBouquet != null }
     // On start the hub focuses Live TV's first card (Continue watching, else the first
     // service) so the remote acts on content instead of an unclear cursor. One-shot per hub
     // entry, and never once the user has moved through the drawer, so late-loading rows do
@@ -519,14 +518,14 @@ fun ComposeTvHubChrome(
                                             headerFocus = continueWatchingFocus.takeIf {
                                                 continueWatching != null
                                             },
-                                            header = continueWatching?.let { stream ->
+                                            header = continueWatching?.let { last ->
                                                 { firstCardFocus ->
                                                     HubContinueWatchingCard(
-                                                        stream = stream,
+                                                        service = last.service,
                                                         onClick = {
                                                             gatedServiceClick(
-                                                                stream.asService(),
-                                                                stream.bouquetRef
+                                                                last.service,
+                                                                last.bouquetRef
                                                             )
                                                         },
                                                         focusRequester = continueWatchingFocus,
@@ -1328,23 +1327,22 @@ private fun HubBouquetServiceItem(
     }
 }
 
-/** [LastLiveStream] as the service the hub's stream path plays. */
-private fun LastLiveStream.asService(): ServiceNowNext =
-    ServiceNowNext(serviceReference = reference, serviceName = serviceName)
-
 /**
  * "Continue watching": the channel the active profile played last, in a service card's size,
- * as the first item of Live TV's grid. OK plays it like its card in the grid; Down goes to
- * [downFocus], the first card.
+ * as the first item of Live TV's grid: its name, the programme running now and its progress.
+ * OK plays it like its card in the grid; Down goes to [downFocus], the first card.
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun HubContinueWatchingCard(
-    stream: LastLiveStream,
+    service: ServiceNowNext,
     onClick: () -> Unit,
     focusRequester: FocusRequester,
     downFocus: FocusRequester?
 ) {
+    var focused by remember { mutableStateOf(false) }
+    val nowTitle = service.now?.title.orEmpty()
+    val progress = nowProgress(service.now)
     Surface(
         onClick = onClick,
         modifier = Modifier
@@ -1359,42 +1357,80 @@ private fun HubContinueWatchingCard(
                     down = downFocus
                 }
             }
+            .onFocusChanged { focused = it.isFocused }
             .semantics(mergeDescendants = true) { role = Role.Button }
             .testTag("hub_continue_watching"),
         colors = dreamDroidTvCardColors(),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f),
         shape = ClickableSurfaceDefaults.shape()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            PiconImage(
-                reference = stream.reference,
-                name = stream.serviceName,
-                contentDescription = null,
-                modifier = Modifier
-                    .padding(end = 12.dp)
-                    .size(width = HubServicePiconWidth, height = HubServicePiconHeight)
-                    .testTag("hub_continue_watching_picon")
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = stringResource(R.string.tv_hub_continue_watching),
-                    style = MaterialTheme.typography.labelLarge,
+        Column(modifier = Modifier.fillMaxSize()) {
+            if (progress.isKnown) {
+                LinearProgressIndicator(
+                    progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(HubServiceProgressHeight)
+                        .testTag("hub_continue_watching_progress"),
                     color = MaterialTheme.colorScheme.primary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    trackColor = Color.Transparent,
+                    strokeCap = StrokeCap.Butt,
+                    gapSize = 0.dp,
+                    drawStopIndicator = {}
                 )
-                Text(
-                    text = stream.serviceName,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.testTag("hub_continue_watching_name")
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PiconImage(
+                    reference = service.serviceReference,
+                    name = service.serviceName,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .padding(end = 12.dp)
+                        .size(width = HubServicePiconWidth, height = HubServicePiconHeight)
+                        .testTag("hub_continue_watching_picon")
                 )
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 10.dp),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.tv_hub_continue_watching),
+                        style = MaterialTheme.typography.labelMedium,
+                        // The accent reads on the resting card only; the focused one takes
+                        // its content colour.
+                        color = if (focused) {
+                            LocalContentColor.current
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Text(
+                        text = service.serviceName,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.testTag("hub_continue_watching_name")
+                    )
+                    if (nowTitle.isNotEmpty()) {
+                        Text(
+                            text = nowTitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = LocalContentColor.current.copy(alpha = 0.8f),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.testTag("hub_continue_watching_now")
+                        )
+                    }
+                }
             }
         }
     }

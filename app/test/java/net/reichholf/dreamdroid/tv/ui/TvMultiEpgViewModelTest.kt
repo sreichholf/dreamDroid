@@ -17,6 +17,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.data.TimerRepository
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
+import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
@@ -131,13 +132,16 @@ class TvMultiEpgViewModelTest {
         viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.bouquetRef == BOUQUET }
 
-        viewModel.stream(Event(title = "News", serviceReference = BOUQUET_CHANNEL))
+        viewModel.stream(
+            Event(title = "News", serviceReference = BOUQUET_CHANNEL, serviceName = "Das Erste HD")
+        )
         val stream = awaitState(viewModel) { it.stream != null }.stream
 
         val profile = receiver.profiles.repository.requireCurrent()
         assertEquals(
             TvMultiEpgStream(
                 "News",
+                ServiceNowNext(serviceReference = BOUQUET_CHANNEL, serviceName = "Das Erste HD"),
                 BOUQUET,
                 LiveStream.Ready(BOUQUET_CHANNEL, EnigmaUrls.stream(profile, BOUQUET_CHANNEL))
             ),
@@ -152,7 +156,9 @@ class TvMultiEpgViewModelTest {
         receiver.profiles.repository.requireCurrent().zapAndStream = true
         val viewModel = viewModel()
 
-        viewModel.stream(Event(title = "News", serviceReference = BOUQUET_CHANNEL))
+        viewModel.stream(
+            Event(title = "News", serviceReference = BOUQUET_CHANNEL, serviceName = "Das Erste HD")
+        )
         val state = awaitState(viewModel) { it.userMessage != null }
 
         assertEquals(UiText.Raw("No free tuner"), state.userMessage)
