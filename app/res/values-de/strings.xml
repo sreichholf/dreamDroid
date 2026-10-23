@@ -328,6 +328,7 @@
     <string name="zap_and_stream_summary">Vor der Wiedergabe auf diesen Sender umschalten. Ein Einzel-Tuner kann nur einen Dienst auf dem aktuellen Transponder streamen, und der Sender am Fernseher wechselt dabei mit.</string>
     <string name="subtitles">Untertitel</string>
     <string name="backup">Backup</string>
+    <string name="backup_restore">Backup &amp; Wiederherstellung</string>
     <string name="backup_current_profile">Aktiv</string>
     <string name="backup_export">Export</string>
     <string name="backup_export_missing_permission">Bitte Berechtigung für Datenspeicher erteilen</string>

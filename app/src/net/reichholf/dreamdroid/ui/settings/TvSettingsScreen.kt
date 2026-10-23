@@ -42,8 +42,8 @@ import net.reichholf.dreamdroid.data.AppSettings
 import net.reichholf.dreamdroid.data.ExternalPlayer
 import net.reichholf.dreamdroid.ui.compose.ListRowHorizontalInset
 import net.reichholf.dreamdroid.ui.dialogs.TextInputDialog
-import net.reichholf.dreamdroid.video.Engine
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.video.Engine
 
 /**
  * TV settings subset matching [R.xml.preferences] on television
@@ -123,6 +123,7 @@ fun TvSettingsScreen(
                 },
                 testTag = "tv_setting_video_hardware_acceleration"
             )
+            StreamBufferPreferenceRow(settings) { listDialog = it }
             TvPreferenceRow(
                 title = stringResource(R.string.preferred_audio_language),
                 summary = settings.preferredAudioLanguage.ifBlank {
@@ -144,7 +145,6 @@ fun TvSettingsScreen(
                 },
                 modifier = Modifier.testTag("tv_setting_auto_start_last_stream")
             )
-            StreamBufferPreferenceRow(settings) { listDialog = it }
 
             PreferenceCategoryHeader(stringResource(R.string.picons))
             TvText(
