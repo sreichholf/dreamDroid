@@ -121,7 +121,7 @@ class BackupRepository @Inject constructor(
         const val TAG = "BackupRepository"
         val LAST_STREAM_KEYS = setOf(
             DreamDroid.PREFS_KEY_LAST_STREAM_REFERENCE,
-            DreamDroid.PREFS_KEY_LAST_STREAM_TITLE,
+            DreamDroid.PREFS_KEY_LAST_STREAM_SERVICE_NAME,
             DreamDroid.PREFS_KEY_LAST_STREAM_BOUQUET,
             DreamDroid.PREFS_KEY_LAST_STREAM_PROFILE
         )

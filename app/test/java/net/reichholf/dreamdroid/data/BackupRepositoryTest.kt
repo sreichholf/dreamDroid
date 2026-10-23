@@ -34,7 +34,7 @@ class BackupRepositoryTest {
             .putString(DreamDroid.PREFS_KEY_PREFERRED_AUDIO_LANGUAGE, "eng")
             .putInt(DreamDroid.CURRENT_PROFILE, 3)
             .putString(DreamDroid.PREFS_KEY_LAST_STREAM_REFERENCE, "1:0:1:channel")
-            .putString(DreamDroid.PREFS_KEY_LAST_STREAM_TITLE, "Channel")
+            .putString(DreamDroid.PREFS_KEY_LAST_STREAM_SERVICE_NAME, "Channel")
             .putString(DreamDroid.PREFS_KEY_LAST_STREAM_BOUQUET, "1:0:1:bouquet")
             .putInt(DreamDroid.PREFS_KEY_LAST_STREAM_PROFILE, 3)
             .apply()

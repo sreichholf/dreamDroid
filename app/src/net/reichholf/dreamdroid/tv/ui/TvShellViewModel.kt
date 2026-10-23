@@ -7,15 +7,20 @@ import javax.inject.Inject
 import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ServiceRepository
@@ -26,8 +31,14 @@ import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 /**
  * The TV ProfileCheck [gate]; null until Room answered whether the active profile has a
  * cache, so Checking never flashes over content Room can paint.
+ *
+ * [lastStreamEffect] is the one-shot result of starting the last channel on launch: play it,
+ * or show why the receiver cannot stream it.
  */
-data class TvShellUiState(val gate: TvSessionGate? = null)
+data class TvShellUiState(
+    val gate: TvSessionGate? = null,
+    val lastStreamEffect: LastStreamStart? = null
+)
 
 /**
  * The TV activity's session: checks the active profile when the hub starts and on every
@@ -40,8 +51,12 @@ class TvShellViewModel @Inject constructor(
     private val profiles: ProfileRepository,
     private val checks: ProfileCheckRepository,
     private val services: ServiceRepository,
-    private val sessions: SessionConnectionHolder
+    private val sessions: SessionConnectionHolder,
+    private val lastStreamStart: LastLiveStreamAutoStart
 ) : ViewModel() {
+    /** The next check result may start the last channel; see [startLastStreamAfterFirstCheck]. */
+    private var lastStreamPending = false
+
     /**
      * Whether Room can paint for which profile id. Refreshed on each profile or session
      * change; unknown until Room answered.
@@ -58,22 +73,28 @@ class TvShellViewModel @Inject constructor(
             }
             .stateIn(viewModelScope, SharingStarted.Eagerly, UNKNOWN_CACHE)
 
-    val uiState: StateFlow<TvShellUiState> = combine(
-        sessions.status,
-        profiles.current,
-        cache
-    ) { status, profile, (cacheProfileId, hasCache) ->
-        val known = hasCache.takeIf { profile?.id == cacheProfileId }
-        TvShellUiState(
-            gate = known?.let {
-                tvSessionGate(
-                    status = status,
-                    hasCache = it,
-                    receiverLabel = profile?.let { p -> "${p.user}@${p.host}:${p.port}" }.orEmpty()
-                )
-            }
-        )
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, TvShellUiState())
+    private val _uiState = MutableStateFlow(TvShellUiState())
+    val uiState: StateFlow<TvShellUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            combine(
+                sessions.status,
+                profiles.current,
+                cache
+            ) { status, profile, (cacheProfileId, hasCache) ->
+                val known = hasCache.takeIf { profile?.id == cacheProfileId }
+                known?.let {
+                    tvSessionGate(
+                        status = status,
+                        hasCache = it,
+                        receiverLabel =
+                            profile?.let { p -> "${p.user}@${p.host}:${p.port}" }.orEmpty()
+                    )
+                }
+            }.collect { gate -> _uiState.update { it.copy(gate = gate) } }
+        }
+    }
 
     private var checkJob: Job? = null
     private var switchesJob: Job? = null
@@ -93,6 +114,18 @@ class TvShellViewModel @Inject constructor(
         if (profile !== checkedProfile) {
             onProfileChanged(profile)
         }
+    }
+
+    /**
+     * The app launched: the next profile check, whatever its result, decides once whether
+     * the last channel starts. A later check or profile switch does not.
+     */
+    fun startLastStreamAfterFirstCheck() {
+        lastStreamPending = true
+    }
+
+    fun onLastStreamEffectHandled() {
+        _uiState.update { it.copy(lastStreamEffect = null) }
     }
 
     /** Asks the receiver again, dropping its cached device info. */
@@ -152,7 +185,13 @@ class TvShellViewModel @Inject constructor(
 
     private suspend fun apply(profile: Profile, result: ProfileCheckResult) {
         if (profiles.current.value == null) return
+        val startLastStream = lastStreamPending
+        lastStreamPending = false
         sessions.applyProfileCheckResult(result, hasCache(profile))
+        if (startLastStream) {
+            val start = lastStreamStart.streamToStart() ?: return
+            _uiState.update { it.copy(lastStreamEffect = start) }
+        }
     }
 
     private suspend fun hasCache(profile: Profile): Boolean =

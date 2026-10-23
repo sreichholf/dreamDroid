@@ -11,6 +11,8 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
@@ -18,6 +20,7 @@ import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
@@ -39,6 +42,8 @@ import org.junit.jupiter.api.Test
 class VideoPlaybackViewModelTest {
     private val receiver = EpgTestReceiver()
     private val viewModels = mutableListOf<VideoPlaybackViewModel>()
+    private val lastStreams =
+        LastLiveStreamRepository(MemorySharedPreferences(), receiver.profiles.repository)
 
     /** `/web/zap` answer. */
     private var zapReply = MockResponse().setBody(simpleResult(true, "Active service changed"))
@@ -55,6 +60,15 @@ class VideoPlaybackViewModelTest {
         runBlocking { viewModels.forEach { it.cancelAndJoin() } }
         receiver.stop()
         Dispatchers.resetMain()
+    }
+
+    @Test
+    fun aPlayingLiveStreamBecomesTheLastChannel() {
+        val stream = LastLiveStream(ZDF, "ZDF HD", BOUQUET)
+
+        viewModel().onLiveStreamPlaying(stream)
+
+        assertEquals(stream, lastStreams.forActiveProfile())
     }
 
     @Test
@@ -247,7 +261,8 @@ class VideoPlaybackViewModelTest {
                 receiverApis(on.profiles.repository),
                 on.profiles.repository
             ),
-            on.profiles.repository
+            on.profiles.repository,
+            lastStreams
         ).also { viewModels += it }
 
     private fun routes(request: RecordedRequest): MockResponse = when (request.path()) {

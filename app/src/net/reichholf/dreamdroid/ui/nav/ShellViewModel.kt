@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
+import net.reichholf.dreamdroid.data.LastStreamStart
 import net.reichholf.dreamdroid.data.PluginPresence
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
@@ -56,7 +58,9 @@ data class ShellUiState(
     /** The receiver has the AutoTimer plugin, so the drawer lists AutoTimer. */
     val autoTimerInDrawer: Boolean = false,
     /** The active profile's web interface has the sleep timer, so the drawer offers it. */
-    val sleepTimerInDrawer: Boolean = true
+    val sleepTimerInDrawer: Boolean = true,
+    /** Play this saved channel: the launch's first profile check found the receiver online. */
+    val lastStreamEffect: LastStreamStart.Play? = null
 )
 
 /** A profile check started. [showGate]: open the gate, which shows Checking. */
@@ -99,6 +103,7 @@ class ShellViewModel @Inject constructor(
     private val services: ServiceRepository,
     private val sessions: SessionConnectionHolder,
     private val settings: SettingsRepository,
+    private val lastStreamStart: LastLiveStreamAutoStart,
     capabilities: WebIfCapabilitiesRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(ShellUiState())
@@ -114,6 +119,9 @@ class ShellViewModel @Inject constructor(
 
     /** A successful check opens the start route even off the gate (after the failed gate). */
     private var openStartOnSuccess = false
+
+    /** The next check outcome may start the last channel; see [startLastStreamAfterFirstCheck]. */
+    private var lastStreamPending = false
 
     init {
         viewModelScope.launch {
@@ -161,6 +169,18 @@ class ShellViewModel @Inject constructor(
         val profile = profiles.current.value ?: return
         profiles.setDeviceInfo(profile, null)
         checkProfile(profile, showGate = true)
+    }
+
+    /**
+     * The app launched: the next profile check, whatever its outcome, decides once whether
+     * the last channel starts. A later check or profile switch does not.
+     */
+    fun startLastStreamAfterFirstCheck() {
+        lastStreamPending = true
+    }
+
+    fun onLastStreamEffectHandled() {
+        _uiState.update { it.copy(lastStreamEffect = null) }
     }
 
     /** The setup assistant finished; its profile is not a first start any more. */
@@ -334,6 +354,8 @@ class ShellViewModel @Inject constructor(
         if (profiles.current.value == null) {
             return
         }
+        val startLastStream = lastStreamPending
+        lastStreamPending = false
         val hasCache = hasCache(profile)
         sessions.applyProfileCheckResult(result, hasCache)
         val firstStart = settings.firstStart
@@ -352,6 +374,17 @@ class ShellViewModel @Inject constructor(
             ProfileCheckOutcome.Leave(offGateToo = openStart || firstStart, firstStart = firstStart)
         }
         _uiState.update { it.copy(profileCheckOutcome = outcome) }
+        if (startLastStream) {
+            publishLastStreamStart()
+        }
+    }
+
+    private suspend fun publishLastStreamStart() {
+        when (val start = lastStreamStart.streamToStart()) {
+            is LastStreamStart.Play -> _uiState.update { it.copy(lastStreamEffect = start) }
+            is LastStreamStart.Failed -> showMessage(start.message)
+            null -> Unit
+        }
     }
 
     private fun failedGate(profile: Profile, result: ProfileCheckResult): ProfileCheckUi.Failed =
