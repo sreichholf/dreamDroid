@@ -1,16 +1,10 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.469
-* UPD: New TV hub layout with tabs
-* NEW: Continue watching on TV
-* NEW: Backup & Restore on TV
-* NEW: Option to auto-start the last watched live channel
-* NEW: Preferred audio language for the integrated player
-* UPD: TV forms open the keyboard on OK, not on every field
-* UPD: Many UI improvements
-* UPD: New TV player overlay with channel list
-* UPD: TV player: Up/Down opens the channel list
-* FIX: Player info showing a programme that had already ended
+* UPD: TV - rework hub, player, MultiEPG, editing
+* NEW: TV - Continue watching, Backup/Restore
+* NEW: TV - Autostart streaming, preferred audio language
+* FIX: TV - multiple usability quirks
 
 ## 2.0.468
 * UPD: Live TV streams reconnect after dropouts
