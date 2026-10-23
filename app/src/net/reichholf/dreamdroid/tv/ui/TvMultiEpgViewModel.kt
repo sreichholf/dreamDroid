@@ -43,7 +43,7 @@ data class TvMultiEpgStream(val title: String, val bouquetRef: String, val strea
  * The TV MultiEPG: the bouquet it shows and the ones it can switch to, the loaded grid,
  * the focused cell, the zoom, the open overlay (detail, timer editor, or bouquet picker),
  * the set-timer request, and a [stream] for the player. [streamingEnabled] and
- * [mutationsBlocked] follow the session, [textSize] the setting.
+ * [mutationsBlocked] follow the session, [textSize] and [piconsEnabled] the settings.
  */
 data class TvMultiEpgUiState(
     val bouquetRef: String = "",
@@ -61,7 +61,8 @@ data class TvMultiEpgUiState(
     val stream: TvMultiEpgStream? = null,
     val streamingEnabled: Boolean = false,
     val mutationsBlocked: Boolean = false,
-    val textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT
+    val textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    val piconsEnabled: Boolean = false
 ) {
     val title: UiText
         get() = if (bouquetName.isBlank()) {
@@ -103,7 +104,8 @@ class TvMultiEpgViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         TvMultiEpgUiState(
             visibleMinutes = readMultiEpgVisibleMinutes(savedStateHandle),
-            textSize = MultiEpgTextSize.fromPref(settings.current().multiEpgTextSize)
+            textSize = MultiEpgTextSize.fromPref(settings.current().multiEpgTextSize),
+            piconsEnabled = settings.current().picons
         )
     )
     val uiState: StateFlow<TvMultiEpgUiState> = combine(
@@ -116,7 +118,8 @@ class TvMultiEpgViewModel @Inject constructor(
             grid = grid,
             streamingEnabled = connection.allowsStreaming(),
             mutationsBlocked = connection.blocksMutations,
-            textSize = MultiEpgTextSize.fromPref(appSettings.multiEpgTextSize)
+            textSize = MultiEpgTextSize.fromPref(appSettings.multiEpgTextSize),
+            piconsEnabled = appSettings.picons
         )
     }.stateIn(viewModelScope, SharingStarted.Eagerly, _uiState.value)
 

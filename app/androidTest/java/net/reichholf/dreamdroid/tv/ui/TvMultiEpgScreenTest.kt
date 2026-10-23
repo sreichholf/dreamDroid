@@ -1,10 +1,12 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.graphics.Color as AndroidColor
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
@@ -16,20 +18,35 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.assertHasClickAction
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasContentDescription
+import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
@@ -38,7 +55,10 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
+import java.util.Locale
 import kotlin.math.abs
+import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
@@ -46,6 +66,7 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -54,6 +75,10 @@ import org.junit.Test
 class TvMultiEpgScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
+
+    private lateinit var scheme: ColorScheme
+    private lateinit var density: Density
+    private lateinit var hScroll: ScrollState
 
     @Test
     fun screenAndChromeTagsExist() {
@@ -131,12 +156,11 @@ class TvMultiEpgScreenTest {
         var nowClicks = 0
         var zoomMinutes: Int? = null
         composeRule.setContent {
-            DreamDroidTvTheme {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(480.dp)
-                ) {
+            // The toolbar is laid out for a TV window; a phone-wide one pushes Now off screen.
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.ForcedSize(DpSize(960.dp, 540.dp))
+            ) {
+                DreamDroidTvTheme {
                     fixtureScreen(
                         onJumpToNow = { nowClicks++ },
                         onVisibleMinutesChange = { zoomMinutes = it }
@@ -410,14 +434,15 @@ class TvMultiEpgScreenTest {
         fun pixel(x: Float, y: Float) =
             Color(image.getPixel((x - list.left).toInt(), (y - list.top).toInt()))
         val band = colors.onSurface.copy(alpha = 0.06f)
-        // An empty corner of the channel cell, and bare timeline track far right of the bars.
+        // An empty corner of the channel cell, and bare timeline track: the 4 dp gap above a
+        // row's bars ("No information" fills the rest of the row), clear of the right edge fade.
         val probes = listOf(
-            selectedCell.right - px(4.dp) to otherCell.right - px(4.dp),
-            list.right - px(24.dp) to list.right - px(24.dp)
+            Triple(selectedCell.right - px(4.dp), otherCell.right - px(4.dp), px(4.dp)),
+            Triple(selectedCell.right + px(300.dp), otherCell.right + px(300.dp), px(1.dp))
         )
-        for ((selectedX, otherX) in probes) {
-            val selected = pixel(selectedX, selectedCell.top + px(4.dp))
-            val other = pixel(otherX, otherCell.top + px(4.dp))
+        for ((selectedX, otherX, inset) in probes) {
+            val selected = pixel(selectedX, selectedCell.top + inset)
+            val other = pixel(otherX, otherCell.top + inset)
             assertTrue(
                 "selected row filled with primaryContainer at x=$selectedX",
                 rgbDistance(selected, colors.primaryContainer) > 60
@@ -437,6 +462,415 @@ class TvMultiEpgScreenTest {
             abs(AndroidColor.green(x) - AndroidColor.green(y)) +
             abs(AndroidColor.blue(x) - AndroidColor.blue(y))
     }
+
+    @Test
+    fun barsHaveRoundedCorners() {
+        val start = 1_700_000_000L
+        setTvGrid(channels = fixtureChannels(start), start = start, selectedRef = SELECT_NONE)
+        val image = gridImage()
+        // ZDF's first bar ("Sport", one hour = 180 dp), right end, clear of its text.
+        val barEnd = ChannelWidth + 180.dp - 2.dp
+        val rowTop = RowHeight + 2.dp
+        assertTrue(image.colorAt(barEnd - 20.dp, rowTop + 12.dp).near(scheme.surfaceVariant))
+        assertFalse(image.colorAt(barEnd - 1.dp, rowTop + 1.dp).near(scheme.surfaceVariant))
+    }
+
+    @Test
+    fun titleOfARunningProgrammeSticksToTheLeftEdge() {
+        val start = 1_700_000_000L
+        val film = channel("1:0:1:3:0:0:0:0:0:0:", "Film", start, "Long film", "Later")
+            .copy(
+                bars = listOf(
+                    bar(
+                        "1:0:1:3:0:0:0:0:0:0:",
+                        "Film",
+                        "1",
+                        "Long film",
+                        start,
+                        start + 3L * 3600L
+                    )
+                )
+            )
+        setTvGrid(
+            channels = listOf(film) + fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE
+        )
+        val scrollPx = with(density) { (180.dp).roundToPx() }
+        composeRule.runOnIdle { runBlocking { hScroll.scrollTo(scrollPx) } }
+        composeRule.waitForIdle()
+
+        val gridLeft = composeRule.onNodeWithTag(
+            "tv_multi_epg_grid"
+        ).getUnclippedBoundsInRoot().left
+        val title = composeRule.onNodeWithText("Long film").getUnclippedBoundsInRoot()
+        assertTrue(title.left >= gridLeft + ChannelWidth)
+        assertTrue(title.left <= gridLeft + ChannelWidth + 16.dp)
+
+        val image = gridImage()
+        val ink = image.countInk(
+            left = ChannelWidth + 4.dp,
+            right = ChannelWidth + 80.dp,
+            top = 2.dp,
+            bottom = RowHeight - 2.dp,
+            bar = scheme.surfaceVariant,
+            text = scheme.onSurfaceVariant
+        )
+        assertTrue("no title ink at the left edge", ink > 20)
+    }
+
+    @Test
+    fun tinyBarsShowNoText() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:4:0:0:0:0:0:0:"
+        val minute = 60L
+        val tiny = MultiEpgChannel(
+            serviceRef = ref,
+            serviceName = "Tiny",
+            bars = listOf(
+                bar(ref, "Tiny", "1", "Before", start, start + 30 * minute),
+                bar(ref, "Tiny", "2", "Teaser", start + 30 * minute, start + 33 * minute),
+                bar(ref, "Tiny", "3", "Short", start + 33 * minute, start + 45 * minute),
+                bar(ref, "Tiny", "4", "After", start + 45 * minute, start + 120 * minute)
+            )
+        )
+        setTvGrid(channels = listOf(tiny), start = start, selectedRef = SELECT_NONE)
+        composeRule.onNodeWithText("Before").assertExists()
+        composeRule.onNodeWithText("After").assertExists()
+        composeRule.onAllNodesWithText("Teaser").assertCountEquals(0)
+        composeRule.onAllNodesWithText("Short").assertCountEquals(0)
+        // "Teaser" and "Short" span minutes 30–45: 90..135 dp from the timeline start.
+        val ink = gridImage().countInk(
+            left = ChannelWidth + 90.dp,
+            right = ChannelWidth + 135.dp,
+            top = 2.dp,
+            bottom = RowHeight - 2.dp,
+            bar = scheme.surfaceVariant,
+            text = scheme.onSurfaceVariant
+        )
+        assertEquals(0, ink)
+    }
+
+    @Test
+    fun nowLineRunsBehindTheTitleWithAMarkerOnTheRuler() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:5:0:0:0:0:0:0:"
+        val dense = MultiEpgChannel(
+            serviceRef = ref,
+            serviceName = "Dense",
+            bars = listOf(bar(ref, "Dense", "1", "WWWWWWWWWWWWWWWW", start, start + 2L * 3600L))
+        )
+        // Now at minute 10 = 30 dp, inside the title, which starts 10 dp into the bar.
+        setTvGrid(
+            channels = listOf(dense),
+            start = start,
+            selectedRef = SELECT_NONE,
+            nowSec = start + 600L
+        )
+        val ruler = composeRule.onNodeWithTag("tv_multi_epg_ruler").captureToImage()
+        // The marker is a 10 dp triangle pointing down at the ruler's bottom; 4 dp above its
+        // tip it is about 5 dp wide, so its middle pixels are not anti-aliased edges.
+        val marker = (-2..2).map { ruler.colorAt(30.dp + it.dp, RulerHeight - 4.dp) }
+        assertTrue(
+            "no ruler marker: ${marker.joinToString { it.hex() }} vs ${scheme.primary.hex()}",
+            marker.any { it.near(scheme.primary) }
+        )
+
+        val image = gridImage()
+        // The line's column: the first x near 30 dp that holds the line colour between rows.
+        val x = (-4..4).map { ChannelWidth + 30.dp + it.dp }
+            .firstOrNull { image.colorAt(it, RowHeight - 1.dp).near(scheme.primary) }
+        assertTrue(
+            "now-line not drawn: " +
+                (-4..4).joinToString {
+                    image.colorAt(ChannelWidth + 30.dp + it.dp, RowHeight - 1.dp).hex()
+                } +
+                " vs ${scheme.primary.hex()}",
+            x != null
+        )
+        val column = (8..40).map { y -> image.colorAt(x!!, y.dp) }
+        assertTrue(
+            "now-line covers the title: ${column.joinToString { it.hex() }}",
+            column.any { it.near(scheme.onSurfaceVariant, tolerance = 0.12f) }
+        )
+    }
+
+    @Test
+    fun focusedCursorUsesTheCardFocusColours() {
+        val start = 1_700_000_000L
+        val channels = fixtureChannels(start)
+        setTvGrid(channels = channels, start = start, selectedRef = channels[0].serviceRef)
+        // Das Erste's first bar ("News"), right end, clear of its text.
+        val x = ChannelWidth + 180.dp - 22.dp
+        val y = 14.dp
+        assertTrue(gridImage().colorAt(x, y).near(scheme.primaryContainer))
+
+        composeRule.onNodeWithTag("tv_multi_epg_grid").requestFocus()
+        composeRule.waitForIdle()
+        assertTrue(gridImage().colorAt(x, y).near(scheme.inverseSurface))
+    }
+
+    @Test
+    fun holesInTheDataShowNoInformation() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:6:0:0:0:0:0:0:"
+        val late = MultiEpgChannel(
+            serviceRef = ref,
+            serviceName = "Late",
+            bars = listOf(bar(ref, "Late", "1", "Evening", start + 3600L, start + 7200L))
+        )
+        val empty = MultiEpgChannel("1:0:1:7:0:0:0:0:0:0:", "Empty", emptyList())
+        setTvGrid(channels = listOf(late, empty), start = start, selectedRef = SELECT_NONE)
+        composeRule.onAllNodesWithTag("tv_multi_epg_no_info", useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .let { assertTrue(it.size >= 2) }
+        composeRule.onAllNodesWithText("No information").fetchSemanticsNodes()
+            .let { assertTrue(it.size >= 2) }
+    }
+
+    @Test
+    fun channelNamesStayOnOneLine() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:8:0:0:0:0:0:0:"
+        val long =
+            channel(ref, "A very long channel name that would wrap", start, "News", "Magazin")
+        setTvGrid(channels = listOf(long), start = start, selectedRef = SELECT_NONE)
+        val name = composeRule.onNodeWithTag("tv_multi_epg_channel_name", useUnmergedTree = true)
+            .getUnclippedBoundsInRoot()
+        assertTrue(name.height < 28.dp)
+    }
+
+    @Test
+    fun dayChevronsAndReloadAreLabelledTargets() {
+        var prev = 0
+        var next = 0
+        var reloads = 0
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            onPrevDay = { prev++ },
+            onNextDay = { next++ },
+            onRefresh = { reloads++ }
+        )
+        listOf(
+            "tv_multi_epg_prev_day" to "Previous day",
+            "tv_multi_epg_next_day" to "Next day",
+            "tv_multi_epg_refresh" to "Reload"
+        ).forEach { (tag, label) ->
+            val node = composeRule.onNodeWithTag(tag)
+            node.assertWidthIsAtLeast(48.dp)
+            node.assertHeightIsAtLeast(48.dp)
+            node.assertHasClickAction()
+            composeRule.onNode(hasTestTag(tag) and hasContentDescription(label))
+                .assertExists()
+            node.requestFocus()
+            node.performKeyInput { pressKey(Key.DirectionCenter) }
+        }
+        composeRule.waitForIdle()
+        assertEquals(listOf(1, 1, 1), listOf(prev, next, reloads))
+        composeRule.onAllNodesWithText("Previous day").assertCountEquals(0)
+    }
+
+    @Test
+    fun toolbarControlsShareTheRailColourAndFocusTurnsInverse() {
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            onRefresh = {}
+        )
+        val controls = listOf(
+            "tv_multi_epg_bouquet",
+            "tv_multi_epg_prev_day",
+            "tv_multi_epg_next_day",
+            "tv_multi_epg_now",
+            "tv_multi_epg_zoom",
+            "tv_multi_epg_refresh"
+        )
+
+        // 6 dp in from a control's start, at its middle: inside its pill, clear of its text.
+        fun fill(tag: String): Color {
+            val rail = composeRule.onNodeWithTag("tv_multi_epg_chrome_rail")
+            val railBounds = rail.getUnclippedBoundsInRoot()
+            val bounds = composeRule.onNodeWithTag(tag).getUnclippedBoundsInRoot()
+            return rail.captureToImage().colorAt(
+                bounds.left - railBounds.left + 6.dp,
+                (bounds.top + bounds.bottom) / 2 - railBounds.top
+            )
+        }
+        for (tag in controls) {
+            val color = fill(tag)
+            assertTrue(
+                "$tag at rest: ${color.hex()} vs rail ${scheme.surfaceContainerLow.hex()}",
+                color.near(scheme.surfaceContainerLow)
+            )
+        }
+
+        composeRule.onNodeWithTag("tv_multi_epg_now").requestFocus()
+        composeRule.waitForIdle()
+        assertTrue(
+            "focused Now: ${fill("tv_multi_epg_now").hex()}",
+            fill("tv_multi_epg_now").near(scheme.inverseSurface)
+        )
+        assertTrue(fill("tv_multi_epg_zoom").near(scheme.surfaceContainerLow))
+    }
+
+    @Test
+    fun selectedRowBandHasRoundedEnds() {
+        val start = 1_700_000_000L
+        val channels = fixtureChannels(start)
+        setTvGrid(channels = channels, start = start, selectedRef = channels[0].serviceRef)
+        val image = gridImage()
+
+        // Row 0 carries the band, row 1 not: compare the same spot in both rows.
+        fun band(x: Dp, y: Dp) = image.colorAt(x, y) to image.colorAt(x, RowHeight + y)
+        val (corner, cornerOther) = band(1.dp, 1.dp)
+        assertTrue(
+            "band start corner not rounded: ${corner.hex()} vs ${cornerOther.hex()}",
+            corner.near(cornerOther, tolerance = 0.01f)
+        )
+        val (inside, insideOther) = band(8.dp, RowHeight - 4.dp)
+        assertFalse(
+            "band missing just inside its rounded start: ${inside.hex()} vs ${insideOther.hex()}",
+            inside.near(insideOther, tolerance = 0.01f)
+        )
+
+        // At the end of the timeline (no edge fade once it cannot scroll further) the band
+        // ends rounded too.
+        composeRule.runOnIdle { runBlocking { hScroll.scrollTo(hScroll.maxValue) } }
+        composeRule.waitForIdle()
+        val end = gridImage()
+        val right = with(density) { end.width.toDp() } - 1.dp
+        val endCorner = end.colorAt(right, 1.dp)
+        val endCornerOther = end.colorAt(right, RowHeight + 1.dp)
+        assertTrue(
+            "band end corner not rounded: ${endCorner.hex()} vs ${endCornerOther.hex()}",
+            endCorner.near(endCornerOther, tolerance = 0.01f)
+        )
+    }
+
+    @Test
+    fun dayLabelLeavesOutTheYear() {
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            nowSec = start
+        )
+        val today = composeRule.onNodeWithTag("tv_multi_epg_day").fetchSemanticsNode()
+            .config[SemanticsProperties.Text].joinToString()
+        assertTrue(today, today.startsWith("Today · "))
+        assertFalse(today, today.contains("2023"))
+
+        val tomorrow = tvMultiEpgDayLabel(start + 86_400L, start, "Today", Locale.US)
+        assertFalse(tomorrow, tomorrow.contains("2023") || tomorrow.contains("Today"))
+    }
+
+    /**
+     * The grid at a 960 × 540 dp TV window, dark theme, keyboard input mode (as on a remote),
+     * with [hScroll], [scheme] and [density] captured for the pixel checks.
+     */
+    private fun setTvGrid(
+        channels: List<MultiEpgChannel>,
+        start: Long,
+        selectedRef: String,
+        nowSec: Long = start - 3600L,
+        onPrevDay: () -> Unit = {},
+        onNextDay: () -> Unit = {},
+        onRefresh: (() -> Unit)? = null
+    ) {
+        var showContent by mutableStateOf(false)
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.ForcedSize(DpSize(960.dp, 540.dp))
+            ) {
+                DreamDroidTvTheme(forceDark = true) {
+                    scheme = PhoneMaterialTheme.colorScheme
+                    density = LocalDensity.current
+                    if (showContent) {
+                        val scroll = rememberScrollState()
+                        hScroll = scroll
+                        TvMultiEpgScreen(
+                            bouquetName = "Favourites",
+                            channels = channels,
+                            timelineStartSec = start,
+                            timelineEndSec = start + 8L * 3600L,
+                            nowSec = nowSec,
+                            originFloorSec = start,
+                            loading = false,
+                            errorMessage = null,
+                            selectedServiceRef = selectedRef,
+                            selectedStartSec = start,
+                            onSelectedChange = { _, _ -> },
+                            onJumpToNow = {},
+                            onPrevDay = onPrevDay,
+                            onNextDay = onNextDay,
+                            onVisibleWindow = { _, _ -> },
+                            onEventClick = {},
+                            onBouquetClick = {},
+                            onRefresh = onRefresh,
+                            hScrollState = scroll
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle {
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
+            showContent = true
+        }
+        composeRule.waitForIdle()
+    }
+
+    private fun gridImage(): ImageBitmap =
+        composeRule.onNodeWithTag("tv_multi_epg_grid").captureToImage()
+
+    private fun ImageBitmap.colorAt(x: Dp, y: Dp): Color {
+        val map = toPixelMap()
+        return with(density) {
+            map[x.roundToPx().coerceIn(0, width - 1), y.roundToPx().coerceIn(0, height - 1)]
+        }
+    }
+
+    /** Pixels in the box closer to the [text] colour than to the [bar] colour. */
+    private fun ImageBitmap.countInk(
+        left: Dp,
+        right: Dp,
+        top: Dp,
+        bottom: Dp,
+        bar: Color,
+        text: Color
+    ): Int {
+        val map = toPixelMap()
+        val threshold = (bar.luminance() + text.luminance()) / 2f
+        val lighterText = text.luminance() > bar.luminance()
+        var count = 0
+        with(density) {
+            for (x in left.roundToPx() until right.roundToPx().coerceAtMost(width)) {
+                for (y in top.roundToPx() until bottom.roundToPx().coerceAtMost(height)) {
+                    val lum = map[x, y].luminance()
+                    if (if (lighterText) lum > threshold else lum < threshold) {
+                        count++
+                    }
+                }
+            }
+        }
+        return count
+    }
+
+    private fun Color.hex(): String = "#%08x".format(toArgb())
+
+    private fun Color.near(other: Color, tolerance: Float = 0.06f): Boolean =
+        abs(red - other.red) <= tolerance &&
+            abs(green - other.green) <= tolerance &&
+            abs(blue - other.blue) <= tolerance
 
     @Composable
     private fun fixtureScreen(
@@ -477,6 +911,15 @@ class TvMultiEpgScreenTest {
                 onVisibleMinutesChange(it)
             }
         )
+    }
+
+    private companion object {
+        const val SELECT_NONE = "none"
+
+        // Comfortable text size at font scale 1: channel column and row height.
+        val ChannelWidth = 112.dp
+        val RowHeight = 48.dp
+        val RulerHeight = 28.dp
     }
 
     private fun fixtureChannels(start: Long): List<MultiEpgChannel> = listOf(

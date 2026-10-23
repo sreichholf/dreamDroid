@@ -57,6 +57,7 @@
     <string name="next_day">Next day</string>
     <string name="multiepg_today">Today</string>
     <string name="multiepg_empty">No EPG data for this bouquet window.</string>
+    <string name="multiepg_no_information">No information</string>
     <string name="multiepg_timer_record">Recording timer</string>
     <string name="multiepg_timer_zap">Zap timer</string>
     <string name="multiepg_zoom">Visible span</string>

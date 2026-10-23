@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -24,8 +27,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Icon as PhoneIcon
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.material3.Text as PhoneText
 import androidx.compose.runtime.Composable
@@ -43,35 +45,54 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.Icon
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
@@ -82,9 +103,33 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
-import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvPillShape
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTopBarItemScale
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemColors
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemShape
 
-private val RulerHeight = 22.dp
+private val RulerHeight = 28.dp
+private val RulerTickHeight = 6.dp
+private val NowMarkerWidth = 10.dp
+private val NowLineWidth = 2.dp
+
+/** Space between two bars and between two rows. */
+private val BarGap = 4.dp
+private val BarTextPadding = 8.dp
+
+/** Bars, or the part of a bar left in the viewport, narrower than this show no text. */
+private val BarMinTextWidth = 48.dp
+
+/** Bars at least this wide show start – end under the title when the row fits it. */
+private val BarSecondLineMinWidth = 120.dp
+private val FocusBorderWidth = 2.dp
+private val EdgeFade = 32.dp
+private val ChromeTargetSize = 48.dp
+private val ChromeRailPadding = 4.dp
+private val ChromeRailShape = DreamDroidTvPillShape
+
+/** Holes in a row's data shorter than this stay plain gaps instead of "No information". */
+private const val NO_INFO_MIN_GAP_SEC: Long = 5 * 60L
 
 /** The selected channel's accent bar at the start of its cell. */
 private val ChannelCueWidth = 4.dp
@@ -93,9 +138,13 @@ private val ChannelCueHeight = 24.dp
 /** The selected row's band: onSurface, faint enough to stay behind the programme bars. */
 private const val ROW_BAND_ALPHA = 0.06f
 
+/** The row band's outer corners: the programme bars' radius (`shapes.medium`). */
+private val RowBandRadius = 12.dp
+
 /**
  * TV GraphMultiEPG grid. Programme bars are not clickable/focusable — one
- * [onPreviewKeyEvent] host owns the D-pad cursor.
+ * [onPreviewKeyEvent] host owns the D-pad cursor, which is drawn with the hub cards'
+ * focused colours while the grid has focus and as "selected" while focus is in the chrome.
  */
 @Composable
 fun TvMultiEpgScreen(
@@ -124,7 +173,8 @@ fun TvMultiEpgScreen(
     timerClocks: Map<String, MultiEpgTimerClock> = emptyMap(),
     visibleMinutes: Int = MultiEpgZoom.DEFAULT_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
-    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT
+    textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
+    piconsEnabled: Boolean = false
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
@@ -153,6 +203,7 @@ fun TvMultiEpgScreen(
     val gridFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     var pendingPanRight by remember { mutableStateOf(false) }
+    var gridFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(timelineStartSec) {
         if (timelineStartSec == 0L) {
@@ -337,7 +388,7 @@ fun TvMultiEpgScreen(
         if (timelineEndSec <= originForLayout) {
             ""
         } else {
-            MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
+            tvMultiEpgDayLabel(visibleStartSec, nowSec, todayLabel)
         }
     }
 
@@ -407,20 +458,23 @@ fun TvMultiEpgScreen(
                 timelineWidth = timelineWidth,
                 minuteWidth = minuteWidth,
                 tickStepSec = MultiEpgZoom.tickStepSec(layoutVisibleMinutes),
+                nowSec = nowSec,
                 cullStartSec = cullWindow.first,
                 cullEndSec = cullWindow.second,
                 modifier = Modifier
                     .weight(1f)
                     .onSizeChanged { viewportWidthPx = it.width }
+                    .testTag("tv_multi_epg_ruler")
                     .horizontalScroll(hScroll)
             )
         }
-        HorizontalDivider(color = PhoneMaterialTheme.colorScheme.outlineVariant)
 
         Box(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .tvMultiEpgEdgeFades(hScroll, listState)
+                .onFocusChanged { gridFocused = it.isFocused }
                 .focusRequester(gridFocus)
                 .focusable()
                 .onPreviewKeyEvent { event ->
@@ -476,8 +530,10 @@ fun TvMultiEpgScreen(
                             .height(rowHeight)
                     ) {
                         TvMultiEpgChannelLabel(
+                            serviceRef = channel.serviceRef,
                             serviceName = channel.serviceName,
                             selected = selected,
+                            piconsEnabled = piconsEnabled,
                             style = channelStyle,
                             modifier = Modifier
                                 .width(channelLabelWidth)
@@ -494,12 +550,15 @@ fun TvMultiEpgScreen(
                             TvMultiEpgChannelTimeline(
                                 channel = channel,
                                 timelineStartSec = originForLayout,
+                                timelineEndSec = timelineEndSec,
                                 timelineWidth = timelineWidth,
                                 minuteWidth = minuteWidth,
                                 nowSec = nowSec,
                                 cullStartSec = cullWindow.first,
                                 cullEndSec = cullWindow.second,
-                                selectedStartSec = if (selected) selectedStartSec else null,
+                                cursorStartSec = if (selected) selectedStartSec else null,
+                                cursorFocused = gridFocused,
+                                viewportStartPx = { hScroll.value },
                                 selectedRow = selected,
                                 timerClocks = timerClocks,
                                 rowHeight = rowHeight,
@@ -508,17 +567,52 @@ fun TvMultiEpgScreen(
                             )
                         }
                     }
-                    HorizontalDivider(
-                        color = PhoneMaterialTheme.colorScheme.outlineVariant.copy(
-                            alpha = 0.5f
-                        )
-                    )
                 }
             }
         }
     }
 }
 
+/**
+ * Fades the grid out at its right and bottom edges while there is more to scroll that
+ * way, so a programme or row cut by the edge reads as "more", not as the end.
+ */
+private fun Modifier.tvMultiEpgEdgeFades(hScroll: ScrollState, listState: LazyListState): Modifier =
+    this
+        .graphicsLayer { compositingStrategy = CompositingStrategy.Offscreen }
+        .drawWithContent {
+            drawContent()
+            val fade = EdgeFade.toPx()
+            if (hScroll.canScrollForward) {
+                drawRect(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(Color.Black, Color.Transparent),
+                        startX = size.width - fade,
+                        endX = size.width
+                    ),
+                    topLeft = Offset(size.width - fade, 0f),
+                    size = Size(fade, size.height),
+                    blendMode = BlendMode.DstIn
+                )
+            }
+            if (listState.canScrollForward) {
+                drawRect(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(Color.Black, Color.Transparent),
+                        startY = size.height - fade,
+                        endY = size.height
+                    ),
+                    topLeft = Offset(0f, size.height - fade),
+                    size = Size(size.width, fade),
+                    blendMode = BlendMode.DstIn
+                )
+            }
+        }
+
+/**
+ * The toolbar: one rail in the hub cards' container colour holding every control, flat at
+ * rest and in the cards' inverse colours when focused, so the row has one colour plus focus.
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun TvMultiEpgChrome(
@@ -550,99 +644,227 @@ private fun TvMultiEpgChrome(
                 }
                 true
             },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        TvMultiEpgChromeChip(
-            label = bouquetName,
-            tag = "tv_multi_epg_bouquet",
-            onClick = onBouquetClick
-        )
-        if (dayLabel.isNotEmpty()) {
+        Row(
+            modifier = Modifier
+                .background(PhoneMaterialTheme.colorScheme.surfaceContainerLow, ChromeRailShape)
+                .padding(ChromeRailPadding)
+                .testTag("tv_multi_epg_chrome_rail"),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            TvMultiEpgChromeButton(
+                tag = "tv_multi_epg_bouquet",
+                onClick = onBouquetClick
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = bouquetName,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_drop_down),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            TvMultiEpgChromeDivider()
+            TvMultiEpgChromeIcon(
+                iconRes = R.drawable.ic_chevron_left,
+                label = stringResource(R.string.previous_day),
+                tag = "tv_multi_epg_prev_day",
+                onClick = onPrevDay
+            )
             Text(
                 text = dayLabel,
                 style = MaterialTheme.typography.titleSmall,
+                color = PhoneMaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
                 modifier = Modifier
-                    .weight(1f)
-                    .padding(horizontal = 8.dp)
+                    .widthIn(min = 140.dp)
+                    .testTag("tv_multi_epg_day")
             )
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
+            TvMultiEpgChromeIcon(
+                iconRes = R.drawable.ic_chevron_right,
+                label = stringResource(R.string.next_day),
+                tag = "tv_multi_epg_next_day",
+                onClick = onNextDay
+            )
+            TvMultiEpgChromeDivider()
+            TvMultiEpgChromeText(
+                label = stringResource(R.string.multiepg_now),
+                tag = "tv_multi_epg_now",
+                onClick = onJumpToNow
+            )
+            TvMultiEpgChromeText(
+                label = stringResource(R.string.multiepg_zoom_hours, hours),
+                tag = "tv_multi_epg_zoom",
+                onClick = {
+                    val options = MultiEpgZoom.OPTIONS_MINUTES
+                    val index = options.indexOf(MultiEpgZoom.coerce(visibleMinutes))
+                    val next = options[(index + 1).mod(options.size)]
+                    onVisibleMinutesChange(next)
+                },
+                contentDescription = stringResource(R.string.multiepg_zoom)
+            )
+            if (onRefresh != null) {
+                TvMultiEpgChromeIcon(
+                    iconRes = R.drawable.ic_action_refresh,
+                    label = stringResource(R.string.reload),
+                    tag = "tv_multi_epg_refresh",
+                    onClick = onRefresh
+                )
+            }
         }
+        Spacer(modifier = Modifier.weight(1f))
         if (loading) {
             Text(
                 text = stringResource(R.string.loading),
-                style = MaterialTheme.typography.labelSmall
-            )
-        }
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.previous_day),
-            tag = "tv_multi_epg_prev_day",
-            onClick = onPrevDay
-        )
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.multiepg_now),
-            tag = "tv_multi_epg_now",
-            onClick = onJumpToNow
-        )
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.next_day),
-            tag = "tv_multi_epg_next_day",
-            onClick = onNextDay
-        )
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.multiepg_zoom_hours, hours),
-            tag = "tv_multi_epg_zoom",
-            onClick = {
-                val options = MultiEpgZoom.OPTIONS_MINUTES
-                val index = options.indexOf(MultiEpgZoom.coerce(visibleMinutes))
-                val next = options[(index + 1).mod(options.size)]
-                onVisibleMinutesChange(next)
-            }
-        )
-        if (onRefresh != null) {
-            TvMultiEpgChromeChip(
-                label = stringResource(R.string.reload),
-                tag = "tv_multi_epg_refresh",
-                onClick = onRefresh
+                style = MaterialTheme.typography.labelSmall,
+                color = PhoneMaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
+/** A rail control: styled like the hub top bar's text controls, flat until focused. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun TvMultiEpgChromeChip(label: String, tag: String, onClick: () -> Unit) {
+private fun TvMultiEpgChromeButton(
+    tag: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
     Surface(
         onClick = onClick,
-        modifier = Modifier.testTag(tag),
-        colors = dreamDroidTvCardColors(),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+        modifier = modifier
+            .height(ChromeTargetSize)
+            .widthIn(min = ChromeTargetSize)
+            .testTag(tag),
+        shape = dreamDroidTvTopBarItemShape(),
+        colors = dreamDroidTvTopBarItemColors(),
+        scale = DreamDroidTvTopBarItemScale
+    ) {
+        Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun TvMultiEpgChromeText(
+    label: String,
+    tag: String,
+    onClick: () -> Unit,
+    contentDescription: String? = null
+) {
+    TvMultiEpgChromeButton(
+        tag = tag,
+        onClick = onClick,
+        modifier = if (contentDescription != null) {
+            Modifier.semantics { this.contentDescription = contentDescription }
+        } else {
+            Modifier
+        }
     ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            maxLines = 1,
+            modifier = Modifier.padding(horizontal = 16.dp)
         )
     }
+}
+
+@Composable
+private fun TvMultiEpgChromeIcon(
+    @DrawableRes iconRes: Int,
+    label: String,
+    tag: String,
+    onClick: () -> Unit
+) {
+    TvMultiEpgChromeButton(
+        tag = tag,
+        onClick = onClick,
+        modifier = Modifier.width(ChromeTargetSize)
+    ) {
+        Icon(
+            painter = painterResource(iconRes),
+            contentDescription = label,
+            modifier = Modifier.size(24.dp)
+        )
+    }
+}
+
+/** Separates the rail's groups: bouquet, day, then Now / zoom / Reload. */
+@Composable
+private fun TvMultiEpgChromeDivider() {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 6.dp)
+            .size(width = 1.dp, height = 24.dp)
+            .background(PhoneMaterialTheme.colorScheme.outlineVariant)
+    )
+}
+
+/**
+ * The visible day without the year (the EPG reaches about a week ahead): "Today · Oct 23"
+ * for today, the weekday and date ("Fri, Oct 24") for any other day, in the locale's order.
+ */
+internal fun tvMultiEpgDayLabel(
+    visibleSec: Long,
+    nowSec: Long,
+    todayLabel: String,
+    locale: Locale = Locale.getDefault()
+): String {
+    val today = MultiEpgTimeLabels.sameLocalDay(visibleSec, nowSec)
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(
+        locale,
+        if (today) "MMMd" else "EEEMMMd"
+    )
+    val date = SimpleDateFormat(pattern, locale).format(Date(visibleSec * 1000L))
+    return if (today) "$todayLabel · $date" else date
 }
 
 /**
  * The channel cell. The selected programme's channel is a quiet cue, not a second focus
  * colour: its name in semi-bold [onSurface][androidx.compose.material3.ColorScheme.onSurface],
  * a small primary accent bar at the cell's start, and the row band across the full cell.
+ * The name is one line; with picons enabled, the picon replaces it once one loads.
  */
 @Composable
 private fun TvMultiEpgChannelLabel(
+    serviceRef: String,
     serviceName: String,
     selected: Boolean,
+    piconsEnabled: Boolean,
     style: TextStyle,
     modifier: Modifier = Modifier
 ) {
     val colors = PhoneMaterialTheme.colorScheme
+    var piconLoaded by remember(serviceRef, serviceName, piconsEnabled) {
+        mutableStateOf(false)
+    }
     Box(
         modifier = modifier.then(
-            if (selected) Modifier.background(tvMultiEpgRowBand()) else Modifier
+            if (selected) {
+                // The band starts here: round its start like the programme bars.
+                Modifier.background(
+                    tvMultiEpgRowBand(),
+                    RoundedCornerShape(topStart = RowBandRadius, bottomStart = RowBandRadius)
+                )
+            } else {
+                Modifier
+            }
         ),
         contentAlignment = Alignment.CenterStart
     ) {
@@ -654,14 +876,33 @@ private fun TvMultiEpgChannelLabel(
                     .testTag("tv_multi_epg_channel_cue")
             )
         }
-        PhoneText(
-            text = serviceName,
-            style = if (selected) style.copy(fontWeight = FontWeight.SemiBold) else style,
-            color = if (selected) colors.onSurface else colors.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.padding(horizontal = 12.dp)
-        )
+        if (piconsEnabled) {
+            // Invisible until it loads, so a failed load does not flash the placeholder.
+            PiconImage(
+                reference = serviceRef,
+                name = serviceName,
+                contentDescription = serviceName,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 12.dp, vertical = BarGap)
+                    .alpha(if (piconLoaded) 1f else 0f)
+                    .testTag("tv_multi_epg_channel_picon"),
+                onSuccess = { piconLoaded = true },
+                onError = { piconLoaded = false }
+            )
+        }
+        if (!piconsEnabled || !piconLoaded) {
+            PhoneText(
+                text = serviceName,
+                style = if (selected) style.copy(fontWeight = FontWeight.SemiBold) else style,
+                color = if (selected) colors.onSurface else colors.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .testTag("tv_multi_epg_channel_name")
+            )
+        }
     }
 }
 
@@ -670,6 +911,7 @@ private fun TvMultiEpgChannelLabel(
 private fun tvMultiEpgRowBand(): Color =
     PhoneMaterialTheme.colorScheme.onSurface.copy(alpha = ROW_BAND_ALPHA)
 
+/** Hour (or half-hour) labels centred on their tick marks, and the "now" marker. */
 @Composable
 private fun TvMultiEpgTimeRuler(
     timelineStartSec: Long,
@@ -677,6 +919,7 @@ private fun TvMultiEpgTimeRuler(
     timelineWidth: Dp,
     minuteWidth: Dp,
     tickStepSec: Long,
+    nowSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
     modifier: Modifier = Modifier
@@ -704,78 +947,183 @@ private fun TvMultiEpgTimeRuler(
         }
         list
     }
-    Box(modifier = modifier.height(RulerHeight).width(timelineWidth)) {
+    val tickColor = PhoneMaterialTheme.colorScheme.outline
+    val nowColor = PhoneMaterialTheme.colorScheme.primary
+    Box(
+        modifier = modifier
+            .height(RulerHeight)
+            .width(timelineWidth)
+            .drawBehind {
+                val minutePx = minuteWidth.toPx()
+                val tickHeight = RulerTickHeight.toPx()
+                val stroke = 1.dp.toPx()
+                for (t in ticks) {
+                    val x = (t - timelineStartSec) / 60f * minutePx
+                    drawLine(
+                        color = tickColor,
+                        start = Offset(x, size.height - tickHeight),
+                        end = Offset(x, size.height),
+                        strokeWidth = stroke
+                    )
+                    val half = x + tickStepSec / 120f * minutePx
+                    drawLine(
+                        color = tickColor,
+                        start = Offset(half, size.height - tickHeight / 2f),
+                        end = Offset(half, size.height),
+                        strokeWidth = stroke
+                    )
+                }
+                if (nowSec in timelineStartSec until timelineEndSec) {
+                    val x = (nowSec - timelineStartSec) / 60f * minutePx
+                    val half = NowMarkerWidth.toPx() / 2f
+                    val marker = Path().apply {
+                        moveTo(x - half, size.height - half * 1.5f)
+                        lineTo(x + half, size.height - half * 1.5f)
+                        lineTo(x, size.height)
+                        close()
+                    }
+                    drawPath(marker, nowColor)
+                }
+            }
+    ) {
         for (t in ticks) {
             val offsetMin = (t - timelineStartSec) / 60f
             PhoneText(
                 text = tickFormat.format(Date(t * 1000L)),
                 style = PhoneMaterialTheme.typography.labelSmall,
                 color = PhoneMaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier
-                    .offset(x = minuteWidth * offsetMin)
-                    .padding(start = 2.dp),
+                modifier = Modifier.centeredAtX(minuteWidth * offsetMin),
                 maxLines = 1
             )
         }
     }
 }
 
+/** Places the element with its horizontal centre on [x], but not left of 0. */
+private fun Modifier.centeredAtX(x: Dp): Modifier = layout { measurable, constraints ->
+    val placeable = measurable.measure(constraints.copy(minWidth = 0))
+    layout(placeable.width, placeable.height) {
+        placeable.place((x.roundToPx() - placeable.width / 2).coerceAtLeast(0), 0)
+    }
+}
+
+/** A drawn programme bar at [x], [width] wide, inside the row's timeline. */
+private data class TvBarSlot(val bar: MultiEpgBar, val x: Dp, val width: Dp)
+
+/**
+ * One channel's row: the programme bars and "No information" fillers for the holes in
+ * the data, the now-line over the bars, and the bar text over the now-line.
+ */
 @Composable
 private fun TvMultiEpgChannelTimeline(
     channel: MultiEpgChannel,
     timelineStartSec: Long,
+    timelineEndSec: Long,
     timelineWidth: Dp,
     minuteWidth: Dp,
     nowSec: Long,
     cullStartSec: Long,
     cullEndSec: Long,
-    selectedStartSec: Long?,
+    cursorStartSec: Long?,
+    cursorFocused: Boolean,
+    viewportStartPx: () -> Int,
     timerClocks: Map<String, MultiEpgTimerClock>,
     rowHeight: Dp,
     eventStyle: TextStyle,
     clockSize: Dp,
     selectedRow: Boolean = false
 ) {
-    val trackColor = PhoneMaterialTheme.colorScheme.surface
-    val barColor = PhoneMaterialTheme.colorScheme.surfaceVariant
-    val selectedBarColor = PhoneMaterialTheme.colorScheme.primaryContainer
-    val onBar = PhoneMaterialTheme.colorScheme.onSurfaceVariant
-    val onSelectedBar = PhoneMaterialTheme.colorScheme.onPrimaryContainer
-    val nowColor = PhoneMaterialTheme.colorScheme.primary
-    val timelineEndSec = timelineStartSec + ((timelineWidth / minuteWidth) * 60f).toLong()
-    val visibleBars = remember(channel.bars, cullStartSec, cullEndSec) {
-        channel.bars.overlapping(cullStartSec, cullEndSec)
+    val scheme = PhoneMaterialTheme.colorScheme
+    val shape = MaterialTheme.shapes.medium
+    val timeStyle = PhoneMaterialTheme.typography.labelSmall
+    val density = LocalDensity.current
+    val secondLineFits = with(density) {
+        eventStyle.lineHeight.isSp &&
+            timeStyle.lineHeight.isSp &&
+            eventStyle.lineHeight.toDp() + timeStyle.lineHeight.toDp() + BarGap * 2 <= rowHeight
     }
+    val timeFormat = remember {
+        DateFormat.getTimeInstance(DateFormat.SHORT, Locale.getDefault())
+    }
+    val noInformation = stringResource(R.string.multiepg_no_information)
+    val minuteWidthDp = minuteWidth.value
+    val slots = remember(channel.bars, cullStartSec, cullEndSec, timelineStartSec, minuteWidthDp) {
+        channel.bars.overlapping(cullStartSec, cullEndSec).mapNotNull { bar ->
+            if (bar.endSec <= timelineStartSec) {
+                return@mapNotNull null
+            }
+            val width = MultiEpgBarLayout.widthDp(
+                startSec = bar.startSec,
+                endSec = bar.endSec,
+                timelineStartSec = timelineStartSec,
+                minuteWidthDp = minuteWidthDp,
+                nextStartSec = MultiEpgBarLayout.nextStartSec(channel.bars, bar.startSec)
+            )
+            if (width <= 0f) {
+                return@mapNotNull null
+            }
+            val x = MultiEpgBarLayout.offsetDp(bar.startSec, timelineStartSec, minuteWidthDp)
+            TvBarSlot(bar, x.dp, width.dp)
+        }
+    }
+    val gaps =
+        remember(
+            channel.bars,
+            cullStartSec,
+            cullEndSec,
+            timelineStartSec,
+            timelineEndSec,
+            minuteWidthDp
+        ) {
+            MultiEpgBarLayout.gaps(
+                sortedBars = channel.bars,
+                fromSec = maxOf(timelineStartSec, cullStartSec),
+                toSec = minOf(timelineEndSec, cullEndSec),
+                minGapSec = NO_INFO_MIN_GAP_SEC
+            ).map { gap ->
+                val x = MultiEpgBarLayout.offsetDp(gap.first, timelineStartSec, minuteWidthDp)
+                x.dp to (minuteWidthDp * ((gap.last + 1 - gap.first) / 60f)).dp
+            }
+        }
 
     Box(
         modifier = Modifier
             .width(timelineWidth)
             .height(rowHeight)
-            .background(trackColor)
-            .then(if (selectedRow) Modifier.background(tvMultiEpgRowBand()) else Modifier)
-    ) {
-        for (bar in visibleBars) {
-            key(channel.serviceRef, bar.event.eventId, bar.startSec) {
-                val selected = selectedStartSec != null && bar.startSec == selectedStartSec
-                TvProgrammeBar(
-                    bar = bar,
-                    timelineStartSec = timelineStartSec,
-                    minuteWidth = minuteWidth,
-                    barColor = if (selected) selectedBarColor else barColor,
-                    onBar = if (selected) onSelectedBar else onBar,
-                    eventStyle = eventStyle,
-                    clockSize = clockSize,
-                    clock = timerClocks[
-                        multiEpgTimerClockKey(
-                            channel.serviceRef,
-                            bar.event.eventId,
-                            bar.startSec
-                        )
-                    ],
-                    nextStartSec = MultiEpgBarLayout.nextStartSec(
-                        channel.bars,
-                        bar.startSec
+            .then(
+                if (selectedRow) {
+                    // The band ends with the timeline: round its end like its start.
+                    Modifier.background(
+                        tvMultiEpgRowBand(),
+                        RoundedCornerShape(topEnd = RowBandRadius, bottomEnd = RowBandRadius)
                     )
+                } else {
+                    Modifier
+                }
+            )
+    ) {
+        for ((x, width) in gaps) {
+            TvBarBackground(
+                x = x,
+                width = width,
+                color = scheme.surfaceVariant.copy(alpha = 0.35f),
+                shape = shape,
+                modifier = Modifier.testTag("tv_multi_epg_no_info")
+            )
+        }
+        for (slot in slots) {
+            key(slot.bar.event.eventId, slot.bar.startSec) {
+                val cursor = slot.bar.startSec == cursorStartSec
+                TvBarBackground(
+                    x = slot.x,
+                    width = slot.width,
+                    color = when {
+                        cursor && cursorFocused -> scheme.inverseSurface
+                        cursor -> scheme.primaryContainer
+                        else -> scheme.surfaceVariant
+                    },
+                    shape = shape,
+                    border = if (cursor && cursorFocused) scheme.primary else null
                 )
             }
         }
@@ -783,106 +1131,221 @@ private fun TvMultiEpgChannelTimeline(
             val nowMin = (nowSec - timelineStartSec) / 60f
             Box(
                 modifier = Modifier
-                    .offset(x = minuteWidth * nowMin)
-                    .width(2.dp)
+                    .offset(x = minuteWidth * nowMin - NowLineWidth / 2)
+                    .width(NowLineWidth)
                     .fillMaxHeight()
-                    .background(nowColor)
+                    .background(scheme.primary)
             )
+        }
+        for ((x, width) in gaps) {
+            TvBarText(
+                x = x,
+                width = width,
+                title = noInformation,
+                secondLine = null,
+                color = scheme.onSurfaceVariant.copy(alpha = 0.6f),
+                titleStyle = eventStyle,
+                secondStyle = timeStyle,
+                endReserve = 0.dp,
+                viewportStartPx = viewportStartPx
+            )
+        }
+        for (slot in slots) {
+            key(slot.bar.event.eventId, slot.bar.startSec) {
+                val bar = slot.bar
+                val cursor = bar.startSec == cursorStartSec
+                val clock = timerClocks[
+                    multiEpgTimerClockKey(channel.serviceRef, bar.event.eventId, bar.startSec)
+                ]
+                val secondLine = if (secondLineFits && slot.width >= BarSecondLineMinWidth) {
+                    val start = timeFormat.format(Date(bar.startSec * 1000L))
+                    val end = timeFormat.format(Date(bar.endSec * 1000L))
+                    "$start – $end"
+                } else {
+                    null
+                }
+                TvBarText(
+                    x = slot.x,
+                    width = slot.width,
+                    title = bar.event.title,
+                    secondLine = secondLine,
+                    color = when {
+                        cursor && cursorFocused -> scheme.inverseOnSurface
+                        cursor -> scheme.onPrimaryContainer
+                        else -> scheme.onSurfaceVariant
+                    },
+                    titleStyle = eventStyle,
+                    secondStyle = timeStyle,
+                    endReserve = if (clock != null) clockSize + 2.dp else 0.dp,
+                    viewportStartPx = viewportStartPx
+                )
+                if (clock != null) {
+                    TvBarClock(
+                        x = slot.x,
+                        width = slot.width,
+                        clock = clock,
+                        clockSize = clockSize
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
-private fun TvProgrammeBar(
-    bar: MultiEpgBar,
-    timelineStartSec: Long,
-    minuteWidth: Dp,
-    barColor: Color,
-    onBar: Color,
-    eventStyle: TextStyle,
-    clockSize: Dp,
-    clock: MultiEpgTimerClock?,
-    nextStartSec: Long?
+private fun TvBarBackground(
+    x: Dp,
+    width: Dp,
+    color: Color,
+    shape: Shape,
+    modifier: Modifier = Modifier,
+    border: Color? = null
 ) {
-    val drawStart = maxOf(bar.startSec, timelineStartSec)
-    if (bar.endSec <= timelineStartSec) {
+    Box(
+        modifier = modifier
+            .offset(x = x)
+            .width(width)
+            .fillMaxHeight()
+            .padding(BarGap / 2)
+            .background(color, shape)
+            .then(
+                if (border != null) {
+                    Modifier.border(FocusBorderWidth, border, shape)
+                } else {
+                    Modifier
+                }
+            )
+    )
+}
+
+/**
+ * A bar's title (and [secondLine], if any). Bars narrower than [BarMinTextWidth] show no
+ * text; the text of a bar that began left of the viewport sticks to the viewport's edge.
+ */
+@Composable
+private fun TvBarText(
+    x: Dp,
+    width: Dp,
+    title: String,
+    secondLine: String?,
+    color: Color,
+    titleStyle: TextStyle,
+    secondStyle: TextStyle,
+    endReserve: Dp,
+    viewportStartPx: () -> Int
+) {
+    if (width < BarMinTextWidth) {
         return
     }
-    val minuteWidthDp = minuteWidth.value
-    val x = MultiEpgBarLayout.offsetDp(
-        startSec = drawStart,
-        timelineStartSec = timelineStartSec,
-        minuteWidthDp = minuteWidthDp
-    ).dp
-    val w = MultiEpgBarLayout.widthDp(
-        startSec = bar.startSec,
-        endSec = bar.endSec,
-        timelineStartSec = timelineStartSec,
-        minuteWidthDp = minuteWidthDp,
-        nextStartSec = nextStartSec
-    ).dp
-    if (w <= 0.dp) {
-        return
+    Column(
+        modifier = Modifier
+            .offset(x = x)
+            .width(width)
+            .fillMaxHeight()
+            .stickyBarText(barStart = x, barWidth = width, viewportStartPx = viewportStartPx)
+            .padding(
+                start = BarGap / 2 + BarTextPadding,
+                end = BarGap / 2 + BarTextPadding + endReserve
+            ),
+        verticalArrangement = Arrangement.Center
+    ) {
+        PhoneText(
+            text = title,
+            style = titleStyle,
+            color = color,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        if (secondLine != null) {
+            PhoneText(
+                text = secondLine,
+                style = secondStyle,
+                color = color,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/**
+ * Lays the text out from the viewport's left edge when the bar began before it, and drops
+ * it when less than [BarMinTextWidth] of the bar is left. Reads the scroll offset in the
+ * layout phase, so panning relayouts the text without recomposing the row.
+ */
+private fun Modifier.stickyBarText(
+    barStart: Dp,
+    barWidth: Dp,
+    viewportStartPx: () -> Int
+): Modifier = layout { measurable, constraints ->
+    val width = constraints.maxWidth
+    val height = constraints.maxHeight
+    val viewportStart = viewportStartPx().toDp().value
+    val textWidth = MultiEpgBarLayout.textWidthDp(
+        barStartDp = barStart.value,
+        barWidthDp = barWidth.value,
+        viewportStartDp = viewportStart,
+        minTextWidthDp = BarMinTextWidth.value
+    )
+    if (textWidth <= 0f) {
+        return@layout layout(width, height) {}
+    }
+    val inset = MultiEpgBarLayout.stickyTextInsetDp(
+        barStart.value,
+        barWidth.value,
+        viewportStart
+    )
+    val placeable = measurable.measure(
+        Constraints.fixed(textWidth.dp.roundToPx().coerceIn(0, width), height)
+    )
+    layout(width, height) {
+        placeable.place(inset.dp.roundToPx(), 0)
+    }
+}
+
+@Composable
+private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: Dp) {
+    val record = clock == MultiEpgTimerClock.Record
+    val clockCd = stringResource(
+        if (record) {
+            R.string.multiepg_timer_record
+        } else {
+            R.string.multiepg_timer_zap
+        }
+    )
+    val clockTint = if (record) {
+        PhoneMaterialTheme.colorScheme.primary
+    } else {
+        PhoneMaterialTheme.colorScheme.tertiary
     }
     Box(
         modifier = Modifier
             .offset(x = x)
-            .width(w)
+            .width(width)
             .fillMaxHeight()
-            .padding(vertical = 1.dp, horizontal = 0.5.dp)
-            .background(barColor, PhoneMaterialTheme.shapes.extraSmall)
-            .padding(horizontal = 4.dp),
-        contentAlignment = Alignment.CenterStart
+            .padding(end = BarGap / 2 + 4.dp),
+        contentAlignment = Alignment.CenterEnd
     ) {
-        PhoneText(
-            text = bar.event.title,
-            style = eventStyle,
-            color = onBar,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier
-                .align(Alignment.CenterStart)
-                .padding(end = if (clock != null) clockSize + 2.dp else 0.dp)
-        )
-        if (clock != null) {
-            val record = clock == MultiEpgTimerClock.Record
-            val clockCd = stringResource(
-                if (record) {
-                    R.string.multiepg_timer_record
-                } else {
-                    R.string.multiepg_timer_zap
-                }
+        Box(modifier = Modifier.size(clockSize)) {
+            PhoneIcon(
+                painter = painterResource(R.drawable.ic_multiepg_clock),
+                contentDescription = clockCd,
+                tint = clockTint,
+                modifier = Modifier.matchParentSize()
             )
-            val clockTint = if (record) {
-                PhoneMaterialTheme.colorScheme.primary
-            } else {
-                PhoneMaterialTheme.colorScheme.tertiary
-            }
             Box(
                 modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .size(clockSize)
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_multiepg_clock),
-                    contentDescription = clockCd,
-                    tint = clockTint,
-                    modifier = Modifier.matchParentSize()
-                )
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(clockSize * 0.35f)
-                        .background(
-                            color = clockTint,
-                            shape = if (record) {
-                                CircleShape
-                            } else {
-                                RoundedCornerShape(1.dp)
-                            }
-                        )
-                )
-            }
+                    .align(Alignment.BottomEnd)
+                    .size(clockSize * 0.35f)
+                    .background(
+                        color = clockTint,
+                        shape = if (record) {
+                            CircleShape
+                        } else {
+                            RoundedCornerShape(1.dp)
+                        }
+                    )
+            )
         }
     }
 }
