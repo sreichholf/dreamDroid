@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -81,14 +80,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
-import androidx.tv.material3.IconButton
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import java.text.DateFormat
+import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -105,7 +103,10 @@ import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.multiepg.multiEpgTimerClockKey
 import net.reichholf.dreamdroid.multiepg.overlapping
-import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvPillShape
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTopBarItemScale
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemColors
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvTopBarItemShape
 
 private val RulerHeight = 28.dp
 private val RulerTickHeight = 6.dp
@@ -124,6 +125,8 @@ private val BarSecondLineMinWidth = 120.dp
 private val FocusBorderWidth = 2.dp
 private val EdgeFade = 32.dp
 private val ChromeTargetSize = 48.dp
+private val ChromeRailPadding = 4.dp
+private val ChromeRailShape = DreamDroidTvPillShape
 
 /** Holes in a row's data shorter than this stay plain gaps instead of "No information". */
 private const val NO_INFO_MIN_GAP_SEC: Long = 5 * 60L
@@ -382,7 +385,7 @@ fun TvMultiEpgScreen(
         if (timelineEndSec <= originForLayout) {
             ""
         } else {
-            MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel)
+            tvMultiEpgDayLabel(visibleStartSec, nowSec, todayLabel)
         }
     }
 
@@ -603,6 +606,10 @@ private fun Modifier.tvMultiEpgEdgeFades(hScroll: ScrollState, listState: LazyLi
             }
         }
 
+/**
+ * The toolbar: one rail in the hub cards' container colour holding every control, flat at
+ * rest and in the cards' inverse colours when focused, so the row has one colour plus focus.
+ */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
 private fun TvMultiEpgChrome(
@@ -634,119 +641,147 @@ private fun TvMultiEpgChrome(
                 }
                 true
             },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        TvMultiEpgChromeChip(
-            label = bouquetName,
-            tag = "tv_multi_epg_bouquet",
-            onClick = onBouquetClick,
-            trailingIconRes = R.drawable.ic_arrow_drop_down
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        TvMultiEpgChromeIcon(
-            iconRes = R.drawable.ic_chevron_left,
-            label = stringResource(R.string.previous_day),
-            tag = "tv_multi_epg_prev_day",
-            onClick = onPrevDay
-        )
-        Text(
-            text = dayLabel,
-            style = MaterialTheme.typography.titleSmall,
-            textAlign = TextAlign.Center,
-            maxLines = 1,
+        Row(
             modifier = Modifier
-                .widthIn(min = 160.dp)
-                .testTag("tv_multi_epg_day")
-        )
-        TvMultiEpgChromeIcon(
-            iconRes = R.drawable.ic_chevron_right,
-            label = stringResource(R.string.next_day),
-            tag = "tv_multi_epg_next_day",
-            onClick = onNextDay
-        )
+                .background(PhoneMaterialTheme.colorScheme.surfaceContainerLow, ChromeRailShape)
+                .padding(ChromeRailPadding)
+                .testTag("tv_multi_epg_chrome_rail"),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            TvMultiEpgChromeButton(
+                tag = "tv_multi_epg_bouquet",
+                onClick = onBouquetClick
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = bouquetName,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_drop_down),
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+            TvMultiEpgChromeDivider()
+            TvMultiEpgChromeIcon(
+                iconRes = R.drawable.ic_chevron_left,
+                label = stringResource(R.string.previous_day),
+                tag = "tv_multi_epg_prev_day",
+                onClick = onPrevDay
+            )
+            Text(
+                text = dayLabel,
+                style = MaterialTheme.typography.titleSmall,
+                color = PhoneMaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                modifier = Modifier
+                    .widthIn(min = 140.dp)
+                    .testTag("tv_multi_epg_day")
+            )
+            TvMultiEpgChromeIcon(
+                iconRes = R.drawable.ic_chevron_right,
+                label = stringResource(R.string.next_day),
+                tag = "tv_multi_epg_next_day",
+                onClick = onNextDay
+            )
+            TvMultiEpgChromeDivider()
+            TvMultiEpgChromeText(
+                label = stringResource(R.string.multiepg_now),
+                tag = "tv_multi_epg_now",
+                onClick = onJumpToNow
+            )
+            TvMultiEpgChromeText(
+                label = stringResource(R.string.multiepg_zoom_hours, hours),
+                tag = "tv_multi_epg_zoom",
+                onClick = {
+                    val options = MultiEpgZoom.OPTIONS_MINUTES
+                    val index = options.indexOf(MultiEpgZoom.coerce(visibleMinutes))
+                    val next = options[(index + 1).mod(options.size)]
+                    onVisibleMinutesChange(next)
+                },
+                contentDescription = stringResource(R.string.multiepg_zoom)
+            )
+            if (onRefresh != null) {
+                TvMultiEpgChromeIcon(
+                    iconRes = R.drawable.ic_action_refresh,
+                    label = stringResource(R.string.reload),
+                    tag = "tv_multi_epg_refresh",
+                    onClick = onRefresh
+                )
+            }
+        }
         Spacer(modifier = Modifier.weight(1f))
         if (loading) {
             Text(
                 text = stringResource(R.string.loading),
-                style = MaterialTheme.typography.labelSmall
-            )
-        }
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.multiepg_now),
-            tag = "tv_multi_epg_now",
-            onClick = onJumpToNow
-        )
-        TvMultiEpgChromeChip(
-            label = stringResource(R.string.multiepg_zoom_hours, hours),
-            tag = "tv_multi_epg_zoom",
-            onClick = {
-                val options = MultiEpgZoom.OPTIONS_MINUTES
-                val index = options.indexOf(MultiEpgZoom.coerce(visibleMinutes))
-                val next = options[(index + 1).mod(options.size)]
-                onVisibleMinutesChange(next)
-            },
-            contentDescription = stringResource(R.string.multiepg_zoom)
-        )
-        if (onRefresh != null) {
-            TvMultiEpgChromeIcon(
-                iconRes = R.drawable.ic_action_refresh,
-                label = stringResource(R.string.reload),
-                tag = "tv_multi_epg_refresh",
-                onClick = onRefresh
+                style = MaterialTheme.typography.labelSmall,
+                color = PhoneMaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
 }
 
+/** A rail control: styled like the hub top bar's text controls, flat until focused. */
 @OptIn(ExperimentalTvMaterial3Api::class)
 @Composable
-private fun TvMultiEpgChromeChip(
-    label: String,
+private fun TvMultiEpgChromeButton(
     tag: String,
     onClick: () -> Unit,
-    @DrawableRes trailingIconRes: Int? = null,
-    contentDescription: String? = null
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
 ) {
     Surface(
         onClick = onClick,
-        modifier = Modifier
-            .heightIn(min = ChromeTargetSize)
-            .then(
-                if (contentDescription != null) {
-                    Modifier.semantics { this.contentDescription = contentDescription }
-                } else {
-                    Modifier
-                }
-            )
+        modifier = modifier
+            .height(ChromeTargetSize)
+            .widthIn(min = ChromeTargetSize)
             .testTag(tag),
-        colors = dreamDroidTvCardColors(),
-        scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
+        shape = dreamDroidTvTopBarItemShape(),
+        colors = dreamDroidTvTopBarItemColors(),
+        scale = DreamDroidTvTopBarItemScale
     ) {
-        Row(
-            modifier = Modifier
-                .heightIn(min = ChromeTargetSize)
-                .padding(start = 12.dp, end = if (trailingIconRes != null) 8.dp else 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (trailingIconRes != null) {
-                Icon(
-                    painter = painterResource(trailingIconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+        Box(modifier = Modifier.fillMaxHeight(), contentAlignment = Alignment.Center) {
+            content()
         }
     }
 }
 
-@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun TvMultiEpgChromeText(
+    label: String,
+    tag: String,
+    onClick: () -> Unit,
+    contentDescription: String? = null
+) {
+    TvMultiEpgChromeButton(
+        tag = tag,
+        onClick = onClick,
+        modifier = if (contentDescription != null) {
+            Modifier.semantics { this.contentDescription = contentDescription }
+        } else {
+            Modifier
+        }
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            maxLines = 1,
+            modifier = Modifier.padding(horizontal = 16.dp)
+        )
+    }
+}
+
 @Composable
 private fun TvMultiEpgChromeIcon(
     @DrawableRes iconRes: Int,
@@ -754,17 +789,47 @@ private fun TvMultiEpgChromeIcon(
     tag: String,
     onClick: () -> Unit
 ) {
-    IconButton(
+    TvMultiEpgChromeButton(
+        tag = tag,
         onClick = onClick,
-        modifier = Modifier
-            .size(ChromeTargetSize)
-            .testTag(tag)
+        modifier = Modifier.width(ChromeTargetSize)
     ) {
         Icon(
             painter = painterResource(iconRes),
-            contentDescription = label
+            contentDescription = label,
+            modifier = Modifier.size(24.dp)
         )
     }
+}
+
+/** Separates the rail's groups: bouquet, day, then Now / zoom / Reload. */
+@Composable
+private fun TvMultiEpgChromeDivider() {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = 6.dp)
+            .size(width = 1.dp, height = 24.dp)
+            .background(PhoneMaterialTheme.colorScheme.outlineVariant)
+    )
+}
+
+/**
+ * The visible day without the year (the EPG reaches about a week ahead): "Today · Oct 23"
+ * for today, the weekday and date ("Fri, Oct 24") for any other day, in the locale's order.
+ */
+internal fun tvMultiEpgDayLabel(
+    visibleSec: Long,
+    nowSec: Long,
+    todayLabel: String,
+    locale: Locale = Locale.getDefault()
+): String {
+    val today = MultiEpgTimeLabels.sameLocalDay(visibleSec, nowSec)
+    val pattern = android.text.format.DateFormat.getBestDateTimePattern(
+        locale,
+        if (today) "MMMd" else "EEEMMMd"
+    )
+    val date = SimpleDateFormat(pattern, locale).format(Date(visibleSec * 1000L))
+    return if (today) "$todayLabel · $date" else date
 }
 
 /**

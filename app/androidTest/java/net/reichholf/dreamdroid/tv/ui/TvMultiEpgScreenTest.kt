@@ -29,6 +29,7 @@ import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.ForcedSize
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
+import java.util.Locale
 import kotlin.math.abs
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.enigma.Event
@@ -669,6 +671,69 @@ class TvMultiEpgScreenTest {
         composeRule.waitForIdle()
         assertEquals(listOf(1, 1, 1), listOf(prev, next, reloads))
         composeRule.onAllNodesWithText("Previous day").assertCountEquals(0)
+    }
+
+    @Test
+    fun toolbarControlsShareTheRailColourAndFocusTurnsInverse() {
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            onRefresh = {}
+        )
+        val controls = listOf(
+            "tv_multi_epg_bouquet",
+            "tv_multi_epg_prev_day",
+            "tv_multi_epg_next_day",
+            "tv_multi_epg_now",
+            "tv_multi_epg_zoom",
+            "tv_multi_epg_refresh"
+        )
+
+        // 6 dp in from a control's start, at its middle: inside its pill, clear of its text.
+        fun fill(tag: String): Color {
+            val rail = composeRule.onNodeWithTag("tv_multi_epg_chrome_rail")
+            val railBounds = rail.getUnclippedBoundsInRoot()
+            val bounds = composeRule.onNodeWithTag(tag).getUnclippedBoundsInRoot()
+            return rail.captureToImage().colorAt(
+                bounds.left - railBounds.left + 6.dp,
+                (bounds.top + bounds.bottom) / 2 - railBounds.top
+            )
+        }
+        for (tag in controls) {
+            val color = fill(tag)
+            assertTrue(
+                "$tag at rest: ${color.hex()} vs rail ${scheme.surfaceContainerLow.hex()}",
+                color.near(scheme.surfaceContainerLow)
+            )
+        }
+
+        composeRule.onNodeWithTag("tv_multi_epg_now").requestFocus()
+        composeRule.waitForIdle()
+        assertTrue(
+            "focused Now: ${fill("tv_multi_epg_now").hex()}",
+            fill("tv_multi_epg_now").near(scheme.inverseSurface)
+        )
+        assertTrue(fill("tv_multi_epg_zoom").near(scheme.surfaceContainerLow))
+    }
+
+    @Test
+    fun dayLabelLeavesOutTheYear() {
+        val start = 1_700_000_000L
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            nowSec = start
+        )
+        val today = composeRule.onNodeWithTag("tv_multi_epg_day").fetchSemanticsNode()
+            .config[SemanticsProperties.Text].joinToString()
+        assertTrue(today, today.startsWith("Today · "))
+        assertFalse(today, today.contains("2023"))
+
+        val tomorrow = tvMultiEpgDayLabel(start + 86_400L, start, "Today", Locale.US)
+        assertFalse(tomorrow, tomorrow.contains("2023") || tomorrow.contains("Today"))
     }
 
     /**
