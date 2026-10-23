@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -143,6 +141,11 @@ fun TvMultiEpgHost(
                 onVisibleWindow = viewModel::onVisibleWindow,
                 onEventClick = viewModel::showDetail,
                 onBouquetClick = viewModel::showBouquetPicker,
+                bouquets = uiState.bouquets,
+                selectedBouquetRef = uiState.bouquetRef,
+                pickingBouquet = uiState.pickingBouquet,
+                onPickBouquet = viewModel::pickBouquet,
+                onDismissBouquets = viewModel::dismissBouquetPicker,
                 visibleMinutes = uiState.visibleMinutes,
                 onVisibleMinutesChange = viewModel::onVisibleMinutesChange,
                 textSize = uiState.textSize,
@@ -165,13 +168,6 @@ fun TvMultiEpgHost(
                     onEditTimer = { viewModel.editTimer(event) },
                     streamingEnabled = uiState.streamingEnabled,
                     mutationsBlocked = uiState.mutationsBlocked
-                )
-            }
-            if (uiState.pickingBouquet) {
-                TvMultiEpgBouquetPicker(
-                    bouquets = uiState.bouquets,
-                    onPick = viewModel::pickBouquet,
-                    onDismiss = viewModel::dismissBouquetPicker
                 )
             }
             val editingEvent = uiState.editTimerEvent
@@ -331,66 +327,6 @@ private fun TvMultiEpgAction(
             style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
         )
-    }
-}
-
-@OptIn(ExperimentalTvMaterial3Api::class)
-@Composable
-internal fun TvMultiEpgBouquetPicker(
-    bouquets: List<Service>,
-    onPick: (Service) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val firstRowFocus = remember { FocusRequester() }
-    BackHandler(onBack = onDismiss)
-    LaunchedEffect(bouquets) {
-        if (bouquets.isEmpty()) {
-            return@LaunchedEffect
-        }
-        try {
-            firstRowFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Overlay not attached yet.
-        }
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PhoneMaterialTheme.colorScheme.background)
-            .focusGroup()
-            .testTag("tv_multi_epg_bouquet_picker")
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(bouquets, key = { it.reference }) { service ->
-                val isFirst = service.reference == bouquets.first().reference
-                Surface(
-                    onClick = { onPick(service) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .then(
-                            if (isFirst) {
-                                Modifier.focusRequester(firstRowFocus)
-                            } else {
-                                Modifier
-                            }
-                        )
-                        .testTag("tv_multi_epg_bouquet_${service.reference}"),
-                    colors = dreamDroidTvCardColors(),
-                    scale = ClickableSurfaceDefaults.scale(focusedScale = 1.05f)
-                ) {
-                    Text(
-                        text = service.name.ifBlank { service.reference },
-                        style = MaterialTheme.typography.titleSmall,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)
-                    )
-                }
-            }
-        }
     }
 }
 

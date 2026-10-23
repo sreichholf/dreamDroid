@@ -1,6 +1,7 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import android.graphics.Color as AndroidColor
+import android.view.KeyEvent
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asAndroidBitmap
@@ -33,10 +35,14 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotSelected
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -58,6 +64,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.height
+import androidx.compose.ui.unit.toSize
+import androidx.compose.ui.unit.width
+import androidx.test.platform.app.InstrumentationRegistry
 import java.util.Locale
 import kotlin.math.abs
 import kotlinx.coroutines.runBlocking
@@ -329,34 +338,81 @@ class TvMultiEpgScreenTest {
     }
 
     @Test
-    fun bouquetPickerCenterPicksFirstRow() {
-        var picked: String? = null
-        val first = Service("1:7:1:fav:0:0:0:0:0:0:", "Favourites")
-        composeRule.setContent {
-            DreamDroidTvTheme {
-                Box(modifier = Modifier.fillMaxSize()) {
-                    TvMultiEpgBouquetPicker(
-                        bouquets = listOf(
-                            first,
-                            Service("1:7:1:other:0:0:0:0:0:0:", "Other")
-                        ),
-                        onPick = { picked = it.name },
-                        onDismiss = {}
-                    )
-                }
-            }
+    fun bouquetMenuDropsFromTheChipOpenOnTheCurrentBouquet() {
+        val start = 1_700_000_000L
+        val bouquets = listOf(
+            Service("1:7:1:fav:0:0:0:0:0:0:", "Favourites"),
+            Service("1:7:1:sports:0:0:0:0:0:0:", "Sports"),
+            Service("1:7:1:movies:0:0:0:0:0:0:", "Movies")
+        )
+        var picking by mutableStateOf(false)
+        var selected by mutableStateOf(bouquets[1].reference)
+        setTvGrid(
+            channels = fixtureChannels(start),
+            start = start,
+            selectedRef = SELECT_NONE,
+            bouquets = bouquets,
+            selectedBouquetRef = { selected },
+            pickingBouquet = { picking },
+            onBouquetClick = { picking = true },
+            onPickBouquet = {
+                selected = it.reference
+                picking = false
+            },
+            onDismissBouquets = { picking = false }
+        )
+        val chip = composeRule.onNodeWithTag("tv_multi_epg_bouquet")
+        chip.requestFocus()
+        remoteKey(KeyEvent.KEYCODE_DPAD_CENTER)
+        assertTrue(picking)
+
+        // Drops from the chip, no wider than a menu, focus and check on the current bouquet.
+        // The menu is a popup window of its own: compare screen positions, not root bounds.
+        val chipBounds = chip.screenBounds()
+        val menuNode = composeRule.onNodeWithTag("tv_multi_epg_bouquet_picker")
+        val menu = menuNode.screenBounds()
+        assertTrue("menu $menu below the chip $chipBounds", menu.top >= chipBounds.bottom - 1f)
+        with(density) {
+            assertTrue(
+                "menu $menu at the chip's start $chipBounds",
+                abs(menu.left - chipBounds.left) <= 16.dp.toPx()
+            )
         }
-        val row = composeRule.onNodeWithTag("tv_multi_epg_bouquet_${first.reference}")
-        row.assertIsDisplayed()
-        row.requestFocus()
-        composeRule.waitForIdle()
-        row.performKeyInput { pressKey(Key.DirectionCenter) }
-        composeRule.waitForIdle()
-        if (picked == null) {
-            row.performClick()
-            composeRule.waitForIdle()
+        // The popup lays out at the device's density, not the forced TV window's.
+        with(menuNode.fetchSemanticsNode().layoutInfo.density) {
+            assertTrue("menu width ${menu.width.toDp()}", menu.width.toDp() <= 368.dp)
         }
-        assertEquals("Favourites", picked)
+        composeRule.onNodeWithTag("tv_multi_epg_bouquet_${bouquets[1].reference}")
+            .assertIsFocused()
+            .assertIsSelected()
+        composeRule.onNodeWithTag("tv_multi_epg_bouquet_${bouquets[2].reference}")
+            .assertIsNotSelected()
+
+        // D-pad down, OK: picks the next bouquet, closes, and focus is back on the chip.
+        remoteKey(KeyEvent.KEYCODE_DPAD_DOWN)
+        remoteKey(KeyEvent.KEYCODE_DPAD_CENTER)
+        assertEquals(bouquets[2].reference, selected)
+        composeRule.onAllNodesWithTag("tv_multi_epg_bouquet_picker").assertCountEquals(0)
+        chip.assertIsFocused()
+
+        // Back closes it without a pick.
+        remoteKey(KeyEvent.KEYCODE_DPAD_CENTER)
+        assertTrue(picking)
+        remoteKey(KeyEvent.KEYCODE_BACK)
+        assertFalse(picking)
+        assertEquals(bouquets[2].reference, selected)
+    }
+
+    private fun SemanticsNodeInteraction.screenBounds(): Rect {
+        val node = fetchSemanticsNode()
+        return Rect(node.positionOnScreen, node.size.toSize())
+    }
+
+    /** A remote key, through the focused window (the menu's popup when it is open). */
+    private fun remoteKey(keyCode: Int) {
+        composeRule.waitForIdle()
+        InstrumentationRegistry.getInstrumentation().sendKeyDownUpSync(keyCode)
+        composeRule.waitForIdle()
     }
 
     /**
@@ -810,7 +866,13 @@ class TvMultiEpgScreenTest {
         nowSec: Long = start - 3600L,
         onPrevDay: () -> Unit = {},
         onNextDay: () -> Unit = {},
-        onRefresh: (() -> Unit)? = null
+        onRefresh: (() -> Unit)? = null,
+        bouquets: List<Service> = emptyList(),
+        selectedBouquetRef: () -> String = { "" },
+        pickingBouquet: () -> Boolean = { false },
+        onBouquetClick: () -> Unit = {},
+        onPickBouquet: (Service) -> Unit = {},
+        onDismissBouquets: () -> Unit = {}
     ) {
         var showContent by mutableStateOf(false)
         lateinit var inputModeManager: InputModeManager
@@ -842,9 +904,14 @@ class TvMultiEpgScreenTest {
                             onNextDay = onNextDay,
                             onVisibleWindow = { _, _ -> },
                             onEventClick = {},
-                            onBouquetClick = {},
+                            onBouquetClick = onBouquetClick,
                             onRefresh = onRefresh,
-                            hScrollState = scroll
+                            hScrollState = scroll,
+                            bouquets = bouquets,
+                            selectedBouquetRef = selectedBouquetRef(),
+                            pickingBouquet = pickingBouquet(),
+                            onPickBouquet = onPickBouquet,
+                            onDismissBouquets = onDismissBouquets
                         )
                     }
                 }
