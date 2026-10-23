@@ -20,6 +20,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import net.reichholf.dreamdroid.testutil.enterTouchMode
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -89,7 +90,11 @@ class EditOutlinedTextFieldKeyboardTest {
                 }
             }
         }
-        composeRule.runOnIdle { inputModeManager.requestInputMode(inputMode) }
+        if (inputMode == InputMode.Touch) {
+            composeRule.enterTouchMode(inputModeManager)
+        } else {
+            composeRule.runOnIdle { inputModeManager.requestInputMode(inputMode) }
+        }
         composeRule.runOnIdle {
             assertEquals(inputMode, inputModeManager.inputMode)
             showForm = true
