@@ -42,17 +42,15 @@ fun shouldShowTvSessionRecheck(status: ConnectionStatus): Boolean = !status.chec
         )
 
 /**
- * Raw browse [errorText] stays off Settings and Timers (each hosts its own
- * empty/error). Content headers, including MultiEPG, show it only when this view
- * has nothing painted.
+ * Raw browse [errorText] shows on Live TV and Recordings, and only when that view has
+ * nothing painted. Guide, Timers and Settings host their own empty and error states.
  */
 fun shouldShowTvBrowseError(
-    selectedHeaderId: String,
+    section: HubSection,
     loading: Boolean,
     errorText: String?,
     hasPaintedContent: Boolean
-): Boolean = selectedHeaderId != TvComposeHubHost.HEADER_SETTINGS_ID &&
-    selectedHeaderId != TvComposeHubHost.HEADER_TIMERS_ID &&
+): Boolean = (section is HubSection.Live || section is HubSection.Recordings) &&
     !loading &&
     errorText != null &&
     !hasPaintedContent
@@ -91,8 +89,8 @@ fun tvSessionGate(
 }
 
 /**
- * Movie drawer headers. Never advertise the `/hdd/movie` HTTP fallback as a
- * live location — only receiver-backed lists or a Room snapshot.
+ * The Recordings drawer's movie locations. Never advertise the `/hdd/movie` HTTP
+ * fallback as a live location — only receiver-backed lists or a Room snapshot.
  */
 fun movieHeadersForTvHub(
     locationsFromReceiver: Boolean,

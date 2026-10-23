@@ -7,8 +7,9 @@
 * NEU: Media3 als optionale Player-Engine
 * FIX: Kein Bild bei manchen Live-Sendern mit Hardware-Dekodierung
 * FIX: Live-Streams starteten nach Senderwechsel nicht
-* UPD: TV-Oberfläche für Google TV modernisiert
-* UPD: D-pad-Navigation in den TV-Einstellungen verbessert
+* UPD: Neue TV-Oberfläche mit Tabs
+* NEU: Weiterschauen auf dem TV
+* NEU: Backup & Wiederherstellung auf dem TV
 * NEU: Letzten Live-Sender beim App-Start automatisch wiedergeben
 * NEU: Bevorzugte Audiosprache für den integrierten Player
 * FIX: Import von Backups aus 1.15
@@ -298,3 +299,4 @@
 * UPD: UI wurde auf aktuelle Technologien aktualisiert (GROSSE interne Änderungen)
 * FIX: Diverse Fehlerbehbungen (defekter EPG auf älteren Dreamboxen, doppelte Tags, ...)
 * NEU: Fehler die wir noch nicht gefunden haben ;)
+

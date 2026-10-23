@@ -245,12 +245,10 @@ class ComposeTvHubServiceRowTest {
         )
         composeRule.setContent {
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(TvComposeHubHost.HEADER_SETTINGS_ID, "Preferences"),
-                    HubNavHeader(bouquet.reference, bouquet.name)
-                ),
-                selectedHeaderId = bouquet.reference,
-                onHeaderSelected = {},
+                section = HubSection.Live(bouquet.reference),
+                onOpenTab = {},
+                onOpenSettings = {},
+                onDrawerItemSelected = {},
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = listOf(
@@ -277,7 +275,10 @@ class ComposeTvHubServiceRowTest {
                     modifier = Modifier
                         .background(parent)
                         .padding(12.dp)
-                        .width(340.dp)
+                        // The row (this minus its 24dp padding) fits the 300dp card and both
+                        // focus insets: a narrower row scrolls the focused card onto its
+                        // clipping edge, which cuts the scaled corners flat.
+                        .width(400.dp)
                         .height(240.dp)
                         .testTag("card_parent")
                 ) {

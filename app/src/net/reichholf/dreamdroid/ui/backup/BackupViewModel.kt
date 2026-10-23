@@ -34,7 +34,8 @@ data class BackupProfileToggle(
  * The export choices. App settings and receiver passwords stay out of the file until the
  * user turns [exportSettings] or [includePasswords] on. [confirmingPasswords] shows the
  * warning before an export that includes passwords; [pickingExport] asks the destination
- * to open the document picker once.
+ * to open the document picker once. [imported] turns true once an import was written in this
+ * visit, so the caller knows the profiles and settings changed.
  */
 data class BackupUiState(
     val profiles: List<BackupProfileToggle> = emptyList(),
@@ -43,6 +44,7 @@ data class BackupUiState(
     val confirmingPasswords: Boolean = false,
     val pickingExport: Boolean = false,
     val importReview: ImportReview? = null,
+    val imported: Boolean = false,
     val userMessage: UiText? = null
 ) {
     val title: UiText
@@ -120,7 +122,8 @@ class BackupViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(
         BackupUiState(
             exportSettings = savedStateHandle[KEY_EXPORT_SETTINGS] ?: false,
-            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: false
+            includePasswords = savedStateHandle[KEY_INCLUDE_PASSWORDS] ?: false,
+            imported = savedStateHandle[KEY_IMPORTED] ?: false
         )
     )
     val uiState: StateFlow<BackupUiState> = _uiState.asStateFlow()
@@ -254,6 +257,8 @@ class BackupViewModel @Inject constructor(
         clearImport()
         viewModelScope.launch {
             if (backups.importBackup(backup, review.choice)) {
+                savedStateHandle[KEY_IMPORTED] = true
+                _uiState.update { it.copy(imported = true) }
                 showMessage(UiText.Resource(R.string.backup_import_successful))
                 reload()
             } else {
@@ -384,5 +389,6 @@ class BackupViewModel @Inject constructor(
         const val KEY_IMPORT_EXCLUDED = "backup_import_excluded_profiles"
         const val KEY_IMPORT_PASSWORDS = "backup_import_passwords"
         const val KEY_IMPORT_SETTINGS = "backup_import_settings"
+        const val KEY_IMPORTED = "backup_imported"
     }
 }

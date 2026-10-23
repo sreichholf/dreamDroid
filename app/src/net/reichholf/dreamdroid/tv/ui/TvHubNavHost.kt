@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.tv.ui
 
 import android.Manifest
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
@@ -34,12 +33,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.toRoute
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.map
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.backup.BackupDestination
+import net.reichholf.dreamdroid.ui.backup.BackupViewModel
 import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.settings.SettingsViewModel
 import net.reichholf.dreamdroid.ui.settings.TvSettingsScreen
@@ -50,6 +49,8 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 
 /** Hub entry flag. A settings write or a profile save sets it; the hub consumes it. */
 internal const val TV_HUB_RELOAD_KEY: String = "tv_hub_reload"
+
+/** Profiles entry flag. A backup import sets it; Profiles reloads, then marks the hub. */
 private const val TV_PROFILES_RELOAD_KEY: String = "tv_profiles_reload"
 
 internal fun markTvHubReload(handle: SavedStateHandle?) {
@@ -129,20 +130,7 @@ private fun TvHubNavGraph(
                 onRecheckProfile = shellViewModel::recheck,
                 viewModel = hubViewModel,
                 onOpenSettings = { navController.navigate(TvSettings) },
-                onOpenProfiles = { navController.navigate(TvProfiles) },
-                onOpenMultiEpg = { reference, name ->
-                    navController.navigate(
-                        TvComposeHubHost.tvMultiEpgRoute(reference, name)
-                    )
-                }
-            )
-        }
-        composable<TvMultiEpg> { entry ->
-            val route = entry.toRoute<TvMultiEpg>()
-            TvMultiEpgHost(
-                activity = activity,
-                bouquetRef = route.bouquetRef,
-                bouquetName = route.bouquetName
+                onOpenProfiles = { navController.navigate(TvProfiles) }
             )
         }
         composable<TvSettings> {
@@ -170,10 +158,15 @@ private fun TvHubNavGraph(
             }
         }
         composable<TvBackup> {
-            BackHandler {
-                navController.previousBackStackEntry?.savedStateHandle
-                    ?.set(TV_PROFILES_RELOAD_KEY, true)
-                navController.popBackStack()
+            val backupViewModel: BackupViewModel = hiltViewModel()
+            val backupState by backupViewModel.uiState.collectAsStateWithLifecycle()
+            // Marked when an import is written, so every way back to Profiles reloads it,
+            // and leaving without an import reloads nothing.
+            LaunchedEffect(backupState.imported) {
+                if (backupState.imported) {
+                    navController.previousBackStackEntry?.savedStateHandle
+                        ?.set(TV_PROFILES_RELOAD_KEY, true)
+                }
             }
             DreamDroidTvTheme {
                 Column(
@@ -190,7 +183,8 @@ private fun TvHubNavGraph(
                     )
                     BackupDestination(
                         modifier = Modifier.weight(1f),
-                        inlineExport = true
+                        inlineExport = true,
+                        viewModel = backupViewModel
                     )
                 }
             }

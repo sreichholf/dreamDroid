@@ -162,6 +162,12 @@
     <string name="session_checking">Prüfung</string>
     <string name="session_needs_receiver">Empfänger erforderlich</string>
     <string name="session_needs_receiver_long">Diese Funktion benötigt eine Verbindung zur Box</string>
+    <string name="tv_hub_live">Live-TV</string>
+    <string name="tv_hub_guide">Programm</string>
+    <string name="tv_hub_recordings">Aufnahmen</string>
+    <string name="tv_hub_timers">Timer</string>
+    <string name="tv_hub_no_bouquets">Keine TV-Bouquets auf diesem Receiver.</string>
+    <string name="tv_hub_continue_watching">Weiterschauen</string>
     <string name="error">FEHLER!</string>
     <string name="version_too_low">Version &lt; 1.6</string>
     <string name="connection_error">Verbindungsfehler</string>
@@ -339,7 +345,6 @@
     <string name="backup_profiles">Profile</string>
     <string name="licenses">Lizenzen</string>
     <string name="no_tracks">Keine Tonspuren verfügbar!</string>
-    <string name="preferences">Einstellungen</string>
     <string name="backup_import_error">Backup-Import fehlgeschlagen!</string>
     <string name="ssid">WLAN Name</string>
     <string name="live_movie"><![CDATA[TV & Filme]]></string>

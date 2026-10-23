@@ -68,7 +68,7 @@ class VideoPlaybackViewModelTest {
 
         viewModel().onLiveStreamPlaying(stream)
 
-        assertEquals(stream, lastStreams.forActiveProfile())
+        assertEquals(stream, runBlocking { lastStreams.lastStream.first() })
     }
 
     @Test

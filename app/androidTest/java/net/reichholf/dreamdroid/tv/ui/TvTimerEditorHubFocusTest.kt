@@ -30,9 +30,9 @@ import org.junit.Rule
 import org.junit.Test
 
 /**
- * Opening the hub Timers editor must keep the Timers header selected and put focus in the
- * form. The edit button leaves the composition, so the editor takes focus itself; focus
- * that falls back to the drawer would leave the form unreachable.
+ * Opening the hub Timers editor must keep Timers selected and put focus in the form. The
+ * edit button leaves the composition, so the editor takes focus itself; focus that falls
+ * back to the top bar would leave the form unreachable or switch the tab.
  */
 @OptIn(ExperimentalTestApi::class)
 class TvTimerEditorHubFocusTest {
@@ -40,25 +40,26 @@ class TvTimerEditorHubFocusTest {
     val composeRule = createComposeRule()
 
     @Test
-    fun openingTheTimerEditorKeepsTheTimersHeaderSelected() {
+    fun openingTheTimerEditorKeepsTimersSelected() {
         val bouquet = HubBouquetRow(
             bouquet = Service("1:7:1:0:0:0:0:0:0:0:Favourites", "Favourites"),
             services = emptyList()
         )
         val timers = listOf(Timer(name = "Existing", serviceName = "ARD"))
-        var selected by mutableStateOf(TvComposeHubHost.HEADER_TIMERS_ID)
+        var selected by mutableStateOf<HubSection>(HubSection.Timers)
         var page by mutableStateOf<TvTimerPage>(TvTimerPage.List)
 
         lateinit var inputModeManager: InputModeManager
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
             ComposeTvHubChrome(
-                headers = listOf(
-                    HubNavHeader(bouquet.bouquet.reference, bouquet.bouquet.name),
-                    HubNavHeader(TvComposeHubHost.HEADER_TIMERS_ID, "Timer")
-                ),
-                selectedHeaderId = selected,
-                onHeaderSelected = { selected = it },
+                section = selected,
+                onOpenTab = {
+                    selected =
+                        if (it == HubTab.Timers) HubSection.Timers else HubSection.Live(null)
+                },
+                onOpenSettings = { selected = HubSection.Settings },
+                onDrawerItemSelected = { selected = HubSection.Live(it) },
                 settingsItems = emptyList(),
                 onSettingsClick = {},
                 bouquetRows = listOf(bouquet),
@@ -102,7 +103,7 @@ class TvTimerEditorHubFocusTest {
         edit.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
 
-        assertEquals("header selection changed", TvComposeHubHost.HEADER_TIMERS_ID, selected)
+        assertEquals("section changed", HubSection.Timers, selected)
         // Focus lands on the first control that is not a text field, so no soft keyboard.
         composeRule.onNodeWithContentDescription(
             InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.enabled)

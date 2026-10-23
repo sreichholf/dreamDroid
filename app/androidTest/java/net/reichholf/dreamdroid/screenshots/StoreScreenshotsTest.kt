@@ -197,19 +197,19 @@ class StoreScreenshotsTest {
             awaitNode(hasText(second.name))
             capture("1_hub")
 
-            // TV surfaces answer D-pad and semantic clicks, not touch.
-            tvClick("hub_bouquet_multiepg")
+            // TV surfaces answer D-pad and semantic clicks, not touch. Guide, Timers and
+            // Recordings are top bar tabs; a movie location is an item of the Recordings drawer.
+            tvClick("hub_tab_guide")
             awaitNode(hasTestTag("tv_multi_epg_grid"))
             awaitNode(hasText(receiver.titleNow(first)))
             capture("2_multiepg")
 
-            it.onActivity { activity -> activity.onBackPressedDispatcher.onBackPressed() }
-            awaitNode(hasTestTag("compose_tv_hub_chrome"))
-            tvClick("hub_header_timers")
+            tvClick("hub_tab_timers")
             awaitNode(hasText(receiver.timerTitles().first()))
             capture("3_timers")
 
-            tvClick("hub_header_movie:/media/hdd/movie/")
+            tvClick("hub_tab_recordings")
+            tvClick("hub_header_/media/hdd/movie/")
             awaitNode(hasTestTag("hub_movie_card"))
             awaitNode(hasText(ScreenshotReceiver.MOVIE_TITLES.first()))
             capture("4_movies")

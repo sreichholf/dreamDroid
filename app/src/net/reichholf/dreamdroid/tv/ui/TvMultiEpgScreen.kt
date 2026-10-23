@@ -57,6 +57,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -84,6 +85,13 @@ import net.reichholf.dreamdroid.multiepg.overlapping
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
 private val RulerHeight = 22.dp
+
+/** The selected channel's accent bar at the start of its cell. */
+private val ChannelCueWidth = 4.dp
+private val ChannelCueHeight = 24.dp
+
+/** The selected row's band: onSurface, faint enough to stay behind the programme bars. */
+private const val ROW_BAND_ALPHA = 0.06f
 
 /**
  * TV GraphMultiEPG grid. Programme bars are not clickable/focusable — one
@@ -474,7 +482,7 @@ fun TvMultiEpgScreen(
                             modifier = Modifier
                                 .width(channelLabelWidth)
                                 .fillMaxHeight()
-                                .padding(horizontal = 6.dp)
+                                .testTag("tv_multi_epg_channel_${channel.serviceRef}")
                         )
                         Box(
                             modifier = Modifier
@@ -492,6 +500,7 @@ fun TvMultiEpgScreen(
                                 cullStartSec = cullWindow.first,
                                 cullEndSec = cullWindow.second,
                                 selectedStartSec = if (selected) selectedStartSec else null,
+                                selectedRow = selected,
                                 timerClocks = timerClocks,
                                 rowHeight = rowHeight,
                                 eventStyle = eventStyle,
@@ -618,6 +627,11 @@ private fun TvMultiEpgChromeChip(label: String, tag: String, onClick: () -> Unit
     }
 }
 
+/**
+ * The channel cell. The selected programme's channel is a quiet cue, not a second focus
+ * colour: its name in semi-bold [onSurface][androidx.compose.material3.ColorScheme.onSurface],
+ * a small primary accent bar at the cell's start, and the row band across the full cell.
+ */
 @Composable
 private fun TvMultiEpgChannelLabel(
     serviceName: String,
@@ -625,29 +639,36 @@ private fun TvMultiEpgChannelLabel(
     style: TextStyle,
     modifier: Modifier = Modifier
 ) {
-    val background = if (selected) {
-        PhoneMaterialTheme.colorScheme.primaryContainer
-    } else {
-        Color.Transparent
-    }
-    val color = if (selected) {
-        PhoneMaterialTheme.colorScheme.onPrimaryContainer
-    } else {
-        PhoneMaterialTheme.colorScheme.onSurface
-    }
+    val colors = PhoneMaterialTheme.colorScheme
     Box(
-        modifier = modifier.background(background),
+        modifier = modifier.then(
+            if (selected) Modifier.background(tvMultiEpgRowBand()) else Modifier
+        ),
         contentAlignment = Alignment.CenterStart
     ) {
+        if (selected) {
+            Box(
+                modifier = Modifier
+                    .size(width = ChannelCueWidth, height = ChannelCueHeight)
+                    .background(colors.primary, RoundedCornerShape(percent = 50))
+                    .testTag("tv_multi_epg_channel_cue")
+            )
+        }
         PhoneText(
             text = serviceName,
-            style = style,
-            color = color,
+            style = if (selected) style.copy(fontWeight = FontWeight.SemiBold) else style,
+            color = if (selected) colors.onSurface else colors.onSurfaceVariant,
             maxLines = 2,
-            overflow = TextOverflow.Ellipsis
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(horizontal = 12.dp)
         )
     }
 }
+
+/** The faint band behind the selected row, from the channel cell through the timeline. */
+@Composable
+private fun tvMultiEpgRowBand(): Color =
+    PhoneMaterialTheme.colorScheme.onSurface.copy(alpha = ROW_BAND_ALPHA)
 
 @Composable
 private fun TvMultiEpgTimeRuler(
@@ -712,7 +733,8 @@ private fun TvMultiEpgChannelTimeline(
     timerClocks: Map<String, MultiEpgTimerClock>,
     rowHeight: Dp,
     eventStyle: TextStyle,
-    clockSize: Dp
+    clockSize: Dp,
+    selectedRow: Boolean = false
 ) {
     val trackColor = PhoneMaterialTheme.colorScheme.surface
     val barColor = PhoneMaterialTheme.colorScheme.surfaceVariant
@@ -730,6 +752,7 @@ private fun TvMultiEpgChannelTimeline(
             .width(timelineWidth)
             .height(rowHeight)
             .background(trackColor)
+            .then(if (selectedRow) Modifier.background(tvMultiEpgRowBand()) else Modifier)
     ) {
         for (bar in visibleBars) {
             key(channel.serviceRef, bar.event.eventId, bar.startSec) {

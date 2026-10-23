@@ -262,7 +262,6 @@
     <string name="audio_tracks">audio stopy</string>
     <string name="subtitles">titulky</string>
     <string name="no_tracks">K dispozici nejsou žádné stopy !</string>
-    <string name="preferences">preference</string>
     <string name="backup">záloha</string>
     <string name="backup_current_profile">aktuální</string>
     <string name="backup_export">export</string>

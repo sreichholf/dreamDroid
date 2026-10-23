@@ -14,7 +14,10 @@ import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.withTimeout
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.LastLiveStream
+import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LiveStream
 import net.reichholf.dreamdroid.data.MovieRepository
 import net.reichholf.dreamdroid.data.ReceiverPluginsRepository
@@ -27,6 +30,7 @@ import net.reichholf.dreamdroid.helpers.EnigmaUrls
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
+import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TV_ROOTS
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
@@ -67,6 +71,8 @@ class TvHubViewModelTest {
         receiver.sessions,
         timers
     )
+    private val lastStreams =
+        LastLiveStreamRepository(MemorySharedPreferences(), receiver.profiles.repository)
     private val viewModels = mutableListOf<TvHubViewModel>()
 
     /** The TV bouquet index the receiver answers; empty means none. */
@@ -118,10 +124,10 @@ class TvHubViewModelTest {
         val browseFills = receiver.requestsTo(EPG_MULTI)
         assertEquals(2, browseFills.size)
 
-        viewModel.selectHeader(OTHER)
+        viewModel.selectDrawerItem(OTHER)
         viewModel.onShown()
 
-        // Only OTHER's requests: the header change can reach the sync after a brief start for
+        // Only OTHER's requests: the bouquet change can reach the sync after a brief start for
         // FAVOURITES under the unconfined test Main. syncWaitsUntilTheTargetSettles covers that.
         val synced = receiver.awaitRequests(MultiEpgWindows.SYNC_CHUNKS) {
             it.requestUrl?.encodedPath == EPG_MULTI && it.bRef() == OTHER
@@ -236,16 +242,16 @@ class TvHubViewModelTest {
         movies.saveMovies(HDD, listOf(Movie(title = "Cached")))
         receiverDown = true
         var before = viewModel.jobs()
-        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.openTab(HubTab.Recordings)
         viewModel.joinJobsSince(before)
         // uiState combines the ViewModel state with the session, so it can trail the load.
         val cached = awaitState(viewModel) { HDD in it.moviesByLocation }
         assertEquals(listOf("Cached"), cached.moviesByLocation.getValue(HDD).map { it.title })
-        viewModel.selectHeader(FAVOURITES)
+        viewModel.openTab(HubTab.Live)
         receiverDown = false
         before = viewModel.jobs()
 
-        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.openTab(HubTab.Recordings)
         viewModel.joinJobsSince(before)
 
         assertEquals(2, receiver.requestsTo(MOVIE_LIST).size)
@@ -253,14 +259,14 @@ class TvHubViewModelTest {
     }
 
     @Test
-    fun aMovieHeaderLoadsItsLocationOnce() = runBlocking<Unit> {
+    fun recordingsLoadItsLocationOnce() = runBlocking<Unit> {
         val viewModel = viewModel()
         awaitLoaded(viewModel)
 
-        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.openTab(HubTab.Recordings)
         awaitState(viewModel) { HDD in it.moviesByLocation }
-        viewModel.selectHeader(FAVOURITES)
-        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.openTab(HubTab.Live)
+        viewModel.openTab(HubTab.Recordings)
         val state = awaitState(viewModel) { !it.movieLoading }
 
         assertEquals(2, state.moviesByLocation.getValue(HDD).size)
@@ -272,7 +278,7 @@ class TvHubViewModelTest {
     fun offlineMoviesComeFromRoom() = runBlocking<Unit> {
         val viewModel = viewModel()
         awaitLoaded(viewModel)
-        viewModel.selectHeader(MOVIE_HEADER)
+        viewModel.openTab(HubTab.Recordings)
         awaitState(viewModel) { HDD in it.moviesByLocation }
 
         receiver.goOffline()
@@ -281,7 +287,7 @@ class TvHubViewModelTest {
                 !it.loading && HDD in it.moviesByLocation
         }
 
-        assertEquals(MOVIE_HEADER, state.selectedHeaderId)
+        assertEquals(HubSection.Recordings(HDD), state.section)
         assertEquals(2, state.moviesByLocation.getValue(HDD).size)
         assertEquals(1, receiver.requestsTo(MOVIE_LIST).size)
     }
@@ -315,24 +321,45 @@ class TvHubViewModelTest {
     }
 
     @Test
-    fun reloadDropsAVanishedHeaderAndKeepsPersistentOnes() = runBlocking<Unit> {
+    fun reloadDropsAVanishedBouquetAndKeepsTimers() = runBlocking<Unit> {
         val viewModel = viewModel()
         val opened = awaitLoaded(viewModel)
-        assertEquals(FAVOURITES, opened.selectedHeaderId)
+        assertEquals(HubSection.Live(FAVOURITES), opened.section)
 
         // Each wait names the reloaded rows: a bare "loaded" also matches the state
         // before the reload reached the combined uiState.
         bouquets = listOf(OTHER to "Other")
         viewModel.reload()
         val dropped = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(OTHER) }
-        assertEquals(OTHER, dropped.selectedHeaderId)
+        assertEquals(HubSection.Live(OTHER), dropped.section)
 
-        viewModel.selectHeader(TvComposeHubHost.HEADER_TIMERS_ID)
-        awaitState(viewModel) { it.selectedHeaderId == TvComposeHubHost.HEADER_TIMERS_ID }
+        viewModel.openTab(HubTab.Timers)
+        awaitState(viewModel) { it.section == HubSection.Timers }
         bouquets = listOf(FAVOURITES to "Favourites")
         viewModel.reload()
         val kept = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(FAVOURITES) }
-        assertEquals(TvComposeHubHost.HEADER_TIMERS_ID, kept.selectedHeaderId)
+        assertEquals(HubSection.Timers, kept.section)
+    }
+
+    @Test
+    fun backReturnsToLiveTvOnItsBouquet() = runBlocking<Unit> {
+        bouquets = listOf(FAVOURITES to "Favourites", OTHER to "Other")
+        val viewModel = viewModel()
+        awaitLoaded(viewModel)
+        viewModel.selectDrawerItem(OTHER)
+        viewModel.openTab(HubTab.Guide)
+        awaitState(viewModel) { it.section == HubSection.Guide(OTHER) }
+
+        assertTrue(viewModel.back())
+        awaitState(viewModel) { it.section == HubSection.Live(OTHER) }
+        assertFalse(viewModel.back())
+    }
+
+    @Test
+    fun theActiveProfileNamesTheChip() = runBlocking<Unit> {
+        val name = receiver.profiles.repository.requireCurrent().name.orEmpty()
+
+        awaitState(viewModel()) { it.profileName == name && name.isNotEmpty() }
     }
 
     @Test
@@ -397,6 +424,23 @@ class TvHubViewModelTest {
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
         viewModel.onStreamStarted()
         awaitState(viewModel) { it.stream == null }
+    }
+
+    @Test
+    fun lastStreamFollowsThePlayerAndTheActiveProfile() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        assertNull(viewModel.uiState.value.lastStream)
+        val zdf = LastLiveStream(CHANNEL, "Das Erste HD", FAVOURITES)
+
+        lastStreams.save(zdf)
+        awaitState(viewModel) { it.lastStream == zdf }
+
+        val active = receiver.profiles.repository.requireCurrent()
+        receiver.profiles.repository.setCurrent(Profile().apply { id = PROFILE_ID + 1 })
+        awaitState(viewModel) { it.lastStream == null }
+
+        receiver.profiles.repository.setCurrent(active)
+        awaitState(viewModel) { it.lastStream == zdf }
     }
 
     @Test
@@ -496,6 +540,8 @@ class TvHubViewModelTest {
             ReceiverRepository(clients, receiver.profiles.repository),
             movies,
             receiver.sessions,
+            receiver.profiles.repository,
+            lastStreams,
             epgSyncDelayMs
         ).also { viewModels += it }
 
@@ -532,7 +578,6 @@ class TvHubViewModelTest {
         const val CHANNEL = "1:0:1:6DCA:44D:1:C00000:0:0:0:"
         const val MARKER = "1:64:1:0:0:0:0:0:0:0:"
         const val HDD = "/media/hdd/movie/"
-        val MOVIE_HEADER = TvComposeHubHost.movieHeaderId(HDD)
         const val BOUQUET_INDEX_PATH = "/web/getservices"
         const val EPG_MULTI = "/web/epgmulti"
         const val MOVIE_LIST = "/web/movielist"
