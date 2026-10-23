@@ -9,6 +9,7 @@
 * UPD: Many UI improvements
 * UPD: New TV player overlay with channel list
 * UPD: TV player: Up/Down opens the channel list
+* FIX: Player info showing a programme that had already ended
 
 ## 2.0.468
 * UPD: Live TV streams reconnect after dropouts

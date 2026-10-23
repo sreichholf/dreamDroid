@@ -38,7 +38,6 @@ import net.reichholf.dreamdroid.enigma.Movie as EnigmaMovie
 import net.reichholf.dreamdroid.enigma.Service as BouquetService
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.helpers.enigma2.Service
 import net.reichholf.dreamdroid.helpers.getSerializableCompat
 import net.reichholf.dreamdroid.helpers.isTelevision
@@ -113,7 +112,10 @@ class VideoOverlayController(
         handler = Handler(Looper.getMainLooper())
         servicesViewVisible = false
         autoHideRunnable = Runnable { hideOverlays() }
-        issueReloadRunnable = Runnable { reload() }
+        issueReloadRunnable = Runnable {
+            reload()
+            scheduleEventReload()
+        }
 
         applyPlaybackExtras(extras)
 
@@ -153,7 +155,8 @@ class VideoOverlayController(
                 onList = { onList() },
                 onAudio = { onSelectAudioTrack() },
                 onSubtitle = { onSelectSubtitleTrack() },
-                onSleepTimer = { onSleepTimer() }
+                onSleepTimer = { onSleepTimer() },
+                onUserInteraction = { autohide() }
             )
         } else {
             composeOverlay!!.bindVideoOverlayScreen(
@@ -722,32 +725,23 @@ class VideoOverlayController(
         } else {
             updateViews()
         }
+        scheduleEventReload()
+    }
+
+    /**
+     * Reloads now/next when the running event ends, and again until the receiver has moved
+     * on: right after the end its EPG may still report the old event.
+     */
+    private fun scheduleEventReload() {
         if (currentService == null && movie == null) return
         handler.removeCallbacks(issueReloadRunnable)
-        val now = currentService?.now
-        val start = now?.start
-        val duration = now?.duration
-        if (
-            duration != null &&
-            start != null &&
-            duration.isNotEmpty() &&
-            start.isNotEmpty() &&
-            duration != Python.NONE &&
-            start != Python.NONE
-        ) {
-            val eventStart = (start.toDouble()).toLong() * 1000
-            val eventEnd = eventStart + (duration.toDouble()).toLong() * 1000
-            val nowMs = System.currentTimeMillis()
-            var delay = eventEnd - nowMs
-            if (eventEnd <= nowMs) {
-                delay = nowMs // outdated, reload in few seconds
-            }
-            delay += 2000
-            handler.postDelayed(issueReloadRunnable, delay)
-        } else {
-            Log.i(LOG_TAG, "No Eventinfo present, will update in 5 Minutes!")
-            handler.postDelayed(issueReloadRunnable, 300000)
+        val progress = eventProgress(currentService?.now, System.currentTimeMillis())
+        val delay = when {
+            progress == null -> NO_EVENT_RELOAD_MS
+            progress.elapsedSec >= progress.totalSec -> ENDED_EVENT_RELOAD_MS
+            else -> (progress.totalSec - progress.elapsedSec) * 1000 + 2000
         }
+        handler.postDelayed(issueReloadRunnable, delay)
     }
 
     fun reload() {
@@ -762,9 +756,12 @@ class VideoOverlayController(
         player.setPosition(fpos / length)
     }
 
+    /** Live TV is the session's call; engines report some live streams as seekable. */
+    private fun isLive(): Boolean = movie == null && currentService != null
+
     private fun isRecording(): Boolean {
         val isDreamboxRecording = movie != null
-        return player.state.value.seekable || isDreamboxRecording
+        return isDreamboxRecording || (!isLive() && player.state.value.seekable)
     }
 
     private fun updateViews() {
@@ -772,7 +769,7 @@ class VideoOverlayController(
 
         val title = session.title
         overlayUiState.title = title ?: ""
-        overlayUiState.showPvrControls = player.state.value.seekable
+        overlayUiState.showPvrControls = !isLive() && player.state.value.seekable
 
         if (movie != null || currentService != null) {
             overlayUiState.showInfoButton = true
@@ -817,7 +814,7 @@ class VideoOverlayController(
     private fun updateProgress() {
         if (rootView == null) return
         val playerState = player.state.value
-        val isSeekable = playerState.seekable
+        val isSeekable = !isLive() && playerState.seekable
         overlayUiState.seekable = isSeekable
         var len = -1L
         var cur = -1L
@@ -850,27 +847,15 @@ class VideoOverlayController(
                     overlayUiState.showNow = false
                 }
                 overlayUiState.hasNext = false
-            } else if (currentService?.now != null) {
-                val now = currentService!!.now!!
-                val duration = now.duration
-                val start = now.start
-
-                if (
-                    duration.isNotEmpty() &&
-                    start.isNotEmpty() &&
-                    duration != Python.NONE &&
-                    start != Python.NONE
-                ) {
-                    try {
-                        len = duration.toDouble().toLong()
-                        cur = len - DateTime.getRemaining(duration, start) * 60L
-                    } catch (e: Exception) {
-                        Log.e(DreamDroid.LOG_TAG, e.toString())
-                    }
+            } else {
+                // The player's time on a live stream is the stream's, not the programme's.
+                eventProgress(currentService?.now, System.currentTimeMillis())?.let {
+                    len = it.totalSec
+                    cur = it.elapsedSec
                 }
             }
         }
-        if (len <= 0) {
+        if (len <= 0 && !isLive()) {
             len = playerState.lengthMs / 1000
             cur = playerState.timeMs / 1000
         }
@@ -1167,6 +1152,8 @@ class VideoOverlayController(
 
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
         private const val FAKE_LENGTH: Int = 10000
+        private const val NO_EVENT_RELOAD_MS: Long = 300_000
+        private const val ENDED_EVENT_RELOAD_MS: Long = 30_000
 
         private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 

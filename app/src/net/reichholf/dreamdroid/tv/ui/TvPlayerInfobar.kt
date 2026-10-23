@@ -34,6 +34,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.ViewCompositionStrategy
@@ -477,7 +478,8 @@ fun ComposeView.bindTvPlayerInfobar(
     onList: () -> Unit,
     onAudio: () -> Unit,
     onSubtitle: () -> Unit,
-    onSleepTimer: () -> Unit
+    onSleepTimer: () -> Unit,
+    onUserInteraction: () -> Unit = {}
 ) {
     setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
     // Focusable shell so the View focus search lands here; then forward into Compose.
@@ -497,7 +499,14 @@ fun ComposeView.bindTvPlayerInfobar(
                 onSubtitle = onSubtitle,
                 onSleepTimer = onSleepTimer,
                 firstControlFocusRequester = firstControlFocus,
-                modifier = Modifier.focusGroup()
+                // Moving between the actions is consumed here, so the controller never sees
+                // it; without this the infobar hides mid-navigation and the next key zaps.
+                modifier = Modifier
+                    .focusGroup()
+                    .onPreviewKeyEvent {
+                        onUserInteraction()
+                        false
+                    }
             )
             VideoOverlayModals(state, uncappedDetailSheets = true)
         }

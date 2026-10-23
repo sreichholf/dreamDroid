@@ -5,28 +5,17 @@ import android.text.format.DateFormat
 import java.util.Date
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
-import net.reichholf.dreamdroid.helpers.DateTime
-import net.reichholf.dreamdroid.helpers.Python
+import net.reichholf.dreamdroid.ui.video.eventProgress
 
 /**
- * "20:14 – 23:08 · 115 min left" for a running event, in the device's time format; null
- * when the event has no usable start or duration.
+ * "20:14 – 23:08 · 115 min left" for a running event, in the device's time format and by the
+ * device clock; null when the event has no usable start or duration.
  */
 fun nowEventTimes(context: Context, event: Event?): String? {
-    if (event == null || !hasTime(event.start) || !hasTime(event.duration)) {
-        return null
-    }
-    return try {
-        val startMs = event.start.toDouble().toLong() * 1000
-        val endMs = startMs + event.duration.toDouble().toLong() * 1000
-        val format = DateFormat.getTimeFormat(context)
-        val left = DateTime.getRemaining(event.duration, event.start, event.currentTime)
-            .coerceAtLeast(0)
-        "${format.format(Date(startMs))} – ${format.format(Date(endMs))} · " +
-            context.getString(R.string.tv_minutes_left, left)
-    } catch (_: NumberFormatException) {
-        null
-    }
+    val progress = eventProgress(event, System.currentTimeMillis()) ?: return null
+    val startMs = progress.startSec * 1000
+    val endMs = startMs + progress.totalSec * 1000
+    val format = DateFormat.getTimeFormat(context)
+    return "${format.format(Date(startMs))} – ${format.format(Date(endMs))} · " +
+        context.getString(R.string.tv_minutes_left, progress.leftMinutes.toInt())
 }
-
-private fun hasTime(value: String): Boolean = value.isNotEmpty() && value != Python.NONE

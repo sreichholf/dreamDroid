@@ -6,10 +6,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
@@ -23,6 +25,8 @@ import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
@@ -40,6 +44,7 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalTestApi::class)
 class TvPlayerInfobarTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
@@ -246,6 +251,48 @@ class TvPlayerInfobarTest {
                 .isNotEmpty()
         }
         composeRule.onNodeWithContentDescription(subtitles).assertIsFocused()
+    }
+
+    @Test
+    fun movingBetweenActionsResetsAutoHide() {
+        val state = liveState().apply { showAudioButton = false }
+        var composeView: ComposeView? = null
+        var interactions = 0
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            AndroidView(
+                factory = { ctx ->
+                    ComposeView(ctx).also { view ->
+                        composeView = view
+                        view.bindTvPlayerInfobar(
+                            state = state,
+                            onPlay = {},
+                            onRewind = {},
+                            onForward = {},
+                            onInfo = {},
+                            onList = {},
+                            onAudio = {},
+                            onSubtitle = {},
+                            onSleepTimer = {},
+                            onUserInteraction = { interactions++ }
+                        )
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+        enterKeyboardMode(inputModeManager)
+        composeRule.runOnIdle { composeView!!.requestFocus() }
+        val subtitles = composeRule.onNodeWithContentDescription(
+            context.getString(R.string.subtitles)
+        )
+        composeRule.waitUntil { runCatching { subtitles.assertIsFocused() }.isSuccess }
+        val before = composeRule.runOnIdle { interactions }
+        subtitles.performKeyInput { pressKey(Key.DirectionRight) }
+        composeRule.onNodeWithContentDescription(context.getString(R.string.info))
+            .assertIsFocused()
+        composeRule.runOnIdle { assertTrue(interactions > before) }
     }
 
     private fun setInfobar(
