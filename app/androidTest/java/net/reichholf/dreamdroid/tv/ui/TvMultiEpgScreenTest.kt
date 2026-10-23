@@ -432,14 +432,15 @@ class TvMultiEpgScreenTest {
         fun pixel(x: Float, y: Float) =
             Color(image.getPixel((x - list.left).toInt(), (y - list.top).toInt()))
         val band = colors.onSurface.copy(alpha = 0.06f)
-        // An empty corner of the channel cell, and bare timeline track far right of the bars.
+        // An empty corner of the channel cell, and bare timeline track: the 4 dp gap above a
+        // row's bars ("No information" fills the rest of the row), clear of the right edge fade.
         val probes = listOf(
-            selectedCell.right - px(4.dp) to otherCell.right - px(4.dp),
-            list.right - px(24.dp) to list.right - px(24.dp)
+            Triple(selectedCell.right - px(4.dp), otherCell.right - px(4.dp), px(4.dp)),
+            Triple(selectedCell.right + px(300.dp), otherCell.right + px(300.dp), px(1.dp))
         )
-        for ((selectedX, otherX) in probes) {
-            val selected = pixel(selectedX, selectedCell.top + px(4.dp))
-            val other = pixel(otherX, otherCell.top + px(4.dp))
+        for ((selectedX, otherX, inset) in probes) {
+            val selected = pixel(selectedX, selectedCell.top + inset)
+            val other = pixel(otherX, otherCell.top + inset)
             assertTrue(
                 "selected row filled with primaryContainer at x=$selectedX",
                 rgbDistance(selected, colors.primaryContainer) > 60
