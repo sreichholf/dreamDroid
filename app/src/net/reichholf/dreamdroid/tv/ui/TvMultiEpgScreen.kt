@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -27,6 +28,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.Icon as PhoneIcon
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.material3.Text as PhoneText
@@ -48,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -72,6 +75,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -79,6 +83,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -92,6 +97,7 @@ import java.util.Locale
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
+import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
@@ -127,6 +133,9 @@ private val FocusBorderWidth = 2.dp
 private val EdgeFade = 32.dp
 private val ChromeTargetSize = 48.dp
 private val ChromeRailPadding = 4.dp
+private val BouquetMenuMinWidth = 240.dp
+private val BouquetMenuMaxWidth = 360.dp
+private val BouquetMenuMaxHeight = 360.dp
 private val ChromeRailShape = DreamDroidTvPillShape
 
 /** Holes in a row's data shorter than this stay plain gaps instead of "No information". */
@@ -175,7 +184,12 @@ fun TvMultiEpgScreen(
     visibleMinutes: Int = MultiEpgZoom.DEFAULT_MINUTES,
     onVisibleMinutesChange: ((Int) -> Unit)? = null,
     textSize: MultiEpgTextSize = MultiEpgTextSize.DEFAULT,
-    piconsEnabled: Boolean = false
+    piconsEnabled: Boolean = false,
+    bouquets: List<Service> = emptyList(),
+    selectedBouquetRef: String = "",
+    pickingBouquet: Boolean = false,
+    onPickBouquet: (Service) -> Unit = {},
+    onDismissBouquets: () -> Unit = {}
 ) {
     val hScroll = hScrollState
     val density = LocalDensity.current
@@ -404,6 +418,11 @@ fun TvMultiEpgScreen(
             loading = loading,
             visibleMinutes = layoutVisibleMinutes,
             onBouquetClick = onBouquetClick,
+            bouquets = bouquets,
+            selectedBouquetRef = selectedBouquetRef,
+            pickingBouquet = pickingBouquet,
+            onPickBouquet = onPickBouquet,
+            onDismissBouquets = onDismissBouquets,
             onJumpToNow = onJumpToNow,
             onPrevDay = onPrevDay,
             onNextDay = onNextDay,
@@ -622,6 +641,11 @@ private fun TvMultiEpgChrome(
     loading: Boolean,
     visibleMinutes: Int,
     onBouquetClick: () -> Unit,
+    bouquets: List<Service>,
+    selectedBouquetRef: String,
+    pickingBouquet: Boolean,
+    onPickBouquet: (Service) -> Unit,
+    onDismissBouquets: () -> Unit,
     onJumpToNow: () -> Unit,
     onPrevDay: () -> Unit,
     onNextDay: () -> Unit,
@@ -631,6 +655,21 @@ private fun TvMultiEpgChrome(
     keysEnabled: Boolean
 ) {
     val hours = MultiEpgZoom.hours(visibleMinutes)
+    val bouquetChipFocus = remember { FocusRequester() }
+    var menuWasOpen by remember { mutableStateOf(false) }
+    // Back or a pick closes the menu's popup: put focus back on its chip.
+    LaunchedEffect(pickingBouquet) {
+        if (pickingBouquet) {
+            menuWasOpen = true
+        } else if (menuWasOpen) {
+            menuWasOpen = false
+            try {
+                bouquetChipFocus.requestFocus()
+            } catch (_: IllegalStateException) {
+                // Toolbar not attached.
+            }
+        }
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -655,26 +694,38 @@ private fun TvMultiEpgChrome(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            TvMultiEpgChromeButton(
-                tag = "tv_multi_epg_bouquet",
-                onClick = onBouquetClick
-            ) {
-                Row(
-                    modifier = Modifier.padding(start = 16.dp, end = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            Box {
+                TvMultiEpgChromeButton(
+                    tag = "tv_multi_epg_bouquet",
+                    onClick = onBouquetClick,
+                    modifier = Modifier.focusRequester(bouquetChipFocus)
                 ) {
-                    Text(
-                        text = bouquetName,
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                    Icon(
-                        painter = painterResource(R.drawable.ic_arrow_drop_down),
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    Row(
+                        modifier = Modifier.padding(start = 16.dp, end = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = bouquetName,
+                            style = MaterialTheme.typography.labelLarge,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Icon(
+                            painter = painterResource(R.drawable.ic_arrow_drop_down),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(20.dp)
+                                .rotate(if (pickingBouquet) 180f else 0f)
+                        )
+                    }
                 }
+                TvMultiEpgBouquetMenu(
+                    expanded = pickingBouquet,
+                    bouquets = bouquets,
+                    selectedRef = selectedBouquetRef,
+                    onPick = onPickBouquet,
+                    onDismiss = onDismissBouquets
+                )
             }
             TvMultiEpgChromeDivider()
             TvMultiEpgChromeIcon(
@@ -732,6 +783,85 @@ private fun TvMultiEpgChrome(
                 style = MaterialTheme.typography.labelSmall,
                 color = PhoneMaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+/**
+ * The bouquets, in a menu that drops from the toolbar's bouquet chip. It opens with focus on
+ * the current bouquet, which carries a check mark; OK picks a row, Back closes the menu.
+ * Rows look like the toolbar's controls: flat until focused.
+ */
+@OptIn(ExperimentalTvMaterial3Api::class)
+@Composable
+private fun TvMultiEpgBouquetMenu(
+    expanded: Boolean,
+    bouquets: List<Service>,
+    selectedRef: String,
+    onPick: (Service) -> Unit,
+    onDismiss: () -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        offset = DpOffset(0.dp, 8.dp),
+        shape = PhoneMaterialTheme.shapes.large,
+        containerColor = PhoneMaterialTheme.colorScheme.surfaceContainerHigh,
+        modifier = Modifier
+            .widthIn(min = BouquetMenuMinWidth, max = BouquetMenuMaxWidth)
+            .heightIn(max = BouquetMenuMaxHeight)
+            .testTag("tv_multi_epg_bouquet_picker")
+    ) {
+        val focusIndex = bouquets.indexOfFirst { it.reference == selectedRef }.coerceAtLeast(0)
+        val initialFocus = remember { FocusRequester() }
+        bouquets.forEachIndexed { index, service ->
+            val current = service.reference == selectedRef
+            Surface(
+                onClick = { onPick(service) },
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .fillMaxWidth()
+                    .height(ChromeTargetSize)
+                    .then(
+                        if (index == focusIndex) Modifier.focusRequester(initialFocus) else Modifier
+                    )
+                    .semantics { selected = current }
+                    .testTag("tv_multi_epg_bouquet_${service.reference}"),
+                shape = dreamDroidTvTopBarItemShape(),
+                colors = dreamDroidTvTopBarItemColors(),
+                scale = DreamDroidTvTopBarItemScale
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(modifier = Modifier.size(20.dp)) {
+                        if (current) {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_check),
+                                contentDescription = null,
+                                modifier = Modifier.matchParentSize()
+                            )
+                        }
+                    }
+                    Text(
+                        text = service.name.ifBlank { service.reference },
+                        style = MaterialTheme.typography.titleSmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+        }
+        LaunchedEffect(Unit) {
+            try {
+                initialFocus.requestFocus()
+            } catch (_: IllegalStateException) {
+                // No bouquets.
+            }
         }
     }
 }
