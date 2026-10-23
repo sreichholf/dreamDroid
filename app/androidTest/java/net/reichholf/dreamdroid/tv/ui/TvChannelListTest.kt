@@ -18,25 +18,29 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
+import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
+import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
-import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.isNotFocusable
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
@@ -212,7 +216,7 @@ class TvChannelListTest {
         awaitFocused(first)
         first.performKeyInput { pressKey(Key.DirectionUp) }
         composeRule.waitForIdle()
-        markerNode.assertIsNotFocused()
+        markerNode.assert(isNotFocusable())
         first.assertIsFocused()
     }
 
@@ -316,17 +320,20 @@ class TvChannelListTest {
         lateinit var inputModeManager: InputModeManager
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
-            DreamDroidTvTheme(fillBackground = false, forceDark = true) {
-                TvChannelList(
-                    services = services(),
-                    currentRef = currentRef,
-                    bouquets = bouquets,
-                    selectedBouquetRef = selectedBouquetRef(),
-                    onServiceClick = onServiceClick,
-                    onSelectBouquet = onSelectBouquet,
-                    focusRequester = focusRequester,
-                    onUserInteraction = onUserInteraction
-                )
+            // The detail card sits beside the 400dp panel: a TV window, not the phone emulator.
+            DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(TvWindow)) {
+                DreamDroidTvTheme(fillBackground = false, forceDark = true) {
+                    TvChannelList(
+                        services = services(),
+                        currentRef = currentRef,
+                        bouquets = bouquets,
+                        selectedBouquetRef = selectedBouquetRef(),
+                        onServiceClick = onServiceClick,
+                        onSelectBouquet = onSelectBouquet,
+                        focusRequester = focusRequester,
+                        onUserInteraction = onUserInteraction
+                    )
+                }
             }
         }
         requestKeyboardMode(inputModeManager)
@@ -390,3 +397,5 @@ class TvChannelListTest {
         next = Event(title = "$name next", startTimeReadable = "20:15")
     )
 }
+
+private val TvWindow = DpSize(960.dp, 540.dp)

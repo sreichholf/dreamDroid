@@ -10,9 +10,12 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
@@ -24,9 +27,10 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
-import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
@@ -113,7 +117,8 @@ class TvPlayerInfobarTest {
                 .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
                 .assertWidthIsAtLeast(48.dp)
                 .assertHeightIsAtLeast(48.dp)
-                .performClick()
+                // tv Surfaces take OK, not touch; the semantics action is OK's path.
+                .performSemanticsAction(SemanticsActions.OnClick)
         }
         composeRule.runOnIdle {
             assertEquals(listOf("audio", "subtitle", "info", "list", "sleep"), clicks)
@@ -174,7 +179,8 @@ class TvPlayerInfobarTest {
                 .assertHasClickAction()
                 .assertWidthIsAtLeast(48.dp)
                 .assertHeightIsAtLeast(48.dp)
-                .performClick()
+                // tv Surfaces take OK, not touch; the semantics action is OK's path.
+                .performSemanticsAction(SemanticsActions.OnClick)
         }
         composeRule.runOnIdle {
             assertEquals(listOf("rewind", "play", "forward"), clicks)
@@ -310,19 +316,22 @@ class TvPlayerInfobarTest {
         lateinit var inputModeManager: InputModeManager
         composeRule.setContent {
             inputModeManager = LocalInputModeManager.current
-            DreamDroidTvTheme(fillBackground = false, forceDark = true) {
-                TvPlayerInfobar(
-                    state = state,
-                    onPlay = onPlay,
-                    onRewind = onRewind,
-                    onForward = onForward,
-                    onInfo = onInfo,
-                    onList = onList,
-                    onAudio = onAudio,
-                    onSubtitle = onSubtitle,
-                    onSleepTimer = onSleepTimer,
-                    firstControlFocusRequester = requester
-                )
+            // A TV window: the phone emulator squeezes the text column next to the actions.
+            DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(TvWindow)) {
+                DreamDroidTvTheme(fillBackground = false, forceDark = true) {
+                    TvPlayerInfobar(
+                        state = state,
+                        onPlay = onPlay,
+                        onRewind = onRewind,
+                        onForward = onForward,
+                        onInfo = onInfo,
+                        onList = onList,
+                        onAudio = onAudio,
+                        onSubtitle = onSubtitle,
+                        onSleepTimer = onSleepTimer,
+                        firstControlFocusRequester = requester
+                    )
+                }
             }
         }
         composeRule.waitForIdle()
@@ -361,3 +370,5 @@ class TvPlayerInfobarTest {
         )
     }
 }
+
+private val TvWindow = DpSize(960.dp, 540.dp)
