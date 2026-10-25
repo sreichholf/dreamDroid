@@ -1,5 +1,8 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
+## 2.0.470
+* UPD: TV - profile and timer editors match the hub
+
 ## 2.0.469
 * UPD: TV - rework hub, player, MultiEPG, editing
 * NEW: TV - Continue watching, Backup/Restore
