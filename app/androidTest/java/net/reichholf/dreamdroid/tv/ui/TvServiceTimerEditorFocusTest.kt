@@ -19,6 +19,7 @@ import androidx.compose.ui.test.assertIsNotFocused
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
@@ -28,6 +29,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.enigma2.Timer
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.timers.TimerEditUiState
 import net.reichholf.dreamdroid.ui.timers.TimerFormActions
 import org.junit.Assert.assertEquals
@@ -89,19 +91,21 @@ class TvServiceTimerEditorFocusTest {
                 }
                 val event = editingEvent
                 if (event != null) {
-                    TvTimerEditorContent(
-                        uiState = TimerEditUiState(
-                            timer = Timer.createByEvent(event),
-                            isCreate = true
-                        ),
-                        name = remember { TextFieldState(event.title) },
-                        description = remember { TextFieldState("") },
-                        actions = object : TimerFormActions {},
-                        servicePickKey = tvTimerServicePickKey(null),
-                        onServicePicked = {},
-                        onSave = {},
-                        onDismiss = { editingEvent = null }
-                    )
+                    DreamDroidTvTheme(fillBackground = false) {
+                        TvTimerEditorContent(
+                            uiState = TimerEditUiState(
+                                timer = Timer.createByEvent(event),
+                                isCreate = true
+                            ),
+                            name = remember { TextFieldState(event.title) },
+                            description = remember { TextFieldState("") },
+                            actions = object : TimerFormActions {},
+                            servicePickKey = tvTimerServicePickKey(null),
+                            onServicePicked = {},
+                            onSave = {},
+                            onDismiss = { editingEvent = null }
+                        )
+                    }
                 }
             }
         }
@@ -126,10 +130,10 @@ class TvServiceTimerEditorFocusTest {
             HubSection.Live(sports.bouquet.reference),
             selected
         )
-        // Focus lands on the first control that is not a text field, so no soft keyboard.
-        composeRule.onNodeWithContentDescription(
+        // Focus lands in the name field; on TV the IME opens on OK / Enter, not on focus.
+        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed().assertIsFocused()
+        composeRule.onNodeWithText(
             InstrumentationRegistry.getInstrumentation().targetContext.getString(R.string.enabled)
-        ).assertIsFocused()
-        composeRule.onNodeWithContentDescription("Title").assertIsDisplayed().assertIsNotFocused()
+        ).assertIsNotFocused()
     }
 }

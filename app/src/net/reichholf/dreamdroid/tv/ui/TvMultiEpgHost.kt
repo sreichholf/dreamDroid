@@ -48,6 +48,7 @@ import net.reichholf.dreamdroid.ui.epg.toEpgDetailContentOrUnavailable
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvBackgroundBrush
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
 /**
@@ -179,7 +180,7 @@ fun TvMultiEpgHost(
                     onSaved = viewModel::onTimerSaved,
                     modifier = Modifier
                         .fillMaxSize()
-                        .background(PhoneMaterialTheme.colorScheme.background)
+                        .background(dreamDroidTvBackgroundBrush())
                 )
             }
         }

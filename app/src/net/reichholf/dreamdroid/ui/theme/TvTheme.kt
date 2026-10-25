@@ -8,9 +8,14 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ClickableSurfaceColors
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ClickableSurfaceScale
@@ -27,6 +32,39 @@ import androidx.tv.material3.TabColors
 import androidx.tv.material3.TabDefaults
 import androidx.tv.material3.darkColorScheme
 import androidx.tv.material3.lightColorScheme
+
+/**
+ * True inside [DreamDroidTvTheme]. The shared form chrome in `ui/compose/EditForm.kt`
+ * selects the TV variants from `ui/compose/TvForm.kt`: section headers instead of cards,
+ * TV rows for switches, pickers and dropdowns, a TV Save button instead of the phone FAB,
+ * the TV type scale and 10-foot insets. False everywhere on phone.
+ */
+val LocalTvFormChrome = staticCompositionLocalOf { false }
+
+/**
+ * The margin the surrounding TV chrome already applies to its content, so a screen
+ * hosted inside it does not add a second one. `EditFormColumn` in `ui/compose/EditForm.kt`
+ * subtracts it; the hub's section pane is the one host that provides it.
+ */
+data class TvContentInset(val horizontal: Dp = 0.dp, val top: Dp = 0.dp)
+
+val LocalTvContentInset = staticCompositionLocalOf { TvContentInset() }
+
+/**
+ * The hub background: a soft primary wash over the background, shared by every TV screen
+ * so routes and overlays sit on the same surface as the hub. The wash is composited once,
+ * so a screen inside it does not wash the background a second time.
+ */
+@Composable
+fun dreamDroidTvBackgroundBrush(): Brush {
+    val background = PhoneMaterialTheme.colorScheme.background
+    return Brush.linearGradient(
+        colors = listOf(
+            PhoneMaterialTheme.colorScheme.primary.copy(alpha = 0.10f).compositeOver(background),
+            background
+        )
+    )
+}
 
 /**
  * Phone [DreamDroidTheme] plus a matching `androidx.tv.material3` scheme so the TV hub
@@ -52,12 +90,15 @@ fun DreamDroidTvTheme(
             extraLarge = phoneShapes.extraLarge
         )
         TvMaterialTheme(colorScheme = tvScheme, shapes = tvShapes) {
-            CompositionLocalProvider(TvLocalContentColor provides tvScheme.onSurface) {
+            CompositionLocalProvider(
+                TvLocalContentColor provides tvScheme.onSurface,
+                LocalTvFormChrome provides true
+            ) {
                 if (fillBackground) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(phoneScheme.background)
+                            .background(dreamDroidTvBackgroundBrush())
                     ) {
                         content()
                     }

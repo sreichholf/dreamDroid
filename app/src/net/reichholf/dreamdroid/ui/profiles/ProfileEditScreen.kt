@@ -11,11 +11,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -26,12 +30,14 @@ import net.reichholf.dreamdroid.StreamMode
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
+import net.reichholf.dreamdroid.ui.compose.EditFormSaveRow
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
 import net.reichholf.dreamdroid.ui.compose.EditFormSubsection
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
 import net.reichholf.dreamdroid.ui.compose.EditPairedRow
 import net.reichholf.dreamdroid.ui.compose.EditSwitchRow
 import net.reichholf.dreamdroid.ui.dialogs.ConfirmAlertDialog
+import net.reichholf.dreamdroid.ui.theme.LocalTvFormChrome
 
 @Composable
 fun ProfileEditScreen(
@@ -46,17 +52,25 @@ fun ProfileEditScreen(
     modifier: Modifier = Modifier
 ) {
     var showTrustAllCertsWarning by remember { mutableStateOf(false) }
+    // TV opens the IME on OK, not on focus, so the editor can start in the name field.
+    // Save is a TV button at the end of the form instead of the phone FAB.
+    val tvForm = LocalTvFormChrome.current
+    val nameFocus = remember { FocusRequester() }
+    LaunchedEffect(tvForm) {
+        if (tvForm) {
+            nameFocus.requestFocus()
+        }
+    }
     // Hosted under the XML app bar; default Scaffold safeDrawing would double-pad
     // and lift the FAB (#263). Bottom inset is PhoneNavHost when the shell
     // destination bar is hidden. Phone ProfileEditDestination passes
     // showSaveFab=false; Save (and Delete when editing) are shell top-bar
-    // actions ([saveAndDeleteActions]). The TV profiles destination
-    // keeps the default in-content FAB.
+    // actions ([saveAndDeleteActions]).
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
-            if (showSaveFab) {
+            if (showSaveFab && !tvForm) {
                 FloatingActionButton(onClick = onSave) {
                     Icon(
                         painter = painterResource(R.drawable.ic_action_save),
@@ -65,7 +79,7 @@ fun ProfileEditScreen(
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = if (tvForm) Color.Transparent else MaterialTheme.colorScheme.background
     ) { padding ->
         EditFormColumn(
             modifier = Modifier
@@ -75,7 +89,8 @@ fun ProfileEditScreen(
             EditFormSection(title = stringResource(R.string.profile)) {
                 EditOutlinedTextField(
                     state = fields.name.state,
-                    label = stringResource(R.string.profile_name)
+                    label = stringResource(R.string.profile_name),
+                    modifier = if (tvForm) Modifier.focusRequester(nameFocus) else Modifier
                 )
                 EditSwitchRow(
                     checked = form.simpleRemote,
@@ -219,7 +234,10 @@ fun ProfileEditScreen(
                 )
             }
 
-            if (showSaveFab) {
+            if (showSaveFab && tvForm) {
+                EditFormSaveRow(label = saveLabel, onSave = onSave)
+            }
+            if (showSaveFab && !tvForm) {
                 Spacer(Modifier.height(72.dp))
             }
         }

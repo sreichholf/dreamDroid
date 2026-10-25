@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -115,7 +113,6 @@ fun TvTimerServicePickScreen(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(PhoneMaterialTheme.colorScheme.background)
             .focusGroup()
             .testTag("tv_timer_service_pick")
     ) {
