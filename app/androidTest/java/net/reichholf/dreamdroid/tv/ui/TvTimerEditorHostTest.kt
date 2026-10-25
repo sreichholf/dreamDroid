@@ -29,6 +29,7 @@ import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.TimerVps
@@ -74,6 +75,24 @@ class TvTimerEditorHostTest {
         activateSave()
 
         assertEquals(1, saves)
+    }
+
+    @Test
+    fun saveLabelIsCenteredInTheButton() {
+        setDpadEditor(state(isCreate = true), name = "Sample")
+
+        val save = composeRule.onNodeWithText(saveLabel())
+        save.performScrollTo()
+        val button = save.getBoundsInRoot()
+        val label = composeRule.onNodeWithText(saveLabel(), useUnmergedTree = true)
+            .getBoundsInRoot()
+        val buttonCenterX = (button.left.value + button.right.value) / 2f
+        val buttonCenterY = (button.top.value + button.bottom.value) / 2f
+        val labelCenterX = (label.left.value + label.right.value) / 2f
+        val labelCenterY = (label.top.value + label.bottom.value) / 2f
+        val dx = abs(buttonCenterX - labelCenterX)
+        val dy = abs(buttonCenterY - labelCenterY)
+        assertTrue("save label off center: dx=$dx dy=$dy", dx <= 2f && dy <= 2f)
     }
 
     @Test

@@ -21,7 +21,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +36,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -206,9 +206,6 @@ private val HubServicePiconHeight = 48.dp
 
 /** Zap overlay row card: wide enough for text next to the leading picon. */
 internal val HubServiceRowCardWidth = 300.dp
-
-/** The smallest D-pad / touch target of the top bar and the empty state. */
-private val HubMinTouchTarget = 48.dp
 
 /** Every top bar control: tabs, profile chip, Recheck and Settings. */
 internal val HubTopBarHeight = 36.dp
@@ -768,7 +765,7 @@ private fun HubLiveEmptyState(message: String, onReload: () -> Unit, onOpenProfi
             Button(
                 onClick = onReload,
                 modifier = Modifier
-                    .heightIn(min = HubMinTouchTarget)
+                    .minimumInteractiveComponentSize()
                     .testTag("hub_live_empty_reload")
             ) {
                 Text(text = stringResource(R.string.reload))
@@ -776,7 +773,7 @@ private fun HubLiveEmptyState(message: String, onReload: () -> Unit, onOpenProfi
             Button(
                 onClick = onOpenProfiles,
                 modifier = Modifier
-                    .heightIn(min = HubMinTouchTarget)
+                    .minimumInteractiveComponentSize()
                     .testTag("hub_live_empty_profiles")
             ) {
                 Text(text = stringResource(R.string.profiles))
