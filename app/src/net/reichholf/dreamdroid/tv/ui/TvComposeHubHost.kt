@@ -38,6 +38,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -53,7 +54,6 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.focusRestorer
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.StrokeCap
@@ -112,6 +112,9 @@ import net.reichholf.dreamdroid.ui.services.nowProgress
 import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTopBarItemScale
+import net.reichholf.dreamdroid.ui.theme.LocalTvContentInset
+import net.reichholf.dreamdroid.ui.theme.TvContentInset
+import net.reichholf.dreamdroid.ui.theme.dreamDroidTvBackgroundBrush
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvDrawerItemColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvIconButtonColors
@@ -212,6 +215,9 @@ internal val HubTopBarHeight = 36.dp
 
 /** Above the first drawer row and the section title, which line up. */
 private val HubDrawerVerticalPadding = 24.dp
+
+/** The pane's screen margin, also reported through [LocalTvContentInset]. */
+private val HubSectionHorizontalInset = 32.dp
 
 /** The least space between the centred tabs and the top bar's trailing group. */
 private val HubTopBarMinGap = 16.dp
@@ -468,14 +474,7 @@ fun ComposeTvHubChrome(
             Column(
                 modifier = modifier
                     .fillMaxSize()
-                    .background(
-                        Brush.linearGradient(
-                            colors = listOf(
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
-                                MaterialTheme.colorScheme.background
-                            )
-                        )
-                    )
+                    .background(dreamDroidTvBackgroundBrush())
                     .testTag("compose_tv_hub_chrome")
             ) {
                 HubTopBar(
@@ -624,7 +623,12 @@ private fun HubSectionPane(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(start = 32.dp, end = 32.dp, top = HubDrawerVerticalPadding, bottom = 20.dp)
+            .padding(
+                start = HubSectionHorizontalInset,
+                end = HubSectionHorizontalInset,
+                top = HubDrawerVerticalPadding,
+                bottom = 20.dp
+            )
             .testTag("compose_tv_hub_rows"),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
@@ -665,7 +669,16 @@ private fun HubSectionPane(
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            content()
+            // The pane owns the screen margin; a form hosted here subtracts it from its own
+            // (LocalTvContentInset), so the timer editor is indented once, not twice.
+            CompositionLocalProvider(
+                LocalTvContentInset provides TvContentInset(
+                    horizontal = HubSectionHorizontalInset,
+                    top = HubDrawerVerticalPadding
+                )
+            ) {
+                content()
+            }
         }
     }
 }

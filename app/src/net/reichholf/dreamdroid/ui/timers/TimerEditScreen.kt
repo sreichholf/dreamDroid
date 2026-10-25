@@ -19,6 +19,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -32,6 +33,7 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.ui.compose.EditDropdownField
 import net.reichholf.dreamdroid.ui.compose.EditFormColumn
+import net.reichholf.dreamdroid.ui.compose.EditFormSaveRow
 import net.reichholf.dreamdroid.ui.compose.EditFormSection
 import net.reichholf.dreamdroid.ui.compose.EditOutlinedTextField
 import net.reichholf.dreamdroid.ui.compose.EditPairedRow
@@ -44,6 +46,7 @@ import net.reichholf.dreamdroid.ui.epg.EpgDatePickerDialog
 import net.reichholf.dreamdroid.ui.epg.EpgTimePickerDialog
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.text.asString
+import net.reichholf.dreamdroid.ui.theme.LocalTvFormChrome
 
 /** A field of the timer form that opens a picker. */
 enum class TimerEditPick {
@@ -196,12 +199,14 @@ fun TimerEditScreen(
 
     // Hosted under the shell app bar; default Scaffold safeDrawing would double-pad
     // and lift a FAB (#263). Bottom inset is PhoneNavHost when the shell
-    // destination bar is hidden. Phone save/delete is top-bar only.
+    // destination bar is hidden. Phone save/delete is top-bar only. On TV Save is a
+    // TV button at the end of the form, not the FAB.
+    val tvForm = LocalTvFormChrome.current
     Scaffold(
         modifier = modifier.fillMaxSize(),
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
         floatingActionButton = {
-            if (showSaveFab) {
+            if (showSaveFab && !tvForm) {
                 FloatingActionButton(
                     onClick = { if (!mutating) onSave() }
                 ) {
@@ -212,7 +217,7 @@ fun TimerEditScreen(
                 }
             }
         },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = if (tvForm) Color.Transparent else MaterialTheme.colorScheme.background
     ) { padding ->
         EditFormColumn(
             modifier = Modifier
@@ -220,10 +225,14 @@ fun TimerEditScreen(
                 .padding(padding)
         ) {
             EditFormSection(title = stringResource(R.string.timer)) {
+                // TV opens the IME on OK / Enter, not on focus, so the editor can start
+                // in the name field.
                 EditOutlinedTextField(
                     state = name,
                     label = stringResource(R.string.title),
-                    contentDescription = "Title"
+                    contentDescription = "Title",
+                    modifier =
+                        initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
                 )
                 EditOutlinedTextField(
                     state = description,
@@ -231,14 +240,10 @@ fun TimerEditScreen(
                     singleLine = false,
                     contentDescription = "Description"
                 )
-                // Initial focus goes to the first control that is not a text field, so
-                // opening the editor on a TV does not pop up the soft keyboard.
                 EditSwitchRow(
                     checked = form.enabled,
                     onCheckedChange = actions::onEnabledChange,
-                    label = stringResource(R.string.enabled),
-                    modifier =
-                        initialFocusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+                    label = stringResource(R.string.enabled)
                 )
                 EditSwitchRow(
                     checked = form.zap,
@@ -340,7 +345,14 @@ fun TimerEditScreen(
                 )
             }
 
-            if (showSaveFab) {
+            if (showSaveFab && tvForm) {
+                EditFormSaveRow(
+                    label = saveLabel,
+                    onSave = onSave,
+                    enabled = !mutating
+                )
+            }
+            if (showSaveFab && !tvForm) {
                 Spacer(Modifier.height(72.dp))
             }
         }

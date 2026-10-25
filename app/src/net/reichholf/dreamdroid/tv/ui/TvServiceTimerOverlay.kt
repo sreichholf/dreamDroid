@@ -1,7 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,7 +66,6 @@ fun TvServiceTimerOverlay(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
             .focusGroup()
             .testTag("tv_service_timer_overlay"),
         contentAlignment = Alignment.Center

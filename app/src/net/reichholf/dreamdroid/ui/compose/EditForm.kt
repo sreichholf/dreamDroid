@@ -16,6 +16,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
+import androidx.compose.foundation.text.input.KeyboardActionHandler
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.TextObfuscationMode
@@ -42,6 +43,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.InputMode
 import androidx.compose.ui.input.key.Key
@@ -49,23 +52,34 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.tv.material3.MaterialTheme as TvMaterialTheme
+import androidx.tv.material3.Text as TvText
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.ui.theme.LocalTvContentInset
+import net.reichholf.dreamdroid.ui.theme.LocalTvFormChrome
 
 /**
  * Material 3 compact-form metrics: 16.dp screen inset, 16.dp between fields and
  * section cards, 56.dp switch rows, [titleMedium] section titles, [bodyLarge]
  * controls. Binary settings use a trailing [Switch], not a leading checkbox.
+ *
+ * The TV variant ([LocalTvFormChrome]) swaps in the components from `TvForm.kt`:
+ * section headers instead of cards, TV rows for switches, pickers, dropdowns and
+ * Save, the TV type scale, 32/24.dp insets and 20.dp between groups.
  */
 object EditForm {
     val ScreenPadding = 16.dp
@@ -75,15 +89,82 @@ object EditForm {
     val SwitchRowMinHeight = 56.dp
 }
 
+/** Screen inset and group spacing of the current form factor. */
+private data class EditFormMetrics(
+    val screenInset: Dp,
+    val screenInsetVertical: Dp,
+    val groupSpacing: Dp
+)
+
+private val PhoneEditFormMetrics = EditFormMetrics(
+    screenInset = EditForm.ScreenPadding,
+    screenInsetVertical = EditForm.ScreenPadding,
+    groupSpacing = EditForm.GroupSpacing
+)
+
+/** 32/24.dp insets and 20.dp between groups, matching `TvSettingsScreen` and the hub. */
+private val TvEditFormMetrics = EditFormMetrics(
+    screenInset = 32.dp,
+    screenInsetVertical = 24.dp,
+    groupSpacing = 20.dp
+)
+
+@Composable
+private fun editFormMetrics(): EditFormMetrics =
+    if (LocalTvFormChrome.current) TvEditFormMetrics else PhoneEditFormMetrics
+
+/** Control text: [bodyLarge] on phone, the TV [bodyLarge] in a TV form. */
+@Composable
+private fun editFormFieldTextStyle(): TextStyle {
+    if (LocalTvFormChrome.current) {
+        return TvMaterialTheme.typography.bodyLarge.copy(
+            color = TvMaterialTheme.colorScheme.onSurface
+        )
+    }
+    return MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
+}
+
+/** Text fields and pick fields are 72.dp tall in a TV form, 56.dp on phone. */
+@Composable
+private fun editFormFieldHeight(): Modifier =
+    if (LocalTvFormChrome.current) Modifier.heightIn(min = 72.dp) else Modifier
+
+/**
+ * Save as a [TvFormSaveButton] at the end of a TV form. Renders nothing on phone, where
+ * Save lives in the shell top bar or the in-content FAB.
+ */
+@Composable
+fun EditFormSaveRow(
+    label: String,
+    onSave: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    if (!LocalTvFormChrome.current) {
+        return
+    }
+    TvFormSaveButton(label = label, onSave = onSave, modifier = modifier, enabled = enabled)
+}
+
 @Composable
 fun EditFormColumn(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    val metrics = editFormMetrics()
+    // A host that already insets its content (the hub's section pane) is not inset twice.
+    val hostInset = LocalTvContentInset.current
+    val horizontal = (metrics.screenInset - hostInset.horizontal).coerceAtLeast(0.dp)
+    val top = (metrics.screenInsetVertical - hostInset.top).coerceAtLeast(0.dp)
     Column(
         modifier = modifier
             .fillMaxWidth()
             .imePadding()
             .verticalScroll(rememberScrollState())
-            .padding(EditForm.ScreenPadding),
-        verticalArrangement = Arrangement.spacedBy(EditForm.GroupSpacing),
+            .padding(
+                start = horizontal,
+                top = top,
+                end = horizontal,
+                bottom = metrics.screenInsetVertical
+            ),
+        verticalArrangement = Arrangement.spacedBy(metrics.groupSpacing),
         content = content
     )
 }
@@ -94,6 +175,10 @@ fun EditFormSection(
     title: String? = null,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    if (LocalTvFormChrome.current) {
+        TvFormSection(modifier = modifier, title = title, content = content)
+        return
+    }
     OutlinedCard(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.outlinedCardColors(
@@ -124,6 +209,10 @@ fun EditFormSubsection(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    if (LocalTvFormChrome.current) {
+        TvFormSubsection(modifier = modifier, title = title, content = content)
+        return
+    }
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(EditForm.FieldSpacing)
@@ -156,6 +245,17 @@ fun EditSwitchRow(
     summary: String? = null,
     enabled: Boolean = true
 ) {
+    if (LocalTvFormChrome.current) {
+        TvSwitchRow(
+            title = label,
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            modifier = modifier,
+            summary = summary,
+            enabled = enabled
+        )
+        return
+    }
     if (summary == null) {
         SwitchToggleRow(checked, onCheckedChange, label, modifier, enabled)
     } else {
@@ -224,6 +324,8 @@ fun EditOutlinedTextField(
     contentDescription: String = label
 ) {
     var passwordVisible by remember { mutableStateOf(false) }
+    val tv = LocalTvFormChrome.current
+    val focusManager = LocalFocusManager.current
     val resolvedTrailingIcon: @Composable (() -> Unit)? = if (password) {
         {
             PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
@@ -234,13 +336,13 @@ fun EditOutlinedTextField(
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        label = { Text(label) },
+        label = { EditFormFieldLabel(label) },
         singleLine = singleLine,
         readOnly = readOnly,
         enabled = enabled,
         isError = isError,
         supportingText = supportingText?.let { message ->
-            { Text(message) }
+            { EditFormSupportingText(message) }
         },
         trailingIcon = resolvedTrailingIcon,
         suffix = suffix?.let { suffixText ->
@@ -248,6 +350,8 @@ fun EditOutlinedTextField(
         },
         modifier = modifier
             .fillMaxWidth()
+            .then(if (tv) Modifier.clearFocusOnBack(focusManager) else Modifier)
+            .then(editFormFieldHeight())
             .then(
                 if (password) {
                     Modifier
@@ -265,9 +369,7 @@ fun EditOutlinedTextField(
         } else {
             VisualTransformation.None
         },
-        textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = MaterialTheme.colorScheme.onSurface
-        ),
+        textStyle = editFormFieldTextStyle(),
         colors = OutlinedTextFieldDefaults.colors(
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
         )
@@ -294,26 +396,45 @@ fun EditOutlinedTextField(
     enabled: Boolean = true,
     contentDescription: String = label
 ) {
+    val tv = LocalTvFormChrome.current
     val keyboardOnSelect = rememberKeyboardOnSelect()
+    val focusManager = LocalFocusManager.current
     val keyboardOptions = KeyboardOptions(
         keyboardType = keyboardType,
         imeAction = imeAction,
         showKeyboardOnFocus = keyboardOnSelect.showOnFocus
     )
-    val textStyle = MaterialTheme.typography.bodyLarge.copy(
-        color = MaterialTheme.colorScheme.onSurface
-    )
+    val textStyle = editFormFieldTextStyle()
+    val fieldHeight = editFormFieldHeight()
     val colors = OutlinedTextFieldDefaults.colors(
         unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
     )
-    val supporting: @Composable (() -> Unit)? = supportingText?.let { message ->
-        { Text(message) }
+    // Next moves on down the form; Done leaves the field and hides the keyboard. On
+    // phone the Material 3 defaults stay.
+    val keyboardAction: KeyboardActionHandler? = if (tv) {
+        KeyboardActionHandler { performDefaultAction ->
+            when (imeAction) {
+                ImeAction.Next -> focusManager.moveFocus(FocusDirection.Down)
+                ImeAction.Done -> focusManager.clearFocus()
+                else -> performDefaultAction()
+            }
+        }
+    } else {
+        null
     }
+    val supporting: @Composable (() -> Unit)? = supportingText?.let { message ->
+        { EditFormSupportingText(message) }
+    }
+    val fieldModifier = modifier
+        .then(keyboardOnSelect.modifier)
+        .then(if (tv) Modifier.clearFocusOnBack(focusManager) else Modifier)
+        .then(fieldHeight)
+        .fillMaxWidth()
     if (password) {
         var passwordVisible by remember { mutableStateOf(false) }
         OutlinedSecureTextField(
             state = state,
-            label = { Text(label) },
+            label = { EditFormFieldLabel(label) },
             isError = isError,
             supportingText = supporting,
             enabled = enabled,
@@ -326,16 +447,15 @@ fun EditOutlinedTextField(
                 TextObfuscationMode.RevealLastTyped
             },
             keyboardOptions = keyboardOptions,
+            onKeyboardAction = keyboardAction,
             textStyle = textStyle,
             colors = colors,
-            modifier = modifier
-                .then(keyboardOnSelect.modifier)
-                .fillMaxWidth()
+            modifier = fieldModifier
         )
     } else {
         OutlinedTextField(
             state = state,
-            label = { Text(label) },
+            label = { EditFormFieldLabel(label) },
             inputTransformation = inputTransformation,
             suffix = suffix?.let { suffixText ->
                 { Text(suffixText) }
@@ -349,13 +469,49 @@ fun EditOutlinedTextField(
             isError = isError,
             supportingText = supporting,
             keyboardOptions = keyboardOptions,
+            onKeyboardAction = keyboardAction,
             textStyle = textStyle,
             colors = colors,
-            modifier = modifier
-                .then(keyboardOnSelect.modifier)
-                .fillMaxWidth()
-                .semantics { this.contentDescription = contentDescription }
+            modifier = fieldModifier.semantics { this.contentDescription = contentDescription }
         )
+    }
+}
+
+/** TV fields use TV type on the label; the phone keeps the OutlinedTextField default. */
+@Composable
+private fun EditFormFieldLabel(label: String) {
+    if (LocalTvFormChrome.current) {
+        TvText(
+            text = label,
+            style = TvMaterialTheme.typography.titleSmall,
+            color = TvMaterialTheme.colorScheme.onSurface
+        )
+    } else {
+        Text(text = label)
+    }
+}
+
+/** TV fields use TV body for the supporting line; the phone keeps the Material 3 default. */
+@Composable
+private fun EditFormSupportingText(message: String) {
+    if (LocalTvFormChrome.current) {
+        TvText(
+            text = message,
+            style = TvMaterialTheme.typography.bodyMedium,
+            color = TvMaterialTheme.colorScheme.onSurface
+        )
+    } else {
+        Text(text = message)
+    }
+}
+
+/** Back on a focused TV field leaves the field instead of the editor. */
+private fun Modifier.clearFocusOnBack(focusManager: FocusManager): Modifier = onPreviewKeyEvent {
+    if (it.type == KeyEventType.KeyUp && (it.key == Key.Back || it.key == Key.Escape)) {
+        focusManager.clearFocus()
+        true
+    } else {
+        false
     }
 }
 
@@ -410,6 +566,10 @@ fun EditPickField(
     modifier: Modifier = Modifier,
     contentDescription: String = label
 ) {
+    if (LocalTvFormChrome.current) {
+        TvFormPickRow(value = value, label = label, onClick = onClick, modifier = modifier)
+        return
+    }
     Box(modifier = modifier.fillMaxWidth()) {
         OutlinedTextField(
             value = value,
@@ -418,10 +578,10 @@ fun EditPickField(
             readOnly = true,
             enabled = false,
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
-            modifier = Modifier.fillMaxWidth(),
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(editFormFieldHeight()),
+            textStyle = editFormFieldTextStyle(),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
@@ -452,6 +612,17 @@ fun EditDropdownField(
     contentDescription: String = label,
     supportingText: String? = null
 ) {
+    if (LocalTvFormChrome.current) {
+        TvFormDropdownRow(
+            options = options,
+            selectedIndex = selectedIndex,
+            onSelected = onSelected,
+            label = label,
+            modifier = modifier,
+            supportingText = supportingText
+        )
+        return
+    }
     var expanded by remember { mutableStateOf(false) }
     val selected = options.getOrElse(selectedIndex) { "" }
     ExposedDropdownMenuBox(
@@ -471,10 +642,9 @@ fun EditDropdownField(
             modifier = Modifier
                 .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                 .fillMaxWidth()
+                .then(editFormFieldHeight())
                 .semantics { this.contentDescription = contentDescription },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
+            textStyle = editFormFieldTextStyle(),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest
             )

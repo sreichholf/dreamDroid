@@ -1,12 +1,20 @@
 package net.reichholf.dreamdroid.tv.ui
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import net.reichholf.dreamdroid.R
@@ -97,27 +105,36 @@ fun TvProfilesHost(
     }
 
     val form = uiState.form
-    if (uiState.page == TvProfilesPage.List || form == null) {
-        TvProfilesScreen(
-            profiles = uiState.profiles,
-            onAdd = viewModel::showAdd,
-            onBackup = onBackup,
-            onActivate = viewModel::activate,
-            onEdit = viewModel::showEdit,
-            onDelete = {},
-            onDeleteConfirmed = viewModel::delete,
-            modifier = modifier
+    Column(modifier = modifier.fillMaxSize()) {
+        Text(
+            text = stringResource(R.string.profiles),
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier
+                .padding(start = 32.dp, top = 24.dp, bottom = 8.dp)
+                .semantics { heading() }
         )
-    } else {
-        ProfileEditScreen(
-            form = form,
-            fields = viewModel.fields,
-            hostError = uiState.hostError?.asString(),
-            onFormChange = viewModel::onFormChange,
-            onSslChange = viewModel::onSslChange,
-            saveLabel = stringResource(R.string.save),
-            onSave = viewModel::save,
-            modifier = modifier
-        )
+        if (uiState.page == TvProfilesPage.List || form == null) {
+            TvProfilesScreen(
+                profiles = uiState.profiles,
+                onAdd = viewModel::showAdd,
+                onBackup = onBackup,
+                onActivate = viewModel::activate,
+                onEdit = viewModel::showEdit,
+                onDelete = {},
+                onDeleteConfirmed = viewModel::delete,
+                modifier = Modifier.weight(1f)
+            )
+        } else {
+            ProfileEditScreen(
+                form = form,
+                fields = viewModel.fields,
+                hostError = uiState.hostError?.asString(),
+                onFormChange = viewModel::onFormChange,
+                onSslChange = viewModel::onSslChange,
+                saveLabel = stringResource(R.string.save),
+                onSave = viewModel::save,
+                modifier = Modifier.weight(1f)
+            )
+        }
     }
 }

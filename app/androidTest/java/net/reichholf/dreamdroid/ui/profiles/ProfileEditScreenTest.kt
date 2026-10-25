@@ -61,12 +61,12 @@ class ProfileEditScreenTest {
     }
 
     @Test
-    fun addModeShowsDefaultsKeyLabelsAndTvSaveFab() {
+    fun addModeShowsDefaultsKeyLabelsAndInContentFab() {
         show(Profile.getDefault())
         composeRule.setContent {
             DreamDroidTheme {
-                // Default showSaveFab=true is the TV profiles destination.
-                // Phone ProfileEditDestination passes showSaveFab=false (toolbar Save).
+                // Phone with the in-content FAB: ProfileEditDestination passes
+                // showSaveFab=false (toolbar Save) instead.
                 EditableScreen()
             }
         }

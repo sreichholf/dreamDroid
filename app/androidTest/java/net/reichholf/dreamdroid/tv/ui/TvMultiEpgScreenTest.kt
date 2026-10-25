@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.tv.ui
 import android.graphics.Color as AndroidColor
 import android.view.KeyEvent
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -884,35 +885,43 @@ class TvMultiEpgScreenTest {
                 DreamDroidTvTheme(forceDark = true) {
                     scheme = PhoneMaterialTheme.colorScheme
                     density = LocalDensity.current
-                    if (showContent) {
-                        val scroll = rememberScrollState()
-                        hScroll = scroll
-                        TvMultiEpgScreen(
-                            bouquetName = "Favourites",
-                            channels = channels,
-                            timelineStartSec = start,
-                            timelineEndSec = start + 8L * 3600L,
-                            nowSec = nowSec,
-                            originFloorSec = start,
-                            loading = false,
-                            errorMessage = null,
-                            selectedServiceRef = selectedRef,
-                            selectedStartSec = start,
-                            onSelectedChange = { _, _ -> },
-                            onJumpToNow = {},
-                            onPrevDay = onPrevDay,
-                            onNextDay = onNextDay,
-                            onVisibleWindow = { _, _ -> },
-                            onEventClick = {},
-                            onBouquetClick = onBouquetClick,
-                            onRefresh = onRefresh,
-                            hScrollState = scroll,
-                            bouquets = bouquets,
-                            selectedBouquetRef = selectedBouquetRef(),
-                            pickingBouquet = pickingBouquet(),
-                            onPickBouquet = onPickBouquet,
-                            onDismissBouquets = onDismissBouquets
-                        )
+                    // The grid's alpha bands need the flat base the pixel probes expect;
+                    // the hub's wash behind them is the production background, not this harness.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PhoneMaterialTheme.colorScheme.background)
+                    ) {
+                        if (showContent) {
+                            val scroll = rememberScrollState()
+                            hScroll = scroll
+                            TvMultiEpgScreen(
+                                bouquetName = "Favourites",
+                                channels = channels,
+                                timelineStartSec = start,
+                                timelineEndSec = start + 8L * 3600L,
+                                nowSec = nowSec,
+                                originFloorSec = start,
+                                loading = false,
+                                errorMessage = null,
+                                selectedServiceRef = selectedRef,
+                                selectedStartSec = start,
+                                onSelectedChange = { _, _ -> },
+                                onJumpToNow = {},
+                                onPrevDay = onPrevDay,
+                                onNextDay = onNextDay,
+                                onVisibleWindow = { _, _ -> },
+                                onEventClick = {},
+                                onBouquetClick = onBouquetClick,
+                                onRefresh = onRefresh,
+                                hScrollState = scroll,
+                                bouquets = bouquets,
+                                selectedBouquetRef = selectedBouquetRef(),
+                                pickingBouquet = pickingBouquet(),
+                                onPickBouquet = onPickBouquet,
+                                onDismissBouquets = onDismissBouquets
+                            )
+                        }
                     }
                 }
             }

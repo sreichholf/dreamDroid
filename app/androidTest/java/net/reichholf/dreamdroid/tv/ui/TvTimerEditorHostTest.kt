@@ -5,11 +5,19 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -31,6 +39,7 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditUiState
 import net.reichholf.dreamdroid.ui.timers.TimerFormActions
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -43,25 +52,26 @@ class TvTimerEditorHostTest {
     @get:Rule
     val composeRule = createAndroidComposeRule<ComponentActivity>()
 
+    private lateinit var inputModeManager: InputModeManager
+
     @Test
-    fun createModeShowsTimerNameAndSaveFab() {
+    fun createModeShowsTimerNameAndSaveButton() {
         composeRule.setContent {
             Editor(state(isCreate = true), name = "Sample")
         }
 
         composeRule.onNodeWithText("Sample").assertIsDisplayed()
         composeRule.onNodeWithContentDescription("Title").assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(saveLabel()).assertIsDisplayed()
+        composeRule.onNodeWithContentDescription(saveLabel()).assertDoesNotExist()
+        composeRule.onNodeWithText(saveLabel()).performScrollTo().assertIsDisplayed()
     }
 
     @Test
-    fun saveFabSaves() {
+    fun saveButtonSaves() {
         var saves = 0
-        composeRule.setContent {
-            Editor(state(isCreate = true), name = "Sample", onSave = { saves++ })
-        }
+        setDpadEditor(state(isCreate = true), name = "Sample", onSave = { saves++ })
 
-        composeRule.onNodeWithContentDescription(saveLabel()).performClick()
+        activateSave()
 
         assertEquals(1, saves)
     }
@@ -70,17 +80,14 @@ class TvTimerEditorHostTest {
     fun blockedSaveShowsNeedsReceiverAndDoesNotSaveOrDismiss() {
         var saves = 0
         var dismissed = false
-        composeRule.setContent {
-            Editor(
-                state(isCreate = true).copy(mutationsBlocked = true),
-                name = "Blocked save",
-                onSave = { saves++ },
-                onDismiss = { dismissed = true }
-            )
-        }
+        setDpadEditor(
+            state(isCreate = true).copy(mutationsBlocked = true),
+            name = "Blocked save",
+            onSave = { saves++ },
+            onDismiss = { dismissed = true }
+        )
 
-        composeRule.onNodeWithContentDescription(saveLabel()).performClick()
-        composeRule.waitForIdle()
+        activateSave()
         assertEquals(0, saves)
         assertFalse(dismissed)
         composeRule.onNodeWithTag("hub_stream_unavailable").assertIsDisplayed()
@@ -107,7 +114,7 @@ class TvTimerEditorHostTest {
             Editor(state(isCreate = true).copy(timer = timer), name = "Sample")
         }
 
-        composeRule.onNodeWithContentDescription(string(R.string.vps)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.vps)).assertDoesNotExist()
     }
 
     @Test
@@ -117,15 +124,22 @@ class TvTimerEditorHostTest {
             Editor(state(isCreate = true).copy(timer = timer, vpsPlugin = true), name = "Sample")
         }
 
-        composeRule.onNodeWithContentDescription(string(R.string.vps))
+        val vpsRow = composeRule.onNodeWithText(string(R.string.vps))
             .performScrollTo()
             .assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.vps_note))
             .performScrollTo()
             .assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(string(R.string.vps_time))
+        composeRule.onNodeWithText(string(R.string.vps_time))
             .performScrollTo()
             .assertIsDisplayed()
+
+        val rowBounds = vpsRow.getBoundsInRoot()
+        val noteBounds = composeRule.onNodeWithText(string(R.string.vps_note)).getBoundsInRoot()
+        assertTrue(
+            "VPS note should sit below its row, row=$rowBounds note=$noteBounds",
+            noteBounds.top >= rowBounds.bottom
+        )
     }
 
     @Test
@@ -135,11 +149,11 @@ class TvTimerEditorHostTest {
             Editor(state(isCreate = true).copy(timer = timer, vpsPlugin = true), name = "Sample")
         }
 
-        composeRule.onNodeWithContentDescription(string(R.string.vps))
+        composeRule.onNodeWithText(string(R.string.vps))
             .performScrollTo()
             .assertIsDisplayed()
         composeRule.onNodeWithText(string(R.string.vps_note)).assertDoesNotExist()
-        composeRule.onNodeWithContentDescription(string(R.string.vps_time)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.vps_time)).assertDoesNotExist()
     }
 
     @Test
@@ -154,6 +168,46 @@ class TvTimerEditorHostTest {
         }
 
         composeRule.runOnIdle { assertEquals(true, dismissed) }
+    }
+
+    /**
+     * Shows the editor in keyboard input mode, as a remote drives it. In touch mode a TV
+     * Surface cannot take focus, so OK on Save would prove nothing. The editor comes after
+     * the switch, so its initial focus request runs in keyboard mode and leaves the IME
+     * closed.
+     */
+    private fun setDpadEditor(
+        state: TimerEditUiState,
+        name: String,
+        onSave: () -> Unit = {},
+        onDismiss: () -> Unit = {}
+    ) {
+        var showEditor by mutableStateOf(false)
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            if (showEditor) {
+                Editor(state, name, onSave, onDismiss)
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle {
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
+            showEditor = true
+        }
+        composeRule.waitForIdle()
+    }
+
+    /**
+     * Save is a TV button: focus it and press OK, as the remote does. A touch click would
+     * not activate its surface.
+     */
+    private fun activateSave() {
+        val save = composeRule.onNodeWithText(saveLabel())
+        save.performScrollTo()
+        save.requestFocus()
+        save.assertIsFocused()
+        save.performKeyInput { pressKey(Key.DirectionCenter) }
+        composeRule.waitForIdle()
     }
 
     /**

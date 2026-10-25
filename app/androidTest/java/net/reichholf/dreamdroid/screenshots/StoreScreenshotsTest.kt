@@ -18,6 +18,7 @@ import androidx.compose.ui.test.isRoot
 import androidx.compose.ui.test.junit4.v2.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.printToString
 import androidx.core.content.ContextCompat
@@ -80,6 +81,7 @@ class StoreScreenshotsTest {
     private val favourites = ScreenshotReceiver.FAVOURITES
     private lateinit var server: MockWebServer
     private lateinit var outDir: File
+    private var profileId: Int = 0
 
     @Before
     fun setUp() {
@@ -107,7 +109,8 @@ class StoreScreenshotsTest {
         }
         runBlocking {
             profiles.save(profile)
-            profiles.setCurrent(checkNotNull(profile.id))
+            profileId = checkNotNull(profile.id)
+            profiles.setCurrent(profileId)
         }
         profiles.markLoaded()
     }
@@ -188,11 +191,15 @@ class StoreScreenshotsTest {
         }
     }
 
-    /** The TV hub: a bouquet's channels, its MultiEPG, the timers and the recordings. */
+    /**
+     * The TV hub: a bouquet's channels, its MultiEPG, the timers and the recordings.
+     * Ends with the profile and timer editors (5 and 6): they are review shots of the TV
+     * form chrome, not store assets.
+     */
     @Test
     fun tv() {
         assumeTrue(device == "tv")
-        ActivityScenario.launch(TvMainActivity::class.java).use {
+        ActivityScenario.launch(TvMainActivity::class.java).use { scenario ->
             awaitNode(hasTestTag("hub_service_card"))
             awaitNode(hasText(second.name))
             capture("1_hub")
@@ -201,7 +208,9 @@ class StoreScreenshotsTest {
             // Recordings are top bar tabs; a movie location is an item of the Recordings drawer.
             tvClick("hub_tab_guide")
             awaitNode(hasTestTag("tv_multi_epg_grid"))
-            awaitNode(hasText(receiver.titleNow(first)))
+            // The channel row, not a programme title: titles turn over with the clock, so a
+            // wait on receiver.titleNow() can miss the cell the grid shows after a boundary.
+            awaitNode(hasTestTag("tv_multi_epg_channel_${first.ref}"))
             capture("2_multiepg")
 
             tvClick("hub_tab_timers")
@@ -213,7 +222,33 @@ class StoreScreenshotsTest {
             awaitNode(hasTestTag("hub_movie_card"))
             awaitNode(hasText(ScreenshotReceiver.MOVIE_TITLES.first()))
             capture("4_movies")
+
+            // New timer: the editor replaces the timers section, Back returns to the list.
+            tvClick("hub_tab_timers")
+            tvClick("tv_timers_add")
+            awaitNode(hasText(context.getString(R.string.enabled)) and hasClickAction())
+            // The editor opens on the name field, at the top of the form.
+            capture("5_timer_editor")
+            back(scenario)
+            awaitNode(hasTestTag("tv_timers_list"))
+
+            // Settings → Profile → edit the seeded profile.
+            tvClick("hub_action_settings")
+            tvClick("hub_settings_profile")
+            awaitNode(hasTestTag("tv_profiles_list"))
+            tvClick("tv_profiles_edit_$profileId")
+            awaitNode(hasText(context.getString(R.string.profile)))
+            capture("6_profile_editor")
+
+            // The form's other end: the last section's controls and the Save button.
+            composeRule.onAllNodes(hasText(context.getString(R.string.save)))[0].performScrollTo()
+            capture("7_profile_editor_save")
         }
+    }
+
+    /** Compose's BackHandler runs through the activity's dispatcher, so this is a real Back. */
+    private fun back(scenario: ActivityScenario<TvMainActivity>) {
+        scenario.onActivity { it.onBackPressedDispatcher.onBackPressed() }
     }
 
     private fun tvClick(tag: String) {
