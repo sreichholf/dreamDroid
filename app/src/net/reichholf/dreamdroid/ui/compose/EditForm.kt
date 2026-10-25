@@ -2,7 +2,6 @@ package net.reichholf.dreamdroid.ui.compose
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -29,6 +28,7 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedSecureTextField
@@ -74,8 +74,8 @@ import net.reichholf.dreamdroid.ui.theme.LocalTvFormChrome
 
 /**
  * Material 3 compact-form metrics: 16.dp screen inset, 16.dp between fields and
- * section cards, 56.dp switch rows, [titleMedium] section titles, [bodyLarge]
- * controls. Binary settings use a trailing [Switch], not a leading checkbox.
+ * section cards, [titleMedium] section titles, [bodyLarge] controls. Binary
+ * settings are [ListItem] rows with a trailing [Switch], not a leading checkbox.
  *
  * The TV variant ([LocalTvFormChrome]) swaps in the components from `TvForm.kt`:
  * section headers instead of cards, TV rows for switches, pickers, dropdowns and
@@ -86,7 +86,6 @@ object EditForm {
     val GroupSpacing = 16.dp
     val FieldSpacing = 16.dp
     val CardPadding = 16.dp
-    val SwitchRowMinHeight = 56.dp
 }
 
 /** Screen inset and group spacing of the current form factor. */
@@ -124,7 +123,7 @@ private fun editFormFieldTextStyle(): TextStyle {
     return MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface)
 }
 
-/** Text fields and pick fields are 72.dp tall in a TV form, 56.dp on phone. */
+/** Text and dropdown fields are 72.dp tall in a TV form; the phone keeps the M3 default. */
 @Composable
 private fun editFormFieldHeight(): Modifier =
     if (LocalTvFormChrome.current) Modifier.heightIn(min = 72.dp) else Modifier
@@ -256,52 +255,25 @@ fun EditSwitchRow(
         )
         return
     }
-    if (summary == null) {
-        SwitchToggleRow(checked, onCheckedChange, label, modifier, enabled)
-    } else {
-        Column(modifier = modifier.fillMaxWidth()) {
-            SwitchToggleRow(checked, onCheckedChange, label, Modifier, enabled)
-            Text(
-                text = summary,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    ListItem(
+        headlineContent = { Text(label) },
+        supportingContent = summary?.let { text -> { Text(text) } },
+        trailingContent = {
+            Switch(
+                checked = checked,
+                onCheckedChange = null,
+                enabled = enabled
             )
-        }
-    }
-}
-
-@Composable
-private fun SwitchToggleRow(
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit,
-    label: String,
-    modifier: Modifier,
-    enabled: Boolean = true
-) {
-    Row(
+        },
         modifier = modifier
             .fillMaxWidth()
-            .heightIn(min = EditForm.SwitchRowMinHeight)
-            .semantics(mergeDescendants = true) { contentDescription = label }
             .toggleable(
                 value = checked,
                 onValueChange = onCheckedChange,
                 enabled = enabled,
                 role = Role.Switch
-            ),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = null
-        )
-    }
+            )
+    )
 }
 
 @Composable
@@ -557,48 +529,24 @@ private fun PasswordVisibilityToggle(visible: Boolean, onToggle: () -> Unit) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPickField(
     value: String,
     label: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    contentDescription: String = label
+    modifier: Modifier = Modifier
 ) {
     if (LocalTvFormChrome.current) {
         TvFormPickRow(value = value, label = label, onClick = onClick, modifier = modifier)
         return
     }
-    Box(modifier = modifier.fillMaxWidth()) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            label = { Text(label) },
-            readOnly = true,
-            enabled = false,
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = false) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .then(editFormFieldHeight()),
-            textStyle = editFormFieldTextStyle(),
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                disabledBorderColor = MaterialTheme.colorScheme.outline,
-                disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                disabledTrailingIconColor = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        )
-        // Disabled fields drop click semantics; overlay keeps the picker tappable.
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable(onClick = onClick, role = Role.Button)
-                .semantics { this.contentDescription = contentDescription }
-        )
-    }
+    ListItem(
+        headlineContent = { Text(label) },
+        supportingContent = { Text(value) },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick, role = Role.Button)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
