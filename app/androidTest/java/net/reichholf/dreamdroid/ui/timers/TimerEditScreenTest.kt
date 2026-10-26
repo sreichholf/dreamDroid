@@ -83,10 +83,10 @@ class TimerEditScreenTest {
             "Switch rows are at least 56.dp, height=$enabledHeight",
             enabledHeight >= 56.dp
         )
-        val beginDate = composeRule.onNodeWithContentDescription("Begin date")
+        val beginDate = composeRule.onNodeWithText("Begin date")
             .performScrollTo()
             .getBoundsInRoot()
-        val beginTime = composeRule.onNodeWithContentDescription("Begin time")
+        val beginTime = composeRule.onNodeWithText("Begin time")
             .getBoundsInRoot()
         assertTrue(
             "Begin date and time stay on one row, date=$beginDate time=$beginTime",
@@ -108,7 +108,7 @@ class TimerEditScreenTest {
         }
 
         composeRule.onNodeWithText("News").performScrollTo().assertIsDisplayed()
-        composeRule.onNodeWithContentDescription("Tags")
+        composeRule.onNodeWithText("Tags")
             .performScrollTo()
             .assertIsDisplayed()
             .performClick()
@@ -134,7 +134,7 @@ class TimerEditScreenTest {
             }
         }
 
-        val tags = composeRule.onNodeWithContentDescription("Tags")
+        val tags = composeRule.onNodeWithText("Tags")
             .performScrollTo()
             .getBoundsInRoot()
         val host = composeRule.onNodeWithTag("host").getBoundsInRoot()
@@ -209,7 +209,7 @@ class TimerEditScreenTest {
         composeRule.onNodeWithText(string(R.string.vps_note))
             .performScrollTo()
             .assertIsDisplayed()
-        composeRule.onNodeWithContentDescription(string(R.string.vps_time)).assertDoesNotExist()
+        composeRule.onNodeWithText(string(R.string.vps_time)).assertDoesNotExist()
     }
 
     @Test
@@ -222,10 +222,10 @@ class TimerEditScreenTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription(string(R.string.vps_date))
+        composeRule.onNodeWithText(string(R.string.vps_date))
             .performScrollTo()
             .performClick()
-        composeRule.onNodeWithContentDescription(string(R.string.vps_time))
+        composeRule.onNodeWithText(string(R.string.vps_time))
             .performScrollTo()
             .performClick()
         assertEquals(listOf(TimerEditPick.VpsDate, TimerEditPick.VpsTime), picks)
@@ -257,7 +257,7 @@ class TimerEditScreenTest {
                 }
             }
         }
-        composeRule.onNodeWithContentDescription(string(R.string.repeatings)).performScrollTo()
+        composeRule.onNodeWithText(string(R.string.repeatings)).performScrollTo()
 
         // The snackbar's timeout runs on the test clock.
         composeRule.mainClock.autoAdvance = false
@@ -319,7 +319,7 @@ class TimerEditScreenTest {
             }
         }
 
-        composeRule.onNodeWithContentDescription(string(R.string.repeatings))
+        composeRule.onNodeWithText(string(R.string.repeatings))
             .performScrollTo()
             .performClick()
         composeRule.onNode(isDialog()).assertIsDisplayed()
