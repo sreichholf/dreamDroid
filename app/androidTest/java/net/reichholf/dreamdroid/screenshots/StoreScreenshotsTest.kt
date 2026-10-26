@@ -225,9 +225,12 @@ class StoreScreenshotsTest {
 
             // New timer: the editor replaces the timers section, Back returns to the list.
             tvClick("hub_tab_timers")
+            // Gate on the screen, not on semantics: the display can lag the composition by a
+            // frame, and two stale frames of the list look stable to saveScreen().
+            val timersList = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
             tvClick("tv_timers_add")
-            awaitNode(hasText(context.getString(R.string.enabled)) and hasClickAction())
-            // The editor opens on the name field, at the top of the form.
+            awaitNode(hasText(context.getString(R.string.save)) and hasClickAction())
+            awaitScreenChange(timersList)
             capture("5_timer_editor")
             back(scenario)
             awaitNode(hasTestTag("tv_timers_list"))

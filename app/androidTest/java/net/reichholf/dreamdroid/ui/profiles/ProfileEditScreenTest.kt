@@ -400,6 +400,10 @@ class ProfileEditScreenTest {
         vps.performScrollTo().assertIsOff()
         composeRule.onNodeWithText("Uses the receiver's VPS plugin for timers.")
             .assertIsDisplayed()
+        // The summary sits inside the row's toggle target, not in a sibling below it.
+        composeRule.onNode(
+            hasText("Uses the receiver's VPS plugin for timers.") and isToggleable()
+        ).assertIsOff()
         composeRule.onNodeWithContentDescription("VPS default for new timers")
             .assertDoesNotExist()
 

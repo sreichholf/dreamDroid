@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * UPD: TV - profile and timer editors match the hub
+* UPD: Many UI improvements
 
 ## 2.0.469
 * UPD: TV - rework hub, player, MultiEPG, editing
