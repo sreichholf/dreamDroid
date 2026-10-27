@@ -143,8 +143,10 @@ class MultiEpgSyncSingleFlightTest {
 
         val warm = async { sync.warmChunk(1, "bouquet-a", t0) }
         withTimeout(5_000L) { fetchStarted.await() }
+        // Undispatched and forceRefresh skips the Room check, so the reader joins the
+        // warm's flight before it is released.
         val reader = async(start = CoroutineStart.UNDISPATCHED) {
-            sync.ensureChunk(1, "bouquet-a", t0)
+            sync.ensureChunk(1, "bouquet-a", t0, forceRefresh = true)
         }
         release.complete(Unit)
 
