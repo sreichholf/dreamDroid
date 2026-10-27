@@ -9,6 +9,14 @@ Phone Enigma2 remote. Rewrite trunk is `main` (`master` is the old 1.x line; nev
 
 Hilt history and decisions: [`docs/hilt-migration.md`](docs/hilt-migration.md). CI: [`.github/workflows/android-ci.yml`](.github/workflows/android-ci.yml) — read it for what runs on which event.
 
+## Worktrees
+
+Always make changes in a dedicated git worktree, never in the primary checkout. Other agents work in this repository at the same time; a shared checkout lets one agent's branch switch, edit, or build interfere with another's.
+
+- Create one worktree per task from `origin/main` (`git worktree add <path> -b <branch> origin/main`), outside the primary checkout.
+- Do not reuse, reset, or remove another agent's worktree.
+- Remove your own worktree once its PR is merged: `git worktree remove <path>`.
+
 ## Writing
 
 Keep it minimal. Changelogs and commit messages are bullet style, cut down to the core. Comments never explain the change; they only explain what the code can't.
