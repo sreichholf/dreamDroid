@@ -117,7 +117,8 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch {
             if (!profiles.ensureCurrent() && !showingSetup) {
                 shellViewModel.cancelCheck()
-                showSetup()
+                // The hub's no-profile gate offers setup; drop the deleted profile's rows.
+                hubViewModel.reload()
             }
         }
     }
@@ -143,7 +144,7 @@ class MainActivity : AppCompatActivity() {
         hubStarted = true
         localNetworkPermissionRequest.ensure(this)
         shellViewModel.start()
-        TvComposeHubHost.install(this)
+        TvComposeHubHost.install(this) { showSetup() }
         try {
             // Coil ImageLoader w/ OkHttpClient. Trust-all is per OkHttp client.
             // Do not flip process-wide HttpsURLConnection follow-redirects.

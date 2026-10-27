@@ -211,6 +211,20 @@ class TimerRepositoryTest {
     }
 
     @Test
+    fun withoutAProfileTheTimerListAsksNothing() = runTest {
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
+        receiver.repository.clearCurrent()
+
+        val result = repository.timers().last()
+
+        assertEquals(TimerListResult.Failed(UiText.Resource(R.string.error_parsing)), result)
+        assertNull(repository.snapshot())
+        assertFalse(repository.hasVpsPlugin())
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
     fun saveReplacesTheOriginalTimer() = runTest {
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val original = timer("Old")

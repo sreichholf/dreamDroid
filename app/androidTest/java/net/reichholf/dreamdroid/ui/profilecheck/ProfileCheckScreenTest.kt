@@ -7,6 +7,7 @@ import androidx.compose.ui.test.performClick
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import net.reichholf.dreamdroid.DreamDroid
+import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertTrue
@@ -32,7 +33,8 @@ class ProfileCheckScreenTest {
                 ProfileCheckScreen(
                     ui = ProfileCheckUi.Checking(UiText.Raw("Checking connection…")),
                     onRecheck = {},
-                    onProfiles = {}
+                    onProfiles = {},
+                    onAddProfile = {}
                 )
             }
         }
@@ -51,7 +53,8 @@ class ProfileCheckScreenTest {
                         message = UiText.Raw("Host unreachable")
                     ),
                     onRecheck = { recheck = true },
-                    onProfiles = { profiles = true }
+                    onProfiles = { profiles = true },
+                    onAddProfile = {}
                 )
             }
         }
@@ -65,5 +68,27 @@ class ProfileCheckScreenTest {
             assertTrue(recheck)
             assertTrue(profiles)
         }
+    }
+
+    @Test
+    fun noProfileShowsCopyAndAddProfile() {
+        var addProfile = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                ProfileCheckScreen(
+                    ui = ProfileCheckUi.NoProfile,
+                    onRecheck = {},
+                    onProfiles = {},
+                    onAddProfile = { addProfile = true }
+                )
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithText(context.getString(R.string.no_profile_title)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.no_profile_body)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.profile_add))
+            .assertIsDisplayed()
+            .performClick()
+        composeRule.runOnIdle { assertTrue(addProfile) }
     }
 }

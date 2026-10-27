@@ -127,14 +127,14 @@ class ServiceRepository @Inject constructor(
 
     /** The Room tab strip refs, TV and radio, the bouquets MultiEPG and the hub persist. */
     suspend fun hubTabStripRefs(): List<String> {
-        val profileId = profiles.requireCurrent().id ?: return emptyList()
+        val profileId = profiles.current.value?.id ?: return emptyList()
         return database.rosterDao().getTabStripRefs(profileId)
     }
 
     /** The Room TV and radio tab strips. Empty when neither was written. */
     suspend fun cachedBouquets(): Bouquets {
         val bouquets = Bouquets()
-        val profileId = profiles.requireCurrent().id ?: return bouquets
+        val profileId = profiles.current.value?.id ?: return bouquets
         bouquets.tv.addAll(tabStrip(profileId, KIND_TV))
         bouquets.radio.addAll(tabStrip(profileId, KIND_RADIO))
         return bouquets
@@ -166,8 +166,9 @@ class ServiceRepository @Inject constructor(
     )
 
     private suspend fun receiverBouquets(): EnigmaResponse<Bouquets> {
-        val client = clients.current()
-        val profileId = profiles.requireCurrent().id
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val client = clients.forProfile(profile)
+        val profileId = profile.id
         val tv = client.services(tvRoots[0])
         val tvList = tv.value ?: return EnigmaResponse(null, tv.error)
         val live = Bouquets()
@@ -222,14 +223,17 @@ class ServiceRepository @Inject constructor(
 
     /**
      * Members of [ref], read [cacheFirstLoad] from the Room roster of [ref]. Does not write
-     * the roster.
+     * the roster. Nothing when no profile is active, as the hub can outlive one.
      */
     fun services(ref: String, forceRefresh: Boolean = false): Flow<ServiceListLoad> =
         cacheFirstLoad(
             sessions,
             forceRefresh,
-            cached = { profiles.requireCurrent().id?.let { cachedBouquetServices(it, ref) } },
-            fetch = { clients.current().services(ref) },
+            cached = { profiles.current.value?.id?.let { cachedBouquetServices(it, ref) } },
+            fetch = checked@{
+                val profile = profiles.current.value ?: return@checked EnigmaResponse(null)
+                clients.forProfile(profile).services(ref)
+            },
             loaded = ServiceListLoad::Services,
             failed = ServiceListLoad::Failed
         )

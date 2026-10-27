@@ -40,6 +40,9 @@ class PhoneNavigator(
 
     override var composeActivityResultListener: PhoneNavHandle.ActivityResultListener? = null
 
+    /** Runs after a NavHost attached, so the shell can replay effects it had nowhere to show. */
+    var onNavHostAttached: (() -> Unit)? = null
+
     override val navUiState: StateFlow<PhoneNavUiState>
         get() = state.uiState
 
@@ -74,6 +77,7 @@ class PhoneNavigator(
             )
         }
         flushPendingNavigations()
+        onNavHostAttached?.invoke()
     }
 
     override fun detachNavController(controller: NavHostController) {
@@ -199,6 +203,17 @@ class PhoneNavigator(
             return true
         }
         controller.navigateToProfileCheck()
+        return true
+    }
+
+    /** Shows the gate with nothing behind it; see [resetToProfileCheck]. */
+    fun resetToProfileCheck(): Boolean {
+        val controller = navController
+        if (controller == null) {
+            pending.profileCheck = true
+            return true
+        }
+        controller.resetToProfileCheck()
         return true
     }
 

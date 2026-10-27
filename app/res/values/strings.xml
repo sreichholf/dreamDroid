@@ -277,6 +277,8 @@
     <string name="sent_from_dreamdroid">Sent from dreamDroid on %s</string>
     <string name="open_dreamdroid">Open dreamDroid</string>
     <string name="no_profile_available">No connection profile found! Please configure at least one profile using the main application!</string>
+    <string name="no_profile_title">No connection profile</string>
+    <string name="no_profile_body">Add a profile to connect to your receiver.</string>
     <string name="confirm_app_close">Ask for confirmation before app exits</string>
     <string name="confirm_app_close_long">Ask for confirmation before the app is being closed when pressing &quot;back&quot;</string>
     <string name="play_button_as_play_pause">Use Play button as Play/Pause button</string>

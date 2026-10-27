@@ -55,6 +55,8 @@ data class ShellUiState(
     val profileCheck: ProfileCheckUi = CHECKING,
     val profileCheckStarted: ProfileCheckStart? = null,
     val profileCheckOutcome: ProfileCheckOutcome? = null,
+    /** Open the setup assistant: the no-profile gate's Add Profile. */
+    val setupRequested: Boolean = false,
     /** The receiver has the AutoTimer plugin, so the drawer lists AutoTimer. */
     val autoTimerInDrawer: Boolean = false,
     /** The active profile's web interface has the sleep timer, so the drawer offers it. */
@@ -125,8 +127,36 @@ class ShellViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            // Losing the active profile (the last one deleted) turns the gate into NoProfile.
+            // A null that was there from the start is the first run; setup, not a loss.
+            var hadProfile = false
             profiles.current.collect { profile ->
-                _uiState.update { it.copy(profileName = profile?.name.orEmpty()) }
+                val lost = hadProfile && profile == null
+                hadProfile = hadProfile || profile != null
+                if (lost) {
+                    cancelCheck()
+                    _uiState.update {
+                        it.copy(
+                            profileName = "",
+                            profileCheck = ProfileCheckUi.NoProfile,
+                            profileCheckStarted = ProfileCheckStart(showGate = true),
+                            profileCheckOutcome = null
+                        )
+                    }
+                    return@collect
+                }
+                _uiState.update { state ->
+                    state.copy(
+                        profileName = profile?.name.orEmpty(),
+                        profileCheck = if (
+                            profile != null && state.profileCheck is ProfileCheckUi.NoProfile
+                        ) {
+                            CHECKING
+                        } else {
+                            state.profileCheck
+                        }
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -193,6 +223,18 @@ class ShellViewModel @Inject constructor(
         openStartOnSuccess = false
     }
 
+    /** The no-profile gate's Add Profile: the shell opens the setup assistant. */
+    fun requestSetup() {
+        // The shell already ran, so the added profile is not this process's first start:
+        // its check leaves for the start route instead of Profiles with the drawer.
+        settings.firstStart = false
+        _uiState.update { it.copy(setupRequested = true) }
+    }
+
+    fun onSetupRequestedHandled() {
+        _uiState.update { it.copy(setupRequested = false) }
+    }
+
     /** Drops a running check, for example when the shell stops. */
     fun cancelCheck() {
         checkJob?.cancel()
@@ -227,8 +269,11 @@ class ShellViewModel @Inject constructor(
         _uiState.update { it.copy(profileCheckOutcome = null) }
     }
 
-    /** Whether the volume key [keyCode] sets the receiver's volume instead of the phone's. */
-    fun controlsReceiverVolume(keyCode: Int): Boolean =
+    /**
+     * Whether the volume key [keyCode] sets the receiver's volume instead of the phone's.
+     * Without a profile nothing commands the receiver, so the key stays the phone's.
+     */
+    fun controlsReceiverVolume(keyCode: Int): Boolean = profiles.current.value != null &&
         shouldConsumeVolumeKey(keyCode, settings.current().volumeControl)
 
     /** Sets the receiver's volume for [keyCode]. A key while a request runs is dropped. */

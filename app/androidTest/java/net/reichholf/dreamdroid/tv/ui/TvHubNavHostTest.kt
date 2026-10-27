@@ -89,6 +89,7 @@ class TvHubNavHostTest {
             navController = rememberNavController()
             TvHubNavHost(
                 activity = activity,
+                onAddProfile = {},
                 navController = navController,
                 startDestination = TvProfiles
             )
@@ -107,6 +108,7 @@ class TvHubNavHostTest {
         composeRule.setContent {
             TvHubNavHost(
                 activity = activity,
+                onAddProfile = {},
                 startDestination = route
             )
         }

@@ -229,6 +229,8 @@
     <string name="watch_on_dream">Auf Dreambox ansehen</string>
     <string name="sent_from_dreamdroid">Von dreamDroid gesendet (%s)</string>
     <string name="no_profile_available">Es wurde kein Verbindungsprofil gefunden! Bitte konfiguriere mindestens ein Verbindungsprofil über die App!</string>
+    <string name="no_profile_title">Kein Verbindungsprofil</string>
+    <string name="no_profile_body">Füge ein Profil hinzu, um dich mit deinem Receiver zu verbinden.</string>
     <string name="confirm_app_close">Verlassen der App bestätigen</string>
     <string name="confirm_app_close_long">Einen Bestätigungsdialog zeigen bevor die App durch Drücken von (OK) zurück beendet wird.</string>
     <string name="appearance">Erscheinungsbild</string>

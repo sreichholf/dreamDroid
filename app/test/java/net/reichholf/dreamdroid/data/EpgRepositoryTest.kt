@@ -112,6 +112,25 @@ class EpgRepositoryTest {
     }
 
     @Test
+    fun withoutAProfileEpgAnswersNothingAndAsksNothing() = runBlocking {
+        receiver.writeChunk(BOUQUET, NOW, listOf(event("News", NOW)))
+        receiver.profiles.repository.clearCurrent()
+
+        assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
+        assertNull(repository.cachedSearch("News"))
+        assertTrue(repository.fillNowChunk(BOUQUET, BOUQUET, NOW).isEmpty())
+        repository.syncContainer(BOUQUET, BOUQUET, NOW)
+        val bouquetLoads = repository.bouquetEvents(BOUQUET, NOW).toList()
+        receiver.goOffline()
+        val serviceLoads = repository.serviceEvents(CHANNEL).toList()
+
+        assertFalse(repository.skipsReceiverSearch())
+        assertEquals(listOf(EventListLoad.Failed(null)), bouquetLoads)
+        assertEquals(listOf(EventListLoad.Failed(null)), serviceLoads)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
     fun writtenEmptyChunkIsAnEmptyListNotMissing() = runBlocking {
         receiver.writeChunk(BOUQUET, NOW, emptyList())
         receiver.goOffline()

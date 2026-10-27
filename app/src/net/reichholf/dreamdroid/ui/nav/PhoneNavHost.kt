@@ -391,6 +391,21 @@ fun NavHostController.navigateReplacingProfileCheck(route: Any) {
     }
 }
 
+/**
+ * Open the gate with nothing behind it. With no active profile there is no shell to go
+ * back to, so Back leaves the app instead of showing screens that cannot reach a receiver.
+ */
+fun NavHostController.resetToProfileCheck() {
+    if (routeKey(currentDestination?.route) == PhoneNavRoutes.PROFILE_CHECK) {
+        popBackStack<ProfileCheck>(inclusive = false)
+        return
+    }
+    navigate(ProfileCheck) {
+        popUpTo(graph.findStartDestination().id) { inclusive = true }
+        launchSingleTop = true
+    }
+}
+
 /** Drawer-style top-level navigate: single-top + save/restore under the start destination. */
 fun NavHostController.navigateDrawerRoot(route: Any) {
     val destination = normalizeRoute(route)

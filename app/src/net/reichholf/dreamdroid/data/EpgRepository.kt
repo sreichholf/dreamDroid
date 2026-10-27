@@ -89,7 +89,7 @@ class EpgRepository @Inject constructor(
      * the profile at all.
      */
     suspend fun cachedSearch(query: String): List<Event>? {
-        val profileId = profiles.requireCurrent().id ?: return null
+        val profileId = profiles.current.value?.id ?: return null
         val dao = database.epgDao()
         if (!dao.hasEvents(profileId)) {
             return null
@@ -108,7 +108,7 @@ class EpgRepository @Inject constructor(
         if (!status.shouldSkipReceiverHttp(hasCache = true)) {
             return false
         }
-        val profileId = profiles.requireCurrent().id ?: return false
+        val profileId = profiles.current.value?.id ?: return false
         return status.shouldSkipReceiverHttp(database.epgDao().hasEvents(profileId))
     }
 
@@ -125,7 +125,8 @@ class EpgRepository @Inject constructor(
      * holds the recording margins, so it starts before the programme and ends after it: the
      * programme is the one called [title] in it, else the one that fills most of it. The
      * MultiEPG cache answers when it holds [title]; otherwise the receiver does, unless the
-     * session is Offline. Null when neither has a programme there.
+     * session is Offline. Null when neither has a programme there, or when no profile is
+     * active.
      */
     suspend fun recordedProgramme(
         serviceRef: String,
@@ -133,7 +134,8 @@ class EpgRepository @Inject constructor(
         beginSec: Long,
         endSec: Long
     ): Event? {
-        profiles.requireCurrent().id?.let { profileId ->
+        val profile = profiles.current.value ?: return null
+        profile.id?.let { profileId ->
             val cached = database.epgDao()
                 .serviceEventsOverlapping(profileId, serviceRef, beginSec, endSec)
                 .map { it.toEvent() }
@@ -144,7 +146,7 @@ class EpgRepository @Inject constructor(
         if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
             return null
         }
-        val events = clients.current().serviceEpg(serviceRef, beginSec, endSec).value
+        val events = clients.forProfile(profile).serviceEpg(serviceRef, beginSec, endSec).value
             ?: return null
         return programmeInWindow(events, title, beginSec, endSec)
     }
@@ -186,7 +188,7 @@ class EpgRepository @Inject constructor(
         tabRootRef: String,
         nowSec: Long = System.currentTimeMillis() / 1000L
     ): List<Event> {
-        val profileId = profiles.requireCurrent().id ?: return emptyList()
+        val profileId = profiles.current.value?.id ?: return emptyList()
         if (!services.isCacheableContainer(containerRef, tabRootRef)) {
             return emptyList()
         }
@@ -206,7 +208,7 @@ class EpgRepository @Inject constructor(
         tabRootRef: String,
         nowSec: Long = System.currentTimeMillis() / 1000L
     ) {
-        val profileId = profiles.requireCurrent().id ?: return
+        val profileId = profiles.current.value?.id ?: return
         if (!services.isCacheableContainer(containerRef, tabRootRef)) {
             return
         }
@@ -243,7 +245,7 @@ class EpgRepository @Inject constructor(
         clients.current().epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
-    /** [cacheFirstLoad] of one event list of the active profile. */
+    /** [cacheFirstLoad] of one event list; nothing when no profile is active. */
     private fun listLoad(
         forceRefresh: Boolean,
         readCache: suspend (profileId: Int) -> List<Event>?,
@@ -251,8 +253,11 @@ class EpgRepository @Inject constructor(
     ): Flow<EventListLoad> = cacheFirstLoad(
         sessions,
         forceRefresh,
-        cached = { profiles.requireCurrent().id?.let { readCache(it) } },
-        fetch = { fetch(clients.current()) },
+        cached = { profiles.current.value?.id?.let { readCache(it) } },
+        fetch = checked@{
+            val profile = profiles.current.value ?: return@checked EnigmaResponse(null)
+            fetch(clients.forProfile(profile))
+        },
         loaded = EventListLoad::Events,
         failed = EventListLoad::Failed
     )

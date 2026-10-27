@@ -72,6 +72,7 @@ internal fun consumeTvHubReload(handle: SavedStateHandle): Boolean {
 @Composable
 fun TvHubNavHost(
     activity: ComponentActivity,
+    onAddProfile: () -> Unit,
     navController: NavHostController = rememberNavController(),
     startDestination: Any = TvHub
 ) {
@@ -85,6 +86,7 @@ fun TvHubNavHost(
                 activity = activity,
                 shellViewModel = shellViewModel,
                 hubViewModel = hubViewModel,
+                onAddProfile = onAddProfile,
                 navController = navController,
                 startDestination = startDestination
             )
@@ -107,6 +109,7 @@ private fun TvHubNavGraph(
     activity: ComponentActivity,
     shellViewModel: TvShellViewModel,
     hubViewModel: TvHubViewModel,
+    onAddProfile: () -> Unit,
     navController: NavHostController,
     startDestination: Any
 ) {
@@ -128,6 +131,7 @@ private fun TvHubNavGraph(
                 activity = activity,
                 gate = shellState.gate,
                 onRecheckProfile = shellViewModel::recheck,
+                onAddProfile = onAddProfile,
                 viewModel = hubViewModel,
                 onOpenSettings = { navController.navigate(TvSettings) },
                 onOpenProfiles = { navController.navigate(TvProfiles) }

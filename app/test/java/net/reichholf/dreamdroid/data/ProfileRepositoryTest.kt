@@ -225,8 +225,27 @@ class ProfileRepositoryTest {
         repo.delete(store.profile(1)!!)
 
         assertEquals(-1, store.remembered)
-        assertNull(repo.requireCurrent().id)
+        assertNull(repo.current.value)
+        assertFalse(repo.hasCurrent())
         assertNull(repo.activeProfileId())
+    }
+
+    @Test
+    fun deletingLastProfileDropsItsCaches() = runBlocking<Unit> {
+        val only = profile(1, "only")
+        val store = MemoryProfileStore(listOf(only))
+        val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
+        assertTrue(repo.setCurrent(1, forceEvent = true))
+        val current = repo.requireCurrent()
+        repo.putLocations(current, listOf("/media/hdd/movie"))
+        repo.putTags(current, listOf("News"))
+        assertTrue(repo.locationsLoadedFromReceiver())
+
+        repo.delete(store.profile(1)!!)
+
+        assertTrue(repo.locations().isEmpty())
+        assertTrue(repo.tags().isEmpty())
+        assertFalse(repo.locationsLoadedFromReceiver())
     }
 
     @Test

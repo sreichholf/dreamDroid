@@ -30,7 +30,8 @@ import net.reichholf.dreamdroid.ui.session.probeSessionReachabilityIfNeeded
 
 /**
  * The TV ProfileCheck [gate]; null until Room answered whether the active profile has a
- * cache, so Checking never flashes over content Room can paint.
+ * cache, so Checking never flashes over content Room can paint, and [TvSessionGate.NoProfile]
+ * while no profile is active.
  *
  * [lastStreamEffect] is the one-shot result of starting the last channel on launch: play it,
  * or show why the receiver cannot stream it.
@@ -83,14 +84,17 @@ class TvShellViewModel @Inject constructor(
                 profiles.current,
                 cache
             ) { status, profile, (cacheProfileId, hasCache) ->
-                val known = hasCache.takeIf { profile?.id == cacheProfileId }
-                known?.let {
-                    tvSessionGate(
-                        status = status,
-                        hasCache = it,
-                        receiverLabel =
-                            profile?.let { p -> "${p.user}@${p.host}:${p.port}" }.orEmpty()
-                    )
+                if (profile == null) {
+                    TvSessionGate.NoProfile
+                } else {
+                    val known = hasCache.takeIf { profile.id == cacheProfileId }
+                    known?.let {
+                        tvSessionGate(
+                            status = status,
+                            hasCache = it,
+                            receiverLabel = "${profile.user}@${profile.host}:${profile.port}"
+                        )
+                    }
                 }
             }.collect { gate -> _uiState.update { it.copy(gate = gate) } }
         }
@@ -102,7 +106,8 @@ class TvShellViewModel @Inject constructor(
 
     /**
      * Follows profile switches from now on and checks the active profile, unless it is the
-     * one this ViewModel already checked (the activity was recreated).
+     * one this ViewModel already checked (the activity was recreated). With no active
+     * profile there is nothing to check; a later start checks again.
      */
     fun start() {
         if (switchesJob == null) {
@@ -110,7 +115,7 @@ class TvShellViewModel @Inject constructor(
                 profiles.switches.collect { onProfileChanged(it) }
             }
         }
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value ?: return
         if (profile !== checkedProfile) {
             onProfileChanged(profile)
         }

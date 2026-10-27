@@ -40,7 +40,8 @@ class TvProfileCheckScreenTest {
                 TvProfileCheckScreen(
                     gate = TvSessionGate.Checking(UiText.Resource(R.string.checking_connection)),
                     onRecheck = {},
-                    onProfiles = {}
+                    onProfiles = {},
+                    onAddProfile = {}
                 )
             }
         }
@@ -64,7 +65,8 @@ class TvProfileCheckScreenTest {
                         message = UiText.Resource(R.string.host_unreach)
                     ),
                     onRecheck = { recheck = true },
-                    onProfiles = { profiles = true }
+                    onProfiles = { profiles = true },
+                    onAddProfile = {}
                 )
             }
         }
@@ -84,6 +86,31 @@ class TvProfileCheckScreenTest {
             assertTrue(recheck)
             assertTrue(profiles)
         }
+    }
+
+    @Test
+    fun noProfileShowsTheTitleTheBodyAndTheAddAction() {
+        var addProfile = false
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                TvProfileCheckScreen(
+                    gate = TvSessionGate.NoProfile,
+                    onRecheck = {},
+                    onProfiles = {},
+                    onAddProfile = { addProfile = true }
+                )
+            }
+        }
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        composeRule.onNodeWithTag("tv_profile_check").assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.no_profile_title))
+            .assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.no_profile_body)).assertIsDisplayed()
+        composeRule.onNodeWithText(context.getString(R.string.profile_add)).assertIsDisplayed()
+
+        activateTvSurface("tv_profile_check_add_profile") { addProfile }
+
+        composeRule.runOnIdle { assertTrue(addProfile) }
     }
 
     private fun activateTvSurface(tag: String, alreadyFired: () -> Boolean) {

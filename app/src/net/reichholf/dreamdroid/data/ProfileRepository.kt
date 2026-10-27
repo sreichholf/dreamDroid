@@ -78,6 +78,10 @@ class ProfileRepository @Inject constructor(
     @Volatile
     private var xmlDump: Boolean = false
 
+    /**
+     * The active profile; throws when there is none. A caller that can run without one reads
+     * [current] instead.
+     */
     fun requireCurrent(): Profile = current.value!!
 
     fun hasCurrent(): Boolean = current.value != null
@@ -192,7 +196,10 @@ class ProfileRepository @Inject constructor(
         }
     }
 
+    /** Drops the active profile; no per-profile cache outlives the profile it came from. */
+    @Synchronized
     fun clearCurrent() {
+        clearPerProfileCaches()
         _current.value = null
     }
 
@@ -256,7 +263,7 @@ class ProfileRepository @Inject constructor(
 
     /**
      * Deletes [profile] and its offline cache. Deleting the active profile activates
-     * the first remaining one, or forgets the active profile when none is left.
+     * the first remaining one; a deleted last profile leaves none active.
      */
     suspend fun delete(profile: Profile): Unit = writes.withLock {
         val deletedId = profile.id
@@ -271,7 +278,7 @@ class ProfileRepository @Inject constructor(
             setCurrentLocked(next.id!!, forceEvent = true)
         } else {
             store.clearActiveId()
-            setCurrent(Profile.getDefault())
+            clearCurrent()
         }
     }
 
