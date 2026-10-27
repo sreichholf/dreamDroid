@@ -24,7 +24,11 @@ import net.reichholf.dreamdroid.enigma.isUnreachableEnigmaFailure
 import net.reichholf.dreamdroid.enigma.toEnigmaDisplayText
 import net.reichholf.dreamdroid.ui.text.UiText
 
-/** What the MultiEPG grid paints. [MultiEpgGrid] replaces it as a whole on every change. */
+/**
+ * What the MultiEPG grid paints. [MultiEpgGrid] replaces it as a whole on every change;
+ * [timelineEndSec] includes one chunk of scroll range beyond the painted windows so the
+ * viewport can reach the chunk warmed into Room.
+ */
 data class MultiEpgGridState(
     val bouquetRef: String = "",
     val channels: List<MultiEpgChannel> = emptyList(),
@@ -43,15 +47,16 @@ data class MultiEpgGridState(
 
 /**
  * Stale-while-revalidate MultiEPG grid loader shared by the phone and TV ViewModels:
- * peek Room, refresh and prefetch in the background, keep stale rows on error, replace
- * on bouquet/profile remount. Offline skips Enigma HTTP (pull-to-refresh still fetches).
+ * peek Room, refresh the visible chunk, fill the next into Room, keep stale rows on
+ * error, replace on bouquet/profile remount. Offline skips Enigma HTTP (pull-to-refresh
+ * still fetches).
  * Room paints from a stored chunk or from events overlapping now for 24 h, like list EPG.
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
  * is the earliest start among programmes overlapping [MultiEpgGridState.originFloorSec]
- * ("now"), the right grows as the viewport moves into the future, and chunks that no
- * longer overlap the padded viewport leave at the front or back. Room still
- * holds them; scrolling back reattaches from cache. Bouquet services loaded
+ * ("now"), and only the chunks overlapping the viewport are held for the UI. The next
+ * chunk is warmed into Room, not painted; panning into it reads it back from Room.
+ * Room holds the rest, so scrolling back reattaches from cache. Bouquet services loaded
  * from `/web/getservices` keep a row even when a window has no events.
  */
 class MultiEpgGrid(
@@ -210,7 +215,7 @@ class MultiEpgGrid(
                 }
                 if (peek != null && peek.events.isNotEmpty()) {
                     if (peek.fresh) {
-                        prefetchFuture(anchorSec)
+                        warmNextChunk(anchorSec)
                         return@launch
                     }
                 }
@@ -225,7 +230,7 @@ class MultiEpgGrid(
                 }
                 val chunk = MultiEpgWindows.chunkContaining(anchorSec)
                 putWindow(chunk.startSec, events)
-                prefetchFuture(anchorSec)
+                warmNextChunk(anchorSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
@@ -253,9 +258,9 @@ class MultiEpgGrid(
     }
 
     /**
-     * Align painted chunks with the viewport. Adds missing chunks at either end
-     * and drops chunks that no longer overlap the padded range. Calling this
-     * while panning inside the same chunks is a no-op.
+     * Align painted chunks with the viewport. Adds missing chunks in view and drops
+     * chunks that left it; nothing else is kept for the UI. Calling this while
+     * panning inside the same chunks is a no-op.
      */
     fun onVisibleWindow(visibleStartSec: Long, visibleEndSec: Long) {
         if (bouquetRef.trim().isEmpty() || eventsByWindow.isEmpty()) {
@@ -266,7 +271,8 @@ class MultiEpgGrid(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec
+            visibleEndSec = visibleEndSec,
+            padSec = 0L
         )
         if (want.toSet() == eventsByWindow.keys.toSet() && windowJob?.isActive != true) {
             return
@@ -306,21 +312,29 @@ class MultiEpgGrid(
         windowJob?.join()
     }
 
-    private fun prefetchFuture(anchor: Long) {
+    /**
+     * Fill Room with the chunk after [anchor] without painting it. The grid keeps
+     * only what it draws, so a cache miss here does not hold a day of programmes.
+     */
+    private fun warmNextChunk(anchor: Long) {
         val ref = bouquetRef.trim()
-        if (ref.isEmpty()) {
+        if (ref.isEmpty() || !persistBouquet(ref) || isSessionOffline()) {
             return
         }
         prefetchJob?.cancel()
         beginSync()
         prefetchJob = scope.launch {
             try {
-                attachWindow(anchor + MultiEpgWindows.CHUNK_SECONDS)
+                sync.warmChunk(
+                    profileId = profileId(),
+                    bouquetRef = ref,
+                    unixSec = anchor + MultiEpgWindows.CHUNK_SECONDS
+                )
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
                 }
-                surfaceError(t)
+                // Cache fill only: the visible window is unaffected and a pan retries.
             } finally {
                 endSync()
             }
@@ -374,7 +388,8 @@ class MultiEpgGrid(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec
+            visibleEndSec = visibleEndSec,
+            padSec = 0L
         )
         if (want.isEmpty()) {
             return
@@ -420,7 +435,9 @@ class MultiEpgGrid(
             minWindowStartSec = starts.first(),
             events = merged
         )
-        val nextEnd = starts.last() + MultiEpgWindows.CHUNK_SECONDS
+        // One chunk of scroll range beyond the painted window lets the viewport reach
+        // the warmed chunk; its events are attached only once they are in view.
+        val nextEnd = starts.last() + 2L * MultiEpgWindows.CHUNK_SECONDS
         val previous = _state.value.channels
         val next = withContext(Dispatchers.Default) {
             buildMultiEpgChannels(merged, previous, bouquetRoster)

@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.ui.text.UiText
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
@@ -195,9 +196,10 @@ class MultiEpgGridTest {
     }
 
     @Test
-    fun lateInUtcDayOriginIsNowAndPrefetchesTomorrow() = runBlocking {
+    fun lateInUtcDayOriginWarmsTomorrowIntoRoomWithoutPaintingIt() = runBlocking {
         val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
         val lateNow = chunk.endSec - 600L
+        val tomorrowStart = chunk.startSec + MultiEpgWindows.CHUNK_SECONDS
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, time, _ ->
@@ -215,10 +217,15 @@ class MultiEpgGridTest {
         grid.awaitIdle()
         assertEquals(lateNow, grid.state.value.timelineStartSec)
         assertEquals(lateNow, grid.state.value.originFloorSec)
+        // The scroll range reaches the warmed chunk, but the grid does not hold its events.
         assertTrue(grid.state.value.timelineEndSec > chunk.endSec)
-        assertEquals(chunk.startSec, grid.loadedWindowStarts.minOrNull())
+        assertEquals(setOf(chunk.startSec), grid.loadedWindowStarts)
         assertFalse(
             grid.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS)
+        )
+        assertNotNull(
+            db.epgDao().getChunk(1, "bouquet-a", tomorrowStart),
+            "the next chunk must be filled into Room"
         )
     }
 
@@ -250,7 +257,7 @@ class MultiEpgGridTest {
         grid.awaitIdle()
         assertTrue(
             grid.loadedWindowStarts.contains(chunk.startSec),
-            "panning inside the padded window must keep today"
+            "panning inside the visible chunk must keep today"
         )
 
         grid.onVisibleWindow(day2 + 3600L, day2 + 3600L + 7200L)
@@ -268,6 +275,78 @@ class MultiEpgGridTest {
             fetches.size,
             "restoring today should peek Room, not refetch the box"
         )
+    }
+
+    @Test
+    fun paintedWindowsShrinkToTheViewport() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertEquals(setOf(chunk.startSec), grid.loadedWindowStarts)
+
+        grid.onVisibleWindow(day3 + 3_600L, day3 + 3_600L + 7_200L)
+        grid.awaitIdle()
+
+        assertEquals(setOf(day3), grid.loadedWindowStarts)
+        val bars = grid.state.value.channels.flatMap { it.bars }
+        assertTrue(bars.isNotEmpty())
+        assertTrue(
+            bars.all { it.startSec >= day3 && it.startSec < day3 + MultiEpgWindows.CHUNK_SECONDS }
+        )
+        assertNotNull(
+            db.epgDao().getChunk(1, "bouquet-a", chunk.startSec),
+            "dropping a painted window must not delete its Room cache"
+        )
+    }
+
+    @Test
+    fun panIntoTheWarmedChunkReadsRoomWithoutFetch() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val tomorrow = chunk.startSec + MultiEpgWindows.CHUNK_SECONDS
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        val fetchesAfterLoad = fetches.size
+
+        grid.onVisibleWindow(
+            tomorrow + 3_600L,
+            tomorrow + 3_600L + 7_200L
+        )
+        grid.awaitIdle()
+
+        assertEquals(setOf(tomorrow), grid.loadedWindowStarts)
+        assertEquals(fetchesAfterLoad, fetches.size)
+        assertEquals("T", titleOnFocusedChunk(grid, tomorrow))
     }
 
     @Test
@@ -873,7 +952,7 @@ class MultiEpgGridTest {
     }
 
     @Test
-    fun prefetchFailureKeepsGridAndSurfacesError() = runBlocking {
+    fun prefetchFailureLeavesVisibleGridAndIsSilent() = runBlocking {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec
         val sync = MultiEpgSync(
@@ -896,7 +975,8 @@ class MultiEpgGridTest {
         grid.awaitIdle()
         assertEquals("T", titleOnFocusedChunk(grid, t0))
         assertTrue(grid.state.value.channels.isNotEmpty())
-        assertEquals(UiText.Raw("prefetch down"), grid.state.value.errorMessage)
+        assertNull(grid.state.value.errorMessage)
+        assertEquals(setOf(visibleStart), grid.loadedWindowStarts)
     }
 
     private fun titleOnFocusedChunk(grid: MultiEpgGrid, unixSec: Long): String =

@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * UPD: TV - profile and timer editors match the hub
+* UPD: Lower memory use in MultiEPG
 * UPD: Many UI improvements
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile

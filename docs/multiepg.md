@@ -133,7 +133,7 @@ Open MultiEPG(bouquet B)
        yes + fresh TTL → paint from cache
        no  → GET /web/epgmulti?bRef=B&time=T0&endTime=T1
             → upsert Room → paint
-  → pan the sliding window → fetch chunks that enter at the front/back (dedupe in-flight); drop painted chunks that left the padded viewport
+  → pan the sliding window → fetch chunks that enter the viewport (dedupe in-flight); only the chunks in view stay in memory, the next one is filled into Room without painting
   → pull-to-refresh → invalidate chunk + refetch
   → leave screen → cancel HTTP; keep Room until TTL expires or the 2-day retention prune
 ```
@@ -142,6 +142,7 @@ Open MultiEPG(bouquet B)
 | --- | --- |
 | Primary API | Windowed `/web/epgmulti` |
 | Chunk size | Rolling **24 h** windows (`time` unix + `endTime` minutes for that span), aligned to the viewport’s day/hour floor — not “full EPG dump” |
+| Painted windows | Only the chunks overlapping the viewport. The next chunk is warmed into Room, not held for the UI; panning into it reads Room |
 | Visible span | Default 2 h UI (data chunk still 24 h) |
 | Concurrency | **One** in-flight MultiEPG request (no parallel bouquet dumps) |
 | TTL | 25 minutes for the chunks of today and tomorrow (UTC days, like the chunks), 6 hours from the day after tomorrow on (`MultiEpgWindows.ttlMs`) |
@@ -245,7 +246,7 @@ EpgChunkMeta
 
 Nested **MultiEPG** (hub toolbar/overflow or list EPG Timeline) opens the grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
 
-**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh/prefetch in the background with a small toolbar spinner (including next-chunk prefetch); pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right appends upcoming chunks and drops chunks that have left the padded viewport at the front; panning back toward now reattaches those chunks from Room at the front and drops far-future chunks at the back. The toolbar shows the local calendar day under the viewport.
+**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh the visible chunk in the background with a small toolbar spinner; the next chunk is filled into Room only, never painted, and a failure there stays silent; pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right attaches the chunks that enter the viewport from Room (fetching only on a miss) and drops chunks that left it; panning back toward now reattaches them from Room. The timeline keeps one chunk of scroll range beyond the painted window so panning can reach the warmed chunk. The toolbar shows the local calendar day under the viewport.
 
 ### Phase exit criteria
 

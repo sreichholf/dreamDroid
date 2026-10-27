@@ -193,6 +193,24 @@ class MultiEpgSync(
         }
     }
 
+    /**
+     * Cache fill for [unixSec]'s chunk. Unlike [ensureChunk] no caller needs the events:
+     * a fresh Room chunk is left untouched, and a missing or stale one is fetched and
+     * persisted. The grid warms the next chunk this way so panning into it reads Room
+     * instead of holding a day of programmes in memory.
+     */
+    suspend fun warmChunk(profileId: Int, bouquetRef: String, unixSec: Long) {
+        val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
+        val now = clockMs()
+        val cached = withContext(Dispatchers.IO) {
+            dao.getChunk(profileId, bouquetRef, chunk.startSec)
+        }
+        if (cached != null && now - cached.fetchedAtMs <= ttlFor(chunk, now)) {
+            return
+        }
+        ensureChunk(profileId, bouquetRef, unixSec, persist = true)
+    }
+
     private fun ttlFor(chunk: MultiEpgWindows.Chunk, nowMs: Long): Long = MultiEpgWindows.ttlMs(
         chunkStartSec = chunk.startSec,
         nowSec = nowMs / 1000L,
