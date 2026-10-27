@@ -33,6 +33,7 @@ fun ProfileCheckDestination(
             // Keep the gate under Profiles so Back returns to the check.
             handle.navigateAboveProfileCheck(PhoneNavRoutes.PROFILES)
         },
+        onAddProfile = shell::requestSetup,
         modifier = modifier
     )
 }

@@ -30,6 +30,9 @@ import net.reichholf.dreamdroid.ui.text.asString
 sealed class ProfileCheckUi {
     data class Checking(val message: UiText) : ProfileCheckUi()
     data class Failed(val title: UiText, val message: UiText) : ProfileCheckUi()
+
+    /** The last profile was deleted: there is nothing to check until a new one is added. */
+    data object NoProfile : ProfileCheckUi()
 }
 
 @Composable
@@ -37,6 +40,7 @@ fun ProfileCheckScreen(
     ui: ProfileCheckUi,
     onRecheck: () -> Unit,
     onProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -96,6 +100,30 @@ fun ProfileCheckScreen(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(R.string.profiles))
+                }
+            }
+
+            is ProfileCheckUi.NoProfile -> {
+                Text(
+                    text = stringResource(R.string.no_profile_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.no_profile_body),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                Button(
+                    onClick = onAddProfile,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(R.string.profile_add))
                 }
             }
         }

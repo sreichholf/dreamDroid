@@ -18,6 +18,7 @@ import net.reichholf.dreamdroid.ui.nav.Profiles
 import net.reichholf.dreamdroid.ui.nav.navigateAboveProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateReplacingProfileCheck
 import net.reichholf.dreamdroid.ui.nav.navigateToProfileCheck
+import net.reichholf.dreamdroid.ui.nav.resetToProfileCheck
 import net.reichholf.dreamdroid.ui.nav.routeKey
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
@@ -107,6 +108,38 @@ class ProfileCheckBackStackTest {
                 PhoneNavRoutes.PROFILE_CHECK in backStackRoutes
             )
             assertEquals(PhoneNavRoutes.PROFILES, backStackRoutes.last())
+        }
+    }
+
+    /** No profile: Back must leave the app, not expose screens that cannot reach a receiver. */
+    @Test
+    fun resettingToProfileCheckLeavesNothingBehindTheGate() {
+        var backStackRoutes = emptyList<String>()
+        composeRule.setContent {
+            DreamDroidTheme {
+                val navController = rememberNavController()
+                NavHost(
+                    navController = navController,
+                    startDestination = Hub
+                ) {
+                    composable<Hub> { Text("Hub") }
+                    composable<ProfileCheck> { Text("ProfileCheck") }
+                    composable<Profiles> { Text("Profiles") }
+                }
+                LaunchedEffect(Unit) {
+                    navController.navigateToProfileCheck()
+                    navController.navigateAboveProfileCheck(Profiles)
+                    navController.resetToProfileCheck()
+                    backStackRoutes = navController.currentBackStack.value.mapNotNull {
+                        routeKey(it.destination.route)
+                    }
+                }
+            }
+        }
+        composeRule.waitForIdle()
+        composeRule.onNodeWithText("ProfileCheck").assertIsDisplayed()
+        composeRule.runOnIdle {
+            assertEquals(listOf(PhoneNavRoutes.PROFILE_CHECK), backStackRoutes)
         }
     }
 }

@@ -60,8 +60,9 @@ class TimerRepository @Inject constructor(
         sessions,
         forceRefresh,
         cached = { snapshot() },
-        fetch = {
-            val profileId = profiles.requireCurrent().id
+        fetch = checked@{
+            val profile = profiles.current.value ?: return@checked EnigmaResponse(null)
+            val profileId = profile.id
             clients.current(vpsPlugin = vpsPlugin()).timers().also { response ->
                 val live = response.value
                 if (live != null && profileId != null) {
@@ -112,10 +113,11 @@ class TimerRepository @Inject constructor(
 
     /**
      * Whether timers use the VPS plugin: the active profile has VPS on and its receiver has
-     * the plugin, asking it while unknown. With VPS off the receiver is not asked.
+     * the plugin, asking it while unknown. With VPS off, or without an active profile, the
+     * receiver is not asked.
      */
     suspend fun hasVpsPlugin(): Boolean {
-        if (!profiles.requireCurrent().vpsEnabled) {
+        if (profiles.current.value?.vpsEnabled != true) {
             return false
         }
         return (plugins.known() ?: plugins.refresh().value)?.vps == true
@@ -157,8 +159,11 @@ class TimerRepository @Inject constructor(
         )
     }
 
-    /** The last timer list the receiver sent for the active profile, or null if none. */
-    suspend fun snapshot(): List<Timer>? = snapshot(profiles.requireCurrent().id)
+    /**
+     * The last timer list the receiver sent for the active profile, or null if none or when
+     * no profile is active.
+     */
+    suspend fun snapshot(): List<Timer>? = snapshot(profiles.current.value?.id)
 
     private fun vpsForNewTimer(vpsPlugin: Boolean): TimerVps? =
         if (vpsPlugin) TimerVps(profiles.requireCurrent().vpsDefault) else null

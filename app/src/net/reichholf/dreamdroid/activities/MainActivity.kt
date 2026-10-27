@@ -153,12 +153,31 @@ class MainActivity :
 
     private fun isPaused(): Boolean = !lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)
 
+    /** The NavHost is attached again: handle the gate effects setup had nowhere to show. */
+    private fun onShellContentReady() {
+        if (phoneShellReady && !showingSetup) {
+            onProfileCheckEffects(shellActions.uiState.value)
+        }
+    }
+
     /** Navigation for the profile check that [shellActions] runs; only while resumed. */
     private fun onProfileCheckEffects(state: ShellUiState) {
+        if (state.setupRequested) {
+            shellActions.onSetupRequestedHandled()
+            showSetupAssistant()
+            // Whatever the shell still has for the gate waits until the NavHost is back.
+            return
+        }
         state.profileCheckStarted?.let { start ->
             shellActions.onProfileCheckStartHandled()
             if (start.showGate) {
-                phoneNav.navigateToProfileCheck()
+                // A failed check returns to the shell on Back; without a profile there is
+                // nothing behind the gate to return to.
+                if (profiles.hasCurrent()) {
+                    phoneNav.navigateToProfileCheck()
+                } else {
+                    phoneNav.resetToProfileCheck()
+                }
             }
             navigationHelper?.onProfileChanged()
         }
@@ -216,7 +235,7 @@ class MainActivity :
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 shellActions.uiState.collect { state ->
-                    if (phoneShellReady) {
+                    if (phoneShellReady && !showingSetup) {
                         onProfileCheckEffects(state)
                     }
                     state.lastStreamEffect?.let { start ->
@@ -253,8 +272,8 @@ class MainActivity :
         }
         lifecycleScope.launch {
             if (!profiles.ensureCurrent() && !showingSetup) {
+                // Without a profile the gate shows NoProfile; its Add Profile opens setup.
                 shellActions.cancelCheck()
-                showSetupAssistant()
             }
         }
     }
@@ -418,6 +437,9 @@ class MainActivity :
     }
 
     private fun initViews() {
+        // Setup covers the shell, so a check that finishes meanwhile has no destination to
+        // show. Replaying the state once the NavHost is back handles those effects.
+        phoneNav.onNavHostAttached = ::onShellContentReady
         setContent {
             DreamDroidTheme {
                 val status by phoneNav.connectionStatusFlow().collectAsState()

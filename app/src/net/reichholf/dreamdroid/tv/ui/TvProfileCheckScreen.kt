@@ -28,7 +28,7 @@ import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
 /**
- * TV ProfileCheck gate. Checking / Failed copy matches the phone gate; actions
+ * TV ProfileCheck gate. Checking / Failed / NoProfile copy matches the phone gate; actions
  * are focusable `androidx.tv` Surfaces (not phone [androidx.compose.material3.Button]).
  */
 @OptIn(ExperimentalTvMaterial3Api::class)
@@ -37,6 +37,7 @@ fun TvProfileCheckScreen(
     gate: TvSessionGate,
     onRecheck: () -> Unit,
     onProfiles: () -> Unit,
+    onAddProfile: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -92,6 +93,28 @@ fun TvProfileCheckScreen(
                     label = stringResource(R.string.profiles),
                     onClick = onProfiles,
                     testTag = "tv_profile_check_profiles"
+                )
+            }
+
+            TvSessionGate.NoProfile -> {
+                Text(
+                    text = stringResource(R.string.no_profile_title),
+                    style = MaterialTheme.typography.headlineSmall,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = stringResource(R.string.no_profile_body),
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(32.dp))
+                TvProfileCheckAction(
+                    label = stringResource(R.string.profile_add),
+                    onClick = onAddProfile,
+                    testTag = "tv_profile_check_add_profile"
                 )
             }
 

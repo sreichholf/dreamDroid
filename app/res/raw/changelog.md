@@ -5,6 +5,7 @@
 * UPD: Many UI improvements
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile
+* UPD: Add a profile when none is left
 
 ## 2.0.469
 * UPD: TV - rework hub, player, MultiEPG, editing

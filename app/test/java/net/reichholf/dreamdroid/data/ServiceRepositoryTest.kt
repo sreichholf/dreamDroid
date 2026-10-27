@@ -166,6 +166,22 @@ class ServiceRepositoryTest {
     }
 
     @Test
+    fun withoutAProfileTheHubAnswersNothingAndAsksNothing() = runBlocking {
+        writeStrip("TV", FAVOURITES to "Favourites")
+        receiver.profiles.repository.clearCurrent()
+
+        val cached = services.cachedBouquets()
+        val bouquets = services.bouquets().last()
+        val roster = services.services(FAVOURITES).last()
+
+        assertTrue(services.hubTabStripRefs().isEmpty())
+        assertTrue(cached.tv.isEmpty() && cached.radio.isEmpty())
+        assertEquals(BouquetListLoad.Failed(null), bouquets)
+        assertEquals(ServiceListLoad.Failed(null), roster)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
     fun offlineServicesComeFromTheRosterUntilAForcedRefresh() = runBlocking {
         writeStrip("TV", FAVOURITES to "Favourites")
         services.persistRoster(FAVOURITES, FAVOURITES, listOf(ServiceNowNext(CHANNEL, "Cached")))

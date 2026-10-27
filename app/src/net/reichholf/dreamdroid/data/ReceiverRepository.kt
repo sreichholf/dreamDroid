@@ -74,13 +74,15 @@ class ReceiverRepository @Inject constructor(
 
     /**
      * Returns once the startup profile check stored the active profile's device info, or
-     * after [timeoutMs]. A caller with nothing to paint waits here, so its first request
-     * does not race the check.
+     * after [timeoutMs], or at once when no profile is active: no check can arrive for one.
+     * A caller with nothing to paint waits here, so its first request does not race the check.
      */
     suspend fun awaitProfileCheck(timeoutMs: Long = PROFILE_CHECK_WAIT_MS) {
         withTimeoutOrNull(timeoutMs) {
-            while (profiles.deviceInfo(profiles.requireCurrent()) == null) {
+            var profile = profiles.current.value
+            while (profile != null && profiles.deviceInfo(profile) == null) {
                 delay(PROFILE_CHECK_POLL_MS)
+                profile = profiles.current.value
             }
         }
     }

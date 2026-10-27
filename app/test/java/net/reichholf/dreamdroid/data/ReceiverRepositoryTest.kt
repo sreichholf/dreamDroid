@@ -87,6 +87,15 @@ class ReceiverRepositoryTest {
     }
 
     @Test
+    fun profileCheckWaitReturnsAtOnceWithoutAProfile() = runTest {
+        profiles.clearCurrent()
+
+        repository.awaitProfileCheck(timeoutMs = 5_000L)
+
+        assertEquals(0L, currentTime)
+    }
+
+    @Test
     fun setVolumeSendsTheCommandAndParsesTheLevel() = runBlocking<Unit> {
         receiver.answer = { request ->
             if (request.volumePath()) {

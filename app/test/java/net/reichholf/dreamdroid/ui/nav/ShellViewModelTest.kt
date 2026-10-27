@@ -281,6 +281,51 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun aShellWithoutAProfileFromTheStartDoesNotOpenTheGate() = runBlocking<Unit> {
+        profiles.clearCurrent()
+        val viewModel = viewModel()
+
+        assertNull(viewModel.uiState.value.profileCheckStarted)
+        assertFalse(viewModel.uiState.value.profileCheck is ProfileCheckUi.NoProfile)
+    }
+
+    @Test
+    fun losingTheActiveProfileShowsNoProfileAndAsksForSetup() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start()
+
+        profiles.clearCurrent()
+        val state = viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
+
+        assertEquals(ProfileCheckStart(showGate = true), state.profileCheckStarted)
+        assertEquals("", state.profileName)
+        viewModel.onProfileCheckStartHandled()
+        assertNull(viewModel.uiState.value.profileCheckStarted)
+
+        viewModel.requestSetup()
+        assertTrue(viewModel.uiState.value.setupRequested)
+        assertFalse(settings.firstStart)
+        viewModel.onSetupRequestedHandled()
+        assertFalse(viewModel.uiState.value.setupRequested)
+    }
+
+    @Test
+    fun addingAProfileAgainLeavesTheNoProfileGate() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start()
+        val profile = profiles.requireCurrent()
+
+        profiles.clearCurrent()
+        viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
+
+        profiles.setCurrent(profile)
+        val state = viewModel.awaitState { it.profileCheck !is ProfileCheckUi.NoProfile }
+
+        assertInstanceOf(ProfileCheckUi.Checking::class.java, state.profileCheck)
+        assertEquals(profile.name.orEmpty(), state.profileName)
+    }
+
+    @Test
     fun theLaunchsFirstOnlineCheckStartsTheLastChannel() = runBlocking<Unit> {
         rememberLastChannel()
         val viewModel = viewModel()

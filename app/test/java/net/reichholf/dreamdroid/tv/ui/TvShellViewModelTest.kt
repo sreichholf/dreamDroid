@@ -119,6 +119,44 @@ class TvShellViewModelTest {
     }
 
     @Test
+    fun startingWithoutAnActiveProfileChecksNothingAndALaterStartDoes() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        val profile = profiles.requireCurrent()
+        profiles.clearCurrent()
+
+        viewModel.start()
+
+        assertEquals(0, deviceInfoRequests())
+
+        profiles.setCurrent(profile)
+        viewModel.start()
+
+        receiver.awaitRequestsTo("/web/deviceinfo", 1)
+        awaitStatus { it.session == ConnectionStatus.Session.Online }
+        assertEquals(1, deviceInfoRequests())
+    }
+
+    @Test
+    fun noActiveProfileShowsTheNoProfileGateAndAProfileRecoversIt() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        val profile = profiles.requireCurrent()
+        profiles.clearCurrent()
+
+        assertEquals(
+            TvSessionGate.NoProfile,
+            viewModel.awaitGate { it == TvSessionGate.NoProfile }
+        )
+        assertEquals(0, deviceInfoRequests())
+
+        profiles.setCurrent(profile)
+        viewModel.start()
+        awaitStatus { it.session == ConnectionStatus.Session.Online }
+
+        assertEquals(TvSessionGate.None, viewModel.awaitGate { it == TvSessionGate.None })
+        assertEquals(1, deviceInfoRequests())
+    }
+
+    @Test
     fun aProfileWithCachedDeviceInfoIsNotAskedAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         profiles.setDeviceInfo(

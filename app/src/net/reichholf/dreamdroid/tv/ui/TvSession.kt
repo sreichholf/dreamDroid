@@ -58,6 +58,9 @@ fun shouldShowTvBrowseError(
 sealed class TvSessionGate {
     data object None : TvSessionGate()
 
+    /** No active profile, so there is no receiver to check; the hub offers to add one. */
+    data object NoProfile : TvSessionGate()
+
     data class Checking(val message: UiText) : TvSessionGate()
 
     data class Failed(val title: UiText, val message: UiText) : TvSessionGate()

@@ -182,9 +182,9 @@ object TvComposeHubHost {
         }
     }
 
-    fun install(activity: ComponentActivity) {
+    fun install(activity: ComponentActivity, onAddProfile: () -> Unit) {
         activity.setContent {
-            TvHubNavHost(activity = activity)
+            TvHubNavHost(activity = activity, onAddProfile = onAddProfile)
         }
     }
 }
@@ -227,6 +227,7 @@ fun ComposeTvHubApp(
     activity: ComponentActivity,
     gate: TvSessionGate?,
     onRecheckProfile: () -> Unit,
+    onAddProfile: () -> Unit,
     viewModel: TvHubViewModel,
     onOpenSettings: () -> Unit = {},
     onOpenProfiles: () -> Unit = {}
@@ -257,12 +258,13 @@ fun ComposeTvHubApp(
         kind to stringResource(TvComposeHubHost.settingsTitleRes(kind))
     }
 
-    if (gate is TvSessionGate.Checking || gate is TvSessionGate.Failed) {
+    if (gate != TvSessionGate.None) {
         DreamDroidTvTheme {
             TvProfileCheckScreen(
                 gate = gate,
                 onRecheck = onRecheckProfile,
-                onProfiles = onOpenProfiles
+                onProfiles = onOpenProfiles,
+                onAddProfile = onAddProfile
             )
         }
         return

@@ -5,6 +5,7 @@
 * UPD: Viele UI-Verbesserungen
 * FIX: Absturz bei Listen mit doppelten Einträgen
 * FIX: TV - Absturz ohne aktives Profil
+* UPD: Profil hinzufügen, wenn keines vorhanden ist
 
 ## 2.0.469
 * UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet

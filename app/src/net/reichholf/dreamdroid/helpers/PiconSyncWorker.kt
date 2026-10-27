@@ -68,7 +68,8 @@ class PiconSyncWorker(appContext: Context, params: WorkerParameters) :
             .profileRepository()
         // WorkManager can start this in a fresh process, before the active profile is read.
         profiles.awaitLoaded()
-        val profile = profiles.requireCurrent()
+        // No screen is open while this runs, so nothing gates it when the last profile is gone.
+        val profile = profiles.current.value ?: return
         try {
             var tmpFile = File(localPath)
             if (!tmpFile.exists()) {

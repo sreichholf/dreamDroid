@@ -132,7 +132,8 @@ class DrawerDialogHostTest {
                         message = net.reichholf.dreamdroid.ui.text.UiText.Raw("Cannot reach box")
                     ),
                     onRecheck = {},
-                    onProfiles = {}
+                    onProfiles = {},
+                    onAddProfile = {}
                 )
             }
         }
