@@ -6,6 +6,7 @@
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile
 * UPD: Add a profile when none is left
+* FIX: Crash opening a repeating timer
 
 ## 2.0.469
 * UPD: TV - rework hub, player, MultiEPG, editing

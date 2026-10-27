@@ -374,8 +374,7 @@ class OpenWebifApiTest {
                 "/media/hdd/movie/",
                 "Krimi Serie",
                 "0",
-                "0",
-                ""
+                "0"
             ),
             with(tatort) {
                 listOf(
@@ -394,8 +393,7 @@ class OpenWebifApiTest {
                     location,
                     tags,
                     state,
-                    repeated,
-                    logEntries
+                    repeated
                 )
             }
         )

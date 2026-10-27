@@ -174,7 +174,6 @@ internal fun OwifTimers.toTimers(): List<Timer> = timers.map { dto ->
         afterEvent = dto.afterEvent.trim(),
         location = dto.dirname.trim().takeUnless { it == Python.NONE }.orEmpty(),
         tags = dto.tags.trim(),
-        logEntries = "",
         fileName = dto.filename.trim(),
         backOff = dto.backOff.trim(),
         nextActivation = dto.nextActivation.trim(),

@@ -51,7 +51,6 @@ private fun SavedStateHandle.timerEditRoute(): TimerEdit {
         afterEvent = text("afterEvent"),
         location = text("location"),
         tags = text("tags"),
-        logEntries = text("logEntries"),
         fileName = text("fileName"),
         backOff = text("backOff"),
         nextActivation = text("nextActivation"),

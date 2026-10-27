@@ -28,7 +28,6 @@ class TimerSnapshotMappingTest {
             afterEvent = "3",
             location = "HDD",
             tags = "news",
-            logEntries = "log",
             fileName = "file.ts",
             backOff = "0",
             nextActivation = "1",

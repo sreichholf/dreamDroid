@@ -41,7 +41,6 @@ class TimerParserTest {
         assertEquals("3", first.afterEvent)
         assertEquals("None", first.location)
         assertEquals("", first.tags)
-        assertTrue(first.logEntries.contains("record time changed"))
         assertEquals("0", first.state)
         assertEquals("0", first.repeated)
         assertEquals("False", first.canceled)
