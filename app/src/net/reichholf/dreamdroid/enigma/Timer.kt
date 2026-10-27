@@ -29,7 +29,6 @@ data class Timer(
     val afterEvent: String = "",
     val location: String = "",
     val tags: String = "",
-    val logEntries: String = "",
     val fileName: String = "",
     val backOff: String = "",
     val nextActivation: String = "",

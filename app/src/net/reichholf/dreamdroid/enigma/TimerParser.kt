@@ -31,7 +31,6 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
     val afterEvent = StringBuilder()
     val location = StringBuilder()
     val tags = StringBuilder()
-    val logEntries = StringBuilder()
     val fileName = StringBuilder()
     val backOff = StringBuilder()
     val nextActivation = StringBuilder()
@@ -70,7 +69,6 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                         afterEvent.setLength(0)
                         location.setLength(0)
                         tags.setLength(0)
-                        logEntries.setLength(0)
                         fileName.setLength(0)
                         backOff.setLength(0)
                         nextActivation.setLength(0)
@@ -116,8 +114,6 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                     "e2location" -> if (inTimer) current = location
 
                     "e2tags" -> if (inTimer) current = tags
-
-                    "e2logentries" -> if (inTimer) current = logEntries
 
                     "e2filename" -> if (inTimer) current = fileName
 
@@ -178,7 +174,6 @@ private fun parseTimerList(parser: XmlPullParser): List<Timer> {
                                 afterEvent = afterEvent.toString().trim(),
                                 location = location.toString().trim(),
                                 tags = tags.toString().trim(),
-                                logEntries = logEntries.toString(),
                                 fileName = fileName.toString().trim(),
                                 backOff = backOff.toString().trim(),
                                 nextActivation = nextActivation.toString().trim(),
@@ -227,7 +222,6 @@ internal fun buildTimer(
     afterEvent: String,
     location: String,
     tags: String,
-    logEntries: String,
     fileName: String,
     backOff: String,
     nextActivation: String,
@@ -274,7 +268,6 @@ internal fun buildTimer(
         afterEvent = afterEvent,
         location = location,
         tags = tags,
-        logEntries = logEntries,
         fileName = fileName,
         backOff = backOff,
         nextActivation = nextActivation,
