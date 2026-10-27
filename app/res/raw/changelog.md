@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * UPD: TV - profile and timer editors match the hub
+* FIX: Crash in picture-in-picture for streams with an extreme aspect ratio
 * UPD: Many UI improvements
 
 ## 2.0.469

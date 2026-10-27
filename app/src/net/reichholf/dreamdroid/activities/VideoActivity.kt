@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.util.Rational
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -31,6 +32,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.LastLiveStream
@@ -50,12 +52,16 @@ import net.reichholf.dreamdroid.ui.video.SleepTimerCountdown
 import net.reichholf.dreamdroid.ui.video.VideoOverlayController
 import net.reichholf.dreamdroid.ui.video.VideoPlaybackViewModel
 import net.reichholf.dreamdroid.ui.video.VideoSnackbarHost
+import net.reichholf.dreamdroid.video.PIP_ASPECT_RATIO_SCALE
 import net.reichholf.dreamdroid.video.PlayRequest
 import net.reichholf.dreamdroid.video.PlayerEvent
 import net.reichholf.dreamdroid.video.PlayerViews
 import net.reichholf.dreamdroid.video.VideoLayout
 import net.reichholf.dreamdroid.video.VideoPlayer
 import net.reichholf.dreamdroid.video.VlcEngine
+import net.reichholf.dreamdroid.video.pictureInPictureAspectRatio
+
+private const val TAG = "VideoActivity"
 
 /**
  * Created by reichi on 16/02/16.
@@ -295,19 +301,31 @@ class VideoActivity :
     }
 
     private fun onMediaPlaying() {
-        setPictureInPictureParams(getPipParams())
+        updatePipParams()
+    }
+
+    private fun updatePipParams() {
+        val params = getPipParams()
+        try {
+            setPictureInPictureParams(params)
+        } catch (e: IllegalArgumentException) {
+            Log.w(TAG, "PiP parameters rejected by the system", e)
+        }
     }
 
     private fun getPipParams(): PictureInPictureParams {
-        val sourceRectHint = Rect()
-        playerContainer?.getGlobalVisibleRect(sourceRectHint)
-        val ar = Rational(videoWidth, videoHeight)
         val builder = PictureInPictureParams.Builder()
-        if (ar.isFinite && !ar.isZero) {
-            builder.setAspectRatio(ar)
+        pictureInPictureAspectRatio(videoWidth, videoHeight)?.let { ratio ->
+            builder.setAspectRatio(
+                Rational((ratio * PIP_ASPECT_RATIO_SCALE).roundToInt(), PIP_ASPECT_RATIO_SCALE)
+            )
         }
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.S_V2) {
-            builder.setSourceRectHint(sourceRectHint)
+            val sourceRectHint = Rect()
+            // Writes the unclipped local bounds first, so only true gives a usable global rect.
+            if (playerContainer?.getGlobalVisibleRect(sourceRectHint) == true) {
+                builder.setSourceRectHint(sourceRectHint)
+            }
         }
         return builder.build()
     }
@@ -351,7 +369,7 @@ class VideoActivity :
         videoHeight = layout.visibleHeight
         if (playerAttached) {
             // The size arrives after Playing; PiP needs it for the aspect ratio.
-            setPictureInPictureParams(getPipParams())
+            updatePipParams()
         }
     }
 

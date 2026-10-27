@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * UPD: TV - Profil- und Timer-Editor passen zum Hub
+* FIX: Absturz im Bild-in-Bild bei Streams mit extremem Seitenverhältnis
 * UPD: Viele UI-Verbesserungen
 
 ## 2.0.469
