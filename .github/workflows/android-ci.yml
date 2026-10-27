@@ -32,6 +32,10 @@ concurrency:
 # cached, booted AVD per vendor.
 # aosp_atd: Automated Test Device image (no Play/Google APIs, fewer system
 # apps, headless). No test needs Google APIs.
+# swangle_indirect: the host renders GLES through ANGLE on SwiftShader Vulkan. Under
+# swiftshader_indirect, surfaceflinger crashed in libEGL_emulation's eglCreateImageKHR
+# mid-run (emulator 37.2.12), taking the system server and the rest of the shard with
+# it. This image has no in-guest renderer (-gpu guest falls back to swangle).
 env:
   AVD_API_LEVEL: 30
   AVD_TARGET: aosp_atd
@@ -40,7 +44,7 @@ env:
   AVD_PROFILE: pixel_7
   # Part of the AVD cache key. Bump it whenever the snapshot step or
   # .github/emulator/settle-snapshot.sh changes, so the old snapshot is not reused.
-  AVD_SNAPSHOT_VERSION: v2
+  AVD_SNAPSHOT_VERSION: v4
 
 jobs:
   unit:
@@ -196,7 +200,7 @@ jobs:
           target: ${{ env.AVD_TARGET }}
           profile: ${{ env.AVD_PROFILE }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: bash .github/emulator/settle-snapshot.sh
 
@@ -209,7 +213,7 @@ jobs:
           profile: ${{ env.AVD_PROFILE }}
           force-avd-creation: false
           # Boot from the cached snapshot; do not write it back.
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           # Cloud `connected-test.sh` instead streams the ABI-split x86_64 APK
           # (UTP's fat-APK push times out under TCG). Do not unify those paths.
@@ -366,7 +370,7 @@ jobs:
           target: ${{ env.AVD_TARGET }}
           profile: ${{ env.AVD_PROFILE }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: bash .github/emulator/settle-snapshot.sh
 
@@ -378,7 +382,7 @@ jobs:
           target: ${{ env.AVD_TARGET }}
           profile: ${{ env.AVD_PROFILE }}
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash .github/upgrade-from-115/run.sh old/app-google-x86_64-debug.apk app/build/outputs/apk/google/debug/app-google-x86_64-debug.apk app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk upgrade-logs
 
@@ -457,7 +461,7 @@ jobs:
           target: ${{ matrix.target }}
           profile: ${{ matrix.profile }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
           script: bash .github/emulator/settle-snapshot.sh
 
@@ -469,7 +473,7 @@ jobs:
           target: ${{ matrix.target }}
           profile: ${{ matrix.profile }}
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          emulator-options: -no-snapshot-save -no-window -gpu swangle_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: bash .github/store-screenshots/run.sh ${{ matrix.device }} app/build/outputs/apk/google/debug app/build/outputs/apk/androidTest/google/debug/app-google-debug-androidTest.apk store-screenshots
 
