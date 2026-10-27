@@ -209,7 +209,7 @@ class SetupAssistantScreenTest {
         composeRule.onNodeWithText("Save").performClick()
         composeRule.waitUntil(timeoutMillis = 5_000) { finished }
         val profile = profiles.profiles().singleOrNull()
-        assertEquals(profile?.id, profiles.requireCurrent().id)
+        assertEquals(profile?.id, profiles.current.value!!.id)
         assertEquals("192.168.1.2", profile?.host)
         assertEquals("192.168.1.2", profile?.name)
         assertEquals("root", profile?.user)

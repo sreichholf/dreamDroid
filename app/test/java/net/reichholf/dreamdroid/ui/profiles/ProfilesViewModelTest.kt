@@ -72,7 +72,7 @@ class ProfilesViewModelTest {
         viewModel.activate(row)
         val state = viewModel.uiState.first { it.profiles.getOrNull(1)?.active == true }
 
-        assertEquals(bedroom.id, profiles.requireCurrent().id)
+        assertEquals(bedroom.id, profiles.current.value!!.id)
         assertEquals(namedMessage(R.string.profile_activated, "Bedroom"), state.userMessage)
         viewModel.onMessageShown()
         assertNull(viewModel.uiState.value.userMessage)

@@ -87,7 +87,7 @@ class TvShellViewModelTest {
         assertEquals(TvSessionGate.None, viewModel.awaitGate { it == TvSessionGate.None })
         assertFalse(status.checking)
         assertEquals(1, deviceInfoRequests())
-        assertNotNull(profiles.deviceInfo(profiles.requireCurrent()))
+        assertNotNull(profiles.deviceInfo(profiles.current.value!!))
     }
 
     @Test
@@ -101,7 +101,7 @@ class TvShellViewModelTest {
         assertNull(status.session)
         assertNotNull(status.lastFailure)
         val gate = viewModel.awaitGate { it is TvSessionGate.Failed } as TvSessionGate.Failed
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         assertEquals(UiText.Raw("${profile.user}@${profile.host}:${profile.port}"), gate.title)
         assertEquals(UiText.Resource(R.string.error_parsing), gate.message)
     }
@@ -121,7 +121,7 @@ class TvShellViewModelTest {
     @Test
     fun startingWithoutAnActiveProfileChecksNothingAndALaterStartDoes() = runBlocking<Unit> {
         val viewModel = viewModel()
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         profiles.clearCurrent()
 
         viewModel.start()
@@ -139,7 +139,7 @@ class TvShellViewModelTest {
     @Test
     fun noActiveProfileShowsTheNoProfileGateAndAProfileRecoversIt() = runBlocking<Unit> {
         val viewModel = viewModel()
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         profiles.clearCurrent()
 
         assertEquals(
@@ -160,7 +160,7 @@ class TvShellViewModelTest {
     fun aProfileWithCachedDeviceInfoIsNotAskedAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         profiles.setDeviceInfo(
-            profiles.requireCurrent(),
+            profiles.current.value!!,
             DeviceInfoParser.parse(loadWebFixture("deviceinfo.xml"))
         )
 
@@ -175,7 +175,7 @@ class TvShellViewModelTest {
         val viewModel = viewModel()
         viewModel.start()
         awaitStatus { it.session == ConnectionStatus.Session.Online }
-        val checked = profiles.requireCurrent()
+        val checked = profiles.current.value!!
         // An edit that keeps the connection settings replaces the instance, not the id.
         profiles.setCurrent(
             Profile().apply {
@@ -208,11 +208,23 @@ class TvShellViewModelTest {
     }
 
     @Test
+    fun recheckWithoutAnActiveProfileDoesNotAskTheReceiver() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        profiles.clearCurrent()
+        val before = viewModel.jobs()
+
+        viewModel.recheck()
+        viewModel.joinJobsSince(before)
+
+        assertEquals(0, deviceInfoRequests())
+    }
+
+    @Test
     fun aProfileSwitchResetsTheSessionAndChecksTheNewProfile() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.start()
         awaitStatus { it.session == ConnectionStatus.Session.Online }
-        val first = profiles.requireCurrent()
+        val first = profiles.current.value!!
         val other = Profile().apply {
             name = "other"
             host = first.host

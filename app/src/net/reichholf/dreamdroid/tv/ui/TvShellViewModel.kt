@@ -135,7 +135,8 @@ class TvShellViewModel @Inject constructor(
 
     /** Asks the receiver again, dropping its cached device info. */
     fun recheck() {
-        startCheck(profiles.requireCurrent(), reuseDeviceInfo = false)
+        val profile = profiles.current.value ?: return
+        startCheck(profile, reuseDeviceInfo = false)
     }
 
     /** Drops a running check, for example when the active profile is gone. */

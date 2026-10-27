@@ -113,7 +113,7 @@ class TvTimerEditViewModelTest {
 
     @Test
     fun servicePickKeyFollowsTheActiveProfile() {
-        val id = receiver.repository.requireCurrent().id
+        val id = receiver.repository.current.value!!.id
 
         assertEquals("tv-timer-service-pick:$id", viewModel.servicePickKey())
     }

@@ -94,7 +94,7 @@ class ReceiverPluginsRepositoryTest {
     fun aReinstalledPluginIsPresentAgainAfterTheNextRefresh() = runBlocking<Unit> {
         receiver.respond(EXTERNALS, externals("vpsplugin"))
         repository.refresh()
-        repository.markVpsAbsent(receiver.repository.requireCurrent())
+        repository.markVpsAbsent(receiver.repository.current.value!!)
 
         repository.refresh()
 
@@ -106,7 +106,7 @@ class ReceiverPluginsRepositoryTest {
         receiver.respond(EXTERNALS, externals("autotimer", "vpsplugin"))
         repository.refresh()
 
-        repository.markVpsAbsent(receiver.repository.requireCurrent())
+        repository.markVpsAbsent(receiver.repository.current.value!!)
 
         assertEquals(
             ReceiverPlugins(AutoTimerPlugin.Installed(AutoTimerApi.V1_6), vps = false),
@@ -117,7 +117,7 @@ class ReceiverPluginsRepositoryTest {
     @Test
     fun presenceBelongsToTheProfile() = runBlocking<Unit> {
         repository.refresh()
-        val other = receiver.repository.requireCurrent()
+        val other = receiver.repository.current.value!!
         receiver.repository.setCurrent(
             Profile().apply {
                 id = OTHER_PROFILE_ID

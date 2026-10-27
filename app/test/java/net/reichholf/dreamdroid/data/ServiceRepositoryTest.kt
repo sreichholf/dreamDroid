@@ -173,11 +173,15 @@ class ServiceRepositoryTest {
         val cached = services.cachedBouquets()
         val bouquets = services.bouquets().last()
         val roster = services.services(FAVOURITES).last()
+        val epg = services.bouquetNowNext(FAVOURITES)
+        val members = services.bouquetServices(FAVOURITES)
 
         assertTrue(services.hubTabStripRefs().isEmpty())
         assertTrue(cached.tv.isEmpty() && cached.radio.isEmpty())
         assertEquals(BouquetListLoad.Failed(null), bouquets)
         assertEquals(ServiceListLoad.Failed(null), roster)
+        assertNull(epg.value)
+        assertTrue(members.isEmpty())
         assertEquals(0, receiver.server.requestCount)
     }
 

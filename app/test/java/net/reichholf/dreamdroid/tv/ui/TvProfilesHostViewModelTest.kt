@@ -111,7 +111,7 @@ class TvProfilesHostViewModelTest {
         val state = viewModel.uiState.first { it.event != null }
 
         assertEquals(TvProfilesEvent.Save(saved = true, currentProfile = true), state.event)
-        assertEquals("10.0.0.99", profiles.requireCurrent().host)
+        assertEquals("10.0.0.99", profiles.current.value!!.host)
         assertEquals(listOf<String?>("10.0.0.99"), switched)
         scope.cancel()
     }
@@ -125,7 +125,7 @@ class TvProfilesHostViewModelTest {
         val state = viewModel.uiState.first { it.event != null }
 
         assertEquals(TvProfilesEvent.Activate(success = true), state.event)
-        assertEquals(bedroom.id, profiles.requireCurrent().id)
+        assertEquals(bedroom.id, profiles.current.value!!.id)
     }
 
     @Test
@@ -141,7 +141,7 @@ class TvProfilesHostViewModelTest {
 
         assertEquals(TvProfilesEvent.Delete(currentProfile = true), state.event)
         assertEquals(listOf("Living Room"), profiles.profiles().map { it.name })
-        assertEquals("Living Room", profiles.requireCurrent().name)
+        assertEquals("Living Room", profiles.current.value!!.name)
     }
 
     private fun viewModel() = TvProfilesHostViewModel(profiles).also { viewModels += it }

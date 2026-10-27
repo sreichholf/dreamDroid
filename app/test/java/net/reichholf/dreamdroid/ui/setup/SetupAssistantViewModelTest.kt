@@ -95,7 +95,7 @@ class SetupAssistantViewModelTest {
         val saved = profiles.profiles().single()
         assertEquals(server.hostName, saved.host)
         assertEquals(server.port, saved.port)
-        assertEquals(saved.id, profiles.requireCurrent().id)
+        assertEquals(saved.id, profiles.current.value!!.id)
         assertEquals(SetupDraft(), finished.draft)
         assertEquals("", viewModel.host.text)
         assertEquals("80", viewModel.port.text)

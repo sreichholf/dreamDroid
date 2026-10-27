@@ -108,7 +108,7 @@ Only for a profile with `vpsEnabled`: `TimerRepository.hasVpsPlugin()` answers f
 
 ## 4. Requests
 
-`TimerRepository` builds each request's client with what it knows of the plugin (`ReceiverApiFactory.current(vpsPlugin = …)`). How VPS goes out is up to the client:
+`TimerRepository` builds each request's client with what it knows of the plugin (`ReceiverApiFactory.forProfile(profile, vpsPlugin = …)`). How VPS goes out is up to the client:
 
 | | Dreambox, plugin there | Dreambox, no plugin | OpenWebif |
 | --- | --- | --- | --- |

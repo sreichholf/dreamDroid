@@ -133,7 +133,7 @@ class VideoPlaybackViewModelTest {
 
     @Test
     fun zapAndStreamZapsBeforeStreaming() = runTest {
-        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.profiles.repository.current.value!!.zapAndStream = true
         val viewModel = viewModel()
         viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
 
@@ -146,7 +146,7 @@ class VideoPlaybackViewModelTest {
 
     @Test
     fun rejectedZapShowsTheReceiverTextAndStreamsNothing() = runTest {
-        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.profiles.repository.current.value!!.zapAndStream = true
         zapReply = MockResponse().setBody(simpleResult(false, "No free tuner"))
         val viewModel = viewModel()
         viewModel.applyExtras("ZDF HD", ZDF, BOUQUET, null)
@@ -252,7 +252,7 @@ class VideoPlaybackViewModelTest {
     }
 
     private fun zdfStream(): LiveStream.Ready =
-        LiveStream.Ready(ZDF, EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), ZDF))
+        LiveStream.Ready(ZDF, EnigmaUrls.stream(receiver.profiles.repository.current.value!!, ZDF))
 
     private fun viewModel(on: EpgTestReceiver = receiver): VideoPlaybackViewModel =
         VideoPlaybackViewModel(

@@ -264,7 +264,7 @@ class PhoneNavigator(
     }
 
     override fun navigateToDrawerEpg(): Boolean {
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value ?: return false
         val ref = profile.defaultBouquetTv
         val name = profile.defaultBouquetTvName
         if (!settings.drawerEpgMulti) {

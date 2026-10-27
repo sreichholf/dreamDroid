@@ -169,7 +169,7 @@ internal fun newMultiEpgGrid(
 ): MultiEpgGrid = MultiEpgGrid(
     sync = epg.multiEpgSync,
     scope = scope,
-    profileId = { profiles.requireCurrent().id ?: -1 },
+    profileId = { profiles.current.value?.id ?: -1 },
     // The grid only asks for the timers once it decided to ask the receiver.
     fetchTimers = {
         when (val result = timers.timers(forceRefresh = true).last()) {
@@ -178,7 +178,8 @@ internal fun newMultiEpgGrid(
         }
     },
     loadBouquetServices = services::bouquetServices,
-    persistBouquet = persistGate::persist,
+    // Writes need the profile that asked for the rows; without one there is no id to key them by.
+    persistBouquet = { ref -> profiles.current.value != null && persistGate.persist(ref) },
     shouldSkipReceiverHttp = { hasCache ->
         sessions.status.value.shouldSkipReceiverHttp(hasCache)
     },

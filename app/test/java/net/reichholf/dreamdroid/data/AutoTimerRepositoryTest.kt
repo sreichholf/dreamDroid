@@ -16,6 +16,7 @@ import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerEntry
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerId
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerSettings
 import net.reichholf.dreamdroid.enigma.autotimer.AutoTimerWrite
+import net.reichholf.dreamdroid.enigma.autotimer.Extras
 import net.reichholf.dreamdroid.testutil.TestReceiver
 import net.reichholf.dreamdroid.testutil.loadOwifFixture
 import net.reichholf.dreamdroid.testutil.loadWebFixture
@@ -384,6 +385,31 @@ class AutoTimerRepositoryTest {
             ),
             result
         )
+    }
+
+    @Test
+    fun withoutAProfileNothingIsSent() = runBlocking<Unit> {
+        receiver.repository.clearCurrent()
+        val nothing = AutoTimerWriteResult.Failed(UiText.Resource(R.string.no_profile_body))
+        val autoTimer = AutoTimer(AutoTimerId(2), AutoTimerSettings.NEW, Extras())
+
+        assertEquals(
+            AutoTimerLoad.Failed(UiText.Resource(R.string.no_profile_body)),
+            repository.list()
+        )
+        assertEquals(
+            AutoTimerPreviewLoad.Failed(UiText.Resource(R.string.no_profile_body)),
+            repository.preview(AutoTimerId(2), "Wilsberg")
+        )
+        assertEquals(
+            nothing,
+            repository.save(AutoTimerWrite.Create(AutoTimerSettings.NEW, AutoTimerSettings.NEW))
+        )
+        assertEquals(nothing, repository.remove(AutoTimerEntry.Readable(autoTimer)))
+        assertEquals(nothing, repository.runNow())
+        assertEquals(null, repository.locate(AutoTimerSettings.NEW, null))
+        assertEquals(0, repository.revision.value)
+        assertEquals(emptyList<Any>(), receiver.requests)
     }
 
     private suspend fun loaded(): AutoTimer {

@@ -161,6 +161,24 @@ class MovieRepositoryTest {
     }
 
     @Test
+    fun withoutAProfileMoviesAnswerNothingAndAskNothing() = runTest {
+        receiver.profiles.repository.clearCurrent()
+
+        val load = repository.movies(HDD, emptyList()).last()
+        val deleted = repository.delete(Movie(reference = "1:0:0:0:0:0:0:0:0:0:$HDD/news.ts"))
+        val download = repository.downloadToCache("/media/hdd/movie/news.ts")
+
+        assertEquals(MovieListLoad.Failed(null), load)
+        assertNull(deleted.value)
+        assertNull(deleted.error)
+        assertNull(repository.streamUrl(Movie(title = "News")))
+        assertNull(repository.directLink("/media/hdd/movie/news.ts"))
+        // The caller says "add a profile" instead of starting a player with an empty URL.
+        assertEquals(MovieDownload.NoProfile, download)
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    @Test
     fun loadReplacesOnlyItsLocation() = runTest {
         repository.saveMovies(HDD, listOf(Movie(title = "Old"), Movie(title = "Drop")))
         repository.saveMovies(USB, listOf(Movie(title = "Keep")))

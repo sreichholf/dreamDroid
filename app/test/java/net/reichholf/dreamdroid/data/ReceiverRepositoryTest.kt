@@ -27,8 +27,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * [ReceiverRepository]'s current service, live streams, and profile-check wait against a
- * MockWebServer.
+ * [ReceiverRepository]'s current service, live streams, profile-check wait, and answers
+ * without an active profile, against a MockWebServer.
  */
 class ReceiverRepositoryTest {
     private val receiver = EpgTestReceiver()
@@ -73,7 +73,7 @@ class ReceiverRepositoryTest {
         advanceTimeBy(1_000L)
         assertFalse(waiting.isCompleted)
 
-        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
+        profiles.setDeviceInfo(profiles.current.value!!, DeviceInfo())
         waiting.await()
 
         assertTrue(currentTime < 1_200L, "waited $currentTime ms")
@@ -198,7 +198,7 @@ class ReceiverRepositoryTest {
         val stream = repository.liveStream(SERVICE)
 
         assertEquals(
-            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.requireCurrent(), SERVICE)),
+            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.current.value!!, SERVICE)),
             stream
         )
         assertTrue(receiver.requests.isEmpty())
@@ -206,13 +206,13 @@ class ReceiverRepositoryTest {
 
     @Test
     fun zapAndStreamZapsBeforeTheStream() = runBlocking<Unit> {
-        profiles.requireCurrent().zapAndStream = true
+        profiles.current.value!!.zapAndStream = true
         receiver.answer = { MockResponse().setBody(simpleResult(true, "Active service changed")) }
 
         val stream = repository.liveStream(SERVICE)
 
         assertEquals(
-            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.requireCurrent(), SERVICE)),
+            LiveStream.Ready(SERVICE, EnigmaUrls.stream(profiles.current.value!!, SERVICE)),
             stream
         )
         val zap = receiver.requestsTo("/web/zap").single()
@@ -221,7 +221,7 @@ class ReceiverRepositoryTest {
 
     @Test
     fun rejectedZapStreamsNothingAndSaysWhy() = runBlocking<Unit> {
-        profiles.requireCurrent().zapAndStream = true
+        profiles.current.value!!.zapAndStream = true
         receiver.answer = { MockResponse().setBody(simpleResult(false, "No free tuner")) }
 
         assertEquals(LiveStream.Failed(UiText.Raw("No free tuner")), repository.liveStream(SERVICE))
@@ -229,11 +229,47 @@ class ReceiverRepositoryTest {
 
     @Test
     fun zapAndStreamWithoutAServiceIsAContentError() = runBlocking<Unit> {
-        profiles.requireCurrent().zapAndStream = true
+        profiles.current.value!!.zapAndStream = true
 
         assertEquals(
             LiveStream.Failed(UiText.Resource(R.string.get_content_error)),
             repository.liveStream("")
+        )
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
+    fun withoutAProfileCommandsAnswerNothingAndAskNothing() = runBlocking<Unit> {
+        profiles.clearCurrent()
+
+        assertNull(repository.zap(SERVICE).value)
+        assertNull(repository.setVolume(VolumeCommand.Up).value)
+        assertNull(repository.setPowerState(PowerCommand.ToggleStandby).value)
+        assertNull(repository.remoteCommand(412, simpleRemote = false, longClick = true).value)
+        assertNull(repository.setSleepTimer("30", "standby", true).value)
+        assertNull(repository.sendMessage("Hello", "2", "10").value)
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
+    fun withoutAProfileReadsAnswerNothingAndAskNothing() = runBlocking<Unit> {
+        profiles.clearCurrent()
+
+        assertNull(repository.currentService().value)
+        assertNull(repository.deviceInfo().value)
+        assertNull(repository.signal().value)
+        assertNull(repository.screenshot().value)
+        assertNull(repository.sleepTimer().value)
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
+    fun liveStreamWithoutAProfileFailsAndAsksNothing() = runBlocking<Unit> {
+        profiles.clearCurrent()
+
+        assertEquals(
+            LiveStream.Failed(UiText.Resource(R.string.no_profile_body)),
+            repository.liveStream(SERVICE)
         )
         assertTrue(receiver.requests.isEmpty())
     }

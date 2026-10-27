@@ -115,10 +115,13 @@ class EpgRepository @Inject constructor(
     /**
      * Receiver-side EPG search by title. Searches run one at a time for the whole app: the
      * box scans its whole EPG per search, and a cancelled caller's HTTP call still finishes,
-     * so the next search waits for it.
+     * so the next search waits for it. Nothing without an active profile.
      */
     suspend fun receiverSearch(query: String): EnigmaResponse<List<Event>> =
-        epgSearchRequest.withLock { clients.current().epgSearch(query) }
+        epgSearchRequest.withLock {
+            val profile = profiles.current.value ?: return@withLock EnigmaResponse(null)
+            clients.forProfile(profile).epgSearch(query)
+        }
 
     /**
      * The programme a timer on [serviceRef] from [beginSec] to [endSec] records. That window
@@ -235,14 +238,15 @@ class EpgRepository @Inject constructor(
 
     /**
      * One MultiEPG window of [bouquetRef]. Requests run one at a time, so the box never serves
-     * two bouquet dumps at once.
+     * two bouquet dumps at once. Empty without an active profile, which sends no request.
      */
     private suspend fun fetchEpgMulti(
         bouquetRef: String,
         timeSec: Long,
         endTimeSec: Long
     ): List<Event> = epgMultiRequest.withLock {
-        clients.current().epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
+        val profile = profiles.current.value ?: return@withLock emptyList()
+        clients.forProfile(profile).epgMulti(bouquetRef, timeSec, endTimeSec).valueOrThrow()
     }
 
     /** [cacheFirstLoad] of one event list; nothing when no profile is active. */

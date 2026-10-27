@@ -36,6 +36,9 @@ data class MovieLocations(val names: List<String>, val fromReceiver: Boolean)
 sealed interface MovieDownload {
     data class Ready(val file: File) : MovieDownload
 
+    /** No active profile: nothing was copied and no connection was opened. */
+    data object NoProfile : MovieDownload
+
     data class Failed(val error: EnigmaHttpError) : MovieDownload
 }
 
@@ -83,33 +86,47 @@ class MovieRepository @Inject constructor(
         val profile = profiles.current.value ?: return EnigmaResponse(null)
         return clients.forProfile(profile).movies(location, tags).also { response ->
             val live = response.value
-            if (live != null && tags.isEmpty()) {
-                saveMovies(location, live)
+            val profileId = profile.id
+            if (live != null && tags.isEmpty() && profileId != null) {
+                saveMovies(profileId, location, live)
             }
         }
     }
 
-    suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
-        clients.current().deleteMovie(movie)
+    suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).deleteMovie(movie)
+    }
 
-    /** The stream of [movie] from the active profile, for the video player. */
-    fun streamUrl(movie: Movie): String = clients.current().recordingStreamUrl(movie)
+    /**
+     * The stream of [movie] from the active profile, for the video player; null without one,
+     * so the caller can say why instead of handing a player an empty URL.
+     */
+    fun streamUrl(movie: Movie): String? {
+        val profile = profiles.current.value ?: return null
+        return clients.forProfile(profile).recordingStreamUrl(movie)
+    }
 
     /**
      * A URL any viewer can open for the recording at [remotePath], or null when the profile
-     * needs a login and the file has to go through [downloadToCache].
+     * needs a login and the file has to go through [downloadToCache], or when no profile is
+     * active.
      */
     fun directLink(remotePath: String): String? {
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value ?: return null
         if (profile.login) {
             return null
         }
         return clients.forProfile(profile).recordingFileUrl(remotePath)
     }
 
-    /** Copies the recording at [remotePath] into the app cache, with the profile's login. */
+    /**
+     * Copies the recording at [remotePath] into the app cache, with the profile's login.
+     * Without an active profile it fails before any request.
+     */
     suspend fun downloadToCache(remotePath: String): MovieDownload {
-        val api = clients.current()
+        val profile = profiles.current.value ?: return MovieDownload.NoProfile
+        val api = clients.forProfile(profile)
         return withContext(Dispatchers.IO) {
             val out = File(context.cacheDir, movieCacheFileName(remotePath))
             val error = api.downloadRecording(remotePath, out)
@@ -178,8 +195,14 @@ class MovieRepository @Inject constructor(
         return dao.getMovieList(profileId, location).map { it.toMovie() }
     }
 
+    /** Writes [movies] under the active profile, or nothing when there is none. */
     suspend fun saveMovies(location: String, movies: List<Movie>) {
         val profileId = profiles.current.value?.id ?: return
+        saveMovies(profileId, location, movies)
+    }
+
+    /** Writes the list the receiver answered for [profileId], the profile it was asked for. */
+    private suspend fun saveMovies(profileId: Int, location: String, movies: List<Movie>) {
         database.movieDao().replaceMovies(
             profileId,
             location,

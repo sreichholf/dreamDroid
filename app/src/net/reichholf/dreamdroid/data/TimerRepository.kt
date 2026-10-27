@@ -3,6 +3,9 @@ package net.reichholf.dreamdroid.data
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.flow
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
 import net.reichholf.dreamdroid.enigma.Event
@@ -54,62 +57,82 @@ class TimerRepository @Inject constructor(
 ) {
     /**
      * The timers of the active profile, read [cacheFirstLoad] from the Room snapshot, which a
-     * live `/web/timerlist` replaces.
+     * live `/web/timerlist` replaces. Without an active profile there is no snapshot to read
+     * and nothing to ask, so the list says so instead of failing to parse.
      */
-    fun timers(forceRefresh: Boolean = false): Flow<TimerListResult> = cacheFirstLoad(
-        sessions,
-        forceRefresh,
-        cached = { snapshot() },
-        fetch = checked@{
-            val profile = profiles.current.value ?: return@checked EnigmaResponse(null)
-            val profileId = profile.id
-            clients.current(vpsPlugin = vpsPlugin()).timers().also { response ->
-                val live = response.value
-                if (live != null && profileId != null) {
-                    database.timerDao().replaceSnapshot(
-                        profileId,
-                        live.mapIndexed { index, timer -> timer.toListEntity(profileId, index) }
+    fun timers(forceRefresh: Boolean = false): Flow<TimerListResult> = flow {
+        if (profiles.current.value == null) {
+            emit(TimerListResult.Failed(UiText.Resource(R.string.no_profile_body)))
+            return@flow
+        }
+        emitAll(
+            cacheFirstLoad(
+                sessions,
+                forceRefresh,
+                cached = { snapshot() },
+                fetch = checked@{
+                    val profile = profiles.current.value
+                        ?: return@checked EnigmaResponse(null)
+                    val profileId = profile.id
+                    clients.forProfile(profile, vpsPlugin = vpsPlugin(profile)).timers()
+                        .also { response ->
+                            val live = response.value
+                            if (live != null && profileId != null) {
+                                database.timerDao().replaceSnapshot(
+                                    profileId,
+                                    live.mapIndexed { index, timer ->
+                                        timer.toListEntity(profileId, index)
+                                    }
+                                )
+                            }
+                        }
+                },
+                loaded = { timers, _ -> TimerListResult.Loaded(timers) },
+                failed = { error ->
+                    TimerListResult.Failed(
+                        error?.contentErrorText() ?: UiText.Resource(R.string.error_parsing)
                     )
                 }
-            }
-        },
-        loaded = { timers, _ -> TimerListResult.Loaded(timers) },
-        failed = { error ->
-            TimerListResult.Failed(
-                error?.contentErrorText() ?: UiText.Resource(R.string.error_parsing)
             )
-        }
-    )
+        )
+    }
 
     /**
      * Saves [timer]. With [original], the receiver replaces that timer instead of adding one.
      * Its [Timer.vps] goes along when known.
      */
     suspend fun save(timer: Timer, original: Timer?): EnigmaResponse<SimpleResult> {
-        val api = clients.current(vpsPlugin = vpsPlugin())
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val api = clients.forProfile(profile, vpsPlugin = vpsPlugin(profile))
         return if (original == null) api.addTimer(timer) else api.editTimer(original, timer)
     }
 
     /** Enables a disabled [timer] and disables an enabled one; its VPS stays. */
-    suspend fun toggleEnabled(timer: Timer): EnigmaResponse<SimpleResult> =
-        clients.current(vpsPlugin = vpsPlugin())
+    suspend fun toggleEnabled(timer: Timer): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile, vpsPlugin = vpsPlugin(profile))
             .setTimerDisabled(timer, disabled = timer.disabled != "1")
+    }
 
     /**
      * Adds a timer for [event] by its event id; the receiver fills in the rest. With the VPS
      * plugin, the timer gets the profile's VPS default.
      */
     suspend fun addByEvent(event: Event): EnigmaResponse<SimpleResult> {
-        val vpsPlugin = vpsPlugin()
-        val vps = vpsForNewTimer(vpsPlugin.present)
-        return clients.current(vpsPlugin = vpsPlugin).addTimerForEvent(event, vps)
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val vpsPlugin = vpsPlugin(profile)
+        val vps = vpsForNewTimer(profile, vpsPlugin.present)
+        return clients.forProfile(profile, vpsPlugin = vpsPlugin).addTimerForEvent(event, vps)
     }
 
     /**
      * VPS for a timer the user creates: the profile's default when the receiver has the VPS
-     * plugin, null when it has not.
+     * plugin, null when it has not or when no profile is active.
      */
-    suspend fun vpsForNewTimer(): TimerVps? = vpsForNewTimer(hasVpsPlugin())
+    suspend fun vpsForNewTimer(): TimerVps? {
+        val profile = profiles.current.value ?: return null
+        return vpsForNewTimer(profile, hasVpsPlugin(profile))
+    }
 
     /**
      * Whether timers use the VPS plugin: the active profile has VPS on and its receiver has
@@ -117,17 +140,20 @@ class TimerRepository @Inject constructor(
      * receiver is not asked.
      */
     suspend fun hasVpsPlugin(): Boolean {
-        if (profiles.current.value?.vpsEnabled != true) {
-            return false
-        }
-        return (plugins.known() ?: plugins.refresh().value)?.vps == true
+        val profile = profiles.current.value ?: return false
+        return hasVpsPlugin(profile)
     }
 
-    suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> =
-        clients.current().deleteTimer(timer)
+    suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).deleteTimer(timer)
+    }
 
     /** Removes finished timers on the receiver. */
-    suspend fun cleanup(): EnigmaResponse<SimpleResult> = clients.current().cleanupTimers()
+    suspend fun cleanup(): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).cleanupTimers()
+    }
 
     /**
      * Locations and tags, fetched from the receiver until it answered. Failed locations
@@ -165,14 +191,19 @@ class TimerRepository @Inject constructor(
      */
     suspend fun snapshot(): List<Timer>? = snapshot(profiles.current.value?.id)
 
-    private fun vpsForNewTimer(vpsPlugin: Boolean): TimerVps? =
-        if (vpsPlugin) TimerVps(profiles.requireCurrent().vpsDefault) else null
+    private suspend fun hasVpsPlugin(profile: Profile): Boolean {
+        if (!profile.vpsEnabled) {
+            return false
+        }
+        return (plugins.known() ?: plugins.refresh().value)?.vps == true
+    }
+
+    private fun vpsForNewTimer(profile: Profile, vpsPlugin: Boolean): TimerVps? =
+        if (vpsPlugin) TimerVps(profile.vpsDefault) else null
 
     /** The VPS plugin for one request's client; a request that finds it gone marks it absent. */
-    private suspend fun vpsPlugin(): VpsPlugin {
-        val profile = profiles.requireCurrent()
-        return VpsPlugin(hasVpsPlugin()) { plugins.markVpsAbsent(profile) }
-    }
+    private suspend fun vpsPlugin(profile: Profile): VpsPlugin =
+        VpsPlugin(hasVpsPlugin(profile)) { plugins.markVpsAbsent(profile) }
 
     private suspend fun snapshot(profileId: Int?): List<Timer>? = profileId?.let { id ->
         database.timerDao().snapshot(id)?.map { it.toTimer() }

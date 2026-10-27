@@ -154,11 +154,13 @@ class TvMultiEpgViewModel @Inject constructor(
 
     /** Loads the bouquet list and the launch bouquet. */
     private fun start(extraRef: String?, extraName: String?) {
+        // No profile: start nothing. startJob stays null, so an open() that comes later can
+        // load; the host does not re-open on its own when a profile appears.
+        val profile = profiles.current.value ?: return
         startJob = viewModelScope.launch {
             val tvBouquets = services.tvBouquets()
             persistGate.knownTabRefs = services.userBouquetTabs(tvBouquets).map { it.reference }
             val bouquets = tvBouquets.filter { it.reference.isNotBlank() }
-            val profile = profiles.requireCurrent()
             val launch = resolveTvMultiEpgLaunchBouquet(
                 extraRef = extraRef,
                 extraName = extraName,

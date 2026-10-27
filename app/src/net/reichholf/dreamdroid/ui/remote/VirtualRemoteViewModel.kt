@@ -98,8 +98,8 @@ class VirtualRemoteViewModel @Inject constructor(
         if (sessions.status.value.blocksMutations) {
             return
         }
+        val profile = profiles.current.value ?: return
         viewModelScope.launch {
-            val profile = profiles.requireCurrent()
             val response =
                 receiver.remoteCommand(keyCode, profile.simpleRemote, longClick)
             val value = response.value

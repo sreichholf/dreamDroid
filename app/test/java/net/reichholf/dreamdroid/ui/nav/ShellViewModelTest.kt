@@ -260,7 +260,7 @@ class ShellViewModelTest {
 
         assertEquals(ProfileCheckOutcome.Failed(firstStart = false), state.profileCheckOutcome)
         val failed = assertInstanceOf(ProfileCheckUi.Failed::class.java, state.profileCheck)
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         assertEquals(UiText.Raw("null@${profile.host}:${profile.port}"), failed.title)
         assertEquals(UiText.Resource(R.string.get_content_error), failed.message)
         assertNull(sessions.status.value.session)
@@ -313,7 +313,7 @@ class ShellViewModelTest {
     fun addingAProfileAgainLeavesTheNoProfileGate() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.start()
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         profiles.clearCurrent()
         viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
@@ -431,11 +431,11 @@ class ShellViewModelTest {
     @Test
     fun theDrawerOffersTheSleepTimerOfTheActiveProfile() = runBlocking<Unit> {
         val viewModel = viewModel()
-        val other = Profile().apply { id = profiles.requireCurrent().id!! + 1 }
+        val other = Profile().apply { id = profiles.current.value!!.id!! + 1 }
 
         capabilities.set(other, WebIfCapabilities(sleepTimer = false))
         // A rename of the active profile reaches the state after the change above.
-        val current = profiles.requireCurrent()
+        val current = profiles.current.value!!
         profiles.setCurrent(
             Profile().apply {
                 id = current.id
@@ -447,7 +447,7 @@ class ShellViewModelTest {
         viewModel.awaitState { it.profileName == "Renamed" }
         assertTrue(viewModel.uiState.value.sleepTimerInDrawer)
 
-        capabilities.set(profiles.requireCurrent(), WebIfCapabilities(sleepTimer = false))
+        capabilities.set(profiles.current.value!!, WebIfCapabilities(sleepTimer = false))
         viewModel.awaitState { !it.sleepTimerInDrawer }
     }
 
@@ -494,7 +494,7 @@ class ShellViewModelTest {
     fun aCachedDeviceInfoAnswerIsReusedAndStaysOffTheGate() = runBlocking<Unit> {
         settings.firstStart = false
         profiles.setDeviceInfo(
-            profiles.requireCurrent(),
+            profiles.current.value!!,
             DeviceInfoParser.parse(loadWebFixture("deviceinfo.xml"))
         )
         val viewModel = viewModel()
@@ -517,7 +517,7 @@ class ShellViewModelTest {
         viewModel.checkActiveProfile()
         viewModel.awaitState { it.profileCheckOutcome != null }
         viewModel.onProfileCheckOutcomeHandled()
-        val checked = profiles.requireCurrent()
+        val checked = profiles.current.value!!
         // An edit that keeps the connection settings replaces the instance, not the id.
         profiles.setCurrent(
             Profile().apply {
@@ -542,7 +542,7 @@ class ShellViewModelTest {
     fun switchesAreCheckedOnlyAfterStart() = runBlocking<Unit> {
         settings.firstStart = false
         val viewModel = viewModel()
-        val first = profiles.requireCurrent()
+        val first = profiles.current.value!!
         val (setup, next) = listOf("setup", "next").map { profileName ->
             Profile().apply {
                 name = profileName

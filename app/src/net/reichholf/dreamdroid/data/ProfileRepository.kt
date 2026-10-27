@@ -78,12 +78,6 @@ class ProfileRepository @Inject constructor(
     @Volatile
     private var xmlDump: Boolean = false
 
-    /**
-     * The active profile; throws when there is none. A caller that can run without one reads
-     * [current] instead.
-     */
-    fun requireCurrent(): Profile = current.value!!
-
     fun hasCurrent(): Boolean = current.value != null
 
     fun dumpXml(): Boolean = xmlDump

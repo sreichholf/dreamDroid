@@ -314,7 +314,7 @@ class HubServiceListViewModel @AssistedInject constructor(
             showMessage(UiText.Resource(R.string.default_bouquet_not_set))
             return
         }
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value ?: return
         val reset = profile.defaultBouquetTv == state.currentRef
         if (reset) {
             profile.defaultBouquetTv = null

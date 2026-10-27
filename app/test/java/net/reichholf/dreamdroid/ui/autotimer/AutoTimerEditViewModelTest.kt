@@ -438,7 +438,7 @@ class AutoTimerEditViewModelTest {
         val viewModel = create()
         viewModel.editing()
         viewModel.match.set("Tatort")
-        val home = receiver.repository.requireCurrent()
+        val home = receiver.repository.current.value!!
 
         receiver.repository.setCurrent(otherProfile(home))
         withTimeout(TIMEOUT) {

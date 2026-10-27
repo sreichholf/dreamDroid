@@ -51,7 +51,7 @@ class ProfileCheckRepositoryTest {
     @Test
     fun aDreamboxKeepsItsVersionTable() = runBlocking {
         receiver.respond(DEVICE_INFO, loadWebFixture("deviceinfo.xml"))
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         assertEquals(ProfileCheckResult(), checks.check(profile))
 
@@ -64,7 +64,7 @@ class ProfileCheckRepositoryTest {
     fun anOpenWebifBoxIsNotTooOldAndHasEverything() = runBlocking {
         receiver.respond(DEVICE_INFO, loadOwifFixture("deviceinfo.xml"))
         receiver.respond(STATUS_INFO, """{"volume": 50, "inStandby": "false"}""")
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         capabilities.set(profile, NOTHING)
 
         assertEquals(ProfileCheckResult(), checks.check(profile))
@@ -77,7 +77,7 @@ class ProfileCheckRepositoryTest {
     fun aCachedCheckKeepsTheOpenWebifFlavorWithoutAsking() = runBlocking {
         receiver.respond(DEVICE_INFO, loadOwifFixture("deviceinfo.xml"))
         receiver.respond(STATUS_INFO, "{}")
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         checks.check(profile)
 
         assertEquals(ProfileCheckResult(), checks.checkReusingDeviceInfo(profile))
@@ -91,7 +91,7 @@ class ProfileCheckRepositoryTest {
     fun anOpenWebifVersionTheApiDoesNotConfirmStaysOnTheDreamboxPathWithoutAWarning() =
         runBlocking {
             receiver.respond(DEVICE_INFO, loadOwifFixture("deviceinfo.xml"))
-            val profile = profiles.requireCurrent()
+            val profile = profiles.current.value!!
             capabilities.set(profile, NOTHING)
 
             assertEquals(ProfileCheckResult(), checks.check(profile))
@@ -108,7 +108,7 @@ class ProfileCheckRepositoryTest {
             STATUS_INFO,
             MockResponse().setSocketPolicy(SocketPolicy.DISCONNECT_AFTER_REQUEST)
         )
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         val result = checks.check(profile)
 
@@ -126,7 +126,7 @@ class ProfileCheckRepositoryTest {
             DEVICE_INFO,
             MockResponse().setResponseCode(403).setBody(loadOwifFixture("error403.html"))
         )
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         val result = checks.check(profile)
 
@@ -137,7 +137,7 @@ class ProfileCheckRepositoryTest {
 
     @Test
     fun anOldDreamboxTurnsItsFeaturesOffForItsProfileOnly() = runBlocking {
-        val old = profiles.requireCurrent()
+        val old = profiles.current.value!!
         val current = otherProfile()
         receiver.respondOnce(DEVICE_INFO, deviceInfo(webIfVersion = "1.6.4"))
         receiver.respondOnce(DEVICE_INFO, deviceInfo(webIfVersion = "1.7.4"))
@@ -152,7 +152,7 @@ class ProfileCheckRepositoryTest {
     @Test
     fun aDreamboxBetweenSleepTimerAndNowNextGetsTheSleepTimerOnly() = runBlocking {
         receiver.respond(DEVICE_INFO, deviceInfo(webIfVersion = "1.6.8"))
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         assertEquals(ProfileCheckResult(), checks.check(profile))
 
@@ -161,7 +161,7 @@ class ProfileCheckRepositoryTest {
 
     @Test
     fun a405SwitchesToGetForThatProfileOnly() = runBlocking {
-        val refusing = profiles.requireCurrent()
+        val refusing = profiles.current.value!!
         val other = otherProfile()
         receiver.respondOnce(DEVICE_INFO, MockResponse().setResponseCode(405))
         receiver.respond(DEVICE_INFO, loadWebFixture("deviceinfo.xml"))
@@ -180,7 +180,7 @@ class ProfileCheckRepositoryTest {
 
     @Test
     fun a405SwitchesAwayFromTheMethodThatRequestUsed() = runBlocking {
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
         val held = receiver.hold(DEVICE_INFO)
         receiver.respondOnce(DEVICE_INFO, MockResponse().setResponseCode(405))
         receiver.respond(DEVICE_INFO, loadWebFixture("deviceinfo.xml"))
@@ -198,7 +198,7 @@ class ProfileCheckRepositoryTest {
     }
 
     /** A second saved profile on the same receiver. */
-    private fun otherProfile(): Profile = profiles.requireCurrent().let { first ->
+    private fun otherProfile(): Profile = profiles.current.value!!.let { first ->
         Profile().apply {
             id = first.id!! + 1
             name = "other"

@@ -46,7 +46,7 @@ class ProfileRepositoryTest {
 
         repo.loadCurrent()
 
-        val imported = repo.requireCurrent()
+        val imported = repo.current.value!!
         assertTrue(imported.piconsOnline)
         assertTrue(imported.piconsOnlineUseName)
         assertEquals("/media/hdd/picon", imported.piconsOnlinePath)
@@ -99,7 +99,7 @@ class ProfileRepositoryTest {
 
         repo.setCurrent(edited)
 
-        assertEquals("Living Room", repo.requireCurrent().name)
+        assertEquals("Living Room", repo.current.value!!.name)
         assertEquals(listOf("/hdd/movie"), repo.locations())
         assertEquals(DEVICE_INFO, repo.deviceInfo(edited))
         assertEquals(NOTHING, capabilities.of(edited))
@@ -117,8 +117,8 @@ class ProfileRepositoryTest {
 
         repo.setCurrent(profile(1, "other-box"))
 
-        assertEquals("other-box", repo.requireCurrent().host)
-        assertNull(repo.deviceInfo(repo.requireCurrent()))
+        assertEquals("other-box", repo.current.value!!.host)
+        assertNull(repo.deviceInfo(repo.current.value!!))
         assertEquals(WebIfCapabilities(), capabilities.of(first))
         assertEquals(listOf("/hdd/movie"), repo.locations())
     }
@@ -163,7 +163,7 @@ class ProfileRepositoryTest {
         assertEquals(2, repo.activeProfileId())
         val restarted = ProfileRepository(store, WebIfCapabilitiesRepository())
         restarted.loadCurrent()
-        assertEquals(2, restarted.requireCurrent().id)
+        assertEquals(2, restarted.current.value!!.id)
     }
 
     @Test
@@ -179,10 +179,10 @@ class ProfileRepositoryTest {
         val added = profile(0, "bedroom").apply { id = null }
         repo.save(added)
 
-        assertEquals("Living Room", repo.requireCurrent().name)
+        assertEquals("Living Room", repo.current.value!!.name)
         assertEquals("Living Room", store.profile(1)?.name)
         assertEquals(2, added.id)
-        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, repo.current.value!!.id)
         assertTrue(switchedIds.isEmpty())
         scope.cancel()
     }
@@ -198,7 +198,7 @@ class ProfileRepositoryTest {
 
         repo.save(profile(1, "living-room").apply { vpsDefault = VpsMode.Safe })
 
-        assertEquals(VpsMode.Safe, repo.requireCurrent().vpsDefault)
+        assertEquals(VpsMode.Safe, repo.current.value!!.vpsDefault)
         assertTrue(switchedIds.isEmpty())
         scope.cancel()
     }
@@ -212,7 +212,7 @@ class ProfileRepositoryTest {
         repo.delete(store.profile(2)!!)
 
         assertEquals(listOf(2), store.deletedIds)
-        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, repo.current.value!!.id)
         assertEquals(1, store.remembered)
     }
 
@@ -236,7 +236,7 @@ class ProfileRepositoryTest {
         val store = MemoryProfileStore(listOf(only))
         val repo = ProfileRepository(store, WebIfCapabilitiesRepository())
         assertTrue(repo.setCurrent(1, forceEvent = true))
-        val current = repo.requireCurrent()
+        val current = repo.current.value!!
         repo.putLocations(current, listOf("/media/hdd/movie"))
         repo.putTags(current, listOf("News"))
         assertTrue(repo.locationsLoadedFromReceiver())
@@ -257,15 +257,15 @@ class ProfileRepositoryTest {
         val other = store.profile(2)!!
         repo.setDeviceInfo(other, DEVICE_INFO)
         capabilities.set(other, NOTHING)
-        capabilities.set(repo.requireCurrent(), NOTHING)
+        capabilities.set(repo.current.value!!, NOTHING)
 
         repo.delete(other)
 
-        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, repo.current.value!!.id)
         assertEquals(1, store.remembered)
         assertNull(repo.deviceInfo(other))
         assertEquals(WebIfCapabilities(), capabilities.of(other))
-        assertEquals(NOTHING, capabilities.of(repo.requireCurrent()))
+        assertEquals(NOTHING, capabilities.of(repo.current.value!!))
     }
 
     @Test
@@ -285,7 +285,7 @@ class ProfileRepositoryTest {
             save.await()
         }
 
-        assertEquals("new-box", repo.requireCurrent().host)
+        assertEquals("new-box", repo.current.value!!.host)
     }
 
     @Test
@@ -305,7 +305,7 @@ class ProfileRepositoryTest {
         repo.markLoaded()
         withTimeout(5_000L) { waiter.await() }
         assertTrue(repo.isLoaded())
-        assertEquals(1, repo.requireCurrent().id)
+        assertEquals(1, repo.current.value!!.id)
     }
 
     @Test

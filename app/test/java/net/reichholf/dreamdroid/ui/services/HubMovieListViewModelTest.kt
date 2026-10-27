@@ -400,7 +400,7 @@ class HubMovieListViewModelTest {
         viewModel.onMenuAction(MovieRowAction.Stream)
         val open = viewModel.uiState.value.open as MovieOpen.Stream
         assertEquals("Evening News", open.movie.title)
-        val profile = receiver.profiles.repository.requireCurrent()
+        val profile = receiver.profiles.repository.current.value!!
         assertEquals(
             EnigmaUrls.fileStream(profile, open.movie.reference, open.movie.fileName),
             open.url
@@ -415,6 +415,34 @@ class HubMovieListViewModelTest {
             UiText.Resource(R.string.missing_stream_player),
             viewModel.uiState.value.userMessage
         )
+    }
+
+    @Test
+    fun withoutAnActiveProfileStreamAndDownloadSayWhy() = runTest {
+        val viewModel = viewModel()
+        viewModel.settled()
+        receiver.profiles.repository.clearCurrent()
+        val asked = receiver.server.requestCount
+        viewModel.onItemMenu(0)
+
+        viewModel.onMenuAction(MovieRowAction.Stream)
+
+        assertEquals(
+            UiText.Resource(R.string.no_profile_body),
+            viewModel.uiState.value.userMessage
+        )
+        assertNull(viewModel.uiState.value.open)
+
+        viewModel.onMessageShown()
+        viewModel.onMenuAction(MovieRowAction.Download)
+
+        assertEquals(
+            UiText.Resource(R.string.no_profile_body),
+            viewModel.uiState.value.userMessage
+        )
+        assertNull(viewModel.uiState.value.progress)
+        assertNull(viewModel.uiState.value.open)
+        assertEquals(asked, receiver.server.requestCount)
     }
 
     @Test

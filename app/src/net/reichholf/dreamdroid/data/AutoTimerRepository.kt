@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.di.ApplicationScope
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
@@ -103,6 +104,8 @@ class AutoTimerRepository @Inject constructor(
 
     /** Lists the AutoTimers; asks for the plugin first until it was seen. */
     suspend fun list(): AutoTimerLoad {
+        val profile = profiles.current.value
+            ?: return AutoTimerLoad.Failed(UiText.Resource(R.string.no_profile_body))
         if (knownPlugin() !is AutoTimerPlugin.Installed) {
             val check = checkPlugin()
             when (check.value) {
@@ -111,7 +114,7 @@ class AutoTimerRepository @Inject constructor(
                 is AutoTimerPlugin.Installed -> Unit
             }
         }
-        val response = clients.current().autoTimers()
+        val response = clients.forProfile(profile).autoTimers()
         return response.value?.let { AutoTimerLoad.Ready(it.entries, it.defaults) }
             ?: AutoTimerLoad.Failed(response.error.contentErrorText())
     }
@@ -133,7 +136,9 @@ class AutoTimerRepository @Inject constructor(
         if (!autoTimer.settings.enabled) {
             return AutoTimerPreviewLoad.Disabled(autoTimer)
         }
-        val response = clients.current(PREVIEW_TIMEOUT_MS).testAutoTimer(id)
+        val profile = profiles.current.value
+            ?: return AutoTimerPreviewLoad.Failed(UiText.Resource(R.string.no_profile_body))
+        val response = clients.forProfile(profile, PREVIEW_TIMEOUT_MS).testAutoTimer(id)
         return when (val outcome = response.value) {
             is PreviewOutcome.Matches -> AutoTimerPreviewLoad.Ready(autoTimer, outcome.matches)
 
@@ -148,14 +153,19 @@ class AutoTimerRepository @Inject constructor(
      * Writes [write] unless the box renumbered its AutoTimers since they were loaded. One
      * write runs at a time.
      */
-    suspend fun save(write: AutoTimerWrite): AutoTimerWriteResult = counted {
-        writes.withLock {
-            when (write) {
-                is AutoTimerWrite.Change ->
-                    guard(AutoTimerEntry.Readable(write.loaded))
-                        ?: saved(clients.current().saveAutoTimer(write))
+    suspend fun save(write: AutoTimerWrite): AutoTimerWriteResult {
+        val profile = profiles.current.value
+            ?: return AutoTimerWriteResult.Failed(UiText.Resource(R.string.no_profile_body))
+        return counted {
+            writes.withLock {
+                when (write) {
+                    is AutoTimerWrite.Change ->
+                        guard(profile, AutoTimerEntry.Readable(write.loaded))
+                            ?: saved(clients.forProfile(profile).saveAutoTimer(write))
 
-                is AutoTimerWrite.Create -> saved(clients.current().saveAutoTimer(write))
+                    is AutoTimerWrite.Create ->
+                        saved(clients.forProfile(profile).saveAutoTimer(write))
+                }
             }
         }
     }
@@ -171,12 +181,14 @@ class AutoTimerRepository @Inject constructor(
      * again when the box answers or the request gives up, so a shown list is fetched anew.
      */
     suspend fun runNow(): AutoTimerWriteResult {
+        val profile = profiles.current.value
+            ?: return AutoTimerWriteResult.Failed(UiText.Resource(R.string.no_profile_body))
         val plugin = knownPlugin() ?: checkPlugin().let { check ->
             check.value ?: return AutoTimerWriteResult.Failed(check.error.contentErrorText())
         }
         val api = (plugin as? AutoTimerPlugin.Installed)?.api
             ?: return AutoTimerWriteResult.Failed(UiText.Resource(R.string.autotimer_not_installed))
-        val client = clients.current(RUN_TIMEOUT_MS)
+        val client = clients.forProfile(profile, RUN_TIMEOUT_MS)
         if (api.runAnswersInTime) {
             return counted { writes.withLock { result(client.runAutoTimers()) } }
         }
@@ -211,15 +223,21 @@ class AutoTimerRepository @Inject constructor(
         save(AutoTimerWrite.Change(autoTimer, autoTimer.settings.copy(enabled = enabled)))
 
     /** Removes [entry] unless its id names another AutoTimer by now. */
-    suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult = counted {
-        writes.withLock {
-            guard(entry) ?: result(clients.current().removeAutoTimer(entry.id))
+    suspend fun remove(entry: AutoTimerEntry): AutoTimerWriteResult {
+        val profile = profiles.current.value
+            ?: return AutoTimerWriteResult.Failed(UiText.Resource(R.string.no_profile_body))
+        return counted {
+            writes.withLock {
+                guard(profile, entry)
+                    ?: result(clients.forProfile(profile).removeAutoTimer(entry.id))
+            }
         }
     }
 
     /**
      * Runs [write], then counts it in [revision]. A refused write counts too: its conflict
-     * means a shown list is out of date.
+     * means a shown list is out of date. A write without an active profile is refused before
+     * this, since there is no list to invalidate.
      */
     private inline fun counted(write: () -> AutoTimerWriteResult): AutoTimerWriteResult = try {
         write()
@@ -231,8 +249,8 @@ class AutoTimerRepository @Inject constructor(
      * Null when the box still lists [expected] under its id. The box numbers its AutoTimers
      * anew whenever its config file changed, so an id alone may name another one.
      */
-    private suspend fun guard(expected: AutoTimerEntry): AutoTimerWriteResult? {
-        val response = clients.current().autoTimers()
+    private suspend fun guard(profile: Profile, expected: AutoTimerEntry): AutoTimerWriteResult? {
+        val response = clients.forProfile(profile).autoTimers()
         val entries = response.value?.entries
             ?: return AutoTimerWriteResult.Failed(response.error.contentErrorText())
         val current = entries.firstOrNull { it.id == expected.id }

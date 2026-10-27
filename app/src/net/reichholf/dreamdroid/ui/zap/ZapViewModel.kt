@@ -76,11 +76,11 @@ class ZapViewModel @Inject constructor(
     val uiState: StateFlow<ZapUiState>
 
     init {
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value
         saved = readZapNavSaved(
             savedStateHandle,
-            defaultBouquetRef = profile.defaultBouquetTv.orEmpty(),
-            defaultBouquetName = profile.defaultBouquetTvName.orEmpty()
+            defaultBouquetRef = profile?.defaultBouquetTv.orEmpty(),
+            defaultBouquetName = profile?.defaultBouquetTvName.orEmpty()
         )
         _uiState = MutableStateFlow(ZapUiState(bouquetName = saved.bouquetName))
         uiState = _uiState.asStateFlow()
