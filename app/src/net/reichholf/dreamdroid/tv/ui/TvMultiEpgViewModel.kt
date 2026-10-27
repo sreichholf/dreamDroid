@@ -26,6 +26,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.enigma.userMessageText
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
 import net.reichholf.dreamdroid.multiepg.MultiEpgGridState
 import net.reichholf.dreamdroid.multiepg.MultiEpgNowClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
@@ -57,7 +58,7 @@ data class TvMultiEpgUiState(
     val bouquets: List<Service> = emptyList(),
     val grid: MultiEpgGridState = MultiEpgGridState(),
     val visibleMinutes: Int = MULTI_EPG_VISIBLE_MINUTES,
-    val selectedServiceRef: String = "",
+    val selectedKey: MultiEpgChannelKey? = null,
     val selectedStartSec: Long = 0L,
     val detailEvent: Event? = null,
     val editTimerEvent: Event? = null,
@@ -172,8 +173,8 @@ class TvMultiEpgViewModel @Inject constructor(
         }
     }
 
-    fun select(serviceRef: String, startSec: Long) {
-        _uiState.update { it.copy(selectedServiceRef = serviceRef, selectedStartSec = startSec) }
+    fun select(key: MultiEpgChannelKey?, startSec: Long) {
+        _uiState.update { it.copy(selectedKey = key, selectedStartSec = startSec) }
     }
 
     /** Moves the focused cell back onto a bar after the grid changed. */
@@ -181,7 +182,7 @@ class TvMultiEpgViewModel @Inject constructor(
         val state = _uiState.value
         val next = reconcileTvMultiEpgSelection(
             grid.state.value.channels,
-            state.selectedServiceRef,
+            state.selectedKey,
             state.selectedStartSec
         ) ?: return
         select(next.first, next.second)
@@ -189,7 +190,7 @@ class TvMultiEpgViewModel @Inject constructor(
 
     /** Reloads the bouquet with [nowSec] as the new left edge. */
     fun jumpToNow(nowSec: Long) {
-        select("", 0L)
+        select(null, 0L)
         grid.replaceAndLoad(_uiState.value.bouquetRef, nowSec)
     }
 
@@ -327,27 +328,31 @@ class TvMultiEpgViewModel @Inject constructor(
 
 /**
  * The focused cell after [channels] changed, or null when it still points at a bar.
- * A missing channel falls back to the first one; a missing bar to the bar covering
- * [startSec], then to the channel's first bar.
+ * A row that disappeared falls back to another row of the same service (its occurrence
+ * vanished), then to the first row; a missing bar to the bar covering [startSec], then
+ * to the row's first bar.
  */
 fun reconcileTvMultiEpgSelection(
     channels: List<MultiEpgChannel>,
-    serviceRef: String,
+    selectedKey: MultiEpgChannelKey?,
     startSec: Long
-): Pair<String, Long>? {
+): Pair<MultiEpgChannelKey, Long>? {
     if (channels.isEmpty()) {
         return null
     }
-    val current = channels.find { it.serviceRef == serviceRef }
+    val current = selectedKey?.let { key ->
+        channels.firstOrNull { it.key == key }
+            ?: channels.firstOrNull { it.serviceRef == key.serviceRef }
+    }
     if (current == null) {
         val first = channels.first()
-        return first.serviceRef to (first.bars.firstOrNull()?.startSec ?: 0L)
+        return first.key to (first.bars.firstOrNull()?.startSec ?: 0L)
     }
     if (current.bars.isEmpty() || current.bars.any { it.startSec == startSec }) {
-        return null
+        return if (current.key == selectedKey) null else current.key to startSec
     }
     val overlap = current.bars.firstOrNull { bar ->
         bar.startSec <= startSec && bar.endSec > startSec
     }
-    return serviceRef to (overlap?.startSec ?: current.bars.first().startSec)
+    return current.key to (overlap?.startSec ?: current.bars.first().startSec)
 }

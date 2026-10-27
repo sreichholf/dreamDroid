@@ -185,6 +185,7 @@ class TimerRepositoryTest {
         val clocks = buildMultiEpgTimerClocks(
             channels = listOf(
                 MultiEpgChannel(
+                    occurrence = 0,
                     serviceRef = ref,
                     serviceName = "TV",
                     bars = listOf(

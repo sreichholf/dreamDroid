@@ -1,10 +1,12 @@
 package net.reichholf.dreamdroid.ui.pick
 
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertLeftPositionInRootIsEqualTo
 import androidx.compose.ui.test.hasClickAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.unit.dp
@@ -57,6 +59,30 @@ class PickServiceScreenTest {
             hasText("All Radio") and hasClickAction()
         ).assertIsDisplayed().performClick()
         assertEquals(radio, clicked)
+    }
+
+    @Test
+    fun repeatedBouquetShowsBothRowsAndBothClick() {
+        val repeated =
+            Service(
+                "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET \"userbouquet.favourites.tv\" ORDER BY bouquet",
+                "Favourites (TV)"
+            )
+        var clicks = 0
+        composeRule.setContent {
+            DreamDroidTheme {
+                PickServiceScreen(
+                    items = listOf(repeated, repeated),
+                    onItemClick = { clicks++ }
+                )
+            }
+        }
+        composeRule.onAllNodesWithText("Favourites (TV)", useUnmergedTree = true)
+            .assertCountEquals(2)
+        val rows = composeRule.onAllNodes(hasText("Favourites (TV)") and hasClickAction())
+        rows[0].performClick()
+        rows[1].performClick()
+        assertEquals(2, clicks)
     }
 
     @Test

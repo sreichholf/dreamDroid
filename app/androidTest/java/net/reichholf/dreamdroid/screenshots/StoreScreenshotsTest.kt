@@ -210,7 +210,7 @@ class StoreScreenshotsTest {
             awaitNode(hasTestTag("tv_multi_epg_grid"))
             // The channel row, not a programme title: titles turn over with the clock, so a
             // wait on receiver.titleNow() can miss the cell the grid shows after a boundary.
-            awaitNode(hasTestTag("tv_multi_epg_channel_${first.ref}"))
+            awaitNode(hasTestTag("tv_multi_epg_channel_${first.ref}#0"))
             capture("2_multiepg")
 
             tvClick("hub_tab_timers")

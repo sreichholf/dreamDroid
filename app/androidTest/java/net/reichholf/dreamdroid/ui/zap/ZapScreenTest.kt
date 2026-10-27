@@ -6,8 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
@@ -50,6 +52,21 @@ class ZapScreenTest {
         }
         composeRule.onNodeWithText("ARD HD").assertIsDisplayed()
         composeRule.onNodeWithText("ZDF HD").assertIsDisplayed()
+    }
+
+    @Test
+    fun repeatedServiceKeepsBothCards() {
+        val service = Service("1:0:1:1:1:1:1:0:0:0:", "ARD HD")
+        composeRule.setContent {
+            DreamDroidTheme {
+                ZapScreen(
+                    items = listOf(service, service),
+                    onItemClick = {},
+                    onItemLongClick = {}
+                )
+            }
+        }
+        composeRule.onAllNodesWithText("ARD HD").assertCountEquals(2)
     }
 
     @Test

@@ -106,6 +106,7 @@ class MultiEpgTimerClocksTest {
     }
 
     private fun channel(startSec: Long, eventId: String = "10"): MultiEpgChannel = MultiEpgChannel(
+        occurrence = 0,
         serviceRef = ref,
         serviceName = "TV",
         bars = listOf(

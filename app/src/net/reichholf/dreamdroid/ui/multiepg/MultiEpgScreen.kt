@@ -168,6 +168,7 @@ fun MultiEpgScreen(
         if (scrolledToFocus || ref.isNullOrEmpty() || channels.isEmpty()) {
             return@LaunchedEffect
         }
+        // The route carries the playing channel, not a row: land on its first occurrence.
         val index = channels.indexOfFirst { it.serviceRef == ref }
         if (index >= 0) {
             listState.scrollToItem(index)
@@ -445,7 +446,7 @@ fun MultiEpgScreen(
             ) {
                 items(
                     items = channels,
-                    key = { it.serviceRef },
+                    key = { it.key },
                     contentType = { "channel" }
                 ) { channel ->
                     Row(

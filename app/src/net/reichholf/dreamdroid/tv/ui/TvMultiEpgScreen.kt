@@ -102,6 +102,7 @@ import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgBarLayout
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
@@ -166,9 +167,9 @@ fun TvMultiEpgScreen(
     originFloorSec: Long,
     loading: Boolean,
     errorMessage: String?,
-    selectedServiceRef: String,
+    selectedKey: MultiEpgChannelKey?,
     selectedStartSec: Long,
-    onSelectedChange: (String, Long) -> Unit,
+    onSelectedChange: (MultiEpgChannelKey, Long) -> Unit,
     onJumpToNow: () -> Unit,
     onPrevDay: () -> Unit,
     onNextDay: () -> Unit,
@@ -335,8 +336,8 @@ fun TvMultiEpgScreen(
         onVisibleWindow(visibleStartSec, visibleEndSec)
     }
 
-    LaunchedEffect(selectedServiceRef, selectedStartSec, originForLayout, layoutVisibleMinutes) {
-        val channel = channels.find { it.serviceRef == selectedServiceRef }
+    LaunchedEffect(selectedKey, selectedStartSec, originForLayout, layoutVisibleMinutes) {
+        val channel = channels.firstOrNull { it.key == selectedKey }
             ?: return@LaunchedEffect
         val bar = channel.bars.find { it.startSec == selectedStartSec }
             ?: return@LaunchedEffect
@@ -372,8 +373,8 @@ fun TvMultiEpgScreen(
         }
     }
 
-    LaunchedEffect(selectedServiceRef, channels) {
-        val index = channels.indexOfFirst { it.serviceRef == selectedServiceRef }
+    LaunchedEffect(selectedKey, channels) {
+        val index = channels.indexOfFirst { it.key == selectedKey }
         if (index >= 0) {
             listState.scrollToItem(index)
         }
@@ -382,19 +383,19 @@ fun TvMultiEpgScreen(
     LaunchedEffect(
         channels,
         pendingPanRight,
-        selectedServiceRef,
+        selectedKey,
         selectedStartSec,
         visibleMinutes
     ) {
         if (!pendingPanRight) {
             return@LaunchedEffect
         }
-        val channel = channels.find { it.serviceRef == selectedServiceRef }
+        val channel = channels.firstOrNull { it.key == selectedKey }
             ?: return@LaunchedEffect
         val next = MultiEpgBarLayout.nextStartSec(channel.bars, selectedStartSec)
         if (next != null) {
             pendingPanRight = false
-            onSelectedChange(channel.serviceRef, next)
+            onSelectedChange(channel.key, next)
         }
     }
 
@@ -457,7 +458,7 @@ fun TvMultiEpgScreen(
             return@Column
         }
 
-        val selectedRefState = rememberUpdatedState(selectedServiceRef)
+        val selectedKeyState = rememberUpdatedState(selectedKey)
         val selectedStartState = rememberUpdatedState(selectedStartSec)
         val originFloorState = rememberUpdatedState(originFloorSec)
         val channelsState = rememberUpdatedState(channels)
@@ -509,13 +510,13 @@ fun TvMultiEpgScreen(
                     val consume = consumesTvMultiEpgGridKey(
                         key = event.key,
                         channels = channelsState.value,
-                        selectedServiceRef = selectedRefState.value
+                        selectedKey = selectedKeyState.value
                     )
                     if (event.type == KeyEventType.KeyDown && consume) {
                         handleTvMultiEpgGridKey(
                             key = event.key,
                             channels = channelsState.value,
-                            selectedServiceRef = selectedRefState.value,
+                            selectedKey = selectedKeyState.value,
                             selectedStartSec = selectedStartState.value,
                             originFloorSec = originFloorState.value,
                             zoomWindowSec = zoomWindowSec(),
@@ -540,10 +541,10 @@ fun TvMultiEpgScreen(
             ) {
                 items(
                     items = channels,
-                    key = { it.serviceRef },
+                    key = { it.key },
                     contentType = { "channel" }
                 ) { channel ->
-                    val selected = channel.serviceRef == selectedServiceRef
+                    val selected = channel.key == selectedKey
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -558,7 +559,7 @@ fun TvMultiEpgScreen(
                             modifier = Modifier
                                 .width(channelLabelWidth)
                                 .fillMaxHeight()
-                                .testTag("tv_multi_epg_channel_${channel.serviceRef}")
+                                .testTag(tvMultiEpgChannelTag(channel))
                         )
                         Box(
                             modifier = Modifier
@@ -1489,6 +1490,10 @@ private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: D
     }
 }
 
+/** Semantics tag of a channel row; [MultiEpgChannel.occurrence] keeps a repeated service apart. */
+private fun tvMultiEpgChannelTag(channel: MultiEpgChannel): String =
+    "tv_multi_epg_channel_${channel.serviceRef}#${channel.occurrence}"
+
 private fun isTvMultiEpgGridKey(key: Key): Boolean = key == Key.DirectionUp ||
     key == Key.DirectionDown ||
     key == Key.DirectionLeft ||
@@ -1503,7 +1508,7 @@ private fun isTvMultiEpgGridKey(key: Key): Boolean = key == Key.DirectionUp ||
 internal fun consumesTvMultiEpgGridKey(
     key: Key,
     channels: List<MultiEpgChannel>,
-    selectedServiceRef: String
+    selectedKey: MultiEpgChannelKey?
 ): Boolean {
     if (key != Key.DirectionUp) {
         return true
@@ -1511,19 +1516,19 @@ internal fun consumesTvMultiEpgGridKey(
     if (channels.isEmpty()) {
         return false
     }
-    val index = channels.indexOfFirst { it.serviceRef == selectedServiceRef }
+    val index = channels.indexOfFirst { it.key == selectedKey }
         .coerceAtLeast(0)
     return index > 0
 }
 
-private fun handleTvMultiEpgGridKey(
+internal fun handleTvMultiEpgGridKey(
     key: Key,
     channels: List<MultiEpgChannel>,
-    selectedServiceRef: String,
+    selectedKey: MultiEpgChannelKey?,
     selectedStartSec: Long,
     originFloorSec: Long,
     zoomWindowSec: Long,
-    onSelectedChange: (String, Long) -> Unit,
+    onSelectedChange: (MultiEpgChannelKey, Long) -> Unit,
     onEventClick: (Event) -> Unit,
     onVisibleWindow: (Long, Long) -> Unit,
     onPendingPanRight: (Boolean) -> Unit,
@@ -1532,7 +1537,7 @@ private fun handleTvMultiEpgGridKey(
     if (channels.isEmpty()) {
         return
     }
-    val index = channels.indexOfFirst { it.serviceRef == selectedServiceRef }
+    val index = channels.indexOfFirst { it.key == selectedKey }
         .coerceAtLeast(0)
     val channel = channels.getOrNull(index) ?: return
     when (key) {
@@ -1574,7 +1579,7 @@ private fun handleTvMultiEpgGridKey(
             val prev = MultiEpgBarLayout.prevStartSec(channel.bars, selectedStartSec)
                 ?: return
             onPendingPanRight(false)
-            onSelectedChange(channel.serviceRef, prev)
+            onSelectedChange(channel.key, prev)
         }
 
         Key.DirectionRight -> {
@@ -1584,7 +1589,7 @@ private fun handleTvMultiEpgGridKey(
             val next = MultiEpgBarLayout.nextStartSec(channel.bars, selectedStartSec)
             if (next != null) {
                 onPendingPanRight(false)
-                onSelectedChange(channel.serviceRef, next)
+                onSelectedChange(channel.key, next)
             } else {
                 onPendingPanRight(true)
                 val start = selectedStartSec
@@ -1605,11 +1610,11 @@ private fun moveToChannel(
     channel: MultiEpgChannel,
     index: Int,
     selectedStartSec: Long,
-    onSelectedChange: (String, Long) -> Unit,
+    onSelectedChange: (MultiEpgChannelKey, Long) -> Unit,
     onScrollToChannel: (Int) -> Unit
 ) {
     val start = startOnChannel(channel, selectedStartSec)
-    onSelectedChange(channel.serviceRef, start)
+    onSelectedChange(channel.key, start)
     onScrollToChannel(index)
 }
 

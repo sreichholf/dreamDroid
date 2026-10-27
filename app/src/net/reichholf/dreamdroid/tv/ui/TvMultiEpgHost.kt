@@ -110,7 +110,7 @@ fun TvMultiEpgHost(
         }
     }
 
-    LaunchedEffect(grid.channels, uiState.selectedServiceRef, uiState.selectedStartSec) {
+    LaunchedEffect(grid.channels, uiState.selectedKey, uiState.selectedStartSec) {
         viewModel.reconcileSelection()
     }
 
@@ -128,7 +128,7 @@ fun TvMultiEpgHost(
                 originFloorSec = grid.originFloorSec,
                 loading = grid.syncing,
                 errorMessage = grid.errorMessage?.asString(),
-                selectedServiceRef = uiState.selectedServiceRef,
+                selectedKey = uiState.selectedKey,
                 selectedStartSec = uiState.selectedStartSec,
                 onSelectedChange = viewModel::select,
                 onJumpToNow = {

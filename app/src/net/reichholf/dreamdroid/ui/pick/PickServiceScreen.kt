@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.ui.pick
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +29,9 @@ fun PickServiceScreen(
     }
 
     LazyColumn(modifier = modifier.fillMaxSize()) {
-        items(items, key = { "${it.reference}:${it.name}" }) { service ->
+        itemsIndexed(items, key = { index, service ->
+            "$index:${service.reference}:${service.name}"
+        }) { _, service ->
             BouquetRow(
                 name = service.name,
                 onClick = { onItemClick(service) }
