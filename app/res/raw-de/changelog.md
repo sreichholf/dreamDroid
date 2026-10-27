@@ -8,6 +8,7 @@
 * FIX: TV - Absturz ohne aktives Profil
 * UPD: Profil hinzufügen, wenn keines vorhanden ist
 * FIX: Absturz beim Öffnen eines wiederholten Timers
+* FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist
 
 ## 2.0.469
 * UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet

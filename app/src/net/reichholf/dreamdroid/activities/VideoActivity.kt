@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.activities
 import android.annotation.TargetApi
 import android.app.PictureInPictureParams
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.Rect
@@ -305,11 +306,15 @@ class VideoActivity :
     }
 
     private fun updatePipParams() {
+        if (!pictureInPictureSupported()) return
         val params = getPipParams()
         try {
             setPictureInPictureParams(params)
         } catch (e: IllegalArgumentException) {
             Log.w(TAG, "PiP parameters rejected by the system", e)
+        } catch (e: IllegalStateException) {
+            // The system refuses PiP for this activity (device or task type); playback goes on.
+            Log.w(TAG, "PiP not available for this activity", e)
         }
     }
 
@@ -331,14 +336,27 @@ class VideoActivity :
     }
 
     private fun doEnterPip(): Boolean {
-        val params = getPipParams()
-        try {
-            enterPictureInPictureMode(params)
-        } catch (e: IllegalArgumentException) {
-            enterPictureInPictureMode(PictureInPictureParams.Builder().build())
-        }
-        return true
+        if (!pictureInPictureSupported()) return false
+        // A device that overrides the aspect ratio bounds rejects the ratio, not the entry.
+        return enterPip(getPipParams())
+            ?: enterPip(PictureInPictureParams.Builder().build())
+            ?: false
     }
+
+    /** True on success, null when the parameters were rejected, false when PiP is refused. */
+    private fun enterPip(params: PictureInPictureParams): Boolean? = try {
+        enterPictureInPictureMode(params)
+    } catch (e: IllegalArgumentException) {
+        Log.w(TAG, "PiP parameters rejected by the system", e)
+        null
+    } catch (e: IllegalStateException) {
+        Log.w(TAG, "PiP not available for this activity", e)
+        false
+    }
+
+    /** PiP needs the system feature; without it every PiP call is rejected. */
+    private fun pictureInPictureSupported(): Boolean =
+        packageManager.hasSystemFeature(PackageManager.FEATURE_PICTURE_IN_PICTURE)
 
     @TargetApi(Build.VERSION_CODES.R)
     override fun onPictureInPictureRequested(): Boolean = doEnterPip()
