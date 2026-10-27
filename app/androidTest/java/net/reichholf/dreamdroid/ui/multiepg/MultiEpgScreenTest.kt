@@ -717,6 +717,65 @@ class MultiEpgScreenTest {
     }
 
     @Test
+    fun focusIntoTheUnpaintedDayReportsThatWindow() {
+        val origin = 1_700_000_000L
+        val day2 = origin + 86_400L
+        val focusSec = day2 + 3_600L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val channels = listOf(
+            MultiEpgChannel(
+                occurrence = 0,
+                serviceRef = ref,
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "News",
+                            start = origin.toString(),
+                            duration = "3600",
+                            serviceReference = ref,
+                            serviceName = "Das Erste HD"
+                        ),
+                        startSec = origin,
+                        endSec = origin + 3600
+                    )
+                )
+            )
+        )
+        var visibleStart = 0L
+        var visibleEnd = 0L
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(modifier = Modifier.width(411.dp).height(891.dp)) {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = channels,
+                        timelineStartSec = origin,
+                        timelineEndSec = origin + 2L * 86_400L,
+                        nowSec = origin,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                        onVisibleWindow = { start, end ->
+                            visibleStart = start
+                            visibleEnd = end
+                        },
+                        focusSec = focusSec,
+                        focusEpoch = 1,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+        // The pre-layout fallback reports focusSec verbatim; a landed scroll is left of it.
+        composeRule.waitUntil(5_000) { visibleStart >= day2 && visibleStart < focusSec }
+        composeRule.waitForIdle()
+        assertTrue(visibleEnd > visibleStart)
+    }
+
+    @Test
     fun recordClockShowsOnMatchingBar() {
         val start = 1_700_000_000L
         val ref = "1:0:1:1:1:1:0:0:0:0:"

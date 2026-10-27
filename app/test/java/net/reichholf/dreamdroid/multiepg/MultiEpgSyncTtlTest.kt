@@ -58,4 +58,38 @@ class MultiEpgSyncTtlTest {
         val farStart = MultiEpgWindows.chunkContaining(far).startSec
         assertEquals(listOf(nearStart, farStart, nearStart), fetchedStarts)
     }
+
+    @Test
+    fun warmChunkFetchesOnlyWhileRoomIsMissingOrStale() = runBlocking {
+        val day = MultiEpgWindows.CHUNK_SECONDS
+        val nowSec = 1_000L * day + 3_600L
+        var nowMs = nowSec * 1000L
+        val fetchedStarts = mutableListOf<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetchedStarts += time
+                listOf(
+                    Event(
+                        eventId = "e-$time",
+                        title = "News",
+                        start = (time + 600L).toString(),
+                        duration = "3600",
+                        serviceReference = "1:0:1:1:1:1:0:0:0:0:",
+                        serviceName = "TV"
+                    )
+                )
+            },
+            clockMs = { nowMs }
+        )
+        val nearStart = MultiEpgWindows.chunkContaining(nowSec).startSec
+
+        sync.warmChunk(1, "bouquet-a", nowSec)
+        sync.warmChunk(1, "bouquet-a", nowSec)
+        assertEquals(listOf(nearStart), fetchedStarts)
+
+        nowMs += 26L * 60L * 1000L
+        sync.warmChunk(1, "bouquet-a", nowSec)
+        assertEquals(listOf(nearStart, nearStart), fetchedStarts)
+    }
 }

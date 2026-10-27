@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * UPD: TV - Profil- und Timer-Editor passen zum Hub
+* UPD: Geringerer Speicherverbrauch im MultiEPG
 * UPD: Viele UI-Verbesserungen
 * FIX: Absturz bei Listen mit doppelten Einträgen
 * FIX: TV - Absturz ohne aktives Profil

@@ -14,6 +14,7 @@ import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.testutil.TestContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -120,6 +121,39 @@ class MultiEpgSyncSingleFlightTest {
         assertEquals("epgmulti down", failure?.message)
         assertEquals("epgmulti down", starter.await().exceptionOrNull()?.message)
         assertEquals(1, fetches.get())
+    }
+
+    @Test
+    fun ensureChunkJoinsAConcurrentWarmChunk() = runBlocking {
+        val fetches = AtomicInteger(0)
+        val fetchStarted = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val chunkStart = MultiEpgWindows.chunkContaining(t0).startSec
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.incrementAndGet()
+                fetchStarted.complete(Unit)
+                release.await()
+                listOf(news(time))
+            },
+            clockMs = { 1_000_000L }
+        )
+
+        val warm = async { sync.warmChunk(1, "bouquet-a", t0) }
+        withTimeout(5_000L) { fetchStarted.await() }
+        // Undispatched and forceRefresh skips the Room check, so the reader joins the
+        // warm's flight before it is released.
+        val reader = async(start = CoroutineStart.UNDISPATCHED) {
+            sync.ensureChunk(1, "bouquet-a", t0, forceRefresh = true)
+        }
+        release.complete(Unit)
+
+        assertEquals(listOf("News"), withTimeout(5_000L) { reader.await() }.map { it.title })
+        warm.await()
+        assertEquals(1, fetches.get())
+        assertNotNull(db.epgDao().getChunk(1, "bouquet-a", chunkStart))
     }
 
     private fun news(time: Long): Event = Event(

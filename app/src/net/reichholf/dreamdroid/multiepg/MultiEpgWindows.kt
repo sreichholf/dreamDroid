@@ -49,24 +49,22 @@ object MultiEpgWindows {
     }
 
     /**
-     * UTC cache chunk starts that cover a painted sliding window.
+     * UTC cache chunk starts that cover the visible range.
      *
      * [originFloorSec] is "now" (chunk load clamp). Chunks entirely at or before
-     * that instant are omitted. Padding keeps one chunk behind and ahead of the
-     * viewport so pan does not hit a wall; a chunk leaves the set only after
-     * it no longer overlaps that padded range (off-screen front or back).
+     * that instant are omitted. Only chunks overlapping the viewport are returned;
+     * the grid keeps exactly those and warms the next one into Room.
      */
     fun slidingChunks(
         originFloorSec: Long,
         visibleStartSec: Long,
         visibleEndSec: Long,
-        chunkSeconds: Long = CHUNK_SECONDS,
-        padSec: Long = CHUNK_SECONDS
+        chunkSeconds: Long = CHUNK_SECONDS
     ): List<Long> {
         val visStart = max(originFloorSec, visibleStartSec)
         val visEnd = max(visStart + 60L, visibleEndSec)
-        val from = max(originFloorSec, visStart - padSec)
-        val to = visEnd + padSec
+        val from = visStart
+        val to = visEnd
         val out = ArrayList<Long>(4)
         var start = chunkContaining(from, chunkSeconds).startSec
         while (start < to && out.size < MAX_SLIDING_CHUNKS) {
