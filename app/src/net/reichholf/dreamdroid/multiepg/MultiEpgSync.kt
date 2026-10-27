@@ -37,8 +37,7 @@ class MultiEpgSync(
     data class ChunkKey(
         val profileId: Int,
         val bouquetRef: String,
-        val windowStart: Long,
-        val persist: Boolean
+        val windowStart: Long
     )
 
     data class CachedChunk(
@@ -165,7 +164,7 @@ class MultiEpgSync(
         bouquetRef: String,
         chunk: MultiEpgWindows.Chunk
     ) {
-        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist = true)
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
         var deferred: CompletableDeferred<Unit>
         while (true) {
             var created = false
@@ -231,7 +230,7 @@ class MultiEpgSync(
         bouquetRef: String,
         chunk: MultiEpgWindows.Chunk
     ): List<Event> {
-        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist = false)
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec)
         var deferred: CompletableDeferred<List<Event>>
         while (true) {
             var created = false

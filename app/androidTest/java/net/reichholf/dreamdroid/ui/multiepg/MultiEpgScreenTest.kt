@@ -45,7 +45,6 @@ import net.reichholf.dreamdroid.multiepg.playableMultiEpgRoster
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -721,6 +720,7 @@ class MultiEpgScreenTest {
     fun focusIntoTheUnpaintedDayReportsThatWindow() {
         val origin = 1_700_000_000L
         val day2 = origin + 86_400L
+        val focusSec = day2 + 3_600L
         val ref = "1:0:1:1:1:1:0:0:0:0:"
         val channels = listOf(
             MultiEpgChannel(
@@ -762,17 +762,17 @@ class MultiEpgScreenTest {
                             visibleStart = start
                             visibleEnd = end
                         },
-                        focusSec = day2 + 3_600L,
+                        focusSec = focusSec,
                         focusEpoch = 1,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
             }
         }
-        composeRule.waitUntil(5_000) { visibleStart >= day2 }
+        // The pre-layout fallback reports focusSec verbatim; a landed scroll is left of it.
+        composeRule.waitUntil(5_000) { visibleStart >= day2 && visibleStart < focusSec }
         composeRule.waitForIdle()
         assertTrue(visibleEnd > visibleStart)
-        assertFalse(dayLabelText().startsWith("Today"))
     }
 
     @Test

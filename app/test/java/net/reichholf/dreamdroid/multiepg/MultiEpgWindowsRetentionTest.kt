@@ -17,4 +17,16 @@ class MultiEpgWindowsRetentionTest {
             MultiEpgWindows.retentionCutoffSec(now)
         )
     }
+
+    @Test
+    fun slidingChunksKeepsOnlyTheVisibleChunk() {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val want = MultiEpgWindows.slidingChunks(
+            originFloorSec = now,
+            visibleStartSec = now,
+            visibleEndSec = now + 7_200L
+        )
+        assertEquals(listOf(chunk.startSec), want)
+    }
 }
