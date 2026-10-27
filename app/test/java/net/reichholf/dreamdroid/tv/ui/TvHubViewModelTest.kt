@@ -117,6 +117,58 @@ class TvHubViewModelTest {
     }
 
     @Test
+    fun withoutAnActiveProfileTheHubSettlesEmptyAndAsksNothing() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        awaitLoaded(viewModel)
+        val asked = receiver.requests.size
+        receiver.profiles.repository.clearCurrent()
+
+        viewModel.reload()
+        val state = awaitState(viewModel) { !it.loading && it.bouquetRows.isEmpty() }
+
+        assertEquals(emptyList<String>(), state.movieLocations)
+        assertNull(state.errorText)
+        assertEquals(asked, receiver.requests.size)
+    }
+
+    /** The last profile can be deleted while a browse waits for the receiver. */
+    @Test
+    fun aProfileDeletedBeforeTheBouquetsAreAskedLeavesTheHubEmpty() = runBlocking<Unit> {
+        receiver.answer = { request ->
+            if (request.requestUrl?.encodedPath == "/web/getlocations") {
+                receiver.profiles.repository.clearCurrent()
+            }
+            routes(request)
+        }
+
+        val state = awaitLoaded(viewModel())
+
+        assertTrue(state.bouquetRows.isEmpty())
+        assertTrue(receiver.requestsTo(BOUQUET_INDEX_PATH).isEmpty())
+    }
+
+    /** Afterwards a bouquet has neither a receiver nor a profile to read Room with. */
+    @Test
+    fun aProfileDeletedMidBrowseDropsTheRemainingBouquets() = runBlocking<Unit> {
+        bouquets = listOf(FAVOURITES to "Favourites", OTHER to "Other")
+        val viewModel = viewModel()
+        awaitLoaded(viewModel)
+        assertNotNull(receiver.services.cachedNowNext(OTHER))
+        receiver.answer = { request ->
+            val path = request.requestUrl?.encodedPath
+            if (path == "/web/epgnownext" && request.bRef() == FAVOURITES) {
+                receiver.profiles.repository.clearCurrent()
+            }
+            routes(request)
+        }
+
+        viewModel.reload()
+
+        val state = awaitState(viewModel) { !it.loading && it.rowRefs() == listOf(FAVOURITES) }
+        assertEquals(listOf(FAVOURITES), state.rowRefs())
+    }
+
+    @Test
     fun shownHubSyncsTheWeekOfTheSelectedBouquet() = runBlocking<Unit> {
         epgInEveryWindow = true
         bouquets = listOf(FAVOURITES to "Favourites", OTHER to "Other")

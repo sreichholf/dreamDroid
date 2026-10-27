@@ -132,10 +132,12 @@ class TimerRepository @Inject constructor(
      * read as `/hdd/movie`, failed tags as none; both are asked again on the next call.
      * Answers are kept until the profile changes; known ones return without suspending.
      * While the session is Offline the receiver is not asked, as if it had failed.
+     * Without an active profile nothing is asked and what is known comes back.
      */
     suspend fun locationsAndTags(): TimerChoices {
-        if (!profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()) {
-            val profile = profiles.requireCurrent()
+        val unanswered = !profiles.locationsLoadedFromReceiver() || profiles.tags().isEmpty()
+        val profile = profiles.current.value
+        if (profile != null && unanswered) {
             val api = if (sessions.status.value.shouldSkipReceiverHttp(hasCache = true)) {
                 null
             } else {

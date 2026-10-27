@@ -118,7 +118,7 @@ class TvHubViewModel internal constructor(
     private val receiver: ReceiverRepository,
     private val movies: MovieRepository,
     private val sessions: SessionConnectionHolder,
-    profiles: ProfileRepository,
+    private val profiles: ProfileRepository,
     lastStreams: LastLiveStreamRepository,
     private val epgSyncDelayMs: Long
 ) : ViewModel() {
@@ -202,6 +202,23 @@ class TvHubViewModel internal constructor(
         liveMovieLocations.clear()
         browseSession = sessions.status.value.session
         browseLive = false
+        if (profiles.current.value == null) {
+            // Setup replaced the hub: asking the receiver needs a profile, and a browse that
+            // asked nothing must not pass for a live one after setup saved the first profile.
+            browseJob = null
+            _uiState.update {
+                it.copy(
+                    loading = false,
+                    errorText = null,
+                    movieError = null,
+                    bouquetRows = emptyList(),
+                    movieLocations = emptyList(),
+                    moviesByLocation = emptyMap(),
+                    navigation = it.navigation.reconcile(emptyList(), emptyList())
+                )
+            }
+            return
+        }
         _uiState.update {
             it.copy(
                 loading = true,

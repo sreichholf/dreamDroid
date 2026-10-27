@@ -4,6 +4,7 @@
 * UPD: TV - Profil- und Timer-Editor passen zum Hub
 * UPD: Viele UI-Verbesserungen
 * FIX: Absturz bei Listen mit doppelten Einträgen
+* FIX: TV - Absturz ohne aktives Profil
 
 ## 2.0.469
 * UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet

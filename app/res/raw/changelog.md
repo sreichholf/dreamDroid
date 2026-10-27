@@ -4,6 +4,7 @@
 * UPD: TV - profile and timer editors match the hub
 * UPD: Many UI improvements
 * FIX: Crash on a list that repeats an entry
+* FIX: TV - crash without an active profile
 
 ## 2.0.469
 * UPD: TV - rework hub, player, MultiEPG, editing

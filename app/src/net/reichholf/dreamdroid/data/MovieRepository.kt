@@ -67,17 +67,27 @@ class MovieRepository @Inject constructor(
         sessions,
         forceRefresh,
         cached = { if (tags.isEmpty()) cachedMovies(location) else null },
-        fetch = {
-            clients.current().movies(location, tags).also { response ->
-                val live = response.value
-                if (live != null && tags.isEmpty()) {
-                    saveMovies(location, live)
-                }
-            }
-        },
+        fetch = { fetchMovies(location, tags) },
         loaded = MovieListLoad::Movies,
         failed = MovieListLoad::Failed
     )
+
+    /**
+     * The receiver's list for [location]; nothing when no profile is active, as the hub can
+     * outlive one.
+     */
+    private suspend fun fetchMovies(
+        location: String,
+        tags: List<String>
+    ): EnigmaResponse<List<Movie>> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).movies(location, tags).also { response ->
+            val live = response.value
+            if (live != null && tags.isEmpty()) {
+                saveMovies(location, live)
+            }
+        }
+    }
 
     suspend fun delete(movie: Movie): EnigmaResponse<SimpleResult> =
         clients.current().deleteMovie(movie)
@@ -137,7 +147,7 @@ class MovieRepository @Inject constructor(
      * means the receiver answered with no locations.
      */
     suspend fun cachedLocations(): List<String>? {
-        val profileId = profiles.requireCurrent().id ?: return null
+        val profileId = profiles.current.value?.id ?: return null
         val dao = database.movieDao()
         if (dao.locationMetaCount(profileId) == 0) {
             return null
@@ -146,7 +156,7 @@ class MovieRepository @Inject constructor(
     }
 
     suspend fun saveLocations(locations: List<String>) {
-        val profileId = profiles.requireCurrent().id ?: return
+        val profileId = profiles.current.value?.id ?: return
         database.movieDao().replaceLocations(
             profileId,
             locations.mapIndexed { index, dirname ->
@@ -160,7 +170,7 @@ class MovieRepository @Inject constructor(
      * answered with no movies.
      */
     suspend fun cachedMovies(location: String): List<Movie>? {
-        val profileId = profiles.requireCurrent().id ?: return null
+        val profileId = profiles.current.value?.id ?: return null
         val dao = database.movieDao()
         if (dao.movieListMetaCount(profileId, location) == 0) {
             return null
@@ -169,7 +179,7 @@ class MovieRepository @Inject constructor(
     }
 
     suspend fun saveMovies(location: String, movies: List<Movie>) {
-        val profileId = profiles.requireCurrent().id ?: return
+        val profileId = profiles.current.value?.id ?: return
         database.movieDao().replaceMovies(
             profileId,
             location,
