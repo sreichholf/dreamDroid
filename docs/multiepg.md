@@ -246,7 +246,7 @@ EpgChunkMeta
 
 Nested **MultiEPG** (hub toolbar/overflow or list EPG Timeline) opens the grid (LazyColumn rows + shared H-scroll; sync on `Dispatchers.IO`/`Default`). Grid chrome matches list EPG (`surfaceVariant` bars, hairline dividers); **now** marker uses `colorScheme.primary`. Rows default to Comfortable (~48.dp); Compact is the original dense 36.dp. Off-screen programme bars are viewport-culled.
 
-**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh the visible chunk in the background with a small toolbar spinner; the next chunk is filled into Room only, never painted, and a failure there stays silent; pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right attaches the chunks that enter the viewport from Room (fetching only on a miss) and drops chunks that left it; panning back toward now reattaches them from Room. The timeline keeps one chunk of scroll range beyond the painted window so panning can reach the warmed chunk. The toolbar shows the local calendar day under the viewport.
+**Sync UX (locked):** stale-while-revalidate — paint Room immediately when present; refresh the visible chunk in the background with a small toolbar spinner; the next chunk is filled into Room only, never painted, and a failure there stays silent; pull-to-refresh always forces a refetch; keep stale rows on refresh failure (soft error); bouquet/profile remount replaces the grid immediately. Cache chunks stay 24 h UTC. The painted grid is a **sliding window**: left edge is the **earliest start among programmes overlapping now**; panning right attaches the chunks that enter the viewport from Room (fetching only on a miss), drops chunks that left it, and warms the following chunk into Room; panning back toward now reattaches them from Room. The timeline keeps one chunk of scroll range beyond the painted window so panning can reach the warmed chunk. The toolbar shows the local calendar day under the viewport.
 
 ### Phase exit criteria
 
@@ -306,7 +306,7 @@ Fixture: `app/androidTest/resources/web/epgmulti.xml` (multi-service, same tags 
 | --- | --- | --- |
 | 1 | Navigation | Keep list EPG as the drawer entry; MultiEPG is nested from hub toolbar/overflow and list EPG Timeline |
 | 2 | Visible window | **2 h** default (GraphMultiEPG); zoom 1 / 2 / 4 / 5 h |
-| 3 | Prefetch | +24 h Room chunks in the grid; the hub syncs 7 days of the list on screen (operator, 2026-10-11) |
+| 3 | Prefetch | +24 h chunk warmed into Room, not painted; the hub syncs 7 days of the list on screen (operator, 2026-10-11) |
 | 4 | Cache TTL | 25 min for today and tomorrow, 6 h after that (operator, 2026-10-11); 2-day retention prune; no idle sync |
 | 5 | Fallback | Defer `epgservice` fallback until spike proves need |
 | 6 | TV | Phone-only v1 (TV shipped later, §9) |

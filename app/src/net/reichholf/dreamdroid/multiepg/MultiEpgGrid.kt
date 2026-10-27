@@ -215,7 +215,7 @@ class MultiEpgGrid(
                 }
                 if (peek != null && peek.events.isNotEmpty()) {
                     if (peek.fresh) {
-                        warmNextChunk(anchorSec)
+                        warmNextChunk(id, anchorSec)
                         return@launch
                     }
                 }
@@ -230,7 +230,7 @@ class MultiEpgGrid(
                 }
                 val chunk = MultiEpgWindows.chunkContaining(anchorSec)
                 putWindow(chunk.startSec, events)
-                warmNextChunk(anchorSec)
+                warmNextChunk(id, anchorSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
@@ -271,8 +271,7 @@ class MultiEpgGrid(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec,
-            padSec = 0L
+            visibleEndSec = visibleEndSec
         )
         if (want.toSet() == eventsByWindow.keys.toSet() && windowJob?.isActive != true) {
             return
@@ -316,17 +315,19 @@ class MultiEpgGrid(
      * Fill Room with the chunk after [anchor] without painting it. The grid keeps
      * only what it draws, so a cache miss here does not hold a day of programmes.
      */
-    private fun warmNextChunk(anchor: Long) {
+    private fun warmNextChunk(profileId: Int, anchor: Long) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty() || !persistBouquet(ref) || isSessionOffline()) {
             return
         }
-        prefetchJob?.cancel()
-        beginSync()
+        if (prefetchJob?.isActive == true) {
+            return
+        }
         prefetchJob = scope.launch {
+            beginSync()
             try {
                 sync.warmChunk(
-                    profileId = profileId(),
+                    profileId = profileId,
                     bouquetRef = ref,
                     unixSec = anchor + MultiEpgWindows.CHUNK_SECONDS
                 )
@@ -388,8 +389,7 @@ class MultiEpgGrid(
         val want = MultiEpgWindows.slidingChunks(
             originFloorSec = _state.value.originFloorSec,
             visibleStartSec = visibleStartSec,
-            visibleEndSec = visibleEndSec,
-            padSec = 0L
+            visibleEndSec = visibleEndSec
         )
         if (want.isEmpty()) {
             return
@@ -402,7 +402,12 @@ class MultiEpgGrid(
         for (start in want) {
             attachWindow(start)
         }
-        gridMutex.withLock {
+        val painted = gridMutex.withLock {
+            // Keep the last painted chunks when a wanted one could not be attached
+            // (Offline, or the fetch failed): pruning then would blank the grid.
+            if (!eventsByWindow.keys.containsAll(wantSet)) {
+                return@withLock false
+            }
             val extras = eventsByWindow.keys.filter { it !in wantSet }
             if (extras.isNotEmpty()) {
                 for (start in extras) {
@@ -410,6 +415,10 @@ class MultiEpgGrid(
                 }
                 publishGridLocked()
             }
+            true
+        }
+        if (painted) {
+            warmNextChunk(profileId(), want.last())
         }
     }
 

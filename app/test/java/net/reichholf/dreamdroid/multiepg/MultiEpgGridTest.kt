@@ -161,7 +161,9 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad("bouquet-a", t0)
-        grid.awaitState { grid.state.value.channels.isNotEmpty() }
+        grid.awaitState {
+            grid.state.value.channels.isNotEmpty() && grid.state.value.syncing
+        }
         assertEquals("T", titleOnFocusedChunk(grid, t0))
         assertTrue(grid.state.value.syncing)
         gate.complete(Unit)
@@ -218,7 +220,10 @@ class MultiEpgGridTest {
         assertEquals(lateNow, grid.state.value.timelineStartSec)
         assertEquals(lateNow, grid.state.value.originFloorSec)
         // The scroll range reaches the warmed chunk, but the grid does not hold its events.
-        assertTrue(grid.state.value.timelineEndSec > chunk.endSec)
+        assertEquals(
+            chunk.endSec + MultiEpgWindows.CHUNK_SECONDS,
+            grid.state.value.timelineEndSec
+        )
         assertEquals(setOf(chunk.startSec), grid.loadedWindowStarts)
         assertFalse(
             grid.loadedWindowStarts.contains(chunk.startSec - MultiEpgWindows.CHUNK_SECONDS)
@@ -336,7 +341,7 @@ class MultiEpgGridTest {
         )
         grid.replaceAndLoad("bouquet-a", now)
         grid.awaitIdle()
-        val fetchesAfterLoad = fetches.size
+        assertEquals(1, fetches.count { it == tomorrow })
 
         grid.onVisibleWindow(
             tomorrow + 3_600L,
@@ -345,8 +350,82 @@ class MultiEpgGridTest {
         grid.awaitIdle()
 
         assertEquals(setOf(tomorrow), grid.loadedWindowStarts)
-        assertEquals(fetchesAfterLoad, fetches.size)
+        assertEquals(
+            1,
+            fetches.count { it == tomorrow },
+            "the pan must read the warmed chunk from Room"
+        )
+        assertEquals(
+            1,
+            fetches.count { it == tomorrow + MultiEpgWindows.CHUNK_SECONDS },
+            "the pan must warm the following chunk"
+        )
         assertEquals("T", titleOnFocusedChunk(grid, tomorrow))
+    }
+
+    @Test
+    fun nonPersistedBouquetIsNotWarmed() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            persistBouquet = { false }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+
+        assertEquals(listOf(chunk.startSec), fetches)
+        assertEquals(setOf(chunk.startSec), grid.loadedWindowStarts)
+        assertNull(
+            db.epgDao().getChunk(1, "bouquet-a", chunk.startSec + MultiEpgWindows.CHUNK_SECONDS)
+        )
+    }
+
+    @Test
+    fun offlinePanIntoAnUncachedChunkKeepsPaintedWindow() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val fetches = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.incrementAndGet()
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        sync.ensureChunk(1, "bouquet-a", now)
+        val fetchesBeforePan = fetches.get()
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 },
+            isSessionOffline = { true }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        assertEquals("T", titleOnFocusedChunk(grid, now))
+
+        grid.onVisibleWindow(day3 + 3_600L, day3 + 3_600L + 7_200L)
+        grid.awaitIdle()
+
+        assertEquals(fetchesBeforePan, fetches.get())
+        assertEquals(setOf(chunk.startSec), grid.loadedWindowStarts)
+        assertEquals("T", titleOnFocusedChunk(grid, now))
     }
 
     @Test
@@ -955,10 +1034,12 @@ class MultiEpgGridTest {
     fun prefetchFailureLeavesVisibleGridAndIsSilent() = runBlocking {
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L
         val visibleStart = MultiEpgWindows.chunkContaining(t0).startSec
+        val prefetchAttempts = AtomicInteger(0)
         val sync = MultiEpgSync(
             dao = db.epgDao(),
             fetch = { _, time, _ ->
                 if (time != visibleStart) {
+                    prefetchAttempts.incrementAndGet()
                     error("prefetch down")
                 }
                 listOf(programme(id = time.toString(), title = "T", start = time))
@@ -977,6 +1058,7 @@ class MultiEpgGridTest {
         assertTrue(grid.state.value.channels.isNotEmpty())
         assertNull(grid.state.value.errorMessage)
         assertEquals(setOf(visibleStart), grid.loadedWindowStarts)
+        assertTrue(prefetchAttempts.get() >= 1)
     }
 
     private fun titleOnFocusedChunk(grid: MultiEpgGrid, unixSec: Long): String =

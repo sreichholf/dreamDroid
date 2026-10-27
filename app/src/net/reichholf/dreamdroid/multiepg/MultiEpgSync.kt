@@ -27,7 +27,12 @@ class MultiEpgSync(
     private val chunkSeconds: Long = MultiEpgWindows.CHUNK_SECONDS
 ) {
     private val mutex = Mutex()
-    private val inFlight = HashMap<ChunkKey, CompletableDeferred<List<Event>>>()
+
+    /** Fetch flights for `persist = false` callers; they need the events themselves. */
+    private val liveFlights = HashMap<ChunkKey, CompletableDeferred<List<Event>>>()
+
+    /** Persist flights; readers read Room after them, warmers discard the result. */
+    private val persistFlights = HashMap<ChunkKey, CompletableDeferred<Unit>>()
 
     data class ChunkKey(
         val profileId: Int,
@@ -102,35 +107,75 @@ class MultiEpgSync(
         persist: Boolean = true
     ): List<Event> {
         val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
-        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist)
-        val now = clockMs()
-
-        if (persist && !forceRefresh) {
-            val cached = withContext(Dispatchers.IO) {
-                dao.getChunk(profileId, bouquetRef, chunk.startSec)
+        if (persist) {
+            if (!forceRefresh && isChunkFresh(profileId, bouquetRef, chunk)) {
+                return readChunk(profileId, bouquetRef, chunk)
             }
-            if (cached != null && now - cached.fetchedAtMs <= ttlFor(chunk, now)) {
-                return withContext(Dispatchers.IO) {
-                    dao.eventsOverlapping(
-                        profileId,
-                        bouquetRef,
-                        chunk.startSec,
-                        chunk.endSec
-                    ).map { it.toEvent() }
-                }
-            }
+            persistChunk(profileId, bouquetRef, chunk)
+            return readChunk(profileId, bouquetRef, chunk)
         }
+        return fetchWithoutPersisting(profileId, bouquetRef, chunk)
+    }
 
-        var deferred: CompletableDeferred<List<Event>>
+    /**
+     * Cache fill for [unixSec]'s chunk. Unlike [ensureChunk] no caller needs the events:
+     * a fresh Room chunk is left untouched, and a missing or stale one is fetched and
+     * persisted. The grid warms the next chunk this way so panning into it reads Room
+     * instead of holding a day of programmes in memory.
+     */
+    suspend fun warmChunk(profileId: Int, bouquetRef: String, unixSec: Long) {
+        val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
+        if (isChunkFresh(profileId, bouquetRef, chunk)) {
+            return
+        }
+        persistChunk(profileId, bouquetRef, chunk)
+    }
+
+    private suspend fun isChunkFresh(
+        profileId: Int,
+        bouquetRef: String,
+        chunk: MultiEpgWindows.Chunk
+    ): Boolean {
+        val now = clockMs()
+        val meta = withContext(Dispatchers.IO) {
+            dao.getChunk(profileId, bouquetRef, chunk.startSec)
+        }
+        return meta != null && now - meta.fetchedAtMs <= ttlFor(chunk, now)
+    }
+
+    private suspend fun readChunk(
+        profileId: Int,
+        bouquetRef: String,
+        chunk: MultiEpgWindows.Chunk
+    ): List<Event> = withContext(Dispatchers.IO) {
+        dao.eventsOverlapping(
+            profileId,
+            bouquetRef,
+            chunk.startSec,
+            chunk.endSec
+        ).map { it.toEvent() }
+    }
+
+    /**
+     * Fetch and persist [chunk] once for every caller that needs it. Readers read Room
+     * after the flight; a warm only waits for it and never materialises the chunk.
+     */
+    private suspend fun persistChunk(
+        profileId: Int,
+        bouquetRef: String,
+        chunk: MultiEpgWindows.Chunk
+    ) {
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist = true)
+        var deferred: CompletableDeferred<Unit>
         while (true) {
             var created = false
             mutex.withLock {
-                val existing = inFlight[key]
+                val existing = persistFlights[key]
                 if (existing != null) {
                     deferred = existing
                 } else {
                     deferred = CompletableDeferred()
-                    inFlight[key] = deferred
+                    persistFlights[key] = deferred
                     created = true
                 }
             }
@@ -138,13 +183,14 @@ class MultiEpgSync(
                 break
             }
             try {
-                return deferred.await()
+                deferred.await()
+                return
             } catch (_: CancellationException) {
                 // The caller that started this fetch was cancelled, not this one: fetch again.
                 currentCoroutineContext().ensureActive()
                 mutex.withLock {
-                    if (inFlight[key] === deferred) {
-                        inFlight.remove(key)
+                    if (persistFlights[key] === deferred) {
+                        persistFlights.remove(key)
                     }
                 }
             }
@@ -153,11 +199,6 @@ class MultiEpgSync(
         try {
             val events = fetch(bouquetRef, chunk.startSec, chunk.endSec)
             val entities = events.toEpgEventEntities(profileId, bouquetRef)
-            if (!persist) {
-                val result = entities.map { it.toEvent() }
-                deferred.complete(result)
-                return result
-            }
             val meta = EpgChunkMetaEntity(
                 profileId = profileId,
                 bouquetRef = bouquetRef,
@@ -171,14 +212,58 @@ class MultiEpgSync(
                     MultiEpgWindows.retentionCutoffSec(clockMs() / 1000L)
                 )
             }
-            val result = withContext(Dispatchers.IO) {
-                dao.eventsOverlapping(
-                    profileId,
-                    bouquetRef,
-                    chunk.startSec,
-                    chunk.endSec
-                ).map { it.toEvent() }
+            deferred.complete(Unit)
+        } catch (t: Throwable) {
+            deferred.completeExceptionally(t)
+            throw t
+        } finally {
+            mutex.withLock {
+                if (persistFlights[key] === deferred) {
+                    persistFlights.remove(key)
+                }
             }
+        }
+    }
+
+    /** Non-persisted containers (Provider / All Services) only need the events. */
+    private suspend fun fetchWithoutPersisting(
+        profileId: Int,
+        bouquetRef: String,
+        chunk: MultiEpgWindows.Chunk
+    ): List<Event> {
+        val key = ChunkKey(profileId, bouquetRef, chunk.startSec, persist = false)
+        var deferred: CompletableDeferred<List<Event>>
+        while (true) {
+            var created = false
+            mutex.withLock {
+                val existing = liveFlights[key]
+                if (existing != null) {
+                    deferred = existing
+                } else {
+                    deferred = CompletableDeferred()
+                    liveFlights[key] = deferred
+                    created = true
+                }
+            }
+            if (created) {
+                break
+            }
+            try {
+                return deferred.await()
+            } catch (_: CancellationException) {
+                currentCoroutineContext().ensureActive()
+                mutex.withLock {
+                    if (liveFlights[key] === deferred) {
+                        liveFlights.remove(key)
+                    }
+                }
+            }
+        }
+
+        try {
+            val result = fetch(bouquetRef, chunk.startSec, chunk.endSec)
+                .toEpgEventEntities(profileId, bouquetRef)
+                .map { it.toEvent() }
             deferred.complete(result)
             return result
         } catch (t: Throwable) {
@@ -186,29 +271,11 @@ class MultiEpgSync(
             throw t
         } finally {
             mutex.withLock {
-                if (inFlight[key] === deferred) {
-                    inFlight.remove(key)
+                if (liveFlights[key] === deferred) {
+                    liveFlights.remove(key)
                 }
             }
         }
-    }
-
-    /**
-     * Cache fill for [unixSec]'s chunk. Unlike [ensureChunk] no caller needs the events:
-     * a fresh Room chunk is left untouched, and a missing or stale one is fetched and
-     * persisted. The grid warms the next chunk this way so panning into it reads Room
-     * instead of holding a day of programmes in memory.
-     */
-    suspend fun warmChunk(profileId: Int, bouquetRef: String, unixSec: Long) {
-        val chunk = MultiEpgWindows.chunkContaining(unixSec, chunkSeconds)
-        val now = clockMs()
-        val cached = withContext(Dispatchers.IO) {
-            dao.getChunk(profileId, bouquetRef, chunk.startSec)
-        }
-        if (cached != null && now - cached.fetchedAtMs <= ttlFor(chunk, now)) {
-            return
-        }
-        ensureChunk(profileId, bouquetRef, unixSec, persist = true)
     }
 
     private fun ttlFor(chunk: MultiEpgWindows.Chunk, nowMs: Long): Long = MultiEpgWindows.ttlMs(

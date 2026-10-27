@@ -45,6 +45,7 @@ import net.reichholf.dreamdroid.multiepg.playableMultiEpgRoster
 import net.reichholf.dreamdroid.ui.compose.PULL_REFRESH_INDICATOR_TAG
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotSame
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
@@ -714,6 +715,64 @@ class MultiEpgScreenTest {
         composeRule.onNodeWithText("NightShow").assertIsDisplayed()
         assertEquals(dayBefore, dayLabelText())
         composeRule.onNodeWithTag("multi_epg_sync_indicator").assertIsDisplayed()
+    }
+
+    @Test
+    fun focusIntoTheUnpaintedDayReportsThatWindow() {
+        val origin = 1_700_000_000L
+        val day2 = origin + 86_400L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val channels = listOf(
+            MultiEpgChannel(
+                occurrence = 0,
+                serviceRef = ref,
+                serviceName = "Das Erste HD",
+                bars = listOf(
+                    MultiEpgBar(
+                        event = Event(
+                            eventId = "10",
+                            title = "News",
+                            start = origin.toString(),
+                            duration = "3600",
+                            serviceReference = ref,
+                            serviceName = "Das Erste HD"
+                        ),
+                        startSec = origin,
+                        endSec = origin + 3600
+                    )
+                )
+            )
+        )
+        var visibleStart = 0L
+        var visibleEnd = 0L
+        composeRule.setContent {
+            DreamDroidTheme {
+                Box(modifier = Modifier.width(411.dp).height(891.dp)) {
+                    MultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = channels,
+                        timelineStartSec = origin,
+                        timelineEndSec = origin + 2L * 86_400L,
+                        nowSec = origin,
+                        loading = false,
+                        errorMessage = null,
+                        onJumpToNow = {},
+                        onEventClick = {},
+                        onVisibleWindow = { start, end ->
+                            visibleStart = start
+                            visibleEnd = end
+                        },
+                        focusSec = day2 + 3_600L,
+                        focusEpoch = 1,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+        composeRule.waitUntil(5_000) { visibleStart >= day2 }
+        composeRule.waitForIdle()
+        assertTrue(visibleEnd > visibleStart)
+        assertFalse(dayLabelText().startsWith("Today"))
     }
 
     @Test
