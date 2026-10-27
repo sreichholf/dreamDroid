@@ -82,7 +82,7 @@ class HubViewModelTest {
         Dispatchers.setMain(main)
         receiver.answer = ::routes
         receiver.start()
-        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
+        profiles.setDeviceInfo(profiles.current.value!!, DeviceInfo())
     }
 
     @AfterEach
@@ -94,7 +94,7 @@ class HubViewModelTest {
 
     @Test
     fun loadsTheBouquetsAndSelectsTheProfileDefault() = runBlocking<Unit> {
-        profiles.requireCurrent().setDefaultRefValues(SPORTS.reference, SPORTS.name)
+        profiles.current.value!!.setDefaultRefValues(SPORTS.reference, SPORTS.name)
         val handle = SavedStateHandle()
 
         val state = viewModel(handle).loaded()
@@ -114,10 +114,10 @@ class HubViewModelTest {
 
     @Test
     fun withoutAStripTheHubWaitsForTheProfileCheck() = runBlocking<Unit> {
-        profiles.setDeviceInfo(profiles.requireCurrent(), null)
+        profiles.setDeviceInfo(profiles.current.value!!, null)
         val beforeTheCheck = CopyOnWriteArrayList<String?>()
         receiver.answer = { request ->
-            if (profiles.deviceInfo(profiles.requireCurrent()) == null) {
+            if (profiles.deviceInfo(profiles.current.value!!) == null) {
                 beforeTheCheck += request.requestUrl?.encodedPath
             }
             routes(request)
@@ -128,7 +128,7 @@ class HubViewModelTest {
         // one that asks the receiver first has sent that request by now.
         withTimeout(5_000L) { main.delays.first { it >= 1 } }
         main.scheduler.advanceTimeBy(10_000L)
-        profiles.setDeviceInfo(profiles.requireCurrent(), DeviceInfo())
+        profiles.setDeviceInfo(profiles.current.value!!, DeviceInfo())
         main.scheduler.advanceTimeBy(200L)
 
         assertEquals(listOf(FAVOURITES, SPORTS), viewModel.loaded().tvBouquets)

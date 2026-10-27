@@ -123,9 +123,12 @@ class TvHubViewModelTest {
         val asked = receiver.requests.size
         receiver.profiles.repository.clearCurrent()
 
+        val before = viewModel.jobs()
         viewModel.reload()
-        val state = awaitState(viewModel) { !it.loading && it.bouquetRows.isEmpty() }
+        viewModel.joinJobsSince(before)
 
+        val state = viewModel.uiState.value
+        assertTrue(state.bouquetRows.isEmpty())
         assertEquals(emptyList<String>(), state.movieLocations)
         assertNull(state.errorText)
         assertEquals(asked, receiver.requests.size)
@@ -410,7 +413,7 @@ class TvHubViewModelTest {
 
     @Test
     fun theActiveProfileNamesTheChip() = runBlocking<Unit> {
-        val name = receiver.profiles.repository.requireCurrent().name.orEmpty()
+        val name = receiver.profiles.repository.current.value!!.name.orEmpty()
 
         awaitState(viewModel()) { it.profileName == name && name.isNotEmpty() }
     }
@@ -465,7 +468,7 @@ class TvHubViewModelTest {
         viewModel.streamService(service, FAVOURITES)
         val stream = awaitState(viewModel) { it.stream != null }.stream
 
-        val profile = receiver.profiles.repository.requireCurrent()
+        val profile = receiver.profiles.repository.current.value!!
         assertEquals(
             TvStreamOpen.Service(
                 service,
@@ -488,7 +491,7 @@ class TvHubViewModelTest {
         lastStreams.save(zdf)
         awaitState(viewModel) { it.continueWatching?.service?.serviceReference == CHANNEL }
 
-        val active = receiver.profiles.repository.requireCurrent()
+        val active = receiver.profiles.repository.current.value!!
         receiver.profiles.repository.setCurrent(Profile().apply { id = PROFILE_ID + 1 })
         awaitState(viewModel) { it.continueWatching == null }
 
@@ -518,7 +521,7 @@ class TvHubViewModelTest {
 
     @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
-        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.profiles.repository.current.value!!.zapAndStream = true
         val viewModel = viewModel()
 
         viewModel.streamService(
@@ -540,11 +543,24 @@ class TvHubViewModelTest {
         viewModel.streamMovie(movie)
         val stream = awaitState(viewModel) { it.stream != null }.stream
 
-        val profile = receiver.profiles.repository.requireCurrent()
+        val profile = receiver.profiles.repository.current.value!!
         assertEquals(
             TvStreamOpen.Recording(movie, EnigmaUrls.fileStream(profile, MOVIE_REF, MOVIE_FILE)),
             stream
         )
+    }
+
+    @Test
+    fun streamMovieWithoutAnActiveProfileSaysWhy() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        receiver.profiles.repository.clearCurrent()
+        val movie = Movie(reference = MOVIE_REF, fileName = MOVIE_FILE, title = "News")
+
+        viewModel.streamMovie(movie)
+
+        val state = awaitState(viewModel) { it.userMessage != null }
+        assertEquals(UiText.Resource(R.string.no_profile_body), state.userMessage)
+        assertNull(state.stream)
     }
 
     @Test

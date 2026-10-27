@@ -188,7 +188,7 @@ class CurrentServiceViewModelTest {
         assertEquals(
             CurrentServiceStream(
                 "Das Erste HD",
-                LiveStream.Ready(REF, EnigmaUrls.stream(profiles.requireCurrent(), REF))
+                LiveStream.Ready(REF, EnigmaUrls.stream(profiles.current.value!!, REF))
             ),
             stream
         )
@@ -198,7 +198,7 @@ class CurrentServiceViewModelTest {
 
     @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
-        profiles.requireCurrent().zapAndStream = true
+        profiles.current.value!!.zapAndStream = true
         receiver.answer = { request ->
             if (request.requestUrl?.encodedPath == "/web/zap") {
                 MockResponse().setBody(simpleResult(false, "No free tuner"))

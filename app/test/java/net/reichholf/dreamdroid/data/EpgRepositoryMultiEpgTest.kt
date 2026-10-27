@@ -167,7 +167,7 @@ class EpgRepositoryMultiEpgTest {
     @Test
     fun anOpenWebifAlternativesGroupIsStoredAsAChannel() = runBlocking {
         receiver.profiles.repository.setDeviceInfo(
-            receiver.profiles.repository.requireCurrent(),
+            receiver.profiles.repository.current.value!!,
             DeviceInfo(interfaceVersion = "OWIF 1.5.2"),
             ReceiverFlavor.OpenWebif
         )

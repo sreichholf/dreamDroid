@@ -369,7 +369,7 @@ class HubServiceListViewModelTest {
     @Test
     fun aReceiverWithoutNowNextGetsNoNextEventInTheRowMenu() = runBlocking {
         receiver.profiles.capabilities.set(
-            receiver.profiles.repository.requireCurrent(),
+            receiver.profiles.repository.current.value!!,
             WebIfCapabilities(nowNext = false)
         )
         val viewModel = viewModel()
@@ -421,7 +421,7 @@ class HubServiceListViewModelTest {
         assertEquals(CHANNEL_44D, stream.row.serviceReference)
         assertEquals(TAB, stream.bouquetRef)
         assertEquals(
-            EnigmaUrls.stream(receiver.profiles.repository.requireCurrent(), CHANNEL_44D),
+            EnigmaUrls.stream(receiver.profiles.repository.current.value!!, CHANNEL_44D),
             stream.stream.url
         )
         assertTrue(receiver.requestsTo(ZAP).isEmpty())
@@ -435,7 +435,7 @@ class HubServiceListViewModelTest {
 
     @Test
     fun rejectedZapAndStreamShowsTheReceiverTextAndStreamsNothing() = runBlocking {
-        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.profiles.repository.current.value!!.zapAndStream = true
         receiver.answer = { request ->
             if (request.requestUrl?.encodedPath == ZAP) {
                 MockResponse().setBody(
@@ -500,7 +500,7 @@ class HubServiceListViewModelTest {
 
         viewModel.toggleDefaultBouquet()
         val set = viewModel.uiState.first { it.isDefaultBouquet }
-        assertEquals(TAB, receiver.profiles.repository.requireCurrent().defaultBouquetTv)
+        assertEquals(TAB, receiver.profiles.repository.current.value!!.defaultBouquetTv)
         assertEquals(
             UiText.Resource(
                 R.string.default_bouquet_set_to_name,
@@ -512,8 +512,28 @@ class HubServiceListViewModelTest {
 
         viewModel.toggleDefaultBouquet()
         val reset = viewModel.uiState.first { !it.isDefaultBouquet }
-        assertNull(receiver.profiles.repository.requireCurrent().defaultBouquetTv)
+        assertNull(receiver.profiles.repository.current.value!!.defaultBouquetTv)
         assertNull(reset.userMessage)
+    }
+
+    @Test
+    fun togglingDefaultWithoutAnActiveProfileDoesNothing() = runBlocking {
+        val viewModel = viewModel()
+        viewModel.settled()
+        viewModel.toggleDefaultBouquet()
+        viewModel.uiState.first { it.isDefaultBouquet }
+        val profile = receiver.profiles.repository.current.value!!
+        assertEquals(TAB, profile.defaultBouquetTv)
+        viewModel.onMessageShown()
+        receiver.profiles.repository.clearCurrent()
+        val requestsBefore = receiver.server.requestCount
+
+        viewModel.toggleDefaultBouquet()
+
+        assertEquals(TAB, profile.defaultBouquetTv)
+        assertTrue(viewModel.uiState.value.isDefaultBouquet)
+        assertNull(viewModel.uiState.value.userMessage)
+        assertEquals(requestsBefore, receiver.server.requestCount)
     }
 
     @Test

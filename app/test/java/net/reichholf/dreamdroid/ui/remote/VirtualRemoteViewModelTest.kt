@@ -18,6 +18,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
@@ -146,6 +148,19 @@ class VirtualRemoteViewModelTest {
         viewModel.awaitState { it.keysBlocked }
 
         viewModel.onKey(412, false)
+
+        assertTrue(receiver.requests.isEmpty())
+        assertNull(viewModel.uiState.value.userMessage)
+    }
+
+    @Test
+    fun noActiveProfileSendsNothing() = runBlocking {
+        profiles.clearCurrent()
+        val viewModel = viewModel()
+        val before = viewModel.jobs()
+
+        viewModel.onKey(412, false)
+        viewModel.joinJobsSince(before)
 
         assertTrue(receiver.requests.isEmpty())
         assertNull(viewModel.uiState.value.userMessage)

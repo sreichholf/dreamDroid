@@ -19,12 +19,15 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgTextSize
 import net.reichholf.dreamdroid.multiepg.MultiEpgTimerClock
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
+import net.reichholf.dreamdroid.room.EpgChunkMetaEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.event
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -120,6 +123,25 @@ class MultiEpgViewModelTest {
         val state = awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
 
         assertEquals(listOf("Cached"), titles(state))
+        assertEquals(0, receiver.server.requestCount)
+    }
+
+    /** Chunks under a profile that is gone are not painted, and nothing is asked. */
+    @Test
+    fun aDeletedProfilesChunksAreNotPainted() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(NOW)
+        receiver.profiles.database.epgDao().replaceChunk(
+            EpgChunkMetaEntity(PROFILE_ID, BOUQUET, chunk.startSec, chunk.endSec, 1L),
+            listOf(event("Cached", NOW))
+        )
+        val viewModel = viewModel()
+        receiver.profiles.repository.clearCurrent()
+
+        val before = viewModel.jobs()
+        viewModel.ensureLoaded(0, BOUQUET, "Favourites", NOW)
+        viewModel.joinJobsSince(before)
+
+        assertTrue(viewModel.uiState.value.grid.channels.isEmpty())
         assertEquals(0, receiver.server.requestCount)
     }
 

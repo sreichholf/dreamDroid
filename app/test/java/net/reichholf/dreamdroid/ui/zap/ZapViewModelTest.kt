@@ -112,6 +112,16 @@ class ZapViewModelTest {
     }
 
     @Test
+    fun noActiveProfileOpensThePickerWithoutAskingTheReceiver() = runBlocking {
+        profiles.clearCurrent()
+
+        val viewModel = viewModel()
+
+        assertEquals(ZapEffect.PickBouquet, viewModel.uiState.value.effect)
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
     fun cancelledPickerSaysNoItemsAndTheNextReloadAsksAgain() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.onEffectHandled()
@@ -220,7 +230,7 @@ class ZapViewModelTest {
         assertEquals(
             ZapEffect.Stream(
                 service,
-                LiveStream.Ready(CHANNEL, EnigmaUrls.stream(profiles.requireCurrent(), CHANNEL))
+                LiveStream.Ready(CHANNEL, EnigmaUrls.stream(profiles.current.value!!, CHANNEL))
             ),
             effect
         )
@@ -237,7 +247,7 @@ class ZapViewModelTest {
 
     @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
-        profiles.requireCurrent().zapAndStream = true
+        profiles.current.value!!.zapAndStream = true
         receiver.answer = { request ->
             if (request.requestUrl?.encodedPath == ZAP) {
                 MockResponse().setBody(simpleResult(false, "No free tuner"))
@@ -257,7 +267,7 @@ class ZapViewModelTest {
     }
 
     private fun useDefaultBouquet() {
-        profiles.requireCurrent().setDefaultRefValues(BOUQUET, "Favourites")
+        profiles.current.value!!.setDefaultRefValues(BOUQUET, "Favourites")
     }
 
     private fun routes(request: RecordedRequest): MockResponse =

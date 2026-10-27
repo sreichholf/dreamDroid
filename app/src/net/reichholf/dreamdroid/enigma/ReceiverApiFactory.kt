@@ -12,12 +12,16 @@ import net.reichholf.dreamdroid.helpers.EnigmaHttp
 import net.reichholf.dreamdroid.helpers.EnigmaOkHttp
 
 /**
- * Builds a [ReceiverApi] per operation. A client wraps one [EnigmaHttp], which is bound to one
- * profile and cancels its in-flight call when a second fetch starts, so it must not be shared
- * across screens. A profile detected as [ReceiverFlavor.OpenWebif] gets an [OpenWebifApi];
- * every other one, an undetected one included, a [DreamboxWebIfApi]. Each client sees its
- * profile's [WebIfCapabilities]. A Dreambox client sends timer requests through the VPS plugin
- * when told it is there ([VpsPlugin]); OpenWebif takes VPS on its own timer requests.
+ * Builds a [ReceiverApi] for the profile an operation acts for. A client wraps one [EnigmaHttp],
+ * which is bound to one profile and cancels its in-flight call when a second fetch starts, so it
+ * must not be shared across screens. A profile detected as [ReceiverFlavor.OpenWebif] gets an
+ * [OpenWebifApi]; every other one, an undetected one included, a [DreamboxWebIfApi]. Each client
+ * sees its profile's [WebIfCapabilities]. A Dreambox client sends timer requests through the VPS
+ * plugin when told it is there ([VpsPlugin]); OpenWebif takes VPS on its own timer requests.
+ *
+ * There is deliberately no client for "the active profile": callers read
+ * [ProfileRepository.current] and answer nothing when it is null, so a missing profile can
+ * never reach a request.
  */
 @Singleton
 class ReceiverApiFactory @Inject constructor(
@@ -30,17 +34,15 @@ class ReceiverApiFactory @Inject constructor(
     private val xmlDumpDir = lazy { File(context.cacheDir, XML_DUMP_DIR) }
 
     /**
-     * A client for the active profile. [timeoutMillis] bounds each request; a long one suits
-     * a call the box takes long to answer. [vpsPlugin] is what the caller knows of the VPS plugin.
+     * A client for [profile], which need not be the active one. [timeoutMillis] bounds each
+     * request; a long one suits a call the box takes long to answer. [vpsPlugin] is what the
+     * caller knows of the VPS plugin.
      */
-    fun current(
+    fun forProfile(
+        profile: Profile,
         timeoutMillis: Int = EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS,
         vpsPlugin: VpsPlugin = VpsPlugin.Absent
-    ): ReceiverApi = client(profiles.requireCurrent(), timeoutMillis, vpsPlugin)
-
-    /** A client for [profile], which need not be the active one. */
-    fun forProfile(profile: Profile): ReceiverApi =
-        client(profile, EnigmaHttp.DEFAULT_CONNECTION_TIMEOUT_MILLIS, VpsPlugin.Absent)
+    ): ReceiverApi = client(profile, timeoutMillis, vpsPlugin)
 
     /** A [ReceiverDetector] for [profile]'s receiver, for one profile check. */
     fun detector(profile: Profile): ReceiverDetector =

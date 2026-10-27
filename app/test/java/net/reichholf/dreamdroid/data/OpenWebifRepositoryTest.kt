@@ -32,7 +32,7 @@ class OpenWebifRepositoryTest {
     fun setUp() {
         receiver.start()
         profiles.setDeviceInfo(
-            profiles.requireCurrent(),
+            profiles.current.value!!,
             DeviceInfo(interfaceVersion = "OWIF 1.5.2"),
             ReceiverFlavor.OpenWebif
         )

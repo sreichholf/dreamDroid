@@ -118,12 +118,17 @@ class EpgRepositoryTest {
 
         assertNull(repository.recordedProgramme(NEO, WILSBERG, MATCH_BEGIN, MATCH_END))
         assertNull(repository.cachedSearch("News"))
+        val search = repository.receiverSearch("News")
+        val window = repository.multiEpgSync
+            .ensureChunk(EpgTestReceiver.PROFILE_ID, BOUQUET, NOW, persist = false)
         assertTrue(repository.fillNowChunk(BOUQUET, BOUQUET, NOW).isEmpty())
         repository.syncContainer(BOUQUET, BOUQUET, NOW)
         val bouquetLoads = repository.bouquetEvents(BOUQUET, NOW).toList()
         receiver.goOffline()
         val serviceLoads = repository.serviceEvents(CHANNEL).toList()
 
+        assertNull(search.value)
+        assertTrue(window.isEmpty())
         assertFalse(repository.skipsReceiverSearch())
         assertEquals(listOf(EventListLoad.Failed(null)), bouquetLoads)
         assertEquals(listOf(EventListLoad.Failed(null)), serviceLoads)

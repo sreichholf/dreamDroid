@@ -17,8 +17,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 /**
- * [ReceiverApiFactory]'s clients: the active profile, its detected flavor, and the "dump XML"
- * setting.
+ * [ReceiverApiFactory]'s clients: a profile, its detected flavor, and the "dump XML" setting.
  */
 class ReceiverApiFactoryTest {
     private val server = MockWebServer()
@@ -39,10 +38,10 @@ class ReceiverApiFactoryTest {
     }
 
     @Test
-    fun currentTalksToTheActiveProfile() = runBlocking {
-        activate(xmlDebug = false)
+    fun aProfileClientTalksToThatProfile() = runBlocking {
+        val profile = activate(xmlDebug = false)
 
-        val info = clients.current().deviceInfo().value
+        val info = clients.forProfile(profile).deviceInfo().value
 
         assertEquals("dm920", info?.deviceName)
         assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
@@ -50,18 +49,18 @@ class ReceiverApiFactoryTest {
 
     @Test
     fun xmlDebugDumpsResponsesIntoTheCache() = runBlocking {
-        activate(xmlDebug = true)
+        val profile = activate(xmlDebug = true)
 
-        clients.current().deviceInfo()
+        clients.forProfile(profile).deviceInfo()
 
         assertEquals(DEVICE_INFO, File(dumpDir, "deviceinfo").readText())
     }
 
     @Test
     fun withoutXmlDebugNothingIsDumped() = runBlocking {
-        activate(xmlDebug = false)
+        val profile = activate(xmlDebug = false)
 
-        clients.current().deviceInfo()
+        clients.forProfile(profile).deviceInfo()
 
         assertFalse(dumpDir.exists())
     }
@@ -72,10 +71,8 @@ class ReceiverApiFactoryTest {
         server.enqueue(MockResponse().setBody("{}"))
 
         repository.setDeviceInfo(profile, DeviceInfo(deviceName = "x"), ReceiverFlavor.OpenWebif)
-        clients.current().deviceInfo()
         clients.forProfile(profile).deviceInfo()
 
-        assertEquals("/api/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
         assertEquals("/api/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
     }
 
@@ -84,13 +81,13 @@ class ReceiverApiFactoryTest {
         val profile = activate(xmlDebug = false)
         server.enqueue(MockResponse().setBody(DEVICE_INFO))
 
-        clients.current().deviceInfo()
+        clients.forProfile(profile).deviceInfo()
         repository.setDeviceInfo(
             profile,
             DeviceInfo(deviceName = "x"),
             ReceiverFlavor.DreamboxWebIf
         )
-        clients.current().deviceInfo()
+        clients.forProfile(profile).deviceInfo()
 
         assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)
         assertEquals("/web/deviceinfo", server.takeRequest().requestUrl?.encodedPath)

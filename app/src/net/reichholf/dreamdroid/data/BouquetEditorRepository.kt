@@ -39,7 +39,7 @@ data class BouquetEditResult(
  * Bouquet editing through the receiver's bouquet editor plugin (`/bouqueteditor`). Lists
  * come from [ReceiverApi.bouquetEditorServices]. Edits reach the box one at a time, in call
  * order. The first edit of an editor session ([resetBackup]) per profile writes a backup to the
- * box's `/tmp`.
+ * box's `/tmp`. Without an active profile every call answers nothing and sends no request.
  * Unless the box rejected it, an edit drops the Room rosters it touched
  * ([ServiceRepository.onBouquetsEdited]): one cancelled or cut off after it was sent may
  * still have reached the box.
@@ -60,8 +60,11 @@ class BouquetEditorRepository @Inject constructor(
     val receiver: Flow<BouquetReceiver?> =
         profiles.current.map { it?.receiver() }.distinctUntilChanged()
 
-    /** Whether the receiver has the plugin. Null value on failure. */
-    suspend fun isAvailable(): EnigmaResponse<Boolean> = clients.current().hasBouquetEditor()
+    /** Whether the receiver has the plugin. Null value without an active profile or on failure. */
+    suspend fun isAvailable(): EnigmaResponse<Boolean> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).hasBouquetEditor()
+    }
 
     /** The bouquets of the [mode] index, in the box's order. */
     suspend fun bouquets(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> =
@@ -70,9 +73,10 @@ class BouquetEditorRepository @Inject constructor(
     /** The rows of [ref]: a bouquet's entries, or a source folder's services. */
     suspend fun entries(ref: String): EnigmaResponse<List<BouquetEntry>> = list(ref, atRoot = false)
 
-    /** Satellite folders to add services from. */
+    /** Satellite folders to add services from. Nothing without an active profile. */
     suspend fun satellites(mode: BouquetMode): EnigmaResponse<List<BouquetEntry>> {
-        val response = clients.current().bouquetEditorSatellites(mode)
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val response = clients.forProfile(profile).bouquetEditorSatellites(mode)
         return EnigmaResponse(
             response.value?.map {
                 it.toBouquetEntry(atRoot = false)
@@ -122,8 +126,10 @@ class BouquetEditorRepository @Inject constructor(
      */
     suspend fun addServices(bouquetRef: String, refs: List<String>): BouquetEditResult =
         editMutex.withLock {
-            val client = clients.current()
-            val backup = backupOnce(client)
+            val profile = profiles.current.value
+                ?: return@withLock BouquetEditResult(EnigmaResponse(null))
+            val client = clients.forProfile(profile)
+            val backup = backupOnce(client, profile.id)
             var rejected: EnigmaResponse<SimpleResult>? = null
             var last = EnigmaResponse<SimpleResult>(null)
             var touched = false
@@ -181,8 +187,10 @@ class BouquetEditorRepository @Inject constructor(
         editedRefs: List<String>,
         call: suspend ReceiverApi.() -> EnigmaResponse<SimpleResult>
     ): BouquetEditResult = editMutex.withLock {
-        val client = clients.current()
-        val backup = backupOnce(client)
+        val profile = profiles.current.value
+            ?: return@withLock BouquetEditResult(EnigmaResponse(null))
+        val client = clients.forProfile(profile)
+        val backup = backupOnce(client, profile.id)
         val response = invalidatingOnCancel(editedRefs) { client.call() }
         if (!response.rejected) {
             services.onBouquetsEdited(editedRefs)
@@ -200,8 +208,11 @@ class BouquetEditorRepository @Inject constructor(
         }
 
     /** Runs under [editMutex]. Tried once per profile and session, whatever the outcome. */
-    private suspend fun backupOnce(client: ReceiverApi): EnigmaResponse<SimpleResult>? {
-        if (!backedUpProfiles.add(profiles.requireCurrent().id)) {
+    private suspend fun backupOnce(
+        client: ReceiverApi,
+        profileId: Int?
+    ): EnigmaResponse<SimpleResult>? {
+        if (!backedUpProfiles.add(profileId)) {
             return null
         }
         val name = BACKUP_PREFIX + System.currentTimeMillis() / 1000L
@@ -209,7 +220,8 @@ class BouquetEditorRepository @Inject constructor(
     }
 
     private suspend fun list(ref: String, atRoot: Boolean): EnigmaResponse<List<BouquetEntry>> {
-        val response = clients.current().bouquetEditorServices(ref)
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val response = clients.forProfile(profile).bouquetEditorServices(ref)
         return EnigmaResponse(response.value?.map { it.toBouquetEntry(atRoot) }, response.error)
     }
 

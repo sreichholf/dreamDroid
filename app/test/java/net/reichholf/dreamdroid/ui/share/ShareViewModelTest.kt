@@ -160,7 +160,7 @@ class ShareViewModelTest {
     }
 
     private fun saveProfile(name: String) = runBlocking<Unit> {
-        val current = profiles.requireCurrent()
+        val current = profiles.current.value!!
         profiles.save(
             Profile().apply {
                 this.name = name

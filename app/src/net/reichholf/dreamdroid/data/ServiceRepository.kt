@@ -213,9 +213,14 @@ class ServiceRepository @Inject constructor(
     suspend fun cachedTvBouquetTabs(): List<Service> =
         profiles.current.value?.id?.let { tabStrip(it, KIND_TV) }.orEmpty()
 
-    /** Members of [bouquetRef] from the receiver, the MultiEPG rows. Failures throw. */
-    suspend fun bouquetServices(bouquetRef: String): List<Service> =
-        clients.current().services(bouquetRef).valueOrThrow()
+    /**
+     * Members of [bouquetRef] from the receiver, the MultiEPG rows. Failures throw; empty
+     * without an active profile.
+     */
+    suspend fun bouquetServices(bouquetRef: String): List<Service> {
+        val profile = profiles.current.value ?: return emptyList()
+        return clients.forProfile(profile).services(bouquetRef).valueOrThrow()
+    }
 
     /** The roster of [bouquetRef] in Room, or null when it was never written. */
     suspend fun cachedBouquetServices(profileId: Int, bouquetRef: String): List<Service>? =
@@ -275,10 +280,13 @@ class ServiceRepository @Inject constructor(
 
     /**
      * Now/next of [bouquetRef] without the roster: one row per service the receiver lists
-     * events for, so no markers or folders. The player zaps through these rows.
+     * events for, so no markers or folders. The player zaps through these rows. Nothing
+     * without an active profile.
      */
-    suspend fun bouquetNowNext(bouquetRef: String): EnigmaResponse<List<ServiceNowNext>> =
-        clients.current().epgNowNext(bouquetRef)
+    suspend fun bouquetNowNext(bouquetRef: String): EnigmaResponse<List<ServiceNowNext>> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).epgNowNext(bouquetRef)
+    }
 
     /**
      * The Room roster of [ref] with now/next from the Room EPG chunk at [nowSec], or null

@@ -9,6 +9,7 @@ import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -45,6 +46,13 @@ class PhoneNavigatorTest {
 
         assertEquals(listOf(3), delivered)
         assertTrue(state.takeHeldActivityResult() == null)
+    }
+
+    @Test
+    fun drawerEpgWithoutAnActiveProfileNavigatesNowhere() {
+        profiles.repository.clearCurrent()
+
+        assertFalse(navigator().navigateToDrawerEpg())
     }
 
     @Test

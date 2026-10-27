@@ -25,6 +25,8 @@ import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
 import net.reichholf.dreamdroid.testutil.MemorySharedPreferences
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
+import net.reichholf.dreamdroid.testutil.jobs
+import net.reichholf.dreamdroid.testutil.joinJobsSince
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.multiepg.MULTI_EPG_VISIBLE_MINUTES_KEY
@@ -104,6 +106,19 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
+    fun noActiveProfileLoadsNoBouquets() = runBlocking {
+        val viewModel = viewModel()
+        receiver.profiles.repository.clearCurrent()
+        val before = viewModel.jobs()
+
+        viewModel.open(BOUQUET, "Favourites")
+        viewModel.joinJobsSince(before)
+
+        assertTrue(viewModel.uiState.value.bouquets.isEmpty())
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
     fun titleFallsBackToMultiEpg() {
         assertEquals(UiText.Resource(R.string.multiepg), viewModel().uiState.value.title)
     }
@@ -137,7 +152,7 @@ class TvMultiEpgViewModelTest {
         )
         val stream = awaitState(viewModel) { it.stream != null }.stream
 
-        val profile = receiver.profiles.repository.requireCurrent()
+        val profile = receiver.profiles.repository.current.value!!
         assertEquals(
             TvMultiEpgStream(
                 "News",
@@ -153,7 +168,7 @@ class TvMultiEpgViewModelTest {
 
     @Test
     fun rejectedZapAndStreamShowsTheReceiverText() = runBlocking<Unit> {
-        receiver.profiles.repository.requireCurrent().zapAndStream = true
+        receiver.profiles.repository.current.value!!.zapAndStream = true
         val viewModel = viewModel()
 
         viewModel.stream(

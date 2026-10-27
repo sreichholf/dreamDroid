@@ -81,8 +81,8 @@ class BackupRepositoryTest {
 
         importAll(json(data))
 
-        assertEquals(kitchen.id, profiles.requireCurrent().id)
-        assertEquals("10.0.0.5", profiles.requireCurrent().host)
+        assertEquals(kitchen.id, profiles.current.value!!.id)
+        assertEquals("10.0.0.5", profiles.current.value!!.host)
         assertEquals(kitchen.id, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
     }
 
@@ -102,7 +102,7 @@ class BackupRepositoryTest {
             )
         )
 
-        assertEquals(living.id, profiles.requireCurrent().id)
+        assertEquals(living.id, profiles.current.value!!.id)
         assertEquals(living.id, preferences.getInt(DreamDroid.CURRENT_PROFILE, -1))
     }
 
@@ -164,7 +164,7 @@ class BackupRepositoryTest {
         val rows = profiles.profiles()
         assertEquals(listOf(living.id), rows.map { it.id })
         assertEquals("10.0.0.2", rows.single().host)
-        assertEquals("10.0.0.2", profiles.requireCurrent().host)
+        assertEquals("10.0.0.2", profiles.current.value!!.host)
     }
 
     @Test

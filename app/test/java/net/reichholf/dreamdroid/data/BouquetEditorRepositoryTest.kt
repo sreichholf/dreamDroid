@@ -74,6 +74,29 @@ class BouquetEditorRepositoryTest {
     }
 
     @Test
+    fun withoutAProfileTheEditorAnswersNothingAndAsksNothing() = runBlocking {
+        receiver.repository.clearCurrent()
+
+        val available = repository.isAvailable()
+        val satellites = repository.satellites(BouquetMode.Tv)
+        val bouquets = repository.bouquets(BouquetMode.Tv)
+        val added = repository.addBouquet(BouquetMode.Tv, "News")
+        val appended = repository.addServices(FAVOURITES, listOf(ERSTE))
+
+        assertNull(available.value)
+        assertNull(satellites.value)
+        assertNull(bouquets.value)
+        assertNull(added.response.value)
+        assertFalse(added.succeeded)
+        assertNull(added.backup)
+        assertNull(appended.response.value)
+        assertFalse(appended.succeeded)
+        assertNull(appended.backup)
+        assertTrue(services.bouquetEdits.value.isEmpty())
+        assertTrue(receiver.requests.isEmpty())
+    }
+
+    @Test
     fun bouquetsReadTheModeIndex() = runBlocking {
         receiver.respond(GET_SERVICES, fixture("getservices_roots_radio.xml"))
 

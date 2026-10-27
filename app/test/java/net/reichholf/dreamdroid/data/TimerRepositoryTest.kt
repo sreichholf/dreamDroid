@@ -218,9 +218,15 @@ class TimerRepositoryTest {
 
         val result = repository.timers().last()
 
-        assertEquals(TimerListResult.Failed(UiText.Resource(R.string.error_parsing)), result)
+        assertEquals(TimerListResult.Failed(UiText.Resource(R.string.no_profile_body)), result)
         assertNull(repository.snapshot())
         assertFalse(repository.hasVpsPlugin())
+        assertNull(repository.vpsForNewTimer())
+        assertNull(repository.save(timer("New"), null).value)
+        assertNull(repository.toggleEnabled(timer("On")).value)
+        assertNull(repository.addByEvent(EVENT).value)
+        assertNull(repository.delete(timer("Gone")).value)
+        assertNull(repository.cleanup().value)
         assertTrue(receiver.requests.isEmpty())
     }
 
@@ -356,7 +362,7 @@ class TimerRepositoryTest {
         receiver.respond(TAGS, "<e2tags><e2tag>News</e2tag></e2tags>")
         val held = receiver.hold(LOCATIONS)
         val profiles = receiver.repository
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value!!
 
         val choices = async(Dispatchers.IO) { repository.locationsAndTags() }
         awaitArrival(held)
@@ -404,7 +410,7 @@ class TimerRepositoryTest {
 
     @Test
     fun vpsPluginListsTimersThroughItsEndpoint() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("autotimer", "vpsplugin"))
         receiver.respond(VPS_TIMER_LIST, loadWebFixture("vps/timerlist.xml"))
 
@@ -419,7 +425,7 @@ class TimerRepositoryTest {
 
     @Test
     fun withoutTheVpsPluginTheStockEndpointsAnswer() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("autotimer"))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
@@ -448,7 +454,7 @@ class TimerRepositoryTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
-        receiver.repository.requireCurrent().vpsDefault = VpsMode.Safe
+        receiver.repository.current.value!!.vpsDefault = VpsMode.Safe
 
         repository.timers().last()
         val original = timer("Old").copy(vps = TimerVps(VpsMode.Safe))
@@ -470,7 +476,7 @@ class TimerRepositoryTest {
 
     @Test
     fun vpsPluginSaveSendsAllThreeParams() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(VPS_TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val original = timer("Old")
@@ -493,7 +499,7 @@ class TimerRepositoryTest {
 
     @Test
     fun timerWithUnknownVpsKeepsTheReceiversVpsThroughTheStockEndpoint() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         val snapshotRow = timer("Old")
@@ -507,10 +513,10 @@ class TimerRepositoryTest {
 
     @Test
     fun vpsPluginAddByEventSendsTheProfileDefault() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(VPS_TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
-        receiver.repository.requireCurrent().vpsDefault = VpsMode.Safe
+        receiver.repository.current.value!!.vpsDefault = VpsMode.Safe
 
         assertEquals("Timer added", repository.addByEvent(EVENT).value?.stateText)
 
@@ -525,7 +531,7 @@ class TimerRepositoryTest {
     @Test
     fun aMissingVpsEndpointFallsBackToStockOnce() = runTest {
         // The receiver lists the plugin, but its endpoints answer 404.
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
@@ -544,7 +550,7 @@ class TimerRepositoryTest {
 
     @Test
     fun aMissingVpsTimerListFallsBackToTheStockList() = runTest {
-        receiver.repository.requireCurrent().vpsEnabled = true
+        receiver.repository.current.value!!.vpsEnabled = true
         receiver.respond(WEB_EXTERNALS, externals("vpsplugin"))
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
 

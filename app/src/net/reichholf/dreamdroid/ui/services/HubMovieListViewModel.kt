@@ -200,8 +200,12 @@ class HubMovieListViewModel @AssistedInject constructor(
             MovieRowAction.Download -> download(movie)
 
             MovieRowAction.Stream -> {
-                val open = MovieOpen.Stream(movie, movieRepository.streamUrl(movie))
-                _uiState.update { it.copy(open = open) }
+                val url = movieRepository.streamUrl(movie)
+                if (url == null) {
+                    showMessage(UiText.Resource(R.string.no_profile_body))
+                } else {
+                    _uiState.update { it.copy(open = MovieOpen.Stream(movie, url)) }
+                }
             }
         }
     }
@@ -298,6 +302,8 @@ class HubMovieListViewModel @AssistedInject constructor(
             when (download) {
                 is MovieDownload.Ready ->
                     _uiState.update { it.copy(open = MovieOpen.CachedFile(download.file)) }
+
+                MovieDownload.NoProfile -> showMessage(UiText.Resource(R.string.no_profile_body))
 
                 is MovieDownload.Failed -> {
                     val text = download.error.failure.userMessageText()

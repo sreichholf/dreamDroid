@@ -33,29 +33,44 @@ sealed interface LiveStream {
     data class Failed(val message: UiText) : LiveStream
 }
 
-/** Receiver state and commands of the active profile. */
+/**
+ * Receiver state and commands of the active profile. Without one every call answers
+ * nothing and asks no receiver.
+ */
 @Singleton
 class ReceiverRepository @Inject constructor(
     private val clients: ReceiverApiFactory,
     private val profiles: ProfileRepository
 ) {
-    suspend fun deviceInfo(): EnigmaResponse<DeviceInfo> = clients.current().deviceInfo()
+    suspend fun deviceInfo(): EnigmaResponse<DeviceInfo> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).deviceInfo()
+    }
 
-    suspend fun signal(): EnigmaResponse<Signal> = clients.current().signal()
+    suspend fun signal(): EnigmaResponse<Signal> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).signal()
+    }
 
     /** A JPEG of video and OSD at the receiver's resolution. */
-    suspend fun screenshot(): EnigmaResponse<ByteArray> = clients.current().screenshot()
+    suspend fun screenshot(): EnigmaResponse<ByteArray> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).screenshot()
+    }
 
     /** Zaps the receiver to [reference], a service or a recording. */
-    suspend fun zap(reference: String): EnigmaResponse<SimpleResult> =
-        clients.current().zap(reference)
+    suspend fun zap(reference: String): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).zap(reference)
+    }
 
     /**
      * The stream of the live service [reference]. A zap-and-stream profile ([ZapAndStream])
-     * zaps first; a failed zap streams nothing.
+     * zaps first; a failed zap streams nothing, as does a missing profile.
      */
     suspend fun liveStream(reference: String): LiveStream {
-        val profile = profiles.requireCurrent()
+        val profile = profiles.current.value
+            ?: return LiveStream.Failed(UiText.Resource(R.string.no_profile_body))
         if (ZapAndStream.required(profile)) {
             if (reference.isEmpty()) {
                 return LiveStream.Failed(UiText.Resource(R.string.get_content_error))
@@ -69,8 +84,10 @@ class ReceiverRepository @Inject constructor(
     }
 
     /** The service the receiver is tuned to, with its now and next event. */
-    suspend fun currentService(): EnigmaResponse<CurrentService> =
-        clients.current().currentService()
+    suspend fun currentService(): EnigmaResponse<CurrentService> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).currentService()
+    }
 
     /**
      * Returns once the startup profile check stored the active profile's device info, or
@@ -97,35 +114,50 @@ class ReceiverRepository @Inject constructor(
         clients.forProfile(profile).playMedia(reference)
 
     /** Runs the volume [command]; the answer carries the new level. */
-    suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume> =
-        clients.current().setVolume(command)
+    suspend fun setVolume(command: VolumeCommand): EnigmaResponse<Volume> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).setVolume(command)
+    }
 
     /** Runs the power [command]; the answer carries the new state. */
-    suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState> =
-        clients.current().setPowerState(command)
+    suspend fun setPowerState(command: PowerCommand): EnigmaResponse<PowerState> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).setPowerState(command)
+    }
 
     /** Reads the sleep timer. */
-    suspend fun sleepTimer(): EnigmaResponse<SleepTimer> = clients.current().sleepTimer()
+    suspend fun sleepTimer(): EnigmaResponse<SleepTimer> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).sleepTimer()
+    }
 
     /** Writes the sleep timer; the answer carries the stored timer. */
     suspend fun setSleepTimer(
         time: String?,
         action: String?,
         enabled: Boolean
-    ): EnigmaResponse<SleepTimer> = clients.current().setSleepTimer(time, action, enabled)
+    ): EnigmaResponse<SleepTimer> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).setSleepTimer(time, action, enabled)
+    }
 
     /** Shows a message on the receiver. */
     suspend fun sendMessage(
         text: String?,
         type: String?,
         timeout: String?
-    ): EnigmaResponse<SimpleResult> = clients.current().sendMessage(text, type, timeout)
+    ): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).sendMessage(text, type, timeout)
+    }
 
     /** Sends a remote-control key press. */
     suspend fun remoteCommand(
         keyCode: Int,
         simpleRemote: Boolean,
         longClick: Boolean
-    ): EnigmaResponse<SimpleResult> =
-        clients.current().remoteCommand(keyCode, simpleRemote, longClick)
+    ): EnigmaResponse<SimpleResult> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).remoteCommand(keyCode, simpleRemote, longClick)
+    }
 }

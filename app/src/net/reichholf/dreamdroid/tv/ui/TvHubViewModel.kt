@@ -355,8 +355,10 @@ class TvHubViewModel internal constructor(
     /** Streams the recording [movie]. */
     fun streamMovie(movie: Movie) {
         streamJob?.cancel()
+        val url = movies.streamUrl(movie)
+            ?: return showMessage(UiText.Resource(R.string.no_profile_body))
         _uiState.update {
-            it.copy(stream = TvStreamOpen.Recording(movie, movies.streamUrl(movie)))
+            it.copy(stream = TvStreamOpen.Recording(movie, url))
         }
     }
 

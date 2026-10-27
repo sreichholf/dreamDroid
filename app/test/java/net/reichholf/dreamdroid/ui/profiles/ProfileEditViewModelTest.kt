@@ -140,7 +140,7 @@ class ProfileEditViewModelTest {
         val state = viewModel.uiState.first { it.finished != null }
 
         assertEquals(namedMessage(R.string.profile_updated, "Lounge"), state.finished)
-        assertEquals("Lounge", profiles.requireCurrent().name)
+        assertEquals("Lounge", profiles.current.value!!.name)
         assertEquals("Lounge", profiles.profile(saved.id!!)?.name)
     }
 

@@ -123,7 +123,7 @@ class AutoTimerPreviewViewModelTest {
     fun aProfileSwitchLeavesTheAutoTimerBehind() = runBlocking<Unit> {
         val viewModel = viewModel(id = 2)
         viewModel.ready()
-        val current = receiver.repository.requireCurrent()
+        val current = receiver.repository.current.value!!
 
         receiver.repository.setCurrent(
             Profile().apply {
@@ -143,7 +143,7 @@ class AutoTimerPreviewViewModelTest {
     fun backOnItsProfileTheAutoTimerIsPreviewedAgain() = runBlocking<Unit> {
         val viewModel = viewModel(id = 2)
         viewModel.ready()
-        val home = receiver.repository.requireCurrent()
+        val home = receiver.repository.current.value!!
         receiver.repository.setCurrent(
             Profile().apply {
                 id = 8

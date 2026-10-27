@@ -295,7 +295,7 @@ class AutoTimerListViewModelTest {
         viewModel.requestRun()
         viewModel.confirmRun()
         assertTrue(run.arrived.await(TIMEOUT, TimeUnit.MILLISECONDS))
-        val current = receiver.repository.requireCurrent()
+        val current = receiver.repository.current.value!!
 
         receiver.repository.setCurrent(
             Profile().apply {
