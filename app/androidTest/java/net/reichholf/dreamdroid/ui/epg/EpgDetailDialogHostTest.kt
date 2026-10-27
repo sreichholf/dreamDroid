@@ -381,6 +381,7 @@ class EpgDetailDialogHostTest {
         var state by mutableStateOf(EpgEventDetailUiState())
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(

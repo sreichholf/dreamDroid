@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -84,7 +84,9 @@ fun ZapScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(items, key = { "${it.reference}:${it.name}" }) { service ->
+        itemsIndexed(items, key = { index, service ->
+            "$index:${service.reference}:${service.name}"
+        }) { _, service ->
             ZapServiceCard(
                 service = service,
                 zapBlocked = zapBlocked,

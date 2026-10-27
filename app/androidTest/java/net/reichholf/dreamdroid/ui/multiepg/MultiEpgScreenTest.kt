@@ -15,10 +15,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHeightIsEqualTo
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -225,6 +227,7 @@ class MultiEpgScreenTest {
         val start = 1_700_000_000L
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -243,6 +246,7 @@ class MultiEpgScreenTest {
                 )
             ),
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:2:1:1:0:0:0:0:",
                 serviceName = "ZDF HD",
                 bars = listOf(
@@ -288,6 +292,57 @@ class MultiEpgScreenTest {
     }
 
     @Test
+    fun repeatedServiceRendersOneRowPerBouquetEntry() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:1:1:1:0:0:0:0:"
+        val bar = MultiEpgBar(
+            event = Event(
+                eventId = "10",
+                title = "Tagesschau",
+                start = start.toString(),
+                duration = "1800",
+                serviceReference = ref,
+                serviceName = "Das Erste HD"
+            ),
+            startSec = start,
+            endSec = start + 1800
+        )
+        val channels = listOf(
+            MultiEpgChannel(
+                occurrence = 0,
+                serviceRef = ref,
+                serviceName = "Das Erste HD",
+                bars = listOf(bar)
+            ),
+            MultiEpgChannel(
+                occurrence = 1,
+                serviceRef = ref,
+                serviceName = "Das Erste HD",
+                bars = listOf(bar)
+            )
+        )
+        composeRule.setContent {
+            DreamDroidTheme {
+                MultiEpgScreen(
+                    bouquetName = "Favourites",
+                    channels = channels,
+                    timelineStartSec = start,
+                    timelineEndSec = start + 7200,
+                    nowSec = start + 60,
+                    loading = false,
+                    errorMessage = null,
+                    onJumpToNow = {},
+                    onEventClick = {}
+                )
+            }
+        }
+
+        composeRule.onAllNodesWithTag("multi_epg_channel_label", useUnmergedTree = true)
+            .assertCountEquals(2)
+        composeRule.onAllNodesWithText("Tagesschau").assertCountEquals(2)
+    }
+
+    @Test
     fun gridKeepsChannelNameWhenRowHasNoBars() {
         val start = 1_700_000_000L
         composeRule.setContent {
@@ -296,6 +351,7 @@ class MultiEpgScreenTest {
                     bouquetName = "Favourites",
                     channels = listOf(
                         MultiEpgChannel(
+                            occurrence = 0,
                             serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                             serviceName = "Das Erste HD",
                             bars = listOf(
@@ -314,6 +370,7 @@ class MultiEpgScreenTest {
                             )
                         ),
                         MultiEpgChannel(
+                            occurrence = 0,
                             serviceRef = "1:0:1:2:1:1:0:0:0:0:",
                             serviceName = "Deluxe Music HD",
                             bars = emptyList()
@@ -339,6 +396,7 @@ class MultiEpgScreenTest {
         val start = 1_700_000_000L
         val loaded = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -463,6 +521,7 @@ class MultiEpgScreenTest {
         val start = 1_700_000_000L
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -533,6 +592,7 @@ class MultiEpgScreenTest {
                     bouquetName = "Favourites",
                     channels = listOf(
                         MultiEpgChannel(
+                            occurrence = 0,
                             serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                             serviceName = "Das Erste HD",
                             bars = listOf(
@@ -606,6 +666,7 @@ class MultiEpgScreenTest {
         var timelineStart by mutableLongStateOf(origin)
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -661,6 +722,7 @@ class MultiEpgScreenTest {
         val ref = "1:0:1:1:1:1:0:0:0:0:"
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = ref,
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -798,6 +860,7 @@ class MultiEpgScreenTest {
         serviceRef: String = "1:0:1:1:1:1:0:0:0:0:"
     ): List<MultiEpgChannel> = listOf(
         MultiEpgChannel(
+            occurrence = 0,
             serviceRef = serviceRef,
             serviceName = "Das Erste HD",
             bars = listOf(
@@ -857,6 +920,7 @@ class MultiEpgScreenTest {
         val lateStart = start + 3L * 3600L
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:1:1:1:0:0:0:0:",
                 serviceName = "Das Erste HD",
                 bars = listOf(
@@ -950,6 +1014,7 @@ class MultiEpgScreenTest {
         val start = 1_700_000_000L
         val channels = (0 until 24).map { index ->
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = "1:0:1:$index:1:1:0:0:0:0:",
                 serviceName = "Channel $index",
                 bars = listOf(

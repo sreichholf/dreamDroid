@@ -75,6 +75,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
+import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -117,7 +118,7 @@ class TvMultiEpgScreenTest {
         val start = 1_700_000_000L
         val channels = fixtureChannels(start)
         composeRule.setContent {
-            var selectedRef by remember { mutableStateOf(channels[0].serviceRef) }
+            var selectedKey by remember { mutableStateOf(channels[0].key) }
             var selectedStart by remember { mutableLongStateOf(start) }
             DreamDroidTvTheme {
                 Box(
@@ -134,10 +135,10 @@ class TvMultiEpgScreenTest {
                         originFloorSec = start,
                         loading = false,
                         errorMessage = null,
-                        selectedServiceRef = selectedRef,
+                        selectedKey = selectedKey,
                         selectedStartSec = selectedStart,
-                        onSelectedChange = { ref, sec ->
-                            selectedRef = ref
+                        onSelectedChange = { key, sec ->
+                            selectedKey = key
                             selectedStart = sec
                         },
                         onJumpToNow = {},
@@ -161,6 +162,70 @@ class TvMultiEpgScreenTest {
         grid.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         assertEquals("Serie", clicked)
+    }
+
+    @Test
+    fun repeatedServiceKeepsItsOwnRowAndTheDpadReachesIt() {
+        val start = 1_700_000_000L
+        val ref = "1:0:1:1:0:0:0:0:0:0:"
+        val channels = listOf(
+            channel(ref, "Das Erste", start, "News", "Magazin"),
+            channel(ref, "Das Erste", start, "News", "Magazin").copy(occurrence = 1)
+        )
+        composeRule.setContent {
+            var selectedKey by remember { mutableStateOf(channels[0].key) }
+            var selectedStart by remember { mutableLongStateOf(start) }
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(480.dp)
+                ) {
+                    TvMultiEpgScreen(
+                        bouquetName = "Favourites",
+                        channels = channels,
+                        timelineStartSec = start,
+                        timelineEndSec = start + 4L * 3600L,
+                        nowSec = start,
+                        originFloorSec = start,
+                        loading = false,
+                        errorMessage = null,
+                        selectedKey = selectedKey,
+                        selectedStartSec = selectedStart,
+                        onSelectedChange = { key, sec ->
+                            selectedKey = key
+                            selectedStart = sec
+                        },
+                        onJumpToNow = {},
+                        onPrevDay = {},
+                        onNextDay = {},
+                        onVisibleWindow = { _, _ -> },
+                        onEventClick = {},
+                        onBouquetClick = {}
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("tv_multi_epg_channel_name", useUnmergedTree = true)
+            .assertCountEquals(2)
+        composeRule.onAllNodesWithTag("tv_multi_epg_channel_cue", useUnmergedTree = true)
+            .assertCountEquals(1)
+
+        val grid = composeRule.onNodeWithTag("tv_multi_epg_grid")
+        grid.requestFocus()
+        composeRule.waitForIdle()
+        grid.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+
+        fun bounds(tag: String) =
+            composeRule.onNodeWithTag(tag, useUnmergedTree = true).fetchSemanticsNode().boundsInRoot
+
+        val secondRow = bounds("tv_multi_epg_channel_$ref#1")
+        val cue = bounds("tv_multi_epg_channel_cue")
+        assertTrue(
+            "cue in the second occurrence",
+            cue.center.y in secondRow.top..secondRow.bottom
+        )
     }
 
     @Test
@@ -199,12 +264,13 @@ class TvMultiEpgScreenTest {
     fun emptyBarRowCenterDoesNotCrash() {
         val start = 1_700_000_000L
         val empty = MultiEpgChannel(
+            occurrence = 0,
             serviceRef = "1:0:1:9:0:0:0:0:0:0:",
             serviceName = "Empty",
             bars = emptyList()
         )
         composeRule.setContent {
-            var selectedRef by remember { mutableStateOf(empty.serviceRef) }
+            var selectedKey by remember { mutableStateOf(empty.key) }
             var selectedStart by remember { mutableLongStateOf(start) }
             DreamDroidTvTheme {
                 Box(
@@ -221,10 +287,10 @@ class TvMultiEpgScreenTest {
                         originFloorSec = start,
                         loading = false,
                         errorMessage = null,
-                        selectedServiceRef = selectedRef,
+                        selectedKey = selectedKey,
                         selectedStartSec = selectedStart,
-                        onSelectedChange = { ref, sec ->
-                            selectedRef = ref
+                        onSelectedChange = { key, sec ->
+                            selectedKey = key
                             selectedStart = sec
                         },
                         onJumpToNow = {},
@@ -351,7 +417,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             bouquets = bouquets,
             selectedBouquetRef = { selected },
             pickingBouquet = { picking },
@@ -427,11 +493,13 @@ class TvMultiEpgScreenTest {
         // One short programme each, so most of the visible timeline is bare track.
         val channels = listOf(
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = FIRST,
                 serviceName = "Das Erste",
                 bars = listOf(bar(FIRST, "Das Erste", "1", "News", start, start + 600L))
             ),
             MultiEpgChannel(
+                occurrence = 0,
                 serviceRef = SECOND,
                 serviceName = "ZDF",
                 bars = listOf(bar(SECOND, "ZDF", "2", "Sport", start, start + 600L))
@@ -457,7 +525,7 @@ class TvMultiEpgScreenTest {
                         originFloorSec = start,
                         loading = false,
                         errorMessage = null,
-                        selectedServiceRef = FIRST,
+                        selectedKey = channels[0].key,
                         selectedStartSec = start,
                         onSelectedChange = { _, _ -> },
                         onJumpToNow = {},
@@ -478,8 +546,8 @@ class TvMultiEpgScreenTest {
 
         composeRule.onAllNodesWithTag("tv_multi_epg_channel_cue", useUnmergedTree = true)
             .assertCountEquals(1)
-        val selectedCell = bounds("tv_multi_epg_channel_$FIRST")
-        val otherCell = bounds("tv_multi_epg_channel_$SECOND")
+        val selectedCell = bounds("tv_multi_epg_channel_$FIRST#0")
+        val otherCell = bounds("tv_multi_epg_channel_$SECOND#0")
         val cue = bounds("tv_multi_epg_channel_cue")
         assertTrue("cue in the selected row", cue.center.y in selectedCell.top..selectedCell.bottom)
         assertEquals(selectedCell.left, cue.left, 1f)
@@ -525,7 +593,7 @@ class TvMultiEpgScreenTest {
     @Test
     fun barsHaveRoundedCorners() {
         val start = 1_700_000_000L
-        setTvGrid(channels = fixtureChannels(start), start = start, selectedRef = SELECT_NONE)
+        setTvGrid(channels = fixtureChannels(start), start = start, selectedKey = null)
         val image = gridImage()
         // ZDF's first bar ("Sport", one hour = 180 dp), right end, clear of its text.
         val barEnd = ChannelWidth + 180.dp - 2.dp
@@ -553,7 +621,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = listOf(film) + fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE
+            selectedKey = null
         )
         val scrollPx = with(density) { (180.dp).roundToPx() }
         composeRule.runOnIdle { runBlocking { hScroll.scrollTo(scrollPx) } }
@@ -584,6 +652,7 @@ class TvMultiEpgScreenTest {
         val ref = "1:0:1:4:0:0:0:0:0:0:"
         val minute = 60L
         val tiny = MultiEpgChannel(
+            occurrence = 0,
             serviceRef = ref,
             serviceName = "Tiny",
             bars = listOf(
@@ -593,7 +662,7 @@ class TvMultiEpgScreenTest {
                 bar(ref, "Tiny", "4", "After", start + 45 * minute, start + 120 * minute)
             )
         )
-        setTvGrid(channels = listOf(tiny), start = start, selectedRef = SELECT_NONE)
+        setTvGrid(channels = listOf(tiny), start = start, selectedKey = null)
         composeRule.onNodeWithText("Before").assertExists()
         composeRule.onNodeWithText("After").assertExists()
         composeRule.onAllNodesWithText("Teaser").assertCountEquals(0)
@@ -615,6 +684,7 @@ class TvMultiEpgScreenTest {
         val start = 1_700_000_000L
         val ref = "1:0:1:5:0:0:0:0:0:0:"
         val dense = MultiEpgChannel(
+            occurrence = 0,
             serviceRef = ref,
             serviceName = "Dense",
             bars = listOf(bar(ref, "Dense", "1", "WWWWWWWWWWWWWWWW", start, start + 2L * 3600L))
@@ -623,7 +693,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = listOf(dense),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             nowSec = start + 600L
         )
         val ruler = composeRule.onNodeWithTag("tv_multi_epg_ruler").captureToImage()
@@ -658,7 +728,7 @@ class TvMultiEpgScreenTest {
     fun focusedCursorUsesTheCardFocusColours() {
         val start = 1_700_000_000L
         val channels = fixtureChannels(start)
-        setTvGrid(channels = channels, start = start, selectedRef = channels[0].serviceRef)
+        setTvGrid(channels = channels, start = start, selectedKey = channels[0].key)
         // Das Erste's first bar ("News"), right end, clear of its text.
         val x = ChannelWidth + 180.dp - 22.dp
         val y = 14.dp
@@ -674,12 +744,18 @@ class TvMultiEpgScreenTest {
         val start = 1_700_000_000L
         val ref = "1:0:1:6:0:0:0:0:0:0:"
         val late = MultiEpgChannel(
+            occurrence = 0,
             serviceRef = ref,
             serviceName = "Late",
             bars = listOf(bar(ref, "Late", "1", "Evening", start + 3600L, start + 7200L))
         )
-        val empty = MultiEpgChannel("1:0:1:7:0:0:0:0:0:0:", "Empty", emptyList())
-        setTvGrid(channels = listOf(late, empty), start = start, selectedRef = SELECT_NONE)
+        val empty = MultiEpgChannel(
+            occurrence = 0,
+            serviceRef = "1:0:1:7:0:0:0:0:0:0:",
+            serviceName = "Empty",
+            bars = emptyList()
+        )
+        setTvGrid(channels = listOf(late, empty), start = start, selectedKey = null)
         composeRule.onAllNodesWithTag("tv_multi_epg_no_info", useUnmergedTree = true)
             .fetchSemanticsNodes()
             .let { assertTrue(it.size >= 2) }
@@ -693,7 +769,7 @@ class TvMultiEpgScreenTest {
         val ref = "1:0:1:8:0:0:0:0:0:0:"
         val long =
             channel(ref, "A very long channel name that would wrap", start, "News", "Magazin")
-        setTvGrid(channels = listOf(long), start = start, selectedRef = SELECT_NONE)
+        setTvGrid(channels = listOf(long), start = start, selectedKey = null)
         val name = composeRule.onNodeWithTag("tv_multi_epg_channel_name", useUnmergedTree = true)
             .getUnclippedBoundsInRoot()
         assertTrue(name.height < 28.dp)
@@ -708,7 +784,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             onPrevDay = { prev++ },
             onNextDay = { next++ },
             onRefresh = { reloads++ }
@@ -739,7 +815,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             onRefresh = {}
         )
         listOf(
@@ -765,7 +841,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             onRefresh = {}
         )
         val controls = listOf(
@@ -808,7 +884,7 @@ class TvMultiEpgScreenTest {
     fun selectedRowBandHasRoundedEnds() {
         val start = 1_700_000_000L
         val channels = fixtureChannels(start)
-        setTvGrid(channels = channels, start = start, selectedRef = channels[0].serviceRef)
+        setTvGrid(channels = channels, start = start, selectedKey = channels[0].key)
         val image = gridImage()
 
         // Row 0 carries the band, row 1 not: compare the same spot in both rows.
@@ -844,7 +920,7 @@ class TvMultiEpgScreenTest {
         setTvGrid(
             channels = fixtureChannels(start),
             start = start,
-            selectedRef = SELECT_NONE,
+            selectedKey = null,
             nowSec = start
         )
         val today = composeRule.onNodeWithTag("tv_multi_epg_day").fetchSemanticsNode()
@@ -863,7 +939,7 @@ class TvMultiEpgScreenTest {
     private fun setTvGrid(
         channels: List<MultiEpgChannel>,
         start: Long,
-        selectedRef: String,
+        selectedKey: MultiEpgChannelKey?,
         nowSec: Long = start - 3600L,
         onPrevDay: () -> Unit = {},
         onNextDay: () -> Unit = {},
@@ -904,7 +980,7 @@ class TvMultiEpgScreenTest {
                                 originFloorSec = start,
                                 loading = false,
                                 errorMessage = null,
-                                selectedServiceRef = selectedRef,
+                                selectedKey = selectedKey,
                                 selectedStartSec = start,
                                 onSelectedChange = { _, _ -> },
                                 onJumpToNow = {},
@@ -984,7 +1060,7 @@ class TvMultiEpgScreenTest {
     ) {
         val start = 1_700_000_000L
         val channels = fixtureChannels(start)
-        var selectedRef by remember { mutableStateOf(channels[0].serviceRef) }
+        var selectedKey by remember { mutableStateOf(channels[0].key) }
         var selectedStart by remember { mutableLongStateOf(start) }
         var visibleMinutes by remember {
             mutableIntStateOf(MultiEpgZoom.DEFAULT_MINUTES)
@@ -998,10 +1074,10 @@ class TvMultiEpgScreenTest {
             originFloorSec = start,
             loading = false,
             errorMessage = null,
-            selectedServiceRef = selectedRef,
+            selectedKey = selectedKey,
             selectedStartSec = selectedStart,
-            onSelectedChange = { ref, sec ->
-                selectedRef = ref
+            onSelectedChange = { key, sec ->
+                selectedKey = key
                 selectedStart = sec
             },
             onJumpToNow = onJumpToNow,
@@ -1019,8 +1095,6 @@ class TvMultiEpgScreenTest {
     }
 
     private companion object {
-        const val SELECT_NONE = "none"
-
         // Comfortable text size at font scale 1: channel column and row height.
         val ChannelWidth = 112.dp
         val RowHeight = 48.dp
@@ -1039,6 +1113,7 @@ class TvMultiEpgScreenTest {
         firstTitle: String,
         secondTitle: String
     ): MultiEpgChannel = MultiEpgChannel(
+        occurrence = 0,
         serviceRef = ref,
         serviceName = name,
         bars = listOf(

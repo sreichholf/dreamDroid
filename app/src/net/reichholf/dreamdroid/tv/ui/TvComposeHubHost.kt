@@ -1201,7 +1201,10 @@ fun HubServiceRow(
                 }
             )
     ) {
-        itemsIndexed(services, key = { _, it -> it.serviceReference }) { index, service ->
+        itemsIndexed(
+            services,
+            key = { index, it -> "$index:${it.serviceReference}" }
+        ) { index, service ->
             val cardModifier = if (index == firstCardIndex && firstItemFocusRequester != null) {
                 Modifier.focusRequester(firstItemFocusRequester)
             } else {
@@ -1272,7 +1275,7 @@ fun HubServiceGrid(
         }
         gridItemsIndexed(
             services,
-            key = { _, it -> it.serviceReference },
+            key = { index, it -> "$index:${it.serviceReference}" },
             span = { _, service ->
                 if (tvHubDrawsMarkerHeader(service.serviceReference)) {
                     GridItemSpan(maxLineSpan)
@@ -1600,7 +1603,9 @@ fun HubMovieGrid(
             .fillMaxSize()
             .testTag("hub_movie_grid")
     ) {
-        gridItemsIndexed(movies, key = { _, it -> it.reference + "|" + it.fileName }) { _, movie ->
+        gridItemsIndexed(movies, key = { index, it ->
+            "$index:${it.reference}|${it.fileName}"
+        }) { _, movie ->
             HubMovieCard(
                 movie = movie,
                 onClick = { onMovieClick(movie) },

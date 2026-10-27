@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
@@ -121,6 +122,54 @@ class ComposeTvHubServiceRowTest {
         assertEquals(service, info)
         assertEquals("1:7:1:0:0:0:0:0:0:0:FROM BOUQUET", infoBouquet)
         assertEquals(null, clicked)
+    }
+
+    @Test
+    fun repeatedServiceKeepsBothCardsInTheRow() {
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel"
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(220.dp)
+                ) {
+                    HubServiceRow(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service, service),
+                        onServiceClick = { _, _ -> }
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("hub_service_card").assertCountEquals(2)
+    }
+
+    @Test
+    fun repeatedServiceKeepsBothCardsInTheGrid() {
+        val service = ServiceNowNext(
+            serviceReference = "1:0:1:1:1:1:1:0:0:0:",
+            serviceName = "Demo Channel"
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                ) {
+                    HubServiceGrid(
+                        bouquetRef = "1:7:1:0:0:0:0:0:0:0:FROM BOUQUET",
+                        services = listOf(service, service),
+                        onServiceClick = { _, _ -> }
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("hub_service_card").assertCountEquals(2)
     }
 
     @Test

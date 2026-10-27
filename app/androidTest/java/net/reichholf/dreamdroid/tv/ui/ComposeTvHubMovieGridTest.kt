@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -64,6 +65,30 @@ class ComposeTvHubMovieGridTest {
             node.performClick()
         }
         assertEquals(movie, clicked)
+    }
+
+    @Test
+    fun repeatedRecordingShowsBothCards() {
+        val movie = Movie(
+            reference = "1:0:0:0:0:0:0:0:0:0:",
+            title = "Same recording",
+            fileName = ""
+        )
+        composeRule.setContent {
+            DreamDroidTvTheme {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(400.dp)
+                ) {
+                    HubMovieGrid(
+                        movies = listOf(movie, movie),
+                        onMovieClick = {}
+                    )
+                }
+            }
+        }
+        composeRule.onAllNodesWithTag("hub_movie_card").assertCountEquals(2)
     }
 
     @Test
