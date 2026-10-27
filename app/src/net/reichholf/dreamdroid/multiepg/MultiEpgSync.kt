@@ -34,11 +34,7 @@ class MultiEpgSync(
     /** Persist flights; readers read Room after them, warmers discard the result. */
     private val persistFlights = HashMap<ChunkKey, CompletableDeferred<Unit>>()
 
-    data class ChunkKey(
-        val profileId: Int,
-        val bouquetRef: String,
-        val windowStart: Long
-    )
+    data class ChunkKey(val profileId: Int, val bouquetRef: String, val windowStart: Long)
 
     data class CachedChunk(
         val events: List<Event>,
