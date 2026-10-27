@@ -190,7 +190,7 @@ class ServiceRepository @Inject constructor(
      * skips the receiver, and when the receiver fails. Does not write the tab strip.
      */
     suspend fun tvBouquets(): List<Service> {
-        val cached = profiles.requireCurrent().id?.let { tabStrip(it, KIND_TV) }.orEmpty()
+        val cached = cachedTvBouquetTabs()
         if (sessions.status.value.shouldSkipReceiverHttp(cached.isNotEmpty())) {
             return cached
         }
@@ -199,9 +199,9 @@ class ServiceRepository @Inject constructor(
 
     /** The TV hub's bouquets from the receiver. An answer replaces the Room TV tab strip. */
     suspend fun tvBouquetTabs(): EnigmaResponse<List<Service>> {
+        val profileId = profiles.current.value?.id
         val response = fetchTvBouquets()
         val bouquets = response.value
-        val profileId = profiles.requireCurrent().id
         if (bouquets != null && profileId != null) {
             replaceTabStrip(profileId, KIND_TV, bouquets)
         }
@@ -210,7 +210,7 @@ class ServiceRepository @Inject constructor(
 
     /** The Room TV tab strip, which the TV hub paints while it skips the receiver. */
     suspend fun cachedTvBouquetTabs(): List<Service> =
-        profiles.requireCurrent().id?.let { tabStrip(it, KIND_TV) }.orEmpty()
+        profiles.current.value?.id?.let { tabStrip(it, KIND_TV) }.orEmpty()
 
     /** Members of [bouquetRef] from the receiver, the MultiEPG rows. Failures throw. */
     suspend fun bouquetServices(bouquetRef: String): List<Service> =
@@ -258,10 +258,11 @@ class ServiceRepository @Inject constructor(
     /**
      * The services of [ref] are the roster; the receiver's now/next only adds events to it
      * (see [mergeBouquetNowNext]). A failed roster fails; a failed now/next leaves the rows
-     * without events.
+     * without events. Without an active profile the answer is empty.
      */
     suspend fun receiverNowNext(ref: String): EnigmaResponse<List<ServiceNowNext>> {
-        val client = clients.current()
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        val client = clients.forProfile(profile)
         val roster = client.services(ref)
         val services = roster.value ?: return EnigmaResponse(null, roster.error)
         val epg = client.epgNowNext(ref).value.orEmpty()
@@ -283,7 +284,7 @@ class ServiceRepository @Inject constructor(
         ref: String,
         nowSec: Long = System.currentTimeMillis() / 1000L
     ): List<ServiceNowNext>? {
-        val profileId = profiles.requireCurrent().id ?: return null
+        val profileId = profiles.current.value?.id ?: return null
         val rows = roster(profileId, ref)?.map { ServiceNowNext(it.serviceRef, it.name) }
             ?: return null
         val chunk = MultiEpgWindows.chunkContaining(nowSec)
@@ -317,7 +318,7 @@ class ServiceRepository @Inject constructor(
         tabRootRef: String,
         rows: List<ServiceNowNext>
     ): Boolean {
-        val profileId = profiles.requireCurrent().id ?: return false
+        val profileId = profiles.current.value?.id ?: return false
         if (!isCacheableContainer(ref, tabRootRef)) {
             return false
         }
@@ -377,8 +378,15 @@ class ServiceRepository @Inject constructor(
         database.movieDao().deleteAllForProfile(profileId)
     }
 
-    private suspend fun fetchTvBouquets(): EnigmaResponse<List<Service>> =
-        clients.current().services(tvRoots[0])
+    /**
+     * The TV bouquet index, or an empty answer when no profile is active: the TV hub can
+     * outlive one (setup after the last profile was deleted). The client is built from the
+     * profile read here, so the request cannot lose it in between.
+     */
+    private suspend fun fetchTvBouquets(): EnigmaResponse<List<Service>> {
+        val profile = profiles.current.value ?: return EnigmaResponse(null)
+        return clients.forProfile(profile).services(tvRoots[0])
+    }
 
     private suspend fun tabStrip(profileId: Int, kind: String): List<Service> =
         database.rosterDao().getTabStrip(profileId, kind).map { Service(it.serviceRef, it.name) }
