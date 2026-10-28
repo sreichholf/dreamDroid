@@ -207,9 +207,9 @@ class TvMultiEpgViewModel @Inject constructor(
         focusDay(grid.state.value.anchorSec + MultiEpgWindows.CHUNK_SECONDS, zoomSeconds)
     }
 
-    /** Refetches the chunk in view even when Room is fresh. */
+    /** Refetches the chunks in view even when Room is fresh. */
     fun refresh() {
-        grid.load(grid.state.value.anchorSec, forceRefresh = true, isPull = false)
+        grid.refresh()
     }
 
     fun onVisibleWindow(startSec: Long, endSec: Long) {

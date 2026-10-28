@@ -142,6 +142,153 @@ class MultiEpgGridTest {
     }
 
     @Test
+    fun refreshLoadsTheChunkInViewAfterAPan() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val viewStart = day3 + 3_600L
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+
+        grid.onVisibleWindow(viewStart, viewStart + 7_200L)
+        grid.awaitIdle()
+        assertEquals(setOf(day3), grid.loadedWindowStarts)
+        val inViewFetches = fetches.count { it == day3 }
+
+        grid.refresh(isPull = true)
+        grid.awaitIdle()
+
+        assertEquals(inViewFetches + 1, fetches.count { it == day3 })
+        assertEquals(
+            setOf(day3),
+            grid.loadedWindowStarts,
+            "the refresh must refetch the chunk in view, not repaint the old anchor"
+        )
+        assertEquals(day3, grid.state.value.timelineStartSec)
+    }
+
+    @Test
+    fun refreshRefetchesEveryChunkInView() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val first = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val second = first + MultiEpgWindows.CHUNK_SECONDS
+        val viewStart = second - 1_800L
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        grid.onVisibleWindow(viewStart, viewStart + 3_600L)
+        grid.awaitIdle()
+        assertEquals(setOf(first, second), grid.loadedWindowStarts)
+        val firstBefore = fetches.count { it == first }
+        val secondBefore = fetches.count { it == second }
+
+        grid.refresh()
+        grid.awaitIdle()
+
+        assertEquals(firstBefore + 1, fetches.count { it == first })
+        assertEquals(secondBefore + 1, fetches.count { it == second })
+        assertEquals(setOf(first, second), grid.loadedWindowStarts)
+    }
+
+    @Test
+    fun refreshFallsBackToTheAnchorBeforeAViewportIsReported() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", chunk.startSec + 10L)
+        grid.awaitIdle()
+        val before = fetches.count { it == chunk.startSec }
+
+        grid.refresh()
+        grid.awaitIdle()
+
+        assertEquals(before + 1, fetches.count { it == chunk.startSec })
+    }
+
+    @Test
+    fun remountForgetsTheReportedViewport() = runBlocking {
+        val chunk = MultiEpgWindows.chunkContaining(MultiEpgWindows.CHUNK_SECONDS + 10L)
+        val now = chunk.startSec + 3_600L
+        val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val fetches = ArrayList<Long>()
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                fetches.add(time)
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", now)
+        grid.awaitIdle()
+        grid.onVisibleWindow(day3 + 3_600L, day3 + 3_600L + 7_200L)
+        grid.awaitIdle()
+        val pannedFetches = fetches.count { it == day3 }
+
+        grid.replaceAndLoad("bouquet-b", now)
+        grid.awaitIdle()
+        val anchorAfterRemount = fetches.count { it == chunk.startSec }
+        grid.refresh()
+        grid.awaitIdle()
+
+        assertEquals(
+            pannedFetches,
+            fetches.count { it == day3 },
+            "the remount must drop the panned viewport"
+        )
+        assertEquals(anchorAfterRemount + 1, fetches.count { it == chunk.startSec })
+    }
+
+    @Test
     fun freshPeekPrefetchKeepsToolbarSyncing() = runBlocking {
         val gate = CompletableDeferred<Unit>()
         val t0 = MultiEpgWindows.CHUNK_SECONDS + 10L

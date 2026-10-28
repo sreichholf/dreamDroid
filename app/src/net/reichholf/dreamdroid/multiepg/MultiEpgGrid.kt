@@ -130,6 +130,44 @@ class MultiEpgGrid(
     }
 
     fun load(anchorSec: Long, forceRefresh: Boolean = false, isPull: Boolean = false) {
+        startLoad(
+            targets = listOf(anchorSec),
+            anchorSec = anchorSec,
+            forceRefresh = forceRefresh,
+            isPull = isPull
+        )
+    }
+
+    /**
+     * Force-refetches every chunk the last reported viewport covers, or the anchor's chunk
+     * before the screen reported one, clamped to [MultiEpgGridState.originFloorSec]. A zoom
+     * that spans a 24 h boundary refreshes every chunk in view, not only the first.
+     */
+    fun refresh(isPull: Boolean = false) {
+        val state = _state.value
+        val reported = visibleStartSec > 0L
+        val startSec = maxOf(
+            state.originFloorSec,
+            if (reported) visibleStartSec else state.anchorSec
+        )
+        startLoad(
+            targets = MultiEpgWindows.slidingChunks(
+                originFloorSec = state.originFloorSec,
+                visibleStartSec = startSec,
+                visibleEndSec = if (reported) visibleEndSec else startSec
+            ),
+            anchorSec = startSec,
+            forceRefresh = true,
+            isPull = isPull
+        )
+    }
+
+    private fun startLoad(
+        targets: List<Long>,
+        anchorSec: Long,
+        forceRefresh: Boolean,
+        isPull: Boolean
+    ) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty()) {
             timers = emptyList()
@@ -217,24 +255,25 @@ class MultiEpgGrid(
                         _state.update { it.copy(errorMessage = applied.errorMessage) }
                     }
                 }
-                if (peek != null && peek.events.isNotEmpty()) {
-                    if (peek.fresh) {
-                        warmNextChunk(id, anchorSec)
-                        return@launch
+                if (peek != null && peek.events.isNotEmpty() && peek.fresh) {
+                    warmNextChunk(id, anchorSec)
+                    return@launch
+                }
+                for (target in targets) {
+                    val events = withContext(Dispatchers.IO) {
+                        sync.ensureChunk(
+                            profileId = id,
+                            bouquetRef = ref,
+                            unixSec = target,
+                            forceRefresh = forceRefresh,
+                            persist = persist
+                        )
                     }
+                    putWindow(MultiEpgWindows.chunkContaining(target).startSec, events)
                 }
-                val events = withContext(Dispatchers.IO) {
-                    sync.ensureChunk(
-                        profileId = id,
-                        bouquetRef = ref,
-                        unixSec = anchorSec,
-                        forceRefresh = forceRefresh,
-                        persist = persist
-                    )
+                if (targets.isNotEmpty()) {
+                    warmNextChunk(id, targets.last())
                 }
-                val chunk = MultiEpgWindows.chunkContaining(anchorSec)
-                putWindow(chunk.startSec, events)
-                warmNextChunk(id, anchorSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t

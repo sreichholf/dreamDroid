@@ -134,7 +134,7 @@ Open MultiEPG(bouquet B)
        no  → GET /web/epgmulti?bRef=B&time=T0&endTime=T1
             → upsert Room → paint
   → pan the sliding window → fetch chunks that enter the viewport (dedupe in-flight); only the chunks in view stay in memory, the next one is filled into Room without painting
-  → pull-to-refresh → invalidate chunk + refetch
+  → pull-to-refresh → invalidate the chunks in view + refetch
   → leave screen → cancel HTTP; keep Room until TTL expires or the 2-day retention prune
 ```
 
