@@ -8,11 +8,15 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.video.eventProgress
 
 /**
- * "20:14 – 23:08 · 115 min left" for a running event, in the device's time format and by the
- * device clock; null when the event has no usable start or duration.
+ * "20:14 – 23:08 · 115 min left" for a running event, in the device's time format and at
+ * [nowMs] on the device clock; null when the event has no usable start or duration.
  */
-fun nowEventTimes(context: Context, event: Event?): String? {
-    val progress = eventProgress(event, System.currentTimeMillis()) ?: return null
+fun nowEventTimes(
+    context: Context,
+    event: Event?,
+    nowMs: Long = System.currentTimeMillis()
+): String? {
+    val progress = eventProgress(event, nowMs) ?: return null
     val startMs = progress.startSec * 1000
     val endMs = startMs + progress.totalSec * 1000
     val format = DateFormat.getTimeFormat(context)

@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
@@ -30,6 +31,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -316,6 +318,39 @@ class TvChannelListTest {
     }
 
     @Test
+    fun nowBarsFollowTheDeviceClock() {
+        val startSec = 1_700_000_000L
+        val running = ServiceNowNext(
+            serviceReference = daserste.serviceReference,
+            serviceName = daserste.serviceName,
+            // The receiver's freeze-frame clock: one minute in, and it stays there.
+            now = Event(
+                title = daserste.now!!.title,
+                start = startSec.toString(),
+                duration = "3600",
+                currentTime = (startSec + 60).toString()
+            )
+        )
+        var nowMs by mutableStateOf(startSec * 1000)
+        val requester = FocusRequester()
+        setList(
+            services = { listOf(running) },
+            currentRef = running.serviceReference,
+            nowMs = { nowMs },
+            focusRequester = requester
+        )
+        composeRule.runOnIdle { requester.requestFocus() }
+        awaitFocused(row(running.serviceName))
+        assertEquals(0f, rowProgress(running.serviceName), 0.001f)
+        assertEquals(0f, detailProgress(), 0.001f)
+
+        composeRule.runOnIdle { nowMs += 30 * 60_000L }
+        composeRule.waitUntil { rowProgress(running.serviceName) > 0.49f }
+        assertEquals(0.5f, rowProgress(running.serviceName), 0.001f)
+        assertEquals(0.5f, detailProgress(), 0.001f)
+    }
+
+    @Test
     fun binderBridgesViewFocusIntoPlayingRow() {
         val view = setBoundView()
         assertTrue(view.isFocusable)
@@ -346,6 +381,7 @@ class TvChannelListTest {
         currentRef: String? = zdf.serviceReference,
         bouquets: List<Service> = this.bouquets,
         selectedBouquetRef: () -> String? = { bouquets.first().reference },
+        nowMs: () -> Long = { System.currentTimeMillis() },
         focusRequester: FocusRequester? = null,
         onServiceClick: (ServiceNowNext) -> Unit = {},
         onSelectBouquet: (Service) -> Unit = {},
@@ -364,6 +400,7 @@ class TvChannelListTest {
                         selectedBouquetRef = selectedBouquetRef(),
                         onServiceClick = onServiceClick,
                         onSelectBouquet = onSelectBouquet,
+                        nowMs = nowMs(),
                         focusRequester = focusRequester,
                         onUserInteraction = onUserInteraction
                     )
@@ -410,6 +447,19 @@ class TvChannelListTest {
 
     private fun detail(): SemanticsNodeInteraction =
         composeRule.onNodeWithTag(TV_CHANNEL_DETAIL_TAG).assertIsDisplayed()
+
+    private fun rowProgress(name: String): Float {
+        val info = row(name).fetchSemanticsNode()
+            .config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
+        checkNotNull(info) { "the $name row has no progress bar" }
+        return info.current
+    }
+
+    private fun detailProgress(): Float = composeRule.onNode(
+        SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo) and
+            hasAnyAncestor(hasTestTag(TV_CHANNEL_DETAIL_TAG)),
+        useUnmergedTree = true
+    ).fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
 
     // The Compose test API cannot set a repeat count, which is what a held D-pad key sends.
     private fun sendDpad(action: Int, repeat: Int) {

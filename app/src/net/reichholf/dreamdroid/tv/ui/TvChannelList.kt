@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -65,6 +66,7 @@ import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
@@ -72,10 +74,10 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceRef
-import net.reichholf.dreamdroid.ui.services.nowProgress
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
+import net.reichholf.dreamdroid.ui.video.eventProgress
 
 const val TV_CHANNEL_LIST_TAG = "tv_channel_list"
 const val TV_CHANNEL_ROW_TAG = "tv_channel_row"
@@ -89,6 +91,8 @@ private val RowShape = RoundedCornerShape(12.dp)
 
 /** Rows kept above the target when the list scrolls to it, so it does not sit at the edge. */
 private const val SCROLL_CONTEXT_ROWS = 2
+
+private const val MINUTE_MS = 60_000L
 
 /**
  * Player channel list: the shown bouquet as a vertical list docked left, Left/Right switching
@@ -105,6 +109,7 @@ fun TvChannelList(
     onServiceClick: (ServiceNowNext) -> Unit,
     onSelectBouquet: (Service) -> Unit,
     modifier: Modifier = Modifier,
+    nowMs: Long = rememberMinuteNowMs(),
     focusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
     onScrollInProgress: ((Boolean) -> Unit)? = null
@@ -224,6 +229,7 @@ fun TvChannelList(
                         ChannelRow(
                             service = service,
                             playing = service.serviceReference == currentRef,
+                            nowMs = nowMs,
                             onClick = { onServiceClick(service) },
                             modifier = Modifier
                                 .then(
@@ -250,6 +256,7 @@ fun TvChannelList(
         if (focused != null) {
             ChannelDetailCard(
                 service = focused,
+                nowMs = nowMs,
                 background = panelColor,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -333,10 +340,11 @@ private fun ChannelMarker(name: String) {
 private fun ChannelRow(
     service: ServiceNowNext,
     playing: Boolean,
+    nowMs: Long,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val progress = nowProgress(service.now)
+    val progress = eventProgress(service.now, nowMs)
     val nowTitle = service.now?.title.orEmpty()
     Surface(
         onClick = onClick,
@@ -396,10 +404,10 @@ private fun ChannelRow(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                if (progress.isKnown) {
+                if (progress != null) {
                     val content = LocalContentColor.current
                     LinearProgressIndicator(
-                        progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                        progress = { progress.elapsedSec.toFloat() / progress.totalSec.toFloat() },
                         modifier = Modifier
                             .padding(top = 4.dp)
                             .fillMaxWidth()
@@ -433,6 +441,7 @@ private fun PlayingTag(modifier: Modifier = Modifier) {
 @Composable
 private fun ChannelDetailCard(
     service: ServiceNowNext,
+    nowMs: Long,
     background: Color,
     modifier: Modifier = Modifier
 ) {
@@ -440,17 +449,17 @@ private fun ChannelDetailCard(
     val phone = PhoneMaterialTheme.colorScheme
     val now = service.now
     val next = service.next
-    val progress = nowProgress(now)
-    val times = nowEventTimes(context, now)
+    val progress = eventProgress(now, nowMs)
+    val times = nowEventTimes(context, now, nowMs)
     Column(
         modifier = modifier
             .clip(PanelShape)
             .background(background)
             .testTag(TV_CHANNEL_DETAIL_TAG)
     ) {
-        if (progress.isKnown) {
+        if (progress != null) {
             LinearProgressIndicator(
-                progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                progress = { progress.elapsedSec.toFloat() / progress.totalSec.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp),
@@ -515,6 +524,22 @@ private fun ChannelDetailCard(
             }
         }
     }
+}
+
+/**
+ * Device-clock milliseconds, refreshed on the next minute boundary: now/next events carry the
+ * receiver's `currentTime`, which does not move while the overlay stays open.
+ */
+@Composable
+private fun rememberMinuteNowMs(): Long {
+    var nowMs by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(MINUTE_MS - System.currentTimeMillis() % MINUTE_MS)
+            nowMs = System.currentTimeMillis()
+        }
+    }
+    return nowMs
 }
 
 fun ComposeView.bindTvChannelList(
