@@ -117,7 +117,7 @@ fun EpgBouquetDestination(
         onTimeline = { openMultiEpg(timeSec.toLong()) }
     )
 
-    EpgEventListDetailHost(handle, detailViewModel, modifier) { shownEvent ->
+    EpgEventListDetailHost(handle, detailViewModel, modifier, showChannelEpg = true) { shownEvent ->
         DreamDroidPullRefresh(
             refreshing = uiState.refreshing,
             onRefresh = { viewModel.reload(forceRefresh = true) },

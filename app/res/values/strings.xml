@@ -159,6 +159,7 @@
     <string name="no_epg_available">Currently there is no EPG-Information available for this channel!</string>
     <string name="movie_detail_pane_empty">Choose Info on a recording to see its details here</string>
     <string name="epg_detail_pane_empty">Choose an event to see its details here</string>
+    <string name="channel_epg_open">Show channel EPG</string>
     <string name="timer_detail_pane_empty">Choose a timer to edit it here</string>
     <string name="ok">OK</string>
     <string name="activate">Activate</string>
