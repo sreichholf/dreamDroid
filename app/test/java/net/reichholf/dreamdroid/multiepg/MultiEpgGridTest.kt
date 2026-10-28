@@ -2,8 +2,11 @@ package net.reichholf.dreamdroid.multiepg
 
 import java.util.concurrent.atomic.AtomicInteger
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.withTimeoutOrNull
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.EnigmaFailureException
@@ -361,6 +364,164 @@ class MultiEpgGridTest {
             "the pan must warm the following chunk"
         )
         assertEquals("T", titleOnFocusedChunk(grid, tomorrow))
+    }
+
+    @Test
+    fun panDuringAWarmWarmsTheChunkItSkipped() = runBlocking {
+        val anchor = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val now = MultiEpgWindows.chunkContaining(anchor).startSec
+        val warmed = now + MultiEpgWindows.CHUNK_SECONDS
+        val panTarget = now + 4L * MultiEpgWindows.CHUNK_SECONDS
+        val afterPanTarget = now + 5L * MultiEpgWindows.CHUNK_SECONDS
+        val warmGate = CompletableDeferred<Unit>()
+        val warmStarted = CompletableDeferred<Unit>()
+        val afterPanFetches = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { _, time, _ ->
+                if (time == warmed) {
+                    warmStarted.complete(Unit)
+                    warmGate.await()
+                }
+                if (time == afterPanTarget) {
+                    afterPanFetches.incrementAndGet()
+                }
+                listOf(programme(id = time.toString(), title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", anchor)
+        withTimeout(5_000) { warmStarted.await() }
+
+        grid.onVisibleWindow(
+            panTarget + 3_600L,
+            panTarget + 3_600L + 7_200L
+        )
+        grid.awaitState { grid.loadedWindowStarts == setOf(panTarget) }
+
+        warmGate.complete(Unit)
+        grid.awaitIdle()
+
+        assertEquals(
+            1,
+            afterPanFetches.get(),
+            "the warm skipped by the pan must run once the running warm ends"
+        )
+    }
+
+    @Test
+    fun remountDropsTheChunkQueuedBehindTheCancelledWarm() = runBlocking {
+        val anchor = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val now = MultiEpgWindows.chunkContaining(anchor).startSec
+        val nextChunk = now + MultiEpgWindows.CHUNK_SECONDS
+        val panA = now + 4L * MultiEpgWindows.CHUNK_SECONDS
+        val queuedA = now + 5L * MultiEpgWindows.CHUNK_SECONDS
+        val warmStarted = CompletableDeferred<Unit>()
+        val warmGate = CompletableDeferred<Unit>()
+        val staleFetches = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { bouquet, time, _ ->
+                if (bouquet == "bouquet-a" && time == nextChunk) {
+                    warmStarted.complete(Unit)
+                    // A fetch already inside its blocking call runs on after the cancel,
+                    // so its finally lands after the next bouquet is mounted.
+                    withContext(NonCancellable) { warmGate.await() }
+                }
+                if (bouquet == "bouquet-a" && time == queuedA) {
+                    staleFetches.incrementAndGet()
+                }
+                listOf(programme(id = "$bouquet-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", anchor)
+        withTimeout(5_000) { warmStarted.await() }
+
+        grid.onVisibleWindow(panA + 3_600L, panA + 3_600L + 7_200L)
+        grid.awaitState { grid.loadedWindowStarts == setOf(panA) }
+
+        grid.replaceAndLoad("bouquet-b", anchor)
+        grid.awaitIdle()
+        assertEquals(setOf(now), grid.loadedWindowStarts)
+
+        warmGate.complete(Unit)
+        grid.awaitState { !grid.state.value.syncing }
+        assertEquals(
+            0,
+            staleFetches.get(),
+            "the remount must drop the chunk the pan queued for the previous bouquet"
+        )
+    }
+
+    @Test
+    fun cancelledWarmLeavesTheNextWarmsQueueAlone() = runBlocking {
+        val anchor = MultiEpgWindows.CHUNK_SECONDS + 10L
+        val now = MultiEpgWindows.chunkContaining(anchor).startSec
+        val nextChunk = now + MultiEpgWindows.CHUNK_SECONDS
+        val panB = now + 4L * MultiEpgWindows.CHUNK_SECONDS
+        val queuedB = now + 5L * MultiEpgWindows.CHUNK_SECONDS
+        val warmAStarted = CompletableDeferred<Unit>()
+        val warmAGate = CompletableDeferred<Unit>()
+        val warmBStarted = CompletableDeferred<Unit>()
+        val warmBGate = CompletableDeferred<Unit>()
+        val queuedFetches = AtomicInteger(0)
+        val sync = MultiEpgSync(
+            dao = db.epgDao(),
+            fetch = { bouquet, time, _ ->
+                if (time == nextChunk) {
+                    if (bouquet == "bouquet-a") {
+                        warmAStarted.complete(Unit)
+                        withContext(NonCancellable) { warmAGate.await() }
+                    } else {
+                        warmBStarted.complete(Unit)
+                        warmBGate.await()
+                    }
+                }
+                if (bouquet == "bouquet-b" && time == queuedB) {
+                    queuedFetches.incrementAndGet()
+                }
+                listOf(programme(id = "$bouquet-$time", title = "T", start = time))
+            },
+            clockMs = { 1_000_000L },
+            ttlMs = 25L * 60L * 1000L
+        )
+        val grid = MultiEpgGrid(
+            sync = sync,
+            scope = this,
+            profileId = { 1 }
+        )
+        grid.replaceAndLoad("bouquet-a", anchor)
+        withTimeout(5_000) { warmAStarted.await() }
+
+        grid.replaceAndLoad("bouquet-b", anchor)
+        withTimeout(5_000) { warmBStarted.await() }
+        grid.onVisibleWindow(panB + 3_600L, panB + 3_600L + 7_200L)
+        grid.awaitState { grid.loadedWindowStarts == setOf(panB) }
+
+        // The cancelled warm A ends while B owns the queued chunk.
+        warmAGate.complete(Unit)
+        grid.awaitState { grid.state.value.syncingCount == 1 }
+
+        warmBGate.complete(Unit)
+        grid.awaitIdle()
+        assertEquals(
+            1,
+            queuedFetches.get(),
+            "the warm the pan queued must survive the cancelled warm's finally"
+        )
     }
 
     @Test

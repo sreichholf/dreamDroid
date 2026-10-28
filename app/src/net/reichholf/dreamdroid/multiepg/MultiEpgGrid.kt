@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.multiepg
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -83,6 +84,7 @@ class MultiEpgGrid(
 
     private var loadJob: Job? = null
     private var prefetchJob: Job? = null
+    private var queuedWarm: WarmTarget? = null
     private var windowJob: Job? = null
     private val gridMutex = Mutex()
     private val eventsByWindow = ConcurrentHashMap<Long, List<Event>>()
@@ -92,6 +94,7 @@ class MultiEpgGrid(
     private var timers: List<Timer> = emptyList()
 
     fun cancel() {
+        queuedWarm = null
         loadJob?.cancel()
         prefetchJob?.cancel()
         windowJob?.cancel()
@@ -102,6 +105,7 @@ class MultiEpgGrid(
      * [anchorSec] becomes the left clamp ("now") for this grid.
      */
     fun replaceAndLoad(bouquetRef: String, anchorSec: Long) {
+        queuedWarm = null
         loadJob?.cancel()
         prefetchJob?.cancel()
         windowJob?.cancel()
@@ -320,26 +324,48 @@ class MultiEpgGrid(
         if (ref.isEmpty() || !persistBouquet(ref) || isSessionOffline()) {
             return
         }
+        val target = WarmTarget(
+            profileId = profileId,
+            bouquetRef = ref,
+            startSec = MultiEpgWindows.chunkContaining(
+                anchor + MultiEpgWindows.CHUNK_SECONDS
+            ).startSec
+        )
         if (prefetchJob?.isActive == true) {
+            queuedWarm = target
             return
         }
-        prefetchJob = scope.launch {
+        startWarm(target)
+    }
+
+    private fun startWarm(target: WarmTarget) {
+        if (isSessionOffline()) {
+            return
+        }
+        // LAZY: the tracked slot must be set before the body can reach its finally.
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             beginSync()
             try {
-                sync.warmChunk(
-                    profileId = profileId,
-                    bouquetRef = ref,
-                    unixSec = anchor + MultiEpgWindows.CHUNK_SECONDS
-                )
+                sync.warmChunk(target.profileId, target.bouquetRef, target.startSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
                 }
-                // Cache fill only: the visible window is unaffected and a pan retries.
+                // Cache fill only: the visible window is unaffected and the next pan retries.
             } finally {
                 endSync()
+                if (prefetchJob === coroutineContext[Job]) {
+                    prefetchJob = null
+                    val queued = queuedWarm
+                    queuedWarm = null
+                    if (isActive && queued != null) {
+                        startWarm(queued)
+                    }
+                }
             }
         }
+        prefetchJob = job
+        job.start()
     }
 
     private suspend fun attachWindow(unixSec: Long) {
@@ -483,6 +509,8 @@ class MultiEpgGrid(
     private fun endSync() {
         _state.update { it.copy(syncingCount = (it.syncingCount - 1).coerceAtLeast(0)) }
     }
+
+    private class WarmTarget(val profileId: Int, val bouquetRef: String, val startSec: Long)
 
     companion object {
         private const val DEFAULT_VISIBLE_SECONDS: Long = 2L * 60L * 60L
