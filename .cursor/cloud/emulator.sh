@@ -54,7 +54,7 @@ emu_launch() {
 
   echo "emulator: launching '$AVD_NAME' (accel=$EMU_ACCEL, mode=$mode)"
   nohup "$EMULATOR" -avd "$AVD_NAME" \
-    -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect \
+    -no-window -no-audio -no-boot-anim -gpu swangle \
     $accel_flags $snap_flag \
     > "$EMU_LOG" 2>&1 &
 }
