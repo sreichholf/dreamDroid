@@ -28,6 +28,8 @@ import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
 import androidx.tv.material3.Surface
 import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import org.junit.Assert.assertEquals
@@ -144,21 +146,27 @@ class DreamDroidTvThemeTest {
     }
 
     /**
-     * Focus is the phone's selection colour in both themes, and an item resting in that colour
-     * focuses in primary, so focus still shows on it.
+     * Focus is primary, not the selection tint: the tint is 1.2:1 against the resting card fill
+     * (light) and 1.65:1 (night), and a focused card must not look like a selected one at rest.
+     * An item resting in the tint focuses in the inverse fill so focus still shows on it. Both
+     * fills clear WCAG 1.4.11's 3:1 against the fill they replace.
      */
     @Test
-    fun focusedCardsTakeThePhoneSelectionColoursInBothThemes() {
+    fun focusedCardsStandOutFromTheirRestingFillInBothThemes() {
         var dark by mutableStateOf(true)
-        var active by mutableStateOf(false)
+        var restingInSelection by mutableStateOf(false)
         var selection = Color.Unspecified
+        var surfaceLow = Color.Unspecified
         var primary = Color.Unspecified
+        var inverse = Color.Unspecified
         val focus = FocusRequester()
         composeRule.setContent {
             DreamDroidTvTheme(forceDark = dark) {
                 val phone = PhoneMaterialTheme.colorScheme
                 selection = phone.secondaryContainer
+                surfaceLow = phone.surfaceContainerLow
                 primary = phone.primary
+                inverse = phone.inverseSurface
                 Surface(
                     onClick = {},
                     modifier = Modifier
@@ -167,7 +175,7 @@ class DreamDroidTvThemeTest {
                         .focusRequester(focus)
                         .testTag("tv_card_surface"),
                     colors = dreamDroidTvCardColors(
-                        restContainer = phone.secondaryContainer.takeIf { active }
+                        restContainer = phone.secondaryContainer.takeIf { restingInSelection }
                     ),
                     scale = ClickableSurfaceScale.None
                 ) {}
@@ -178,20 +186,34 @@ class DreamDroidTvThemeTest {
             for (resting in listOf(false, true)) {
                 composeRule.runOnIdle {
                     dark = theme
-                    active = resting
+                    restingInSelection = resting
                 }
                 composeRule.waitForIdle()
                 val bitmap = composeRule.onNodeWithTag("tv_card_surface").captureToImage()
                     .asAndroidBitmap()
                 val px = bitmap.getPixel(bitmap.width / 2, bitmap.height / 2)
-                val want = if (resting) primary else selection
+                val rest = if (resting) selection else surfaceLow
+                val want = if (resting) inverse else primary
                 assertTrue(
-                    "dark=$theme active=$resting focused #${Integer.toHexString(px)} " +
+                    "dark=$theme selectedResting=$resting focused #${Integer.toHexString(px)} " +
                         "expected #${Integer.toHexString(want.toArgb())}",
                     rgbDistance(px, want.toArgb()) < 30
                 )
+                assertTrue(
+                    "dark=$theme selectedResting=$resting focus #${Integer.toHexString(px)} " +
+                        "on rest #${Integer.toHexString(rest.toArgb())} " +
+                        "contrast=${contrast(px, rest.toArgb())}",
+                    contrast(px, rest.toArgb()) >= 3f
+                )
             }
         }
+    }
+
+    /** WCAG relative-luminance contrast of two ARGB colours. */
+    private fun contrast(a: Int, b: Int): Float {
+        val la = Color(a).luminance()
+        val lb = Color(b).luminance()
+        return (max(la, lb) + 0.05f) / (min(la, lb) + 0.05f)
     }
 
     private fun rgbDistance(a: Int, b: Int): Int {

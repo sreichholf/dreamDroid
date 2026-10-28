@@ -114,21 +114,23 @@ fun DreamDroidTvTheme(
 data class DreamDroidTvFocusColors(val container: Color, val content: Color)
 
 /**
- * D-pad focus on TV cards, list rows and the Guide cursor: the phone's selection colours
- * (secondaryContainer), which stay dark in the dark theme instead of flashing near white.
+ * D-pad focus on TV cards, list rows and the Guide cursor: primary, which clears 3:1 against
+ * both the resting card fill and the selection tint. The tint itself sits too close to the
+ * resting fill to mark focus, and would read as a selected item at rest.
  */
 @Composable
 fun dreamDroidTvFocusColors(): DreamDroidTvFocusColors = PhoneMaterialTheme.colorScheme.let {
-    DreamDroidTvFocusColors(it.secondaryContainer, it.onSecondaryContainer)
+    DreamDroidTvFocusColors(it.primary, it.onPrimary)
 }
 
 /**
  * Focus on an item that already rests in the selection colour (the active profile, an enabled
- * timer, the chosen receiver): primary, so focus still shows in both themes.
+ * timer, the chosen receiver): the inverse fill, so focus reads over the tint and still differs
+ * from [dreamDroidTvFocusColors].
  */
 @Composable
 fun dreamDroidTvActiveFocusColors(): DreamDroidTvFocusColors = PhoneMaterialTheme.colorScheme.let {
-    DreamDroidTvFocusColors(it.primary, it.onPrimary)
+    DreamDroidTvFocusColors(it.inverseSurface, it.inverseOnSurface)
 }
 
 /**
