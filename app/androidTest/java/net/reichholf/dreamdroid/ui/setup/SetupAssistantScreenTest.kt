@@ -60,11 +60,15 @@ import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
+import net.reichholf.dreamdroid.data.ProfileRepository
+import net.reichholf.dreamdroid.data.ProfileStore
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.SettingsRepository
+import net.reichholf.dreamdroid.data.WebIfCapabilitiesRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.helpers.backup.BackupData
+import net.reichholf.dreamdroid.testutil.MemoryProfileStore
 import net.reichholf.dreamdroid.testutil.enterTouchMode
 import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -813,6 +817,62 @@ class SetupAssistantScreenTest {
     }
 
     @Test
+    fun restoreKeepsTheActionEnabledWhileItWrites() = runBlocking<Unit> {
+        val data = BackupData().apply {
+            addProfile(
+                Profile.getDefault().apply {
+                    name = "Living room"
+                    host = "10.0.0.5"
+                }
+            )
+        }
+        documents.files[RESTORE_URI] = GsonBuilder().create().toJson(data)
+        val gate = CompletableDeferred<Unit>()
+        val store = ProfileRepository(
+            GatedProfileStore(MemoryProfileStore(), gate),
+            WebIfCapabilitiesRepository()
+        )
+        val viewModel = model(
+            profiles = store,
+            backupRepository = BackupRepository(store, SettingsRepository(preferences))
+        )
+        var finished = false
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = { finished = true },
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+
+        composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.draft.step == SetupStep.Import
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Restore").assertIsEnabled().performClick()
+        composeRule.waitForIdle()
+
+        // The review goes null for the whole write; the action must not go with it, or the
+        // D-pad loses the button that shows the progress.
+        assertTrue(viewModel.uiState.value.restoring)
+        composeRule.onNodeWithText("Restore").assertIsEnabled()
+        composeRule.onNodeWithTag("setup_checking").assertIsDisplayed()
+
+        gate.complete(Unit)
+        composeRule.waitUntil(timeoutMillis = 5_000) { finished }
+        composeRule.onNodeWithTag("setup_checking").assertDoesNotExist()
+        assertEquals("10.0.0.5", store.profiles().single().host)
+    }
+
+    @Test
     fun anUnreadableRestoreStaysOnWelcomeWithTheReason() {
         val viewModel = model()
         composeRule.setContent {
@@ -891,7 +951,9 @@ class SetupAssistantScreenTest {
 
     private fun model(
         onSearch: suspend () -> List<Profile> = { emptyList() },
-        onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() }
+        onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() },
+        profiles: ProfileRepository = this.profiles,
+        backupRepository: BackupRepository = backups
     ): SetupAssistantViewModel = SetupAssistantViewModel(
         SavedStateHandle(),
         profiles,
@@ -902,9 +964,20 @@ class SetupAssistantScreenTest {
                 onCheck(profile)
         },
         ReceiverDiscovery { onSearch() },
-        backups,
+        backupRepository,
         documents
     )
+
+    /** Holds the profile write until [gate] completes, so a test can read the busy state. */
+    private class GatedProfileStore(
+        private val delegate: ProfileStore,
+        private val gate: CompletableDeferred<Unit>
+    ) : ProfileStore by delegate {
+        override suspend fun <R> transaction(block: suspend () -> R): R {
+            gate.await()
+            return delegate.transaction(block)
+        }
+    }
 
     private class MemoryDocuments : BackupDocuments {
         val files = HashMap<String, String>()
