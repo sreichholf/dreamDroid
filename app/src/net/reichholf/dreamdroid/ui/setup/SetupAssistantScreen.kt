@@ -144,8 +144,8 @@ fun SetupAssistantScreen(
     fun openRestorePicker() {
         try {
             pickRestoreFile.launch(arrayOf("*/*"))
-        } catch (e: ActivityNotFoundException) {
-            viewModel.onRestorePickerMissing(e.localizedMessage)
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onRestorePickerMissing()
         }
     }
 

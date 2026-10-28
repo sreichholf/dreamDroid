@@ -339,6 +339,19 @@ class SetupAssistantViewModelTest {
     }
 
     @Test
+    fun aMissingFilePickerSaysSo() {
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.onRestorePickerMissing()
+
+        assertEquals(
+            UiText.Resource(R.string.no_file_picker),
+            viewModel.uiState.value.restoreError
+        )
+        assertEquals(SetupStep.Welcome, viewModel.uiState.value.draft.step)
+    }
+
+    @Test
     fun theRestoreReviewSurvivesProcessDeath() = runTest {
         documents.files[RESTORE_URI] = backupJson(
             Profile.getDefault().apply {

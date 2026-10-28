@@ -254,13 +254,9 @@ class SetupAssistantViewModel @Inject constructor(
         }
     }
 
-    /** No app can pick the document. [reason] is the system's text, when it gave one. */
-    fun onRestorePickerMissing(reason: String?) {
+    fun onRestorePickerMissing() {
         _uiState.update {
-            it.copy(
-                restoreError = reason?.let(UiText::Raw)
-                    ?: UiText.Resource(R.string.setup_restore_failed)
-            )
+            it.copy(restoreError = UiText.Resource(R.string.no_file_picker))
         }
     }
 
