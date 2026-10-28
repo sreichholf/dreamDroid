@@ -659,8 +659,9 @@ class TvMultiEpgScreenTest {
         fun pixel(x: Float, y: Float) =
             Color(image.getPixel((x - list.left).toInt(), (y - list.top).toInt()))
         val band = colors.onSurface.copy(alpha = 0.06f)
-        // An empty corner of the channel cell, and bare timeline track: the 4 dp gap above a
-        // row's bars ("No information" fills the rest of the row), clear of the right edge fade.
+        // An empty corner of the channel cell (4 dp inside its right edge), and bare timeline
+        // track 300 dp in: 1 dp below the row top sits in the 2 dp gap above a row's bars
+        // (BarGap / 2; "No information" fills the rest of the row), clear of the edge fade.
         val probes = listOf(
             Triple(selectedCell.right - px(4.dp), otherCell.right - px(4.dp), px(4.dp)),
             Triple(selectedCell.right + px(300.dp), otherCell.right + px(300.dp), px(1.dp))
