@@ -22,11 +22,8 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme as PhoneMaterialTheme
 import androidx.compose.material3.Text as PhoneText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,7 +53,6 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import java.util.Date
-import kotlinx.coroutines.delay
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvPillShape
@@ -76,7 +72,6 @@ private val InfobarButtonSize = 48.dp
 private val InfobarIconSize = 24.dp
 private val PiconWidth = 96.dp
 private val PiconHeight = 58.dp
-private const val MINUTE_MS = 60_000L
 
 private enum class InfobarAction { Audio, Subtitle, Info, List, Sleep }
 
@@ -96,6 +91,7 @@ fun TvPlayerInfobar(
     onSubtitle: () -> Unit,
     onSleepTimer: () -> Unit,
     modifier: Modifier = Modifier,
+    nowMs: Long = rememberMinuteNowMs(),
     firstControlFocusRequester: FocusRequester? = null
 ) {
     val colors = PhoneMaterialTheme.colorScheme
@@ -151,13 +147,13 @@ fun TvPlayerInfobar(
                             .clip(RoundedCornerShape(8.dp))
                     )
                 }
-                InfobarText(state = state, modifier = Modifier.weight(1f))
+                InfobarText(state = state, nowMs = nowMs, modifier = Modifier.weight(1f))
                 Column(
                     modifier = Modifier.padding(start = 16.dp),
                     horizontalAlignment = Alignment.End,
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    InfobarClock()
+                    InfobarClock(nowMs)
                     actions()
                 }
             }
@@ -175,13 +171,13 @@ fun TvPlayerInfobar(
 }
 
 @Composable
-private fun InfobarText(state: VideoOverlayUiState, modifier: Modifier = Modifier) {
+private fun InfobarText(state: VideoOverlayUiState, nowMs: Long, modifier: Modifier = Modifier) {
     val colors = PhoneMaterialTheme.colorScheme
     val context = LocalContext.current
     val meta = if (state.showPvrControls) {
         null
     } else {
-        nowEventTimes(context, state.nowEvent) ?: state.nowStart.ifEmpty { null }
+        nowEventTimes(context, state.nowEvent, nowMs) ?: state.nowStart.ifEmpty { null }
     }
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Row(verticalAlignment = Alignment.Bottom) {
@@ -236,18 +232,11 @@ private fun InfobarText(state: VideoOverlayUiState, modifier: Modifier = Modifie
 }
 
 @Composable
-private fun InfobarClock() {
+private fun InfobarClock(nowMs: Long) {
     val context = LocalContext.current
     val format = remember(context) { DateFormat.getTimeFormat(context) }
-    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(Unit) {
-        while (true) {
-            delay(MINUTE_MS - now % MINUTE_MS)
-            now = System.currentTimeMillis()
-        }
-    }
     Text(
-        text = format.format(Date(now)),
+        text = format.format(Date(nowMs)),
         color = PhoneMaterialTheme.colorScheme.onSurface,
         style = MaterialTheme.typography.titleMedium,
         modifier = Modifier.testTag("tv_player_infobar_clock")

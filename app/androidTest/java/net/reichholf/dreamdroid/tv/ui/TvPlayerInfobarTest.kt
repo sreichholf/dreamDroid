@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.text.format.DateFormat
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.input.InputMode
@@ -21,6 +23,7 @@ import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertWidthIsAtLeast
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -35,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import java.util.Date
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
@@ -42,6 +46,7 @@ import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.video.SleepTimer
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -69,9 +74,10 @@ class TvPlayerInfobarTest {
     fun liveStateShowsChannelEventsAndMeta() {
         val event = runningEvent()
         val state = liveState().apply { nowEvent = event }
-        setInfobar(state)
+        val nowMs = (RUNNING_EVENT_START_SEC + 600) * 1000
+        setInfobar(state, nowMs = nowMs)
 
-        val meta = nowEventTimes(context, event)
+        val meta = nowEventTimes(context, event, nowMs)
         assertNotNull(meta)
         composeRule.onNodeWithTag(TV_PLAYER_INFOBAR_TAG).assertIsDisplayed()
         composeRule.onNodeWithText("Das Erste HD").assertIsDisplayed()
@@ -83,6 +89,46 @@ class TvPlayerInfobarTest {
             .assertIsDisplayed()
         composeRule.onNodeWithTag("tv_player_infobar_clock", useUnmergedTree = true)
             .assertIsDisplayed()
+    }
+
+    @Test
+    fun clockTickRecomputesTheMetaAndTheClock() {
+        val event = runningEvent()
+        val state = liveState().apply { nowEvent = event }
+        val nowMs = mutableLongStateOf((RUNNING_EVENT_START_SEC + 600) * 1000L)
+        composeRule.setContent {
+            DeviceConfigurationOverride(DeviceConfigurationOverride.WindowSize(TvWindow)) {
+                DreamDroidTvTheme(fillBackground = false, forceDark = true) {
+                    TvPlayerInfobar(
+                        state = state,
+                        onPlay = {},
+                        onRewind = {},
+                        onForward = {},
+                        onInfo = {},
+                        onList = {},
+                        onAudio = {},
+                        onSubtitle = {},
+                        onSleepTimer = {},
+                        nowMs = nowMs.longValue
+                    )
+                }
+            }
+        }
+        composeRule.waitForIdle()
+
+        val format = DateFormat.getTimeFormat(context)
+        val clock = composeRule.onNodeWithTag("tv_player_infobar_clock", useUnmergedTree = true)
+        val firstMeta = nowEventTimes(context, event, nowMs.longValue)!!
+        composeRule.onNodeWithText(firstMeta).assertIsDisplayed()
+        clock.assertTextEquals(format.format(Date(nowMs.longValue)))
+
+        composeRule.runOnIdle { nowMs.longValue += 20 * 60_000L }
+
+        val laterMeta = nowEventTimes(context, event, nowMs.longValue)!!
+        assertNotEquals(firstMeta, laterMeta)
+        composeRule.onNodeWithText(laterMeta).assertIsDisplayed()
+        composeRule.onNodeWithText(firstMeta).assertDoesNotExist()
+        clock.assertTextEquals(format.format(Date(nowMs.longValue)))
     }
 
     @Test
@@ -304,6 +350,7 @@ class TvPlayerInfobarTest {
     private fun setInfobar(
         state: VideoOverlayUiState,
         requester: FocusRequester? = null,
+        nowMs: Long? = null,
         onPlay: () -> Unit = {},
         onRewind: () -> Unit = {},
         onForward: () -> Unit = {},
@@ -329,6 +376,7 @@ class TvPlayerInfobarTest {
                         onAudio = onAudio,
                         onSubtitle = onSubtitle,
                         onSleepTimer = onSleepTimer,
+                        nowMs = nowMs ?: rememberMinuteNowMs(),
                         firstControlFocusRequester = requester
                     )
                 }
@@ -361,7 +409,7 @@ class TvPlayerInfobarTest {
     }
 
     private fun runningEvent(): Event {
-        val start = 1_760_000_000L
+        val start = RUNNING_EVENT_START_SEC
         return Event(
             title = "Tagesschau",
             start = start.toString(),
@@ -371,4 +419,5 @@ class TvPlayerInfobarTest {
     }
 }
 
+private const val RUNNING_EVENT_START_SEC = 1_760_000_000L
 private val TvWindow = DpSize(960.dp, 540.dp)
