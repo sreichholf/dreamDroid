@@ -6,6 +6,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -20,6 +21,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_BODY_TAG
 import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_DIALOG_TAG
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
@@ -268,6 +270,7 @@ class VideoOverlayScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertExists()
+        composeRule.onNodeWithTag(TV_PLAYER_DETAIL_BODY_TAG).assertIsFocused()
         composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.close)).performClick()
         composeRule.waitUntil { state.epgDetailContent == null }

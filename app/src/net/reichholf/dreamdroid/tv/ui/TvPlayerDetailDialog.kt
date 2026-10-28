@@ -70,13 +70,6 @@ private fun TvPlayerDetailDialog(
     val bodyFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     val step = with(LocalDensity.current) { ScrollStep.toPx() }
-    LaunchedEffect(Unit) {
-        try {
-            bodyFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Dialog window not attached yet.
-        }
-    }
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -108,6 +101,7 @@ private fun TvPlayerDetailDialog(
                     }
                     .focusable()
             ) {
+                LaunchedEffect(Unit) { bodyFocus.requestFocus() }
                 body()
             }
         },
