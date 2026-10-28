@@ -477,16 +477,24 @@ private class KeyboardOnSelect(val showOnFocus: Boolean, val modifier: Modifier)
  * Under D-pad input the IME opens on OK / Enter instead of on focus, so moving through a
  * form does not land in the keyboard at every field. Flipping [KeyboardOptions.showKeyboardOnFocus]
  * on a focused field restarts its input session, which shows the keyboard.
+ *
+ * Touch input already shows the keyboard on focus, and there OK / Enter belongs to the field
+ * (a line break in a multiline one). The modifier is rebuilt when the input mode changes, so
+ * switching to touch input stops swallowing its keys too.
  */
 @Composable
 private fun rememberKeyboardOnSelect(): KeyboardOnSelect {
     val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
     var selected by remember { mutableStateOf(false) }
-    val modifier = remember {
+    val modifier = remember(touch) {
         Modifier
             .onFocusChanged { if (!it.isFocused) selected = false }
             .onPreviewKeyEvent { event ->
-                if (!selected && event.type == KeyEventType.KeyDown && event.key in SelectKeys) {
+                if (!touch &&
+                    !selected &&
+                    event.type == KeyEventType.KeyDown &&
+                    event.key in SelectKeys
+                ) {
                     selected = true
                     true
                 } else {

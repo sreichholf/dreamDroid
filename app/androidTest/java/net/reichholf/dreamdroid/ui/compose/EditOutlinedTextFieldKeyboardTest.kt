@@ -33,6 +33,8 @@ class EditOutlinedTextFieldKeyboardTest {
 
     private val host = FocusRequester()
     private val port = FocusRequester()
+    private val body = TextFieldState()
+    private val bodyFocus = FocusRequester()
     private var inputSessions = 0
 
     @Test
@@ -61,6 +63,19 @@ class EditOutlinedTextFieldKeyboardTest {
         composeRule.waitUntil { inputSessions == 1 }
     }
 
+    @Test
+    fun touchEnterReachesTheField() {
+        setForm(InputMode.Touch)
+
+        composeRule.runOnIdle { bodyFocus.requestFocus() }
+        composeRule.waitUntil { inputSessions == 1 }
+
+        composeRule.onNodeWithContentDescription("Body").performKeyInput {
+            pressKey(Key.Enter)
+        }
+        composeRule.runOnIdle { assertEquals("\n", body.text.toString()) }
+    }
+
     private fun setForm(inputMode: InputMode) {
         var showForm by mutableStateOf(false)
         lateinit var inputModeManager: InputModeManager
@@ -84,6 +99,12 @@ class EditOutlinedTextFieldKeyboardTest {
                                 state = TextFieldState(),
                                 label = "Port",
                                 modifier = Modifier.focusRequester(port)
+                            )
+                            EditOutlinedTextField(
+                                state = body,
+                                label = "Body",
+                                singleLine = false,
+                                modifier = Modifier.focusRequester(bodyFocus)
                             )
                         }
                     }
