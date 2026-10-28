@@ -8,6 +8,7 @@
 * UPD: Viele UI-Verbesserungen
 * FIX: Absturz bei Listen mit doppelten Einträgen
 * FIX: TV - Absturz ohne aktives Profil
+* FIX: TV - Fokus bleibt beim Tab-Wechsel in der oberen Leiste
 * UPD: Profil hinzufügen, wenn keines vorhanden ist
 * FIX: Absturz beim Öffnen eines wiederholten Timers
 * FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist

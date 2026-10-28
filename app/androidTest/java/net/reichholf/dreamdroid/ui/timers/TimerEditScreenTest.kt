@@ -1,7 +1,10 @@
 package net.reichholf.dreamdroid.ui.timers
 
+import android.graphics.Color as AndroidColor
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -13,8 +16,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asAndroidBitmap
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.input.InputModeManager
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.test.DeviceConfigurationOverride
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.ForcedSize
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
@@ -25,9 +38,14 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import kotlin.math.abs
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Timer
@@ -40,12 +58,16 @@ import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
 import net.reichholf.dreamdroid.ui.nav.phoneNavDestinationViewport
 import net.reichholf.dreamdroid.ui.text.UiText
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTheme
+import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
+import net.reichholf.dreamdroid.ui.theme.LocalTvContentInset
+import net.reichholf.dreamdroid.ui.theme.TvContentInset
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@OptIn(ExperimentalTestApi::class)
 class TimerEditScreenTest {
     @get:Rule
     val composeRule = createComposeRule()
@@ -341,6 +363,75 @@ class TimerEditScreenTest {
         assertTrue(edit.all { it.enabled })
     }
 
+    @Test
+    fun tvFocusedRowKeepsItsFocusScalePastTheFormEdge() {
+        lateinit var density: Density
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            density = LocalDensity.current
+            inputModeManager = LocalInputModeManager.current
+            // What the hub section pane does: its 32 dp margin is outside the form, and the
+            // form counts it as its own, so full-width rows touch the form's clip.
+            DeviceConfigurationOverride(DeviceConfigurationOverride.ForcedSize(TvWindow)) {
+                DreamDroidTvTheme(fillBackground = false) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .testTag("tv_form_root")
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(HubInset)
+                        ) {
+                            CompositionLocalProvider(
+                                LocalTvContentInset provides TvContentInset(HubInset, HubInset)
+                            ) {
+                                Form(form(sampleTimer()))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle { assertEquals(InputMode.Keyboard, inputModeManager.inputMode) }
+
+        val location = composeRule.onNodeWithText("Location")
+        location.requestFocus()
+        composeRule.waitForIdle()
+        // Let the focus scale and the scroll it asked for settle.
+        composeRule.mainClock.advanceTimeBy(500)
+        composeRule.waitForIdle()
+
+        fun px(dp: Dp) = with(density) { dp.toPx() }
+        val root = composeRule.onNodeWithTag("tv_form_root").fetchSemanticsNode().boundsInRoot
+        val row = location.fetchSemanticsNode().boundsInRoot
+        val image = composeRule.onNodeWithTag("tv_form_root").captureToImage().asAndroidBitmap()
+        fun pixel(x: Float, y: Float) = image.getPixel(
+            (x - root.left).toInt().coerceIn(0, image.width - 1),
+            (y - root.top).toInt().coerceIn(0, image.height - 1)
+        )
+
+        // The host margin is outside the form; the row must start inside it.
+        assertTrue(
+            "the form margin is missing: row.left=${(row.left - root.left) / density.density}dp",
+            row.left - root.left >= px(8.dp)
+        )
+        val y = row.center.y
+        val fill = pixel(row.left + px(40.dp), y)
+        // Just outside the row: inside its focus scale when the scale paints past the clip.
+        val zoomed = pixel(row.left - px(4.dp), y)
+        val formBackground = pixel(root.left + px(2.dp), y)
+        assertTrue(
+            "focused row clipped at the form edge: zoomed=#${Integer.toHexString(zoomed)} " +
+                "fill=#${Integer.toHexString(fill)} " +
+                "background=#${Integer.toHexString(formBackground)}",
+            rgbDistance(zoomed, fill) < rgbDistance(zoomed, formBackground)
+        )
+    }
+
     private fun actions(canDelete: Boolean) = saveAndDeleteActions(
         saveLabel = "Save",
         deleteLabel = "Delete",
@@ -412,3 +503,13 @@ class TimerEditScreenTest {
         const val SNACKBAR_GONE_MILLIS = 15_000L
     }
 }
+
+/** A 1080p TV at its usual 2.0 density. */
+private val TvWindow = DpSize(960.dp, 540.dp)
+
+/** The hub section pane's screen margin, which sits outside a hosted form. */
+private val HubInset = 32.dp
+
+private fun rgbDistance(a: Int, b: Int): Int = abs(AndroidColor.red(a) - AndroidColor.red(b)) +
+    abs(AndroidColor.green(a) - AndroidColor.green(b)) +
+    abs(AndroidColor.blue(a) - AndroidColor.blue(b))

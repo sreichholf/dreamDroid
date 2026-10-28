@@ -40,6 +40,7 @@ import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
@@ -222,6 +223,13 @@ private val HubTopBarMinGap = 16.dp
 /** Top bar icons match the labels beside them. */
 private val HubTopBarIconSize = 20.dp
 
+/**
+ * True while the user moves between the hub's top tabs. The section content a tab switch
+ * reveals must not take focus itself: focus stays on the bar until the user presses Down to
+ * enter the section they picked.
+ */
+internal val LocalTvHubTabNavigation = compositionLocalOf { false }
+
 @Composable
 fun ComposeTvHubApp(
     activity: ComponentActivity,
@@ -395,6 +403,9 @@ fun ComposeTvHubChrome(
         }
 ) {
     var showStreamUnavailable by remember { mutableStateOf(false) }
+    // Set while a tab move changes the section, and cleared when focus leaves the tab row:
+    // content the new section composes skips its own focus request meanwhile.
+    var tabNavigation by remember { mutableStateOf(false) }
     val tabs = hubTabs(bouquetRows, movieLocations)
     val unnamedBouquet = stringResource(R.string.services)
     val drawerItems = section.drawerItems(bouquetRows, movieLocations, unnamedBouquet)
@@ -418,7 +429,7 @@ fun ComposeTvHubChrome(
     val liveTabFocus = remember { FocusRequester() }
     var initialGridFocusDone by remember { mutableStateOf(false) }
     LaunchedEffect(selectedBouquet?.bouquet?.reference, liveContentFocus) {
-        if (!initialGridFocusDone && liveContentFocus != null) {
+        if (!initialGridFocusDone && liveContentFocus != null && !tabNavigation) {
             // The grid composes its cards during layout; wait for that frame.
             withFrameNanos {}
             initialGridFocusDone = liveContentFocus.tryRequestFocus()
@@ -479,7 +490,11 @@ fun ComposeTvHubChrome(
                 HubTopBar(
                     tabs = tabs,
                     section = section,
-                    onOpenTab = onOpenTab,
+                    onOpenTab = { tab ->
+                        tabNavigation = true
+                        onOpenTab(tab)
+                    },
+                    onTabRowFocusChanged = { focused -> if (!focused) tabNavigation = false },
                     onOpenSettings = onOpenSettings,
                     liveTabFocus = liveTabFocus,
                     profileName = profileName,
@@ -567,13 +582,20 @@ fun ComposeTvHubChrome(
                         }
                     )
                 }
+                // A tab switch leaves focus on the bar: content the new section composes
+                // skips its own focus request until focus leaves the tabs.
+                val sectionContent: @Composable () -> Unit = {
+                    CompositionLocalProvider(LocalTvHubTabNavigation provides tabNavigation) {
+                        pane()
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
                 ) {
                     if (drawerItems.isNullOrEmpty()) {
-                        pane()
+                        sectionContent()
                     } else {
                         NavigationDrawer(
                             modifier = Modifier
@@ -590,7 +612,7 @@ fun ComposeTvHubChrome(
                                 )
                             }
                         ) {
-                            pane()
+                            sectionContent()
                         }
                     }
                 }
@@ -850,6 +872,7 @@ private fun HubTopBar(
     tabs: List<HubTab>,
     section: HubSection,
     onOpenTab: (HubTab) -> Unit,
+    onTabRowFocusChanged: (Boolean) -> Unit,
     onOpenSettings: () -> Unit,
     liveTabFocus: FocusRequester,
     profileName: String,
@@ -875,6 +898,7 @@ private fun HubTopBar(
                         if (!focusState.hasFocus) {
                             lastFocusedTab = null
                         }
+                        onTabRowFocusChanged(focusState.hasFocus)
                     }
                     .testTag("hub_tabs"),
                 indicator = { tabPositions, doesTabRowHaveFocus ->

@@ -1,6 +1,8 @@
 package net.reichholf.dreamdroid.ui.timers
 
 import android.text.format.DateFormat
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.painterResource
@@ -202,23 +203,7 @@ fun TimerEditScreen(
     // destination bar is hidden. Phone save/delete is top-bar only. On TV Save is a
     // TV button at the end of the form, not the FAB.
     val tvForm = LocalTvFormChrome.current
-    Scaffold(
-        modifier = modifier.fillMaxSize(),
-        contentWindowInsets = WindowInsets(0, 0, 0, 0),
-        floatingActionButton = {
-            if (showSaveFab && !tvForm) {
-                FloatingActionButton(
-                    onClick = { if (!mutating) onSave() }
-                ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_action_save),
-                        contentDescription = saveLabel
-                    )
-                }
-            }
-        },
-        containerColor = if (tvForm) Color.Transparent else MaterialTheme.colorScheme.background
-    ) { padding ->
+    val formContent: @Composable (PaddingValues) -> Unit = { padding ->
         EditFormColumn(
             modifier = Modifier
                 .fillMaxSize()
@@ -355,6 +340,34 @@ fun TimerEditScreen(
             if (showSaveFab && !tvForm) {
                 Spacer(Modifier.height(72.dp))
             }
+        }
+    }
+    if (tvForm) {
+        // A Scaffold is a Surface: it clips its content to the form bounds. The TV form has no
+        // FAB or inset for a Scaffold to place, but full-width rows paint their focus scale
+        // past those bounds.
+        Box(modifier.fillMaxSize()) {
+            formContent(PaddingValues(0.dp))
+        }
+    } else {
+        Scaffold(
+            modifier = modifier.fillMaxSize(),
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
+            floatingActionButton = {
+                if (showSaveFab) {
+                    FloatingActionButton(
+                        onClick = { if (!mutating) onSave() }
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_action_save),
+                            contentDescription = saveLabel
+                        )
+                    }
+                }
+            },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { padding ->
+            formContent(padding)
         }
     }
 }
