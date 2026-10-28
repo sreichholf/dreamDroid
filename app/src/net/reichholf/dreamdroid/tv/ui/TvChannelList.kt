@@ -179,7 +179,10 @@ fun TvChannelList(
                     onUserInteraction?.invoke()
                     when (event.key) {
                         Key.DirectionLeft, Key.DirectionRight -> {
-                            if (event.type == KeyEventType.KeyDown) {
+                            // Holding the key repeats KeyDown, and each switch reloads the
+                            // bouquet and the stream.
+                            val firstPress = event.nativeKeyEvent.repeatCount == 0
+                            if (event.type == KeyEventType.KeyDown && firstPress) {
                                 switchBouquet(if (event.key == Key.DirectionRight) 1 else -1)
                             }
                             true

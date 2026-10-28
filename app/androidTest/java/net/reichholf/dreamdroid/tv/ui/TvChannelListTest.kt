@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
@@ -179,6 +180,39 @@ class TvChannelListTest {
         composeRule.waitUntil { picked.size == 3 }
         assertEquals(bouquets[1], picked[2])
         row(zdf.serviceName).assertIsFocused()
+    }
+
+    @Test
+    fun heldKeyRepeatSwitchesBouquetsOnce() {
+        var selected by mutableStateOf(bouquets.first().reference)
+        val picked = mutableListOf<Service>()
+        val requester = FocusRequester()
+        setList(
+            selectedBouquetRef = { selected },
+            focusRequester = requester,
+            onSelectBouquet = {
+                picked += it
+                selected = it.reference
+            }
+        )
+        composeRule.runOnIdle { requester.requestFocus() }
+        awaitFocused(row(zdf.serviceName))
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 0)
+        composeRule.waitUntil { picked.size == 1 }
+        assertEquals(bouquets[1], picked[0])
+        composeRule.onNodeWithText("2 / 3").assertIsDisplayed()
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 1)
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 2)
+        sendDpad(KeyEvent.ACTION_UP, repeat = 0)
+        composeRule.waitForIdle()
+        assertEquals("a held key switches once", 1, picked.size)
+        composeRule.onNodeWithText("2 / 3").assertIsDisplayed()
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 0)
+        composeRule.waitUntil { picked.size == 2 }
+        assertEquals(bouquets[2], picked[1])
     }
 
     @Test
@@ -376,6 +410,17 @@ class TvChannelListTest {
 
     private fun detail(): SemanticsNodeInteraction =
         composeRule.onNodeWithTag(TV_CHANNEL_DETAIL_TAG).assertIsDisplayed()
+
+    // The Compose test API cannot set a repeat count, which is what a held D-pad key sends.
+    private fun sendDpad(action: Int, repeat: Int) {
+        val event = KeyEvent(0L, 0L, action, KeyEvent.KEYCODE_DPAD_RIGHT, repeat)
+        composeRule.runOnIdle {
+            assertTrue(
+                "the list did not take the key event",
+                composeRule.activity.window.decorView.dispatchKeyEvent(event)
+            )
+        }
+    }
 
     private fun awaitFocused(node: SemanticsNodeInteraction) {
         composeRule.waitUntil { runCatching { node.assertIsFocused() }.isSuccess }
