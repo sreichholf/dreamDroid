@@ -857,13 +857,7 @@ private fun TvMultiEpgBouquetMenu(
                 }
             }
         }
-        LaunchedEffect(Unit) {
-            try {
-                initialFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // No bouquets.
-            }
-        }
+        LaunchedEffect(Unit) { initialFocus.requestFocus() }
     }
 }
 

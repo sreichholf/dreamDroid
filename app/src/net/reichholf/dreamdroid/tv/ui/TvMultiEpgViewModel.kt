@@ -253,7 +253,11 @@ class TvMultiEpgViewModel @Inject constructor(
         refresh()
     }
 
+    /** Opens the picker only with bouquets to pick: an empty menu has no row to focus. */
     fun showBouquetPicker() {
+        if (_uiState.value.bouquets.isEmpty()) {
+            return
+        }
         _uiState.update { it.copy(pickingBouquet = true) }
     }
 

@@ -194,7 +194,7 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
-    fun overlaysTakeTheGridKeys() {
+    fun overlaysTakeTheGridKeys() = runBlocking {
         val event = Event(eventId = "42", title = "News")
         val viewModel = viewModel()
         assertTrue(viewModel.uiState.value.gridKeysEnabled)
@@ -211,10 +211,24 @@ class TvMultiEpgViewModelTest {
         assertNull(viewModel.uiState.value.editTimerEvent)
         assertTrue(viewModel.uiState.value.gridKeysEnabled)
 
+        viewModel.open(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.bouquets.isNotEmpty() }
         viewModel.showBouquetPicker()
         assertTrue(viewModel.uiState.value.pickingBouquet)
+        assertFalse(viewModel.uiState.value.gridKeysEnabled)
         viewModel.pickBouquet(Service(viewModel.uiState.value.bouquetRef, "Same"))
         assertFalse(viewModel.uiState.value.pickingBouquet)
+        assertTrue(viewModel.uiState.value.gridKeysEnabled)
+    }
+
+    @Test
+    fun bouquetPickerStaysClosedWithoutBouquets() {
+        val viewModel = viewModel()
+
+        viewModel.showBouquetPicker()
+
+        assertFalse(viewModel.uiState.value.pickingBouquet)
+        assertTrue(viewModel.uiState.value.gridKeysEnabled)
     }
 
     @Test
