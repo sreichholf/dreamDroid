@@ -52,6 +52,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -510,6 +511,9 @@ private fun PasswordVisibilityToggle(visible: Boolean, onToggle: () -> Unit) {
     }
 }
 
+const val EDIT_PICK_CHEVRON_TAG = "edit_pick_chevron"
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPickField(
     value: String,
@@ -524,6 +528,12 @@ fun EditPickField(
     ListItem(
         headlineContent = { Text(label) },
         supportingContent = { Text(value) },
+        trailingContent = {
+            ExposedDropdownMenuDefaults.TrailingIcon(
+                expanded = false,
+                modifier = Modifier.testTag(EDIT_PICK_CHEVRON_TAG)
+            )
+        },
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick, role = Role.Button)
