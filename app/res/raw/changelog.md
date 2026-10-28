@@ -8,6 +8,7 @@
 * UPD: Many UI improvements
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile
+* FIX: TV - focus stays in the top bar when switching tabs
 * UPD: Add a profile when none is left
 * FIX: Crash opening a repeating timer
 * FIX: Crash when picture-in-picture is unavailable

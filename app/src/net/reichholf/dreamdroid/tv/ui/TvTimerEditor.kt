@@ -93,6 +93,9 @@ fun TvTimerEditorContent(
     val serviceFocus = remember { FocusRequester() }
     var returnedFromPicker by remember { mutableStateOf(false) }
     val formShown = !pickingService && uiState.timer != null
+    // A tab switch that reveals the open editor must leave focus on the bar: only a real
+    // open (from the list, with focus there) takes it into the form.
+    val tabNavigation by rememberUpdatedState(LocalTvHubTabNavigation.current)
 
     BackHandler(enabled = !pickingService, onBack = onDismiss)
 
@@ -100,7 +103,7 @@ fun TvTimerEditorContent(
     // when the opening button leaves the composition. Back from the service picker, focus
     // returns to the service field.
     LaunchedEffect(formShown) {
-        if (formShown) {
+        if (formShown && !tabNavigation) {
             if (returnedFromPicker) serviceFocus.requestFocus() else initialFocus.requestFocus()
         }
     }

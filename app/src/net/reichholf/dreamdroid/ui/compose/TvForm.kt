@@ -1,10 +1,13 @@
 package net.reichholf.dreamdroid.ui.compose
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -12,11 +15,14 @@ import androidx.compose.material3.Text as PhoneText
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -186,11 +192,33 @@ fun TvFormSaveButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Button(
-        onClick = onSave,
-        enabled = enabled,
-        modifier = modifier.minimumInteractiveComponentSize()
+    val bringIntoView = remember { BringIntoViewRequester() }
+    var focused by remember { mutableStateOf(false) }
+    // The form clips at its viewport. Focus scrolling stops once the button's bounds are
+    // visible, so the room below it (the focus scale) would be cut: scroll the padded wrapper
+    // into view instead, which asks for that room too.
+    LaunchedEffect(focused) {
+        if (focused) {
+            withFrameNanos {}
+            bringIntoView.bringIntoView()
+        }
+    }
+    Box(
+        modifier = Modifier
+            .bringIntoViewRequester(bringIntoView)
+            .padding(bottom = SaveFocusInset)
     ) {
-        Text(text = label)
+        Button(
+            onClick = onSave,
+            enabled = enabled,
+            modifier = modifier
+                .minimumInteractiveComponentSize()
+                .onFocusChanged { focused = it.isFocused }
+        ) {
+            Text(text = label)
+        }
     }
 }
+
+/** Room below the Save pill for its 10% focus scale, which the form's clip would otherwise cut. */
+private val SaveFocusInset = 8.dp
