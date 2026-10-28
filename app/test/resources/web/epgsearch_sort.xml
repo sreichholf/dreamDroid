@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<e2eventlist>
+	<e2event>
+		<e2eventid>500</e2eventid>
+		<e2eventstart>1893456000</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+		<e2eventtitle>Wetter</e2eventtitle>
+		<e2eventdescription>Wetterbericht</e2eventdescription>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Das Erste HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>501</e2eventid>
+		<e2eventstart>1893459600</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+		<e2eventtitle>Tagesschau</e2eventtitle>
+		<e2eventdescription>Nachrichten</e2eventdescription>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:2F1C:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>ZDF HD</e2eventservicename>
+	</e2event>
+	<e2event>
+		<e2eventid>502</e2eventid>
+		<e2eventstart>1893463200</e2eventstart>
+		<e2eventduration>3600</e2eventduration>
+		<e2eventcurrenttime>1893452400</e2eventcurrenttime>
+		<e2eventtitle>Tatort</e2eventtitle>
+		<e2eventdescription>Krimi</e2eventdescription>
+		<e2eventdescriptionextended/>
+		<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>
+		<e2eventservicename>Das Erste HD</e2eventservicename>
+	</e2event>
+</e2eventlist>

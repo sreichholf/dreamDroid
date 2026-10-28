@@ -3,6 +3,7 @@
 ## 2.0.470
 * NEU: Sicherung im Einrichtungsassistenten wiederherstellen
 * NEU: Kanal-EPG aus der EPG-Detailansicht
+* NEU: EPG-Suchergebnisse sortieren
 * UPD: TV - Profil- und Timer-Editor passen zum Hub
 * UPD: Geringerer Speicherverbrauch im MultiEPG
 * UPD: Viele UI-Verbesserungen

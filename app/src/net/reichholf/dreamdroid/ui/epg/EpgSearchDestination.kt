@@ -56,7 +56,8 @@ fun EpgSearchDestination(
                 },
                 onRetry = viewModel::reload,
                 focusOnStart = query.isEmpty(),
-                selectedEvent = shownEvent
+                selectedEvent = shownEvent,
+                onSort = viewModel::setSort
             )
         }
     }

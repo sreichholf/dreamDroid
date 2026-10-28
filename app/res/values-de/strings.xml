@@ -109,6 +109,10 @@
     <string name="epg_search_recent">Letzte Suchen</string>
     <string name="epg_search_recent_remove">Aus den letzten Suchen entfernen</string>
     <string name="epg_search_prompt">Sendungstitel durchsuchen. Treffer erscheinen beim Tippen.</string>
+    <string name="epg_search_sort">Sortierung: %1$s</string>
+    <string name="epg_search_sort_date">Datum</string>
+    <string name="epg_search_sort_channel">Sender</string>
+    <string name="epg_search_sort_title">Titel</string>
     <string name="epg_search_back">Zurück</string>
     <string name="today">Heute</string>
     <string name="tomorrow">Morgen</string>

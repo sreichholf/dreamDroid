@@ -11,9 +11,10 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * EPG events of one day, under [day]; [day] is null for events without a start. The first
- * [earlierStarts] events started on an earlier day and are still running, so their rows
- * show the date, not only the time.
+ * EPG events of one day, under [day]; [day] is null for events without a start and for the
+ * flat channel/title search sorts, whose rows show the date. The first [earlierStarts] events
+ * started on an earlier day and are still running, so their rows show the date, not only the
+ * time.
  */
 data class EpgDaySection(val day: UiText?, val events: List<Event>, val earlierStarts: Int = 0)
 

@@ -123,6 +123,46 @@ class EpgSearchScreenTest {
     }
 
     @Test
+    fun sortChipShowsTheOrderAndSelectsAnOption() {
+        var picked: EpgSearchSort? = null
+        setScreen(
+            queryState = TextFieldState("news"),
+            state = results(
+                EpgDaySection(
+                    null,
+                    listOf(event("100", "Tagesschau", "Das Erste HD", "20:00"))
+                )
+            ).copy(sort = EpgSearchSort.Date),
+            onSort = { picked = it }
+        )
+
+        composeRule.onNodeWithTag(EPG_SEARCH_SORT_TAG)
+            .assertIsDisplayed()
+            .assert(
+                hasText(
+                    context.getString(
+                        R.string.epg_search_sort,
+                        context.getString(R.string.epg_search_sort_date)
+                    )
+                )
+            )
+            .performClick()
+        composeRule.onNodeWithTag(epgSearchSortOptionTag(EpgSearchSort.Date))
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Selected, true))
+        composeRule.onNodeWithTag(epgSearchSortOptionTag(EpgSearchSort.Channel))
+            .performClick()
+
+        composeRule.runOnIdle { assertEquals(EpgSearchSort.Channel, picked) }
+    }
+
+    @Test
+    fun recentSearchesHideTheSortChip() {
+        setScreen(state = EpgSearchUiState(recentSearches = listOf("Tatort")))
+
+        composeRule.onNodeWithTag(EPG_SEARCH_SORT_TAG).assertDoesNotExist()
+    }
+
+    @Test
     fun resultsShowDayHeadersAndClick() {
         val first = event("100", "Tagesschau", "Das Erste HD", "20:00")
         val second = event("101", "Wetter", "ZDF HD", "20:15")
@@ -201,7 +241,8 @@ class EpgSearchScreenTest {
         onRecentRemove: (String) -> Unit = {},
         onItemClick: (Event) -> Unit = {},
         focusOnStart: Boolean = false,
-        selectedEvent: Event? = null
+        selectedEvent: Event? = null,
+        onSort: (EpgSearchSort) -> Unit = {}
     ) {
         composeRule.setContent {
             DreamDroidTheme {
@@ -214,7 +255,8 @@ class EpgSearchScreenTest {
                     onRecentRemove = onRecentRemove,
                     onItemClick = onItemClick,
                     focusOnStart = focusOnStart,
-                    selectedEvent = selectedEvent
+                    selectedEvent = selectedEvent,
+                    onSort = onSort
                 )
             }
         }

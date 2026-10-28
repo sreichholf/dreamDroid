@@ -279,6 +279,29 @@ class EpgSearchViewModelTest {
     }
 
     @Test
+    fun sortingReordersShownResultsWithoutAnotherSearch() = runTest {
+        receiver.answer = { MockResponse().setBody(loadWebFixture("epgsearch_sort.xml")) }
+        val viewModel = viewModel()
+        viewModel.syncRoute("sort", remountEpoch = 0)
+        val byDate = viewModel.awaitState { !it.searching && it.sections.isNotEmpty() }
+        assertEquals(listOf("Wetter", "Tagesschau", "Tatort"), byDate.titles())
+        val requests = receiver.requestsTo(SEARCH_PATH).size
+
+        viewModel.setSort(EpgSearchSort.Title)
+
+        val byTitle = viewModel.awaitState { it.sort == EpgSearchSort.Title }
+        assertEquals(listOf("Tagesschau", "Tatort", "Wetter"), byTitle.titles())
+        assertEquals(null, byTitle.sections.single().day)
+        assertEquals(requests, receiver.requestsTo(SEARCH_PATH).size)
+
+        viewModel.setSort(EpgSearchSort.Channel)
+
+        val byChannel = viewModel.awaitState { it.sort == EpgSearchSort.Channel }
+        assertEquals(listOf("Wetter", "Tatort", "Tagesschau"), byChannel.titles())
+        assertEquals(requests, receiver.requestsTo(SEARCH_PATH).size)
+    }
+
+    @Test
     fun submittedAndOpenedQueriesBecomeRecentSearches() = runTest {
         val viewModel = viewModel()
         viewModel.syncRoute("", remountEpoch = 0)

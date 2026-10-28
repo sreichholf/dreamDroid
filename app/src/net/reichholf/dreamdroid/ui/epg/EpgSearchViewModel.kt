@@ -29,14 +29,15 @@ import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
  * EPG search screen state. With [showRecent] the field holds too little to search and the
- * screen lists [recentSearches]; otherwise it lists [sections]. [cached] results come from
- * the Room EPG cache and only cover bouquets opened on this device. [retryable]: the
- * receiver failed and nothing is shown, so the empty state offers a retry.
+ * screen lists [recentSearches]; otherwise it lists [sections] in [sort] order. [cached]
+ * results come from the Room EPG cache and only cover bouquets opened on this device.
+ * [retryable]: the receiver failed and nothing is shown, so the empty state offers a retry.
  */
 data class EpgSearchUiState(
     val recentSearches: List<String> = emptyList(),
     val showRecent: Boolean = true,
     val sections: List<EpgDaySection> = emptyList(),
+    val sort: EpgSearchSort = EpgSearchSort.Date,
     val cached: Boolean = false,
     val searching: Boolean = false,
     val emptyMessage: UiText? = null,
@@ -157,6 +158,16 @@ class EpgSearchViewModel @Inject constructor(
     /** Pull-to-refresh: searches the current query again right away. */
     fun reload() {
         search(requests.value.query, immediate = true)
+    }
+
+    /** Reorders the shown results; it does not search the receiver again. */
+    fun setSort(sort: EpgSearchSort) {
+        if (_uiState.value.sort == sort) {
+            return
+        }
+        _uiState.update { state ->
+            results.value.applyTo(state.copy(sort = sort))
+        }
     }
 
     /**
@@ -285,7 +296,7 @@ class EpgSearchViewModel @Inject constructor(
             }
             return state.copy(
                 showRecent = false,
-                sections = epgDaySections(events.orEmpty()),
+                sections = epgSearchSections(events.orEmpty(), state.sort),
                 cached = liveEvents == null && cached != null,
                 searching = searching,
                 emptyMessage = emptyMessage,

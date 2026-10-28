@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.ui.epg
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -14,6 +15,9 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.clearText
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -37,6 +41,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,11 +54,14 @@ import net.reichholf.dreamdroid.ui.text.asString
 
 const val EPG_SEARCH_FIELD_TAG = "epg_search_field"
 const val EPG_SEARCH_PROGRESS_TAG = "epg_search_progress"
+const val EPG_SEARCH_SORT_TAG = "epg_search_sort"
+
+fun epgSearchSortOptionTag(sort: EpgSearchSort): String = "epg_search_sort_${sort.name}"
 
 /**
  * EPG search with the search field as the screen's top bar. Below it: recent searches
- * while the field holds too little to search, otherwise the results grouped by day. With
- * [focusOnStart] the field takes focus and opens the keyboard.
+ * while the field holds too little to search, otherwise the results in [EpgSearchUiState.sort]
+ * order. With [focusOnStart] the field takes focus and opens the keyboard.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,7 +76,8 @@ fun EpgSearchScreen(
     modifier: Modifier = Modifier,
     onRetry: () -> Unit = {},
     focusOnStart: Boolean = false,
-    selectedEvent: Event? = null
+    selectedEvent: Event? = null,
+    onSort: (EpgSearchSort) -> Unit = {}
 ) {
     var editing by rememberSaveable { mutableStateOf(focusOnStart) }
     val focusRequester = remember { FocusRequester() }
@@ -133,6 +143,9 @@ fun EpgSearchScreen(
         } else {
             Spacer(modifier = Modifier.height(4.dp))
         }
+        if (!state.showRecent && state.sections.isNotEmpty()) {
+            EpgSearchSortBar(sort = state.sort, onSort = onSort)
+        }
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -154,6 +167,73 @@ fun EpgSearchScreen(
                     onRetry = onRetry,
                     selectedEvent = selectedEvent
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EpgSearchSortBar(sort: EpgSearchSort, onSort: (EpgSearchSort) -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        contentAlignment = Alignment.CenterEnd
+    ) {
+        Box {
+            AssistChip(
+                onClick = { expanded = true },
+                label = {
+                    Text(stringResource(R.string.epg_search_sort, stringResource(sort.label)))
+                },
+                leadingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_sort),
+                        contentDescription = null
+                    )
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_drop_down),
+                        contentDescription = null
+                    )
+                },
+                modifier = Modifier.testTag(EPG_SEARCH_SORT_TAG)
+            )
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                EpgSearchSort.entries.forEach { option ->
+                    val isSelected = option == sort
+                    DropdownMenuItem(
+                        text = {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = stringResource(option.label),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                if (isSelected) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_check),
+                                        contentDescription = null
+                                    )
+                                }
+                            }
+                        },
+                        onClick = {
+                            expanded = false
+                            onSort(option)
+                        },
+                        modifier = Modifier
+                            .testTag(epgSearchSortOptionTag(option))
+                            .semantics { selected = isSelected }
+                    )
+                }
             }
         }
     }
