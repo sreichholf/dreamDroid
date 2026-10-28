@@ -1592,8 +1592,10 @@ internal fun handleTvMultiEpgGridKey(
                 onSelectedChange(channel.key, next)
             } else {
                 onPendingPanRight(true)
-                val start = selectedStartSec
-                onVisibleWindow(start, start + zoomWindowSec)
+                // The next bar lies in the chunk after the selected one, which the grid
+                // attaches only once the reported window reaches into it.
+                val chunkEndSec = MultiEpgWindows.chunkContaining(selectedStartSec).endSec
+                onVisibleWindow(selectedStartSec, chunkEndSec + zoomWindowSec)
             }
         }
 

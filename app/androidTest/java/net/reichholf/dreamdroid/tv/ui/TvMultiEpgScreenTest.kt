@@ -76,6 +76,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import org.junit.Assert.assertEquals
@@ -162,6 +163,102 @@ class TvMultiEpgScreenTest {
         grid.performKeyInput { pressKey(Key.DirectionCenter) }
         composeRule.waitForIdle()
         assertEquals("Serie", clicked)
+    }
+
+    /**
+     * Right on a row's last bar needs the chunk after the painted one, which only arrives
+     * once the reported window reaches into it: painting lags a pan by one chunk.
+     */
+    @Test
+    fun dpadRightOnTheLastBarPaintingTheNextChunkAdvancesTheCursor() {
+        val day = MultiEpgWindows.chunkContaining(1_700_000_000L)
+        // 21:00 leaves a 2 h window inside the chunk, so only a window reaching the chunk
+        // after it can attach the successor bar.
+        val lastBarStart = day.startSec + 21L * 3_600L
+        val nextBarStart = day.endSec
+        val ref = FIRST
+        fun channelFor(chunkStarts: List<Long>) = MultiEpgChannel(
+            occurrence = 0,
+            serviceRef = ref,
+            serviceName = "Das Erste",
+            bars = chunkStarts.sorted().flatMap { chunkStart ->
+                if (chunkStart == day.startSec) {
+                    listOf(
+                        bar(ref, "Das Erste", "1", "News", day.startSec, day.startSec + 3_600L),
+                        bar(
+                            ref,
+                            "Das Erste",
+                            "2",
+                            "Magazin",
+                            lastBarStart,
+                            lastBarStart + 3_600L
+                        )
+                    )
+                } else {
+                    listOf(
+                        bar(ref, "Das Erste", "3", "Serie", nextBarStart, nextBarStart + 3_600L)
+                    )
+                }
+            }
+        )
+        val channelKey = channelFor(listOf(day.startSec)).key
+        var selectedStart = lastBarStart
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            // The grid's own rule: paint exactly the chunks that overlap the window.
+            var chunkStarts by remember { mutableStateOf(listOf(day.startSec)) }
+            var selectedKey by remember { mutableStateOf(channelKey) }
+            var cursorStart by remember { mutableLongStateOf(lastBarStart) }
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.ForcedSize(DpSize(960.dp, 540.dp))
+            ) {
+                DreamDroidTvTheme {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        TvMultiEpgScreen(
+                            bouquetName = "Favourites",
+                            channels = listOf(channelFor(chunkStarts)),
+                            timelineStartSec = day.startSec,
+                            timelineEndSec = day.endSec + 2L * 3_600L,
+                            nowSec = day.startSec,
+                            originFloorSec = day.startSec,
+                            loading = false,
+                            errorMessage = null,
+                            selectedKey = selectedKey,
+                            selectedStartSec = cursorStart,
+                            onSelectedChange = { key, sec ->
+                                selectedKey = key
+                                cursorStart = sec
+                                selectedStart = sec
+                            },
+                            onJumpToNow = {},
+                            onPrevDay = {},
+                            onNextDay = {},
+                            onVisibleWindow = { start, end ->
+                                chunkStarts = MultiEpgWindows.slidingChunks(
+                                    originFloorSec = day.startSec,
+                                    visibleStartSec = start,
+                                    visibleEndSec = end
+                                )
+                            },
+                            onEventClick = {},
+                            onBouquetClick = {}
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        composeRule.runOnIdle {
+            assertEquals(InputMode.Keyboard, inputModeManager.inputMode)
+        }
+        val grid = composeRule.onNodeWithTag("tv_multi_epg_grid")
+        grid.requestFocus()
+        composeRule.waitForIdle()
+        assertEquals(lastBarStart, selectedStart)
+
+        grid.performKeyInput { pressKey(Key.DirectionRight) }
+        composeRule.waitUntil { selectedStart == nextBarStart }
     }
 
     @Test
