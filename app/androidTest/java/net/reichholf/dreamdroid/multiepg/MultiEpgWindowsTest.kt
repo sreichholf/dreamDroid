@@ -38,25 +38,29 @@ class MultiEpgWindowsTest {
     }
 
     @Test
-    fun formatVisibleDayPrefixesTodayOnSameLocalDay() {
+    fun shortVisibleDayLeavesOutTheYearAndTheLongWeekday() {
         val tz = TimeZone.getTimeZone("UTC")
         val now = 1_700_000_000L
-        val label = MultiEpgTimeLabels.formatVisibleDay(
+        val today = MultiEpgTimeLabels.formatVisibleDay(
             visibleSec = now + 3600L,
             nowSec = now,
             todayLabel = "Today",
             locale = Locale.US,
-            timeZone = tz
+            timeZone = tz,
+            short = true
         )
-        assertTrue(label.startsWith("Today · "))
+        assertTrue(today, today.startsWith("Today · "))
+        assertFalse(today, today.contains("2023") || today.contains("Tuesday"))
         val other = MultiEpgTimeLabels.formatVisibleDay(
             visibleSec = now + MultiEpgWindows.CHUNK_SECONDS,
             nowSec = now,
             todayLabel = "Today",
             locale = Locale.US,
-            timeZone = tz
+            timeZone = tz,
+            short = true
         )
-        assertFalse(other.startsWith("Today"))
+        assertFalse(other, other.startsWith("Today") || other.contains("2023"))
+        assertTrue(other, other.contains("Wed"))
     }
 
     @Test

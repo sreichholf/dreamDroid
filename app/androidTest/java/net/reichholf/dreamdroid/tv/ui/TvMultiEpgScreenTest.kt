@@ -76,6 +76,7 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
+import net.reichholf.dreamdroid.multiepg.MultiEpgTimeLabels
 import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
@@ -1036,7 +1037,13 @@ class TvMultiEpgScreenTest {
         assertTrue(today, today.startsWith("Today · "))
         assertFalse(today, today.contains("2023"))
 
-        val tomorrow = tvMultiEpgDayLabel(start + 86_400L, start, "Today", Locale.US)
+        val tomorrow = MultiEpgTimeLabels.formatVisibleDay(
+            visibleSec = start + 86_400L,
+            nowSec = start,
+            todayLabel = "Today",
+            locale = Locale.US,
+            short = true
+        )
         assertFalse(tomorrow, tomorrow.contains("2023") || tomorrow.contains("Today"))
     }
 

@@ -91,7 +91,6 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -400,11 +399,18 @@ fun TvMultiEpgScreen(
     }
 
     val todayLabel = stringResource(R.string.multiepg_today)
-    val dayLabel = remember(visibleStartSec, nowSec, todayLabel, originForLayout, timelineEndSec) {
+    val todayKey = remember(nowSec) { MultiEpgTimeLabels.localDayKey(nowSec) }
+    val dayLabel = remember(
+        MultiEpgTimeLabels.localDayKey(visibleStartSec),
+        todayKey,
+        todayLabel,
+        originForLayout,
+        timelineEndSec
+    ) {
         if (timelineEndSec <= originForLayout) {
             ""
         } else {
-            tvMultiEpgDayLabel(visibleStartSec, nowSec, todayLabel)
+            MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel, short = true)
         }
     }
 
@@ -947,25 +953,6 @@ private fun TvMultiEpgChromeDivider() {
             .size(width = 1.dp, height = 24.dp)
             .background(PhoneMaterialTheme.colorScheme.outlineVariant)
     )
-}
-
-/**
- * The visible day without the year (the EPG reaches about a week ahead): "Today · Oct 23"
- * for today, the weekday and date ("Fri, Oct 24") for any other day, in the locale's order.
- */
-internal fun tvMultiEpgDayLabel(
-    visibleSec: Long,
-    nowSec: Long,
-    todayLabel: String,
-    locale: Locale = Locale.getDefault()
-): String {
-    val today = MultiEpgTimeLabels.sameLocalDay(visibleSec, nowSec)
-    val pattern = android.text.format.DateFormat.getBestDateTimePattern(
-        locale,
-        if (today) "MMMd" else "EEEMMMd"
-    )
-    val date = SimpleDateFormat(pattern, locale).format(Date(visibleSec * 1000L))
-    return if (today) "$todayLabel · $date" else date
 }
 
 /**
