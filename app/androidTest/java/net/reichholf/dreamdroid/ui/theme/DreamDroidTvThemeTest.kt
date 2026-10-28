@@ -101,8 +101,9 @@ class DreamDroidTvThemeTest {
         }
     }
 
+    /** The resting card fill is the phone's `surfaceContainerLow`, not TV Material 3's surface. */
     @Test
-    fun cardColorsUseElevatedSurfaceAndInverseFocus() {
+    fun cardColorsUseTheElevatedSurface() {
         var surfaceLow = Color.Unspecified
         composeRule.setContent {
             DreamDroidTvTheme {
