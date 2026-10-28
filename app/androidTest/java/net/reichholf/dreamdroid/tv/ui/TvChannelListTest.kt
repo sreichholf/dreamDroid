@@ -448,12 +448,12 @@ class TvChannelListTest {
     private fun detail(): SemanticsNodeInteraction =
         composeRule.onNodeWithTag(TV_CHANNEL_DETAIL_TAG).assertIsDisplayed()
 
-    private fun rowProgress(name: String): Float {
-        val info = row(name).fetchSemanticsNode()
-            .config.getOrNull(SemanticsProperties.ProgressBarRangeInfo)
-        checkNotNull(info) { "the $name row has no progress bar" }
-        return info.current
-    }
+    // A progress bar merges its own descendants, so it is its own node, outside the row's config.
+    private fun rowProgress(name: String): Float = composeRule.onNode(
+        hasTestTag(TV_CHANNEL_ROW_PROGRESS_TAG) and
+            hasAnyAncestor(hasTestTag(TV_CHANNEL_ROW_TAG) and hasAnyDescendant(hasText(name))),
+        useUnmergedTree = true
+    ).fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
 
     private fun detailProgress(): Float = composeRule.onNode(
         SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo) and

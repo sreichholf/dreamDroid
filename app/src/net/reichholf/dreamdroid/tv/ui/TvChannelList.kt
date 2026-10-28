@@ -79,6 +79,7 @@ import net.reichholf.dreamdroid.ui.video.eventProgress
 
 const val TV_CHANNEL_LIST_TAG = "tv_channel_list"
 const val TV_CHANNEL_ROW_TAG = "tv_channel_row"
+const val TV_CHANNEL_ROW_PROGRESS_TAG = "tv_channel_row_progress"
 const val TV_CHANNEL_DETAIL_TAG = "tv_channel_detail"
 
 private val PanelWidth = 400.dp
@@ -407,7 +408,8 @@ private fun ChannelRow(
                         modifier = Modifier
                             .padding(top = 4.dp)
                             .fillMaxWidth()
-                            .height(3.dp),
+                            .height(3.dp)
+                            .testTag(TV_CHANNEL_ROW_PROGRESS_TAG),
                         color = content,
                         trackColor = content.copy(alpha = 0.24f),
                         strokeCap = StrokeCap.Butt,
