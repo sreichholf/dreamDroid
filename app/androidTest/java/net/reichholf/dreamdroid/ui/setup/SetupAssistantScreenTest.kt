@@ -50,16 +50,21 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
+import com.google.gson.GsonBuilder
 import kotlin.math.abs
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BackupDocuments
+import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.testutil.enterTouchMode
 import net.reichholf.dreamdroid.testutil.memoryProfiles
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -100,6 +105,7 @@ class SetupAssistantScreenTest {
         composeRule.waitForIdle()
         val centered = composeRule.onNodeWithText("Welcome!").getBoundsInRoot().top.value
         composeRule.onNodeWithText("Start").assertIsNotEnabled()
+        composeRule.onNodeWithText("Restore").assertIsNotEnabled()
         composeRule.mainClock.advanceTimeBy(2_000)
         composeRule.waitForIdle()
         val welcome = composeRule.onNodeWithText("Welcome!").getBoundsInRoot()
@@ -108,16 +114,19 @@ class SetupAssistantScreenTest {
         val rootHeight = rootBounds.bottom.value - rootBounds.top.value
         val logo = composeRule.onNodeWithTag("setup_logo").assertIsDisplayed().getBoundsInRoot()
         val start = composeRule.onNodeWithText("Start").getBoundsInRoot()
+        val restore = composeRule.onNodeWithText("Restore").getBoundsInRoot()
         assertTrue(raised < centered)
         assertTrue(logo.bottom.value - logo.top.value >= 240f)
         assertTrue(logo.top.value < rootHeight * 0.2f)
         assertTrue(raised - logo.bottom.value >= 16f)
         assertTrue(start.top.value >= welcome.bottom.value)
-        val startCenter = (start.left.value + start.right.value) / 2f
+        // Start and Restore share one row, and the row sits in the middle of the window.
+        assertTrue(abs(start.top.value - restore.top.value) < 2f)
+        val rowCenter = (start.left.value + restore.right.value) / 2f
         val rootCenter = (rootBounds.left.value + rootBounds.right.value) / 2f
         val rootWidth = rootBounds.right.value - rootBounds.left.value
-        assertTrue(startCenter > rootCenter - rootWidth * 0.05f)
-        assertTrue(startCenter < rootCenter + rootWidth * 0.05f)
+        assertTrue(rowCenter > rootCenter - rootWidth * 0.05f)
+        assertTrue(rowCenter < rootCenter + rootWidth * 0.05f)
         composeRule.onNodeWithText("Start").assertIsEnabled().performClick()
         composeRule.mainClock.advanceTimeBy(500)
         composeRule.waitForIdle()
@@ -757,6 +766,81 @@ class SetupAssistantScreenTest {
         assertEquals(scrolled, body.scrollOffset())
     }
 
+    @Test
+    fun restoreStepTakesTheBackupAndFinishes() {
+        val data = BackupData().apply {
+            addProfile(
+                Profile.getDefault().apply {
+                    name = "Living room"
+                    host = "10.0.0.5"
+                    pass = "secret"
+                }
+            )
+        }
+        documents.files[RESTORE_URI] = GsonBuilder().create().toJson(data)
+        var finished = false
+        val viewModel = model()
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = { finished = true },
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+        composeRule.onNodeWithTag("setup_restore").assertIsEnabled()
+
+        composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.draft.step == SetupStep.Import
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Restore a backup").assertIsDisplayed()
+        composeRule.onNodeWithText("Living room").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText("Receiver passwords").performScrollTo().assertIsOn()
+        composeRule.onNodeWithText("Restore").performClick()
+        composeRule.waitUntil(timeoutMillis = 5_000) { finished }
+
+        val profile = profiles.profiles().single()
+        assertEquals("secret", profile.pass)
+        assertEquals(profile.id, profiles.current.value!!.id)
+    }
+
+    @Test
+    fun anUnreadableRestoreStaysOnWelcomeWithTheReason() {
+        val viewModel = model()
+        composeRule.setContent {
+            DreamDroidTheme {
+                SetupAssistantScreen(
+                    viewModel = viewModel,
+                    localNetworkGranted = true,
+                    onRequestLocalNetwork = {},
+                    onFinished = {},
+                    onLeave = {}
+                )
+            }
+        }
+        composeRule.mainClock.advanceTimeBy(2_000)
+        composeRule.waitForIdle()
+
+        composeRule.runOnIdle { viewModel.restoreFrom(RESTORE_URI) }
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            viewModel.uiState.value.restoreError != null
+        }
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Welcome!").assertIsDisplayed()
+        composeRule.onNodeWithText("This file could not be read.")
+            .performScrollTo()
+            .assertIsDisplayed()
+    }
+
     private fun SemanticsNodeInteraction.scrollOffset(): Float =
         fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
 
@@ -797,6 +881,14 @@ class SetupAssistantScreenTest {
 
     private val profiles = memoryProfiles()
 
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(
+        InstrumentationRegistry.getInstrumentation().targetContext
+    )
+
+    private val backups = BackupRepository(profiles, SettingsRepository(preferences))
+
+    private val documents = MemoryDocuments()
+
     private fun model(
         onSearch: suspend () -> List<Profile> = { emptyList() },
         onCheck: suspend (Profile) -> ProfileCheckResult = { ProfileCheckResult() }
@@ -809,8 +901,26 @@ class SetupAssistantScreenTest {
             override suspend fun checkReusingDeviceInfo(profile: Profile): ProfileCheckResult =
                 onCheck(profile)
         },
-        ReceiverDiscovery { onSearch() }
+        ReceiverDiscovery { onSearch() },
+        backups,
+        documents
     )
+
+    private class MemoryDocuments : BackupDocuments {
+        val files = HashMap<String, String>()
+
+        override suspend fun read(uri: String, maxChars: Int): String? =
+            files[uri]?.takeIf { it.length <= maxChars }
+
+        override suspend fun write(uri: String, text: String): Boolean {
+            files[uri] = text
+            return true
+        }
+    }
+
+    private companion object {
+        const val RESTORE_URI = "content://documents/backup.json"
+    }
 
     private var savedTrust: Boolean = false
 }

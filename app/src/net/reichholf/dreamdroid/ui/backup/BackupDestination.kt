@@ -27,6 +27,7 @@ fun BackupDestination(
     viewModel: BackupViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val importReview by viewModel.importReview.collectAsStateWithLifecycle()
     ShellTitle(uiState.title)
     ShowShellUserMessage(uiState.userMessage, viewModel::onMessageShown)
 
@@ -85,7 +86,7 @@ fun BackupDestination(
         modifier = modifier
     )
 
-    uiState.importReview?.let { review ->
+    importReview?.let { review ->
         ImportBackupDialog(
             review = review,
             onProfileCheckedChange = viewModel::setImportProfileChecked,

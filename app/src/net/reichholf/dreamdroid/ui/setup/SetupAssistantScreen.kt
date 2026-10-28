@@ -1,6 +1,9 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import android.content.ActivityNotFoundException
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -92,6 +95,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.drop
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.backup.ImportReview
+import net.reichholf.dreamdroid.ui.backup.ImportReviewBody
 import net.reichholf.dreamdroid.ui.text.asString
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvActiveFocusColors
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvFocusColors
@@ -115,16 +120,32 @@ fun SetupAssistantScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    val review by viewModel.importReview.collectAsStateWithLifecycle()
     val draft = state.draft
     val step = draft.step
     val checking = state.checking
     val checkResult = state.checkResult
+    val restoring = state.restoring
     val currentOnFinished by rememberUpdatedState(onFinished)
 
     LaunchedEffect(state.finished) {
         if (state.finished) {
             viewModel.onFinishHandled()
             currentOnFinished()
+        }
+    }
+
+    val pickRestoreFile = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.restoreFrom(it.toString()) }
+    }
+
+    fun openRestorePicker() {
+        try {
+            pickRestoreFile.launch(arrayOf("*/*"))
+        } catch (e: ActivityNotFoundException) {
+            viewModel.onRestorePickerMissing(e.localizedMessage)
         }
     }
 
@@ -162,6 +183,9 @@ fun SetupAssistantScreen(
     val signInReady = !draft.login || viewModel.user.state.text.isNotBlank()
     val signInChecked = checkResult != null && !checking
     val failed = checkResult?.hasError == true
+    // A running check or restore keeps the action enabled: a disabled button drops D-pad
+    // focus onto a text field, which opens the keyboard on TV.
+    val busy = (step == SetupStep.SignIn && checking) || (step == SetupStep.Import && restoring)
     val actionEnabled = when (step) {
         SetupStep.Find -> hostText.isNotBlank()
 
@@ -170,11 +194,11 @@ fun SetupAssistantScreen(
             hostText.isNotBlank() && port != null && port in 1..65535
         }
 
-        // Stays enabled during a check: a disabled button drops D-pad focus onto a text
-        // field, which opens the keyboard on TV. advance() ignores presses meanwhile.
         SetupStep.SignIn -> signInReady
 
         SetupStep.Name -> !checking
+
+        SetupStep.Import -> review?.canImport == true
 
         SetupStep.Welcome -> false
     }
@@ -184,6 +208,8 @@ fun SetupAssistantScreen(
         SetupStep.SignIn -> {
             if (signInChecked) R.string.setup_next else R.string.setup_check_connection
         }
+
+        SetupStep.Import -> R.string.setup_restore
 
         else -> R.string.setup_next
     }
@@ -277,18 +303,58 @@ fun SetupAssistantScreen(
                                             .padding(top = 28.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        val focus = rememberRemoteFocus()
-                                        Button(
-                                            onClick = viewModel::advance,
-                                            enabled = progress >= 1f,
-                                            colors = focus.buttonColors(
-                                                ButtonDefaults.buttonColors()
-                                            ),
-                                            modifier = focus.modifier
-                                                .focusRequester(startFocus)
-                                                .graphicsLayer { alpha = progress }
-                                        ) {
-                                            Text(stringResource(R.string.setup_start))
+                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                            val startAction = rememberRemoteFocus()
+                                            val restoreAction = rememberRemoteFocus()
+                                            Row(
+                                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                                verticalAlignment = Alignment.CenterVertically,
+                                                modifier = Modifier
+                                                    .graphicsLayer { alpha = progress }
+                                            ) {
+                                                Button(
+                                                    onClick = viewModel::advance,
+                                                    enabled = progress >= 1f,
+                                                    colors = startAction.buttonColors(
+                                                        ButtonDefaults.buttonColors()
+                                                    ),
+                                                    modifier = startAction.modifier
+                                                        .focusRequester(startFocus)
+                                                ) {
+                                                    Text(stringResource(R.string.setup_start))
+                                                }
+                                                TextButton(
+                                                    onClick = { openRestorePicker() },
+                                                    enabled = progress >= 1f,
+                                                    colors = restoreAction.buttonColors(
+                                                        ButtonDefaults.textButtonColors()
+                                                    ),
+                                                    modifier = restoreAction.modifier
+                                                        .testTag("setup_restore")
+                                                ) {
+                                                    if (restoring) {
+                                                        CircularProgressIndicator(
+                                                            strokeWidth = 2.dp,
+                                                            modifier = Modifier.size(18.dp)
+                                                        )
+                                                        Spacer(Modifier.width(8.dp))
+                                                    }
+                                                    Text(stringResource(R.string.setup_restore))
+                                                }
+                                            }
+                                            state.restoreError?.let { error ->
+                                                Spacer(Modifier.height(12.dp))
+                                                Text(
+                                                    text = error.asString(),
+                                                    style = MaterialTheme.typography.bodyMedium,
+                                                    color = MaterialTheme.colorScheme.error,
+                                                    modifier = Modifier
+                                                        .testTag("setup_restore_error")
+                                                        .semantics {
+                                                            liveRegion = LiveRegionMode.Polite
+                                                        }
+                                                )
+                                            }
                                         }
                                     }
 
@@ -324,6 +390,15 @@ fun SetupAssistantScreen(
 
                                     SetupStep.Name -> NameStep(
                                         profileName = viewModel.profileName.state
+                                    )
+
+                                    SetupStep.Import -> RestoreStep(
+                                        review = review,
+                                        onProfileCheckedChange = viewModel::setImportProfileChecked,
+                                        onAllProfilesCheckedChange =
+                                            viewModel::setAllImportProfilesChecked,
+                                        onPasswordsChange = viewModel::setImportPasswords,
+                                        onSettingsChange = viewModel::setImportSettings
                                     )
                                 }
                             }
@@ -371,7 +446,7 @@ fun SetupAssistantScreen(
                             }
                         }
                     ) {
-                        if (step == SetupStep.SignIn && checking) {
+                        if (busy) {
                             // The only spinner otherwise sits in the scrolling body, below
                             // the fold on TV; keep progress on the action the remote holds.
                             CircularProgressIndicator(
@@ -455,6 +530,7 @@ private fun SetupTitle(step: SetupStep, progress: Float) {
         SetupStep.Connection -> stringResource(R.string.setup_connection_title)
         SetupStep.SignIn -> stringResource(R.string.setup_sign_in_title)
         SetupStep.Name -> stringResource(R.string.setup_name_title)
+        SetupStep.Import -> stringResource(R.string.setup_restore_title)
     }
     val fontSize = if (step == SetupStep.Welcome) {
         (48f * (1f - progress) + 28f * progress).sp
@@ -706,6 +782,33 @@ private fun NameStep(profileName: TextFieldState) {
         modifier = Modifier
             .fillMaxWidth()
             .keepInViewWhenFocused()
+    )
+}
+
+@Composable
+private fun RestoreStep(
+    review: ImportReview?,
+    onProfileCheckedChange: (index: Int, checked: Boolean) -> Unit,
+    onAllProfilesCheckedChange: (Boolean) -> Unit,
+    onPasswordsChange: (Boolean) -> Unit,
+    onSettingsChange: (Boolean) -> Unit
+) {
+    Text(
+        text = stringResource(R.string.setup_restore_body),
+        style = MaterialTheme.typography.bodyLarge
+    )
+    Spacer(Modifier.height(16.dp))
+    if (review == null) {
+        return
+    }
+    // The step body scrolls as a whole, so the profile list must not scroll inside it.
+    ImportReviewBody(
+        review = review,
+        onProfileCheckedChange = onProfileCheckedChange,
+        onAllProfilesCheckedChange = onAllProfilesCheckedChange,
+        onPasswordsChange = onPasswordsChange,
+        onSettingsChange = onSettingsChange,
+        scrollProfiles = false
     )
 }
 

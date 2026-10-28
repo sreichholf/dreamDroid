@@ -1,6 +1,7 @@
 ### IMPORTANT: For https using self-signed certs, you now have to enable "All certificates" in the respective profile
 
 ## 2.0.470
+* NEW: Restore a backup in the setup assistant
 * UPD: TV - profile and timer editors match the hub
 * UPD: Lower memory use in MultiEPG
 * UPD: Many UI improvements

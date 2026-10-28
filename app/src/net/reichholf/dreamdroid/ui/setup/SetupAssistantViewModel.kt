@@ -14,16 +14,22 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BackupDocuments
+import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.ui.backup.BackupImport
+import net.reichholf.dreamdroid.ui.backup.ImportReview
 import net.reichholf.dreamdroid.ui.text.SavedTextField
+import net.reichholf.dreamdroid.ui.text.UiText
 
 /**
- * The wizard: its [draft] (saved across process death), the receiver search, and the
- * connection check. The typed fields are on [SetupAssistantViewModel]. [finished] is
- * set once the new profile is saved and active.
+ * The wizard: its [draft] (saved across process death), the receiver search, the connection
+ * check, and the restore of a picked backup. The typed fields are on
+ * [SetupAssistantViewModel]. [finished] is set once a profile is saved or restored and active.
  */
 data class SetupAssistantUiState(
     val draft: SetupDraft = SetupDraft(),
@@ -32,25 +38,34 @@ data class SetupAssistantUiState(
     val searched: Boolean = false,
     val checking: Boolean = false,
     val checkResult: ProfileCheckResult? = null,
+    val restoring: Boolean = false,
+    val restoreError: UiText? = null,
     val finished: Boolean = false
 )
 
 /**
- * Wizard draft, receiver search, and connection check for [SetupAssistantScreen].
- * Activity-scoped on the phone and TV hosts, so a rotation keeps a running search
- * or check instead of starting it again.
+ * Wizard draft, receiver search, connection check, and backup restore for
+ * [SetupAssistantScreen]. Activity-scoped on the phone and TV hosts, so a rotation keeps a
+ * running search or check instead of starting it again.
  */
 @HiltViewModel
 class SetupAssistantViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val profiles: ProfileRepository,
     private val checks: ProfileCheckRepository,
-    private val discovery: ReceiverDiscovery
+    private val discovery: ReceiverDiscovery,
+    backups: BackupRepository,
+    documents: BackupDocuments
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
         SetupAssistantUiState(draft = readSetupDraft(savedStateHandle))
     )
     val uiState: StateFlow<SetupAssistantUiState> = _uiState.asStateFlow()
+
+    private val imports = BackupImport(savedStateHandle, backups, profiles, documents)
+
+    /** The backup the user picked on Welcome, while its review step is open. */
+    val importReview: StateFlow<ImportReview?> = imports.review
 
     /** Typed on Find and Connection. On Find, typing drops the picked receiver's name. */
     val host = textField(SetupAssistantSavedKeys.HOST, "") {
@@ -71,6 +86,16 @@ class SetupAssistantViewModel @Inject constructor(
     private var searchJob: Job? = null
     private var checkJob: Job? = null
     private var saveJob: Job? = null
+    private var restoreJob: Job? = null
+
+    init {
+        viewModelScope.launch {
+            val review = imports.reopenSaved()
+            if (!review && _uiState.value.draft.step == SetupStep.Import) {
+                updateDraft { it.copy(step = SetupStep.Welcome) }
+            }
+        }
+    }
 
     /** Returns true when the local-network prompt should be shown for this wizard. */
     fun claimNetworkRequest(): Boolean {
@@ -105,22 +130,34 @@ class SetupAssistantViewModel @Inject constructor(
 
     /** Moves one step back. Returns false on Welcome, where Back leaves the wizard. */
     fun back(): Boolean {
-        val previous = when (_uiState.value.draft.step) {
+        val current = _uiState.value.draft.step
+        // A running restore cannot be abandoned: its profile write is not cancellable.
+        if (current == SetupStep.Import && _uiState.value.restoring) {
+            return true
+        }
+        val previous = when (current) {
             SetupStep.Welcome -> return false
             SetupStep.Find -> SetupStep.Welcome
             SetupStep.Connection -> SetupStep.Find
             SetupStep.SignIn -> SetupStep.Connection
             SetupStep.Name -> SetupStep.SignIn
+            SetupStep.Import -> SetupStep.Welcome
+        }
+        if (current == SetupStep.Import) {
+            imports.clear()
         }
         updateDraft { it.copy(step = previous) }
         return true
     }
 
-    /** The primary action. On the Name step it saves the profile and makes it active. */
+    /** The primary action. On Name it saves the profile; on Import it restores the backup. */
     fun advance() {
         val state = _uiState.value
         when (state.draft.step) {
-            SetupStep.Welcome -> updateDraft { it.copy(step = SetupStep.Find) }
+            SetupStep.Welcome -> {
+                _uiState.update { it.copy(restoreError = null) }
+                updateDraft { it.copy(step = SetupStep.Find) }
+            }
 
             SetupStep.Find -> updateDraft { it.copy(step = SetupStep.Connection) }
 
@@ -141,6 +178,8 @@ class SetupAssistantViewModel @Inject constructor(
             }
 
             SetupStep.Name -> save()
+
+            SetupStep.Import -> restore()
         }
     }
 
@@ -179,6 +218,72 @@ class SetupAssistantViewModel @Inject constructor(
     fun onTrustAllChange(enabled: Boolean) {
         updateDraft { it.copy(trustAllCerts = enabled) }
         check()
+    }
+
+    /**
+     * Reads the backup the user picked. An unreadable file, or one without profiles, stays
+     * on Welcome with [SetupAssistantUiState.restoreError]; a usable one opens its review.
+     */
+    fun restoreFrom(uri: String) {
+        if (_uiState.value.restoring) {
+            return
+        }
+        _uiState.update { it.copy(restoring = true, restoreError = null) }
+        restoreJob = viewModelScope.launch {
+            val opened = imports.open(uri)
+            val hasProfiles = imports.review.value?.profiles?.isNotEmpty() == true
+            if (!opened || !hasProfiles) {
+                imports.clear()
+                _uiState.update {
+                    it.copy(
+                        restoring = false,
+                        restoreError = UiText.Resource(
+                            if (opened) R.string.setup_restore_no_profiles
+                            else R.string.setup_restore_failed
+                        )
+                    )
+                }
+                return@launch
+            }
+            _uiState.update { it.copy(restoring = false) }
+            updateDraft { it.copy(step = SetupStep.Import) }
+        }
+    }
+
+    /** No app can pick the document. [reason] is the system's text, when it gave one. */
+    fun onRestorePickerMissing(reason: String?) {
+        _uiState.update {
+            it.copy(
+                restoreError = reason?.let(UiText::Raw)
+                    ?: UiText.Resource(R.string.setup_restore_failed)
+            )
+        }
+    }
+
+    private fun restore() {
+        if (restoreJob?.isActive == true) {
+            return
+        }
+        val review = imports.review.value ?: return
+        if (!review.canImport) {
+            return
+        }
+        _uiState.update { it.copy(restoring = true, restoreError = null) }
+        restoreJob = viewModelScope.launch {
+            if (!imports.confirm()) {
+                updateDraft { it.copy(step = SetupStep.Welcome) }
+                _uiState.update {
+                    it.copy(
+                        restoring = false,
+                        restoreError = UiText.Resource(R.string.setup_restore_failed)
+                    )
+                }
+                return@launch
+            }
+            profiles.ensureCurrent()
+            reset()
+            _uiState.update { it.copy(finished = true) }
+        }
     }
 
     private fun save() {
@@ -225,6 +330,7 @@ class SetupAssistantViewModel @Inject constructor(
         searchJob = null
         checkJob?.cancel()
         checkJob = null
+        imports.clear()
         host.set("")
         port.set(SetupDefaults.PORT_TEXT)
         user.set(SetupDefaults.USER)

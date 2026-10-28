@@ -4,6 +4,8 @@ import androidx.compose.foundation.text.input.setTextAndPlaceCursorAtEnd
 import androidx.compose.runtime.snapshots.Snapshot
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.preference.PreferenceManager
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,16 +15,24 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
+import net.reichholf.dreamdroid.R
+import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverDiscovery
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
+import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.ProfileCheckResult
+import net.reichholf.dreamdroid.helpers.backup.BackupData
+import net.reichholf.dreamdroid.helpers.backup.GenericSetting
+import net.reichholf.dreamdroid.testutil.MemoryBackupDocuments
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.testutil.loadWebFixture
 import net.reichholf.dreamdroid.testutil.receiverApis
 import net.reichholf.dreamdroid.ui.text.SavedTextField
+import net.reichholf.dreamdroid.ui.text.UiText
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.AfterEach
@@ -41,6 +51,9 @@ class SetupAssistantViewModelTest {
     private val server = MockWebServer()
     private val testProfiles = TestProfiles()
     private val profiles = testProfiles.repository
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(testProfiles.context)
+    private val backups = BackupRepository(profiles, SettingsRepository(preferences))
+    private val documents = MemoryBackupDocuments()
     private val viewModels = mutableListOf<ViewModel>()
     private var searches = 0
 
@@ -209,11 +222,120 @@ class SetupAssistantViewModelTest {
         assertTrue(viewModel.uiState.value.draft.nameEdited)
     }
 
+    @Test
+    fun restoreImportsTheFilesProfilesAndFinishes() = runTest {
+        documents.files[RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "Living room"
+                host = "10.0.0.5"
+                pass = "secret"
+            }
+        )
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.restoreFrom(RESTORE_URI)
+        val step = viewModel.uiState.first { it.draft.step == SetupStep.Import }
+
+        assertFalse(step.restoring)
+        assertEquals(null, step.restoreError)
+        assertEquals(listOf("Living room"), viewModel.importReview.value!!.profiles.map { it.name })
+
+        viewModel.advance()
+        val finished = viewModel.uiState.first { it.finished }
+
+        val saved = profiles.profiles().single()
+        assertEquals(SetupDraft(), finished.draft)
+        assertEquals(saved.id, profiles.current.value!!.id)
+        assertEquals("secret", saved.pass)
+        assertEquals(null, viewModel.importReview.value)
+    }
+
+    @Test
+    fun restoreTakesOnlyTheChosenProfiles() = runTest {
+        documents.files[RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "Kitchen"
+                host = "10.0.0.3"
+            },
+            Profile.getDefault().apply {
+                name = "Cellar"
+                host = "10.0.0.4"
+            }
+        )
+        val viewModel = viewModel(SavedStateHandle())
+        viewModel.restoreFrom(RESTORE_URI)
+        viewModel.uiState.first { it.draft.step == SetupStep.Import }
+
+        viewModel.setImportProfileChecked(1, false)
+        viewModel.advance()
+        viewModel.uiState.first { it.finished }
+
+        assertEquals(listOf("Kitchen"), profiles.profiles().map { it.name })
+    }
+
+    @Test
+    fun aBackupWithoutProfilesStaysOnWelcome() = runTest {
+        documents.files[RESTORE_URI] = GsonBuilder().create().toJson(
+            BackupData().apply {
+                addGenericSetting(
+                    GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean")
+                )
+            }
+        )
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.restoreFrom(RESTORE_URI)
+        val state = viewModel.uiState.first { it.restoreError != null }
+
+        assertEquals(UiText.Resource(R.string.setup_restore_no_profiles), state.restoreError)
+        assertEquals(SetupStep.Welcome, state.draft.step)
+        assertEquals(null, viewModel.importReview.value)
+        assertTrue(profiles.profiles().isEmpty())
+    }
+
+    @Test
+    fun anUnreadableBackupSaysSo() = runTest {
+        val viewModel = viewModel(SavedStateHandle())
+
+        viewModel.restoreFrom("content://missing")
+        val state = viewModel.uiState.first { it.restoreError != null }
+
+        assertEquals(UiText.Resource(R.string.setup_restore_failed), state.restoreError)
+        assertEquals(SetupStep.Welcome, state.draft.step)
+        assertFalse(state.restoring)
+    }
+
+    @Test
+    fun theRestoreReviewSurvivesProcessDeath() = runTest {
+        documents.files[RESTORE_URI] = backupJson(
+            Profile.getDefault().apply {
+                name = "Kitchen"
+                host = "10.0.0.3"
+                pass = "secret"
+            }
+        )
+        val handle = SavedStateHandle()
+        val first = viewModel(handle)
+        first.restoreFrom(RESTORE_URI)
+        first.uiState.first { it.draft.step == SetupStep.Import }
+        first.setImportPasswords(false)
+        documents.files.clear()
+
+        val restored = viewModel(handle)
+        val review = restored.importReview.first { it != null }!!
+
+        assertEquals(SetupStep.Import, restored.uiState.value.draft.step)
+        assertFalse(review.includePasswords)
+    }
+
     /** Types into [field] the way the text field does, then lets observers see it. */
     private fun type(field: SavedTextField, text: String) {
         field.state.setTextAndPlaceCursorAtEnd(text)
         Snapshot.sendApplyNotifications()
     }
+
+    private fun backupJson(vararg rows: Profile): String =
+        GsonBuilder().create().toJson(BackupData().apply { rows.forEach(::addProfile) })
 
     private fun viewModel(
         handle: SavedStateHandle,
@@ -235,6 +357,12 @@ class SetupAssistantViewModelTest {
                     port = 80
                 }
             )
-        }
+        },
+        backups,
+        documents
     ).also { viewModels += it }
+
+    private companion object {
+        const val RESTORE_URI = "content://documents/backup.json"
+    }
 }

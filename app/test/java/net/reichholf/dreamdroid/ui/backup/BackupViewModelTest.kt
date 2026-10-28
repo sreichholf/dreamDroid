@@ -17,7 +17,6 @@ import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
-import net.reichholf.dreamdroid.data.BackupDocuments
 import net.reichholf.dreamdroid.data.BackupRepository
 import net.reichholf.dreamdroid.data.ProfileRepository
 import net.reichholf.dreamdroid.data.ProfileStore
@@ -25,6 +24,7 @@ import net.reichholf.dreamdroid.data.RoomProfileStore
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.helpers.backup.BackupData
 import net.reichholf.dreamdroid.helpers.backup.GenericSetting
+import net.reichholf.dreamdroid.testutil.MemoryBackupDocuments
 import net.reichholf.dreamdroid.testutil.TestProfiles
 import net.reichholf.dreamdroid.testutil.cancelAndJoin
 import net.reichholf.dreamdroid.ui.text.UiText
@@ -42,7 +42,7 @@ class BackupViewModelTest {
     private val profiles = testProfiles.repository
     private val preferences = PreferenceManager.getDefaultSharedPreferences(testProfiles.context)
     private val backups = BackupRepository(profiles, SettingsRepository(preferences))
-    private val documents = MemoryDocuments()
+    private val documents = MemoryBackupDocuments()
     private val viewModels = mutableListOf<ViewModel>()
 
     @BeforeEach
@@ -236,7 +236,7 @@ class BackupViewModelTest {
         val viewModel = viewModel(handle)
 
         viewModel.importFrom(URI)
-        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        val review = viewModel.importReview.first { it != null }!!
         assertEquals(listOf("Kitchen"), review.profiles.map { it.name })
         assertTrue(profiles.profiles().isEmpty())
         assertFalse(viewModel.uiState.value.imported)
@@ -247,7 +247,7 @@ class BackupViewModelTest {
         assertTrue(state.imported)
         assertTrue(viewModel(handle).uiState.value.imported, "imported survives process death")
         assertEquals(UiText.Resource(R.string.backup_import_successful), state.userMessage)
-        assertEquals(null, state.importReview)
+        assertEquals(null, viewModel.importReview.value)
         assertEquals(listOf("Kitchen"), state.profiles.map { it.name })
         assertTrue(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
     }
@@ -262,7 +262,7 @@ class BackupViewModelTest {
         val viewModel = viewModel()
 
         viewModel.importFrom(URI)
-        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        val review = viewModel.importReview.first { it != null }!!
 
         assertEquals(listOf(true, false), review.profiles.map { it.replaces })
         assertTrue(review.profiles.all { it.checked })
@@ -272,8 +272,8 @@ class BackupViewModelTest {
         assertFalse(review.includeSettings)
         viewModel.setImportPasswords(true)
         viewModel.setImportSettings(true)
-        assertFalse(viewModel.uiState.value.importReview!!.includePasswords)
-        assertFalse(viewModel.uiState.value.importReview!!.includeSettings)
+        assertFalse(viewModel.importReview.value!!.includePasswords)
+        assertFalse(viewModel.importReview.value!!.includeSettings)
     }
 
     @Test
@@ -286,7 +286,7 @@ class BackupViewModelTest {
         documents.files[URI] = GsonBuilder().create().toJson(data)
         val viewModel = viewModel()
         viewModel.importFrom(URI)
-        val review = viewModel.uiState.first { it.importReview != null }.importReview!!
+        val review = viewModel.importReview.first { it != null }!!
         assertTrue(review.passwordsAvailable && review.includePasswords)
         assertTrue(review.settingsAvailable && review.includeSettings)
 
@@ -310,17 +310,17 @@ class BackupViewModelTest {
         documents.files[URI] = GsonBuilder().create().toJson(data)
         val viewModel = viewModel()
         viewModel.importFrom(URI)
-        viewModel.uiState.first { it.importReview != null }
+        viewModel.importReview.first { it != null }
 
         viewModel.setAllImportProfilesChecked(false)
-        val review = viewModel.uiState.value.importReview!!
+        val review = viewModel.importReview.value!!
         assertFalse(review.canImport)
         assertFalse(review.passwordsSelectable)
         viewModel.confirmImport()
-        assertTrue(viewModel.uiState.value.importReview != null)
+        assertTrue(viewModel.importReview.value != null)
 
         viewModel.dismissImport()
-        assertEquals(null, viewModel.uiState.value.importReview)
+        assertEquals(null, viewModel.importReview.value)
         assertTrue(profiles.profiles().isEmpty())
     }
 
@@ -334,13 +334,13 @@ class BackupViewModelTest {
         val handle = SavedStateHandle()
         val first = viewModel(handle)
         first.importFrom(URI)
-        first.uiState.first { it.importReview != null }
+        first.importReview.first { it != null }
         first.setImportProfileChecked(0, false)
         first.setImportSettings(false)
         documents.files.clear()
 
         val restored = viewModel(handle)
-        val review = restored.uiState.first { it.importReview != null }.importReview!!
+        val review = restored.importReview.first { it != null }!!
         assertEquals(listOf(false, true), review.profiles.map { it.checked })
         assertFalse(review.includeSettings)
 
@@ -358,7 +358,7 @@ class BackupViewModelTest {
         backgroundScope.launch { viewModel.uiState.collect {} }
         handle.getStateFlow<String?>("backup_import_content", "{").first { it == null }
 
-        assertEquals(null, viewModel.uiState.value.importReview)
+        assertEquals(null, viewModel.importReview.value)
     }
 
     @Test
@@ -379,7 +379,7 @@ class BackupViewModelTest {
         data.addProfile(receiver("Kitchen", "10.0.0.3"))
         documents.files[URI] = GsonBuilder().create().toJson(data)
         viewModel.importFrom(URI)
-        viewModel.uiState.first { it.importReview != null }
+        viewModel.importReview.first { it != null }
 
         viewModel.confirmImport()
 
@@ -398,7 +398,7 @@ class BackupViewModelTest {
         documents.files[URI] = GsonBuilder().create().toJson(data)
         val viewModel = viewModel()
         viewModel.importFrom(URI)
-        viewModel.uiState.first { it.importReview != null }
+        viewModel.importReview.first { it != null }
 
         viewModel.confirmImport()
         viewModel.confirmImport()
@@ -426,7 +426,7 @@ class BackupViewModelTest {
             UiText.Resource(R.string.backup_import_error),
             viewModel.uiState.first { it.userMessage != null }.userMessage
         )
-        assertEquals(null, viewModel.uiState.value.importReview)
+        assertEquals(null, viewModel.importReview.value)
     }
 
     @Test
@@ -492,21 +492,6 @@ class BackupViewModelTest {
 
     private fun read(json: String): BackupData =
         GsonBuilder().create().fromJson(json, BackupData::class.java)
-
-    private class MemoryDocuments : BackupDocuments {
-        val files = HashMap<String, String>()
-        var writable = true
-
-        override suspend fun read(uri: String, maxChars: Int): String? =
-            files[uri]?.takeIf { it.length <= maxChars }
-
-        override suspend fun write(uri: String, text: String): Boolean {
-            if (writable) {
-                files[uri] = text
-            }
-            return writable
-        }
-    }
 
     private companion object {
         const val URI = "content://documents/backup.json"
