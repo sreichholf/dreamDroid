@@ -448,7 +448,7 @@ class ComposeTvHubChromeTest {
         composeRule.onAllNodesWithTag("hub_error").assertCountEquals(0)
         composeRule.onNodeWithTag("hub_live_empty_reload")
             .assertHasClickAction()
-            .assertHeightIsAtLeast(40.dp)
+            .assertHeightIsAtLeast(48.dp)
         activate("hub_live_empty_reload")
         assertEquals(1, reloads)
         activate("hub_live_empty_profiles")

@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text as PhoneText
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -30,7 +29,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
-import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
 import androidx.tv.material3.Text
 
@@ -208,15 +206,12 @@ fun TvFormSaveButton(
             .bringIntoViewRequester(bringIntoView)
             .padding(bottom = SaveFocusInset)
     ) {
-        Button(
+        TvButton(
+            label = label,
             onClick = onSave,
             enabled = enabled,
-            modifier = modifier
-                .minimumInteractiveComponentSize()
-                .onFocusChanged { focused = it.isFocused }
-        ) {
-            Text(text = label)
-        }
+            modifier = modifier.onFocusChanged { focused = it.isFocused }
+        )
     }
 }
 

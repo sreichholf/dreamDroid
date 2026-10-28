@@ -36,7 +36,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -81,7 +80,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleStartEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.tv.material3.Button
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
 import androidx.tv.material3.Icon
@@ -108,6 +106,7 @@ import net.reichholf.dreamdroid.intents.IntentFactory
 import net.reichholf.dreamdroid.tv.BrowseItem
 import net.reichholf.dreamdroid.tv.view.FittedEllipsisText
 import net.reichholf.dreamdroid.tv.view.ImageCardContent
+import net.reichholf.dreamdroid.ui.compose.TvButton
 import net.reichholf.dreamdroid.ui.nav.ShowShellUserMessage
 import net.reichholf.dreamdroid.ui.services.nowProgress
 import net.reichholf.dreamdroid.ui.text.asString
@@ -786,22 +785,16 @@ private fun HubLiveEmptyState(message: String, onReload: () -> Unit, onOpenProfi
             modifier = Modifier.testTag("hub_live_empty_message")
         )
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            Button(
+            TvButton(
+                label = stringResource(R.string.reload),
                 onClick = onReload,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .testTag("hub_live_empty_reload")
-            ) {
-                Text(text = stringResource(R.string.reload))
-            }
-            Button(
+                modifier = Modifier.testTag("hub_live_empty_reload")
+            )
+            TvButton(
+                label = stringResource(R.string.profiles),
                 onClick = onOpenProfiles,
-                modifier = Modifier
-                    .minimumInteractiveComponentSize()
-                    .testTag("hub_live_empty_profiles")
-            ) {
-                Text(text = stringResource(R.string.profiles))
-            }
+                modifier = Modifier.testTag("hub_live_empty_profiles")
+            )
         }
     }
 }
