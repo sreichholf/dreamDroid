@@ -767,7 +767,7 @@ class SetupAssistantScreenTest {
     }
 
     @Test
-    fun restoreStepTakesTheBackupAndFinishes() {
+    fun restoreStepTakesTheBackupAndFinishes() = runBlocking<Unit> {
         val data = BackupData().apply {
             addProfile(
                 Profile.getDefault().apply {
