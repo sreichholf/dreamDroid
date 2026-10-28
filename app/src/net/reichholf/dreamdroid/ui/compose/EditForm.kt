@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -61,8 +60,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
@@ -272,78 +269,9 @@ fun EditSwitchRow(
     )
 }
 
-@Composable
-fun EditOutlinedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Next,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    password: Boolean = false,
-    singleLine: Boolean = true,
-    readOnly: Boolean = false,
-    enabled: Boolean = true,
-    isError: Boolean = false,
-    supportingText: String? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    suffix: String? = null,
-    contentDescription: String = label
-) {
-    var passwordVisible by remember { mutableStateOf(false) }
-    val tv = LocalTvFormChrome.current
-    val focusManager = LocalFocusManager.current
-    val resolvedTrailingIcon: @Composable (() -> Unit)? = if (password) {
-        {
-            PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
-        }
-    } else {
-        trailingIcon
-    }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { EditFormFieldLabel(label) },
-        singleLine = singleLine,
-        readOnly = readOnly,
-        enabled = enabled,
-        isError = isError,
-        supportingText = supportingText?.let { message ->
-            { EditFormSupportingText(message) }
-        },
-        trailingIcon = resolvedTrailingIcon,
-        suffix = suffix?.let { suffixText ->
-            { Text(suffixText) }
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .then(if (tv) Modifier.clearFocusOnBack(focusManager) else Modifier)
-            .then(editFormFieldHeight())
-            .then(
-                if (password) {
-                    Modifier
-                } else {
-                    Modifier.semantics { this.contentDescription = contentDescription }
-                }
-            ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = imeAction
-        ),
-        keyboardActions = keyboardActions,
-        visualTransformation = if (password && !passwordVisible) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        },
-        textStyle = editFormFieldTextStyle()
-    )
-}
-
 /**
- * [EditOutlinedTextField] over a [TextFieldState] the caller owns, typically a
- * ViewModel. Typing edits [state] directly, with no value/onValueChange round trip.
+ * A form field over a [TextFieldState] the caller owns, typically a ViewModel; typing
+ * edits [state] directly, with no value/onValueChange round trip.
  */
 @Composable
 fun EditOutlinedTextField(
