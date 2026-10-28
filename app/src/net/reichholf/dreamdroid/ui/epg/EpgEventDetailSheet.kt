@@ -30,14 +30,17 @@ class EpgEventActions(
     val onImdb: (Event) -> Unit,
     val onSimilar: (Event) -> Unit,
     /** Offered while [EpgEventDetailUiState.autoTimerAvailable]. */
-    val onRecordSeries: (Event) -> Unit = {}
+    val onRecordSeries: (Event) -> Unit = {},
+    /** Opens the channel EPG; null hides the channel tile. */
+    val onChannelEpg: ((Event) -> Unit)? = null
 )
 
 /** [EpgEventActions] of a phone destination: timer actions need the receiver. */
 @Composable
 private fun phoneEpgEventActions(
     handle: PhoneNavHandle,
-    viewModel: EpgEventDetailViewModel
+    viewModel: EpgEventDetailViewModel,
+    showChannelEpg: Boolean = false
 ): EpgEventActions {
     val context = LocalContext.current
     return EpgEventActions(
@@ -51,6 +54,13 @@ private fun phoneEpgEventActions(
             handle.runOnlineOnly {
                 handle.navigateToAutoTimerEdit(AutoTimerEdit.recordSeries(event))
             }
+        },
+        onChannelEpg = if (showChannelEpg) {
+            { event ->
+                handle.navigateToServiceEpg(event.serviceReference, event.serviceName)
+            }
+        } else {
+            null
         }
     )
 }
@@ -71,7 +81,8 @@ fun EpgEventDetailHost(handle: PhoneNavHandle, viewModel: EpgEventDetailViewMode
         onEditTimer = actions.onEditTimer,
         onImdb = actions.onImdb,
         onSimilar = actions.onSimilar,
-        onRecordSeries = actions.onRecordSeries
+        onRecordSeries = actions.onRecordSeries,
+        onChannelEpg = actions.onChannelEpg
     )
 }
 
@@ -85,6 +96,8 @@ fun EpgEventListDetailHost(
     handle: PhoneNavHandle,
     viewModel: EpgEventDetailViewModel,
     modifier: Modifier = Modifier,
+    /** Opt in from the bouquet EPG and EPG search; a channel's own EPG keeps it off. */
+    showChannelEpg: Boolean = false,
     list: @Composable (shownEvent: Event?) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -92,7 +105,7 @@ fun EpgEventListDetailHost(
     EpgEventListDetail(
         state = uiState,
         onDismiss = viewModel::dismissDetail,
-        actions = phoneEpgEventActions(handle, viewModel),
+        actions = phoneEpgEventActions(handle, viewModel, showChannelEpg),
         list = { list(uiState.event) },
         modifier = modifier
     )
@@ -147,7 +160,8 @@ fun EpgEventPane(
             onSimilar = { actions.onSimilar(event) },
             timerWritesBlocked = state.timerWritesBlocked,
             bodyHeightCap = null,
-            onRecordSeries = state.recordSeries(event, actions)
+            onRecordSeries = state.recordSeries(event, actions),
+            onChannelClick = actions.channelClick(event)
         )
     }
 }
@@ -162,9 +176,18 @@ fun EpgEventDetailSheet(
     onImdb: (Event) -> Unit,
     onSimilar: (Event) -> Unit,
     /** Offered while [EpgEventDetailUiState.autoTimerAvailable]. */
-    onRecordSeries: (Event) -> Unit = {}
+    onRecordSeries: (Event) -> Unit = {},
+    /** Opens the channel EPG; null hides the channel tile. */
+    onChannelEpg: ((Event) -> Unit)? = null
 ) {
-    val actions = EpgEventActions(onSetTimer, onEditTimer, onImdb, onSimilar, onRecordSeries)
+    val actions = EpgEventActions(
+        onSetTimer,
+        onEditTimer,
+        onImdb,
+        onSimilar,
+        onRecordSeries,
+        onChannelEpg
+    )
     state.event?.let { EpgEventSheet(state, it, onDismiss, actions) }
     EpgEventSavingProgress(state)
 }
@@ -197,7 +220,8 @@ fun EpgEventListDetail(
             onSimilar = { actions.onSimilar(event) },
             timerWritesBlocked = state.timerWritesBlocked,
             bodyHeightCap = null,
-            onRecordSeries = state.recordSeries(event, actions)
+            onRecordSeries = state.recordSeries(event, actions),
+            onChannelClick = actions.channelClick(event)
         )
     }
     EpgEventSavingProgress(state)
@@ -218,9 +242,15 @@ private fun EpgEventSheet(
         onImdb = { actions.onImdb(event) },
         onSimilar = { actions.onSimilar(event) },
         timerWritesBlocked = state.timerWritesBlocked,
-        onRecordSeries = state.recordSeries(event, actions)
+        onRecordSeries = state.recordSeries(event, actions),
+        onChannelClick = actions.channelClick(event)
     )
 }
+
+/** The channel tile action, or null when the event names no service reference. */
+private fun EpgEventActions.channelClick(event: Event): (() -> Unit)? =
+    onChannelEpg?.takeIf { event.serviceReference.isNotBlank() }
+        ?.let { action -> { action(event) } }
 
 @Composable
 private fun Event.detailContent(): EpgDetailContent = toEpgDetailContentOrUnavailable(

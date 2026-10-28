@@ -28,7 +28,9 @@ fun EpgDetailModalSheet(
     /** Phone bottom sheet caps body height; TV overlay/fullscreen passes null. */
     bodyHeightCap: Dp? = 360.dp,
     /** Opens a new AutoTimer for this event; null hides the action. */
-    onRecordSeries: (() -> Unit)? = null
+    onRecordSeries: (() -> Unit)? = null,
+    /** Opens the channel EPG; null keeps the channel name plain text. */
+    onChannelClick: (() -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(
@@ -59,6 +61,12 @@ fun EpgDetailModalSheet(
             onRecordSeries = onRecordSeries?.let { record ->
                 {
                     record()
+                    onDismiss()
+                }
+            },
+            onChannelClick = onChannelClick?.let { click ->
+                {
+                    click()
                     onDismiss()
                 }
             },

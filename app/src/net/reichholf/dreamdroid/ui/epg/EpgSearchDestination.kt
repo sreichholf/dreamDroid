@@ -35,7 +35,7 @@ fun EpgSearchDestination(
     }
 
     val focusManager = LocalFocusManager.current
-    EpgEventListDetailHost(handle, detailViewModel, modifier) { shownEvent ->
+    EpgEventListDetailHost(handle, detailViewModel, modifier, showChannelEpg = true) { shownEvent ->
         DreamDroidPullRefresh(
             refreshing = false,
             onRefresh = viewModel::reload,

@@ -1,5 +1,7 @@
 package net.reichholf.dreamdroid.ui.epg
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -7,6 +9,7 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -22,9 +25,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -35,6 +40,7 @@ import net.reichholf.dreamdroid.ui.session.onlineOnlyLook
 
 const val EPG_DETAIL_CAPPED_TAG = "epg_detail_capped"
 const val EPG_DETAIL_UNCAPPED_TAG = "epg_detail_uncapped"
+const val EPG_CHANNEL_ROW_TAG = "epg_channel_row"
 
 data class EpgDetailContent(
     val title: String,
@@ -87,6 +93,8 @@ fun Event.toEpgDetailContentOrUnavailable(
 fun EpgDetailBody(
     content: EpgDetailContent,
     modifier: Modifier = Modifier,
+    /** Opens the channel EPG; null keeps the channel name plain text. */
+    onChannelClick: (() -> Unit)? = null,
     /** Icon buttons at the end of the title row. */
     titleActions: @Composable RowScope.() -> Unit = {}
 ) {
@@ -101,12 +109,20 @@ fun EpgDetailBody(
             titleActions()
         }
         if (content.serviceName.isNotEmpty()) {
-            Text(
-                text = content.serviceName,
-                style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp)
-            )
+            if (onChannelClick == null) {
+                Text(
+                    text = content.serviceName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            } else {
+                EpgChannelRow(
+                    name = content.serviceName,
+                    onClick = onChannelClick,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
+            }
         }
         if (content.description.isNotEmpty()) {
             Text(
@@ -133,6 +149,45 @@ fun EpgDetailBody(
     }
 }
 
+/**
+ * Compact channel tile for the sheet. The app's Gmail-style list tile has an 8dp gutter and a
+ * 16dp trailing gap, which would move this off the sheet's text grid and away from the 8dp
+ * chevron gap; this keeps the same tile colour, shape and type.
+ */
+@Composable
+private fun EpgChannelRow(name: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(min = 48.dp)
+            .testTag(EPG_CHANNEL_ROW_TAG)
+            .clip(MaterialTheme.shapes.medium)
+            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            .clickable(
+                onClickLabel = stringResource(R.string.channel_epg_open),
+                role = Role.Button,
+                onClick = onClick
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = name,
+            modifier = Modifier.weight(1f),
+            maxLines = 1,
+            overflow = TextOverflow.MiddleEllipsis,
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(Modifier.width(8.dp))
+        Icon(
+            painter = painterResource(R.drawable.ic_chevron_right),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
+}
+
 @Composable
 fun EpgDetailScreen(
     content: EpgDetailContent,
@@ -147,7 +202,9 @@ fun EpgDetailScreen(
     /** Phone bottom sheet caps body height; TV fullscreen and list-detail panes pass null. */
     bodyHeightCap: Dp? = 360.dp,
     /** Opens a new AutoTimer for this event; null hides the action. */
-    onRecordSeries: (() -> Unit)? = null
+    onRecordSeries: (() -> Unit)? = null,
+    /** Opens the channel EPG; null keeps the channel name plain text. */
+    onChannelClick: (() -> Unit)? = null
 ) {
     BoxWithConstraints(modifier.fillMaxWidth()) {
         val bodyTag = if (bodyHeightCap == null) EPG_DETAIL_UNCAPPED_TAG else EPG_DETAIL_CAPPED_TAG
@@ -161,6 +218,7 @@ fun EpgDetailScreen(
             ) {
                 EpgDetailBody(
                     content = content,
+                    onChannelClick = onChannelClick,
                     titleActions = {
                         if (showActions) {
                             IconButton(onClick = onSimilar) {

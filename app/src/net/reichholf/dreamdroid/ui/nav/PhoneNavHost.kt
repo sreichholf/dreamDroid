@@ -421,7 +421,9 @@ fun NavHostController.navigateDrawerRoot(route: Any) {
 
 /** Nested service EPG: push onto the NavHost back stack (back returns to hub). */
 fun NavHostController.navigateToServiceEpg(serviceRef: String, serviceName: String?) {
-    navigate(ServiceEpg(serviceRef = serviceRef, serviceName = serviceName.orEmpty()))
+    navigate(ServiceEpg(serviceRef = serviceRef, serviceName = serviceName.orEmpty())) {
+        launchSingleTop = true
+    }
 }
 
 /** Nested EPG search: push onto the NavHost back stack (singleTop avoids duplicate same query). */

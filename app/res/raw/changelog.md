@@ -2,6 +2,7 @@
 
 ## 2.0.470
 * NEW: Restore a backup in the setup assistant
+* NEW: Channel EPG from the EPG detail
 * UPD: TV - profile and timer editors match the hub
 * UPD: Lower memory use in MultiEPG
 * UPD: Many UI improvements
