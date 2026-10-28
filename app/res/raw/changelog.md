@@ -15,9 +15,10 @@
 * FIX: Crash in picture-in-picture with an extreme aspect ratio
 
 ## 2.0.469
-* UPD: TV - rework hub, player, MultiEPG, editing
+* UPD: TV - rework hub, player (Up/Down: channel list), MultiEPG, editing
 * NEW: TV - Continue watching, Backup/Restore
-* NEW: TV - Autostart streaming, preferred audio language
+* NEW: Auto-start the last live stream
+* NEW: Preferred audio language for the integrated player
 * FIX: TV - multiple usability quirks
 
 ## 2.0.468

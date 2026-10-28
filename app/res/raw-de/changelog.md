@@ -15,9 +15,10 @@
 * FIX: Absturz in Bild-in-Bild bei extremem Seitenverhältnis
 
 ## 2.0.469
-* UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet
+* UPD: TV - Hub, Player (Hoch/Runter: Senderliste), MultiEPG und Bearbeiten überarbeitet
 * NEU: TV - Weiterschauen, Backup/Wiederherstellung
-* NEU: TV - Stream automatisch starten, bevorzugte Audiosprache
+* NEU: Letzten Live-Stream automatisch starten
+* NEU: Bevorzugte Audiosprache für den integrierten Player
 * FIX: TV - diverse Bedienungsmängel
 
 ## 2.0.468
