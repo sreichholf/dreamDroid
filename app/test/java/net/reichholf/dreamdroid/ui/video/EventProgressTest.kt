@@ -46,7 +46,8 @@ class EventProgressTest {
 
     @Test
     fun aRunningEventReloadsWhenItEnds() {
-        val schedule = eventReloadSchedule(event("1"), null, nowMs = (start + 1800) * 1000)
+        val schedule =
+            eventReloadSchedule(event("1"), "ref#1", null, nowMs = (start + 1800) * 1000)
         assertEquals(1_802_000L, schedule.delayMs)
     }
 
@@ -55,7 +56,8 @@ class EventProgressTest {
         var schedule: EventReloadSchedule? = null
         val delays =
             (0 until 4).map {
-                schedule = eventReloadSchedule(event("1"), schedule, nowMs = (start + 4000) * 1000)
+                schedule =
+                    eventReloadSchedule(event("1"), "ref#1", schedule, (start + 4000) * 1000)
                 schedule!!.delayMs
             }
         assertEquals(listOf(30_000L, 30_000L, 30_000L, 300_000L), delays)
@@ -64,17 +66,32 @@ class EventProgressTest {
 
     @Test
     fun anotherEndedEventStartsTheTriesOver() {
-        val first = eventReloadSchedule(event("1"), null, nowMs = (start + 4000) * 1000)
-        val other = eventReloadSchedule(event("2"), first, nowMs = (start + 4000) * 1000)
+        val first = eventReloadSchedule(event("1"), "ref#1", null, nowMs = (start + 4000) * 1000)
+        val other = eventReloadSchedule(event("2"), "ref#2", first, nowMs = (start + 4000) * 1000)
         assertEquals(30_000L, other.delayMs)
         assertEquals(1, other.endedEventTries)
-        assertEquals("2", other.endedEventId)
+        assertEquals("ref#2", other.endedEventKey)
+    }
+
+    @Test
+    fun anotherServiceWithTheSameEventIdStartsTheTriesOver() {
+        var schedule: EventReloadSchedule? = null
+        (0 until 4).forEach {
+            schedule = eventReloadSchedule(event("1"), "ref-a#1", schedule, (start + 4000) * 1000)
+        }
+        assertEquals(300_000L, schedule!!.delayMs)
+
+        val afterZap =
+            eventReloadSchedule(event("1"), "ref-b#1", schedule, nowMs = (start + 4000) * 1000)
+        assertEquals(30_000L, afterZap.delayMs)
+        assertEquals(1, afterZap.endedEventTries)
+        assertEquals("ref-b#1", afterZap.endedEventKey)
     }
 
     @Test
     fun withoutAnEventItPollsSlowly() {
-        val ended = eventReloadSchedule(event("1"), null, nowMs = (start + 4000) * 1000)
-        val schedule = eventReloadSchedule(null, ended, nowMs = 0)
+        val ended = eventReloadSchedule(event("1"), "ref#1", null, nowMs = (start + 4000) * 1000)
+        val schedule = eventReloadSchedule(null, null, ended, nowMs = 0)
         assertEquals(300_000L, schedule.delayMs)
         assertEquals(0, schedule.endedEventTries)
     }

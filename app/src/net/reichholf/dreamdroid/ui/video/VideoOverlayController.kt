@@ -748,7 +748,8 @@ class VideoOverlayController(
             return
         }
         val now = System.currentTimeMillis()
-        val schedule = eventReloadSchedule(currentService?.now, reloadSchedule, now)
+        val schedule =
+            eventReloadSchedule(currentService?.now, eventKey(session), reloadSchedule, now)
         reloadSchedule = schedule
         reloadDueAtMs = now + schedule.delayMs
         handler.postDelayed(issueReloadRunnable, schedule.delayMs)

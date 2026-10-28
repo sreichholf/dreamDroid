@@ -33,7 +33,7 @@ private fun hasTime(value: String): Boolean = value.isNotEmpty() && value != Pyt
 internal data class EventReloadSchedule(
     val delayMs: Long,
     /** The ended event the tries belong to; a different one starts the count over. */
-    val endedEventId: String? = null,
+    val endedEventKey: String? = null,
     val endedEventTries: Int = 0
 )
 
@@ -47,9 +47,13 @@ private const val EVENT_BOUNDARY_GRACE_MS: Long = 2_000
  * the end a few times more, because the receiver's EPG keeps reporting a finished event for
  * a moment. Past [ENDED_EVENT_RELOAD_TRIES] a stale ended event falls back to the plain
  * [NO_EVENT_RELOAD_MS] poll instead of reloading every [ENDED_EVENT_RELOAD_MS].
+ *
+ * [eventKey] identifies [event] for the tries: an event id alone repeats after a zap to a
+ * service that carries the same programme id, so the key also names the service.
  */
 internal fun eventReloadSchedule(
     event: Event?,
+    eventKey: String?,
     previous: EventReloadSchedule?,
     nowMs: Long
 ): EventReloadSchedule {
@@ -59,12 +63,11 @@ internal fun eventReloadSchedule(
             (progress.totalSec - progress.elapsedSec) * 1000 + EVENT_BOUNDARY_GRACE_MS
         )
     }
-    val eventId = event?.eventId
     val tries =
-        if (previous != null && previous.endedEventId == eventId) previous.endedEventTries else 0
+        if (previous != null && previous.endedEventKey == eventKey) previous.endedEventTries else 0
     return if (tries >= ENDED_EVENT_RELOAD_TRIES) {
-        EventReloadSchedule(NO_EVENT_RELOAD_MS, eventId, tries)
+        EventReloadSchedule(NO_EVENT_RELOAD_MS, eventKey, tries)
     } else {
-        EventReloadSchedule(ENDED_EVENT_RELOAD_MS, eventId, tries + 1)
+        EventReloadSchedule(ENDED_EVENT_RELOAD_MS, eventKey, tries + 1)
     }
 }
