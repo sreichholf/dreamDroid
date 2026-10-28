@@ -310,6 +310,22 @@ class ShellViewModelTest {
     }
 
     @Test
+    fun losingTheActiveProfileDropsTheOnlineSession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+
+        profiles.clearCurrent()
+        viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
+
+        assertNull(sessions.status.value.session)
+        assertFalse(sessions.status.value.checking)
+        assertTrue(sessions.status.value.blocksMutations)
+    }
+
+    @Test
     fun addingAProfileAgainLeavesTheNoProfileGate() = runBlocking<Unit> {
         val viewModel = viewModel()
         viewModel.start()
