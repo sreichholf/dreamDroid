@@ -1404,7 +1404,11 @@ private fun HubContinueWatchingCard(
                         .fillMaxWidth()
                         .height(HubServiceProgressHeight)
                         .testTag("hub_continue_watching_progress"),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (focused) {
+                        LocalContentColor.current
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
                     trackColor = Color.Transparent,
                     strokeCap = StrokeCap.Butt,
                     gapSize = 0.dp,
@@ -1503,6 +1507,7 @@ private fun HubServiceCard(
 ) {
     val density = LocalDensity.current
     val imageWidthPx = with(density) { 200.dp.roundToPx() }
+    var focused by remember { mutableStateOf(false) }
     val now = service.now
     val next = service.next
     val nowTitle = now?.title.orEmpty()
@@ -1532,6 +1537,7 @@ private fun HubServiceCard(
             .height(HubServiceCardHeight)
             .testTag("hub_service_card")
             .onFocusChanged { focusState ->
+                focused = focusState.isFocused
                 if (focusState.isFocused) {
                     onFocused?.invoke()
                 }
@@ -1565,7 +1571,11 @@ private fun HubServiceCard(
                         .fillMaxWidth()
                         .height(HubServiceProgressHeight)
                         .testTag("hub_service_progress"),
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (focused) {
+                        LocalContentColor.current
+                    } else {
+                        MaterialTheme.colorScheme.primary
+                    },
                     trackColor = Color.Transparent,
                     strokeCap = StrokeCap.Butt,
                     gapSize = 0.dp,

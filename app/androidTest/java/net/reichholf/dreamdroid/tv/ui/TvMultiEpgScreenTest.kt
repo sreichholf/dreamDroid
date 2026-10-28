@@ -833,7 +833,18 @@ class TvMultiEpgScreenTest {
 
         composeRule.onNodeWithTag("tv_multi_epg_grid").requestFocus()
         composeRule.waitForIdle()
-        assertTrue(gridImage().colorAt(x, y).near(scheme.primary))
+        val image = gridImage()
+        assertTrue(image.colorAt(x, y).near(scheme.primary))
+        // The focus border runs along the bar's top edge, 2 dp in and 2 dp thick: it is the
+        // fill's content colour, not primary, which would vanish into the focused cursor.
+        val borderTop = listOf(2.5.dp, 3.dp, 3.5.dp)
+            .map { image.colorAt(ChannelWidth + 90.dp, it) }
+        assertTrue(
+            "cursor border not the content colour: " +
+                borderTop.joinToString { it.hex() } +
+                " vs ${scheme.onPrimary.hex()}",
+            borderTop.any { it.near(scheme.onPrimary) }
+        )
     }
 
     @Test

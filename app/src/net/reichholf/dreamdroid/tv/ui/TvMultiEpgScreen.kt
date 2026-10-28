@@ -1257,18 +1257,28 @@ private fun TvMultiEpgChannelTimeline(
                         else -> scheme.surfaceVariant
                     },
                     shape = shape,
-                    border = if (cursor && cursorFocused) scheme.primary else null
+                    border = if (cursor && cursorFocused) focus.content else null
                 )
             }
         }
         if (nowSec in timelineStartSec until timelineEndSec) {
+            // The line is primary too: over the focused cursor's fill it takes that fill's
+            // content colour.
+            val cursorBar = if (cursorFocused) {
+                slots.firstOrNull { it.bar.startSec == cursorStartSec }?.bar
+            } else {
+                null
+            }
+            val overCursor = cursorBar != null &&
+                nowSec >= cursorBar.startSec &&
+                nowSec < cursorBar.endSec
             val nowMin = (nowSec - timelineStartSec) / 60f
             Box(
                 modifier = Modifier
                     .offset(x = minuteWidth * nowMin - NowLineWidth / 2)
                     .width(NowLineWidth)
                     .fillMaxHeight()
-                    .background(scheme.primary)
+                    .background(if (overCursor) focus.content else scheme.primary)
             )
         }
         for ((x, width) in gaps) {
@@ -1318,7 +1328,8 @@ private fun TvMultiEpgChannelTimeline(
                         x = slot.x,
                         width = slot.width,
                         clock = clock,
-                        clockSize = clockSize
+                        clockSize = clockSize,
+                        focusTint = if (cursor && cursorFocused) focus.content else null
                     )
                 }
             }
@@ -1438,7 +1449,13 @@ private fun Modifier.stickyBarText(
 }
 
 @Composable
-private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: Dp) {
+private fun TvBarClock(
+    x: Dp,
+    width: Dp,
+    clock: MultiEpgTimerClock,
+    clockSize: Dp,
+    focusTint: Color? = null
+) {
     val record = clock == MultiEpgTimerClock.Record
     val clockCd = stringResource(
         if (record) {
@@ -1447,7 +1464,7 @@ private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: D
             R.string.multiepg_timer_zap
         }
     )
-    val clockTint = if (record) {
+    val clockTint = focusTint ?: if (record) {
         PhoneMaterialTheme.colorScheme.primary
     } else {
         PhoneMaterialTheme.colorScheme.tertiary
