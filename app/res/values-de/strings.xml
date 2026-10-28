@@ -389,6 +389,11 @@
     <string name="setup_name_body">Dieser Name erscheint in der Profilliste.</string>
     <string name="setup_test_body">dreamDroid kontaktiert den Receiver, bevor das Profil gespeichert wird.</string>
     <string name="setup_connected">Der Receiver hat geantwortet.</string>
+    <string name="setup_restore">Wiederherstellen</string>
+    <string name="setup_restore_title">Aus Sicherung wiederherstellen</string>
+    <string name="setup_restore_body">Übernimm die Profile aus einer Sicherungsdatei. Erst mit „Wiederherstellen“ wird etwas geändert.</string>
+    <string name="setup_restore_failed">Die Datei konnte nicht gelesen werden.</string>
+    <string name="setup_restore_no_profiles">Diese Sicherung enthält keine Profile.</string>
 
     <string name="bouquets">Bouquets</string>
     <string name="bouquet_add">Bouquet hinzufügen</string>

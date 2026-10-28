@@ -10,7 +10,8 @@ enum class SetupStep {
     Find,
     Connection,
     SignIn,
-    Name
+    Name,
+    Import
 }
 
 data class SetupReceiver(val name: String, val host: String, val port: Int)
