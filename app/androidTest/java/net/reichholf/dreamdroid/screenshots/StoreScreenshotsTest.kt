@@ -54,7 +54,9 @@ import org.junit.Test
  * `screenshots` picks the device flow: `phone` (phoneScreenshots), `tablet`
  * (tenInchScreenshots) or `tv` (tvScreenshots); without it every flow skips. The
  * `screenshots` input of android-ci.yml's workflow_dispatch runs each on its emulator and
- * uploads the PNGs.
+ * uploads the PNGs. A flow's whole folder is published, so the TV form chrome, which
+ * developers review but which is not a store asset, has a flow of its own (`tv_review`)
+ * and its own folder.
  */
 @HiltAndroidTest
 class StoreScreenshotsTest {
@@ -192,9 +194,8 @@ class StoreScreenshotsTest {
     }
 
     /**
-     * The TV hub: a bouquet's channels, its MultiEPG, the timers and the recordings.
-     * Ends with the profile and timer editors (5 and 6): they are review shots of the TV
-     * form chrome, not store assets.
+     * The TV hub: a bouquet's channels, its MultiEPG, the timers and the recordings. Four
+     * store assets, so the form editors are a flow of their own ([tvReview]).
      */
     @Test
     fun tv() {
@@ -222,31 +223,44 @@ class StoreScreenshotsTest {
             awaitNode(hasTestTag("hub_movie_card"))
             awaitNode(hasText(ScreenshotReceiver.MOVIE_TITLES.first()))
             capture("4_movies")
-
-            // New timer: the editor replaces the timers section, Back returns to the list.
-            tvClick("hub_tab_timers")
-            // Gate on the screen, not on semantics: the display can lag the composition by a
-            // frame, and two stale frames of the list look stable to saveScreen().
-            val timersList = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
-            tvClick("tv_timers_add")
-            awaitNode(hasText(context.getString(R.string.save)) and hasClickAction())
-            awaitScreenChange(timersList)
-            capture("5_timer_editor")
-            back(scenario)
-            awaitNode(hasTestTag("tv_timers_list"))
-
-            // Settings → Profile → edit the seeded profile.
-            tvClick("hub_action_settings")
-            tvClick("hub_settings_profile")
-            awaitNode(hasTestTag("tv_profiles_list"))
-            tvClick("tv_profiles_edit_$profileId")
-            awaitNode(hasText(context.getString(R.string.profile)))
-            capture("6_profile_editor")
-
-            // The form's other end: the last section's controls and the Save button.
-            composeRule.onAllNodes(hasText(context.getString(R.string.save)))[0].performScrollTo()
-            capture("7_profile_editor_save")
         }
+    }
+
+    /**
+     * The TV form chrome for review, not a store asset: the timer and profile editors.
+     * `-e screenshots tv_review -e class …StoreScreenshotsTest#tvReview`.
+     */
+    @Test
+    fun tvReview() {
+        assumeTrue(device == "tv_review")
+        ActivityScenario.launch(TvMainActivity::class.java).use { captureTvEditors(it) }
+    }
+
+    private fun captureTvEditors(scenario: ActivityScenario<TvMainActivity>) {
+        // New timer: the editor replaces the timers section, Back returns to the list.
+        tvClick("hub_tab_timers")
+        awaitNode(hasText(receiver.timerTitles().first()))
+        // Gate on the screen, not on semantics: the display can lag the composition by a
+        // frame, and two stale frames of the list look stable to saveScreen().
+        val timersList = checkNotNull(instrumentation.uiAutomation.takeScreenshot())
+        tvClick("tv_timers_add")
+        awaitNode(hasText(context.getString(R.string.save)) and hasClickAction())
+        awaitScreenChange(timersList)
+        capture("1_timer_editor")
+        back(scenario)
+        awaitNode(hasTestTag("tv_timers_list"))
+
+        // Settings → Profile → edit the seeded profile.
+        tvClick("hub_action_settings")
+        tvClick("hub_settings_profile")
+        awaitNode(hasTestTag("tv_profiles_list"))
+        tvClick("tv_profiles_edit_$profileId")
+        awaitNode(hasText(context.getString(R.string.profile)))
+        capture("2_profile_editor")
+
+        // The form's other end: the last section's controls and the Save button.
+        composeRule.onAllNodes(hasText(context.getString(R.string.save)))[0].performScrollTo()
+        capture("3_profile_editor_save")
     }
 
     /** Compose's BackHandler runs through the activity's dispatcher, so this is a real Back. */
