@@ -9,6 +9,7 @@
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile
 * FIX: TV - focus stays in the top bar when switching tabs
+* FIX: TV - blank bouquet menu in the Guide
 * UPD: Add a profile when none is left
 * FIX: Crash opening a repeating timer
 * FIX: Crash when picture-in-picture is unavailable

@@ -9,6 +9,7 @@
 * FIX: Absturz bei Listen mit doppelten Einträgen
 * FIX: TV - Absturz ohne aktives Profil
 * FIX: TV - Fokus bleibt beim Tab-Wechsel in der oberen Leiste
+* FIX: TV - Leeres Bouquet-Menü im Guide
 * UPD: Profil hinzufügen, wenn keines vorhanden ist
 * FIX: Absturz beim Öffnen eines wiederholten Timers
 * FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist
