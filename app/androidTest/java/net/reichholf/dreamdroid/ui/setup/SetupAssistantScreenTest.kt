@@ -836,7 +836,7 @@ class SetupAssistantScreenTest {
         composeRule.waitForIdle()
 
         composeRule.onNodeWithText("Welcome!").assertIsDisplayed()
-        composeRule.onNodeWithText("This file could not be read.")
+        composeRule.onNodeWithText("The backup could not be restored.")
             .performScrollTo()
             .assertIsDisplayed()
     }

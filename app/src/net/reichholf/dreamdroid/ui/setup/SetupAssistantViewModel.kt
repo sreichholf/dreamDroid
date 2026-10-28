@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.ui.setup
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -277,24 +278,32 @@ class SetupAssistantViewModel @Inject constructor(
             return
         }
         val review = imports.review.value ?: return
-        if (!review.canImport) {
+        // Settings alone write no profile, and the shell needs an active one.
+        if (review.selectedProfiles == 0) {
             return
         }
         _uiState.update { it.copy(restoring = true, restoreError = null) }
         restoreJob = viewModelScope.launch {
             if (!imports.confirm()) {
-                updateDraft { it.copy(step = SetupStep.Welcome) }
-                _uiState.update {
-                    it.copy(
-                        restoring = false,
-                        restoreError = UiText.Resource(R.string.setup_restore_failed)
-                    )
-                }
+                restoreFailed(R.string.setup_restore_failed)
                 return@launch
             }
-            profiles.ensureCurrent()
+            // confirm() wrote at least one profile (restore() refuses without one), so this
+            // only fails if the store dropped the row.
+            if (!profiles.ensureCurrent()) {
+                restoreFailed(R.string.setup_restore_failed)
+                return@launch
+            }
             reset()
             _uiState.update { it.copy(finished = true) }
+        }
+    }
+
+    /** Gives up the restore step: back on Welcome, with [message] under the buttons. */
+    private fun restoreFailed(@StringRes message: Int) {
+        updateDraft { it.copy(step = SetupStep.Welcome) }
+        _uiState.update {
+            it.copy(restoring = false, restoreError = UiText.Resource(message))
         }
     }
 

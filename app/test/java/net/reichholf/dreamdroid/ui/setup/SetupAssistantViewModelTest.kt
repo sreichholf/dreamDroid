@@ -274,6 +274,39 @@ class SetupAssistantViewModelTest {
     }
 
     @Test
+    fun settingsOnlyRestoreIsNotStarted() = runTest {
+        documents.files[RESTORE_URI] = GsonBuilder().create().toJson(
+            BackupData().apply {
+                addProfile(
+                    Profile.getDefault().apply {
+                        name = "Kitchen"
+                        host = "10.0.0.3"
+                    }
+                )
+                addGenericSetting(
+                    GenericSetting(DreamDroid.PREFS_KEY_INSTANT_ZAP, "true", "Boolean")
+                )
+            }
+        )
+        val viewModel = viewModel(SavedStateHandle())
+        viewModel.restoreFrom(RESTORE_URI)
+        viewModel.uiState.first { it.draft.step == SetupStep.Import }
+
+        viewModel.setImportProfileChecked(0, false)
+        viewModel.advance()
+
+        // The action is disabled without a profile, so the restore must not run: no error on
+        // Welcome, and the settings stay untouched.
+        assertEquals(SetupStep.Import, viewModel.uiState.value.draft.step)
+        assertEquals(null, viewModel.uiState.value.restoreError)
+        assertFalse(viewModel.uiState.value.restoring)
+        assertFalse(viewModel.uiState.value.finished)
+        assertTrue(profiles.profiles().isEmpty())
+        assertEquals(null, profiles.current.value)
+        assertFalse(preferences.getBoolean(DreamDroid.PREFS_KEY_INSTANT_ZAP, false))
+    }
+
+    @Test
     fun aBackupWithoutProfilesStaysOnWelcome() = runTest {
         documents.files[RESTORE_URI] = GsonBuilder().create().toJson(
             BackupData().apply {
