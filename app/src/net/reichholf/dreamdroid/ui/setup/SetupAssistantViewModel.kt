@@ -238,8 +238,11 @@ class SetupAssistantViewModel @Inject constructor(
                     it.copy(
                         restoring = false,
                         restoreError = UiText.Resource(
-                            if (opened) R.string.setup_restore_no_profiles
-                            else R.string.setup_restore_failed
+                            if (opened) {
+                                R.string.setup_restore_no_profiles
+                            } else {
+                                R.string.setup_restore_failed
+                            }
                         )
                     )
                 }
@@ -259,6 +262,15 @@ class SetupAssistantViewModel @Inject constructor(
             )
         }
     }
+
+    fun setImportProfileChecked(index: Int, checked: Boolean) =
+        imports.setProfileChecked(index, checked)
+
+    fun setAllImportProfilesChecked(checked: Boolean) = imports.setAllProfilesChecked(checked)
+
+    fun setImportPasswords(include: Boolean) = imports.setPasswords(include)
+
+    fun setImportSettings(include: Boolean) = imports.setSettings(include)
 
     private fun restore() {
         if (restoreJob?.isActive == true) {
