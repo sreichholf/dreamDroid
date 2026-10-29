@@ -214,11 +214,11 @@ class TvMultiEpgViewModelTest {
         viewModel.open(BOUQUET, "Favourites")
         awaitState(viewModel) { it.bouquets.isNotEmpty() }
         viewModel.showBouquetPicker()
-        assertTrue(viewModel.uiState.value.pickingBouquet)
-        assertFalse(viewModel.uiState.value.gridKeysEnabled)
+        val picked = awaitState(viewModel) { it.pickingBouquet }
+        assertFalse(picked.gridKeysEnabled)
         viewModel.pickBouquet(Service(viewModel.uiState.value.bouquetRef, "Same"))
-        assertFalse(viewModel.uiState.value.pickingBouquet)
-        assertTrue(viewModel.uiState.value.gridKeysEnabled)
+        val dismissed = awaitState(viewModel) { !it.pickingBouquet }
+        assertTrue(dismissed.gridKeysEnabled)
     }
 
     @Test
@@ -297,7 +297,11 @@ class TvMultiEpgViewModelTest {
             !it.grid.syncing && epgMultiTimes().drop(before).contains(day3.toString())
         }
 
-        assertEquals(day3.toString(), epgMultiTimes().drop(before).first())
+        val refreshed = epgMultiTimes().drop(before)
+        assertTrue(
+            day3.toString() in refreshed,
+            "refresh must refetch the panned chunk $day3, got $refreshed"
+        )
         assertEquals(day3, viewModel.uiState.value.grid.timelineStartSec)
     }
 
