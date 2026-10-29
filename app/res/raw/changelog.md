@@ -15,6 +15,7 @@
 * FIX: Crash when picture-in-picture is unavailable
 * FIX: Crash in picture-in-picture with an extreme aspect ratio
 * FIX: TV - Guide cursor jumped a programme after Right, then Down
+* FIX: Backup - cryptic system message when no file picker exists
 
 ## 2.0.469
 * UPD: TV - rework hub, player (Up/Down: channel list), MultiEPG, editing

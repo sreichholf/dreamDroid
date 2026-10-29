@@ -449,14 +449,13 @@ class BackupViewModelTest {
     }
 
     @Test
-    fun missingPickerShowsTheSystemReasonOrAFallback() {
+    fun aMissingFilePickerSaysNoAppProvidesOne() {
         val viewModel = viewModel()
 
-        viewModel.onImportPickerMissing("No app")
-        assertEquals(UiText.Raw("No app"), viewModel.uiState.value.userMessage)
-        viewModel.onExportPickerMissing(null)
+        viewModel.onPickerMissing()
+
         assertEquals(
-            UiText.Resource(R.string.backup_export_missing_permission),
+            UiText.Resource(R.string.no_file_picker),
             viewModel.uiState.value.userMessage
         )
     }

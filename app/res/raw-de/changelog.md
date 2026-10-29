@@ -15,6 +15,7 @@
 * FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist
 * FIX: Absturz in Bild-in-Bild bei extremem Seitenverhältnis
 * FIX: TV - Cursor im Guide sprang nach Rechts und Unten ein Programm weiter
+* FIX: Backup - kryptische Systemmeldung, wenn keine Dateiauswahl vorhanden ist
 
 ## 2.0.469
 * UPD: TV - Hub, Player (Hoch/Runter: Senderliste), MultiEPG und Bearbeiten überarbeitet
