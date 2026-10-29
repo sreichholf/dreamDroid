@@ -73,6 +73,8 @@ fun wizardProfile(
         "",
         ""
     )
+    // The file port is the web interface, so it takes the web login.
+    profile.fileLogin = login
     profile.allCertsTrusted = useHttps && trustAllCerts
     return profile
 }

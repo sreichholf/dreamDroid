@@ -59,6 +59,8 @@ class SetupAssistantModelTest {
         assertEquals(8001, profile.streamPort)
         assertFalse(profile.ssl)
         assertTrue(profile.login)
+        assertTrue(profile.fileLogin)
+        assertFalse(profile.streamLogin)
         assertFalse(profile.allCertsTrusted)
         assertFalse(profile.zapAndStream)
     }
@@ -78,6 +80,7 @@ class SetupAssistantModelTest {
         assertTrue(profile.ssl)
         assertTrue(profile.allCertsTrusted)
         assertFalse(profile.login)
+        assertFalse(profile.fileLogin)
     }
 
     @Test

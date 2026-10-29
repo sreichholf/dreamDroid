@@ -16,6 +16,7 @@
 * FIX: Absturz in Bild-in-Bild bei extremem Seitenverhältnis
 * FIX: TV - Cursor im Guide sprang nach Rechts und Unten ein Programm weiter
 * FIX: Backup - kryptische Systemmeldung, wenn keine Dateiauswahl vorhanden ist
+* FIX: Aufnahmen mit Profilen aus dem Einrichtungsassistenten spielten nicht ab
 
 ## 2.0.469
 * UPD: TV - Hub, Player (Hoch/Runter: Senderliste), MultiEPG und Bearbeiten überarbeitet
