@@ -121,8 +121,9 @@ fun TvSwitchRow(
             checked = checked,
             onCheckedChange = null,
             enabled = enabled,
-            // The focused row is primary, like the library's checked track: that track takes
-            // the row's content colour, as its thumb already does.
+            // The focused row fill is primary, and so is the library's checked track, which
+            // would vanish on it: retint the track from the content colour. The thumb is the
+            // on-primary token, already visible on that fill.
             colors = if (focused) {
                 SwitchDefaults.colors(
                     checkedTrackColor = LocalContentColor.current.copy(alpha = 0.24f)
