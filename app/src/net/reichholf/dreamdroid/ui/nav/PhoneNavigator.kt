@@ -569,8 +569,8 @@ class PhoneNavigator(
 
     /**
      * A result that arrives while no destination listens is held until the next one
-     * registers: timer-edit save pops to the hub, then posts the result, and the post can
-     * run before the hub's listener is back.
+     * registers: a service pick pops to the form that asked, then posts the result, and the
+     * post can run before that form's listener is back.
      */
     private fun deliverComposeActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode < 0) {

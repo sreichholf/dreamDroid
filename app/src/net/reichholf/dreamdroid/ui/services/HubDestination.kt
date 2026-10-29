@@ -41,8 +41,8 @@ import net.reichholf.dreamdroid.ui.timers.TimerPaneViewModel
  * Phase 2.7h: TV & Movies hub as a direct Compose NavHost destination.
  * [HubViewModel] owns mode, the selected row, and bouquet or location tabs
  * (parity with former ServiceListPager). Publishes [TvMoviesHubState] through
- * [RegisterShellDestinationBar] (shell bottom chrome), and routes MultiChoice /
- * timer-edit results for the active child page.
+ * [RegisterShellDestinationBar] (shell bottom chrome), and routes the service
+ * pick for the timer form in the detail pane.
  */
 @Composable
 fun HubDestination(
