@@ -151,6 +151,9 @@ private const val ROW_BAND_ALPHA = 0.06f
 /** The row band's outer corners: the programme bars' radius (`shapes.medium`). */
 private val RowBandRadius = 12.dp
 
+/** The cursor position whose Right pan waits for the chunk after the painted one. */
+private data class TvMultiEpgPanRequest(val channelKey: MultiEpgChannelKey, val startSec: Long)
+
 /**
  * TV GraphMultiEPG grid. Programme bars are not clickable/focusable — one
  * [onPreviewKeyEvent] host owns the D-pad cursor, which is drawn with the hub cards'
@@ -217,7 +220,7 @@ fun TvMultiEpgScreen(
     var viewportWidthPx by remember { mutableIntStateOf(0) }
     val gridFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
-    var pendingPanRight by remember { mutableStateOf(false) }
+    var pendingPanRight by remember { mutableStateOf<TvMultiEpgPanRequest?>(null) }
     var gridFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(timelineStartSec) {
@@ -386,14 +389,18 @@ fun TvMultiEpgScreen(
         selectedStartSec,
         visibleMinutes
     ) {
-        if (!pendingPanRight) {
+        val pending = pendingPanRight ?: return@LaunchedEffect
+        if (pending.channelKey != selectedKey || pending.startSec != selectedStartSec) {
+            // The cursor moved for another reason (Up/Down, day or bouquet change) while
+            // the chunk was in flight: the pan it queued is stale.
+            pendingPanRight = null
             return@LaunchedEffect
         }
         val channel = channels.firstOrNull { it.key == selectedKey }
             ?: return@LaunchedEffect
         val next = MultiEpgBarLayout.nextStartSec(channel.bars, selectedStartSec)
         if (next != null) {
-            pendingPanRight = false
+            pendingPanRight = null
             onSelectedChange(channel.key, next)
         }
     }
@@ -529,7 +536,14 @@ fun TvMultiEpgScreen(
                             onSelectedChange = onSelectedChange,
                             onEventClick = onEventClick,
                             onVisibleWindow = onVisibleWindow,
-                            onPendingPanRight = { pendingPanRight = it },
+                            onPendingPanRight = { pending ->
+                                val key = selectedKeyState.value
+                                pendingPanRight = if (pending && key != null) {
+                                    TvMultiEpgPanRequest(key, selectedStartState.value)
+                                } else {
+                                    null
+                                }
+                            },
                             onScrollToChannel = { index ->
                                 scope.launch { listState.scrollToItem(index) }
                             }

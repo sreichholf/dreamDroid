@@ -262,6 +262,103 @@ class TvMultiEpgScreenTest {
         composeRule.waitUntil { selectedStart == nextBarStart }
     }
 
+    /**
+     * The chunk a Right pan waits for can land after the cursor moved to the next row:
+     * the pan belongs to the cursor that queued it and must not advance the new row.
+     */
+    @Test
+    fun dpadRightThenDownBeforeTheChunkLandsLeavesTheNewRowsCursorAlone() {
+        val day = MultiEpgWindows.chunkContaining(1_700_000_000L)
+        val lastBarStart = day.startSec + 21L * 3_600L
+        val nextBarStart = day.endSec
+        fun channelFor(ref: String, name: String, chunkStarts: List<Long>) = MultiEpgChannel(
+            occurrence = 0,
+            serviceRef = ref,
+            serviceName = name,
+            bars = chunkStarts.sorted().map { chunkStart ->
+                val start = if (chunkStart == day.startSec) lastBarStart else nextBarStart
+                bar(ref, name, start.toString(), "News", start, start + 3_600L)
+            }
+        )
+        val firstKey = channelFor(FIRST, "Das Erste", listOf(day.startSec)).key
+        val secondKey = channelFor(SECOND, "ZDF", listOf(day.startSec)).key
+        // The painted chunks lag the reported window: this harness lands them on demand.
+        var chunkStarts by mutableStateOf(listOf(day.startSec))
+        var wantedChunks = listOf(day.startSec)
+        var observedKey = firstKey
+        var observedStart = lastBarStart
+        lateinit var inputModeManager: InputModeManager
+        composeRule.setContent {
+            inputModeManager = LocalInputModeManager.current
+            var selectedKey by remember { mutableStateOf(firstKey) }
+            var cursorStart by remember { mutableLongStateOf(lastBarStart) }
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.ForcedSize(DpSize(960.dp, 540.dp))
+            ) {
+                DreamDroidTvTheme {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        TvMultiEpgScreen(
+                            bouquetName = "Favourites",
+                            channels = listOf(
+                                channelFor(FIRST, "Das Erste", chunkStarts),
+                                channelFor(SECOND, "ZDF", chunkStarts)
+                            ),
+                            timelineStartSec = day.startSec,
+                            timelineEndSec = day.endSec + 2L * 3_600L,
+                            nowSec = day.startSec,
+                            originFloorSec = day.startSec,
+                            loading = false,
+                            errorMessage = null,
+                            selectedKey = selectedKey,
+                            selectedStartSec = cursorStart,
+                            onSelectedChange = { key, sec ->
+                                selectedKey = key
+                                cursorStart = sec
+                                observedKey = key
+                                observedStart = sec
+                            },
+                            onJumpToNow = {},
+                            onPrevDay = {},
+                            onNextDay = {},
+                            onVisibleWindow = { start, end ->
+                                wantedChunks = MultiEpgWindows.slidingChunks(
+                                    originFloorSec = day.startSec,
+                                    visibleStartSec = start,
+                                    visibleEndSec = end
+                                )
+                            },
+                            onEventClick = {},
+                            onBouquetClick = {}
+                        )
+                    }
+                }
+            }
+        }
+        composeRule.runOnIdle { inputModeManager.requestInputMode(InputMode.Keyboard) }
+        val grid = composeRule.onNodeWithTag("tv_multi_epg_grid")
+        grid.requestFocus()
+        composeRule.waitForIdle()
+
+        grid.performKeyInput { pressKey(Key.DirectionRight) }
+        composeRule.waitForIdle()
+        assertEquals("the pan waits for the chunk", lastBarStart, observedStart)
+
+        grid.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitForIdle()
+        assertEquals(secondKey, observedKey)
+        assertEquals(lastBarStart, observedStart)
+
+        composeRule.runOnIdle { chunkStarts = wantedChunks }
+        composeRule.waitForIdle()
+        assertEquals(
+            "the chunk after the painted one did not land",
+            listOf(day.startSec, day.endSec),
+            chunkStarts
+        )
+        assertEquals(secondKey, observedKey)
+        assertEquals("the stale pan moved the new row's cursor", lastBarStart, observedStart)
+    }
+
     @Test
     fun repeatedServiceKeepsItsOwnRowAndTheDpadReachesIt() {
         val start = 1_700_000_000L

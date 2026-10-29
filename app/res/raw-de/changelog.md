@@ -14,6 +14,7 @@
 * FIX: Absturz beim Öffnen eines wiederholten Timers
 * FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist
 * FIX: Absturz in Bild-in-Bild bei extremem Seitenverhältnis
+* FIX: TV - Cursor im Guide sprang nach Rechts und Unten ein Programm weiter
 
 ## 2.0.469
 * UPD: TV - Hub, Player (Hoch/Runter: Senderliste), MultiEPG und Bearbeiten überarbeitet
