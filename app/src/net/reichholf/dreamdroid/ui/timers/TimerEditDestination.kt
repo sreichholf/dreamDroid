@@ -26,7 +26,7 @@ import net.reichholf.dreamdroid.ui.nav.ShellTitle
 /**
  * Timer create/edit as a NavHost destination; the route is read by the ViewModel. The
  * service pick answers through [PhoneNavHandle.composeActivityResultListener]. A save or
- * delete that went through pops this destination with `RESULT_OK`.
+ * delete that went through pops this destination; the timer list follows the accepted write.
  */
 @Composable
 fun TimerEditDestination(
@@ -58,7 +58,7 @@ fun TimerEditDestination(
     LaunchedEffect(uiState.finished) {
         if (uiState.finished) {
             viewModel.onFinishHandled()
-            handle.deliverPickResult(Activity.RESULT_OK, null)
+            handle.popNavBackStack()
         }
     }
 

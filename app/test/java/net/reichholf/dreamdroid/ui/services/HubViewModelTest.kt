@@ -203,7 +203,6 @@ class HubViewModelTest {
             mode = HubModes.RADIO,
             currentRadio = RADIO.reference,
             selectedRow = 0,
-            timerRemountEpoch = 3,
             nowPlayingReloadEpoch = 4
         ).writeTo(handle)
 
@@ -211,7 +210,6 @@ class HubViewModelTest {
 
         assertEquals(HubModes.RADIO, state.mode)
         assertEquals(0, state.selectedRow)
-        assertEquals(3, state.timerRemountEpoch)
         assertEquals(4, state.nowPlayingReloadEpoch)
     }
 
@@ -385,16 +383,14 @@ class HubViewModelTest {
     }
 
     @Test
-    fun epochsGrowAndAreSaved() = runBlocking<Unit> {
+    fun theNowPlayingEpochGrowsAndIsSaved() = runBlocking<Unit> {
         val handle = SavedStateHandle()
         val viewModel = viewModel(handle)
 
-        viewModel.bumpTimerRemount()
         viewModel.bumpNowPlayingReload()
         viewModel.bumpNowPlayingReload()
 
         val saved = readHubShellSaved(handle)
-        assertEquals(1, saved.timerRemountEpoch)
         assertEquals(2, saved.nowPlayingReloadEpoch)
         assertFalse(viewModel.uiState.value.locationsReady)
     }

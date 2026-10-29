@@ -7,6 +7,7 @@
 * UPD: Lower memory use in MultiEPG
 * UPD: Many UI improvements
 * FIX: Crash on a list that repeats an entry
+* FIX: Timer list not refreshing after adding, editing, or deleting a timer
 * FIX: TV - crash without an active profile
 * FIX: TV - focus stays in the top bar when switching tabs
 * FIX: TV - blank bouquet menu in the Guide

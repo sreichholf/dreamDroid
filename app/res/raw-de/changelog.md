@@ -7,6 +7,7 @@
 * UPD: Geringerer Speicherverbrauch im MultiEPG
 * UPD: Viele UI-Verbesserungen
 * FIX: Absturz bei Listen mit doppelten Einträgen
+* FIX: Timer-Liste nach Hinzufügen, Bearbeiten oder Löschen eines Timers nicht aktualisiert
 * FIX: TV - Absturz ohne aktives Profil
 * FIX: TV - Fokus bleibt beim Tab-Wechsel in der oberen Leiste
 * FIX: TV - Leeres Bouquet-Menü im Guide

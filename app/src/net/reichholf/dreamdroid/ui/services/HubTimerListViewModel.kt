@@ -8,6 +8,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import net.reichholf.dreamdroid.R
@@ -35,8 +36,8 @@ data class HubTimerListUiState(
 }
 
 /**
- * Timer list of the hub, scoped to the hub back-stack entry. The same remount epoch does
- * not load again, so returning to the tab keeps the list.
+ * Timer list of the hub, scoped to the hub back-stack entry. It loads once and then follows
+ * [TimerRepository.writes], so a timer write from any screen refreshes it.
  */
 @HiltViewModel
 class HubTimerListViewModel @Inject constructor(
@@ -48,7 +49,6 @@ class HubTimerListViewModel @Inject constructor(
     )
     val uiState: StateFlow<HubTimerListUiState> = _uiState.asStateFlow()
 
-    private var appliedEpoch: String? = null
     private var loadJob: Job? = null
 
     init {
@@ -57,20 +57,10 @@ class HubTimerListViewModel @Inject constructor(
                 _uiState.update { it.copy(mutationsBlocked = status.blocksMutations) }
             }
         }
-    }
-
-    /**
-     * Loads when [epoch] differs from the last one; the hub bumps it after a timer edit, and
-     * then the snapshot is stale, so the receiver answers.
-     */
-    fun onRemount(epoch: Int) {
-        val key = epoch.toString()
-        if (!shouldLoadHubPage(appliedEpoch, key)) {
-            return
+        viewModelScope.launch {
+            timers.writes.drop(1).collect { reload(forceRefresh = true) }
         }
-        val edited = appliedEpoch != null
-        appliedEpoch = key
-        reload(forceRefresh = edited)
+        reload()
     }
 
     /**
@@ -109,7 +99,7 @@ class HubTimerListViewModel @Inject constructor(
         }
     }
 
-    /** Asks the receiver to drop finished timers, then reloads. */
+    /** Asks the receiver to drop finished timers; the accepted write reloads the list. */
     fun cleanup() {
         val state = _uiState.value
         if (state.cleaning || state.mutationsBlocked) {
@@ -119,7 +109,6 @@ class HubTimerListViewModel @Inject constructor(
         viewModelScope.launch {
             val response = timers.cleanup()
             _uiState.update { it.copy(cleaning = false, userMessage = response.userMessageText()) }
-            reload(forceRefresh = true)
         }
     }
 

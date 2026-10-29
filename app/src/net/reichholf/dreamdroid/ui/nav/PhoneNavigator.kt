@@ -525,7 +525,6 @@ class PhoneNavigator(
             queueTimerEdit(timer, create)
             return true
         }
-        state.pushResultRequestCode(Statics.REQUEST_EDIT_TIMER)
         val route = TimerEdit.from(timer, create)
         if (routeKey(controller.currentDestination?.route) == PhoneNavRoutes.TIMER_EDIT) {
             controller.replaceRoute(route)
@@ -539,7 +538,6 @@ class PhoneNavigator(
         val key = routeKey(route) ?: return false
         return key == PhoneNavRoutes.PICK_SERVICE ||
             key == PhoneNavRoutes.PROFILE_EDIT ||
-            key == PhoneNavRoutes.TIMER_EDIT ||
             key == PhoneNavRoutes.TIMER_SERVICE_PICK
     }
 
@@ -571,8 +569,8 @@ class PhoneNavigator(
 
     /**
      * A result that arrives while no destination listens is held until the next one
-     * registers: timer-edit save pops to the hub, then posts the result, and the post can
-     * run before the hub's listener is back.
+     * registers: a service pick pops to the form that asked, then posts the result, and the
+     * post can run before that form's listener is back.
      */
     private fun deliverComposeActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode < 0) {

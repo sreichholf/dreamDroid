@@ -38,7 +38,6 @@ data class HubUiState(
     val bouquetError: UiText? = null,
     val movieLocations: List<String> = emptyList(),
     val locationsReady: Boolean = false,
-    val timerRemountEpoch: Int = 0,
     val nowPlayingReloadEpoch: Int = 0
 )
 
@@ -76,7 +75,6 @@ class HubViewModel @Inject constructor(
             HubUiState(
                 mode = saved.mode,
                 selectedRow = saved.selectedRow,
-                timerRemountEpoch = saved.timerRemountEpoch,
                 nowPlayingReloadEpoch = saved.nowPlayingReloadEpoch
             )
         )
@@ -124,11 +122,6 @@ class HubViewModel @Inject constructor(
             HubModes.MOVIES -> currentMovie = state.movieLocations.getOrNull(index)
         }
         update { it.copy(selectedRow = index) }
-    }
-
-    /** A timer was edited; the timer list loads again. */
-    fun bumpTimerRemount() {
-        update { it.copy(timerRemountEpoch = it.timerRemountEpoch + 1) }
     }
 
     /** A zap finished; the now-playing strip loads again. */
@@ -253,7 +246,6 @@ class HubViewModel @Inject constructor(
             currentRadio = currentRadio,
             currentMovie = currentMovie,
             selectedRow = state.selectedRow,
-            timerRemountEpoch = state.timerRemountEpoch,
             nowPlayingReloadEpoch = state.nowPlayingReloadEpoch
         ).writeTo(savedStateHandle)
     }

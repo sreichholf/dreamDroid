@@ -3,8 +3,12 @@ package net.reichholf.dreamdroid.data
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.update
 import net.reichholf.dreamdroid.Profile
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaResponse
@@ -15,6 +19,7 @@ import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.TimerVps
 import net.reichholf.dreamdroid.enigma.VpsPlugin
 import net.reichholf.dreamdroid.enigma.contentErrorText
+import net.reichholf.dreamdroid.helpers.Python
 import net.reichholf.dreamdroid.room.AppDatabase
 import net.reichholf.dreamdroid.room.toListEntity
 import net.reichholf.dreamdroid.room.toTimer
@@ -55,6 +60,14 @@ class TimerRepository @Inject constructor(
     private val plugins: ReceiverPluginsRepository,
     private val sessions: SessionConnectionHolder
 ) {
+    private val writesState = MutableStateFlow(0)
+
+    /**
+     * The number of timer writes the receiver accepted. A timer list reloads when it moves,
+     * so a write from any screen (the tab's editor, the EPG detail, cleanup) refreshes it.
+     */
+    val writes: StateFlow<Int> = writesState.asStateFlow()
+
     /**
      * The timers of the active profile, read [cacheFirstLoad] from the Room snapshot, which a
      * live `/web/timerlist` replaces. Without an active profile there is no snapshot to read
@@ -104,14 +117,17 @@ class TimerRepository @Inject constructor(
     suspend fun save(timer: Timer, original: Timer?): EnigmaResponse<SimpleResult> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
         val api = clients.forProfile(profile, vpsPlugin = vpsPlugin(profile))
-        return if (original == null) api.addTimer(timer) else api.editTimer(original, timer)
+        val response = if (original == null) api.addTimer(timer) else api.editTimer(original, timer)
+        return noteWrite(response)
     }
 
     /** Enables a disabled [timer] and disables an enabled one; its VPS stays. */
     suspend fun toggleEnabled(timer: Timer): EnigmaResponse<SimpleResult> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        return clients.forProfile(profile, vpsPlugin = vpsPlugin(profile))
-            .setTimerDisabled(timer, disabled = timer.disabled != "1")
+        return noteWrite(
+            clients.forProfile(profile, vpsPlugin = vpsPlugin(profile))
+                .setTimerDisabled(timer, disabled = timer.disabled != "1")
+        )
     }
 
     /**
@@ -122,7 +138,9 @@ class TimerRepository @Inject constructor(
         val profile = profiles.current.value ?: return EnigmaResponse(null)
         val vpsPlugin = vpsPlugin(profile)
         val vps = vpsForNewTimer(profile, vpsPlugin.present)
-        return clients.forProfile(profile, vpsPlugin = vpsPlugin).addTimerForEvent(event, vps)
+        return noteWrite(
+            clients.forProfile(profile, vpsPlugin = vpsPlugin).addTimerForEvent(event, vps)
+        )
     }
 
     /**
@@ -146,13 +164,13 @@ class TimerRepository @Inject constructor(
 
     suspend fun delete(timer: Timer): EnigmaResponse<SimpleResult> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        return clients.forProfile(profile).deleteTimer(timer)
+        return noteWrite(clients.forProfile(profile).deleteTimer(timer))
     }
 
     /** Removes finished timers on the receiver. */
     suspend fun cleanup(): EnigmaResponse<SimpleResult> {
         val profile = profiles.current.value ?: return EnigmaResponse(null)
-        return clients.forProfile(profile).cleanupTimers()
+        return noteWrite(clients.forProfile(profile).cleanupTimers())
     }
 
     /**
@@ -196,6 +214,14 @@ class TimerRepository @Inject constructor(
             return false
         }
         return (plugins.known() ?: plugins.refresh().value)?.vps == true
+    }
+
+    /** [response] as the caller sees it, with [writes] moved when the receiver took it. */
+    private fun noteWrite(response: EnigmaResponse<SimpleResult>): EnigmaResponse<SimpleResult> {
+        if (response.value?.state == Python.TRUE) {
+            writesState.update { it + 1 }
+        }
+        return response
     }
 
     private fun vpsForNewTimer(profile: Profile, vpsPlugin: Boolean): TimerVps? =
