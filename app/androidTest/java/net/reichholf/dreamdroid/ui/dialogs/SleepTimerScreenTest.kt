@@ -16,6 +16,7 @@ import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.SavedStateHandle
 import androidx.preference.PreferenceManager
@@ -98,6 +99,23 @@ class SleepTimerScreenTest {
         composeRule.onNodeWithText("Standby").assertIsNotSelected()
     }
 
+    @Test
+    fun typedMinutesReachTheViewModelAndKeepThreeDigits() {
+        val viewModel = sleepTimer(90, false, SleepTimer.ACTION_STANDBY)
+        composeRule.setContent {
+            DreamDroidTheme {
+                SleepTimerHost(viewModel)
+            }
+        }
+        val field = composeRule.onNodeWithTag(SLEEP_TIMER_MINUTES_TAG)
+        field.performTextReplacement("1234")
+        composeRule.runOnIdle { assertEquals("90", viewModel.minutesText.text) }
+        field.performTextReplacement("4x")
+        composeRule.runOnIdle { assertEquals("90", viewModel.minutesText.text) }
+        field.performTextReplacement("45")
+        composeRule.runOnIdle { assertEquals("45", viewModel.minutesText.text) }
+    }
+
     private fun sleepTimer(minutes: Int, enabled: Boolean, action: String) = SleepTimerViewModel(
         SavedStateHandle(mapOf("minutes" to minutes, "enabled" to enabled, "action" to action))
     )
@@ -107,8 +125,8 @@ class SleepTimerScreenTest {
         val state by viewModel.uiState.collectAsState()
         SleepTimerScreen(
             state = state,
+            minutesText = viewModel.minutesText.state,
             onMinutesChanged = viewModel::onMinutesChanged,
-            onMinutesTyped = viewModel::onMinutesTyped,
             onAdjustMinutes = viewModel::adjustMinutes,
             onEnabledChanged = viewModel::onEnabledChanged,
             onActionSelected = viewModel::onActionSelected

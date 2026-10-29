@@ -210,16 +210,9 @@ class BackupViewModel @Inject constructor(
         }
     }
 
-    /** No app can pick the document. [reason] is the system's text, when it gave one. */
-    fun onImportPickerMissing(reason: String?) {
-        showMessage(reason?.let(UiText::Raw) ?: UiText.Resource(R.string.backup_import_error))
-    }
-
-    fun onExportPickerMissing(reason: String?) {
-        showMessage(
-            reason?.let(UiText::Raw)
-                ?: UiText.Resource(R.string.backup_export_missing_permission)
-        )
+    /** No app can pick the document, for an import or an export. */
+    fun onPickerMissing() {
+        showMessage(UiText.Resource(R.string.no_file_picker))
     }
 
     fun onMessageShown() {

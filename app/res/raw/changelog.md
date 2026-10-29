@@ -9,14 +9,19 @@
 * FIX: Crash on a list that repeats an entry
 * FIX: TV - crash without an active profile
 * FIX: TV - focus stays in the top bar when switching tabs
+* FIX: TV - blank bouquet menu in the Guide
 * UPD: Add a profile when none is left
 * FIX: Crash opening a repeating timer
 * FIX: Crash when picture-in-picture is unavailable
+* FIX: Crash in picture-in-picture with an extreme aspect ratio
+* FIX: TV - Guide cursor jumped a programme after Right, then Down
+* FIX: Backup - cryptic system message when no file picker exists
 
 ## 2.0.469
-* UPD: TV - rework hub, player, MultiEPG, editing
+* UPD: TV - rework hub, player (Up/Down: channel list), MultiEPG, editing
 * NEW: TV - Continue watching, Backup/Restore
-* NEW: TV - Autostart streaming, preferred audio language
+* NEW: Auto-start the last live stream
+* NEW: Preferred audio language for the integrated player
 * FIX: TV - multiple usability quirks
 
 ## 2.0.468

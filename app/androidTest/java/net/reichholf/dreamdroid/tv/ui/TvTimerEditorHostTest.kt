@@ -15,6 +15,7 @@ import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertHeightIsAtLeast
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.getBoundsInRoot
@@ -28,6 +29,7 @@ import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.requestFocus
+import androidx.compose.ui.unit.dp
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
 import net.reichholf.dreamdroid.R
@@ -78,11 +80,12 @@ class TvTimerEditorHostTest {
     }
 
     @Test
-    fun saveLabelIsCenteredInTheButton() {
+    fun saveButtonIsA48dpTargetWithACenteredLabel() {
         setDpadEditor(state(isCreate = true), name = "Sample")
 
         val save = composeRule.onNodeWithText(saveLabel())
         save.performScrollTo()
+            .assertHeightIsAtLeast(48.dp)
         val button = save.getBoundsInRoot()
         val label = composeRule.onNodeWithText(saveLabel(), useUnmergedTree = true)
             .getBoundsInRoot()

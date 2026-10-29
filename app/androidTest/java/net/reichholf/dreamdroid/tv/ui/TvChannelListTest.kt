@@ -1,5 +1,6 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
@@ -20,6 +21,7 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.WindowSize
 import androidx.compose.ui.test.assert
@@ -29,6 +31,7 @@ import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.captureToImage
+import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasAnyDescendant
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
@@ -182,6 +185,39 @@ class TvChannelListTest {
     }
 
     @Test
+    fun heldKeyRepeatSwitchesBouquetsOnce() {
+        var selected by mutableStateOf(bouquets.first().reference)
+        val picked = mutableListOf<Service>()
+        val requester = FocusRequester()
+        setList(
+            selectedBouquetRef = { selected },
+            focusRequester = requester,
+            onSelectBouquet = {
+                picked += it
+                selected = it.reference
+            }
+        )
+        composeRule.runOnIdle { requester.requestFocus() }
+        awaitFocused(row(zdf.serviceName))
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 0)
+        composeRule.waitUntil { picked.size == 1 }
+        assertEquals(bouquets[1], picked[0])
+        composeRule.onNodeWithText("2 / 3").assertIsDisplayed()
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 1)
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 2)
+        sendDpad(KeyEvent.ACTION_UP, repeat = 0)
+        composeRule.waitForIdle()
+        assertEquals("a held key switches once", 1, picked.size)
+        composeRule.onNodeWithText("2 / 3").assertIsDisplayed()
+
+        sendDpad(KeyEvent.ACTION_DOWN, repeat = 0)
+        composeRule.waitUntil { picked.size == 2 }
+        assertEquals(bouquets[2], picked[1])
+    }
+
+    @Test
     fun singleBouquetConsumesLeftAndRight() {
         val picked = mutableListOf<Service>()
         val requester = FocusRequester()
@@ -282,6 +318,39 @@ class TvChannelListTest {
     }
 
     @Test
+    fun nowBarsFollowTheDeviceClock() {
+        val startSec = 1_700_000_000L
+        val running = ServiceNowNext(
+            serviceReference = daserste.serviceReference,
+            serviceName = daserste.serviceName,
+            // The receiver's freeze-frame clock: one minute in, and it stays there.
+            now = Event(
+                title = daserste.now!!.title,
+                start = startSec.toString(),
+                duration = "3600",
+                currentTime = (startSec + 60).toString()
+            )
+        )
+        var nowMs by mutableStateOf(startSec * 1000)
+        val requester = FocusRequester()
+        setList(
+            services = { listOf(running) },
+            currentRef = running.serviceReference,
+            nowMs = { nowMs },
+            focusRequester = requester
+        )
+        composeRule.runOnIdle { requester.requestFocus() }
+        awaitFocused(row(running.serviceName))
+        assertEquals(0f, rowProgress(running.serviceName), 0.001f)
+        assertEquals(0f, detailProgress(), 0.001f)
+
+        composeRule.runOnIdle { nowMs += 30 * 60_000L }
+        composeRule.waitUntil { rowProgress(running.serviceName) > 0.49f }
+        assertEquals(0.5f, rowProgress(running.serviceName), 0.001f)
+        assertEquals(0.5f, detailProgress(), 0.001f)
+    }
+
+    @Test
     fun binderBridgesViewFocusIntoPlayingRow() {
         val view = setBoundView()
         assertTrue(view.isFocusable)
@@ -312,6 +381,7 @@ class TvChannelListTest {
         currentRef: String? = zdf.serviceReference,
         bouquets: List<Service> = this.bouquets,
         selectedBouquetRef: () -> String? = { bouquets.first().reference },
+        nowMs: () -> Long = { System.currentTimeMillis() },
         focusRequester: FocusRequester? = null,
         onServiceClick: (ServiceNowNext) -> Unit = {},
         onSelectBouquet: (Service) -> Unit = {},
@@ -330,6 +400,7 @@ class TvChannelListTest {
                         selectedBouquetRef = selectedBouquetRef(),
                         onServiceClick = onServiceClick,
                         onSelectBouquet = onSelectBouquet,
+                        nowMs = nowMs(),
                         focusRequester = focusRequester,
                         onUserInteraction = onUserInteraction
                     )
@@ -376,6 +447,30 @@ class TvChannelListTest {
 
     private fun detail(): SemanticsNodeInteraction =
         composeRule.onNodeWithTag(TV_CHANNEL_DETAIL_TAG).assertIsDisplayed()
+
+    // A progress bar merges its own descendants, so it is its own node, outside the row's config.
+    private fun rowProgress(name: String): Float = composeRule.onNode(
+        hasTestTag(TV_CHANNEL_ROW_PROGRESS_TAG) and
+            hasAnyAncestor(hasTestTag(TV_CHANNEL_ROW_TAG) and hasAnyDescendant(hasText(name))),
+        useUnmergedTree = true
+    ).fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
+
+    private fun detailProgress(): Float = composeRule.onNode(
+        SemanticsMatcher.keyIsDefined(SemanticsProperties.ProgressBarRangeInfo) and
+            hasAnyAncestor(hasTestTag(TV_CHANNEL_DETAIL_TAG)),
+        useUnmergedTree = true
+    ).fetchSemanticsNode().config[SemanticsProperties.ProgressBarRangeInfo].current
+
+    // The Compose test API cannot set a repeat count, which is what a held D-pad key sends.
+    private fun sendDpad(action: Int, repeat: Int) {
+        val event = KeyEvent(0L, 0L, action, KeyEvent.KEYCODE_DPAD_RIGHT, repeat)
+        composeRule.runOnIdle {
+            assertTrue(
+                "the list did not take the key event",
+                composeRule.activity.window.decorView.dispatchKeyEvent(event)
+            )
+        }
+    }
 
     private fun awaitFocused(node: SemanticsNodeInteraction) {
         composeRule.waitUntil { runCatching { node.assertIsFocused() }.isSuccess }

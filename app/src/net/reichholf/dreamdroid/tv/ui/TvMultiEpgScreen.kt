@@ -91,7 +91,6 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Text
 import java.text.DateFormat
-import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import kotlinx.coroutines.launch
@@ -151,6 +150,9 @@ private const val ROW_BAND_ALPHA = 0.06f
 
 /** The row band's outer corners: the programme bars' radius (`shapes.medium`). */
 private val RowBandRadius = 12.dp
+
+/** The cursor position whose Right pan waits for the chunk after the painted one. */
+private data class TvMultiEpgPanRequest(val channelKey: MultiEpgChannelKey, val startSec: Long)
 
 /**
  * TV GraphMultiEPG grid. Programme bars are not clickable/focusable — one
@@ -218,7 +220,7 @@ fun TvMultiEpgScreen(
     var viewportWidthPx by remember { mutableIntStateOf(0) }
     val gridFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
-    var pendingPanRight by remember { mutableStateOf(false) }
+    var pendingPanRight by remember { mutableStateOf<TvMultiEpgPanRequest?>(null) }
     var gridFocused by remember { mutableStateOf(false) }
 
     LaunchedEffect(timelineStartSec) {
@@ -387,24 +389,35 @@ fun TvMultiEpgScreen(
         selectedStartSec,
         visibleMinutes
     ) {
-        if (!pendingPanRight) {
+        val pending = pendingPanRight ?: return@LaunchedEffect
+        if (pending.channelKey != selectedKey || pending.startSec != selectedStartSec) {
+            // The cursor moved for another reason (Up/Down, day or bouquet change) while
+            // the chunk was in flight: the pan it queued is stale.
+            pendingPanRight = null
             return@LaunchedEffect
         }
         val channel = channels.firstOrNull { it.key == selectedKey }
             ?: return@LaunchedEffect
         val next = MultiEpgBarLayout.nextStartSec(channel.bars, selectedStartSec)
         if (next != null) {
-            pendingPanRight = false
+            pendingPanRight = null
             onSelectedChange(channel.key, next)
         }
     }
 
     val todayLabel = stringResource(R.string.multiepg_today)
-    val dayLabel = remember(visibleStartSec, nowSec, todayLabel, originForLayout, timelineEndSec) {
+    val todayKey = remember(nowSec) { MultiEpgTimeLabels.localDayKey(nowSec) }
+    val dayLabel = remember(
+        MultiEpgTimeLabels.localDayKey(visibleStartSec),
+        todayKey,
+        todayLabel,
+        originForLayout,
+        timelineEndSec
+    ) {
         if (timelineEndSec <= originForLayout) {
             ""
         } else {
-            tvMultiEpgDayLabel(visibleStartSec, nowSec, todayLabel)
+            MultiEpgTimeLabels.formatVisibleDay(visibleStartSec, nowSec, todayLabel, short = true)
         }
     }
 
@@ -523,7 +536,14 @@ fun TvMultiEpgScreen(
                             onSelectedChange = onSelectedChange,
                             onEventClick = onEventClick,
                             onVisibleWindow = onVisibleWindow,
-                            onPendingPanRight = { pendingPanRight = it },
+                            onPendingPanRight = { pending ->
+                                val key = selectedKeyState.value
+                                pendingPanRight = if (pending && key != null) {
+                                    TvMultiEpgPanRequest(key, selectedStartState.value)
+                                } else {
+                                    null
+                                }
+                            },
                             onScrollToChannel = { index ->
                                 scope.launch { listState.scrollToItem(index) }
                             }
@@ -857,13 +877,7 @@ private fun TvMultiEpgBouquetMenu(
                 }
             }
         }
-        LaunchedEffect(Unit) {
-            try {
-                initialFocus.requestFocus()
-            } catch (_: IllegalStateException) {
-                // No bouquets.
-            }
-        }
+        LaunchedEffect(Unit) { initialFocus.requestFocus() }
     }
 }
 
@@ -953,25 +967,6 @@ private fun TvMultiEpgChromeDivider() {
             .size(width = 1.dp, height = 24.dp)
             .background(PhoneMaterialTheme.colorScheme.outlineVariant)
     )
-}
-
-/**
- * The visible day without the year (the EPG reaches about a week ahead): "Today · Oct 23"
- * for today, the weekday and date ("Fri, Oct 24") for any other day, in the locale's order.
- */
-internal fun tvMultiEpgDayLabel(
-    visibleSec: Long,
-    nowSec: Long,
-    todayLabel: String,
-    locale: Locale = Locale.getDefault()
-): String {
-    val today = MultiEpgTimeLabels.sameLocalDay(visibleSec, nowSec)
-    val pattern = android.text.format.DateFormat.getBestDateTimePattern(
-        locale,
-        if (today) "MMMd" else "EEEMMMd"
-    )
-    val date = SimpleDateFormat(pattern, locale).format(Date(visibleSec * 1000L))
-    return if (today) "$todayLabel · $date" else date
 }
 
 /**
@@ -1263,18 +1258,28 @@ private fun TvMultiEpgChannelTimeline(
                         else -> scheme.surfaceVariant
                     },
                     shape = shape,
-                    border = if (cursor && cursorFocused) scheme.primary else null
+                    border = if (cursor && cursorFocused) focus.content else null
                 )
             }
         }
         if (nowSec in timelineStartSec until timelineEndSec) {
+            // The line is primary too: over the focused cursor's fill it takes that fill's
+            // content colour.
+            val cursorBar = if (cursorFocused) {
+                slots.firstOrNull { it.bar.startSec == cursorStartSec }?.bar
+            } else {
+                null
+            }
+            val overCursor = cursorBar != null &&
+                nowSec >= cursorBar.startSec &&
+                nowSec < cursorBar.endSec
             val nowMin = (nowSec - timelineStartSec) / 60f
             Box(
                 modifier = Modifier
                     .offset(x = minuteWidth * nowMin - NowLineWidth / 2)
                     .width(NowLineWidth)
                     .fillMaxHeight()
-                    .background(scheme.primary)
+                    .background(if (overCursor) focus.content else scheme.primary)
             )
         }
         for ((x, width) in gaps) {
@@ -1324,7 +1329,8 @@ private fun TvMultiEpgChannelTimeline(
                         x = slot.x,
                         width = slot.width,
                         clock = clock,
-                        clockSize = clockSize
+                        clockSize = clockSize,
+                        focusTint = if (cursor && cursorFocused) focus.content else null
                     )
                 }
             }
@@ -1444,7 +1450,13 @@ private fun Modifier.stickyBarText(
 }
 
 @Composable
-private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: Dp) {
+private fun TvBarClock(
+    x: Dp,
+    width: Dp,
+    clock: MultiEpgTimerClock,
+    clockSize: Dp,
+    focusTint: Color? = null
+) {
     val record = clock == MultiEpgTimerClock.Record
     val clockCd = stringResource(
         if (record) {
@@ -1453,7 +1465,7 @@ private fun TvBarClock(x: Dp, width: Dp, clock: MultiEpgTimerClock, clockSize: D
             R.string.multiepg_timer_zap
         }
     )
-    val clockTint = if (record) {
+    val clockTint = focusTint ?: if (record) {
         PhoneMaterialTheme.colorScheme.primary
     } else {
         PhoneMaterialTheme.colorScheme.tertiary
@@ -1592,8 +1604,10 @@ internal fun handleTvMultiEpgGridKey(
                 onSelectedChange(channel.key, next)
             } else {
                 onPendingPanRight(true)
-                val start = selectedStartSec
-                onVisibleWindow(start, start + zoomWindowSec)
+                // The next bar lies in the chunk after the selected one, which the grid
+                // attaches only once the reported window reaches into it.
+                val chunkEndSec = MultiEpgWindows.chunkContaining(selectedStartSec).endSec
+                onVisibleWindow(selectedStartSec, chunkEndSec + zoomWindowSec)
             }
         }
 

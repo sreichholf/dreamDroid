@@ -23,9 +23,13 @@ import androidx.compose.ui.input.InputModeManager
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.DeviceConfigurationOverride
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.ForcedSize
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.getBoundsInRoot
@@ -33,6 +37,7 @@ import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -43,6 +48,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.height
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.math.abs
@@ -52,6 +58,7 @@ import net.reichholf.dreamdroid.enigma.Timer
 import net.reichholf.dreamdroid.enigma.TimerVps
 import net.reichholf.dreamdroid.enigma.VpsMode
 import net.reichholf.dreamdroid.helpers.enigma2.Timer as TimerHelper
+import net.reichholf.dreamdroid.ui.compose.EDIT_PICK_CHEVRON_TAG
 import net.reichholf.dreamdroid.ui.compose.saveAndDeleteActions
 import net.reichholf.dreamdroid.ui.dialogs.MUTATION_PROGRESS_TAG
 import net.reichholf.dreamdroid.ui.nav.LocalShellSnackbarHostState
@@ -135,6 +142,34 @@ class TimerEditScreenTest {
             .assertIsDisplayed()
             .performClick()
         assertEquals(listOf(TimerEditPick.Tags), picks)
+    }
+
+    @Test
+    fun pickRowKeepsItsTrailingChevron() {
+        composeRule.setContent {
+            DreamDroidTheme {
+                Form(form(sampleTimer()), showSaveFab = false)
+            }
+        }
+
+        val tags = composeRule.onNodeWithText("Tags")
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.Role, Role.Button))
+            .performScrollTo()
+            .assertIsDisplayed()
+        val row = tags.getBoundsInRoot()
+        assertTrue(
+            "Pick rows keep a 48.dp target, height=${row.height}",
+            row.height >= 48.dp
+        )
+
+        val rowBounds = tags.fetchSemanticsNode().boundsInRoot
+        val chevrons = composeRule.onAllNodesWithTag(EDIT_PICK_CHEVRON_TAG, useUnmergedTree = true)
+            .fetchSemanticsNodes()
+            .map { it.boundsInRoot }
+        assertTrue(
+            "Pick rows end in a dropdown chevron, row=$rowBounds chevrons=$chevrons",
+            chevrons.any { rowBounds.contains(it.center) }
+        )
     }
 
     @Test

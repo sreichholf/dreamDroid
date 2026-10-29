@@ -125,8 +125,8 @@ fun SleepTimerDialog(
         )
         SleepTimerScreen(
             state = state,
+            minutesText = viewModel.minutesText.state,
             onMinutesChanged = viewModel::onMinutesChanged,
-            onMinutesTyped = viewModel::onMinutesTyped,
             onAdjustMinutes = viewModel::adjustMinutes,
             onEnabledChanged = viewModel::onEnabledChanged,
             onActionSelected = viewModel::onActionSelected,

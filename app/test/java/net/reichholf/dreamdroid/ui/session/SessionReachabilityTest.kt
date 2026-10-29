@@ -84,6 +84,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 2L,
+            isCurrent = { true },
             check = {
                 calls += 1
                 ProfileCheckResult()
@@ -109,6 +110,7 @@ class SessionReachabilityTest {
                 holder = holder,
                 hasCache = true,
                 nowMs = 3L,
+                isCurrent = { true },
                 check = {
                     calls += 1
                     ProfileCheckResult()
@@ -122,6 +124,7 @@ class SessionReachabilityTest {
                 hasCache = true,
                 nowMs = 4L,
                 isBusy = { true },
+                isCurrent = { true },
                 check = {
                     calls += 1
                     ProfileCheckResult()
@@ -144,6 +147,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 50L,
+            isCurrent = { true },
             check = {
                 calls += 1
                 ProfileCheckResult()
@@ -164,6 +168,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 20L,
+            isCurrent = { true },
             check = {
                 ProfileCheckResult(
                     hasError = true,
@@ -187,6 +192,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 20L,
+            isCurrent = { true },
             check = {
                 ProfileCheckResult(hasError = true, failure = EnigmaFailure.Auth)
             }
@@ -205,6 +211,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 30L,
+            isCurrent = { true },
             check = { ProfileCheckResult() }
         )
         assertTrue(ran)
@@ -223,6 +230,7 @@ class SessionReachabilityTest {
             holder = holder,
             hasCache = true,
             nowMs = 60L,
+            isCurrent = { true },
             check = {
                 ProfileCheckResult(
                     hasError = true,

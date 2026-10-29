@@ -36,7 +36,13 @@ fun EnigmaFailure?.isReachabilityFailure(): Boolean = when (this) {
 }
 
 /**
- * Run [check] when [shouldProbeReachability] is true. Returns true if a check ran.
+ * Run [check] when [shouldProbeReachability] is true. Returns true if a check ran and its
+ * result was applied.
+ *
+ * [check] answers for the profile the caller captured, so its result is dropped when
+ * [isCurrent] no longer holds: a probe that outlives its profile (the last profile deleted,
+ * or a switch) must not restore that profile's session over the reset that followed.
+ *
  * Callers must fetch live (clear device info on ProfileRepository); a cached XML hit is not a recheck.
  */
 suspend fun probeSessionReachabilityIfNeeded(
@@ -44,6 +50,7 @@ suspend fun probeSessionReachabilityIfNeeded(
     hasCache: Boolean,
     nowMs: Long = System.currentTimeMillis(),
     isBusy: () -> Boolean = { false },
+    isCurrent: () -> Boolean,
     check: suspend () -> ProfileCheckResult
 ): Boolean {
     if (isBusy()) {
@@ -52,6 +59,10 @@ suspend fun probeSessionReachabilityIfNeeded(
     if (!shouldProbeReachability(holder.status.value)) {
         return false
     }
-    holder.applyProfileCheckResult(check(), hasCache, nowMs)
+    val result = check()
+    if (!isCurrent()) {
+        return false
+    }
+    holder.applyProfileCheckResult(result, hasCache, nowMs)
     return true
 }

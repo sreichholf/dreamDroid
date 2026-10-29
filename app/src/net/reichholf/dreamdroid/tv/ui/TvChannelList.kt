@@ -72,13 +72,14 @@ import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.enigma2.PiconImage
 import net.reichholf.dreamdroid.helpers.enigma2.Service as ServiceRef
-import net.reichholf.dreamdroid.ui.services.nowProgress
 import net.reichholf.dreamdroid.ui.theme.DreamDroidTvTheme
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 import net.reichholf.dreamdroid.ui.video.VideoOverlayUiState
+import net.reichholf.dreamdroid.ui.video.eventProgress
 
 const val TV_CHANNEL_LIST_TAG = "tv_channel_list"
 const val TV_CHANNEL_ROW_TAG = "tv_channel_row"
+const val TV_CHANNEL_ROW_PROGRESS_TAG = "tv_channel_row_progress"
 const val TV_CHANNEL_DETAIL_TAG = "tv_channel_detail"
 
 private val PanelWidth = 400.dp
@@ -105,6 +106,7 @@ fun TvChannelList(
     onServiceClick: (ServiceNowNext) -> Unit,
     onSelectBouquet: (Service) -> Unit,
     modifier: Modifier = Modifier,
+    nowMs: Long = rememberMinuteNowMs(),
     focusRequester: FocusRequester? = null,
     onUserInteraction: (() -> Unit)? = null,
     onScrollInProgress: ((Boolean) -> Unit)? = null
@@ -179,7 +181,10 @@ fun TvChannelList(
                     onUserInteraction?.invoke()
                     when (event.key) {
                         Key.DirectionLeft, Key.DirectionRight -> {
-                            if (event.type == KeyEventType.KeyDown) {
+                            // Holding the key repeats KeyDown, and each switch reloads the
+                            // bouquet and the stream.
+                            val firstPress = event.nativeKeyEvent.repeatCount == 0
+                            if (event.type == KeyEventType.KeyDown && firstPress) {
                                 switchBouquet(if (event.key == Key.DirectionRight) 1 else -1)
                             }
                             true
@@ -221,6 +226,7 @@ fun TvChannelList(
                         ChannelRow(
                             service = service,
                             playing = service.serviceReference == currentRef,
+                            nowMs = nowMs,
                             onClick = { onServiceClick(service) },
                             modifier = Modifier
                                 .then(
@@ -247,6 +253,7 @@ fun TvChannelList(
         if (focused != null) {
             ChannelDetailCard(
                 service = focused,
+                nowMs = nowMs,
                 background = panelColor,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
@@ -330,10 +337,11 @@ private fun ChannelMarker(name: String) {
 private fun ChannelRow(
     service: ServiceNowNext,
     playing: Boolean,
+    nowMs: Long,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val progress = nowProgress(service.now)
+    val progress = eventProgress(service.now, nowMs)
     val nowTitle = service.now?.title.orEmpty()
     Surface(
         onClick = onClick,
@@ -393,14 +401,15 @@ private fun ChannelRow(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-                if (progress.isKnown) {
+                if (progress != null) {
                     val content = LocalContentColor.current
                     LinearProgressIndicator(
-                        progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                        progress = { progress.elapsedSec.toFloat() / progress.totalSec.toFloat() },
                         modifier = Modifier
                             .padding(top = 4.dp)
                             .fillMaxWidth()
-                            .height(3.dp),
+                            .height(3.dp)
+                            .testTag(TV_CHANNEL_ROW_PROGRESS_TAG),
                         color = content,
                         trackColor = content.copy(alpha = 0.24f),
                         strokeCap = StrokeCap.Butt,
@@ -430,6 +439,7 @@ private fun PlayingTag(modifier: Modifier = Modifier) {
 @Composable
 private fun ChannelDetailCard(
     service: ServiceNowNext,
+    nowMs: Long,
     background: Color,
     modifier: Modifier = Modifier
 ) {
@@ -437,17 +447,17 @@ private fun ChannelDetailCard(
     val phone = PhoneMaterialTheme.colorScheme
     val now = service.now
     val next = service.next
-    val progress = nowProgress(now)
-    val times = nowEventTimes(context, now)
+    val progress = eventProgress(now, nowMs)
+    val times = nowEventTimes(context, now, nowMs)
     Column(
         modifier = modifier
             .clip(PanelShape)
             .background(background)
             .testTag(TV_CHANNEL_DETAIL_TAG)
     ) {
-        if (progress.isKnown) {
+        if (progress != null) {
             LinearProgressIndicator(
-                progress = { progress.elapsed.toFloat() / progress.max.toFloat() },
+                progress = { progress.elapsedSec.toFloat() / progress.totalSec.toFloat() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(6.dp),

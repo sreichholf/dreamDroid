@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.InputTransformation
 import androidx.compose.foundation.text.input.KeyboardActionHandler
@@ -52,6 +51,7 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalInputModeManager
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,8 +60,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme as TvMaterialTheme
@@ -271,78 +269,9 @@ fun EditSwitchRow(
     )
 }
 
-@Composable
-fun EditOutlinedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    imeAction: ImeAction = ImeAction.Next,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    password: Boolean = false,
-    singleLine: Boolean = true,
-    readOnly: Boolean = false,
-    enabled: Boolean = true,
-    isError: Boolean = false,
-    supportingText: String? = null,
-    trailingIcon: @Composable (() -> Unit)? = null,
-    suffix: String? = null,
-    contentDescription: String = label
-) {
-    var passwordVisible by remember { mutableStateOf(false) }
-    val tv = LocalTvFormChrome.current
-    val focusManager = LocalFocusManager.current
-    val resolvedTrailingIcon: @Composable (() -> Unit)? = if (password) {
-        {
-            PasswordVisibilityToggle(passwordVisible) { passwordVisible = !passwordVisible }
-        }
-    } else {
-        trailingIcon
-    }
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { EditFormFieldLabel(label) },
-        singleLine = singleLine,
-        readOnly = readOnly,
-        enabled = enabled,
-        isError = isError,
-        supportingText = supportingText?.let { message ->
-            { EditFormSupportingText(message) }
-        },
-        trailingIcon = resolvedTrailingIcon,
-        suffix = suffix?.let { suffixText ->
-            { Text(suffixText) }
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .then(if (tv) Modifier.clearFocusOnBack(focusManager) else Modifier)
-            .then(editFormFieldHeight())
-            .then(
-                if (password) {
-                    Modifier
-                } else {
-                    Modifier.semantics { this.contentDescription = contentDescription }
-                }
-            ),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = keyboardType,
-            imeAction = imeAction
-        ),
-        keyboardActions = keyboardActions,
-        visualTransformation = if (password && !passwordVisible) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        },
-        textStyle = editFormFieldTextStyle()
-    )
-}
-
 /**
- * [EditOutlinedTextField] over a [TextFieldState] the caller owns, typically a
- * ViewModel. Typing edits [state] directly, with no value/onValueChange round trip.
+ * A form field over a [TextFieldState] the caller owns, typically a ViewModel; typing
+ * edits [state] directly, with no value/onValueChange round trip.
  */
 @Composable
 fun EditOutlinedTextField(
@@ -476,16 +405,24 @@ private class KeyboardOnSelect(val showOnFocus: Boolean, val modifier: Modifier)
  * Under D-pad input the IME opens on OK / Enter instead of on focus, so moving through a
  * form does not land in the keyboard at every field. Flipping [KeyboardOptions.showKeyboardOnFocus]
  * on a focused field restarts its input session, which shows the keyboard.
+ *
+ * Touch input already shows the keyboard on focus, and there OK / Enter belongs to the field
+ * (a line break in a multiline one). The modifier is rebuilt when the input mode changes, so
+ * switching to touch input stops swallowing its keys too.
  */
 @Composable
 private fun rememberKeyboardOnSelect(): KeyboardOnSelect {
     val touch = LocalInputModeManager.current.inputMode == InputMode.Touch
     var selected by remember { mutableStateOf(false) }
-    val modifier = remember {
+    val modifier = remember(touch) {
         Modifier
             .onFocusChanged { if (!it.isFocused) selected = false }
             .onPreviewKeyEvent { event ->
-                if (!selected && event.type == KeyEventType.KeyDown && event.key in SelectKeys) {
+                if (!touch &&
+                    !selected &&
+                    event.type == KeyEventType.KeyDown &&
+                    event.key in SelectKeys
+                ) {
                     selected = true
                     true
                 } else {
@@ -510,6 +447,9 @@ private fun PasswordVisibilityToggle(visible: Boolean, onToggle: () -> Unit) {
     }
 }
 
+const val EDIT_PICK_CHEVRON_TAG = "edit_pick_chevron"
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditPickField(
     value: String,
@@ -524,6 +464,12 @@ fun EditPickField(
     ListItem(
         headlineContent = { Text(label) },
         supportingContent = { Text(value) },
+        trailingContent = {
+            ExposedDropdownMenuDefaults.TrailingIcon(
+                expanded = false,
+                modifier = Modifier.testTag(EDIT_PICK_CHEVRON_TAG)
+            )
+        },
         modifier = modifier
             .fillMaxWidth()
             .clickable(onClick = onClick, role = Role.Button)

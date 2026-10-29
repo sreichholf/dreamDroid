@@ -146,7 +146,14 @@ Online, Provider/All still load over HTTP as today.
 
 ### 4.6 Shared sync
 
-Hub slice 4 and MultiEPG share **one process-wide** `MultiEpgSync`, so `inFlight` dedupes across callers and opening Favourites plus MultiEPG does not double `epgmulti` for the same chunk. The single instance is a property of the `@Singleton` `EpgRepository`.
+Hub slice 4 and MultiEPG share **one process-wide** `MultiEpgSync`, so opening Favourites plus MultiEPG does not double `epgmulti` for the same chunk. The single instance is a property of the `@Singleton` `EpgRepository`.
+
+Two flight maps, keyed by profile, `bRef` and chunk start, and **only callers on the same side share a flight**:
+
+- `persistFlights` — `persist = true` callers: bouquet readers (`ensureChunk`) and the grid's warmer (`warmChunk`). One `epgmulti` and one Room write; readers read Room afterwards, a warm discards the result.
+- `liveFlights` — `persist = false` callers only (Provider / All Services). The flight carries the events because nothing is written.
+
+A non-persisting caller and a persisting one for the same chunk do not coalesce; each fetches for its own needs.
 
 ## 5. Error and chrome (Material 3)
 

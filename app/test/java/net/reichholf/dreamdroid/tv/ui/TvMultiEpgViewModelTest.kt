@@ -19,6 +19,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Service
 import net.reichholf.dreamdroid.enigma.ServiceNowNext
 import net.reichholf.dreamdroid.helpers.EnigmaUrls
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import net.reichholf.dreamdroid.multiepg.MultiEpgZoom
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.BOUQUET
@@ -193,7 +194,7 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
-    fun overlaysTakeTheGridKeys() {
+    fun overlaysTakeTheGridKeys() = runBlocking {
         val event = Event(eventId = "42", title = "News")
         val viewModel = viewModel()
         assertTrue(viewModel.uiState.value.gridKeysEnabled)
@@ -210,10 +211,24 @@ class TvMultiEpgViewModelTest {
         assertNull(viewModel.uiState.value.editTimerEvent)
         assertTrue(viewModel.uiState.value.gridKeysEnabled)
 
+        viewModel.open(BOUQUET, "Favourites")
+        awaitState(viewModel) { it.bouquets.isNotEmpty() }
         viewModel.showBouquetPicker()
-        assertTrue(viewModel.uiState.value.pickingBouquet)
+        val picked = awaitState(viewModel) { it.pickingBouquet }
+        assertFalse(picked.gridKeysEnabled)
         viewModel.pickBouquet(Service(viewModel.uiState.value.bouquetRef, "Same"))
+        val dismissed = awaitState(viewModel) { !it.pickingBouquet }
+        assertTrue(dismissed.gridKeysEnabled)
+    }
+
+    @Test
+    fun bouquetPickerStaysClosedWithoutBouquets() {
+        val viewModel = viewModel()
+
+        viewModel.showBouquetPicker()
+
         assertFalse(viewModel.uiState.value.pickingBouquet)
+        assertTrue(viewModel.uiState.value.gridKeysEnabled)
     }
 
     @Test
@@ -251,6 +266,46 @@ class TvMultiEpgViewModelTest {
     }
 
     @Test
+    fun refreshRefetchesThePannedChunk() = runBlocking {
+        receiver.answer = { request ->
+            when (request.requestUrl?.encodedPath) {
+                "/web/epgmulti" -> MockResponse().setBody(
+                    epgMultiAround(request.requestUrl!!.queryParameter("time")!!.toLong())
+                )
+
+                else -> routes(request)
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.open(BOUQUET, "Favourites")
+        val loaded = awaitState(viewModel) {
+            it.grid.channels.isNotEmpty() && !it.grid.syncing
+        }
+        val day3 = MultiEpgWindows.chunkContaining(loaded.grid.anchorSec).startSec +
+            2L * MultiEpgWindows.CHUNK_SECONDS
+        val viewStart = day3 + 3_600L
+
+        viewModel.onVisibleWindow(viewStart, viewStart + 7_200L)
+        awaitState(viewModel) {
+            it.grid.timelineStartSec == day3 && !it.grid.syncing
+        }
+        val before = epgMultiTimes().size
+
+        viewModel.refresh()
+        // The warm behind the pan also adds a request; wait for the refresh's own day3 fetch.
+        awaitState(viewModel) {
+            !it.grid.syncing && epgMultiTimes().drop(before).contains(day3.toString())
+        }
+
+        val refreshed = epgMultiTimes().drop(before)
+        assertTrue(
+            day3.toString() in refreshed,
+            "refresh must refetch the panned chunk $day3, got $refreshed"
+        )
+        assertEquals(day3, viewModel.uiState.value.grid.timelineStartSec)
+    }
+
+    @Test
     fun visibleMinutesRestoreFromAndWriteToSavedState() {
         val handle = SavedStateHandle(mapOf(MULTI_EPG_VISIBLE_MINUTES_KEY to 240))
         val viewModel = viewModel(handle)
@@ -261,6 +316,11 @@ class TvMultiEpgViewModelTest {
         assertEquals(60, handle.get<Int>(MULTI_EPG_VISIBLE_MINUTES_KEY))
         assertEquals(MultiEpgZoom.DEFAULT_MINUTES, viewModel().uiState.value.visibleMinutes)
     }
+
+    /** The `time` of each `/web/epgmulti` request, in order. */
+    private fun epgMultiTimes(): List<String?> = receiver.requests
+        .filter { it.requestUrl?.encodedPath == "/web/epgmulti" }
+        .map { it.requestUrl?.queryParameter("time") }
 
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {

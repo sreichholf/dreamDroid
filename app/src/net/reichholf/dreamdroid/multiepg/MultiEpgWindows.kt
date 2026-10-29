@@ -49,11 +49,14 @@ object MultiEpgWindows {
     }
 
     /**
-     * UTC cache chunk starts that cover the visible range.
+     * UTC cache chunk starts that cover the reported range
+     * [visibleStartSec]..[visibleEndSec], clamped to start at [originFloorSec].
      *
-     * [originFloorSec] is "now" (chunk load clamp). Chunks entirely at or before
-     * that instant are omitted. Only chunks overlapping the viewport are returned;
-     * the grid keeps exactly those and warms the next one into Room.
+     * Chunks entirely at or before [originFloorSec] ("now", the chunk load clamp) are
+     * omitted. The range is what the caller reports, not necessarily the viewport: a
+     * D-pad Right on a row's last bar reports into the chunk after the selected bar, so
+     * that chunk is returned and, when it can be attached, painted before it is on
+     * screen.
      */
     fun slidingChunks(
         originFloorSec: Long,

@@ -139,9 +139,9 @@ class MultiEpgViewModel @Inject constructor(
         grid.focusAt(grid.state.value.anchorSec + MultiEpgWindows.CHUNK_SECONDS)
     }
 
-    /** Pull-to-refresh: refetches the chunk in view even when Room is fresh. */
+    /** Pull-to-refresh: refetches the chunks in view even when Room is fresh. */
     fun refresh() {
-        grid.load(grid.state.value.anchorSec, forceRefresh = true, isPull = true)
+        grid.refresh(isPull = true)
     }
 
     fun onVisibleWindow(startSec: Long, endSec: Long) {

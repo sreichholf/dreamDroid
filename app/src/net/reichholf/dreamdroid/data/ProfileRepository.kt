@@ -372,7 +372,11 @@ class ProfileRepository @Inject constructor(
         }
     }
 
-    private fun isCurrent(profile: Profile): Boolean =
+    /**
+     * True while [profile] is still the active one with the settings the work started from,
+     * so a late answer belonging to it can be applied.
+     */
+    fun isCurrent(profile: Profile): Boolean =
         current.value?.let { it.id == profile.id && it.hasSameSettings(profile) } == true
 
     @Synchronized

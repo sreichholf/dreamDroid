@@ -144,8 +144,8 @@ fun SetupAssistantScreen(
     fun openRestorePicker() {
         try {
             pickRestoreFile.launch(arrayOf("*/*"))
-        } catch (e: ActivityNotFoundException) {
-            viewModel.onRestorePickerMissing(e.localizedMessage)
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onRestorePickerMissing()
         }
     }
 
@@ -198,7 +198,10 @@ fun SetupAssistantScreen(
 
         SetupStep.Name -> !checking
 
-        SetupStep.Import -> review?.canImport == true
+        // The review goes null as soon as the write starts; advance() ignores presses until
+        // it ends, so the action stays enabled and keeps the remote's focus. Settings alone
+        // write no profile, so there is nothing to start without a checked one.
+        SetupStep.Import -> restoring || (review?.selectedProfiles ?: 0) > 0
 
         SetupStep.Welcome -> false
     }
@@ -810,6 +813,14 @@ private fun RestoreStep(
         onSettingsChange = onSettingsChange,
         scrollProfiles = false
     )
+    if (review.selectedProfiles == 0) {
+        Spacer(Modifier.height(12.dp))
+        Text(
+            text = stringResource(R.string.setup_restore_needs_profile),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
 
 @Composable

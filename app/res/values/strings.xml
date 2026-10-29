@@ -477,8 +477,10 @@
     <string name="setup_restore">Restore</string>
     <string name="setup_restore_title">Restore a backup</string>
     <string name="setup_restore_body">Take the profiles from a backup file. Nothing changes before you restore.</string>
-    <string name="setup_restore_failed">This file could not be read.</string>
+    <string name="setup_restore_failed">The backup could not be restored.</string>
+    <string name="no_file_picker">No app on this device provides a file picker.</string>
     <string name="setup_restore_no_profiles">This backup holds no profiles.</string>
+    <string name="setup_restore_needs_profile">Select at least one profile to restore. Settings alone leave no receiver to connect to.</string>
 
     <string name="bouquets">Bouquets</string>
     <string name="bouquet_add">Add bouquet</string>

@@ -9,14 +9,19 @@
 * FIX: Absturz bei Listen mit doppelten Einträgen
 * FIX: TV - Absturz ohne aktives Profil
 * FIX: TV - Fokus bleibt beim Tab-Wechsel in der oberen Leiste
+* FIX: TV - Leeres Bouquet-Menü im Guide
 * UPD: Profil hinzufügen, wenn keines vorhanden ist
 * FIX: Absturz beim Öffnen eines wiederholten Timers
 * FIX: Absturz, wenn Bild-in-Bild nicht verfügbar ist
+* FIX: Absturz in Bild-in-Bild bei extremem Seitenverhältnis
+* FIX: TV - Cursor im Guide sprang nach Rechts und Unten ein Programm weiter
+* FIX: Backup - kryptische Systemmeldung, wenn keine Dateiauswahl vorhanden ist
 
 ## 2.0.469
-* UPD: TV - Hub, Player, MultiEPG und Bearbeiten überarbeitet
+* UPD: TV - Hub, Player (Hoch/Runter: Senderliste), MultiEPG und Bearbeiten überarbeitet
 * NEU: TV - Weiterschauen, Backup/Wiederherstellung
-* NEU: TV - Stream automatisch starten, bevorzugte Audiosprache
+* NEU: Letzten Live-Stream automatisch starten
+* NEU: Bevorzugte Audiosprache für den integrierten Player
 * FIX: TV - diverse Bedienungsmängel
 
 ## 2.0.468

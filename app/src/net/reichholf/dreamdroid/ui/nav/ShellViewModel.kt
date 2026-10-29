@@ -127,13 +127,17 @@ class ShellViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            // Losing the active profile (the last one deleted) turns the gate into NoProfile.
-            // A null that was there from the start is the first run; setup, not a loss.
+            // Losing the active profile (the last one deleted) drops the session and turns
+            // the gate into NoProfile. A null that was there from the start is the first
+            // run; setup, not a loss.
             var hadProfile = false
             profiles.current.collect { profile ->
                 val lost = hadProfile && profile == null
                 hadProfile = hadProfile || profile != null
                 if (lost) {
+                    // Drop the deleted profile's Online session; cancelCheck clears the
+                    // Checking this reset sets, so no check is left running either.
+                    sessions.resetForProfileChange()
                     cancelCheck()
                     _uiState.update {
                         it.copy(
@@ -253,7 +257,8 @@ class ShellViewModel @Inject constructor(
             holder = sessions,
             hasCache = hasCache(active),
             isBusy = { checkJob != null },
-            check = { checks.check(profiles.current.value ?: active) }
+            isCurrent = { profiles.isCurrent(active) },
+            check = { checks.check(active) }
         )
     }
 

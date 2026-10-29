@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -31,8 +32,8 @@ internal const val SLEEP_TIMER_MINUTES_INC_TAG = "sleep_timer_minutes_inc"
 @Composable
 fun SleepTimerScreen(
     state: SleepTimerUiState,
+    minutesText: TextFieldState,
     onMinutesChanged: (Int) -> Unit,
-    onMinutesTyped: (String) -> Unit,
     onAdjustMinutes: (Int) -> Unit,
     onEnabledChanged: (Boolean) -> Unit,
     onActionSelected: (String) -> Unit,
@@ -55,10 +56,10 @@ fun SleepTimerScreen(
                 Text("-")
             }
             EditOutlinedTextField(
-                value = state.minutes.toString(),
-                onValueChange = onMinutesTyped,
+                state = minutesText,
                 label = minutesLabel,
                 keyboardType = KeyboardType.Number,
+                inputTransformation = SleepTimerViewModel.MinutesInput,
                 modifier = Modifier
                     .weight(1f)
                     .testTag(SLEEP_TIMER_MINUTES_TAG)

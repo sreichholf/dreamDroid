@@ -7,8 +7,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -19,9 +24,11 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.ClickableSurfaceDefaults
 import androidx.tv.material3.ExperimentalTvMaterial3Api
+import androidx.tv.material3.LocalContentColor
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Surface
 import androidx.tv.material3.Switch
+import androidx.tv.material3.SwitchDefaults
 import androidx.tv.material3.Text
 import net.reichholf.dreamdroid.ui.theme.dreamDroidTvCardColors
 
@@ -43,12 +50,14 @@ fun TvListRow(
     restContainer: Color? = null,
     trailingContent: (@Composable () -> Unit)? = null
 ) {
+    var focused by remember { mutableStateOf(false) }
     Surface(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = 80.dp)
+            .onFocusChanged { focused = it.isFocused }
             .then(if (testTag != null) Modifier.testTag(testTag) else Modifier),
         colors = dreamDroidTvCardColors(restContainer),
         scale = ClickableSurfaceDefaults.scale(focusedScale = 1.03f),
@@ -70,7 +79,12 @@ fun TvListRow(
                     Text(
                         text = summary,
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        // On the primary focus fill, onSurfaceVariant is unreadable.
+                        color = if (focused) {
+                            LocalContentColor.current.copy(alpha = 0.8f)
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
                     )
                 }
             }
@@ -90,20 +104,33 @@ fun TvSwitchRow(
     summary: String? = null,
     enabled: Boolean = true
 ) {
+    var focused by remember { mutableStateOf(false) }
     TvListRow(
         title = title,
         summary = summary,
         enabled = enabled,
-        modifier = modifier.semantics {
-            role = Role.Switch
-            toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
-        },
+        modifier = modifier
+            .semantics {
+                role = Role.Switch
+                toggleableState = if (checked) ToggleableState.On else ToggleableState.Off
+            }
+            .onFocusChanged { focused = it.isFocused },
         onClick = { onCheckedChange(!checked) }
     ) {
         Switch(
             checked = checked,
             onCheckedChange = null,
-            enabled = enabled
+            enabled = enabled,
+            // The focused row fill is primary, and so is the library's checked track, which
+            // would vanish on it: retint the track from the content colour. The thumb is the
+            // on-primary token, already visible on that fill.
+            colors = if (focused) {
+                SwitchDefaults.colors(
+                    checkedTrackColor = LocalContentColor.current.copy(alpha = 0.24f)
+                )
+            } else {
+                SwitchDefaults.colors()
+            }
         )
     }
 }

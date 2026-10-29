@@ -45,16 +45,16 @@ fun BackupDestination(
     fun openImportPicker() {
         try {
             pickImportFile.launch(arrayOf("*/*"))
-        } catch (e: ActivityNotFoundException) {
-            viewModel.onImportPickerMissing(e.localizedMessage)
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onPickerMissing()
         }
     }
 
     fun openExportPicker() {
         try {
             createBackupFile.launch(BACKUP_EXPORT_FILENAME)
-        } catch (e: ActivityNotFoundException) {
-            viewModel.onExportPickerMissing(e.localizedMessage)
+        } catch (_: ActivityNotFoundException) {
+            viewModel.onPickerMissing()
         }
     }
 

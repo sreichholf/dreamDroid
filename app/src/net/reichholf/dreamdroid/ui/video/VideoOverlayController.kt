@@ -98,6 +98,8 @@ class VideoOverlayController(
     private var playbackJob: Job? = null
     private var playerStateJob: Job? = null
     private var renderedEventKey: String? = null
+    private var reloadSchedule: EventReloadSchedule? = null
+    private var reloadDueAtMs: Long? = null
     private var tvSessionJob: Job? = null
     private var tvChannelListBound: Boolean = false
     private var phoneZapListBound: Boolean = false
@@ -111,10 +113,15 @@ class VideoOverlayController(
         }
         handler = Handler(Looper.getMainLooper())
         servicesViewVisible = false
+        reloadDueAtMs = null
         autoHideRunnable = Runnable { hideOverlays() }
         issueReloadRunnable = Runnable {
-            reload()
-            scheduleEventReload()
+            // Paused: keep the due time; onResume re-arms it without a retry.
+            if (attached && resumed) {
+                reloadDueAtMs = null
+                reload()
+                scheduleEventReload()
+            }
         }
 
         applyPlaybackExtras(extras)
@@ -229,6 +236,7 @@ class VideoOverlayController(
         resumed = true
         showOverlays()
         reload()
+        rearmEventReload()
     }
 
     fun onPause() {
@@ -258,6 +266,7 @@ class VideoOverlayController(
         playerStateJob?.cancel()
         playerStateJob = null
         playback.cancelReload()
+        reloadDueAtMs = null
         tvChannelListBound = false
         phoneZapListBound = false
         activity.findViewById<View>(R.id.overlay)?.setOnTouchListener(null)
@@ -733,15 +742,33 @@ class VideoOverlayController(
      * on: right after the end its EPG may still report the old event.
      */
     private fun scheduleEventReload() {
-        if (currentService == null && movie == null) return
         handler.removeCallbacks(issueReloadRunnable)
-        val progress = eventProgress(currentService?.now, System.currentTimeMillis())
-        val delay = when {
-            progress == null -> NO_EVENT_RELOAD_MS
-            progress.elapsedSec >= progress.totalSec -> ENDED_EVENT_RELOAD_MS
-            else -> (progress.totalSec - progress.elapsedSec) * 1000 + 2000
+        if (currentService == null && movie == null) {
+            reloadDueAtMs = null
+            return
         }
-        handler.postDelayed(issueReloadRunnable, delay)
+        val now = System.currentTimeMillis()
+        val schedule =
+            eventReloadSchedule(currentService?.now, eventKey(session), reloadSchedule, now)
+        reloadSchedule = schedule
+        reloadDueAtMs = now + schedule.delayMs
+        handler.postDelayed(issueReloadRunnable, schedule.delayMs)
+    }
+
+    /**
+     * Re-arms a reload the pause dropped. Before its due time the remaining delay is kept,
+     * without spending a retry; after it, the resume reload is that retry and the next one
+     * is scheduled.
+     */
+    private fun rearmEventReload() {
+        val due = reloadDueAtMs ?: return
+        handler.removeCallbacks(issueReloadRunnable)
+        val remaining = due - System.currentTimeMillis()
+        if (remaining > 0) {
+            handler.postDelayed(issueReloadRunnable, remaining)
+        } else {
+            scheduleEventReload()
+        }
     }
 
     fun reload() {
@@ -1152,8 +1179,6 @@ class VideoOverlayController(
 
         private const val AUTOHIDE_DEFAULT_TIMEOUT: Int = 7000
         private const val FAKE_LENGTH: Int = 10000
-        private const val NO_EVENT_RELOAD_MS: Long = 300_000
-        private const val ENDED_EVENT_RELOAD_MS: Long = 30_000
 
         private val LOG_TAG: String = VideoOverlayController::class.java.simpleName
 

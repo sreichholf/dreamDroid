@@ -2,7 +2,7 @@ package net.reichholf.dreamdroid.tv.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.focusable
-import androidx.compose.foundation.gestures.animateScrollBy
+import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -70,13 +70,6 @@ private fun TvPlayerDetailDialog(
     val bodyFocus = remember { FocusRequester() }
     val scope = rememberCoroutineScope()
     val step = with(LocalDensity.current) { ScrollStep.toPx() }
-    LaunchedEffect(Unit) {
-        try {
-            bodyFocus.requestFocus()
-        } catch (_: IllegalStateException) {
-            // Dialog window not attached yet.
-        }
-    }
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -102,12 +95,13 @@ private fun TvPlayerDetailDialog(
                             scrollState.canScrollBackward
                         }
                         if (canScroll && event.type == KeyEventType.KeyDown) {
-                            scope.launch { scrollState.animateScrollBy(if (down) step else -step) }
+                            scope.launch { scrollState.scrollBy(if (down) step else -step) }
                         }
                         canScroll
                     }
                     .focusable()
             ) {
+                LaunchedEffect(Unit) { bodyFocus.requestFocus() }
                 body()
             }
         },

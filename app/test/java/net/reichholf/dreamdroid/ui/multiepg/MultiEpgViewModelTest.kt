@@ -211,6 +211,38 @@ class MultiEpgViewModelTest {
     }
 
     @Test
+    fun refreshRefetchesThePannedChunk() = runBlocking {
+        receiver.answer = { request ->
+            when (request.requestUrl?.encodedPath) {
+                "/web/epgmulti" -> MockResponse().setBody(
+                    epgMultiAt(request.requestUrl!!.queryParameter("time")!!.toLong())
+                )
+
+                else -> routes(request)
+            }
+        }
+        val viewModel = viewModel()
+        viewModel.ensureLoaded(0, BOUQUET, "Favourites", NOW)
+        awaitState(viewModel) { it.grid.channels.isNotEmpty() && !it.grid.syncing }
+        val day3 = chunk.startSec + 2L * MultiEpgWindows.CHUNK_SECONDS
+        val viewStart = day3 + 3_600L
+
+        viewModel.onVisibleWindow(viewStart, viewStart + 7_200L)
+        awaitState(viewModel) {
+            it.grid.timelineStartSec == day3 && !it.grid.syncing
+        }
+        val before = epgMultiTimes().size
+
+        viewModel.refresh()
+        awaitState(viewModel) {
+            !it.grid.syncing && !it.grid.pullRefreshing && epgMultiTimes().size > before
+        }
+
+        assertEquals(day3.toString(), epgMultiTimes().drop(before).first())
+        assertEquals(day3, viewModel.uiState.value.grid.timelineStartSec)
+    }
+
+    @Test
     fun repeatedEnsureLoadedDoesNotReload() = runBlocking {
         val viewModel = viewModel()
         viewModel.ensureLoaded(0, BOUQUET, "Favourites", NOW)
@@ -235,8 +267,23 @@ class MultiEpgViewModelTest {
         assertEquals(MULTI_EPG_VISIBLE_MINUTES, viewModel().uiState.value.visibleMinutes)
     }
 
-    private fun epgMultiRequests(): Int =
-        receiver.requests.count { it.requestUrl?.encodedPath == "/web/epgmulti" }
+    private fun epgMultiRequests(): Int = epgMultiTimes().size
+
+    /** The `time` of each `/web/epgmulti` request, in order. */
+    private fun epgMultiTimes(): List<String?> = receiver.requests
+        .filter { it.requestUrl?.encodedPath == "/web/epgmulti" }
+        .map { it.requestUrl?.queryParameter("time") }
+
+    /** One programme on the fixture channel that starts at [timeSec]. */
+    private fun epgMultiAt(timeSec: Long): String =
+        "<e2eventlist><e2event><e2eventid>$timeSec</e2eventid>" +
+            "<e2eventstart>$timeSec</e2eventstart>" +
+            "<e2eventduration>3600</e2eventduration>" +
+            "<e2eventcurrenttime>$timeSec</e2eventcurrenttime>" +
+            "<e2eventtitle>T</e2eventtitle>" +
+            "<e2eventservicereference>1:0:1:6DCA:44D:1:C00000:0:0:0:</e2eventservicereference>" +
+            "<e2eventservicename>Das Erste HD</e2eventservicename>" +
+            "</e2event></e2eventlist>"
 
     private fun routes(request: RecordedRequest): MockResponse =
         when (request.requestUrl?.encodedPath) {

@@ -3,8 +3,10 @@ package net.reichholf.dreamdroid.ui.nav
 import android.view.KeyEvent
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -86,6 +88,11 @@ class ShellViewModelTest {
     private var volumeHold: CountDownLatch? = null
     private val volumeArrived = CountDownLatch(1)
 
+    /** While set, `/web/deviceinfo` holds its answer until the latch opens. */
+    @Volatile
+    private var deviceInfoHold: CountDownLatch? = null
+    private val deviceInfoHeld = CompletableDeferred<Unit>()
+
     @BeforeEach
     fun setUp() {
         Dispatchers.setMain(UnconfinedTestDispatcher())
@@ -108,19 +115,25 @@ class ShellViewModelTest {
                         "</e2path></e2webifexternal></e2webifexternals>"
                 )
 
-                "/web/deviceinfo" -> if (deviceInfoUnauthorized) {
-                    MockResponse().setResponseCode(401)
-                } else {
-                    MockResponse().setBody(
-                        if (isReceiver) {
-                            loadWebFixture("deviceinfo.xml").replace(
-                                "<e2webifversion>1.7.4</e2webifversion>",
-                                "<e2webifversion>$webIfVersion</e2webifversion>"
-                            )
-                        } else {
-                            "<html>no receiver</html>"
-                        }
-                    )
+                "/web/deviceinfo" -> {
+                    deviceInfoHold?.let { hold ->
+                        deviceInfoHeld.complete(Unit)
+                        hold.await(5, TimeUnit.SECONDS)
+                    }
+                    if (deviceInfoUnauthorized) {
+                        MockResponse().setResponseCode(401)
+                    } else {
+                        MockResponse().setBody(
+                            if (isReceiver) {
+                                loadWebFixture("deviceinfo.xml").replace(
+                                    "<e2webifversion>1.7.4</e2webifversion>",
+                                    "<e2webifversion>$webIfVersion</e2webifversion>"
+                                )
+                            } else {
+                                "<html>no receiver</html>"
+                            }
+                        )
+                    }
                 }
 
                 "/web/vol" -> {
@@ -307,6 +320,22 @@ class ShellViewModelTest {
         assertFalse(settings.firstStart)
         viewModel.onSetupRequestedHandled()
         assertFalse(viewModel.uiState.value.setupRequested)
+    }
+
+    @Test
+    fun losingTheActiveProfileDropsTheOnlineSession() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.start()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+
+        profiles.clearCurrent()
+        viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
+
+        assertNull(sessions.status.value.session)
+        assertFalse(sessions.status.value.checking)
+        assertTrue(sessions.status.value.blocksMutations)
     }
 
     @Test
@@ -585,6 +614,30 @@ class ShellViewModelTest {
         assertFalse(viewModel.probeReachability())
 
         assertEquals(0, deviceInfoRequests())
+    }
+
+    @Test
+    fun probeResultForADeletedProfileIsDropped() = runBlocking<Unit> {
+        val viewModel = viewModel()
+        viewModel.checkActiveProfile()
+        viewModel.awaitState { it.profileCheckOutcome != null }
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+
+        val hold = CountDownLatch(1)
+        deviceInfoHold = hold
+        val probe = async { viewModel.probeReachability() }
+        withTimeout(5_000L) { deviceInfoHeld.await() }
+
+        // The last profile goes while the probe is still asking the receiver.
+        profiles.clearCurrent()
+        viewModel.awaitState { it.profileCheck is ProfileCheckUi.NoProfile }
+        assertNull(sessions.status.value.session)
+
+        hold.countDown()
+        probe.await()
+
+        assertNull(sessions.status.value.session)
+        assertFalse(sessions.status.value.checking)
     }
 
     @Test

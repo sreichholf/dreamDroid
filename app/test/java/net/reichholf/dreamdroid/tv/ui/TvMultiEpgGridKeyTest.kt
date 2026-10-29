@@ -5,6 +5,7 @@ import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.multiepg.MultiEpgBar
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannel
 import net.reichholf.dreamdroid.multiepg.MultiEpgChannelKey
+import net.reichholf.dreamdroid.multiepg.MultiEpgWindows
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -61,6 +62,34 @@ class TvMultiEpgGridKeyTest {
         assertEquals(
             channels[0].key,
             moveUp(channels, channels[1].key)
+        )
+    }
+
+    @Test
+    fun rightOnTheLastBarReportsAWindowIntoTheNextChunk() {
+        val channels = listOf(channel("a"))
+        val selectedStart = channels[0].bars.last().startSec
+        var reported: Pair<Long, Long>? = null
+        var moved = false
+        handleTvMultiEpgGridKey(
+            key = Key.DirectionRight,
+            channels = channels,
+            selectedKey = channels[0].key,
+            selectedStartSec = selectedStart,
+            originFloorSec = 0L,
+            zoomWindowSec = 3600L,
+            onSelectedChange = { _, _ -> moved = true },
+            onEventClick = {},
+            onVisibleWindow = { start, end -> reported = start to end },
+            onPendingPanRight = {},
+            onScrollToChannel = {}
+        )
+        assertFalse(moved, "no next bar in the painted chunk")
+        val (start, end) = requireNotNull(reported)
+        assertEquals(selectedStart, start)
+        assertTrue(
+            end > MultiEpgWindows.chunkContaining(selectedStart).endSec,
+            "window end $end must reach past the chunk holding $selectedStart"
         )
     }
 

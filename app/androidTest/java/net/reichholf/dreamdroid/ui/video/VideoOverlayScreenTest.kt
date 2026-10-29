@@ -5,13 +5,20 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.semantics.SemanticsProperties
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import androidx.preference.PreferenceManager
 import androidx.test.platform.app.InstrumentationRegistry
 import kotlin.Metadata
@@ -20,6 +27,7 @@ import net.reichholf.dreamdroid.DreamDroid
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.Movie
+import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_BODY_TAG
 import net.reichholf.dreamdroid.tv.ui.TV_PLAYER_DETAIL_DIALOG_TAG
 import net.reichholf.dreamdroid.ui.epg.EPG_DETAIL_CAPPED_TAG
 import net.reichholf.dreamdroid.ui.movies.MOVIE_DETAIL_CAPPED_TAG
@@ -268,10 +276,59 @@ class VideoOverlayScreenTest {
         composeRule.waitForIdle()
         composeRule.onNodeWithText("Tagesschau").assertIsDisplayed()
         composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertExists()
+        composeRule.onNodeWithTag(TV_PLAYER_DETAIL_BODY_TAG).assertIsFocused()
         composeRule.onNodeWithTag(EPG_DETAIL_CAPPED_TAG).assertDoesNotExist()
         composeRule.onNodeWithText(context.getString(R.string.close)).performClick()
         composeRule.waitUntil { state.epgDetailContent == null }
         composeRule.onNodeWithTag(TV_PLAYER_DETAIL_DIALOG_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun tvOverlayEpgInfoScrollsAKeyRepeatStepAtATime() {
+        val context = InstrumentationRegistry.getInstrumentation().targetContext
+        val state = VideoOverlayUiState().apply {
+            title = "Live TV"
+            showInfoButton = true
+        }
+        composeRule.setContent {
+            DreamDroidTheme {
+                VideoOverlayModals(state, tv = true)
+            }
+        }
+        composeRule.runOnIdle {
+            state.showEpgDetail(
+                context,
+                Event(
+                    title = "Tagesschau",
+                    serviceName = "Das Erste HD",
+                    description = "News",
+                    descriptionExtended = buildString {
+                        repeat(80) { append("Line $it\n") }
+                    },
+                    startReadable = "20:00",
+                    durationReadable = "15"
+                )
+            )
+        }
+        composeRule.waitForIdle()
+
+        // The dialog body is the only vertical scroller on screen.
+        val body = composeRule.onNode(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.VerticalScrollAxisRange)
+        )
+        val bodyNode = composeRule.onNodeWithTag(TV_PLAYER_DETAIL_BODY_TAG)
+
+        bodyNode.performKeyInput { pressKey(Key.DirectionDown) }
+        composeRule.waitUntil(timeoutMillis = 5_000) { body.scrollOffset() > 0f }
+        val oneStep = body.scrollOffset()
+
+        // Held-key repeats arrive as more KeyDowns while the previous step is still landing:
+        // each must add a step instead of replacing the one in flight.
+        bodyNode.performKeyInput {
+            pressKey(Key.DirectionDown)
+            pressKey(Key.DirectionDown)
+        }
+        composeRule.waitUntil(timeoutMillis = 5_000) { body.scrollOffset() >= oneStep * 2.5f }
     }
 
     @Test
@@ -328,6 +385,9 @@ class VideoOverlayScreenTest {
         composeRule.onNodeWithTag(MOVIE_DETAIL_UNCAPPED_TAG).assertExists()
         composeRule.onNodeWithTag(MOVIE_DETAIL_CAPPED_TAG).assertDoesNotExist()
     }
+
+    private fun SemanticsNodeInteraction.scrollOffset(): Float =
+        fetchSemanticsNode().config[SemanticsProperties.VerticalScrollAxisRange].value()
 
     private fun rgbDistance(a: Int, b: Int): Int {
         val ar = (a shr 16) and 0xff

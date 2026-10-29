@@ -93,7 +93,7 @@ ViewModel ──► Repository ──► ReceiverApi (interface, domain types on
   - Each flavor fills them its own way: the Dreambox client from its version table, the OWIF client with fixed values (OWIF has now/next and the sleep timer, and accepts GET and POST).
   - `EnigmaHttp` reads and updates `postRequest` per profile instead of the global flag (`EnigmaHttp.kt:102-103,153-158`); a 405 still flips it.
   - Before the first check the defaults stay as before: all true (`DreamDroid.kt:300-303`).
-- **`ReceiverApiFactory`** chooses the implementation from the detected flavor. It keeps the rule of the former `EnigmaClientFactory`: one client per operation, never a singleton (`hilt-migration.md:211`). An unknown flavor gets the Dreambox client, which is what every profile got before.
+- **`ReceiverApiFactory`** chooses the implementation from the detected flavor. It keeps the rule of the former `EnigmaClientFactory`: one client per operation, never a singleton (`hilt-migration.md:212`). An unknown flavor gets the Dreambox client, which is what every profile got before.
 - **The OWIF client uses `/api` JSON, not `/web` XML.** The same `P_<x>` handler serves both (`web.py:2490-2495`); all 26 endpoints the client needs return JSON. JSON avoids the XML template's double escaping and `None` handling, and offers calls `/web` lacks: `statusinfo`, `getallservices`, `timeradd`, `getsatellites`.
   - It needs `kotlinx-serialization-json`; only `-core` was on the classpath.
   - There is no API version field, so the DTOs give every field a default and parse leniently.

@@ -27,7 +27,7 @@ class PictureInPictureTest {
         assertNull(pictureInPictureAspectRatio(-1920, 1080))
     }
 
-    /** setPictureInPictureParams rejects ratios from 0.418410 to 2.39 with an exception. */
+    /** setPictureInPictureParams rejects ratios outside 0.418410..2.39 with an exception. */
     @Test
     fun theBoundsSurviveTheRationalRoundTrip() {
         listOf(PIP_MIN_ASPECT_RATIO, PIP_MAX_ASPECT_RATIO).forEach { ratio ->

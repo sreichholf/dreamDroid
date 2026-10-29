@@ -3,6 +3,7 @@ package net.reichholf.dreamdroid.multiepg
 import java.util.concurrent.ConcurrentHashMap
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,8 +55,10 @@ data class MultiEpgGridState(
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
  * is the earliest start among programmes overlapping [MultiEpgGridState.originFloorSec]
- * ("now"), and only the chunks overlapping the viewport are held for the UI. The next
- * chunk is warmed into Room, not painted; panning into it reads it back from Room.
+ * ("now"), and the grid holds the chunks that cover the reported window, which is the
+ * viewport except when a pan reports past it. The next chunk is warmed into Room and
+ * painted only once a reported window reaches into it: a D-pad Right on a row's last bar
+ * reports that far, and the grid keeps the chunk until the viewport reports again.
  * Room holds the rest, so scrolling back reattaches from cache. Bouquet services loaded
  * from `/web/getservices` keep a row even when a window has no events.
  */
@@ -83,6 +86,7 @@ class MultiEpgGrid(
 
     private var loadJob: Job? = null
     private var prefetchJob: Job? = null
+    private var queuedWarm: WarmTarget? = null
     private var windowJob: Job? = null
     private val gridMutex = Mutex()
     private val eventsByWindow = ConcurrentHashMap<Long, List<Event>>()
@@ -92,6 +96,7 @@ class MultiEpgGrid(
     private var timers: List<Timer> = emptyList()
 
     fun cancel() {
+        queuedWarm = null
         loadJob?.cancel()
         prefetchJob?.cancel()
         windowJob?.cancel()
@@ -102,6 +107,7 @@ class MultiEpgGrid(
      * [anchorSec] becomes the left clamp ("now") for this grid.
      */
     fun replaceAndLoad(bouquetRef: String, anchorSec: Long) {
+        queuedWarm = null
         loadJob?.cancel()
         prefetchJob?.cancel()
         windowJob?.cancel()
@@ -126,6 +132,44 @@ class MultiEpgGrid(
     }
 
     fun load(anchorSec: Long, forceRefresh: Boolean = false, isPull: Boolean = false) {
+        startLoad(
+            targets = listOf(anchorSec),
+            anchorSec = anchorSec,
+            forceRefresh = forceRefresh,
+            isPull = isPull
+        )
+    }
+
+    /**
+     * Force-refetches every chunk the last reported viewport covers, or the anchor's chunk
+     * before the screen reported one, clamped to [MultiEpgGridState.originFloorSec]. A zoom
+     * that spans a 24 h boundary refreshes every chunk in view, not only the first.
+     */
+    fun refresh(isPull: Boolean = false) {
+        val state = _state.value
+        val reported = visibleStartSec > 0L
+        val startSec = maxOf(
+            state.originFloorSec,
+            if (reported) visibleStartSec else state.anchorSec
+        )
+        startLoad(
+            targets = MultiEpgWindows.slidingChunks(
+                originFloorSec = state.originFloorSec,
+                visibleStartSec = startSec,
+                visibleEndSec = if (reported) visibleEndSec else startSec
+            ),
+            anchorSec = startSec,
+            forceRefresh = true,
+            isPull = isPull
+        )
+    }
+
+    private fun startLoad(
+        targets: List<Long>,
+        anchorSec: Long,
+        forceRefresh: Boolean,
+        isPull: Boolean
+    ) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty()) {
             timers = emptyList()
@@ -213,24 +257,25 @@ class MultiEpgGrid(
                         _state.update { it.copy(errorMessage = applied.errorMessage) }
                     }
                 }
-                if (peek != null && peek.events.isNotEmpty()) {
-                    if (peek.fresh) {
-                        warmNextChunk(id, anchorSec)
-                        return@launch
+                if (peek != null && peek.events.isNotEmpty() && peek.fresh) {
+                    warmNextChunk(id, anchorSec)
+                    return@launch
+                }
+                for (target in targets) {
+                    val events = withContext(Dispatchers.IO) {
+                        sync.ensureChunk(
+                            profileId = id,
+                            bouquetRef = ref,
+                            unixSec = target,
+                            forceRefresh = forceRefresh,
+                            persist = persist
+                        )
                     }
+                    putWindow(MultiEpgWindows.chunkContaining(target).startSec, events)
                 }
-                val events = withContext(Dispatchers.IO) {
-                    sync.ensureChunk(
-                        profileId = id,
-                        bouquetRef = ref,
-                        unixSec = anchorSec,
-                        forceRefresh = forceRefresh,
-                        persist = persist
-                    )
+                if (targets.isNotEmpty()) {
+                    warmNextChunk(id, targets.last())
                 }
-                val chunk = MultiEpgWindows.chunkContaining(anchorSec)
-                putWindow(chunk.startSec, events)
-                warmNextChunk(id, anchorSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
@@ -258,9 +303,11 @@ class MultiEpgGrid(
     }
 
     /**
-     * Align painted chunks with the viewport. Adds missing chunks in view and drops
-     * chunks that left it; nothing else is kept for the UI. Calling this while
-     * panning inside the same chunks is a no-op.
+     * Align painted chunks with the reported window. Adds the chunks it covers and,
+     * once every wanted chunk is attached, drops the rest so nothing else is kept for
+     * the UI; a wanted chunk that cannot be attached (Offline, or the fetch failed)
+     * leaves the last painted chunks in place instead of blanking the grid. Calling
+     * this while panning inside the same chunks is a no-op.
      */
     fun onVisibleWindow(visibleStartSec: Long, visibleEndSec: Long) {
         if (bouquetRef.trim().isEmpty() || eventsByWindow.isEmpty()) {
@@ -312,34 +359,57 @@ class MultiEpgGrid(
     }
 
     /**
-     * Fill Room with the chunk after [anchor] without painting it. The grid keeps
-     * only what it draws, so a cache miss here does not hold a day of programmes.
+     * Fill Room with the chunk after [anchor] without painting it: the grid paints that
+     * chunk only once a reported window reaches into it, so a cache miss here does not
+     * hold a day of programmes.
      */
     private fun warmNextChunk(profileId: Int, anchor: Long) {
         val ref = bouquetRef.trim()
         if (ref.isEmpty() || !persistBouquet(ref) || isSessionOffline()) {
             return
         }
+        val target = WarmTarget(
+            profileId = profileId,
+            bouquetRef = ref,
+            startSec = MultiEpgWindows.chunkContaining(
+                anchor + MultiEpgWindows.CHUNK_SECONDS
+            ).startSec
+        )
         if (prefetchJob?.isActive == true) {
+            queuedWarm = target
             return
         }
-        prefetchJob = scope.launch {
+        startWarm(target)
+    }
+
+    private fun startWarm(target: WarmTarget) {
+        if (isSessionOffline()) {
+            return
+        }
+        // LAZY: the tracked slot must be set before the body can reach its finally.
+        val job = scope.launch(start = CoroutineStart.LAZY) {
             beginSync()
             try {
-                sync.warmChunk(
-                    profileId = profileId,
-                    bouquetRef = ref,
-                    unixSec = anchor + MultiEpgWindows.CHUNK_SECONDS
-                )
+                sync.warmChunk(target.profileId, target.bouquetRef, target.startSec)
             } catch (t: Throwable) {
                 if (t is CancellationException) {
                     throw t
                 }
-                // Cache fill only: the visible window is unaffected and a pan retries.
+                // Cache fill only: the visible window is unaffected and the next pan retries.
             } finally {
                 endSync()
+                if (prefetchJob === coroutineContext[Job]) {
+                    prefetchJob = null
+                    val queued = queuedWarm
+                    queuedWarm = null
+                    if (isActive && queued != null) {
+                        startWarm(queued)
+                    }
+                }
             }
         }
+        prefetchJob = job
+        job.start()
     }
 
     private suspend fun attachWindow(unixSec: Long) {
@@ -445,7 +515,7 @@ class MultiEpgGrid(
             events = merged
         )
         // One chunk of scroll range beyond the painted window lets the viewport reach
-        // the warmed chunk; its events are attached only once they are in view.
+        // the warmed chunk; its events are attached once a reported window reaches them.
         val nextEnd = starts.last() + 2L * MultiEpgWindows.CHUNK_SECONDS
         val previous = _state.value.channels
         val next = withContext(Dispatchers.Default) {
@@ -483,6 +553,8 @@ class MultiEpgGrid(
     private fun endSync() {
         _state.update { it.copy(syncingCount = (it.syncingCount - 1).coerceAtLeast(0)) }
     }
+
+    private class WarmTarget(val profileId: Int, val bouquetRef: String, val startSec: Long)
 
     companion object {
         private const val DEFAULT_VISIBLE_SECONDS: Long = 2L * 60L * 60L
