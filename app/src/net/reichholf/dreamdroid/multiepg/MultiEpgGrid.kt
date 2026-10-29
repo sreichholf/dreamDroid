@@ -55,8 +55,10 @@ data class MultiEpgGridState(
  *
  * Cache chunks stay 24 h UTC. The painted grid is a sliding window: left edge
  * is the earliest start among programmes overlapping [MultiEpgGridState.originFloorSec]
- * ("now"), and only the chunks overlapping the viewport are held for the UI. The next
- * chunk is warmed into Room, not painted; panning into it reads it back from Room.
+ * ("now"), and the grid holds the chunks that cover the reported window, which is the
+ * viewport except when a pan reports past it. The next chunk is warmed into Room and
+ * painted only once a reported window reaches into it: a D-pad Right on a row's last bar
+ * reports that far, and the grid keeps the chunk until the viewport reports again.
  * Room holds the rest, so scrolling back reattaches from cache. Bouquet services loaded
  * from `/web/getservices` keep a row even when a window has no events.
  */
@@ -301,9 +303,11 @@ class MultiEpgGrid(
     }
 
     /**
-     * Align painted chunks with the viewport. Adds missing chunks in view and drops
-     * chunks that left it; nothing else is kept for the UI. Calling this while
-     * panning inside the same chunks is a no-op.
+     * Align painted chunks with the reported window. Adds the chunks it covers and,
+     * once every wanted chunk is attached, drops the rest so nothing else is kept for
+     * the UI; a wanted chunk that cannot be attached (Offline, or the fetch failed)
+     * leaves the last painted chunks in place instead of blanking the grid. Calling
+     * this while panning inside the same chunks is a no-op.
      */
     fun onVisibleWindow(visibleStartSec: Long, visibleEndSec: Long) {
         if (bouquetRef.trim().isEmpty() || eventsByWindow.isEmpty()) {
@@ -355,8 +359,9 @@ class MultiEpgGrid(
     }
 
     /**
-     * Fill Room with the chunk after [anchor] without painting it. The grid keeps
-     * only what it draws, so a cache miss here does not hold a day of programmes.
+     * Fill Room with the chunk after [anchor] without painting it: the grid paints that
+     * chunk only once a reported window reaches into it, so a cache miss here does not
+     * hold a day of programmes.
      */
     private fun warmNextChunk(profileId: Int, anchor: Long) {
         val ref = bouquetRef.trim()
@@ -510,7 +515,7 @@ class MultiEpgGrid(
             events = merged
         )
         // One chunk of scroll range beyond the painted window lets the viewport reach
-        // the warmed chunk; its events are attached only once they are in view.
+        // the warmed chunk; its events are attached once a reported window reaches them.
         val nextEnd = starts.last() + 2L * MultiEpgWindows.CHUNK_SECONDS
         val previous = _state.value.channels
         val next = withContext(Dispatchers.Default) {
