@@ -257,7 +257,8 @@ class ShellViewModel @Inject constructor(
             holder = sessions,
             hasCache = hasCache(active),
             isBusy = { checkJob != null },
-            check = { checks.check(profiles.current.value ?: active) }
+            isCurrent = { profiles.isCurrent(active) },
+            check = { checks.check(active) }
         )
     }
 

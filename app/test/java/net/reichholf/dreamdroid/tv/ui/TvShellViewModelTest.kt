@@ -1,7 +1,9 @@
 package net.reichholf.dreamdroid.tv.ui
 
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,10 +17,12 @@ import net.reichholf.dreamdroid.data.LastLiveStream
 import net.reichholf.dreamdroid.data.LastLiveStreamAutoStart
 import net.reichholf.dreamdroid.data.LastLiveStreamRepository
 import net.reichholf.dreamdroid.data.LastStreamStart
+import net.reichholf.dreamdroid.data.ProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverProfileCheckRepository
 import net.reichholf.dreamdroid.data.ReceiverRepository
 import net.reichholf.dreamdroid.data.SettingsRepository
 import net.reichholf.dreamdroid.enigma.DeviceInfoParser
+import net.reichholf.dreamdroid.enigma.ProfileCheckResult
 import net.reichholf.dreamdroid.room.BouquetTabEntity
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver
 import net.reichholf.dreamdroid.testutil.EpgTestReceiver.Companion.PROFILE_ID
@@ -265,6 +269,46 @@ class TvShellViewModelTest {
     }
 
     @Test
+    fun probeResultForADeletedProfileIsDropped() = runBlocking<Unit> {
+        // The probe's check is held open and then fails, so applying its result would show.
+        val real = ReceiverProfileCheckRepository(
+            profiles,
+            receiverApis(profiles, receiver.profiles.context, receiver.profiles.capabilities),
+            receiver.profiles.capabilities
+        )
+        var checks = 0
+        val asking = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val held = object : ProfileCheckRepository by real {
+            override suspend fun check(profile: Profile): ProfileCheckResult {
+                checks += 1
+                if (checks > 1) {
+                    asking.complete(Unit)
+                    release.await()
+                }
+                return real.check(profile)
+            }
+        }
+        val viewModel = viewModel(checks = held)
+        viewModel.start()
+        awaitStatus { it.session == ConnectionStatus.Session.Online }
+
+        isReceiver = false
+        val probe = async { viewModel.probeReachability() }
+        withTimeout(5_000L) { asking.await() }
+
+        // The last profile goes while the probe is still asking the receiver.
+        profiles.clearCurrent()
+        viewModel.awaitGate { it == TvSessionGate.NoProfile }
+
+        release.complete(Unit)
+        probe.await()
+
+        assertEquals(ConnectionStatus.Session.Online, sessions.status.value.session)
+        assertFalse(sessions.status.value.checking)
+    }
+
+    @Test
     fun aFailedCheckWithCacheMayGoOfflineOnlyForReachability() = runBlocking<Unit> {
         receiver.profiles.database.rosterDao().replaceTabStrip(
             PROFILE_ID,
@@ -319,13 +363,15 @@ class TvShellViewModelTest {
         assertNull(viewModel.uiState.value.lastStreamEffect)
     }
 
-    private fun viewModel(): TvShellViewModel = TvShellViewModel(
-        profiles,
-        ReceiverProfileCheckRepository(
+    private fun viewModel(
+        checks: ProfileCheckRepository = ReceiverProfileCheckRepository(
             profiles,
             receiverApis(profiles, receiver.profiles.context, receiver.profiles.capabilities),
             receiver.profiles.capabilities
-        ),
+        )
+    ): TvShellViewModel = TvShellViewModel(
+        profiles,
+        checks,
         receiver.services,
         sessions,
         LastLiveStreamAutoStart(
