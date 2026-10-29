@@ -19,7 +19,7 @@ Always make changes in a dedicated git worktree, never in the primary checkout. 
 
 ## Writing
 
-Keep it minimal. Changelogs, commit messages and PR bodies are bullet style, cut down to the core. Comments never explain the change; they only explain what the code can't.
+Keep it minimal. Changelogs, commit messages and PR bodies are compact, terse bullets, straight to the point, written for engineers. Comments never explain the change; they only explain what the code can't.
 
 ## Before you open a PR
 
@@ -28,7 +28,7 @@ Keep it minimal. Changelogs, commit messages and PR bodies are bullet style, cut
 3. Phone UI changed? Write or update the instrumented test (see **Tests**). Run it locally on a device/emulator, or trigger `workflow_dispatch` on `android-ci.yml` — the emulator job does not run on PRs.
 4. Touched Room, settings (`SharedPreferences`), or profile import/export? Run `workflow_dispatch` with `upgrade_from_115` (see **Data migrations**).
 5. User-visible change? Add a line to both changelogs (see **Changelog**).
-6. Keep commit messages and PR bodies to the essence of the change: what changed and why, short and precise. A PR body has the same style as a commit message: a single-line header, then terse bullets for what changed, why, and the checks. No prose paragraphs, file-by-file tour or restated diff. A one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead. When the PR gets more commits, rewrite the description as a whole instead of appending to it; the PR template (`.github/pull_request_template.md`) carries the same rule.
+6. Commit messages and PR bodies are compact, terse bullets, straight to the point, written for engineers: a single-line header, then what changed, why, and the checks. No prose paragraphs, file-by-file tour, or restated diff. A one-commit PR reuses its commit message. **Do not claim a check passed that did not run.** If a check could not run where you are (no emulator, network 429), say so and say what covers it instead. When the PR gets more commits, rewrite the description as a whole instead of appending to it; the PR template (`.github/pull_request_template.md`) carries the same rule.
 
 ## Where things are
 
