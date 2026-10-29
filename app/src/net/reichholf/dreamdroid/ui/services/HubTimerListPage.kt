@@ -32,17 +32,15 @@ import net.reichholf.dreamdroid.ui.timers.TimerEditPaneHost
 import net.reichholf.dreamdroid.ui.timers.TimerPaneViewModel
 
 /**
- * The hub Timers tab. The list and its load live on [HubTimerListViewModel]; the same
- * [remountEpoch] does not load again. HubDestination owns the REQUEST_EDIT_TIMER result
- * and bumps [remountEpoch] after a timer edit. Where the window fits two panes, a timer opens
- * in a form beside the list instead of on its own screen; [paneViewModel] is the hub's, which
- * also takes the service pick.
+ * The hub Timers tab. The list and its load live on [HubTimerListViewModel], which loads once
+ * and follows the accepted writes. Where the window fits two panes, a timer opens in a form
+ * beside the list instead of on its own screen; [paneViewModel] is the hub's, which also takes
+ * the service pick.
  */
 @Composable
 fun HubTimerListPage(
     handle: PhoneNavHandle,
     paneViewModel: TimerPaneViewModel,
-    remountEpoch: Int = 0,
     modifier: Modifier = Modifier,
     viewModel: HubTimerListViewModel = hiltViewModel()
 ) {
@@ -77,12 +75,11 @@ fun HubTimerListPage(
         )
     }
 
-    // A pane save or delete that went through: the list shows the receiver's timers again.
+    // A pane save or delete that went through: close the form; the accepted write reloads.
     LaunchedEffect(paneState.finished) {
         if (paneState.finished) {
             paneViewModel.onFinishHandled()
             paneViewModel.dismiss()
-            viewModel.reload(forceRefresh = true)
         }
     }
 
@@ -102,10 +99,6 @@ fun HubTimerListPage(
             )
         }
     )
-
-    LaunchedEffect(viewModel, remountEpoch) {
-        viewModel.onRemount(remountEpoch)
-    }
 
     val resources = LocalResources.current
     val items = remember(uiState.timers, resources) {

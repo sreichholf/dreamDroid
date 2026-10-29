@@ -298,6 +298,40 @@ class TimerRepositoryTest {
     }
 
     @Test
+    fun acceptedWritesMoveTheWriteSignal() = runTest {
+        receiver.respond(TIMER_CHANGE, simpleResult(true, "Timer changed"))
+        receiver.respond(TIMER_DELETE, simpleResult(true, "Timer deleted"))
+        receiver.respond(TIMER_CLEANUP, simpleResult(true, "Timer list cleaned"))
+        receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
+        val before = repository.writes.value
+
+        repository.save(timer("New"), null)
+        repository.toggleEnabled(timer("Off").copy(disabled = "1"))
+        repository.delete(timer("Gone"))
+        repository.cleanup()
+        repository.addByEvent(EVENT)
+
+        assertEquals(before + 5, repository.writes.value)
+    }
+
+    @Test
+    fun refusedWritesLeaveTheWriteSignalAlone() = runTest {
+        receiver.respond(TIMER_CHANGE, simpleResult(false, "Conflicting Timer(s) detected!"))
+        receiver.respond(TIMER_DELETE, simpleResult(false, "No matching Timer found"))
+        receiver.respond(TIMER_CLEANUP, simpleResult(false, "Not cleaned"))
+        receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(false, "EventId not found"))
+        val before = repository.writes.value
+
+        repository.save(timer("New"), null)
+        repository.toggleEnabled(timer("Off").copy(disabled = "1"))
+        repository.delete(timer("Gone"))
+        repository.cleanup()
+        repository.addByEvent(EVENT)
+
+        assertEquals(before, repository.writes.value)
+    }
+
+    @Test
     fun locationsAndTagsAreFetchedOnce() = runTest {
         receiver.respond(
             LOCATIONS,

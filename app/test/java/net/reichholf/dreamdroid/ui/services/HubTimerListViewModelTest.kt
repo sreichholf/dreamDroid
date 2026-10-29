@@ -11,9 +11,11 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import net.reichholf.dreamdroid.R
 import net.reichholf.dreamdroid.enigma.EnigmaFailure
+import net.reichholf.dreamdroid.enigma.Event
 import net.reichholf.dreamdroid.enigma.contentErrorText
 import net.reichholf.dreamdroid.helpers.EnigmaHttpError
 import net.reichholf.dreamdroid.testutil.TestReceiver
+import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_ADD_BY_EVENT_ID
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_CLEANUP
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.TIMER_LIST
 import net.reichholf.dreamdroid.testutil.TestReceiver.Companion.simpleResult
@@ -36,6 +38,7 @@ import org.junit.jupiter.api.Test
 class HubTimerListViewModelTest {
     private val receiver = TestReceiver()
     private val sessions = receiver.profiles.sessions
+    private val timers = receiver.timerRepository()
     private val viewModels = mutableListOf<HubTimerListViewModel>()
 
     @BeforeEach
@@ -53,21 +56,30 @@ class HubTimerListViewModelTest {
     }
 
     @Test
-    fun remountLoadsOncePerEpoch() = runTest {
+    fun loadsOnceOnCreateAndKeepsTheList() = runTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         val viewModel = viewModel()
         assertEquals(UiText.Resource(R.string.timer), viewModel.uiState.value.title)
 
-        viewModel.onRemount(0)
         val state = viewModel.settled()
-        viewModel.onRemount(0)
 
         assertEquals(listOf("Navy CIS: L.A.", "Tagesschau"), state.timers.map { it.name })
         assertNull(state.emptyMessage)
         assertEquals(1, receiver.requestsTo(TIMER_LIST).size)
-        val before = viewModel.jobs()
-        viewModel.onRemount(1)
-        viewModel.joinJobsSince(before)
+    }
+
+    @Test
+    fun aTimerAddedFromTheEpgDetailReloadsTheList() = runTest {
+        receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
+        receiver.respond(TIMER_ADD_BY_EVENT_ID, simpleResult(true, "Timer added"))
+        val viewModel = viewModel()
+        assertEquals(2, viewModel.settled().timers.size)
+        receiver.respond(TIMER_LIST, "<e2timerlist></e2timerlist>")
+
+        timers.addByEvent(EVENT)
+
+        val state = viewModel.uiState.first { it.timers.isEmpty() && !it.refreshing }
+        assertEquals(UiText.Resource(R.string.no_list_item), state.emptyMessage)
         assertEquals(2, receiver.requestsTo(TIMER_LIST).size)
     }
 
@@ -76,8 +88,6 @@ class HubTimerListViewModelTest {
         receiver.respond(TIMER_LIST, "<e2timerlist></e2timerlist>")
         val viewModel = viewModel()
 
-        viewModel.reload()
-
         assertEquals(UiText.Resource(R.string.no_list_item), viewModel.settled().emptyMessage)
     }
 
@@ -85,7 +95,6 @@ class HubTimerListViewModelTest {
     fun failedLoadClearsTheListAndShowsTheError() = runTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         val viewModel = viewModel()
-        viewModel.reload()
         viewModel.settled()
         receiver.profiles.database.timerDao().deleteAll()
         receiver.fail(TIMER_LIST)
@@ -102,7 +111,6 @@ class HubTimerListViewModelTest {
     fun failedLoadPaintsTheSnapshot() = runTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         val viewModel = viewModel()
-        viewModel.reload()
         viewModel.settled()
         receiver.fail(TIMER_LIST)
         val before = viewModel.jobs()
@@ -118,19 +126,15 @@ class HubTimerListViewModelTest {
     @Test
     fun offlinePaintsTheSnapshotWithoutTheReceiver() = runTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
-        receiver.timerRepository().timers().last()
+        timers.timers().last()
         val asked = receiver.requests.size
         sessions.onFailure(
             EnigmaFailure.Unreachable(EnigmaFailure.UnreachableReason.Timeout),
             hasCache = true
         )
         val viewModel = viewModel()
-        val before = viewModel.jobs()
 
-        viewModel.onRemount(0)
-        viewModel.joinJobsSince(before)
-
-        assertEquals(2, viewModel.uiState.value.timers.size)
+        assertEquals(2, viewModel.settled().timers.size)
         assertEquals(asked, receiver.requests.size)
         viewModel.reload(forceRefresh = true)
         viewModel.settled()
@@ -138,16 +142,20 @@ class HubTimerListViewModelTest {
     }
 
     @Test
-    fun cleanupShowsTheReceiverAnswerAndReloads() = runTest {
+    fun cleanupShowsTheReceiverAnswerAndItsCleanedList() = runTest {
         receiver.respond(TIMER_LIST, loadWebFixture("timerlist.xml"))
         receiver.respond(TIMER_CLEANUP, simpleResult(true, "Timer list cleaned"))
         val viewModel = viewModel()
+        assertEquals(2, viewModel.settled().timers.size)
+        receiver.respond(TIMER_LIST, "<e2timerlist></e2timerlist>")
 
         viewModel.cleanup()
         val state = viewModel.uiState.first { !it.cleaning && it.userMessage != null }
 
         assertEquals(UiText.Raw("Timer list cleaned"), state.userMessage)
-        assertEquals(2, viewModel.uiState.first { it.timers.isNotEmpty() }.timers.size)
+        val cleaned = viewModel.uiState.first { it.timers.isEmpty() && !it.refreshing }
+        assertEquals(UiText.Resource(R.string.no_list_item), cleaned.emptyMessage)
+        assertEquals(2, receiver.requestsTo(TIMER_LIST).size)
         viewModel.onMessageShown()
         assertNull(viewModel.uiState.value.userMessage)
     }
@@ -174,8 +182,15 @@ class HubTimerListViewModelTest {
     }
 
     private fun viewModel(sessions: SessionConnectionHolder = this.sessions) =
-        HubTimerListViewModel(receiver.timerRepository(), sessions).also { viewModels += it }
+        HubTimerListViewModel(timers, sessions).also { viewModels += it }
 
     private suspend fun HubTimerListViewModel.settled(): HubTimerListUiState =
         uiState.first { !it.refreshing }
+
+    private companion object {
+        val EVENT = Event(
+            eventId = "4712",
+            serviceReference = "1:0:19:283D:3FB:1:C00000:0:0:0:"
+        )
+    }
 }

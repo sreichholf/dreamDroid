@@ -128,7 +128,6 @@ fun HubDestination(
 
     HubActivityResults(
         handle = handle,
-        onTimerEdited = viewModel::bumpTimerRemount,
         onTimerServicePicked = timerPane::onServicePicked
     )
 
@@ -237,7 +236,6 @@ fun HubDestination(
                     HubModes.TIMER -> {
                         HubTimerListPage(
                             handle = handle,
-                            remountEpoch = uiState.timerRemountEpoch,
                             paneViewModel = timerPane
                         )
                     }
@@ -248,28 +246,17 @@ fun HubDestination(
 }
 
 /**
- * The hub's results from the destinations it opens: a timer saved on the TimerEdit route
- * ([onTimerEdited]), and the service picked for the timer form in the Timers detail pane
- * ([onTimerServicePicked]). One listener owns both, so a result held while the hub was away
- * reaches it when the hub is back.
+ * The hub's result from the service pick it opens for the timer form in the Timers detail
+ * pane: a result held while the hub was away reaches it when the hub is back.
  */
 @Composable
-internal fun HubActivityResults(
-    handle: PhoneNavHandle,
-    onTimerEdited: () -> Unit,
-    onTimerServicePicked: (Service) -> Unit
-) {
-    val currentOnTimerEdited by rememberUpdatedState(onTimerEdited)
+internal fun HubActivityResults(handle: PhoneNavHandle, onTimerServicePicked: (Service) -> Unit) {
     val currentOnTimerServicePicked by rememberUpdatedState(onTimerServicePicked)
     DisposableEffect(handle) {
         val listener = PhoneNavHandle.ActivityResultListener { requestCode, resultCode, data ->
-            if (resultCode != Activity.RESULT_OK) return@ActivityResultListener
-            when (requestCode) {
-                Statics.REQUEST_EDIT_TIMER -> currentOnTimerEdited()
-
-                Statics.REQUEST_PICK_SERVICE ->
-                    data?.getSerializableExtraCompat<Service>(NavExtras.DATA)
-                        ?.let(currentOnTimerServicePicked)
+            if (requestCode == Statics.REQUEST_PICK_SERVICE && resultCode == Activity.RESULT_OK) {
+                data?.getSerializableExtraCompat<Service>(NavExtras.DATA)
+                    ?.let(currentOnTimerServicePicked)
             }
         }
         handle.composeActivityResultListener = listener

@@ -525,7 +525,6 @@ class PhoneNavigator(
             queueTimerEdit(timer, create)
             return true
         }
-        state.pushResultRequestCode(Statics.REQUEST_EDIT_TIMER)
         val route = TimerEdit.from(timer, create)
         if (routeKey(controller.currentDestination?.route) == PhoneNavRoutes.TIMER_EDIT) {
             controller.replaceRoute(route)
@@ -539,7 +538,6 @@ class PhoneNavigator(
         val key = routeKey(route) ?: return false
         return key == PhoneNavRoutes.PICK_SERVICE ||
             key == PhoneNavRoutes.PROFILE_EDIT ||
-            key == PhoneNavRoutes.TIMER_EDIT ||
             key == PhoneNavRoutes.TIMER_SERVICE_PICK
     }
 

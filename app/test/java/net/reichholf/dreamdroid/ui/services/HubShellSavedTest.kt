@@ -17,7 +17,6 @@ class HubShellSavedTest {
         assertNull(saved.currentRadio)
         assertNull(saved.currentMovie)
         assertEquals(0, saved.selectedRow)
-        assertEquals(0, saved.timerRemountEpoch)
         assertEquals(0, saved.nowPlayingReloadEpoch)
         assertFalse(handle.contains(HubShellSavedKeys.MODE))
         assertFalse(handle.contains(HubShellSavedKeys.SELECTED_ROW))
@@ -32,7 +31,6 @@ class HubShellSavedTest {
             currentRadio = "1:7:2:radio",
             currentMovie = "/hdd/movie",
             selectedRow = 2,
-            timerRemountEpoch = 4,
             nowPlayingReloadEpoch = 5
         ).writeTo(handle)
         val saved = readHubShellSaved(handle)
@@ -41,7 +39,6 @@ class HubShellSavedTest {
         assertEquals("1:7:2:radio", saved.currentRadio)
         assertEquals("/hdd/movie", saved.currentMovie)
         assertEquals(2, saved.selectedRow)
-        assertEquals(4, saved.timerRemountEpoch)
         assertEquals(5, saved.nowPlayingReloadEpoch)
     }
 
@@ -52,13 +49,6 @@ class HubShellSavedTest {
         HubShellSaved(currentMovie = null).writeTo(handle)
         assertFalse(handle.contains(HubShellSavedKeys.CURRENT_MOVIE))
         assertNull(readHubShellSaved(handle).currentMovie)
-    }
-
-    @Test
-    fun sameLoadKeySkipsAnotherHubPageLoad() {
-        assertTrue(shouldLoadHubPage(appliedKey = null, nextKey = "Online"))
-        assertFalse(shouldLoadHubPage(appliedKey = "Online", nextKey = "Online"))
-        assertTrue(shouldLoadHubPage(appliedKey = "0", nextKey = "1"))
     }
 
     @Test

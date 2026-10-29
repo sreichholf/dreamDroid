@@ -23,7 +23,6 @@ object Statics {
     val ITEM_DETECT_DEVICES: Int = R.id.menu_detect_devices
     val ITEM_DELETE: Int = R.id.menu_delete
 
-    const val REQUEST_EDIT_TIMER: Int = 0x5000
     const val REQUEST_PICK_SERVICE: Int = 0x5001
     const val REQUEST_PICK_BOUQUET: Int = 0x5002
     const val REQUEST_EDIT_PROFILE: Int = 0x5003

@@ -104,7 +104,6 @@ class HubTimerPaneServicePickTest {
                 initializer { TimerPaneViewModel(SavedStateHandle(), timers, sessions) }
             }
         )[TimerPaneViewModel::class]
-        var timerEdits = 0
         lateinit var navController: NavHostController
         composeRule.setContent {
             DreamDroidTheme {
@@ -113,7 +112,6 @@ class HubTimerPaneServicePickTest {
                     composable<Hub> {
                         HubActivityResults(
                             handle = handle,
-                            onTimerEdited = { timerEdits++ },
                             onTimerServicePicked = pane::onServicePicked
                         )
                         Column { TimerEditPaneHost(handle, pane) }
@@ -141,7 +139,6 @@ class HubTimerPaneServicePickTest {
         composeRule.onNodeWithText("ZDF HD").performScrollTo().assertIsDisplayed()
         composeRule.runOnIdle {
             assertEquals("ZDF HD", pane.uiState.value.timer?.serviceName)
-            assertEquals("a pick is not a timer edit", 0, timerEdits)
         }
     }
 
