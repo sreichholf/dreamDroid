@@ -595,16 +595,21 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad("bouquet-a", anchor)
-        withTimeout(5_000) { warmStarted.await() }
+        try {
+            withTimeout(5_000) { warmStarted.await() }
 
-        grid.onVisibleWindow(panA + 3_600L, panA + 3_600L + 7_200L)
-        grid.awaitState { grid.loadedWindowStarts == setOf(panA) }
+            grid.onVisibleWindow(panA + 3_600L, panA + 3_600L + 7_200L)
+            grid.awaitState { grid.loadedWindowStarts == setOf(panA) }
 
-        grid.replaceAndLoad("bouquet-b", anchor)
-        grid.awaitIdle()
-        assertEquals(setOf(now), grid.loadedWindowStarts)
+            grid.replaceAndLoad("bouquet-b", anchor)
+            grid.awaitIdle()
+            assertEquals(setOf(now), grid.loadedWindowStarts)
+        } finally {
+            // The warm fetch waits on the gate outside cancellation; without this release a
+            // failed await above parks runBlocking on it until the build times out.
+            warmGate.complete(Unit)
+        }
 
-        warmGate.complete(Unit)
         grid.awaitState { !grid.state.value.syncing }
         assertEquals(
             0,
@@ -651,24 +656,31 @@ class MultiEpgGridTest {
             profileId = { 1 }
         )
         grid.replaceAndLoad("bouquet-a", anchor)
-        withTimeout(5_000) { warmAStarted.await() }
+        try {
+            withTimeout(5_000) { warmAStarted.await() }
 
-        grid.replaceAndLoad("bouquet-b", anchor)
-        withTimeout(5_000) { warmBStarted.await() }
-        grid.onVisibleWindow(panB + 3_600L, panB + 3_600L + 7_200L)
-        grid.awaitState { grid.loadedWindowStarts == setOf(panB) }
+            grid.replaceAndLoad("bouquet-b", anchor)
+            withTimeout(5_000) { warmBStarted.await() }
+            grid.onVisibleWindow(panB + 3_600L, panB + 3_600L + 7_200L)
+            grid.awaitState { grid.loadedWindowStarts == setOf(panB) }
 
-        // The cancelled warm A ends while B owns the queued chunk.
-        warmAGate.complete(Unit)
-        grid.awaitState { grid.state.value.syncingCount == 1 }
+            // The cancelled warm A ends while B owns the queued chunk.
+            warmAGate.complete(Unit)
+            grid.awaitState { grid.state.value.syncingCount == 1 }
 
-        warmBGate.complete(Unit)
-        grid.awaitIdle()
-        assertEquals(
-            1,
-            queuedFetches.get(),
-            "the warm the pan queued must survive the cancelled warm's finally"
-        )
+            warmBGate.complete(Unit)
+            grid.awaitIdle()
+            assertEquals(
+                1,
+                queuedFetches.get(),
+                "the warm the pan queued must survive the cancelled warm's finally"
+            )
+        } finally {
+            // A's fetch waits on its gate outside cancellation; releasing both keeps a failed
+            // await above from parking runBlocking until the build times out.
+            warmAGate.complete(Unit)
+            warmBGate.complete(Unit)
+        }
     }
 
     @Test
