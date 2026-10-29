@@ -200,7 +200,7 @@ class StoreScreenshotsTest {
     @Test
     fun tv() {
         assumeTrue(device == "tv")
-        ActivityScenario.launch(TvMainActivity::class.java).use { scenario ->
+        ActivityScenario.launch(TvMainActivity::class.java).use {
             awaitNode(hasTestTag("hub_service_card"))
             awaitNode(hasText(second.name))
             capture("1_hub")
