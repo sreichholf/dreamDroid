@@ -16,6 +16,7 @@
 * FIX: Crash in picture-in-picture with an extreme aspect ratio
 * FIX: TV - Guide cursor jumped a programme after Right, then Down
 * FIX: Backup - cryptic system message when no file picker exists
+* FIX: Recordings not playing with profiles from the setup assistant
 
 ## 2.0.469
 * UPD: TV - rework hub, player (Up/Down: channel list), MultiEPG, editing
