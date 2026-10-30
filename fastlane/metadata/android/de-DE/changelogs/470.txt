@@ -1,0 +1,8 @@
+• TV: neuer Hub, Player, MultiEPG und Editoren
+• TV: Weiterschauen, Backup und Wiederherstellung
+• Letzten Live-Stream automatisch starten
+• Bevorzugte Tonspur für den integrierten Player
+• Sender-EPG aus den Event-Details
+• Backup im Einrichtungsassistenten wiederherstellen
+• Timer-Liste aktualisiert sich nach jeder Änderung
+• Viele Absturz- und UI-Fixes
