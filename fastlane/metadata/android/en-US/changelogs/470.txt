@@ -1,0 +1,8 @@
+• TV: new hub, player, MultiEPG and editors
+• TV: continue watching, backup and restore
+• Auto-start the last live stream
+• Preferred audio language for the built-in player
+• Channel EPG from an event's details
+• Restore a backup in the setup assistant
+• Timer list refreshes after every change
+• Many crash and UI fixes
